@@ -1,4 +1,4 @@
-# About 
+# About 1
 MagPyLib is an open-source Python library for calculating magnetic fields from permanent magnets and current distributions. It provides an intuitive class structure to **quickly generate, group, manipulate and visualize magnet assemblies and current distributions.**
 
 The advantage of the **analytical approach** is the computation speed which can be in the sub millisecond range. This is easily **_five orders of magnitude faster_ when compared to FEM-based numerical calculations**. This makes MagPyLib highly efficient when dealing with multivariate global optimization problems that often appear in Magnetic System Design.
