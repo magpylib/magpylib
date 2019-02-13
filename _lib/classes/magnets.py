@@ -27,6 +27,7 @@ class Cube(HomoMag):
     
     Class Initialization (only kwargs):
     ---------------------
+    dim : vec3 [mm]
     
     mag : vec3 [mT]
         Set magnetization vector of magnet in units of [mT].
