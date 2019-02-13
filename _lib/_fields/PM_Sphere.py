@@ -5,8 +5,7 @@
 
 
 #%% IMPORTS
-from magPyLib._lib.mathLibPrivate import fastNorm3D, fastSum3D
-
+from magPyLib.math._mathLibPrivate import fastNorm3D, fastSum3D
 
 
 #%% CALCULATION

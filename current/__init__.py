@@ -1,2 +1,2 @@
-from magPyLib._lib.classes.currents import Circular
-from magPyLib._lib.classes.currents import Line
+from magPyLib.current._circular import Circular
+from magPyLib.current._line import Line

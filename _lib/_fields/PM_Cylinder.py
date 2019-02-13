@@ -6,8 +6,7 @@
 
 #%% IMPORTS
 from numpy import pi,sqrt,array,arctan,cos,sin,arange
-from magPyLib._lib.mathLibPrivate import getPhi, elliptic
-
+from magPyLib.math._mathLibPrivate import getPhi, elliptic
 
 
 #%% Cylinder Field Calculation
