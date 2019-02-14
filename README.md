@@ -10,17 +10,14 @@ _Python3.2+_, _Numpy_, _Matplotlib_
 ---
 ### Local Installation Instructions:
 - Create virtual environment:
-- 
 ```bash
 $ conda create -n packCondaTest python=3.7.1 anaconda
 ```
 - Activate:
-- 
 ```bash
 $ conda activate packCondaTest
 ```
 - Generate distribution files (untracked by git):
-- 
 ```bash
 $ (packCondaTest) python3 setup.py sdist bdist_wheel
 ```
