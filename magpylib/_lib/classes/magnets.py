@@ -5,12 +5,12 @@
 
 #%% IMPORTS
 from numpy import float64,isnan,array
-from magPyLib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.mathLibPrivate import angleAxisRotation
 import sys
-from magPyLib._lib.fields.PM_Cube import Bfield_Cube
-from magPyLib._lib.fields.PM_Cylinder import Bfield_Cylinder
-from magPyLib._lib.fields.PM_Sphere import Bfield_Sphere
-from magPyLib._lib.classes.base import HomoMag
+from magpylib._lib.fields.PM_Cube import Bfield_Cube
+from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
+from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
+from magpylib._lib.classes.base import HomoMag
 
 
 
@@ -85,7 +85,7 @@ class Cube(HomoMag):
     
     Examples:
     ---------
-    >>> import magPyLib as magpy
+    >>> magpylib as magpy
     >>> from time import clock
     >>> pm = magpy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
     >>> T0 = clock()
@@ -225,7 +225,7 @@ class Cylinder(HomoMag):
         
     Examples:
     ---------
-    >>> import magPyLib as magPy
+    >>> magpylib as magPy
     >>> pm = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
     >>> B = pm.getB([1,0,1])
     >>> print(B)
@@ -351,7 +351,7 @@ class Sphere(HomoMag):
         
     Examples:
     ---------
-    >>> import magPyLib as magPy
+    >>> magpylib as magPy
     >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
     >>> B = pm.getB([1,0,1])
     >>> print(B)

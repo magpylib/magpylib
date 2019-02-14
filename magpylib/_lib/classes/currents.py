@@ -4,10 +4,10 @@
 #%% IMPORTS
 from numpy import array,float64
 import sys
-from magPyLib._lib.mathLibPrivate import angleAxisRotation
-from magPyLib._lib.classes.base import LineCurrent
-from magPyLib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
-from magPyLib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.classes.base import LineCurrent
+from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
+from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 
 
 
@@ -79,7 +79,7 @@ class Circular(LineCurrent):
          
     Examples:
     ---------
-    >>> import magPyLib as magPy
+    >>> magpylib as magPy
     >>> cd = magPy.current.Circular(curr=10,dim=2)
     >>> B = cd.getB([0,0,2])
     >>> print(B)
@@ -204,7 +204,7 @@ class Line(LineCurrent):
         
     Examples:
     ---------
-    >>> import magPyLib as magPy
+    >>> magpylib as magPy
     >>> from numpy import sin,cos,pi,linspace
     >>> vertices = [[cos(phi),sin(phi),0] for phi in linspace(0,2*pi,36)]
     >>> cd = magPy.current.Line(curr=10,vertices=vertices)

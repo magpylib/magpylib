@@ -3,7 +3,7 @@
 
 
 from numpy import sqrt,array,cos,sin
-from magPyLib._lib.mathLibPrivate import getPhi,ellipticK, ellipticE
+from magpylib._lib.mathLibPrivate import getPhi,ellipticK, ellipticE
 
 #%% CIRCULAR CURRENT LOOP
 # Describes the magnetic field of a circular current loop that lies parallel to

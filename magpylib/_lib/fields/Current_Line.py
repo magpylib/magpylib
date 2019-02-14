@@ -3,7 +3,7 @@
 
 import sys
 from numpy import array
-from magPyLib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
+from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
 
 
 #%% CURRENT LINE

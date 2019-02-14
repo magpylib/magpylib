@@ -7,9 +7,9 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array,amax, linspace, pi, sin, cos
-from magPyLib._lib.classes.magnets import Cube,Cylinder,Sphere
-from magPyLib._lib.classes.currents import Line, Circular
-from magPyLib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.classes.magnets import Cube,Cylinder,Sphere
+from magpylib._lib.classes.currents import Line, Circular
+from magpylib._lib.mathLibPrivate import angleAxisRotation
 
 class Collection():
     """
@@ -46,7 +46,7 @@ class Collection():
         
     Example:
     --------
-    >>> import magPyLib as magPy
+    >>> magpylib as magPy
     >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
     >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
     >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
@@ -78,7 +78,7 @@ class Collection():
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
@@ -132,7 +132,7 @@ class Collection():
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position,pm2.position)
@@ -169,7 +169,7 @@ class Collection():
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position, pm1.angle, pm1.axis)
@@ -204,7 +204,7 @@ class Collection():
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1],pos=[-1,-1,-1],angle=45,axis=[0,0,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[2,2],pos=[0,-1,1],angle=45,axis=[1,0,0])
         >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=3,pos=[-2,1,2],angle=45,axis=[1,0,0])

@@ -14,7 +14,7 @@ Define base classes here on which the magnetic source objects are built on
 
 #%% IMPORTS
 from numpy import array,float64,pi,isnan
-from magPyLib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
 import sys
 
         
@@ -55,7 +55,7 @@ class RCS:
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print(pm.position)
             [0. 0. 0.]
@@ -85,7 +85,7 @@ class RCS:
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
         >>> print(pm.position)
             [1. 2. 3.]
@@ -119,7 +119,7 @@ class RCS:
         
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print([pm.angle,pm.axis])
             [0.0, array([0., 0., 1.])]
@@ -157,7 +157,7 @@ class RCS:
         
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000], dim=1)
         >>> print(pm.position, pm.angle, pm.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
