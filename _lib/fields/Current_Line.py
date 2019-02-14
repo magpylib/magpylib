@@ -3,7 +3,8 @@
 
 import sys
 from numpy import array
-from magPyLib.math._mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
+from magPyLib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
+
 
 #%% CURRENT LINE
 # Describes the magnetic field of a line current. The line is given by a set of

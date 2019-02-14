@@ -14,10 +14,10 @@ Define base classes here on which the magnetic source objects are built on
 
 #%% IMPORTS
 from numpy import array,float64,pi,isnan
-from magPyLib.math._mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magPyLib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
 import sys
 
-    
+        
 #%% FUNDAMENTAL CLASS - RCS (RELATIVE COORDINATE SYSTEM)
 #       - initiates position, orientation
 #       - adds moveBY, rotateBy

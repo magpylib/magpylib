@@ -2,13 +2,14 @@
 # -*- coding: utf-8 -*-
 
 #%% IMPORTS
+
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array,amax, linspace, pi, sin, cos
-from magPyLib.magnet import Cube,Cylinder,Sphere
-from magPyLib.current import Line, Circular
-from magPyLib.math._mathLibPrivate import angleAxisRotation
+from magPyLib._lib.classes.magnets import Cube,Cylinder,Sphere
+from magPyLib._lib.classes.currents import Line, Circular
+from magPyLib._lib.mathLibPrivate import angleAxisRotation
 
 class Collection():
     """
@@ -219,10 +220,7 @@ class Collection():
         for s in self.sources:
             if type(s) is Cube or type(s) is Cylinder or type(s) is Sphere:
                 Nm += 1
-
-        
-        cm = plt.cm.hsv # pylint: disable=no-member
-
+        cm = plt.cm.hsv
         #select colors
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
