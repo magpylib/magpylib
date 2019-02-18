@@ -35,6 +35,10 @@ setuptools.setup(
     url="https://github.com/magpylib/magpylib",
     packages=setuptools.find_packages(),
     zip_safe = False, ## Gives the environment files so we can access docs, enables tooltips but may decrease performance
+    install_requires=[
+          'numpy',
+          'matplotlib',
+      ],
     classifiers=[
         "Programming Language :: Python :: 3",
         "Operating System :: OS Independent",
