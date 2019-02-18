@@ -1,6 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import typing
+x=y=z=None
+a=b=c=diameter=height=None
 
 
 #%% IMPORTS
@@ -96,7 +99,7 @@ class Cube(HomoMag):
     >>> print(T1-T0)
       0.00047622195062974195
     """    
-    def __init__(self, mag=None, dim=None, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, mag=[x,y,z], dim=[a,b,c], pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class HomoMag
@@ -231,7 +234,7 @@ class Cylinder(HomoMag):
     >>> print(B)
       [34.31662243  0.         10.16090915]
     """ 
-    def __init__(self, mag=None, dim=None, pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
+    def __init__(self, mag=[x,y,z], dim=[diameter,height], pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
 
         
         #inherit class homoMag
@@ -357,7 +360,7 @@ class Sphere(HomoMag):
     >>> print(B)
       [22.09708691  0.          7.36569564]
     """ 
-    def __init__(self, mag=None, dim=None, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, mag=[x,y,z], dim=diameter, pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class homoMag
