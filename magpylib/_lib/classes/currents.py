@@ -121,7 +121,7 @@ class Circular(LineCurrent):
         posRel = p1 - self.position
         
         #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel)
+        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
         BCm = Bfield_CircularCurrentLoop(self.current,self.dimension,p21newCm)  # obtain magnetic field in Cm
@@ -249,7 +249,7 @@ class Line(LineCurrent):
         posRel = p1 - self.position
         
         #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel)
+        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
         BCm = Bfield_CurrentLine(p21newCm,self.vertices,self.current)  # obtain magnetic field in Cm

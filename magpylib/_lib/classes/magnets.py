@@ -131,7 +131,7 @@ class Cube(HomoMag):
         posRel = p1 - self.position
         
         #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel)
+        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
         BCm = Bfield_Cube(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
@@ -270,7 +270,7 @@ class Cylinder(HomoMag):
         posRel = p1 - self.position
         
         #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel)
+        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
         BCm = Bfield_Cylinder(self.magnetization,p21newCm,self.dimension,self.iterDia)  # obtain magnetic field in Cm
@@ -393,7 +393,7 @@ class Sphere(HomoMag):
         posRel = p1 - self.position
         
         #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel)
+        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
         BCm = Bfield_Sphere(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
