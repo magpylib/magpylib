@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 from numpy import arctan,pi,array,sqrt,NaN,cos,sin,arccos
 
 #%% total rotation matix for rotation aboutthree euler angles - first X, then Y, then Z
