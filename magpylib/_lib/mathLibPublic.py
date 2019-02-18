@@ -83,7 +83,7 @@ def anglesFromAxis(axis):
     Returns:    
     --------
     angles : arr2 [deg]
-        The angles [phi,th], azimuth and polar, that correspond to the orientation 
+        The angles [phi,th], azimuth and polar, that anchorrespond to the orientation 
         given by the input axis.
         
     Example:
@@ -105,11 +105,11 @@ def anglesFromAxis(axis):
 
 
 
-def rotatePosition(position,angle,axis,CoR=[0,0,0]):
+def rotatePosition(position,angle,axis,anchor=[0,0,0]):
     """
     This function uses angle-axis rotation to rotate the `position` vector by
     the `angle` argument about an axis defined by the `axis` vector which passes
-    through the center of rotation `CoR` vector. Scalar input is either integer
+    through the center of rotation `anchor` vector. Scalar input is either integer
     or float.Vector input format can be either list, tuple or array of any data
     type (float, int).
     
@@ -124,7 +124,7 @@ def rotatePosition(position,angle,axis,CoR=[0,0,0]):
     axis : vec3
         Axis of rotation
 
-    CoR : vec3
+    anchor : vec3
         The Center of rotation which defines the position of the axis of rotation
 
     Returns:    
@@ -140,7 +140,7 @@ def rotatePosition(position,angle,axis,CoR=[0,0,0]):
     >>> angle = -90
     >>> axis = [0,0,1]
     >>> centerOfRotation = [1,0,0]
-    >>> positionNew = magPy.math.rotatePosition(position0,angle,axis,CoR=centerOfRotation)
+    >>> positionNew = magPy.math.rotatePosition(position0,angle,axis,anchor=centerOfRotation)
     >>> print(positionNew)
       [2. 0. 0.]
     """
@@ -148,11 +148,11 @@ def rotatePosition(position,angle,axis,CoR=[0,0,0]):
     pos = array(position, dtype=float64, copy=False)
     ang = float(angle)
     ax = array(axis, dtype=float64, copy=False)
-    cor = array(CoR, dtype=float64, copy=False)
+    anchor = array(anchor, dtype=float64, copy=False)
     
-    pos12 = pos-cor  
+    pos12 = pos-anchor  
     pos12Rot = angleAxisRotation(ang,ax,pos12)
-    posRot = pos12Rot+cor
+    posRot = pos12Rot+anchor
     
     return posRot
 

@@ -27,7 +27,7 @@ def Bfield_LineSegment(p0,p1,p2,I0):
     #projection of p0 onto line p1-p2
     p4 = p1+(p1-p2)*fastSum3D((p0-p1)*(p1-p2))/fastSum3D((p1-p2)*(p1-p2))
 
-    #determine correct normal vector to surface spanned by triangle
+    #determine anchorrect normal vector to surface spanned by triangle
     cross0 = fastCross3D(p2-p1,p0-p4)
     norm_cross0 = fastNorm3D(cross0)
     if norm_cross0 != 0.:
