@@ -1,9 +1,9 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import typing
-x=y=z=None
-a=b=c=diameter=height=None
+import typing ## Type hint definitions
+x=y=z=None ## These aren't type hints yet.
+a=b=c=d=h=None
 
 
 #%% IMPORTS
@@ -234,7 +234,7 @@ class Cylinder(HomoMag):
     >>> print(B)
       [34.31662243  0.         10.16090915]
     """ 
-    def __init__(self, mag=[x,y,z], dim=[diameter,height], pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
+    def __init__(self, mag=[x,y,z], dim=[d,h], pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
 
         
         #inherit class homoMag
@@ -360,7 +360,7 @@ class Sphere(HomoMag):
     >>> print(B)
       [22.09708691  0.          7.36569564]
     """ 
-    def __init__(self, mag=[x,y,z], dim=diameter, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, mag=[x,y,z], dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class homoMag
