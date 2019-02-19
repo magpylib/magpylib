@@ -49,7 +49,7 @@ import matplotlib.pyplot as plt
 import magpylib as magpy
 
 # create magnets
-magnet1 = magpy.PermanentMagnet(typ=’cube’,mag=[0,0,600],dim=[3,3,3],pos=[-4,0,3])
+magnet1 = magpy.PermanentMagnet(typ=’box’,mag=[0,0,600],dim=[3,3,3],pos=[-4,0,3])
 magnet2 = magpy.PermanentMagnet(typ=’cylinder’, mag=[0,0,500], dim=[3,5], pos=[0,0,0])
 
 # manipulate magnets

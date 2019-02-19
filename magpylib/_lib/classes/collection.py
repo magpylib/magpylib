@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array,amax, linspace, pi, sin, cos
-from magpylib._lib.classes.magnets import Cube,Cylinder,Sphere
+from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 
@@ -47,7 +47,7 @@ class Collection():
     Example:
     --------
     >>> magpylib as magPy
-    >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
+    >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
     >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
     >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
     >>> col = magPy.Collection(pm1,pm2,pm3)
@@ -79,7 +79,7 @@ class Collection():
         Example:
         --------
         >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> col = magPy.Collection(pm1)
@@ -133,7 +133,7 @@ class Collection():
         Example:
         --------
         >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position,pm2.position)
           [0. 0. 0.] [0. 0. 0.]
@@ -170,7 +170,7 @@ class Collection():
         Example:
         --------
         >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position, pm1.angle, pm1.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
@@ -205,7 +205,7 @@ class Collection():
         Example:
         --------
         >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1],pos=[-1,-1,-1],angle=45,axis=[0,0,1])
+        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1],pos=[-1,-1,-1],angle=45,axis=[0,0,1])
         >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[2,2],pos=[0,-1,1],angle=45,axis=[1,0,0])
         >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=3,pos=[-2,1,2],angle=45,axis=[1,0,0])
         >>> C1 = magPy.current.Circular(curr=100,dim=6)
@@ -218,7 +218,7 @@ class Collection():
         #count magnets
         Nm = 0
         for s in self.sources:
-            if type(s) is Cube or type(s) is Cylinder or type(s) is Sphere:
+            if type(s) is Box or type(s) is Cylinder or type(s) is Sphere:
                 Nm += 1
         cm = plt.cm.hsv
         #select colors
@@ -227,7 +227,7 @@ class Collection():
         SYSSIZE = 0
         
         for ii,s in enumerate(self.sources):
-            if type(s) is Cube:
+            if type(s) is Box:
                 P = s.position
                 D = s.dimension/2
                 #create vertices in canonical basis
@@ -243,8 +243,8 @@ class Collection():
                          [v[0],v[3],v[7],v[4]],
                          [v[1],v[2],v[6],v[5]]]
                 # plot
-                cubef = Poly3DCollection(faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
-                ax.add_collection3d(cubef)
+                boxf = Poly3DCollection(faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
+                ax.add_collection3d(boxf)
                 #check system size
                 maxSize = amax(abs(v))
                 if maxSize > SYSSIZE:
@@ -291,8 +291,8 @@ class Collection():
                 for j in range(resolution-1):
                     faces += [[vs[i,j],vs[i+1,j],vs[i+1,j+1],vs[i,j+1]] for i in range(resolution-1)]
                 #plot
-                cubef = Poly3DCollection(faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
-                ax.add_collection3d(cubef)
+                boxf = Poly3DCollection(faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
+                ax.add_collection3d(boxf)
                 #check system size
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:

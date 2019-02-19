@@ -154,7 +154,8 @@ class Line(LineCurrent):
         N positions given in units of [mm] that make up N-1 linear segments
         along which the current `curr` flows, starting from the first position
         and ending with the last one.
-        
+        [[x,y,z], [x,y,z], ...]
+        "[pos1,pos2,...]"
     pos=[0,0,0] : vec3 [mm]
         Set reference position of the current distribution in units of [mm].
     

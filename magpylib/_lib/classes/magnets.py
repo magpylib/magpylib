@@ -10,7 +10,7 @@ a=b=c=d=h=None
 from numpy import float64,isnan,array
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 import sys
-from magpylib._lib.fields.PM_Cube import Bfield_Cube
+from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.classes.base import HomoMag
@@ -19,11 +19,11 @@ from magpylib._lib.classes.base import HomoMag
 
 #%% THE CUBE CLASS
 
-class Cube(HomoMag):
+class Box(HomoMag):
     """ 
     This class represents a homogeneously magnetized rectangular magnet. In 
     the canonical basis (position=[0,0,0], angle=0, axis=[0,0,1]) the magnet
-    has the origin at its geometric center and the sides of the cube are parallel
+    has the origin at its geometric center and the sides of the box are parallel
     to the basis vectors. Scalar input is either integer or float. 
     Vector input format can be either list, tuple or array of any data type (float, int).
     
@@ -35,8 +35,8 @@ class Cube(HomoMag):
         Set magnetization vector of magnet in units of [mT].
         
     dim : vec3 [mm]
-        Set the size of the cube. dim=[A,B,C] which anchorresponds to the three
-        side lenghts of the cube in units of [mm].
+        Set the size of the box. dim=[A,B,C] which anchorresponds to the three
+        side lenghts of the box in units of [mm].
         
     pos=[0,0,0] : vec3 [mm]
         Set position of the center of the magnet in units of [mm].
@@ -51,11 +51,11 @@ class Cube(HomoMag):
     ----------------
     
     magnetization : arr3 [mT]
-        Magnetization vector of cube in units of [mT].
+        Magnetization vector of box in units of [mT].
         
     dimension : arr3 [mm]
         Magnet dimension=[A,B,C] which anchorrespond to the three side lenghts
-        of the cube in units of [mm] in x-,y- and z-direction respectively
+        of the box in units of [mm] in x-,y- and z-direction respectively
         in the canonical basis.
     
     position : arr3 [mm]
@@ -90,7 +90,7 @@ class Cube(HomoMag):
     ---------
     >>> magpylib as magpy
     >>> from time import clock
-    >>> pm = magpy.magnet.Cube(mag=[0,0,1000],dim=[1,1,1])
+    >>> pm = magpy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
     >>> T0 = clock()
     >>> B = pm.getB([1,0,1])
     >>> T1 = clock()
@@ -108,7 +108,7 @@ class Cube(HomoMag):
         #secure input type and check input format of dim
         self.dimension = array(dim, dtype=float64, copy=False)
         if any(isnan(self.dimension))  or  len(self.dimension)!= 3:
-            sys.exit('Bad dim input for cube')
+            sys.exit('Bad dim input for box')
         
         
     def getB(self,pos):
@@ -137,7 +137,7 @@ class Cube(HomoMag):
         p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
         
         #the field is well known in the magnet coordinates
-        BCm = Bfield_Cube(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
+        BCm = Bfield_Box(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
         
         #rotate field vector back
         B = angleAxisRotation(self.angle,self.axis,BCm)
