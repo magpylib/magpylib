@@ -1,5 +1,11 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
+from typing import List, Tuple ## Type hint definitions 
+## Type hint definitions 
+x0=y0=z0=None ## These aren't type hints  but look good in SpydeR IDE
+xn=yn=zn=None 
+I=d=None
+####
 
 #%% IMPORTS
 from numpy import array,float64
@@ -86,7 +92,7 @@ class Circular(LineCurrent):
       [0.         0.         0.56198518]
     """  
       
-    def __init__(self, curr=None, dim=None, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, curr=I, dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
         
         #inherit class lineCurrent
         #   - pos, Mrot, MrotInv, curr
@@ -213,7 +219,7 @@ class Line(LineCurrent):
     >>> print(B)
       [0.  0.  0.559871233]
     """    
-    def __init__(self, curr=None, vertices=None, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, curr=I, vertices=[(x0,y0,z0),"---",(xn,yn,zn)], pos=(0,0,0), angle=0, axis=(0,0,1)):
         
         #inherit class lineCurrent
         #   - pos, Mrot, MrotInv, curr
