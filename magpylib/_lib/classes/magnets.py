@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import typing ## Type hint definitions
-x=y=z=None ## These aren't type hints yet.
+import typing ## Type hint definitions 
+x=y=z=None ## These aren't type hints but look good in Spyder IDE
 a=b=c=d=h=None
-
+###
 
 #%% IMPORTS
 from numpy import float64,isnan,array
