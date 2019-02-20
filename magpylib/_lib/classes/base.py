@@ -221,12 +221,12 @@ class HomoMag(RCS):
         
         #inherit class RCS
         RCS.__init__(self,position,angle,axis)
-        
+        assert all(a == 0 for a in magnetization) is False, "Bad mag input, all values are zero"
+
         #secure input type and check input format of mag
         self.magnetization = array(magnetization, dtype=float64, copy=False)
-        if any(isnan(self.magnetization))  or  len(self.magnetization)!= 3:
-            sys.exit('Bad mag input')
-
+        assert (not any(isnan(self.magnetization))  and  len(self.magnetization)== 3), "Bad mag input, invalid vector dimension"
+    
 
 
 

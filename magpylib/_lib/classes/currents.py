@@ -101,9 +101,9 @@ class Circular(LineCurrent):
         LineCurrent.__init__(self,pos,angle,axis,curr)
         
         #secure input type and check input format of dim
+        assert dim >= 0, 'Bad input dimension'
         self.dimension = float(dim)
-        if self.dimension <= 0:
-            sys.exit('Bad input dimension')
+        
         
     def getB(self,pos):
         """
@@ -229,9 +229,8 @@ class Line(LineCurrent):
         
         #secure input type and check input format of dim
         self.vertices = array(vertices, dtype=float64,copy=False)
-        for d in self.vertices:
-            if len(d)!= 3:
-                sys.exit('Line-current: Bad input dimension')  
+        assert all(len(d)==3 for d in self.vertices), 'Line-current: Bad input dimension, tuple vectors in list must be 3D' 
+                
         
         
     def getB(self,pos):
