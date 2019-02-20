@@ -246,7 +246,7 @@ class Cylinder(HomoMag):
         HomoMag.__init__(self,pos,angle,axis,mag)
         
         #secure input type and check input format of dim
-        assert type(iterDia) == int, 'Bad iterDia input for cylinder, expected int got' % type(iterDia)
+        assert type(iterDia) == int, 'Bad iterDia input for cylinder, expected <class int> got ' + str(type(iterDia))
         self.dimension = checkDimensions(2,dim,"Bad dim input for cylinder")
         self.iterDia = iterDia
             
