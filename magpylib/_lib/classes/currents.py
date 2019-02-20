@@ -10,7 +10,7 @@ I=0.0 ## Default Current
 d=0.0 ## Default Diameter
 ######################################
 
-#%% IMPORTSthe
+#%% IMPORTS
 from numpy import array,float64
 import sys
 from magpylib._lib.mathLibPrivate import angleAxisRotation
@@ -20,7 +20,7 @@ from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 
 
 
-#%% THE CIRCUAR CL CLASS
+#%% THE CIRCULAR CL CLASS
 
 class Circular(LineCurrent):
     
@@ -231,7 +231,7 @@ class Line(LineCurrent):
         
         #secure input type and check input format of dim
         assert type(vertices) != type(listOfPos), 'Line Current: enter a list of position vertices - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
-        assert all(type(pos)==tuple or type(vertices[0])==list for pos in vertices), 'Line-current: Input position (3D) tuples or lists within the list - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
+        assert all(type(pos)==tuple or type(pos)==list for pos in vertices), 'Line-current: Input position (3D) tuples or lists within the list - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
         assert all(len(d)==3 for d in vertices), 'Line-current: Bad input dimension, tuple vectors in list must be 3D' 
         self.vertices = array(vertices, dtype=float64,copy=False)
         
