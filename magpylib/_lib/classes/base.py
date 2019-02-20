@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 '''
 Define base classes here on which the magnetic source objects are built on
 
@@ -15,6 +13,7 @@ Define base classes here on which the magnetic source objects are built on
 #%% IMPORTS
 from numpy import array,float64,pi,isnan
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.utility import checkDimensions
 import sys
 
         

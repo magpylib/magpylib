@@ -16,13 +16,7 @@ from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.classes.base import HomoMag
-
-## Helper function for validating input dimensions
-def checkDimensions(expectedD: int, dim: Tuple[float,float,float], exitMsg: str="Bad dim input") -> array:
-    assert all(coord == 0 for coord in dim) is False, exitMsg + ", all values are zero"
-    dimension = array(dim, dtype=float64, copy=False) 
-    assert (not any(isnan(dimension))  and  len(dimension) == expectedD), exitMsg
-    return dimension
+from magpylib._lib.utility import checkDimensions
 
 #%% THE CUBE CLASS
 
