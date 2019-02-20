@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 '''
 Define base classes here on which the magnetic source objects are built on
 
@@ -15,6 +13,7 @@ Define base classes here on which the magnetic source objects are built on
 #%% IMPORTS
 from numpy import array,float64,pi,isnan
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.utility import checkDimensions
 import sys
 
         
@@ -221,12 +220,12 @@ class HomoMag(RCS):
         
         #inherit class RCS
         RCS.__init__(self,position,angle,axis)
-        
+        assert all(a == 0 for a in magnetization) is False, "Bad mag input, all values are zero"
+
         #secure input type and check input format of mag
         self.magnetization = array(magnetization, dtype=float64, copy=False)
-        if any(isnan(self.magnetization))  or  len(self.magnetization)!= 3:
-            sys.exit('Bad mag input')
-
+        assert (not any(isnan(self.magnetization))  and  len(self.magnetization)== 3), "Bad mag input, invalid vector dimension"
+    
 
 
 

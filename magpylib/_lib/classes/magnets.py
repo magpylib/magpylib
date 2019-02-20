@@ -1,7 +1,7 @@
 ######### Type hint definitions ########
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
-import typing 
+from typing import Tuple
 Mx=My=Mz=0.0 # Def.Magnetization Vector
 a=b=c=0.0 #Default Cuboid dimensions
 d=0.0 # Default Diameter 
@@ -16,8 +16,7 @@ from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.classes.base import HomoMag
-
-
+from magpylib._lib.utility import checkDimensions
 
 #%% THE CUBE CLASS
 
@@ -108,9 +107,7 @@ class Box(HomoMag):
         HomoMag.__init__(self,pos,angle,axis,mag)
         
         #secure input type and check input format of dim
-        self.dimension = array(dim, dtype=float64, copy=False)
-        if any(isnan(self.dimension))  or  len(self.dimension)!= 3:
-            sys.exit('Bad dim input for box')
+        self.dimension = checkDimensions(3,dim,"Bad dim for box")
         
         
     def getB(self,pos):
@@ -146,9 +143,7 @@ class Box(HomoMag):
         
         return B
     
-
-
-
+        
 #%% THE CYLINDER CLASS
 
 class Cylinder(HomoMag):
@@ -245,12 +240,10 @@ class Cylinder(HomoMag):
         HomoMag.__init__(self,pos,angle,axis,mag)
         
         #secure input type and check input format of dim
-        self.dimension = array(dim, dtype=float64, copy=False) 
-        if any(isnan(self.dimension))  or  len(self.dimension)!= 2:
-            sys.exit('Bad dim input for cylinder')
+        assert type(iterDia) == int, 'Bad iterDia input for cylinder, expected <class int> got ' + str(type(iterDia))
+        self.dimension = checkDimensions(2,dim,"Bad dim input for cylinder")
         self.iterDia = iterDia
-        if not type(self.iterDia) == int:
-            sys.exit('Bad iterDia input for cylinder')
+            
         
     def getB(self,pos):
         """
@@ -372,8 +365,7 @@ class Sphere(HomoMag):
         
         #secure input type and check input format of dim
         self.dimension = float(dim)
-        if self.dimension <= 0:
-            sys.exit('Bad dim<0 for sphere')
+        assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
     def getB(self,pos):
         """
