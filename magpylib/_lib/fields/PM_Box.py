@@ -11,13 +11,13 @@ from numpy import pi,sign,sqrt,log,array,arctan
 
 #%% CALCULATIONS
 
-# Describes the magnetic field of a rectangular cuboid magnet with sides parallel to its native
+# Describes the magnetic field of a cuboid magnet with sides parallel to its native
 #   cartesian coordinates. The dimension is 2a x 2b x 2c and the magnetization 
 #   is given by MAG. The center of the box is positioned at posM.
 
 # MAG : arr3   [mT/mm³]     Magnetization per unit volume, MAG = mu0*mag = remanence field
 # pos  : arr3  [mm]        Position of observer
-# dim  : arr3  [mm]        dim = [A,B,C], Magnet dimension = A x B x C
+# dim  : arr3  [mm]        dim = [a,b,c], Magnet dimension = A x B x C
 
 #basic functions required to calculate the cuboid's fields
 def F1(x,y,z,a,b,c):

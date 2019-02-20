@@ -2,8 +2,8 @@
 # -*- coding: utf-8 -*-
 
 import typing ## Type hint definitions 
-x=y=z=None ## These aren't type hints but look good in Spyder IDE
-a=b=c=d=h=None
+Mx=My=Mz=0.0 ## These aren't type hints but look good in Spyder IDE
+a=b=c=d=h=0.0
 ###
 
 #%% IMPORTS
@@ -21,7 +21,7 @@ from magpylib._lib.classes.base import HomoMag
 
 class Box(HomoMag):
     """ 
-    This class represents a homogeneously magnetized rectangular magnet. In 
+    This class represents a homogeneously magnetized cuboid magnet. In 
     the canonical basis (position=[0,0,0], angle=0, axis=[0,0,1]) the magnet
     has the origin at its geometric center and the sides of the box are parallel
     to the basis vectors. Scalar input is either integer or float. 
@@ -35,7 +35,7 @@ class Box(HomoMag):
         Set magnetization vector of magnet in units of [mT].
         
     dim : vec3 [mm]
-        Set the size of the box. dim=[A,B,C] which anchorresponds to the three
+        Set the size of the box. dim=[a,b,c] which anchorresponds to the three
         side lenghts of the box in units of [mm].
         
     pos=[0,0,0] : vec3 [mm]
@@ -54,7 +54,7 @@ class Box(HomoMag):
         Magnetization vector of box in units of [mT].
         
     dimension : arr3 [mm]
-        Magnet dimension=[A,B,C] which anchorrespond to the three side lenghts
+        Magnet dimension=[a,b,c] which anchorrespond to the three side lenghts
         of the box in units of [mm] in x-,y- and z-direction respectively
         in the canonical basis.
     
@@ -99,7 +99,7 @@ class Box(HomoMag):
     >>> print(T1-T0)
       0.00047622195062974195
     """    
-    def __init__(self, mag=[x,y,z], dim=[a,b,c], pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, mag=(Mx,My,Mz), dim=(a,b,c), pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class HomoMag
@@ -190,7 +190,7 @@ class Cylinder(HomoMag):
         Magnetization vector of magnet in units of [mT].
         
     dimension : arr2 [mm]
-        Magnet dimension=[D,H] which anchorrespond to diameter and height of the
+        Magnet dimension=[d,h] which anchorrespond to diameter and height of the
         cylinder in units of [mm].
     
     position : arr3 [mm]
@@ -234,7 +234,7 @@ class Cylinder(HomoMag):
     >>> print(B)
       [34.31662243  0.         10.16090915]
     """ 
-    def __init__(self, mag=[x,y,z], dim=[d,h], pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
+    def __init__(self, mag=(Mx,My,Mz), dim=(d,h), pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
 
         
         #inherit class homoMag
@@ -360,7 +360,7 @@ class Sphere(HomoMag):
     >>> print(B)
       [22.09708691  0.          7.36569564]
     """ 
-    def __init__(self, mag=[x,y,z], dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
+    def __init__(self, mag=(Mx,My,Mz), dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class homoMag
