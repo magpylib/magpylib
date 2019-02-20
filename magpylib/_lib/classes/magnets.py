@@ -1,10 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
-import typing ## Type hint definitions 
-Mx=My=Mz=0.0 ## These aren't type hints but look good in Spyder IDE
-a=b=c=d=h=0.0
-###
+######### Type hint definitions ########
+# These aren't type hints, but look good 
+# in Spyder IDE. Pycharm recognizes it.
+import typing 
+Mx=My=Mz=0.0 # Def.Magnetization Vector
+a=b=c=0.0 #Default Cuboid dimensions
+d=0.0 # Default Diameter 
+h=0.0 # Default Height 
+#######################################
 
 #%% IMPORTS
 from numpy import float64,isnan,array

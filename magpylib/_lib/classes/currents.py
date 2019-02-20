@@ -1,12 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-from typing import List, Tuple,TypeVar ## Type hint definitions 
-## Type hint definitions 
-x_i=TypeVar('x_i',int,float)
+####### Type hint definitions ########
+from typing import List, Tuple,TypeVar 
+## Magnetization Vector Typehints
+x_i=TypeVar('x_i',int,float) 
 y_i=TypeVar('y_i',int,float)
 z_i=TypeVar('z_i',int,float)
-I=d=0.0
-####
+I=0.0 ## Default Current
+d=0.0 ## Default Diameter
+######################################
 
 #%% IMPORTS
 from numpy import array,float64
