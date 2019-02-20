@@ -11,20 +11,19 @@ _Python3.2+_, _Numpy_, _Matplotlib_
 ### Local Installation Instructions:
 - Create virtual environment:
 ```bash
-$ conda create -n packCondaTest python=3.7.1 anaconda
+$ conda create -n packCondaTest 
 ```
 - Activate:
+
 ```bash
 $ conda activate packCondaTest
 ```
-- Generate distribution files (untracked by git):
-```bash
-$ (packCondaTest) python3 setup.py sdist bdist_wheel
-```
 
 - Install the generated library for the environment:
+
+
 ```bash
-$ (packCondaTest) pip install .
+(packCondaTest) /magpylib$  pip install .
 ```
 
 The library is now in the packCondaTest environment.
