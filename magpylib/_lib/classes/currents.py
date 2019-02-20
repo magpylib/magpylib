@@ -4,7 +4,7 @@ from typing import List, Tuple,TypeVar
 x_i=TypeVar('x_i',int,float) 
 y_i=TypeVar('y_i',int,float)
 z_i=TypeVar('z_i',int,float)
-listOf3DPos = List[Tuple[x_i,y_i,z_i]]
+listOfPos = List[Tuple[x_i,y_i,z_i]]
 
 I=0.0 ## Default Current
 d=0.0 ## Default Diameter
@@ -222,7 +222,7 @@ class Line(LineCurrent):
     >>> print(B)
       [0.  0.  0.559871233]
     """    
-    def __init__(self, curr=I, vertices=listOf3DPos, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, curr=I, vertices=listOfPos, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
         
         #inherit class lineCurrent
         #   - pos, Mrot, MrotInv, curr
