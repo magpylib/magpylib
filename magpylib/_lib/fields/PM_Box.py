@@ -11,15 +11,15 @@ from numpy import pi,sign,sqrt,log,array,arctan
 
 #%% CALCULATIONS
 
-# Describes the magnetic field of a cubical magnet with sides parallel to its native
+# Describes the magnetic field of a cuboid magnet with sides parallel to its native
 #   cartesian coordinates. The dimension is 2a x 2b x 2c and the magnetization 
-#   is given by MAG. The center of the cube is positioned at posM.
+#   is given by MAG. The center of the box is positioned at posM.
 
 # MAG : arr3   [mT/mm³]     Magnetization per unit volume, MAG = mu0*mag = remanence field
 # pos  : arr3  [mm]        Position of observer
-# dim  : arr3  [mm]        dim = [A,B,C], Magnet dimension = A x B x C
+# dim  : arr3  [mm]        dim = [a,b,c], Magnet dimension = A x B x C
 
-#basic functions required to calculate the cubic fields
+#basic functions required to calculate the cuboid's fields
 def F1(x,y,z,a,b,c):
     if z+c == 0:
         return pi/2*sign((x+a)*(y+b))
@@ -46,7 +46,7 @@ def F2(x,y,z,a,b,c):
     #    return (sqrt((x+a)**2 + (y-b)**2 + (z+c)**2) + b - y) / (sqrt((x+a)**2 + (y+b)**2 + (z+c)**2) - b - y)
 
 #calculating the field
-def Bfield_Cube(MAG, pos, dim): #returns arr3
+def Bfield_Box(MAG, pos, dim): #returns arr3
 
     # Mag part in z-direction
     B0 = MAG[2]
@@ -78,7 +78,7 @@ def Bfield_Cube(MAG, pos, dim): #returns arr3
     ByY = -B0/4/pi*(F1(-x,y,z,a,b,c) + F1(-x,y,-z,a,b,c) + F1(-x,-y,z,a,b,c) + F1(-x,-y,-z,a,b,c) + F1(x,y,z,a,b,c) +  F1(x,y,-z,a,b,c)  + F1(x,-y,z,a,b,c)  + F1(x,-y,-z,a,b,c))
     field += array([BxY,ByY,BzY])
 
-    # add M when inside the cube to make B out of H
+    # add M when inside the box to make B out of H
     if abs(x) < a:
         if abs(y) < b:
             if abs(z) < c:

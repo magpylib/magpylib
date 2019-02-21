@@ -1,5 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 '''
 Define base classes here on which the magnetic source objects are built on
 
@@ -14,7 +12,8 @@ Define base classes here on which the magnetic source objects are built on
 
 #%% IMPORTS
 from numpy import array,float64,pi,isnan
-from magPyLib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.utility import checkDimensions
 import sys
 
         
@@ -55,7 +54,7 @@ class RCS:
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print(pm.position)
             [0. 0. 0.]
@@ -85,7 +84,7 @@ class RCS:
             
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
         >>> print(pm.position)
             [1. 2. 3.]
@@ -119,7 +118,7 @@ class RCS:
         
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print([pm.angle,pm.axis])
             [0.0, array([0., 0., 1.])]
@@ -133,10 +132,10 @@ class RCS:
             sys.exit('Bad axis input')
         
         
-    def rotate(self, angle, axis, CoR='self.position'):
+    def rotate(self, angle, axis, anchor='self.position'):
         """
         This method rotates the source about `axis` by `angle`. The axis passes
-        through the center of rotation CoR. Scalar input is either integer or
+        through the center of rotation anchor. Scalar input is either integer or
         float. Vector input format can be either list, tuple or array of any
         data type (float, int).
         
@@ -146,7 +145,7 @@ class RCS:
             Set angle of rotation in units of [deg]
         axis : vec3 []
             Set axis of rotation
-        CoR : vec3 [mm]
+        anchor : vec3 [mm]
             Specify the Center of rotation which defines the position of the
             axis of rotation. If not specified the source will rotate about its
             own center.
@@ -157,21 +156,21 @@ class RCS:
         
         Example:
         --------
-        >>> import magPyLib as magPy
+        >>> magpylib as magPy
         >>> pm = magPy.magnet.Sphere(mag=[0,0,1000], dim=1)
         >>> print(pm.position, pm.angle, pm.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
-        >>> pm.rotate(90, [0,1,0], CoR=[1,0,0])
+        >>> pm.rotate(90, [0,1,0], anchor=[1,0,0])
         >>> print([pm.position, pm.angle, pm.axis])
           [1., 0., 1.] 90.0 [0., 1., 0.]
         """
         #secure type
         ax = array(axis, dtype=float64, copy=False)
         ang = float(angle)
-        if str(CoR) == 'self.position':
-            cor = self.position
+        if str(anchor) == 'self.position':
+            anchor = self.position
         else:
-            cor = array(CoR, dtype=float64, copy=False)
+            anchor = array(anchor, dtype=float64, copy=False)
         
         #check input
         if any(isnan(ax)) or len(ax)!= 3:
@@ -180,8 +179,8 @@ class RCS:
             sys.exit('Bad axis input')
         if type(ang) != float:
             sys.exit('Bad angle input')
-        if any(isnan(cor)) or len(cor)!= 3:
-            sys.exit('Bad CoR input')
+        if any(isnan(anchor)) or len(anchor)!= 3:
+            sys.exit('Bad anchor input')
         
         # determine Rotation Quaternion Q from self.axis-angle
         Q = getRotQuat(self.angle,self.axis)
@@ -204,10 +203,10 @@ class RCS:
             self.axis = array(ax3)/Lax3
         
         # set new position using P.v.P*
-        posOld = self.position-cor
+        posOld = self.position-anchor
         Vold = [0] + [p for p in posOld]
         Vnew = Qmult(P,Qmult(Vold,Qconj(P)))
-        self.position = array(Vnew[1:])+cor
+        self.position = array(Vnew[1:])+anchor
 
 
 
@@ -221,12 +220,12 @@ class HomoMag(RCS):
         
         #inherit class RCS
         RCS.__init__(self,position,angle,axis)
-        
+        assert all(a == 0 for a in magnetization) is False, "Bad mag input, all values are zero"
+
         #secure input type and check input format of mag
         self.magnetization = array(magnetization, dtype=float64, copy=False)
-        if any(isnan(self.magnetization))  or  len(self.magnetization)!= 3:
-            sys.exit('Bad mag input')
-
+        assert (not any(isnan(self.magnetization))  and  len(self.magnetization)== 3), "Bad mag input, invalid vector dimension"
+    
 
 
 
