@@ -68,7 +68,7 @@ class Collection():
         This method adds the argument source object to the collection.
         
         Parameters:
-        ----------
+        -----------
         source : source object
             adds the source object `source` to the collection.
         
@@ -101,7 +101,7 @@ class Collection():
         collection at the argument position `pos` in units of [mT]
         
         Parameters:
-        ----------
+        -----------
         pos : vec3 [mm]
             Position where magnetic field should be determined.
         
@@ -122,7 +122,7 @@ class Collection():
         type (float, int).
         
         Parameters:
-        ----------
+        -----------
         displacement : vec3 - [mm]
             Displacement vector
             
@@ -154,7 +154,7 @@ class Collection():
         data type (float, int).
         
         Parameters:
-        ----------
+        -----------
         angle  : scalar [deg]
             Angle of rotation in units of [deg]
         axis : vec3
@@ -194,7 +194,7 @@ class Collection():
         Poly3DCollections z-ordering fails when bounding boxes intersect.
         
         Parameters:
-        -----------
+        ------------
         None
                 
         Returns:    

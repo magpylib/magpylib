@@ -116,7 +116,7 @@ class Box(HomoMag):
         at the argument position `pos` in units of [mT]
         
         Parameters:
-        ----------
+        -----------
         pos : vec3 [mm]
             Position where magnetic field should be determined.
         
@@ -251,7 +251,7 @@ class Cylinder(HomoMag):
         at the argument position `pos` in units of [mT]
         
         Parameters:
-        ----------
+        -----------
         pos : vec3 [mm]
             Position where magnetic field should be determined.
         
@@ -373,7 +373,7 @@ class Sphere(HomoMag):
         at the argument position `pos` in units of [mT]
         
         Parameters:
-        ----------
+        -----------
         pos : vec3 [mm]
             Position where magnetic field should be determined.
         

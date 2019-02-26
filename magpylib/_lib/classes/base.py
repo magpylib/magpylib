@@ -44,7 +44,7 @@ class RCS:
         of any data type (float, int)
         
         Parameters:
-        ----------
+        -----------
         newPos : vec3 [mm]
             Set new position of the source.
             
@@ -74,7 +74,7 @@ class RCS:
         type (float, int).
         
         Parameters:
-        ----------
+        -----------
         displacement : vec3 [mm]
             Set displacement vector
             
@@ -105,7 +105,7 @@ class RCS:
         either list, tuple or array of any data type (float, int).
         
         Parameters:
-        ----------
+        -----------
         angle  : scalar [deg]
             Set new angle of source orientation.
         
@@ -140,7 +140,7 @@ class RCS:
         data type (float, int).
         
         Parameters:
-        ----------
+        -----------
         angle  : scalar [deg]
             Set angle of rotation in units of [deg]
         axis : vec3 []
