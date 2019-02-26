@@ -10,18 +10,14 @@ def randomAxis():
     """
     This function generates a random `axis` (3-vector of length 1) from an equal
     angular distribution using a MonteCarlo scheme.
-       
-    Parameters:
-    ----------
-    none
         
-    Returns:    
-    --------
+    Returns
+    -------
     axis : arr3
         A random axis from an equal angular distribution of length 1
         
-    Example:
-    --------
+    Example
+    -------
     >>> magpylib as magPy
     >>> ax = magPy.math.randomAxis()
     >>> print(ax)
@@ -43,18 +39,18 @@ def axisFromAngles(angles):
     that are defined as in spherical coordinates. phi = azimuth angle, th = polar angle.
     Vector input format can be either list, tuple or array of any data type (float, int).
        
-    Parameters:
+    Parameters
     ----------
     angles : vec2 [deg]
         The two angels [phi,th], azimuth and polar, in units of deg.
         
-    Returns:    
-    --------
+    Returns    
+    -------
     axis : arr3
         An axis of length that is oriented as given by the input angles.
         
-    Example:
-    --------
+    Example
+    -------
     >>> magpylib as magPy
     >>> angles = [90,90]
     >>> ax = magPy.math.axisFromAngles(angles)
@@ -75,19 +71,19 @@ def anglesFromAxis(axis):
     phi = azimuth angle, th = polar angle. Vector input format can be either 
     list, tuple or array of any data type (float, int).
        
-    Parameters:
+    Parameters
     ----------
     axis : vec3
         Arbitrary input axis that defines an orientation.
         
-    Returns:    
-    --------
+    Returns
+    -------
     angles : arr2 [deg]
         The angles [phi,th], azimuth and polar, that anchorrespond to the orientation 
         given by the input axis.
         
-    Example:
-    --------
+    Example
+    -------
     >>> magpylib as magPy
     >>> axis = [1,1,0]
     >>> angles = magPy.math.anglesFromAxis(axis)
@@ -113,7 +109,7 @@ def rotatePosition(position,angle,axis,anchor=[0,0,0]):
     or float.Vector input format can be either list, tuple or array of any data
     type (float, int).
     
-    Parameters:
+    Parameters
     ----------
     position : vec3
         Input position to be rotated.
@@ -127,13 +123,13 @@ def rotatePosition(position,angle,axis,anchor=[0,0,0]):
     anchor : vec3
         The Center of rotation which defines the position of the axis of rotation
 
-    Returns:    
-    --------
+    Returns    
+    -------
     newPosition : arr3
         Rotated position
         
-    Example:
-    --------
+    Example
+    -------
     >>> magpylib as magPy
     >>> from numpy import pi
     >>> position0 = [1,1,0]
