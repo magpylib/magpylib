@@ -1,8 +1,8 @@
-# -*- coding: utf-8 -*-
 """
-Created on Thu Jan 24 09:42:43 2019
+Math functions
+==============
 
-@author: ortner
+Available mathematical functions for rotating positions and extracting angle/axis information.
 """
 __all__ = ["randomAxis", "axisFromAngles", "anglesFromAxis", "rotatePosition"] # This is for Sphinx
 
