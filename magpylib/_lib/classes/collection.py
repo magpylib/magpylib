@@ -10,7 +10,7 @@ from magpylib._lib.mathLibPrivate import angleAxisRotation
 
 class Collection():
     """
-    Create a collection of sources for common manipulation.
+    Create a collection of :mod:`magpylib.source` objects for common manipulation.
     
     Parameters
     ----------
