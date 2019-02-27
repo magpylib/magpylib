@@ -6,6 +6,9 @@
 Welcome to MagPyLib's documentation!
 ====================================
 
+Table of Contents
+-----------------
+
 .. toctree::
    :glob:
    :maxdepth: 2
@@ -19,8 +22,9 @@ Welcome to MagPyLib's documentation!
    :caption: Contents:
 
    _autogen/magpylib
-   _autogen/magpylib.math
    _autogen/magpylib.source
+   _autogen/magpylib.math
+
 
 
 
