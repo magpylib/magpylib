@@ -22,7 +22,7 @@ from magpylib._lib.utility import checkDimensions
 
 class Box(HomoMag):
     """ 
-    This class represents a homogeneously magnetized cuboid magnet. In 
+    A homogeneously magnetized cuboid magnet. In 
     the canonical basis (position=[0,0,0], angle=0.0, axis=[0,0,1]) the magnet
     has the origin at its geometric center and the sides of the box are parallel
     to the basis vectors. Scalar input is either integer or float. 
@@ -79,6 +79,10 @@ class Box(HomoMag):
       [42.9223532 0.0 13.7461635]
     >>> print(T1-T0)
       0.00047622195062974195
+    
+    Note
+    ----
+    The following Methods are available to all sources objects.
     """    
     def __init__(self, mag=(Mx,My,Mz), dim=(a,b,c), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
 
@@ -128,12 +132,13 @@ class Box(HomoMag):
 
 class Cylinder(HomoMag):
     """ 
-    This class represents a homogeneously magnetized cylinder (circular bottom)
-    magnet. The magnet is initialized in the canonical basis (position=[0,0,0],
+    A homogeneously magnetized cylindrical magnet. 
+    The magnet is initialized in the canonical basis (position=[0,0,0],
     angle=0.0, axis=[0,0,1]) with the geometric center at the origin and the
     central symmetry axis pointing in z-direction so that the circular bottom
     lies in a plane parallel to the xy-plane. Scalar input is either integer
-    or float. Vector input format can be either list, tuple or array of any
+    or float and reflects a round bottom. 
+    Vector input format can be either list, tuple or array of any
     data type (float, int).
         
     Parameters
@@ -189,6 +194,10 @@ class Cylinder(HomoMag):
     >>> B = pm.getB([1,0,1])
     >>> print(B)
       [34.31662243  0.         10.16090915]
+    
+    Note
+    ----
+    The following Methods are available to all sources objects.
     """ 
     def __init__(self, mag=(Mx,My,Mz), dim=(d,h), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0), iterDia = 50):
 
@@ -245,7 +254,7 @@ class Cylinder(HomoMag):
 
 class Sphere(HomoMag):
     """ 
-    This class represents a homogeneously magnetized sphere. The magnet
+    A homogeneously magnetized sphere. The magnet
     is initialized in the canonical basis (position=[0,0,0],
     angle=0.0, axis=[0,0,1]) with the center at the origin. Scalar input is
     either integer or float. Vector input format can be either list, tuple
@@ -294,6 +303,10 @@ class Sphere(HomoMag):
     >>> B = pm.getB([1,0,1])
     >>> print(B)
       [22.09708691  0.          7.36569564]
+
+    Note
+    ----
+    The following Methods are available to all sources objects.
     """ 
     def __init__(self, mag=(Mx,My,Mz), dim=d, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
 
