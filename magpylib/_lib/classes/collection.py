@@ -9,8 +9,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array,amax, linspace, pi, sin, cos
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-
+from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
+from magpylib._lib.mathLibPublic import rotatePosition
 class Collection():
     """
     Create a collection of sources for common manipulation.
@@ -325,6 +326,15 @@ class Collection():
                 ax.plot(vs[:,0],vs[:,1],vs[:,2],lw=1,color='k')
                 #check system size
                 maxSize = amax(abs(vs))
+                if maxSize > SYSSIZE:
+                    SYSSIZE = maxSize
+
+            elif type(s) is Dipole:
+                P = rotatePosition(s.position,s.angle,s.axis) 
+                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
+                           s.moment[0],s.moment[1],s.moment[2], # Components of the Vector
+                           normalize=True)
+                maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
                 
