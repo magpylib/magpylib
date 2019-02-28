@@ -188,19 +188,26 @@ class Collection():
             s.rotate(angle,axis,anchor=anchor)
          
     
-    def displaySystem(self):
+    def displaySystem(self,suppress=False):
         """
-        This method displays the collection in an interactive plot. 
+        This method returns and shows the collection display in an interactive plot.
+        If the suppress kwarg is set to True, it will only return Figure information (requires plt.ioff())
         WARNING: As a result of an inherent problem in matplotlib the 
         Poly3DCollections z-ordering fails when bounding boxes intersect.
         
-        Parameters:
-        -----------
-        None
+        Parameter
+        ---------
+        suppress : bool
+            If True, only return Figure information, do not show. Interactive mode must be off.
+            Default: False.
+
+        >>> plt.ioff()
+        >>> figureData = Collection.displayFigure()
+
                 
         Returns:    
         --------
-        matplotlib graphics object
+        matplotlib Figure object
             graphics object is displayed through plt.show()
             
         Example:
@@ -344,6 +351,7 @@ class Collection():
                            normalize=True,
                            length=SYSSIZE/5) # View is Always at least 5 times smaller
                 
+                
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
         ax.set_xlabel('x[mm]', fontsize=12)
@@ -356,5 +364,9 @@ class Collection():
             aspect=1
             )
         plt.tight_layout()
-        plt.show()
+
+        if suppress is False:
+            plt.show()
+
+        return plt.gcf()
         
