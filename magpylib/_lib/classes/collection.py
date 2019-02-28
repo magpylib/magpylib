@@ -331,12 +331,18 @@ class Collection():
 
             elif type(s) is Dipole:
                 P = rotatePosition(s.position,s.angle,s.axis) 
-                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
-                           s.moment[0],s.moment[1],s.moment[2], # Components of the Vector
-                           normalize=True)
+                M = rotatePosition(s.moment,s.angle,s.axis) 
+                
                 maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+                if SYSSIZE == 0: ## Avoids inf. small volume
+                    SYSSIZE=1
+
+                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
+                           M[0],M[1],M[2], # Components of the Vector
+                           normalize=True,
+                           length=SYSSIZE/5) # View is Always at least 5 times smaller
                 
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
