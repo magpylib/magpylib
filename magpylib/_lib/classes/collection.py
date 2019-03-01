@@ -232,10 +232,11 @@ class Collection():
         #select colors
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
+        ii = -1
         SYSSIZE = 0
-        
-        for ii,s in enumerate(self.sources):
+        for s in self.sources:
             if type(s) is Box:
+                ii+=1 #increase color counter
                 P = s.position
                 D = s.dimension/2
                 #create vertices in canonical basis
@@ -259,6 +260,7 @@ class Collection():
                     SYSSIZE = maxSize
             
             elif type(s) is Cylinder:
+                ii+=1 #increase color counter
                 P = s.position
                 R,H = s.dimension/2
                 
@@ -283,6 +285,7 @@ class Collection():
                     SYSSIZE = maxSize
                 
             elif type(s) is Sphere:
+                ii+=1 #increase color counter
                 P = s.position
                 R = s.dimension/2
                 
@@ -336,20 +339,21 @@ class Collection():
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
 
-            elif type(s) is Dipole:
+        
+        for s in self.sources: #plot dipoles afterwards when system size is defined
+            if type(s) is Dipole:
                 P = rotatePosition(s.position,s.angle,s.axis) 
                 M = rotatePosition(s.moment,s.angle,s.axis) 
                 
                 maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
-                if SYSSIZE == 0: ## Avoids inf. small volume
-                    SYSSIZE=1
 
                 plt.quiver(P[0],P[1],P[2], # X,Y,Z position
                            M[0],M[1],M[2], # Components of the Vector
                            normalize=True,
-                           length=SYSSIZE/5) # View is Always at least 5 times smaller
+                           length=SYSSIZE/12,
+                           color='k')
                 
                 
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
