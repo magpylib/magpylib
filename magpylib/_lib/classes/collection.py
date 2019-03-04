@@ -6,8 +6,9 @@ from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array,amax, linspace, pi, sin, cos
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-
+from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
+from magpylib._lib.mathLibPublic import rotatePosition
 class Collection():
     """
     Create a collection of :mod:`magpylib.source` objects for common manipulation.
@@ -165,19 +166,26 @@ class Collection():
             s.rotate(angle,axis,anchor=anchor)
          
     
-    def displaySystem(self):
+    def displaySystem(self,suppress=False):
         """
-        This method displays the collection in an interactive plot. 
+        This method returns and shows the collection display in an interactive plot.
+        If the suppress kwarg is set to True, it will only return Figure information (requires plt.ioff())
         WARNING: As a result of an inherent problem in matplotlib the 
         Poly3DCollections z-ordering fails when bounding boxes intersect.
         
-        Parameters
-        -----------
-        None
+        Parameter
+        ---------
+        suppress : bool
+            If True, only return Figure information, do not show. Interactive mode must be off.
+            Default: False.
+
+        >>> plt.ioff()
+        >>> figureData = Collection.displayFigure()
+
                 
-        Returns
-        -------
-        matplotlib graphics object
+        Return    
+        ------
+        matplotlib Figure object
             graphics object is displayed through plt.show()
             
         Example
@@ -202,10 +210,11 @@ class Collection():
         #select colors
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
+        ii = -1
         SYSSIZE = 0
-        
-        for ii,s in enumerate(self.sources):
+        for s in self.sources:
             if type(s) is Box:
+                ii+=1 #increase color counter
                 P = s.position
                 D = s.dimension/2
                 #create vertices in canonical basis
@@ -229,6 +238,7 @@ class Collection():
                     SYSSIZE = maxSize
             
             elif type(s) is Cylinder:
+                ii+=1 #increase color counter
                 P = s.position
                 R,H = s.dimension/2
                 
@@ -253,6 +263,7 @@ class Collection():
                     SYSSIZE = maxSize
                 
             elif type(s) is Sphere:
+                ii+=1 #increase color counter
                 P = s.position
                 R = s.dimension/2
                 
@@ -305,6 +316,23 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+
+        
+        for s in self.sources: #plot dipoles afterwards when system size is defined
+            if type(s) is Dipole:
+                P = rotatePosition(s.position,s.angle,s.axis) 
+                M = rotatePosition(s.moment,s.angle,s.axis) 
+                
+                maxSize = amax(abs(P))
+                if maxSize > SYSSIZE:
+                    SYSSIZE = maxSize
+
+                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
+                           M[0],M[1],M[2], # Components of the Vector
+                           normalize=True,
+                           length=SYSSIZE/12,
+                           color='k')
+                
                 
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
@@ -318,5 +346,9 @@ class Collection():
             aspect=1
             )
         plt.tight_layout()
-        plt.show()
+
+        if suppress is False:
+            plt.show()
+
+        return plt.gcf()
         
