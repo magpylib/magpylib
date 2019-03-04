@@ -168,17 +168,26 @@ class Collection():
     
     def displaySystem(self,suppress=False):
         """
-        This method returns and shows the collection display in an interactive plot.
-        If the suppress kwarg is set to True, it will only return Figure information (requires plt.ioff())
-        WARNING: As a result of an inherent problem in matplotlib the 
+        Runs plt.show() and Returns a matplotlib figure identifier and shows the collection display in an interactive plot.
+        
+
+
+        WARNING
+        -------
+        As a result of an inherent problem in matplotlib the 
         Poly3DCollections z-ordering fails when bounding boxes intersect.
         
-        Parameter
-        ---------
+
+
+        Parameters
+        ----------
         suppress : bool
             If True, only return Figure information, do not show. Interactive mode must be off.
             Default: False.
 
+
+        >>> ## Suppress matplotlib.pyplot.show() 
+        >>> ## and returning figure from showing up
         >>> plt.ioff()
         >>> figureData = Collection.displayFigure()
 
