@@ -22,6 +22,14 @@ import sys
 sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above 
 
 import sphinx.apidoc
+
+
+
+autodoc_default_options = {
+    'private-members':True,
+    'inherited-members':True,
+}
+
 def setup(app):
     app.add_javascript('copybutton.js') # Add the button for 
                                         # hiding ">>>" in examples
@@ -37,10 +45,9 @@ def setup(app):
     )
 
 
-autodoc_default_options = {
-    'private-members':True,
-    'inherited-members':True
-}
+
+
+
 # -- Project information -----------------------------------------------------
 
 project = 'MagPyLib'
