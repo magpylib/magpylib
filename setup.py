@@ -34,7 +34,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name=_name,
-    version=_magPyversion,
+    version=_magPyVersion,
     author=_author,
     author_email= _author_email,
     description=_description,
