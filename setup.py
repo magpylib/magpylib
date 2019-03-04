@@ -17,8 +17,10 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
+_SphinxVersion = "1.8.2"
+
 _name = "magpylib"
-_version = "1.0a0"
+_magPyVersion = "1.0a0"
 _description = "A simple, user friendly Python 3.2+ toolbox for calculating magnetic fields from permanent magnets and current distributions."
 _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
@@ -32,7 +34,7 @@ with open("README.md", "r") as fh:
 
 setuptools.setup(
     name=_name,
-    version=_version,
+    version=_magPyversion,
     author=_author,
     author_email= _author_email,
     description=_description,
@@ -52,7 +54,7 @@ setuptools.setup(
     command_options={
         'build_sphinx': {
             'project': ('setup.py', _name),
-            'version': ('setup.py', _version),
+            'version': ('setup.py', _SphinxVersion),
             'release': ('setup.py', _release),
             'source_dir': ('setup.py', './..')}},
 )
