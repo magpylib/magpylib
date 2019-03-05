@@ -62,8 +62,8 @@ class RCS:
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print(pm.position)
             [0. 0. 0.]
         >>> pm.setPosition([5,5,5])
@@ -92,8 +92,8 @@ class RCS:
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
         >>> print(pm.position)
             [1. 2. 3.]
         >>> pm.move([3,2,1])
@@ -126,8 +126,8 @@ class RCS:
         
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print([pm.angle,pm.axis])
             [0.0, array([0., 0., 1.])]
         >>> pm.setOrientation(45,[0,1,0])
@@ -164,12 +164,12 @@ class RCS:
         
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000], dim=1)
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000], dim=1)
         >>> print(pm.position, pm.angle, pm.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
         >>> pm.rotate(90, [0,1,0], anchor=[1,0,0])
-        >>> print([pm.position, pm.angle, pm.axis])
+        >>> print(pm.position, pm.angle, pm.axis)
           [1., 0., 1.] 90.0 [0., 1., 0.]
         """
         #secure type
