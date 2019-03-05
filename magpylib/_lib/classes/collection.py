@@ -188,8 +188,9 @@ class Collection():
 
         >>> ## Suppress matplotlib.pyplot.show() 
         >>> ## and returning figure from showing up
-        >>> plt.ioff()
-        >>> figureData = Collection.displayFigure()
+        >>> from matplotlib import pyplot 
+        >>> pyplot.ioff()
+        >>> figureData = Collection.displayFigure(suppress=True)
 
                 
         Return    
