@@ -1,3 +1,7 @@
+![https://readthedocs.com/projects/magpylib-magpylib/badge/?version=sphinx-docs](https://magpylib-magpylib.readthedocs-hosted.com/en/sphinx-docs/)
+
+---
+
 # About
 *A simple and user friendly magnetic toolbox for Python 3.2+*
 
