@@ -1,4 +1,4 @@
-![https://readthedocs.com/projects/magpylib-magpylib/badge/?version=sphinx-docs](https://magpylib-magpylib.readthedocs-hosted.com/en/sphinx-docs/)
+[![](https://readthedocs.com/projects/magpylib-magpylib/badge/?version=sphinx-docs)](https://magpylib-magpylib.readthedocs-hosted.com/)
 
 ---
 
