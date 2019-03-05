@@ -23,7 +23,7 @@ from magpylib._lib.utility import checkDimensions
 class Box(HomoMag):
     """ 
     This class represents a homogeneously magnetized cuboid magnet. In 
-    the canonical basis (position=[0,0,0], angle=0.0, axis=[0,0,1]) the magnet
+    the canonical basis (position=[0,0,0], angle=0, axis=[0,0,1]) the magnet
     has the origin at its geometric center and the sides of the box are parallel
     to the basis vectors. Scalar input is either integer or float. 
     Vector input format can be either list, tuple or array of any data type (float, int).
@@ -42,7 +42,7 @@ class Box(HomoMag):
     pos=[0,0,0] : vec3 [mm]
         Set position of the center of the magnet in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of magnet in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -100,7 +100,7 @@ class Box(HomoMag):
     >>> print(T1-T0)
       0.00047622195062974195
     """    
-    def __init__(self, mag=(Mx,My,Mz), dim=(a,b,c), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, mag=(Mx,My,Mz), dim=(a,b,c), pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class HomoMag
@@ -150,7 +150,7 @@ class Cylinder(HomoMag):
     """ 
     This class represents a homogeneously magnetized cylinder (circular bottom)
     magnet. The magnet is initialized in the canonical basis (position=[0,0,0],
-    angle=0.0, axis=[0,0,1]) with the geometric center at the origin and the
+    angle=0, axis=[0,0,1]) with the geometric center at the origin and the
     central symmetry axis pointing in z-direction so that the circular bottom
     lies in a plane parallel to the xy-plane. Scalar input is either integer
     or float. Vector input format can be either list, tuple or array of any
@@ -169,7 +169,7 @@ class Cylinder(HomoMag):
     pos=[0,0,0] : vec3 [mm]
         Set position of the center of the magnet in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of magnet in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -231,7 +231,7 @@ class Cylinder(HomoMag):
     >>> print(B)
       [34.31662243  0.         10.16090915]
     """ 
-    def __init__(self, mag=(Mx,My,Mz), dim=(d,h), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0), iterDia = 50):
+    def __init__(self, mag=(Mx,My,Mz), dim=(d,h), pos=(0,0,0), angle=0, axis=(0,0,1), iterDia = 50):
 
         
         #inherit class homoMag
@@ -288,7 +288,7 @@ class Sphere(HomoMag):
     """ 
     This class represents a homogeneously magnetized sphere. The magnet
     is initialized in the canonical basis (position=[0,0,0],
-    angle=0.0, axis=[0,0,1]) with the center at the origin. Scalar input is
+    angle=0, axis=[0,0,1]) with the center at the origin. Scalar input is
     either integer or float. Vector input format can be either list, tuple
     or array of any data type (float, int).
     
@@ -304,7 +304,7 @@ class Sphere(HomoMag):
     pos=[0,0,0] : vec3 [mm]
         Set position of the center of the magnet in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of magnet in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -355,7 +355,7 @@ class Sphere(HomoMag):
     >>> print(B)
       [22.09708691  0.          7.36569564]
     """ 
-    def __init__(self, mag=(Mx,My,Mz), dim=d, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, mag=(Mx,My,Mz), dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         
         #inherit class homoMag

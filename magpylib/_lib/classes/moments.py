@@ -32,7 +32,7 @@ class Dipole(RCS):
     pos=[0,0,0] : vec3 [mm]
         Set position of the moment in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of the moment in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -81,7 +81,7 @@ class Dipole(RCS):
     >>> print(B)
       [0.33761862  0.  0.11253954]
     """    
-    def __init__(self, moment=(Mx,My,Mz), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, moment=(Mx,My,Mz), pos=(0,0,0), angle=0, axis=(0,0,1)):
 
         #inherit class RCS
         RCS.__init__(self,pos,angle,axis)

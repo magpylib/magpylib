@@ -26,7 +26,7 @@ class Circular(LineCurrent):
     
     """ 
     A circular line current loop with diameter `dim` and a current `curr` flowing
-    in positive orientation. In the canonical basis (position=[0,0,0], angle=0.0,
+    in positive orientation. In the canonical basis (position=[0,0,0], angle=0,
     axis=[0,0,1]) the loop lies in the x-y plane with the origin at its center.
     Scalar input is either integer or float. Vector input format can be
     either list, tuple or array of any data type (float, int).
@@ -43,7 +43,7 @@ class Circular(LineCurrent):
     pos=[0,0,0] : vec3 [mm]
         Set position of the center of the current loop in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of current loop in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -95,7 +95,7 @@ class Circular(LineCurrent):
       [0.         0.         0.56198518]
     """  
       
-    def __init__(self, curr=I, dim=d, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, curr=I, dim=d, pos=(0,0,0), angle=0, axis=(0,0,1)):
         
         #inherit class lineCurrent
         #   - pos, Mrot, MrotInv, curr
@@ -148,7 +148,7 @@ class Line(LineCurrent):
     """ 
     
     A line current flowing along linear segments from vertex to vertex given by
-    a list of positions `vertices` in the canonical basis (position=[0,0,0], angle=0.0,
+    a list of positions `vertices` in the canonical basis (position=[0,0,0], angle=0,
     axis=[0,0,1]). Scalar input is either integer or float. Vector input format
     can be either list, tuple or array of any data type (float, int).
     
@@ -168,7 +168,7 @@ class Line(LineCurrent):
     pos=[0,0,0] : vec3 [mm]
         Set reference position of the current distribution in units of [mm].
     
-    angle=0.0 : scalar [deg]
+    angle=0 : scalar [deg]
         Set angle of orientation of current distribution in units of [deg].
     
     axis=[0,0,1] : vec3 []
@@ -222,7 +222,7 @@ class Line(LineCurrent):
     >>> print(B)
       [0.  0.  0.559871233]
     """    
-    def __init__(self, curr=I, vertices=listOfPos, pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
+    def __init__(self, curr=I, vertices=listOfPos, pos=(0,0,0), angle=0, axis=(0,0,1)):
         
         #inherit class lineCurrent
         #   - pos, Mrot, MrotInv, curr
