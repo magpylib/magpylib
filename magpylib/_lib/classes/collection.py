@@ -155,7 +155,7 @@ class Collection():
           [0. 0. 0.] 0.0 [0. 0. 1.]
         >>> print(pm2.position, pm2.angle, pm2.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
-        >>> col = magPy.Collection(pm1,pm2)
+        >>> col = Collection(pm1,pm2)
         >>> col.rotate(90, [0,1,0], anchor=[1,0,0])
         >>> print(pm1.position, pm1.angle, pm1.axis)
           [1. 0. 1.] 90.0 [0. 1. 0.]
