@@ -67,8 +67,8 @@ class Circular(LineCurrent):
         
     Example
     -------
-    >>> magpylib as magPy
-    >>> cd = magPy.current.Circular(curr=10,dim=2)
+    >>> from magpylib import source
+    >>> cd = source.current.Circular(curr=10,dim=2)
     >>> B = cd.getB([0,0,2])
     >>> print(B)
       [0.         0.         0.56198518]
@@ -177,13 +177,13 @@ class Line(LineCurrent):
         
     Examples
     --------
-    >>> magpylib as magPy
+    >>> from magpylib import source
     >>> from numpy import sin,cos,pi,linspace
     >>> vertices = [[cos(phi),sin(phi),0] for phi in linspace(0,2*pi,36)]
-    >>> cd = magPy.current.Line(curr=10,vertices=vertices)
+    >>> cd = source.current.Line(curr=10,vertices=vertices)
     >>> B = cd.getB([0,0,2])
     >>> print(B)
-      [0.  0.  0.559871233]
+      [-6.24500451e-17  1.73472348e-18  5.59871233e-01]
 
     
     Note
