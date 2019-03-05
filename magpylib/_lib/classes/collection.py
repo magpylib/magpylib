@@ -25,14 +25,14 @@ class Collection():
         
     Example
     -------
-        >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-        >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
-        >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
-        >>> col = magPy.Collection(pm1,pm2,pm3)
+        >>> from magpylib import source, Collection
+        >>> pm1 = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm2 = source.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
+        >>> pm3 = source.magnet.Sphere(mag=[0,0,1000],dim=1)
+        >>> col = Collection(pm1,pm2,pm3)
         >>> B = col.getB([1,0,1])
         >>> print(B)
-        [99.3360625 0.0 31.2727683]
+        [9.93360625e+01 1.76697482e-14 3.12727683e+01]
     """
     
     def __init__(self,*sources):
@@ -57,19 +57,19 @@ class Collection():
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-        >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
-        >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
-        >>> col = magPy.Collection(pm1)
+        >>> from magpylib import source, Collection
+        >>> pm1 = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm2 = source.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
+        >>> pm3 = source.magnet.Sphere(mag=[0,0,1000],dim=1)
+        >>> col = Collection(pm1)
         >>> print(col.getB([1,0,1]))
-          [42.9223532 0.0 13.7461635]
+          [4.29223532e+01 1.76697482e-14 1.37461635e+01]
         >>> col.addSource(pm2)
         >>> print(col.getB([1,0,1]))
-          [77.2389756 0.0 23.9070726]
+          [7.72389756e+01 1.76697482e-14 2.39070726e+01]
         >>> col.addSource(pm3)
         >>> print(col.getB([1,0,1]))
-          [99.3360625 0.0 31.2727683]
+          [9.93360625e+01 1.76697482e-14 3.12727683e+01]
         """        
         self.sources += [source]
 
@@ -111,15 +111,15 @@ class Collection():
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-        >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
+        >>> from magpylib import source, Collection
+        >>> pm1 = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm2 = source.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position,pm2.position)
           [0. 0. 0.] [0. 0. 0.]
-        >>> col = magPy.Collection(pm1,pm2)
+        >>> col = Collection(pm1,pm2)
         >>> col.move([1,1,1])
         >>> print(pm1.position,pm2.position)
-          [0. 0. 0.] [0. 0. 0.]
+          [1. 1. 1.] [1. 1. 1.]
         """
         for s in self.sources:
             s.move(displacement)
@@ -148,9 +148,9 @@ class Collection():
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-        >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
+        >>> from magpylib import source, Collection
+        >>> pm1 = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
+        >>> pm2 = source.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
         >>> print(pm1.position, pm1.angle, pm1.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
         >>> print(pm2.position, pm2.angle, pm2.axis)
@@ -199,12 +199,12 @@ class Collection():
             
         Example
         -------
-        >>> magpylib as magPy
-        >>> pm1 = magPy.magnet.Box(mag=[0,0,1000],dim=[1,1,1],pos=[-1,-1,-1],angle=45,axis=[0,0,1])
-        >>> pm2 = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[2,2],pos=[0,-1,1],angle=45,axis=[1,0,0])
-        >>> pm3 = magPy.magnet.Sphere(mag=[0,0,1000],dim=3,pos=[-2,1,2],angle=45,axis=[1,0,0])
-        >>> C1 = magPy.current.Circular(curr=100,dim=6)
-        >>> col = magPy.Collection(pm1,pm2,pm3,C1)
+        >>> from magpylib import source, Collection
+        >>> pm1 = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1],pos=[-1,-1,-1],angle=45,axis=[0,0,1])
+        >>> pm2 = source.magnet.Cylinder(mag=[0,0,1000],dim=[2,2],pos=[0,-1,1],angle=45,axis=[1,0,0])
+        >>> pm3 = source.magnet.Sphere(mag=[0,0,1000],dim=3,pos=[-2,1,2],angle=45,axis=[1,0,0])
+        >>> C1 = source.current.Circular(curr=100,dim=6)
+        >>> col = Collection(pm1,pm2,pm3,C1)
         >>> col.displaySystem()
         """ 
         fig = plt.figure(dpi=80,figsize=(8,8))
