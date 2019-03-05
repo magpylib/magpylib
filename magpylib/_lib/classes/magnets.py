@@ -69,16 +69,11 @@ class Box(HomoMag):
 
     Example
     -------
-    >>> magpylib as magpy
-    >>> from time import clock
-    >>> pm = magpy.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-    >>> T0 = clock()
+    >>> from magpylib import source
+    >>> pm = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
     >>> B = pm.getB([1,0,1])
-    >>> T1 = clock()
     >>> print(B)
       [42.9223532 0.0 13.7461635]
-    >>> print(T1-T0)
-      0.00047622195062974195
     
     Note
     ----
@@ -189,8 +184,8 @@ class Cylinder(HomoMag):
         
     Example
     -------
-    >>> magpylib as magPy
-    >>> pm = magPy.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
+    >>> from magpylib import source
+    >>> pm = source.magnet.Cylinder(mag=[0,0,1000],dim=[1,1])
     >>> B = pm.getB([1,0,1])
     >>> print(B)
       [34.31662243  0.         10.16090915]
@@ -298,8 +293,8 @@ class Sphere(HomoMag):
     
     Example
     -------
-    >>> magpylib as magPy
-    >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
+    >>> from magpylib import source
+    >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1)
     >>> B = pm.getB([1,0,1])
     >>> print(B)
       [22.09708691  0.          7.36569564]
