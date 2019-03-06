@@ -6,7 +6,7 @@
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from numpy import array,amax, linspace, pi, sin, cos
+from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
@@ -274,7 +274,7 @@ class Collection():
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
         ii = -1
-        SYSSIZE = 0
+        SYSSIZE = finfo(float).eps ## Machine Epsilon for moment
         for s in self.sources:
             if type(s) is Box:
                 ii+=1 #increase color counter
