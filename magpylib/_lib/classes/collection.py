@@ -63,6 +63,47 @@ class Collection():
         for s in sources:
             self.sources += [s]
 
+    def popSource(self,source=None,index=-1):
+        """
+        Pop a source from the sources list. 
+        
+        Parameters
+        ----------
+
+        source : source object 
+            [Optional] Remove the inputted source from the list
+
+        index : int
+            [Optional] Remove a source at the given index position. Default: Last position.
+            Has no effect is source kwarg is used
+        
+        Return
+        ------
+
+        Popped source object.
+
+        Raises
+        ------
+
+        ValueError
+            Will be thrown if you attempt to remove a source that is not in the Collection.
+        
+        AssertionError
+            Will be thrown if inputted index kwarg type is not type int
+
+        """
+        assert type(index) == int, "Index type in pop must be integer"
+
+        if source is None:
+                return self.sources.pop(index)
+        else:
+
+            try:
+                self.sources.remove(source)
+            except ValueError as e: # Give a more helpful message.
+                raise type(e)(str(e) + ' - ' + str(type(source)) + ' not in list for popSource')
+            return source
+
     
     def addSource(self,source):
         """
@@ -228,7 +269,7 @@ class Collection():
         for s in self.sources:
             if type(s) is Box or type(s) is Cylinder or type(s) is Sphere:
                 Nm += 1
-        cm = plt.cm.hsv
+        cm = plt.cm.hsv #pylint: disable=no-member
         #select colors
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
