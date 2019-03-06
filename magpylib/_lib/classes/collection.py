@@ -91,6 +91,31 @@ class Collection():
         AssertionError
             Will be thrown if inputted index kwarg type is not type int
 
+        Example
+        -------
+
+            >>> from magpylib import Collection, source
+            >>> s = source.magnet.Sphere(mag=[1,2,3],dim=1,pos=[3,3,3])
+            >>> s2 = source.magnet.Sphere(mag=[1,2,3],dim=2,pos=[-3,-3,-3])
+            >>> m = source.moment.Dipole(moment=[1,2,3],pos=(0,0,0))
+            >>> c = Collection(s,s2,m)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.magnets.Sphere object at 0xa31eafcc>, 
+            <magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
+            <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.popSource(source=s)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
+            <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.popSource(source=s2)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.popSource()
+            >>> print(c.sources)
+            []
+            
+
+
         """
         assert type(index) == int, "Index type in pop must be integer"
 
