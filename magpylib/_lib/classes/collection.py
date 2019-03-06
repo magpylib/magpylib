@@ -509,6 +509,15 @@ class Collection():
                            length=SYSSIZE/12,
                            color='k')
                 
+        m = self.markers
+        if all(val==0 for val in m):
+            ax.scatter(m[0],m[1],m[2],s=20,marker='x')
+        else:
+            ax.scatter(m[0],m[1],m[2],s=20,marker='x')
+            ax.scatter(-m[0],-m[1],-m[2],s=20,marker='x')
+            maxSize = amax(abs(max(m)))
+            if maxSize > SYSSIZE:
+                SYSSIZE = maxSize
                 
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
