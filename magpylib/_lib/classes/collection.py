@@ -1,6 +1,9 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-
+######### Type hint definitions ########
+# These aren't type hints, but look good 
+# in Spyder IDE. Pycharm recognizes it.
+from typing import Tuple
+x=y=z=0.0 # Position Vector
+#######################################
 #%% IMPORTS
 
 import matplotlib.pyplot as plt
@@ -58,9 +61,12 @@ class Collection():
       [99.3360625 0.0 31.2727683]
     """
     
-    def __init__(self,*sources):
-        self.sources = []
+    def __init__(self,*sources,marker=[x,y,z]):
         
+        assert len(marker) == 3, "Position vector for marker is not 3"
+        assert all(type(p)==int or type(p)==float for p in marker), "Position vector for marker has non-int or non-float types."
+        self.sources = []
+        self.markers = marker
         for s in sources:
             if type(s) == Collection:
                 self.sources.extend(s.sources)
@@ -133,7 +139,25 @@ class Collection():
                 raise type(e)(str(e) + ' - ' + str(type(source)) + ' not in list for popSource')
             return source
 
+    def marker(self,markerPos=[x,y,z]):
+        """
+        Set/Update mirror marker position for display system. Default: [0,0,0]
+        
+        Parameters
+        ----------
+        markerPos : int/float list
+            Position for mirrored markers (the default is [0,0,0], which shows only one marker at the center)
+        
+        Raise
+        -----
+        AssertionError
+            List is not a position vector made of integers or floats.
     
+        """
+        assert len(markerPos) == 3, "Position vector for marker is not 3"
+        assert all(type(p)==int or type(p)==float for p in markerPos), "Position vector for marker has non-int or non-float types."
+        self.markers=markerPos
+
     def addSource(self,source):
         """
         This method adds the argument source object to the collection.
