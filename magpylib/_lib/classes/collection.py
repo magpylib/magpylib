@@ -13,8 +13,10 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.utility import isSource
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
+
 
 class Collection():
     """
@@ -65,6 +67,8 @@ class Collection():
         
         assert len(marker) == 3, "Position vector for marker is not 3"
         assert all(type(p)==int or type(p)==float for p in marker), "Position vector for marker has non-int or non-float types."
+        assert all(isSource(a) for a in sources), "Non-source object in Collection initialization"
+
         self.sources = []
         self.markers = marker
         for s in sources:
@@ -152,7 +156,7 @@ class Collection():
         -----
         AssertionError
             List is not a position vector made of integers or floats.
-    
+
         """
         assert len(markerPos) == 3, "Position vector for marker is not 3"
         assert all(type(p)==int or type(p)==float for p in markerPos), "Position vector for marker has non-int or non-float types."
@@ -508,7 +512,7 @@ class Collection():
                            normalize=True,
                            length=SYSSIZE/12,
                            color='k')
-                
+
         m = self.markers
         if all(val==0 for val in m):
             ax.scatter(m[0],m[1],m[2],s=20,marker='x')
