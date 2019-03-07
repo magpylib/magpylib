@@ -125,7 +125,7 @@ def drawCurrentArrows(currentList,SYSSIZE,pyplot):
 
 ###
 
-def drawDipole(position,moment,SYSSIZE,pyplot):
+def drawDipole(position,moment,angle,axis,SYSSIZE,pyplot):
     """
     Draw a dipole moment arrow.
     
@@ -141,9 +141,10 @@ def drawDipole(position,moment,SYSSIZE,pyplot):
         canvas to draw on
     
     """
-
-    P=position
-    M=moment
+    from magpylib._lib.mathLibPublic import rotatePosition
+    P = rotatePosition(position,angle,axis)
+    M = rotatePosition(moment,angle,axis) 
+    
     pyplot.quiver(P[0],P[1],P[2], # X,Y,Z position
                 M[0],M[1],M[2], # Components of the Vector
                 normalize=True,

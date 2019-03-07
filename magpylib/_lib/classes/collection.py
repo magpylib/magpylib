@@ -518,11 +518,8 @@ class Collection():
                     currentsList.append(s)
 
         
-        for s in self.sources: #plot dipoles afterwards when system size is defined
-            if type(s) is Dipole:
-                P = rotatePosition(s.position,s.angle,s.axis) 
-                M = rotatePosition(s.moment,s.angle,s.axis) 
-                
+            elif type(s) is Dipole:
+                P = rotatePosition(s.position,s.angle,s.axis)
                 maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
@@ -542,7 +539,9 @@ class Collection():
         
 
         for d in dipolesList:
-            drawDipole(d.position,d.moment,SYSSIZE,plt)
+            drawDipole( d.position,d.moment,
+                        d.angle,d.axis,
+                        SYSSIZE,plt)
 
         if direc is True: ### Draw the Magnetization axes and current directions
             drawCurrentArrows(currentsList,SYSSIZE,plt)
