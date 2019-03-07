@@ -13,7 +13,7 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource
+from magpylib._lib.utility import isSource, drawLineArrows
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -346,7 +346,7 @@ class Collection():
             s.rotate(angle,axis,anchor=anchor)
          
     
-    def displaySystem(self,suppress=False):
+    def displaySystem(self,suppress=False,direc=False):
         """
         This method returns and shows the collection display in an interactive plot.
         If the suppress kwarg is set to True, it will only return Figure information (requires plt.ioff())
@@ -478,7 +478,10 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
-            
+
+                if direc is True:
+                    drawLineArrows(s.vertices,s.current,SYSSIZE,plt)
+
             elif type(s) is Circular:
                 P = s.position
                 R = s.dimension/2
@@ -493,9 +496,13 @@ class Collection():
                 #plot
                 ax.plot(vs[:,0],vs[:,1],vs[:,2],lw=1,color='k')
                 #check system size
+                print(vs0)
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+                    
+                if direc is True:
+                    drawLineArrows(vs0,s.current,SYSSIZE,plt)
 
         
         for s in self.sources: #plot dipoles afterwards when system size is defined
