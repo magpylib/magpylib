@@ -13,7 +13,7 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource, drawLineArrows
+from magpylib._lib.utility import isSource, drawCurrentArrows, drawMagAxis
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -392,6 +392,8 @@ class Collection():
         
         ii = -1
         SYSSIZE = finfo(float).eps ## Machine Epsilon for moment
+        magnetsList=[]
+        currentsList=[]
         for s in self.sources:
             if type(s) is Box:
                 ii+=1 #increase color counter
@@ -416,7 +418,10 @@ class Collection():
                 maxSize = amax(abs(v))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
-            
+
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
             elif type(s) is Cylinder:
                 ii+=1 #increase color counter
                 P = s.position
@@ -442,6 +447,10 @@ class Collection():
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
                 
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
+                
             elif type(s) is Sphere:
                 ii+=1 #increase color counter
                 P = s.position
@@ -466,6 +475,10 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
                     
             elif type(s) is Line:
                 P = s.position
@@ -480,7 +493,7 @@ class Collection():
                     SYSSIZE = maxSize
 
                 if direc is True:
-                    drawLineArrows(s.vertices,s.current,SYSSIZE,plt)
+                    currentsList.append(s)
 
             elif type(s) is Circular:
                 P = s.position
@@ -501,7 +514,7 @@ class Collection():
                     SYSSIZE = maxSize
                     
                 if direc is True:
-                    drawLineArrows(vs0,s.current,SYSSIZE,plt)
+                    currentsList.append(s)
 
         
         for s in self.sources: #plot dipoles afterwards when system size is defined
@@ -528,7 +541,11 @@ class Collection():
             maxSize = amax(abs(max(m)))
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
-                
+        
+        if direc is True: ### Draw the Magnetization axes and current directions
+            drawCurrentArrows(currentsList,SYSSIZE,plt)
+            drawMagAxis(magnetsList,SYSSIZE,plt)
+
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
         ax.set_xlabel('x[mm]', fontsize=12)
