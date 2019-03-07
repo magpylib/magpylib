@@ -496,7 +496,6 @@ class Collection():
                 #plot
                 ax.plot(vs[:,0],vs[:,1],vs[:,2],lw=1,color='k')
                 #check system size
-                print(vs0)
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
