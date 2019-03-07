@@ -122,3 +122,30 @@ def drawLineArrows(vertices,current,SYSSIZE,pyplot):
 def drawCurrentArrows(currentList,SYSSIZE,pyplot):
     for s in currentList:
             drawLineArrows(s.vertices,s.current,SYSSIZE,pyplot)
+
+###
+
+def drawDipole(position,moment,SYSSIZE,pyplot):
+    """
+    Draw a dipole moment arrow.
+    
+    Parameters
+    ----------
+    position : vec3
+        position of the dipole
+    moment : vec3
+        orientation vector of the dipole
+    SYSSIZE : float
+        size of the display
+    pyplot : pyplot
+        canvas to draw on
+    
+    """
+
+    P=position
+    M=moment
+    pyplot.quiver(P[0],P[1],P[2], # X,Y,Z position
+                M[0],M[1],M[2], # Components of the Vector
+                normalize=True,
+                length=SYSSIZE/12,
+                color='k')

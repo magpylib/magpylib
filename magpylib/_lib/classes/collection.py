@@ -13,7 +13,7 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource, drawCurrentArrows, drawMagAxis
+from magpylib._lib.utility import isSource, drawCurrentArrows, drawMagAxis, drawDipole
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -392,6 +392,7 @@ class Collection():
         
         ii = -1
         SYSSIZE = finfo(float).eps ## Machine Epsilon for moment
+        dipolesList=[]
         magnetsList=[]
         currentsList=[]
         for s in self.sources:
@@ -526,11 +527,8 @@ class Collection():
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
 
-                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
-                           M[0],M[1],M[2], # Components of the Vector
-                           normalize=True,
-                           length=SYSSIZE/12,
-                           color='k')
+                dipolesList.append(s)
+
 
         m = self.markers
         if all(val==0 for val in m):
@@ -542,6 +540,10 @@ class Collection():
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
         
+
+        for d in dipolesList:
+            drawDipole(d.position,d.moment,SYSSIZE,plt)
+
         if direc is True: ### Draw the Magnetization axes and current directions
             drawCurrentArrows(currentsList,SYSSIZE,plt)
             drawMagAxis(magnetsList,SYSSIZE,plt)
