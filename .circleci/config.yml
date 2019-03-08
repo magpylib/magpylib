@@ -1,0 +1,13 @@
+version: 2
+jobs:
+  build:
+    docker:
+      - image: python:3
+    steps:
+      - checkout
+      - run: 
+          name: Install Testing Env
+          command: pip install tox
+      - run:
+          name: Run test Suite
+          command: tox
