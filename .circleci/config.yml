@@ -15,3 +15,6 @@ jobs:
           path: test-results
       - store_test_results:
           path: test-results
+      - run: 
+          name: See if tests are where they should be
+          command: cat test-results
