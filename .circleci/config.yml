@@ -17,4 +17,4 @@ jobs:
           path: test-results
       - run: 
           name: See if tests are where they should be
-          command: cat test-results
+          command: ls test-results
