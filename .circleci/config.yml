@@ -7,7 +7,11 @@ jobs:
       - checkout
       - run: 
           name: Install Testing Env
-          command: pip install tox
+          command: mkdir test-reports && pip install tox
       - run:
           name: Run test Suite
-          command: tox
+          command: pytest --cov=./
+      - store_test_results:
+                path: test-reports
+      - store_artifacts:
+                path: test-reports   
