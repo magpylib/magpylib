@@ -1,6 +1,7 @@
+[![CircleCI](https://circleci.com/gh/OrtnerMichael/magPyLib.svg?style=svg)](https://circleci.com/gh/OrtnerMichael/magPyLib)
+
 # About
 *A simple and user friendly magnetic toolbox for Python 3.2+*
-
 
 ### What is Magpylib ?
  - Magpylib is a Python library for calculating magnetic fields from permanent magnets and current distributions. 
