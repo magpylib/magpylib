@@ -12,7 +12,7 @@ jobs:
           name: Run Test Suite
           command: tox
       - store_artifacts:
-          path: test-results
+          path: test-results/cov.xml
       - store_test_results:
           path: test-results
       - run: 
