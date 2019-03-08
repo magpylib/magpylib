@@ -4,7 +4,7 @@ from numpy import float64, isnan, array
 import pytest
 
 def test_checkDimensionZero():
-    errMsg = "Did not raise all zeros Error"
+    # errMsg = "Did not raise all zeros Error"
     with pytest.raises(AssertionError):
         checkDimensions(3,dim=(.0,0,.0))
 
@@ -12,7 +12,7 @@ def test_checkDimensionZero():
         checkDimensions(0,dim=[])
 
 def test_checkDimensionMembers():
-    errMsg = "Did not raise expected Value Error"
+    # errMsg = "Did not raise expected Value Error"
     with pytest.raises(ValueError):
         checkDimensions(3,dim=(3,'r',6))
 
