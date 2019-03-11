@@ -69,19 +69,16 @@ class Collection():
                 else:
                     self.sources+=[s]
 
-    def popSource(self,source=None,index=-1):
+    def removeSource(self,source_ref=-1):
         """
-        Pop a source from the sources list. 
+        Remove a source from the sources list. 
         
         Parameters
         ----------
 
-        source : source object 
+        source_ref : source object or int
             [Optional] Remove the inputted source from the list
-
-        index : int
-            [Optional] Remove a source at the given index position. Default: Last position.
-            Has no effect is source kwarg is used
+            [Optional] If given an int, remove a source at the given index position. Default: Last position.
         
         Return
         ------
@@ -109,31 +106,32 @@ class Collection():
             [<magpylib._lib.classes.magnets.Sphere object at 0xa31eafcc>, 
             <magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
             <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
-            >>> c.popSource(source=s)
+            >>> c.removeSource(s)
             >>> print(c.sources)
             [<magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
             <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
-            >>> c.popSource(source=s2)
+            >>> c.removeSource(s2)
             >>> print(c.sources)
             [<magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
-            >>> c.popSource()
+            >>> c.removeSource()
             >>> print(c.sources)
             []
             
 
 
         """
-        assert type(index) == int, "Index type in pop must be integer"
-
-        if source is None:
-                return self.sources.pop(index)
-        else:
-
+        assert type(source_ref) == int or isSource(source_ref), "Reference in removeSource is not an int nor a source"
+        if type(source_ref) == int:
             try:
-                self.sources.remove(source)
-            except ValueError as e: # Give a more helpful message.
-                raise type(e)(str(e) + ' - ' + str(type(source)) + ' not in list for popSource')
-            return source
+                return self.sources.pop(source_ref)
+            except IndexError as e: # Give a more helpful error message.
+                raise type(e)(str(e) + ' - Index ' + str(source_ref) + ' in collection source is not accessible for removeSource')
+        else:
+            try:
+                self.sources.remove(source_ref)
+            except ValueError as e: # Give a more helpful error message.
+                raise type(e)(str(e) + ' - ' + str(type(source_ref)) + ' not in list for removeSource')
+            return source_ref
         
     def addSources(self,*sources,dupWarning=True):
         """
