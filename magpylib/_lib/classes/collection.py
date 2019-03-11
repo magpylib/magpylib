@@ -3,9 +3,9 @@
 # in Spyder IDE. Pycharm recognizes it.
 from typing import Tuple
 x=y=z=0.0 # Position Vector
+listOfPos=[[x,y,z]] # List of Positions
 #######################################
 #%% IMPORTS
-
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -61,7 +61,7 @@ class Collection():
                     for colSource in s.sources:
                         addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
                 else:
-                self.sources.extend(s.sources)
+                    self.sources.extend(s.sources)       
             else:
                 assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
                 if dupWarning is True:
@@ -134,7 +134,7 @@ class Collection():
             except ValueError as e: # Give a more helpful message.
                 raise type(e)(str(e) + ' - ' + str(type(source)) + ' not in list for popSource')
             return source
-
+        
     def addSources(self,*sources,dupWarning=True):
         """
         This method adds the argument source objects to the collection.
@@ -169,7 +169,7 @@ class Collection():
         >>> col.addSource(pm3)
         >>> print(
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
-        """        
+        """ 
         for s in sources:
             if type(s) == Collection:
                 if dupWarning is True: ## Skip iterating both lists if warnings are off
@@ -177,7 +177,7 @@ class Collection():
                         addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
                 else:
                     self.sources.extend(s.sources)       
-                else:
+            else:
                 assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
                 if dupWarning is True:
                     addUniqueSource(s,self.sources)
@@ -286,7 +286,7 @@ class Collection():
         -------
         As a result of an inherent problem in matplotlib the 
         Poly3DCollections z-ordering fails when bounding boxes intersect.
-        
+
 
         Parameters
         ----------
@@ -314,7 +314,7 @@ class Collection():
             Set to True to show current directions and magnetization vectors.
             Default: False
 
-                
+
         Return    
         ------
         matplotlib Figure object
@@ -481,7 +481,7 @@ class Collection():
                     currentsList.append(s)
 
         
-            elif type(s) is Dipole:
+            elif type(s) is Dipole: 
                 P = rotatePosition(s.position,s.angle,s.axis)
                 maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
