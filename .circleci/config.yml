@@ -15,6 +15,3 @@ jobs:
           path: test-results/magpylib/
       - store_test_results:
           path: test-results/magpylib/
-      - run: 
-          name: See if tests are where they should be
-          command: ls test-results
