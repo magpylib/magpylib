@@ -1,4 +1,6 @@
 '''
+Base Functions
+==============
 Define base classes here on which the magnetic source objects are built on
 
     1. RCS class: the underlying relative coordintate system initiates position
@@ -22,7 +24,13 @@ import sys
 #       - adds moveBY, rotateBy
 
 class RCS:
+    """
+    FUNDAMENTAL CLASS - RCS (RELATIVE COORDINATE SYSTEM)
 
+    initiates position, orientation
+    - adds moveBY, rotateBy
+    """
+   
     def __init__(self, position, angle, axis):
         # fundamental (unit)-orientation/rotation is [0,0,0,1]
         
@@ -43,19 +51,19 @@ class RCS:
         vector `newPos`. Vector input format can be either list, tuple or array
         of any data type (float, int)
         
-        Parameters:
+        Parameters
         ----------
         newPos : vec3 [mm]
             Set new position of the source.
             
-        Returns:    
-        --------
+        Returns
+        -------
         None
             
-        Example:
-        --------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
+        Example
+        -------
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print(pm.position)
             [0. 0. 0.]
         >>> pm.setPosition([5,5,5])
@@ -73,19 +81,19 @@ class RCS:
         Vector input format can be either list, tuple or array of any data
         type (float, int).
         
-        Parameters:
+        Parameters
         ----------
         displacement : vec3 [mm]
             Set displacement vector
             
-        Returns:    
-        --------
+        Returns
+        -------
         None
             
-        Example:
-        --------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
+        Example
+        -------
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1,pos=[1,2,3])
         >>> print(pm.position)
             [1. 2. 3.]
         >>> pm.move([3,2,1])
@@ -104,7 +112,7 @@ class RCS:
         Scalar input is either integer or float. Vector input format can be
         either list, tuple or array of any data type (float, int).
         
-        Parameters:
+        Parameters
         ----------
         angle  : scalar [deg]
             Set new angle of source orientation.
@@ -112,14 +120,14 @@ class RCS:
         axis : vec3 []
             Set new axis of source orientation.
             
-        Returns:    
-        --------
+        Returns
+        -------
         None            
         
-        Example:
-        --------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000],dim=1)
+        Example
+        -------
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000],dim=1)
         >>> print([pm.angle,pm.axis])
             [0.0, array([0., 0., 1.])]
         >>> pm.setOrientation(45,[0,1,0])
@@ -139,7 +147,7 @@ class RCS:
         float. Vector input format can be either list, tuple or array of any
         data type (float, int).
         
-        Parameters:
+        Parameters
         ----------
         angle  : scalar [deg]
             Set angle of rotation in units of [deg]
@@ -150,18 +158,18 @@ class RCS:
             axis of rotation. If not specified the source will rotate about its
             own center.
         
-        Returns:    
-        --------
+        Returns
+        -------
         None
         
-        Example:
-        --------
-        >>> magpylib as magPy
-        >>> pm = magPy.magnet.Sphere(mag=[0,0,1000], dim=1)
+        Example
+        -------
+        >>> from magpylib import source
+        >>> pm = source.magnet.Sphere(mag=[0,0,1000], dim=1)
         >>> print(pm.position, pm.angle, pm.axis)
           [0. 0. 0.] 0.0 [0. 0. 1.]
         >>> pm.rotate(90, [0,1,0], anchor=[1,0,0])
-        >>> print([pm.position, pm.angle, pm.axis])
+        >>> print(pm.position, pm.angle, pm.axis)
           [1., 0., 1.] 90.0 [0., 1., 0.]
         """
         #secure type

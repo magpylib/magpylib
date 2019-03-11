@@ -73,7 +73,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-
+docs/_autogen/
 # PyBuilder
 target/
 
@@ -122,5 +122,7 @@ dmypy.json
 
 ### Python Patch ###
 .venv/
+
+
 
 # End of https://www.gitignore.io/api/python
