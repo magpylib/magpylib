@@ -135,33 +135,20 @@ class Collection():
                 raise type(e)(str(e) + ' - ' + str(type(source)) + ' not in list for popSource')
             return source
 
-    def marker(self,markerPos=[x,y,z]):
+    def addSources(self,*sources,dupWarning=True):
         """
-        Set/Update mirror marker position for display system. Default: [0,0,0]
-        
-        Parameters
-        ----------
-        markerPos : int/float list
-            Position for mirrored markers (the default is [0,0,0], which shows only one marker at the center)
-        
-        Raise
-        -----
-        AssertionError
-            List is not a position vector made of integers or floats.
-
-        """
-        assert len(markerPos) == 3, "Position vector for marker is not 3"
-        assert all(type(p)==int or type(p)==float for p in markerPos), "Position vector for marker has non-int or non-float types."
-        self.markers=markerPos
-
-    def addSource(self,source):
-        """
-        This method adds the argument source object to the collection.
+        This method adds the argument source objects to the collection.
+        May also include other collections.
         
         Parameters
         ----------
         source : source object
             adds the source object `source` to the collection.
+        
+        dupWarning : bool
+            Warn and prevent if there is an attempt to add a 
+            duplicate source into the collection. Set to false to disable
+            check and increase performance.
         
         Returns
         -------
@@ -180,45 +167,22 @@ class Collection():
         >>> print(col.getB([1,0,1]))
           [7.72389756e+01 1.76697482e-14 2.39070726e+01]
         >>> col.addSource(pm3)
-        >>> print(col.getB([1,0,1]))
+        >>> print(
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
         """        
+        for s in sources:
+            if type(s) == Collection:
+                if dupWarning is True: ## Skip iterating both lists if warnings are off
+                    for colSource in s.sources:
+                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
                 else:
-        
-        Example
-        -------
-
-        >>> from magpylib import Collection, source
-        >>> s0 = source.magnet.Sphere(mag=[1,2,3],dim=1,pos=[1,3,1])
-        >>> b0 = source.magnet.Box(mag=[1,2,3],dim=[1,1,1],pos=[3,1,3])
-        >>> c0 = source.magnet.Cylinder(mag=(1,1,1),dim=[2,3])
-        >>> s = source.magnet.Sphere(mag=[1,2,3],dim=1,pos=[3,3,3])
-        >>> s2 = source.magnet.Sphere(mag=[1,2,3],dim=2,pos=[-3,-3,-3])
-        >>> m = source.moment.Dipole(moment=[1,2,3],pos=(-1,-1,-1))
-        >>> col1 = Collection(s,s2,m)
-        >>> print(col1.sources)
-            [<magpylib._lib.classes.magnets.Sphere object at 0xa2c626cc>, 
-            <magpylib._lib.classes.magnets.Sphere object at 0xa2c6246c>, 
-            <magpylib._lib.classes.moments.Dipole object at 0xa2c62d0c>]
-        >>> col2 = Collection(s0,b0,c0)
-        >>> print(col2.sources)
-            [<magpylib._lib.classes.magnets.Sphere object at 0xa2ce416c>, 
-            <magpylib._lib.classes.magnets.Box object at 0xa2c6270c>, 
-            <magpylib._lib.classes.magnets.Cylinder object at 0xa2c6258c>]
-        >>> col1.merge(col2)
-        >>> print(col1.sources)
-            [<magpylib._lib.classes.magnets.Sphere object at 0xa2c626cc>, 
-            <magpylib._lib.classes.magnets.Sphere object at 0xa2c6246c>, 
-            <magpylib._lib.classes.moments.Dipole object at 0xa2c62d0c>, 
-            <magpylib._lib.classes.magnets.Sphere object at 0xa2ce416c>, 
-            <magpylib._lib.classes.magnets.Box object at 0xa2c6270c>, 
-            <magpylib._lib.classes.magnets.Cylinder object at 0xa2c6258c>]
-        """
-        assert type(collection) == Collection, "Attempted Collection merge with non-Collection type."
-        self.sources.extend(collection.sources)
-
-        return self
-
+                    self.sources.extend(s.sources)       
+                else:
+                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                if dupWarning is True:
+                    addUniqueSource(s,self.sources)
+                else:
+                    self.sources+=[s]
 
     def getB(self,pos):
         """
@@ -312,9 +276,9 @@ class Collection():
             s.rotate(angle,axis,anchor=anchor)
          
     
-    def displaySystem(self,suppress=False,direc=False):
+    def displaySystem(self,markers=listOfPos,suppress=False,direc=False):
         """
-        Runs plt.show() and Returns a matplotlib figure identifier and shows the collection display in an interactive plot.
+        Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
         
 
 
@@ -324,9 +288,17 @@ class Collection():
         Poly3DCollections z-ordering fails when bounding boxes intersect.
         
 
-
         Parameters
         ----------
+        markers : list[vec3]
+            List of position vectors to add visual markers to the display
+            Default: [[0,0,0]]
+
+        >>> from magpylib import Collection, source
+        >>> c=source.current.Circular(3,7)
+        >>> x = Collection(c)
+        >>> x.displaySystem([[2,3,5],[10,20,10],[5,5,5],[8,8,8]])
+
         suppress : bool
             If True, only return Figure information, do not show. Interactive mode must be off.
             Default: False.
@@ -337,6 +309,10 @@ class Collection():
         >>> from matplotlib import pyplot 
         >>> pyplot.ioff()
         >>> figureData = Collection.displayFigure(suppress=True)
+
+        direc : bool
+            Set to True to show current directions and magnetization vectors.
+            Default: False
 
                 
         Return    
@@ -353,6 +329,11 @@ class Collection():
         >>> C1 = source.current.Circular(curr=100,dim=6)
         >>> col = Collection(pm1,pm2,pm3,C1)
         >>> col.displaySystem()
+
+        Raises
+        ------
+        AssertionError
+            If Marker position list is poorly defined. i.e. listOfPos=(x,y,z) instead of lisOfPos=[(x,y,z)]
         """ 
         fig = plt.figure(dpi=80,figsize=(8,8))
         ax = fig.gca(projection='3d')
@@ -371,6 +352,12 @@ class Collection():
         dipolesList=[]
         magnetsList=[]
         currentsList=[]
+        markersList=[]
+        for m in markers:
+            assert len(m) == 3, "A Position vector for markers is not 3D"
+            assert all(type(p)==int or type(p)==float for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
+            markersList+=[m]
+
         for s in self.sources:
             if type(s) is Box:
                 ii+=1 #increase color counter
@@ -503,12 +490,8 @@ class Collection():
                 dipolesList.append(s)
 
 
-        m = self.markers
-        if all(val==0 for val in m):
+        for m in markersList: ## Draw Markers
             ax.scatter(m[0],m[1],m[2],s=20,marker='x')
-        else:
-            ax.scatter(m[0],m[1],m[2],s=20,marker='x')
-            ax.scatter(-m[0],-m[1],-m[2],s=20,marker='x')
             maxSize = amax(abs(max(m)))
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
