@@ -13,7 +13,7 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource, drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import isSource,  addUniqueSource, drawCurrentArrows, drawMagAxis, drawDipole
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -44,19 +44,30 @@ class Collection():
         [9.93360625e+01 1.76697482e-14 3.12727683e+01]
     """
     
-    def __init__(self,*sources,marker=[x,y,z]):
+    def __init__(self,*sources,dupWarning=True):
         
-        assert len(marker) == 3, "Position vector for marker is not 3"
-        assert all(type(p)==int or type(p)==float for p in marker), "Position vector for marker has non-int or non-float types."
-        assert all(isSource(a) for a in sources), "Non-source object in Collection initialization"
+        assert all(isSource(a) or type(a)==Collection for a in sources), "Non-source object in Collection initialization"
 
         self.sources = []
-        self.markers = marker
+
+        # The following will add Sources to the Collection sources list, 
+        # The code is the same as the addsource method. 
+        # addSource() is not cast here because it will 
+        # put a tuple inside a tuple.
+        # Iterating for this would compromise performance.
         for s in sources:
             if type(s) == Collection:
+                if dupWarning is True: ## Skip iterating both lists if warnings are off
+                    for colSource in s.sources:
+                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
+                else:
                 self.sources.extend(s.sources)
             else:
-                self.sources += [s]
+                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                if dupWarning is True:
+                    addUniqueSource(s,self.sources)
+                else:
+                    self.sources+=[s]
 
     def popSource(self,source=None,index=-1):
         """
@@ -172,33 +183,7 @@ class Collection():
         >>> print(col.getB([1,0,1]))
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
         """        
-        self.sources += [source]
-
-    def merge(self,collection):
-        """
-        Merge another Collection object's list with this Collection's list.
-
-        Note
-        ----
-
-        The reference to previous Collections are maintained. Modifying their objects
-        will modify them in the merged Collection.
-
-        Parameter
-        ---------
-        
-        Collection of objects to be merged with this Collection.
-
-        Returns
-        -------
-
-        Self
-
-        Raise
-        -----
-
-        AssertionError
-            If input is not a Collection
+                else:
         
         Example
         -------

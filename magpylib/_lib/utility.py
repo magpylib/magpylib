@@ -7,6 +7,8 @@ def checkDimensions(expectedD: int, dim: Tuple[float,float,float], exitMsg: str=
     assert (not any(isnan(dimension))  and  len(dimension) == expectedD), exitMsg
     return dimension
 
+## Collection Helpers
+
 def isSource(theObject : any) -> bool:
     """
     Check is an object is a magnetic source.
@@ -28,6 +30,13 @@ def isSource(theObject : any) -> bool:
             source.current.Circular,
             source.moment.Dipole)
     return any(type(theObject) == src for src in sourcesList)
+
+def addUniqueSource(source,sourceList):
+    import warnings
+    if source not in sourceList:
+        sourceList += [source]
+    else:
+        warnings.warn("Source " + str(source) + " already in Collection list; Ignoring", Warning)
 ####
 def drawMagnetizationVector(position,magnetization,angle,axis,color,SYSSIZE,pyplot):
     """Draw the magnetization vector of a magnet.
