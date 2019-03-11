@@ -4,7 +4,7 @@ import numpy
 
 def test_randomAxis():
     """
-    #Test if it can div a list of integers
+    #Test if returned random axis are valid
     """
     result = randomAxis()
     assert len(result)==3, "Returning axis should be 3"
