@@ -1,14 +1,23 @@
+######### Type hint definitions ########
+# These aren't type hints, but look good 
+# in Spyder IDE. Pycharm recognizes it.
+from typing import Tuple
+x=y=z=0.0 # Position Vector
+listOfPos=[[x,y,z]] # List of Positions
+#######################################
 #%% IMPORTS
-
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from numpy import array,amax, linspace, pi, sin, cos
+from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.utility import isSource,  addUniqueSource, drawCurrentArrows, drawMagAxis, drawDipole
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
+
+
 class Collection():
     """
     Create a collection of :mod:`magpylib.source` objects for common manipulation.
@@ -35,21 +44,109 @@ class Collection():
         [9.93360625e+01 1.76697482e-14 3.12727683e+01]
     """
     
-    def __init__(self,*sources):
-        self.sources = []
+    def __init__(self,*sources,dupWarning=True):
         
-        for s in sources:
-            self.sources += [s]
+        assert all(isSource(a) or type(a)==Collection for a in sources), "Non-source object in Collection initialization"
 
-    
-    def addSource(self,source):
+        self.sources = []
+
+        # The following will add Sources to the Collection sources list, 
+        # The code is the same as the addsource method. 
+        # addSource() is not cast here because it will 
+        # put a tuple inside a tuple.
+        # Iterating for this would compromise performance.
+        for s in sources:
+            if type(s) == Collection:
+                if dupWarning is True: ## Skip iterating both lists if warnings are off
+                    for colSource in s.sources:
+                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
+                else:
+                    self.sources.extend(s.sources)       
+            else:
+                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                if dupWarning is True:
+                    addUniqueSource(s,self.sources)
+                else:
+                    self.sources+=[s]
+
+    def removeSource(self,source_ref=-1):
         """
-        This method adds the argument source object to the collection.
+        Remove a source from the sources list. 
+        
+        Parameters
+        ----------
+
+        source_ref : source object or int
+            [Optional] Remove the inputted source from the list
+            [Optional] If given an int, remove a source at the given index position. Default: Last position.
+        
+        Return
+        ------
+
+        Popped source object.
+
+        Raises
+        ------
+
+        ValueError
+            Will be thrown if you attempt to remove a source that is not in the Collection.
+        
+        AssertionError
+            Will be thrown if inputted index kwarg type is not type int
+
+        Example
+        -------
+
+            >>> from magpylib import Collection, source
+            >>> s = source.magnet.Sphere(mag=[1,2,3],dim=1,pos=[3,3,3])
+            >>> s2 = source.magnet.Sphere(mag=[1,2,3],dim=2,pos=[-3,-3,-3])
+            >>> m = source.moment.Dipole(moment=[1,2,3],pos=(0,0,0))
+            >>> c = Collection(s,s2,m)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.magnets.Sphere object at 0xa31eafcc>, 
+            <magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
+            <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.removeSource(s)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.magnets.Sphere object at 0xa31ea1cc>, 
+            <magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.removeSource(s2)
+            >>> print(c.sources)
+            [<magpylib._lib.classes.moments.Dipole object at 0xa31ea06c>]
+            >>> c.removeSource()
+            >>> print(c.sources)
+            []
+            
+
+
+        """
+        assert type(source_ref) == int or isSource(source_ref), "Reference in removeSource is not an int nor a source"
+        if type(source_ref) == int:
+            try:
+                return self.sources.pop(source_ref)
+            except IndexError as e: # Give a more helpful error message.
+                raise type(e)(str(e) + ' - Index ' + str(source_ref) + ' in collection source is not accessible for removeSource')
+        else:
+            try:
+                self.sources.remove(source_ref)
+            except ValueError as e: # Give a more helpful error message.
+                raise type(e)(str(e) + ' - ' + str(type(source_ref)) + ' not in list for removeSource')
+            return source_ref
+        
+    def addSources(self,*sources,dupWarning=True):
+        """
+        This method adds the argument source objects to the collection.
+        May also include other collections.
         
         Parameters
         ----------
         source : source object
             adds the source object `source` to the collection.
+        
+        dupWarning : bool
+            Warn and prevent if there is an attempt to add a 
+            duplicate source into the collection. Set to false to disable
+            check and increase performance.
         
         Returns
         -------
@@ -68,12 +165,23 @@ class Collection():
         >>> print(col.getB([1,0,1]))
           [7.72389756e+01 1.76697482e-14 2.39070726e+01]
         >>> col.addSource(pm3)
-        >>> print(col.getB([1,0,1]))
+        >>> print(
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
-        """        
-        self.sources += [source]
+        """ 
+        for s in sources:
+            if type(s) == Collection:
+                if dupWarning is True: ## Skip iterating both lists if warnings are off
+                    for colSource in s.sources:
+                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
+                else:
+                    self.sources.extend(s.sources)       
+            else:
+                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                if dupWarning is True:
+                    addUniqueSource(s,self.sources)
+                else:
+                    self.sources+=[s]
 
-    
     def getB(self,pos):
         """
         This method returns the magnetic field vector generated by the whole
@@ -166,9 +274,9 @@ class Collection():
             s.rotate(angle,axis,anchor=anchor)
          
     
-    def displaySystem(self,suppress=False):
+    def displaySystem(self,markers=listOfPos,suppress=False,direc=False):
         """
-        Runs plt.show() and Returns a matplotlib figure identifier and shows the collection display in an interactive plot.
+        Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
         
 
 
@@ -176,11 +284,19 @@ class Collection():
         -------
         As a result of an inherent problem in matplotlib the 
         Poly3DCollections z-ordering fails when bounding boxes intersect.
-        
 
 
         Parameters
         ----------
+        markers : list[vec3]
+            List of position vectors to add visual markers to the display
+            Default: [[0,0,0]]
+
+        >>> from magpylib import Collection, source
+        >>> c=source.current.Circular(3,7)
+        >>> x = Collection(c)
+        >>> x.displaySystem([[2,3,5],[10,20,10],[5,5,5],[8,8,8]])
+
         suppress : bool
             If True, only return Figure information, do not show. Interactive mode must be off.
             Default: False.
@@ -192,7 +308,11 @@ class Collection():
         >>> pyplot.ioff()
         >>> figureData = Collection.displayFigure(suppress=True)
 
-                
+        direc : bool
+            Set to True to show current directions and magnetization vectors.
+            Default: False
+
+
         Return    
         ------
         matplotlib Figure object
@@ -207,6 +327,11 @@ class Collection():
         >>> C1 = source.current.Circular(curr=100,dim=6)
         >>> col = Collection(pm1,pm2,pm3,C1)
         >>> col.displaySystem()
+
+        Raises
+        ------
+        AssertionError
+            If Marker position list is poorly defined. i.e. listOfPos=(x,y,z) instead of lisOfPos=[(x,y,z)]
         """ 
         fig = plt.figure(dpi=80,figsize=(8,8))
         ax = fig.gca(projection='3d')
@@ -221,7 +346,16 @@ class Collection():
         colors = [cm(x) for x in linspace(0,1,Nm+1)]
         
         ii = -1
-        SYSSIZE = 0
+        SYSSIZE = finfo(float).eps ## Machine Epsilon for moment
+        dipolesList=[]
+        magnetsList=[]
+        currentsList=[]
+        markersList=[]
+        for m in markers:
+            assert len(m) == 3, "A Position vector for markers is not 3D"
+            assert all(type(p)==int or type(p)==float for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
+            markersList+=[m]
+
         for s in self.sources:
             if type(s) is Box:
                 ii+=1 #increase color counter
@@ -246,7 +380,10 @@ class Collection():
                 maxSize = amax(abs(v))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
-            
+
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
             elif type(s) is Cylinder:
                 ii+=1 #increase color counter
                 P = s.position
@@ -272,6 +409,10 @@ class Collection():
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
                 
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
+                
             elif type(s) is Sphere:
                 ii+=1 #increase color counter
                 P = s.position
@@ -296,6 +437,10 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+
+                if direc is True:
+                    s.color=colors[ii]
+                    magnetsList.append(s)
                     
             elif type(s) is Line:
                 P = s.position
@@ -308,7 +453,10 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
-            
+
+                if direc is True:
+                    currentsList.append(s)
+
             elif type(s) is Circular:
                 P = s.position
                 R = s.dimension/2
@@ -326,24 +474,36 @@ class Collection():
                 maxSize = amax(abs(vs))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
+                    
+                if direc is True:
+                    currentsList.append(s)
 
         
-        for s in self.sources: #plot dipoles afterwards when system size is defined
-            if type(s) is Dipole:
-                P = rotatePosition(s.position,s.angle,s.axis) 
-                M = rotatePosition(s.moment,s.angle,s.axis) 
-                
+            elif type(s) is Dipole: 
+                P = rotatePosition(s.position,s.angle,s.axis)
                 maxSize = amax(abs(P))
                 if maxSize > SYSSIZE:
                     SYSSIZE = maxSize
 
-                plt.quiver(P[0],P[1],P[2], # X,Y,Z position
-                           M[0],M[1],M[2], # Components of the Vector
-                           normalize=True,
-                           length=SYSSIZE/12,
-                           color='k')
-                
-                
+                dipolesList.append(s)
+
+
+        for m in markersList: ## Draw Markers
+            ax.scatter(m[0],m[1],m[2],s=20,marker='x')
+            maxSize = amax(abs(max(m)))
+            if maxSize > SYSSIZE:
+                SYSSIZE = maxSize
+        
+
+        for d in dipolesList:
+            drawDipole( d.position,d.moment,
+                        d.angle,d.axis,
+                        SYSSIZE,plt)
+
+        if direc is True: ### Draw the Magnetization axes and current directions
+            drawCurrentArrows(currentsList,SYSSIZE,plt)
+            drawMagAxis(magnetsList,SYSSIZE,plt)
+
         for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
             tick.set_fontsize(12)
         ax.set_xlabel('x[mm]', fontsize=12)
