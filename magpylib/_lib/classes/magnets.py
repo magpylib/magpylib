@@ -90,7 +90,7 @@ class Box(HomoMag):
         
     def multiGetB(self,*pos):
         from multiprocessing import Pool
-        pool = Pool(processes=len(pos)) ## Identify how many processes this will take
+        pool = Pool(processes=512) ## How many worker processes are spawned for OS to distribute
         results = pool.map(self.getB, pos)  #Map the function pointer to a list of 
                                             #arguments to run as parameters concurrently
         return results  #Return a list of vec3 results
