@@ -11,7 +11,7 @@ from numpy import float64,isnan,array
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 from magpylib._lib.classes.base import RCS
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
 
 
 class Dipole(RCS):
@@ -75,19 +75,6 @@ class Dipole(RCS):
         self.moment = checkDimensions(3,moment,"Bad moment input")
         
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_Dipole(self.moment,p21newCm)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(   Bfield_Dipole(self.moment,rotatedPos)  , # The B field
+                            self) #Object Angle/Axis properties

@@ -16,7 +16,7 @@ from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.classes.base import HomoMag
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
 
 #%% THE CUBE CLASS
 
@@ -96,22 +96,9 @@ class Box(HomoMag):
         return results  #Return a list of vec3 results
     
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_Box(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(   Bfield_Box(self.magnetization, rotatedPos, self.dimension), # The B field
+                            self) #Object Angle/Axis properties
     
         
 #%% THE CYLINDER CLASS
@@ -200,22 +187,9 @@ class Cylinder(HomoMag):
             
         
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_Cylinder(self.magnetization,p21newCm,self.dimension,self.iterDia)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(   Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
+                            self) #Object Angle/Axis properties
     
     
 
@@ -292,19 +266,6 @@ class Sphere(HomoMag):
         assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_Sphere(self.magnetization,p21newCm,self.dimension)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(   Bfield_Sphere(self.magnetization, rotatedPos, self.dimension), #The B Field
+                            self ) #Object Angle/Axis properties

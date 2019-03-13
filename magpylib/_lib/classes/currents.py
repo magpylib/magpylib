@@ -17,7 +17,7 @@ from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.classes.base import LineCurrent
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
-
+from magpylib._lib.utility import getBField, rotateToCS
 
 
 #%% THE CIRCULAR CLASS
@@ -91,23 +91,10 @@ class Circular(LineCurrent):
         
         
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_CircularCurrentLoop(self.current,self.dimension,p21newCm)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
-        
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(   Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos), # The B field 
+                            self)
+    
     
 
 #%% THE CIRCUAR CL CLASS
@@ -193,21 +180,8 @@ class Line(LineCurrent):
         
         
     def getB(self,pos):
-        #secure input type and check input format
-        p1 = array(pos, dtype=float64, copy=False)
-        
-        #relative position between mag and obs
-        posRel = p1 - self.position
-        
-        #rotate this vector into the CS of the magnet (inverse rotation)
-        p21newCm = angleAxisRotation(self.angle,-self.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
-        
-        #the field is well known in the magnet coordinates
-        BCm = Bfield_CurrentLine(p21newCm,self.vertices,self.current)  # obtain magnetic field in Cm
-        
-        #rotate field vector back
-        B = angleAxisRotation(self.angle,self.axis,BCm)
-        
-        return B
+        rotatedPos = rotateToCS(pos,self)
+        return getBField(  Bfield_CurrentLine(rotatedPos,self.vertices,self.current), # The B field 
+                            self)
     
     
