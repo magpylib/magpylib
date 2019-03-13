@@ -9,7 +9,7 @@ def checkDimensions(expectedD: int, dim: Tuple[float,float,float], exitMsg: str=
     assert (not any(isnan(dimension))  and  len(dimension) == expectedD), exitMsg
     return dimension
 
-## Collection Helpers
+##### Collection Helpers
 
 def isSource(theObject : any) -> bool:
     """
@@ -161,3 +161,29 @@ def drawDipole(position,moment,angle,axis,SYSSIZE,pyplot):
                 normalize=True,
                 length=SYSSIZE/12,
                 color='k')
+
+
+### Source package helpers
+
+def rotateToCS(pos,source_ref):
+        from magpylib._lib.mathLibPrivate import angleAxisRotation
+        #secure input type and check input format   
+        p1 = array(pos, dtype=float64, copy=False)
+        
+        #relative position between mag and obs
+        posRel = p1 - source_ref.position
+
+        #rotate this vector into the CS of the magnet (inverse rotation)
+        p21newCm = angleAxisRotation(source_ref.angle,-source_ref.axis,posRel) # Leave this alone for now pylint: disable=invalid-unary-operand-type
+
+        return p21newCm
+
+
+def getBField(BCm,source_ref):
+        # BCm is the obtained magnetic field in Cm
+        #the field is well known in the magnet coordinates
+        from magpylib._lib.mathLibPrivate import angleAxisRotation
+        #rotate field vector back
+        B = angleAxisRotation(source_ref.angle,source_ref.axis,BCm)
+        
+        return B
