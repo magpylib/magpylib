@@ -35,12 +35,14 @@ def test_checkDimensionReturn():
     
 def test_rotateToCS():
     errMsg =  "Wrong rotation for Box in CS"
+    mockResults = array([-19. ,   1.2,   8. ]) # Expected result for Input
 
+    # Input
     mag=[5,5,5]
     dim=[1,1,1]
     pos=[63,.8,2]
-    mockResults = array([-19. ,   1.2,   8. ])
     
+    # Run
     from magpylib import source
     b = source.magnet.Box(mag,dim,pos)
     result = rotateToCS([44,2,10],b)
@@ -51,17 +53,20 @@ def test_rotateToCS():
 
 def test_getBField():
     errMsg =  "Wrong field for Box in CS"
+    mockResults = array([-4.72365793e-05,  1.35515955e-05, -7.13360174e-05])
+
+    # Input
     mockField = array([ 1.40028858e-05, -4.89208175e-05, -7.01030695e-05])
     axis = [1,1,1]
     angle = 90
-    mockResults = array([-4.72365793e-05,  1.35515955e-05, -7.13360174e-05])
     
-    class MockSource: ## Mock a Source object.
+    class MockSource: ## Mock a Source object with two attributes.
         def __init__(self, axis, angle):
             self.axis = axis
             self.angle = angle
-
     mockSource = MockSource(axis,angle)
+    
+    # Run
     result =  getBField(mockField, mockSource)
 
     rounding = 4
