@@ -18,3 +18,22 @@ def test_LineGetB():
     rounding = 4 ## Round for floating point error 
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
+
+def test_LineGetBAngle():
+    erMsg = "Results from getB are unexpected"
+    mockResults = (-0.00493354,  0.00980648,  0.0119963 ) ## Expected 3 results for this input
+    
+    # Input
+    curr=2.45
+    vertices=[[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]]
+    pos=(4.4,5.24,0.5)
+    angle=45
+    fieldPos=[.5,5,.35]
+    
+    # Run
+    pm = current.Line(curr,vertices,pos,angle)
+    result = pm.getB(fieldPos)
+
+    rounding = 4 ## Round for floating point error 
+    for i in range(3):
+        assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
