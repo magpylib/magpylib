@@ -14,12 +14,34 @@ def test_SphereGetB():
     erMsg = "Results from getB are unexpected"
     mockResults = array([-0.05040102, -0.05712116, -0.03360068]) ## Expected 3 results for this input
     
+    # Input
     mag=[6,7,8]
     dim=2
     pos=[2,2,2]
     fieldPos = [.5,.5,5]
 
+    # Run
     pm = magnet.Sphere(mag,dim,pos)
+    result = pm.getB(fieldPos)
+
+    rounding = 4 ## Round for floating point error 
+    for i in range(3):
+        assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
+
+def test_SphereGetBAngle():
+    erMsg = "Results from getB are unexpected"
+    mockResults = (-0.00047774, -0.00535384, -0.00087997) ## Expected 3 results for this input
+
+    # Input
+    mag=(0.2,32.5,5.3)
+    dim=1
+    pos=(1,0.2,3)
+    axis=[0.2,.61,1]
+    angle=89
+    fieldPos=[5,5,.35]
+
+    # Run
+    pm = magnet.Sphere(mag,dim,pos,angle,axis)
     result = pm.getB(fieldPos)
 
     rounding = 4 ## Round for floating point error 
