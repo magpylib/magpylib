@@ -47,3 +47,31 @@ def test_SphereGetBAngle():
     rounding = 4 ## Round for floating point error 
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
+
+def test_CylinderMulticoreGetB():
+    erMsg = "Results from getB are unexpected"
+    mockResults = ( (-0.00047774, -0.00535384, -0.00087997), ## Expected results for this input
+                    (-0.00047774, -0.00535384, -0.00087997),
+                    (-0.00047774, -0.00535384, -0.00087997),)
+
+    mag=(0.2,32.5,5.3)
+    dim=1
+    pos=(1,0.2,3)
+    axis=[0.2,.61,1]
+    angle=89
+    fieldPos=[  [5,5,.35],
+                [5,5,.35],
+                [5,5,.35],]
+
+    # Run
+    pm = magnet.Sphere(mag,dim,pos,angle,axis)
+    result = pm.getB(fieldPos, multicore=True ) 
+
+    ## Rounding for floating point error 
+    rounding = 4 
+
+    # Loop through predicted cases and check if the positions from results are valid
+    for i in range(len(mockResults)):
+        for j in range(3):
+            assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
+    

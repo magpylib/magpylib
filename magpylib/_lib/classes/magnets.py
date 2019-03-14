@@ -180,7 +180,7 @@ class Cylinder(HomoMag):
         self.iterDia = iterDia
             
         
-    def getB(self,pos):
+    def _getBprime(self,pos): ## Particular Cylinder B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
                             self) #Object Angle/Axis properties
@@ -259,7 +259,7 @@ class Sphere(HomoMag):
         self.dimension = float(dim)
         assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
-    def getB(self,pos):
+    def _getBprime(self,pos):
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Sphere(self.magnetization, rotatedPos, self.dimension), #The B Field
                             self ) #Object Angle/Axis properties
