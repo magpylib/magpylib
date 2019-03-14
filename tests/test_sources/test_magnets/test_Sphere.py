@@ -48,7 +48,7 @@ def test_SphereGetBAngle():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
 
-def test_CylinderMulticoreGetB():
+def test_SphereMulticoreGetB():
     erMsg = "Results from getB are unexpected"
     mockResults = ( (-0.00047774, -0.00535384, -0.00087997), ## Expected results for this input
                     (-0.00047774, -0.00535384, -0.00087997),
