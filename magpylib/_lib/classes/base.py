@@ -281,12 +281,16 @@ class RCS:
             results = pool.map(self._getBprime, pos) # Map the concurrent function pointer to a list of 
                                                      # arguments to run as parameters for each parallelized instance.
         else:
-            if type(pos[0][0])==list or type(pos[0][0])==tuple: ## If they have a list they want to process sequentially
+            if type(pos[0][0])==list or type(pos[0][0])==tuple: ## If this is input as getB([[1,2,3],[3,4,6],...])
                 for p in pos[0]:
                     results+=[self._getBprime(p)]
                     
             else:
-                results = self._getBprime(pos[0])
+                if len(pos)>1: ## If this is input as getB([1,2,3],[3,4,6],...)
+                    for p in pos:
+                        results+=[self._getBprime(p)]
+                else: ## Finally, classic getB([1,2,3])
+                    results=self._getBprime(pos[0])
 
         return results
 
