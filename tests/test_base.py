@@ -91,12 +91,12 @@ def test_RCSMulticoreGetBList():
             assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
 
 def test_RCSGetBSequentialList():
-    erMsg = "Results from getB are unexpected"
+    #erMsg = "Results from getB are unexpected"
     pm = magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
 
     ## Positions list
     with pytest.raises(ValueError):         
-        result = pm.getB(   (.5,.5,5),
-                            [30,20,10],
-                            [1,.2,60],multicore=False ) 
+        pm.getB(   (.5,.5,5),
+                    [30,20,10],
+                    [1,.2,60],multicore=False ) 
         
