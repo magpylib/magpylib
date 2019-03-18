@@ -60,10 +60,7 @@ def test_BoxMulticoreGetB():
 
     with pytest.raises(TypeError):
         ## Positions list
-        result = pm.getB(   (.5,.5,5),
-                            (30,20,10),
-                            (1,.2,60),
-                            multicore=True ) 
+        result = pm.getB(   [(.5,.5,5),(30,20,10),(1,.2,60)], multicore=True ) 
 
         ## Expected Results
         mockRes = ( ( 3.99074612, 4.67238469, 4.22419432), # .5,.5,.5
@@ -77,5 +74,3 @@ def test_BoxMulticoreGetB():
         for i in range(len(mockRes)):
             for j in range(3):
                 assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
-
-
