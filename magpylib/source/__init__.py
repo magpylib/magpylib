@@ -37,6 +37,6 @@ Quicklist for :mod:`~magpylib.source.moment` sources:
 __all__ = ["magnet","current","moment"] # This is for Sphinx
 
 
-import magpylib.source.magnet as magnet
-import magpylib.source.current as current
-import magpylib.source.moment as moment
+import magpylib._lib.classes.magnets as magnet
+import magpylib._lib.classes.currents as current
+import magpylib._lib.classes.moments as moment
