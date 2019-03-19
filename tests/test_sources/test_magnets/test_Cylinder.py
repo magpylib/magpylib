@@ -57,14 +57,14 @@ def test_CylinderMulticoreGetB():
     mag=(6,7,8)
     dim=(2,9)
     pos=(2,2,2)
-    fieldPos = [[.5,.5,5],
+    arrayPos = array([[.5,.5,5],
                 [.5,.5,5],
-                [.5,.5,5]]
+                [.5,.5,5]])
 
     pm = magnet.Cylinder(mag,dim,pos)
 
     ## Positions list
-    result = pm.getB(fieldPos, multicore=True ) 
+    result = pm.getBMulticore(arrayPos ) 
 
     ## Rounding for floating point error 
     rounding = 4 

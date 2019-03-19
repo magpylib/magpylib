@@ -59,13 +59,13 @@ def test_SphereMulticoreGetB():
     pos=(1,0.2,3)
     axis=[0.2,.61,1]
     angle=89
-    fieldPos=[  [5,5,.35],
+    arrayOfPos =array ([  [5,5,.35],
                 [5,5,.35],
-                [5,5,.35],]
+                [5,5,.35],])
 
     # Run
     pm = magnet.Sphere(mag,dim,pos,angle,axis)
-    result = pm.getB(fieldPos, multicore=True ) 
+    result = pm.getBMulticore(arrayOfPos  ) 
 
     ## Rounding for floating point error 
     rounding = 4 

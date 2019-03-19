@@ -39,7 +39,7 @@ def test_DipoleGetBAngle():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
 
-def test_CircularMulticoreGetB():
+def test_DipoleMulticoreGetB():
     erMsg = "Results from getB are unexpected"
     mockResults = (     (-0.00836643 , 0.01346,   -0.01833964), ## Expected 3 results for this input
                         (-0.00836643 , 0.01346,   -0.01833964),
@@ -50,14 +50,14 @@ def test_CircularMulticoreGetB():
     pos=(1,0.2,3)
     axis=[0.2,1,0]
     angle=90
-    fieldPos=  [[.5,5,.35],
+    arrayOfPos =  array([[.5,5,.35],
                 [.5,5,.35],
-                [.5,5,.35],]
+                [.5,5,.35],])
 
     # Run
     pm = Dipole(moment,pos,angle,axis)
     ## Positions list
-    result = pm.getB(fieldPos, multicore=True ) 
+    result = pm.getBMulticore(arrayOfPos) 
 
     ## Rounding for floating point error 
     rounding = 4 

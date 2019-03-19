@@ -89,7 +89,7 @@ class Box(HomoMag):
         #secure input type and check input format of dim
         self.dimension = checkDimensions(3,dim,"Bad dim for box")
 
-    def _getBprime(self,pos): ## Private method. This is used by getB for multiprocess reference.
+    def getB(self,pos): ## Private method. This is used by getB for multiprocess reference.
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Box(self.magnetization, rotatedPos, self.dimension), # The B field
                         self) #Object Angle/Axis properties    
@@ -180,7 +180,7 @@ class Cylinder(HomoMag):
         self.iterDia = iterDia
             
         
-    def _getBprime(self,pos): ## Particular Cylinder B field calculation. Check RCS for getB() interface
+    def getB(self,pos): ## Particular Cylinder B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
                             self) #Object Angle/Axis properties
@@ -259,7 +259,7 @@ class Sphere(HomoMag):
         self.dimension = float(dim)
         assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
-    def _getBprime(self,pos):
+    def getB(self,pos):
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Sphere(self.magnetization, rotatedPos, self.dimension), #The B Field
                             self ) #Object Angle/Axis properties

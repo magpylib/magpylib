@@ -57,9 +57,9 @@ def test_BoxGetBAngle():
 def test_BoxMulticoreGetB():
     erMsg = "Results from getB are unexpected"
     pm = magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
-
+    pos = array([(.5,.5,5),(30,20,10),(1,.2,60)])
     ## Positions list
-    result = pm.getB(   [(.5,.5,5),(30,20,10),(1,.2,60)], multicore=True ) 
+    result = pm.getBMulticore(pos) 
 
     ## Expected Results
     mockRes = ( ( 3.99074612, 4.67238469, 4.22419432), # .5,.5,.5

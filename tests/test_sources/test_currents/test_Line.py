@@ -49,15 +49,15 @@ def test_CircularMulticoreGetB():
     vertices=[[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]]
     pos=(4.4,5.24,0.5)
     angle=45
-    fieldPos=[  [.5,5,.35],
+    arrayOfPos=array([  [.5,5,.35],
                 [.5,5,.35],
-                [.5,5,.35]]
+                [.5,5,.35]])
     
     # Run
     pm = current.Line(curr,vertices,pos,angle)
 
     ## Positions list
-    result = pm.getB(fieldPos, multicore=True ) 
+    result = pm.getBMulticore(arrayOfPos) 
 
     ## Rounding for floating point error 
     rounding = 4 
