@@ -187,3 +187,16 @@ def getBField(BCm,source_ref):
         B = angleAxisRotation(source_ref.angle,source_ref.axis,BCm)
         
         return B
+
+def recoordinateAndGetB(source_ref,newPos=[0,0,0],rotationArgs=(0,(0,0,1)),Bpos=[0,0,0]):
+        source_ref.setPosition(newPos)
+        source_ref.rotate(rotationArgs[0],rotationArgs[1])
+        return source_ref.getB(Bpos)
+
+def initializeMulticorePool(processes):
+        from multiprocessing import Pool, cpu_count
+        if processes == 0:
+            processes = cpu_count() - 1 ## Identify how many workers the host machine can take. 
+                                        ## Using all cores is USUALLY a bad idea.
+        assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
+        return Pool(processes=processes) 

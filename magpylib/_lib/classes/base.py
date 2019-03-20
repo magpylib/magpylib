@@ -16,15 +16,17 @@ Define base classes here on which the magnetic source objects are built on
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
 from typing import Tuple
-Max = 0 # Maximum cores, for multicore
+Auto = 0 # Maximum cores, for multicore
         # function. if 0 find max.
 numpyArray = 0
+constant = None
 #######################################
 
 #%% IMPORTS
+from itertools import product, repeat
 from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB
 from multiprocessing import Pool,cpu_count
 import sys
 
@@ -226,21 +228,81 @@ class RCS:
         Vnew = Qmult(P,Qmult(Vold,Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
-    def getBMulticore(self,pos=numpyArray,processes=0):
+    def getBMulticore(self,pos=numpyArray,processes=Auto):
         results = []
-        assert type(pos) == array or type(pos) == ndarray, "Multicore methods only take numpy array types."
-        if processes == 0:
-            processes = cpu_count() - 1 ## Identify how many workers the host machine can take. 
-                                        ## Using all cores is USUALLY a bad idea.
-        assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
-        pool = Pool(processes=processes) 
+        pool = initializeMulticorePool(processes)
         results = pool.map(self.getB, pos) # Map the concurrent function pointer to a list of 
                                                     # arguments to run as parameters for each parallelized instance.
         pool.close()
         pool.join()
         return results
     
-    def getB(self,pos,multicore=False,processes=Max): 
+    def getBDisplacement(self,Bpos,listOfPos=constant,listOfRotations=constant,processes=Auto): 
+        """
+        In a parallelized environment, calculates the B field in a position for every pair of source position
+        and absolute rotation within the lists.
+
+        Will make a copy of the original object, so make sure rotations are absolute.
+
+        
+        Parameters
+        ----------
+        listOfPos : List [vec3]
+            Repositions of the target magnet. Needs to be the same size as rotations list.
+        listOfRotations : List [angle, axisVec]
+            Angle and axis vector for the rotation after reposition. Needs to be the same size as positions list.
+        Bpos : [vec3]
+            Position Vector for calculating the magnetic field.
+        processes : [type], optional
+            Number of workers for parallel processing (the default is Auto, which calculates the maximum cores minus 1)
+        
+        Returns
+        -------
+        Array of position vectors for B field for each pairing of Position/Rotation.
+
+        Example
+        -------
+            # Input
+        >>> mag=[1,2,3]
+        >>> dim=[1,2,3]
+        >>>  pos=[0,0,0]
+        >>> listOfDisplacement=[[0,0,1],
+                                [0,1,0],
+                                [1,0,0]]
+        >>>  listOfRotations = [ (180,(0,1,0)),
+                                (90,(1,0,0)),
+                                (255,(0,1,0))]
+        >>>  Bpos = [1,2,3]
+        >>>  # Run
+        >>>  pm = magnet.Box(mag,dim,pos)
+        >>>  result = pm.getBDisplacement(Bpos,
+                                        listOfPos=listOfDisplacement,
+                                        listOfRotations=listOfRotations)
+             [array([ 0.00453617, -0.07055326,  0.03153698]), 
+              array([0.00488989, 0.04731373, 0.02416068]), 
+              array([0.0249435 , 0.00106315, 0.02894469])]
+        """
+        assert listOfPos is not None or listOfRotations is not None, "Both list of positions and Rotations are uninitizalized so function call is redundant. Use getB for a single position"
+
+        results = []
+        if listOfPos == None:
+            listOfPos = [[0,0,0] for n in range(len(listOfRotations))]
+        else:
+            if listOfRotations == None:
+                listOfRotations = [(0,(0,0,1)) for n in range(len(listOfPos))]
+    
+        assert len(listOfPos)==len(listOfRotations), "List of Positions is of different size than list of rotations"
+        pool = initializeMulticorePool(processes)
+        results = pool.starmap(recoordinateAndGetB, 
+                                                    zip(repeat(self,times=len(listOfPos)),
+                                                        listOfPos,
+                                                        listOfRotations,
+                                                        repeat(Bpos,times=len(listOfPos))))
+        pool.close()
+        pool.join()
+        return results
+
+    def getB(self,pos,multicore=False,processes=Auto): 
         """
         This method returns the magnetic field vector generated by the source 
         at the argument position `pos` in units of [mT]
