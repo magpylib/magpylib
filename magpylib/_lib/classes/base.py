@@ -249,12 +249,12 @@ class RCS:
         ----------
         listOfPos : List [vec3]
             Repositions of the target magnet. Needs to be the same size as rotations list.
-        listOfRotations : List [angle, axisVec]
+        listOfRotations : List [angle, axisVec,[anchor]]
             Angle and axis vector for the rotation after reposition. Needs to be the same size as positions list.
         Bpos : [vec3]
             Position Vector for calculating the magnetic field.
         processes : [type], optional
-            Number of workers for parallel processing (the default is Auto, which calculates the maximum cores minus 1)
+            Number of workers for parallel processing (the default is Auto, which calculates with all cores minus 1)
         
         Returns
         -------
@@ -262,25 +262,26 @@ class RCS:
 
         Example
         -------
-            # Input
+        >>> # Input
         >>> mag=[1,2,3]
         >>> dim=[1,2,3]
-        >>>  pos=[0,0,0]
+        >>> pos=[0,0,0]
         >>> listOfDisplacement=[[0,0,1],
-                                [0,1,0],
-                                [1,0,0]]
-        >>>  listOfRotations = [ (180,(0,1,0)),
-                                (90,(1,0,0)),
-                                (255,(0,1,0))]
-        >>>  Bpos = [1,2,3]
-        >>>  # Run
-        >>>  pm = magnet.Box(mag,dim,pos)
-        >>>  result = pm.getBDisplacement(Bpos,
-                                        listOfPos=listOfDisplacement,
-                                        listOfRotations=listOfRotations)
-             [array([ 0.00453617, -0.07055326,  0.03153698]), 
-              array([0.00488989, 0.04731373, 0.02416068]), 
-              array([0.0249435 , 0.00106315, 0.02894469])]
+        >>>                    [0,1,0],
+        >>>                    [1,0,0]]
+        >>> #(angle,axisVector,anchorPos) // anchor is optional
+        >>> listOfRotations = [ (180,(0,1,0)),
+        >>>                    (90,(1,0,0)),
+        >>>                    (255,(0,1,0))]
+        >>> Bpos = [1,2,3]
+        >>> # Run
+        >>> pm = magnet.Box(mag,dim,pos)
+        >>> result = pm.getBDisplacement(Bpos,
+        >>>                               listOfPos=listOfDisplacement,
+        >>>                               listOfRotations=listOfRotations)
+            [   array([ 0.00453617, -0.07055326,  0.03153698]), 
+                array([0.00488989, 0.04731373, 0.02416068]), 
+                array([0.0249435 , 0.00106315, 0.02894469]) ]
         """
         assert listOfPos is not None or listOfRotations is not None, "Both list of positions and Rotations are uninitizalized so function call is redundant. Use getB for a single position"
 

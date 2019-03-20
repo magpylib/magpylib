@@ -190,7 +190,11 @@ def getBField(BCm,source_ref):
 
 def recoordinateAndGetB(source_ref,newPos=[0,0,0],rotationArgs=(0,(0,0,1)),Bpos=[0,0,0]):
         source_ref.setPosition(newPos)
-        source_ref.rotate(rotationArgs[0],rotationArgs[1])
+        if len(rotationArgs)==3:
+            source_ref.rotate(rotationArgs[0],rotationArgs[1],rotationArgs[2])
+        else:
+            source_ref.rotate(rotationArgs[0],rotationArgs[1])
+            
         return source_ref.getB(Bpos)
 
 def initializeMulticorePool(processes):

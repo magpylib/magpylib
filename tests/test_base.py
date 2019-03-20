@@ -42,6 +42,33 @@ def test_RCSGetBDisplacement_pos():
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
 
+def test_RCSGetBDisplacement_rotAnchored():
+    erMsg = "Results from getB are unexpected"
+    mockResults = ( [ 0.05545237, -0.03737276,  0.08780605],
+                    [0.00064953, 0.02294665, 0.0141079 ],
+                    [ 0.0133219,  -0.00171035 , 0.01607478])
+    
+    # Input
+    mag=[1,2,3]
+    dim=[1,2,3]
+    pos=[0,0,0]
+
+    #(angle, axis, anchor)
+    listOfRotations = [ (180,(0,1,0),[0,0,1]),
+                        (90,(1,0,0),[0,1,0]),
+                        (255,(0,1,0),[1,0,0])]
+    Bpos = [1,2,3]
+
+    # Run
+    pm = magnet.Box(mag,dim,pos)
+    result = pm.getBDisplacement(Bpos,
+                                listOfRotations=listOfRotations)
+
+    rounding = 4 ## Round for floating point error 
+    for i in range(len(mockResults)):
+        for j in range(3):
+            assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
+
 def test_RCSGetBDisplacement_rotAndMove():
     erMsg = "Results from getB are unexpected"
     mockResults = ( [ 0.00453617, -0.07055326,  0.03153698],
@@ -83,7 +110,7 @@ def test_RCSGetBDisplacement_rot():
     mag=[1,2,3]
     dim=[1,2,3]
     pos=[0,0,0]
-    listOfDisplacement=None
+    #listOfDisplacement=None
     listOfRotations = [ (0,(0,0,1)),
                         (90,(0,0,1)),
                         (180,(0,1,0))]
