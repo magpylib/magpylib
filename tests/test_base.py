@@ -19,7 +19,7 @@ def test_RCSGetB():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
 
-def test_RCSGetBSequential():
+def test_RCSGetBSequential_Error():
     erMsg = "Results from getB are unexpected"
     mockResults = ( (3.99074612, 4.67238469, 4.22419432),
                     (3.99074612, 4.67238469, 4.22419432),
@@ -63,7 +63,7 @@ def test_RCSMulticoreGetB():
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
 
-def test_RCSMulticoreGetBArray():
+def test_RCSMulticoreGetBArray_Error():
     erMsg = "Results from getB are unexpected"
     pm = magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
 
@@ -71,28 +71,29 @@ def test_RCSMulticoreGetBArray():
     P1=(.5,.5,5)
     P2=[30,20,10]
     P3=[1,.2,60]
-    
-    arrayOfPos = array( [ [P1,P2,P3],
-                          [P1,P2,P3],
-                          [P1,P2,P3] ])
-                
-    result = pm.getBMulticore(arrayOfPos) 
-    
-    ## Expected Results
-    B1= ( 3.99074612, 4.67238469, 4.22419432)
-    B2 = ( 0.03900578,  0.01880832, -0.00134112)
-    B3 = ( -0.00260347, -0.00313962,  0.00610886)
-    mockRes = array( [  [B1,B2,B3],
-                        [B1,B2,B3],
-                        [B1,B2,B3] ] ) 
 
-    ## Rounding for floating point error 
-    rounding = 4 
+    with pytest.raises(ValueError):
+        arrayOfPos = array( [ [P1,P2,P3],
+                            [P1,P2,P3],
+                            [P1,P2,P3] ])
+                    
+        result = pm.getBMulticore(arrayOfPos) 
+        
+        ## Expected Results
+        B1 = ( 3.99074612, 4.67238469, 4.22419432)
+        B2 = ( 0.03900578,  0.01880832, -0.00134112)
+        B3 = ( -0.00260347, -0.00313962,  0.00610886)
+        mockRes = array( [  [B1,B2,B3],
+                            [B1,B2,B3],
+                            [B1,B2,B3] ] ) 
 
-    # Loop through predicted cases and check if the positions from results are valid
-    for i in range(len(mockRes)):
-        for j in range(3):
-            assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
+        ## Rounding for floating point error 
+        rounding = 4 
+
+        # Loop through predicted cases and check if the positions from results are valid
+        for i in range(len(mockRes)):
+            for j in range(3):
+                assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
 
 
 def test_RCSMulticoreGetBList():
