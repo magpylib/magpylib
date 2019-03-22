@@ -251,17 +251,19 @@ class RCS:
         
         Example
         -------
+        >>> from magpylib import source
+        >>> from numpy import array
+        >>> pm = source.magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
         >>> ## Positions list
         >>> P1=(.5,.5,5)
         >>> P2=[30,20,10]
         >>> P3=[1,.2,60]
-        >>> arrayOfPos = array( [ [P1,P2,P3] ])            
-        >>> result = pm.getBMulticore(arrayOfPos) 
-        >>> print(result)
-        >>> ## Expected Results
-            array(  array[ 3.99074612, 4.67238469, 4.22419432]
-                  array[ 0.03900578,  0.01880832, -0.00134112]
-                  array[-0.00260347, -0.00313962,  0.00610886])
+
+        >>> arrayOfPos = array( [   [P1,P2,P3],])
+        >>> result = pm.getBMulticore(arrayOfPos)
+            [[[ 3.99074612e+00  4.67238469e+00  4.22419432e+00]
+            [ 3.90057773e-02  1.88083191e-02 -1.34111687e-03]
+            [-2.60347051e-03 -3.13961826e-03  6.10885894e-03]]]
         """
 
         results = []
