@@ -77,3 +77,34 @@ def test_collectionGetBMulticoreList():
     for i in range(len(mockResult)):
         for j in range(3):
             assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)
+
+def test_collectionGetBMulticoreArray():
+    errMsg = "unexpected getB for collection"
+    from magpylib._lib.classes.magnets import Box
+    from numpy import allclose
+    #Input
+
+
+    mag=(2,3,5)
+    dim=(2,2,2)
+    pos=array([     [[2,2,2],
+                    [2,2,2],
+                    [2,2,3]],
+                    [[2,2,2],
+                    [2,2,2],
+                    [2,2,3]]])
+
+
+    mockResult = [  [[0.24976596, 0.21854521, 0.15610372],
+                    [0.24976596, 0.21854521, 0.15610372],
+                    [0.12442073, 0.10615358, 0.151319  ],],
+                    [[0.24976596, 0.21854521, 0.15610372],
+                    [0.24976596, 0.21854521, 0.15610372],
+                    [0.12442073, 0.10615358, 0.151319  ],]]
+    #Run   
+    b = Box(mag,dim)
+    b2 = Box(mag,dim)
+    c = Collection(b,b2)
+    result = c.getBMulticore(pos)
+
+    assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array

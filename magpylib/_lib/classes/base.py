@@ -26,7 +26,8 @@ constant = None
 from itertools import product, repeat
 from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB
+from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB, equalizeListOfPos
+from magpylib._lib.utility import posVectorFinder
 from multiprocessing import Pool,cpu_count
 import sys
 
@@ -229,12 +230,52 @@ class RCS:
         self.position = array(Vnew[1:])+anchor
 
     def getBMulticore(self,pos=numpyArray,processes=Auto):
+        """
+        Take a numpy array/matrix of positions, set up with any dimension,
+        then calculate the Bfield in parallel using a process in each core
+        and return a matrix of the same format.
+        
+        Parameters
+        ----------
+        pos : [numpyArray]
+            Numpy array (the default is numpyArray, which [default_description])
+        processes : [type], optional
+            Number of worker processes to multicore. (the default is Auto, 
+            which is all visible cores minus 1)
+        
+        Returns
+        -------
+        [NumpyArray]
+            A matrix array with the shame shape as pos, 
+            containing instead values of B fields for each input coordinate position.
+        
+        Example
+        -------
+        >>> ## Positions list
+        >>> P1=(.5,.5,5)
+        >>> P2=[30,20,10]
+        >>> P3=[1,.2,60]
+        >>> arrayOfPos = array( [ [P1,P2,P3] ])            
+        >>> result = pm.getBMulticore(arrayOfPos) 
+        >>> print(result)
+        >>> ## Expected Results
+            array(  array[ 3.99074612, 4.67238469, 4.22419432]
+                  array[ 0.03900578,  0.01880832, -0.00134112]
+                  array[-0.00260347, -0.00313962,  0.00610886])
+        """
+
         results = []
+        positionsList = []
+        posVectorFinder(pos,positionsList) # Put all position vectors in a list reference
         pool = initializeMulticorePool(processes)
-        results = pool.map(self.getB, pos) # Map the concurrent function pointer to a list of 
+
+
+        results = pool.map(self.getB, positionsList) # Map the concurrent function pointer to a list of 
                                                     # arguments to run as parameters for each parallelized instance.
         pool.close()
         pool.join()
+        
+        results = array(results).reshape(pos.shape)
         return results
     
     def getBDisplacement(self,Bpos,listOfPos=constant,listOfRotations=constant,processes=Auto): 
@@ -275,6 +316,7 @@ class RCS:
         >>>                    (255,(0,1,0))]
         >>> Bpos = [1,2,3]
         >>> # Run
+        >>> from magpylib.source import magnet
         >>> pm = magnet.Box(mag,dim,pos)
         >>> result = pm.getBDisplacement(Bpos,
         >>>                               listOfPos=listOfDisplacement,
@@ -283,27 +325,28 @@ class RCS:
                 array([0.00488989, 0.04731373, 0.02416068]), 
                 array([0.0249435 , 0.00106315, 0.02894469]) ]
         """
-        assert listOfPos is not None or listOfRotations is not None, "Both list of positions and Rotations are uninitizalized so function call is redundant. Use getB for a single position"
-
         results = []
-        if listOfPos == None:
-            listOfPos = [[0,0,0] for n in range(len(listOfRotations))]
-        else:
-            if listOfRotations == None:
-                listOfRotations = [(0,(0,0,1)) for n in range(len(listOfPos))]
-    
-        assert len(listOfPos)==len(listOfRotations), "List of Positions is of different size than list of rotations"
+        ## Assert lists are of equal size before proceeding. Equalize when possible.
+        posVectors, rotArguments = equalizeListOfPos(   listOfPos,
+                                                        listOfRotations,
+                                                        neutralPos=self.position )
+        ## Start pooling arguments for a reposition+rotate -> getB helper function.
+        ## Feed positions and rotations from each list in pairs.
+        ## Same getB position for all instances.
+        ## Since this is parallelized, Positions and Rotations need to be absolute 
+        ## against the initial coordinates of the object. 
         pool = initializeMulticorePool(processes)
         results = pool.starmap(recoordinateAndGetB, 
-                                                    zip(repeat(self,times=len(listOfPos)),
-                                                        listOfPos,
-                                                        listOfRotations,
-                                                        repeat(Bpos,times=len(listOfPos))))
+                                                    zip(repeat(self,times=len(posVectors)),
+                                                        posVectors,
+                                                        rotArguments,
+                                                        repeat(Bpos,times=len(posVectors))))
+        ## Close the pooled processes and wrap up before returning.
         pool.close()
         pool.join()
         return results
 
-    def getB(self,pos,multicore=False,processes=Auto): 
+    def getB(self,pos): 
         """
         This method returns the magnetic field vector generated by the source 
         at the argument position `pos` in units of [mT]
@@ -312,19 +355,7 @@ class RCS:
         ----------
         pos : vec3 [mm]
             Position or list of Positions where magnetic field should be determined.
-
-        multicore : bool
-            Enable multiprocessing of vector coordinates. 
-            If True, create number of processes given by processes kwarg to run in parallel.
-
-            Warning
-            -------
-            Will decrease performance for small lists.
         
-        processes : int
-            Number of parallel workers for multicore. 
-            Default: 0, discovers Maximum number of recognized cores minus 1.
-            Override this value only if you know what you are doing.
 
         Returns
         -------

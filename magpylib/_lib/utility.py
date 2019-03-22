@@ -197,6 +197,16 @@ def recoordinateAndGetB(source_ref,newPos=[0,0,0],rotationArgs=(0,(0,0,1)),Bpos=
             
         return source_ref.getB(Bpos)
 
+def isPosVector(object_ref):
+    # Return true if the object reference is that of 
+    # a position array.
+    from numpy import array, ndarray
+    try:
+        if ( isinstance(object_ref,list) or isinstance(object_ref,tuple) or isinstance(object_ref,ndarray) or isinstance(object_ref,array) ):
+            if len(object_ref) == 3:
+                return all(isinstance(int(coordinate),int) for coordinate in object_ref)
+    except Exception:
+        return False
 def initializeMulticorePool(processes):
         from multiprocessing import Pool, cpu_count
         if processes == 0:
@@ -204,3 +214,26 @@ def initializeMulticorePool(processes):
                                         ## Using all cores is USUALLY a bad idea.
         assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
         return Pool(processes=processes) 
+def posVectorFinder(dArray,positionsList):
+    # Explore an array and append all the indexed values 
+    # that are position vectors to the given list.
+    for index in range(len(dArray)):
+        if isPosVector(dArray[index]):
+            positionsList.append(dArray[index])
+        else:
+            posVectorFinder(dArray[index],positionsList) # Recursively call itself to explore all dimensions
+
+def equalizeListOfPos(listOfPos,listOfRotations,neutralPos=[0,0,0]):
+    ERR_REDUNDANT = "Both list of positions and Rotations are uninitizalized for getBdisplacement, so function call is redundant. Use getB for a single position"
+    ERR_UNEVENLISTS = "List of Positions is of different size than list of rotations. Enter repeating values or neutral values for matching Position and Rotation"
+    # Check if either list is omitted, 
+    # if only one is omitted then fill the other with neutral elements so they are equalized.
+    assert listOfPos is not None or listOfRotations is not None, ERR_REDUNDANT
+    if listOfPos == None:
+        listOfPos = [neutralPos for n in range(len(listOfRotations))]
+    else:
+        if listOfRotations == None:
+            listOfRotations = [(0,(0,0,1)) for n in range(len(listOfPos))]
+    
+    assert len(listOfPos)==len(listOfRotations), ERR_UNEVENLISTS
+    return (listOfPos,listOfRotations)
