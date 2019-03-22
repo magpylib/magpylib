@@ -25,6 +25,7 @@ Quicklist for :mod:`~magpylib.source.current` sources:
    Line
    Circular
 
+
 .. currentmodule:: magpylib.source.moment
 
 Quicklist for :mod:`~magpylib.source.moment` sources:
@@ -35,7 +36,6 @@ Quicklist for :mod:`~magpylib.source.moment` sources:
 
 """
 __all__ = ["magnet","current","moment"] # This is for Sphinx
-
 
 import magpylib._lib.classes.magnets as magnet
 import magpylib._lib.classes.currents as current
