@@ -31,7 +31,7 @@ def isSource(theObject : any) -> bool:
             source.current.Line,
             source.current.Circular,
             source.moment.Dipole)
-    return any(type(theObject) == src for src in sourcesList)
+    return any(isinstance(theObject,src) for src in sourcesList)
 
 def addUniqueSource(source,sourceList):
     import warnings
@@ -166,6 +166,7 @@ def drawDipole(position,moment,angle,axis,SYSSIZE,pyplot):
 ### Source package helpers
 
 def rotateToCS(pos,source_ref):
+        ## Used in all getB()
         from magpylib._lib.mathLibPrivate import angleAxisRotation
         #secure input type and check input format   
         p1 = array(pos, dtype=float64, copy=False)
@@ -180,6 +181,7 @@ def rotateToCS(pos,source_ref):
 
 
 def getBField(BCm,source_ref):
+        ## Used in all getB()
         # BCm is the obtained magnetic field in Cm
         #the field is well known in the magnet coordinates
         from magpylib._lib.mathLibPrivate import angleAxisRotation
@@ -189,8 +191,12 @@ def getBField(BCm,source_ref):
         return B
 
 def recoordinateAndGetB(source_ref,newPos=[0,0,0],rotationArgs=(0,(0,0,1)),Bpos=[0,0,0]):
+        ## Used in base.RCS.getBDisplacement(),
+
+        # Take an object, a position to place the object in and magnet rotation arguments.
+        # Apply the new position, rotate it, and return the B field value from position Bpos.
         source_ref.setPosition(newPos)
-        if len(rotationArgs)==3:
+        if len(rotationArgs)==3: # Check for anchor, otherwise use default
             source_ref.rotate(rotationArgs[0],rotationArgs[1],rotationArgs[2])
         else:
             source_ref.rotate(rotationArgs[0],rotationArgs[1])
@@ -207,13 +213,17 @@ def isPosVector(object_ref):
                 return all(isinstance(int(coordinate),int) for coordinate in object_ref)
     except Exception:
         return False
+
+
 def initializeMulticorePool(processes):
-        from multiprocessing import Pool, cpu_count
-        if processes == 0:
-            processes = cpu_count() - 1 ## Identify how many workers the host machine can take. 
-                                        ## Using all cores is USUALLY a bad idea.
-        assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
-        return Pool(processes=processes) 
+    # Helper for setting up Multicore pools.
+    from multiprocessing import Pool, cpu_count
+    if processes == 0:
+        processes = cpu_count() - 1 ## Identify how many workers the host machine can take. 
+                                    ## Using all cores is USUALLY a bad idea.
+    assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
+    return Pool(processes=processes) 
+
 def posVectorFinder(dArray,positionsList):
     # Explore an array and append all the indexed values 
     # that are position vectors to the given list.
