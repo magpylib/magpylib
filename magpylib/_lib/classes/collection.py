@@ -202,23 +202,25 @@ class Collection():
 
         Example
         -------
+        >>> from numpy import array
+        >>> from magpylib import source, Collection
         >>> from multiprocessing import freeze_support # These three will
         >>> if __name__ == '__main__':  ################ Prevent hanging 
         >>>     freeze_support() ########################### on Windows OS
         >>>     #Input
         >>>     mag=(2,3,5)
         >>>     dim=(2,2,2)
-        >>>     pos=array([     [2,2,2],
-        ...                     [2,2,2],
-        ...                     [2,2,3]])
-        >>>     mockResult = [  [0.24976596, 0.21854521, 0.15610372],
-        ...                     [0.24976596, 0.21854521, 0.15610372],
-        ...                     [0.12442073, 0.10615358, 0.151319  ],]
+        >>>     pos=array([ [2,2,2],  # Calculate the B Field in
+        ...                 [2,2,3]]) # these two positions
         >>>     #Run   
-        >>>     b = Box(mag,dim)
-        >>>     b2 = Box(mag,dim)
-        >>>     c = Collection(b,b2)
-        >>>     result = c.getBMulticore(pos)
+        >>>     b = magnet.source.Box(mag,dim) # Box 1
+        >>>     b2 = magnet.source.Box(mag,dim) # Box 2
+        >>>     c = Collection(b,b2) # Box 1 + Box 2
+        >>>     result = c.getBMulticore(pos) # Resulting B field from the interaction 
+        >>>                                   # of both Boxes in two Positions
+                    [ [0.24976596, 0.21854521, 0.15610372], # Position 1
+                      [0.12442073, 0.10615358, 0.151319  ],] # Position 2
+        
         """
 
         Btotal = []
