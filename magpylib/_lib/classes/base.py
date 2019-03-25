@@ -238,7 +238,7 @@ class RCS:
         Parameters
         ----------
         pos : [numpyArray]
-            Numpy array (the default is numpyArray, which [default_description])
+            An n-dimension numpy array containing position vectors.
         processes : [type], optional
             Number of worker processes to multicore. (the default is Auto, 
             which is all visible cores minus 1)
@@ -251,16 +251,18 @@ class RCS:
         
         Example
         -------
-        >>> from magpylib import source
-        >>> from numpy import array
-        >>> pm = source.magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
-        >>> ## Positions list
-        >>> P1=(.5,.5,5)
-        >>> P2=[30,20,10]
-        >>> P3=[1,.2,60]
-
-        >>> arrayOfPos = array( [   [P1,P2,P3],])
-        >>> result = pm.getBMulticore(arrayOfPos)
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     from magpylib import source
+        >>>     from numpy import array
+        >>>     pm = source.magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
+        >>>     ## Positions list
+        >>>     P1=(.5,.5,5)
+        >>>     P2=[30,20,10]
+        >>>     P3=[1,.2,60]
+        >>>     arrayOfPos = array( [   [P1,P2,P3],])
+        >>>     result = pm.getBMulticore(arrayOfPos)
             [[[ 3.99074612e+00  4.67238469e+00  4.22419432e+00]
             [ 3.90057773e-02  1.88083191e-02 -1.34111687e-03]
             [-2.60347051e-03 -3.13961826e-03  6.10885894e-03]]]
@@ -305,26 +307,29 @@ class RCS:
 
         Example
         -------
-        >>> # Input
-        >>> mag=[1,2,3]
-        >>> dim=[1,2,3]
-        >>> pos=[0,0,0]
-        >>> listOfDisplacement=[[0,0,1],
-        >>>                    [0,1,0],
-        >>>                    [1,0,0]]
-        >>> #(angle,axisVector,anchorPos) // anchor is optional
-        >>> listOfRotations = [ (180,(0,1,0)),
-        >>>                    (90,(1,0,0)),
-        >>>                    (255,(0,1,0))]
-        >>> Bpos = [1,2,3]
-        >>> # Run
-        >>> from magpylib.source import magnet
-        >>> pm = magnet.Box(mag,dim,pos)
-        >>> result = pm.getBDisplacement(Bpos,
-        >>>                               listOfPos=listOfDisplacement,
-        >>>                               listOfRotations=listOfRotations)
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     # Input
+        >>>     mag=[1,2,3]
+        >>>     dim=[1,2,3]
+        >>>     pos=[0,0,0]
+        >>>     listOfDisplacement=[[0,0,1],
+        ...                         [0,1,0],
+        ...                        [1,0,0]]
+        >>>     #(angle,axisVector,anchorPos) // anchor is optional
+        >>>     listOfRotations = [ (180,(0,1,0)),
+        ...                    (90,(1,0,0)),
+        ...                    (255,(0,1,0))]
+        >>>     Bpos = [1,2,3]
+        >>>     #  Run
+        >>>     from magpylib.source import magnet
+        >>>     pm = magnet.Box(mag,dim,pos)
+        >>>     result = pm.getBDisplacement(Bpos,
+        ...                                  listOfPos=listOfDisplacement,
+        ...                                  listOfRotations=listOfRotations)
             [   array([ 0.00453617, -0.07055326,  0.03153698]), 
-                array([0.00488989, 0.04731373, 0.02416068]), 
+                 array([0.00488989, 0.04731373, 0.02416068]), 
                 array([0.0249435 , 0.00106315, 0.02894469]) ]
         """
         results = []

@@ -3,6 +3,7 @@
 # in Spyder IDE. Pycharm recognizes it.
 from typing import Tuple
 x=y=z=0.0 # Position Vector
+numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
 #######################################
 #%% IMPORTS
@@ -182,7 +183,44 @@ class Collection():
                 else:
                     self.sources+=[s]
 
-    def getBMulticore(self,pos,processes=0):
+    def getBMulticore(self,pos=numpyArray,processes=0):
+        """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
+        
+        Parameters
+        ----------
+        pos : [numpyArray]
+            An n-dimension numpy array containing position vectors.
+        processes : [type], optional
+            Number of worker processes to multicore. (the default is Auto, 
+            which is all visible cores minus 1)
+        Returns
+        -------
+        [NumpyArray]
+            A matrix array, with the shame shape as pos, 
+            containing instead values of B fields for each input coordinate position.
+            from magpylib._lib.classes.magnets import Box
+
+        Example
+        -------
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     #Input
+        >>>     mag=(2,3,5)
+        >>>     dim=(2,2,2)
+        >>>     pos=array([     [2,2,2],
+        ...                     [2,2,2],
+        ...                     [2,2,3]])
+        >>>     mockResult = [  [0.24976596, 0.21854521, 0.15610372],
+        ...                     [0.24976596, 0.21854521, 0.15610372],
+        ...                     [0.12442073, 0.10615358, 0.151319  ],]
+        >>>     #Run   
+        >>>     b = Box(mag,dim)
+        >>>     b2 = Box(mag,dim)
+        >>>     c = Collection(b,b2)
+        >>>     result = c.getBMulticore(pos)
+        """
+
         Btotal = []
         calcFields = [s.getBMulticore(pos,processes=processes) for s in self.sources]
         
