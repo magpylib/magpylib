@@ -1,6 +1,12 @@
 # Getting Started with MagPylib
 
 >Note: This is a Work in Progress
+- [Getting Started with MagPylib](#getting-started-with-magpylib)
+    - [Summary of the Library Structure](#summary-of-the-library-structure)
+    - [Defining Sources](#defining-sources)
+    - [Calculating Fields](#calculating-fields)
+    - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
+    - [Multipoint Field Calculations](#multipoint-field-calculations)
 
 ### Summary of the Library Structure 
 
@@ -90,21 +96,10 @@ This means that you may define a space where multiple source objects interact, a
 A :class:`~magpylib.Collection` object also allows you to manipulate the listed source objects and show them in a 3D display.
 
 Let's create a collection and visualize our :mod:`~magpylib.source.magnet.Box`.
-```
 
-```python
-import magpylib         
-b = magpylib.source.magnet.Box( mag = [1,2,3],   
-                                dim = [4,5,6],  
-                                pos = [7,8,9],  
-                                angle = 90,     
-                                axis = (0,0,1))
+.. plot:: pyplots/guide/collection1.py
+   :include-source:
 
-col = magpylib.Collection(b)
-col.displaySystem()
-```
-
-```eval_rst
 We can set markers to help us identify certain points in the 3D plane. By default, there is a marker at position `[0,0,0]`.
 
 To set a marker or more, we define a list of positions and utilize the marker keyword argument in the displaySystem method.
@@ -112,23 +107,10 @@ To set a marker or more, we define a list of positions and utilize the marker ke
 Collections also allow us to retrieve the getB field of all magnets in the position with its getB() method. 
 
 Let's mark the position and retrieve the B field from our :mod:`~magpylib.source.magnet.Box` object.
-```
 
-```python
-import magpylib 
-pointToCalculate = [-3,-2,-1] # Position Vector of the field point to calculate        
+.. plot:: pyplots/guide/collection2.py
+   :include-source:
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],   
-                                dim = [4,5,6],  
-                                pos = [7,8,9],  
-                                angle = 90,     
-                                axis = (0,0,1))
-
-col = magpylib.Collection(b)
-print(col.getB(pointToCalculate))
-
-markerPosition = pointToCalculate
-col.displaySystem(markers=[ markerPosition ])
 
 ```
 

@@ -38,8 +38,16 @@ Table of Contents
 
 .. toctree::
    :glob:
+   :maxdepth: 2
+   :caption: Guide:
+
+   _pages/_guide/*
+
+
+.. toctree::
+   :glob:
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Library Contents:
 
    _autogen/magpylib
    _autogen/magpylib.source
