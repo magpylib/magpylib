@@ -23,7 +23,7 @@
     pip install .
     ```
 ```eval_rst
-4. Run the example script :doc:`x_examples` using your Python interpreter.
+4. Run the example script :doc:`_guide/x_examples` using your Python interpreter.
 ```
 
 ## Installing into an Anaconda3 environment for Spyder/Jupyter:
@@ -44,7 +44,9 @@
     ```
     (base) pip install .
     ```
-    If your conda environment doesn't have `pip`, install it with conda:
+Note:
+
+    _If your conda environment doesn't have `pip`, install it with conda:_
     ```
     (base) conda install pip
     (base) pip install .
@@ -52,7 +54,7 @@
 
 
 
-Generating the documentation:
+### Generating the documentation on Linux:
 1. Clone Repo
     ```
     git clone https://github.com/ortnermichael/magpylib
