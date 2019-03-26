@@ -1,5 +1,14 @@
 # Installation Instructions
 
+#### Prequisites:
+ - [Git Software](https://git-scm.com/)
+ - Python 3.2+
+ - An internet connection for automatically installing the dependencies
+    - Matplotlib
+    - Numpy
+
+
+## Installing into default Python user environment:
 
 1. Clone Repo
     ```
@@ -13,6 +22,35 @@
     ```
     pip install .
     ```
+```eval_rst
+4. Run the example script :doc:`x_examples` using your Python interpreter.
+```
+
+## Installing into an Anaconda3 environment for Spyder/Jupyter:
+1. Enter a folder, clone Repo
+    ```
+    cd C:\Users\you\Desktop
+    git clone https://github.com/ortnermichael/magpylib
+    ```
+2. Start your Anaconda3 instance
+3. In the interface, go to environments and choose the environment. For this example, we will use the base environment:
+   ![](./../_static/install_guide/anaconda.png)
+4. Click the arrow, choose Terminal
+5. Go to the local git repository
+   ```
+   (base): cd C:\Users\you\Desktop\magpylib
+   ```
+6. Run pip
+    ```
+    (base) pip install .
+    ```
+    If your conda environment doesn't have `pip`, install it with conda:
+    ```
+    (base) conda install pip
+    (base) pip install .
+    ```
+
+
 
 Generating the documentation:
 1. Clone Repo
