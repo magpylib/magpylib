@@ -42,7 +42,7 @@
    ```
 6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](./../_static/images/install_guide/anaconda2.png)
-   
+
 ```eval_rst
 7. Run the example script :doc:`_guide/x_examples` .
 ```
@@ -51,7 +51,7 @@
 
 .. note::
 
-    `If your conda environment doesn't have `pip`, install it with conda:`
+    `If your conda environment doesn't have` pip`, install it with conda:`
 
     .. code-block:: bash
 

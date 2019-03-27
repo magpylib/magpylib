@@ -1,6 +1,8 @@
 MagPyLib Summary
 ----------------
 
+.. image:: ../_static/images/summary/lib.png
+
 The core module of magpylib is :mod:`~magpylib.source`, whose subpackages
 offer the primitive building blocks for creating our simulation data.
 
@@ -19,5 +21,5 @@ and angle information as well as rotation of position vectors.
    source
    math
 
-.. image:: ../_static/images/summary/lib.png
+
 
