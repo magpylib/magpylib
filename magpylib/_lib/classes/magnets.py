@@ -6,6 +6,7 @@ Mx=My=Mz=0.0 # Def.Magnetization Vector
 a=b=c=0.0 #Default Cuboid dimensions
 d=0.0 # Default Diameter 
 h=0.0 # Default Height 
+Max=0 # Multicore flag
 #######################################
 
 #%% IMPORTS
@@ -87,18 +88,11 @@ class Box(HomoMag):
         
         #secure input type and check input format of dim
         self.dimension = checkDimensions(3,dim,"Bad dim for box")
-        
-    def multiGetB(self,*pos):
-        from multiprocessing import Pool
-        pool = Pool(processes=len(pos)) ## Identify how many processes this will take
-        results = pool.map(self.getB, pos)  #Map the function pointer to a list of 
-                                            #arguments to run as parameters concurrently
-        return results  #Return a list of vec3 results
-    
-    def getB(self,pos):
+
+    def getB(self,pos): ## Private method. This is used by getB for multiprocess reference.
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Box(self.magnetization, rotatedPos, self.dimension), # The B field
-                            self) #Object Angle/Axis properties
+                        self) #Object Angle/Axis properties    
     
         
 #%% THE CYLINDER CLASS
@@ -186,7 +180,7 @@ class Cylinder(HomoMag):
         self.iterDia = iterDia
             
         
-    def getB(self,pos):
+    def getB(self,pos): ## Particular Cylinder B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
                             self) #Object Angle/Axis properties

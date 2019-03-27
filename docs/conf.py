@@ -20,9 +20,8 @@ import os
 import sys
 #Location of Sphinx files
 sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above 
-
+os.environ["SPHINX_APIDOC_OPTIONS"] = "members,show-inheritance" ## Hide undocumented members
 import sphinx.apidoc
-
 
 
 autodoc_default_options = {

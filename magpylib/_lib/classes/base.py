@@ -12,10 +12,23 @@ Define base classes here on which the magnetic source objects are built on
 
 '''
 
+######### Type hint definitions ########
+# These aren't type hints, but look good 
+# in Spyder IDE. Pycharm recognizes it.
+from typing import Tuple
+Auto = 0 # Maximum cores, for multicore
+        # function. if 0 find max.
+numpyArray = 0
+constant = None
+#######################################
+
 #%% IMPORTS
-from numpy import array,float64,pi,isnan
+from itertools import product, repeat
+from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB, equalizeListOfPos
+from magpylib._lib.utility import posVectorFinder
+from multiprocessing import Pool,cpu_count
 import sys
 
         
@@ -216,6 +229,130 @@ class RCS:
         Vnew = Qmult(P,Qmult(Vold,Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
+    def getBMulticore(self,pos=numpyArray,processes=Auto):
+        """
+        Take a numpy array/matrix of positions, set up with any dimension,
+        then calculate the Bfield in parallel using a process in each core
+        and return a matrix of the same format.
+        
+        Parameters
+        ----------
+        pos : [numpyArray]
+            An n-dimension numpy array containing position vectors.
+        processes : [type], optional
+            Number of worker processes to multicore. (the default is Auto, 
+            which is all visible cores minus 1)
+        
+        Returns
+        -------
+        [NumpyArray]
+            A matrix array with the shame shape as pos, 
+            containing instead values of B fields for each input coordinate position.
+        
+        Example
+        -------
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     from magpylib import source
+        >>>     from numpy import array
+        >>>     pm = source.magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
+        >>>     ## Positions list
+        >>>     P1=(.5,.5,5)
+        >>>     P2=[30,20,10]
+        >>>     P3=[1,.2,60]
+        >>>     arrayOfPos = array( [   [P1,P2,P3],])
+        >>>     result = pm.getBMulticore(arrayOfPos)
+            [[[ 3.99074612e+00  4.67238469e+00  4.22419432e+00]
+            [ 3.90057773e-02  1.88083191e-02 -1.34111687e-03]
+            [-2.60347051e-03 -3.13961826e-03  6.10885894e-03]]]
+        """
+
+        results = []
+        positionsList = []
+        posVectorFinder(pos,positionsList) # Put all position vectors in a list reference
+        pool = initializeMulticorePool(processes)
+
+
+        results = pool.map(self.getB, positionsList) # Map the concurrent function pointer to a list of 
+                                                    # arguments to run as parameters for each parallelized instance.
+        pool.close()
+        pool.join()
+        
+        results = array(results).reshape(pos.shape)
+        return results
+    
+    def getBDisplacement(self,Bpos,listOfPos=constant,listOfRotations=constant,processes=Auto): 
+        """
+        In a parallelized environment, calculates the B field in a position for every pair of source position
+        and absolute rotation within the lists.
+
+        Will make a copy of the original object, so make sure rotations are absolute.
+
+        
+        Parameters
+        ----------
+        listOfPos : List [vec3]
+            Repositions of the target magnet. Needs to be the same size as rotations list.
+        listOfRotations : List [angle, axisVec,[anchor]]
+            Angle and axis vector for the rotation after reposition. Needs to be the same size as positions list.
+        Bpos : [vec3]
+            Position Vector for calculating the magnetic field.
+        processes : [type], optional
+            Number of workers for parallel processing (the default is Auto, which calculates with all cores minus 1)
+        
+        Returns
+        -------
+        Array of position vectors for B field for each pairing of Position/Rotation.
+
+        Example
+        -------
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     # Input
+        >>>     mag=[1,2,3]
+        >>>     dim=[1,2,3]
+        >>>     pos=[0,0,0]
+        >>>     listOfDisplacement=[[0,0,1],
+        ...                         [0,1,0],
+        ...                        [1,0,0]]
+        >>>     #(angle,axisVector,anchorPos) // anchor is optional
+        >>>     listOfRotations = [ (180,(0,1,0)),
+        ...                    (90,(1,0,0)),
+        ...                    (255,(0,1,0))]
+        >>>     Bpos = [1,2,3]
+        >>>     #  Run
+        >>>     from magpylib.source import magnet
+        >>>     pm = magnet.Box(mag,dim,pos)
+        >>>     result = pm.getBDisplacement(Bpos,
+        ...                                  listOfPos=listOfDisplacement,
+        ...                                  listOfRotations=listOfRotations)
+            [   array([ 0.00453617, -0.07055326,  0.03153698]), 
+                 array([0.00488989, 0.04731373, 0.02416068]), 
+                array([0.0249435 , 0.00106315, 0.02894469]) ]
+        """
+        results = []
+        ## Assert lists are of equal size before proceeding. Equalize when possible.
+        posVectors, rotArguments = equalizeListOfPos(   listOfPos,
+                                                        listOfRotations,
+                                                        neutralPos=self.position )
+        ## Start pooling arguments for a reposition+rotate -> getB helper function.
+        ## Feed positions and rotations from each list in pairs.
+        ## Same getB position for all instances.
+        ## Since this is parallelized, Positions and Rotations need to be absolute 
+        ## against the initial coordinates of the object. 
+        pool = initializeMulticorePool(processes)
+        results = pool.starmap(recoordinateAndGetB, 
+                                                    zip(repeat(self,times=len(posVectors)),
+                                                        posVectors,
+                                                        rotArguments,
+                                                        repeat(Bpos,times=len(posVectors))))
+        ## Close the pooled processes and wrap up before returning.
+        pool.close()
+        pool.join()
+        return results
+
     def getB(self,pos): 
         """
         This method returns the magnetic field vector generated by the source 
@@ -224,14 +361,16 @@ class RCS:
         Parameters
         ----------
         pos : vec3 [mm]
-            Position where magnetic field should be determined.
+            Position or list of Positions where magnetic field should be determined.
         
+
         Returns
         -------
         magnetic field vector : arr3 [mT]
             Magnetic field at the argument position `pos` generated by the
             source in units of [mT].
         """
+        #Return a list of vec3 results   
         # This method will be overriden by the classes that inherit it.
         # Throw a warning and return 0s if it somehow isn't.
         ## Note: Collection() has its own docstring 

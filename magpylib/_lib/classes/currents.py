@@ -90,7 +90,7 @@ class Circular(LineCurrent):
         self.dimension = float(dim)
         
         
-    def getB(self,pos):
+    def getB(self,pos): ## Particular Circular current B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos), # The B field 
                             self)
@@ -175,11 +175,7 @@ class Line(LineCurrent):
         assert all(len(d)==3 for d in vertices), 'Line-current: Bad input dimension, tuple vectors in list must be 3D' 
         self.vertices = array(vertices, dtype=float64,copy=False)
         
-        
-                
-        
-        
-    def getB(self,pos):
+    def getB(self,pos): ## Particular Line current B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(  Bfield_CurrentLine(rotatedPos,self.vertices,self.current), # The B field 
                             self)
