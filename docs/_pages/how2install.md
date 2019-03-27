@@ -33,28 +33,36 @@
     git clone https://github.com/ortnermichael/magpylib
     ```
 2. Start your Anaconda3 instance
-3. In the interface, go to environments and choose the environment. For this example, we will use the base environment:
-   ![](./../_static/install_guide/anaconda.png)
-4. Click the arrow, choose Terminal
-5. Go to the local git repository
+3. On the interface, go to `Environments` and choose the environment you wish to install MagPyLib in. For this example, we will use the base environment:
+   ![](./../_static/images/install_guide/anaconda.png)
+4. Click the arrow, choose `Open Terminal`
+5. Go to your local git repository
    ```
    (base): cd C:\Users\you\Desktop\magpylib
    ```
-6. Run pip
-    ```
-    (base) pip install .
-    ```
-Note:
+6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
+   ![](./../_static/images/install_guide/anaconda2.png)
+   
+```eval_rst
+7. Run the example script :doc:`_guide/x_examples` .
+```
 
-    _If your conda environment doesn't have `pip`, install it with conda:_
-    ```
-    (base) conda install pip
-    (base) pip install .
-    ```
+```eval_rst
+
+.. note::
+
+    `If your conda environment doesn't have `pip`, install it with conda:`
+
+    .. code-block:: bash
+
+        (base): conda install pip
+        (base): pip install .
+
+```
 
 
 
-### Generating the documentation on Linux:
+## Generating the documentation on Linux:
 1. Clone Repo
     ```
     git clone https://github.com/ortnermichael/magpylib

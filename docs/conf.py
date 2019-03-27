@@ -40,7 +40,7 @@ def setup(app):
             'enable_eval_rst': True
             }, True)
     app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
-    app.add_javascript('copybutton.js') # Add the button for 
+    app.add_javascript('webcode/copybutton.js') # Add the button for 
                                         # hiding ">>>" in examples
     sphinx.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
@@ -123,7 +123,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = './_static/magpylib_logo.png'
+html_logo = './_static/images/magpylib_logo.png'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.

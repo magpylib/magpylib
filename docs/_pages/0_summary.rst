@@ -19,4 +19,5 @@ and angle information as well as rotation of position vectors.
    source
    math
 
+.. image:: ../_static/images/summary/lib.png
 
