@@ -416,9 +416,11 @@ class Collection():
         magnetsList=[]
         currentsList=[]
         markersList=[]
+
+        ## Check input and Add markers to the Markers list before plotting
         for m in markers:
             assert len(m) == 3, "A Position vector for markers is not 3D"
-            assert all(type(p)==int or type(p)==float for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
+            assert all(isinstance(p,int) or isinstance(p,float) for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
             markersList+=[m]
 
         for s in self.sources:

@@ -3,6 +3,7 @@ from magpylib._lib.classes.collection import Collection
 from magpylib._lib.classes.base import RCS
 from numpy import array
 import pytest
+
 def test_collectionGetB():
     from magpylib._lib.classes.magnets import Box
 
@@ -24,6 +25,20 @@ def test_collectionGetB():
     rounding = 4
     for j in range(3):
         assert round(result[j],rounding) == round(mockResult[j],rounding)
+
+def test_collectionGetB_markerInput():
+    # TODO: find out a good way to compare plot results.
+    # Have output plot dava saved in text maybe
+    # Just test input validity for now.
+    from magpylib._lib.classes.magnets import Box
+    b = Box([1,1,1],[1,1,1],pos=(5,5,5))
+
+    a = Collection()
+    markers = [[0,0,0],    # int
+               [.1,.1,.1], # float
+               b.position] # float64
+
+    a.displaySystem(markers,suppress=True)
 
 def test_collectionGetBList():
     from magpylib._lib.classes.magnets import Box
