@@ -26,8 +26,8 @@ constant = None
 from itertools import product, repeat
 from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB, equalizeListOfPos
-from magpylib._lib.utility import posVectorFinder
+from magpylib._lib.utility import checkDimensions, initializeMulticorePool,recoordinateAndGetB
+from magpylib._lib.utility import posVectorFinder,isPosVector
 from multiprocessing import Pool,cpu_count
 import sys
 
@@ -229,129 +229,94 @@ class RCS:
         Vnew = Qmult(P,Qmult(Vold,Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
-    def getBMulticore(self,pos=numpyArray,processes=Auto):
-        """
-        Take a numpy array/matrix of positions, set up with any dimension,
-        then calculate the Bfield in parallel using a process in each core
-        and return a matrix of the same format.
-        
-        Parameters
-        ----------
-        pos : [numpyArray]
-            An n-dimension numpy array containing position vectors.
-        processes : [type], optional
-            Number of worker processes to multicore. (the default is Auto, 
-            which is all visible cores minus 1)
-        
-        Returns
-        -------
-        [NumpyArray]
-            A matrix array with the shame shape as pos, 
-            containing instead values of B fields for each input coordinate position.
-        
-        Example
-        -------
-        >>> from multiprocessing import freeze_support # These three will
-        >>> if __name__ == '__main__':  ################ Prevent hanging 
-        >>>     freeze_support() ########################### on Windows OS
-        >>>     from magpylib import source
-        >>>     from numpy import array
-        >>>     pm = source.magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
-        >>>     ## Positions list
-        >>>     P1=(.5,.5,5)
-        >>>     P2=[30,20,10]
-        >>>     P3=[1,.2,60]
-        >>>     arrayOfPos = array( [   [P1,P2,P3],])
-        >>>     result = pm.getBMulticore(arrayOfPos)
-            [[[ 3.99074612e+00  4.67238469e+00  4.22419432e+00]
-            [ 3.90057773e-02  1.88083191e-02 -1.34111687e-03]
-            [-2.60347051e-03 -3.13961826e-03  6.10885894e-03]]]
-        """
 
-        results = []
-        positionsList = []
-        posVectorFinder(pos,positionsList) # Put all position vectors in a list reference
+    def _getBmultiList(self,listOfArgs,processes=Auto): 
+        # Used in getBparallel()
+        ## For lists of positions for B field samples calculated in parallel
+        # Return a list of calculated B field samples
         pool = initializeMulticorePool(processes)
-
-
-        results = pool.map(self.getB, positionsList) # Map the concurrent function pointer to a list of 
-                                                    # arguments to run as parameters for each parallelized instance.
+        results = pool.map(self.getB, listOfArgs)
         pool.close()
         pool.join()
-        
-        results = array(results).reshape(pos.shape)
         return results
-    
-    def getBDisplacement(self,Bpos,listOfPos=constant,listOfRotations=constant,processes=Auto): 
-        """
-        In a parallelized environment, calculates the B field in a position for every pair of source position
-        and absolute rotation within the lists.
 
-        Will make a copy of the original object, so make sure rotations are absolute.
+    def _getBDisplacement(self,listOfArgs,processes=Auto): 
+        # Used in getBparallel()
+        ## For lists of arguments where
+        # First argument is a position for a B field sample 
+        # Second argument is the magnet's absolute position vector
+        # Third argument is a tuple of the magnet's absolute rotation arguments
+        pool = initializeMulticorePool(processes)
+        results = pool.starmap(recoordinateAndGetB, zip(repeat(self,times=len(listOfArgs)),
+                                                        listOfArgs))
+        pool.close()
+        pool.join()
+        return results
+        
+    def getBparallel(self,INPUT,processes=Auto):
+        """
+        Advanced input for advanced people who want advanced results.
+          
+        Enter a list of positions to calculate field samples in a parallelized environment.
+        Alternatively, enter a list of lists - where each list in the list each contain a field sample position vector in the first index,
+        an absolute magnet position vector in the 2nd index, and an orientation argument tuple where the first index is an angle scalar
+        and the second index is an axis (also a tuple). You can also add a third index position for the anchor if you really want to.
+
+        The possibilities are only limited by your imagination plus the number of CPU cores.
 
         
         Parameters
         ----------
-        listOfPos : List [vec3]
-            Repositions of the target magnet. Needs to be the same size as rotations list.
-        listOfRotations : List [angle, axisVec,[anchor]]
-            Angle and axis vector for the rotation after reposition. Needs to be the same size as positions list.
-        Bpos : [vec3]
-            Position Vector for calculating the magnetic field.
-        processes : [type], optional
-            Number of workers for parallel processing (the default is Auto, which calculates with all cores minus 1)
-        
-        Returns
-        -------
-        Array of position vectors for B field for each pairing of Position/Rotation.
-
+        INPUT : [list of vec3] or [list of [Bfield Sample, Magnet Position, Magnet Rotation]]
+      
         Example
         -------
-        >>> from multiprocessing import freeze_support # These three will
-        >>> if __name__ == '__main__':  ################ Prevent hanging 
-        >>>     freeze_support() ########################### on Windows OS
-        >>>     # Input
-        >>>     mag=[1,2,3]
-        >>>     dim=[1,2,3]
-        >>>     pos=[0,0,0]
-        >>>     listOfDisplacement=[[0,0,1],
-        ...                         [0,1,0],
-        ...                        [1,0,0]]
-        >>>     #(angle,axisVector,anchorPos) // anchor is optional
-        >>>     listOfRotations = [ (180,(0,1,0)),
-        ...                    (90,(1,0,0)),
-        ...                    (255,(0,1,0))]
-        >>>     Bpos = [1,2,3]
-        >>>     #  Run
-        >>>     from magpylib.source import magnet
-        >>>     pm = magnet.Box(mag,dim,pos)
-        >>>     result = pm.getBDisplacement(Bpos,
-        ...                                  listOfPos=listOfDisplacement,
-        ...                                  listOfRotations=listOfRotations)
-            [   array([ 0.00453617, -0.07055326,  0.03153698]), 
-                 array([0.00488989, 0.04731373, 0.02416068]), 
-                array([0.0249435 , 0.00106315, 0.02894469]) ]
+
+        For carousel simulation:
+        
+        >>> # Input
+        >>> from magpylib.source import magnet
+        >>> mag=[1,2,3]
+        >>> dim=[1,2,3]
+        >>> pos=[0,0,0]
+        >>> listOfArgs = [  [   [1,2,3],        #pos
+        ...                     [0,0,1],        #MPos
+        ...                     (180,(0,1,0)),],#Morientation
+        ...                 [   [1,2,3],
+        ...                     [0,1,0],
+        ...                     (90,(1,0,0)),],
+        ...                 [   [1,2,3],
+        ...                     [1,0,0],
+        ...                     (255,(0,1,0)),],]
+        >>> # Run
+        >>> pm = magnet.Box(mag,dim,pos)
+        >>> result = pm.getBparallel(listOfArgs)
+        >>> print(result)
+            ( [ 0.00453617, -0.07055326,  0.03153698],
+            [0.00488989, 0.04731373, 0.02416068],
+            [0.0249435,  0.00106315, 0.02894469])
+
+        For parallel field list calculation:
+        
+        >>> # Input
+        >>> from magpylib.source import magnet
+        >>> mag=[6,7,8]
+        >>> dim=[10,10,10]
+        >>> pos=[2,2,2]
+        >>> listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
+        >>> # Run
+        >>> pm = magnet.Box(mag,dim,pos)
+        >>> result = pm.getBparallel(listOfPos)
+        >>> print(result)
+            (   [3.99074612, 4.67238469, 4.22419432],
+                [3.99074612, 4.67238469, 4.22419432],
+                [3.99074612, 4.67238469, 4.22419432],)
+
         """
-        results = []
-        ## Assert lists are of equal size before proceeding. Equalize when possible.
-        posVectors, rotArguments = equalizeListOfPos(   listOfPos,
-                                                        listOfRotations,
-                                                        neutralPos=self.position )
-        ## Start pooling arguments for a reposition+rotate -> getB helper function.
-        ## Feed positions and rotations from each list in pairs.
-        ## Same getB position for all instances.
-        ## Since this is parallelized, Positions and Rotations need to be absolute 
-        ## against the initial coordinates of the object. 
-        pool = initializeMulticorePool(processes)
-        results = pool.starmap(recoordinateAndGetB, 
-                                                    zip(repeat(self,times=len(posVectors)),
-                                                        posVectors,
-                                                        rotArguments,
-                                                        repeat(Bpos,times=len(posVectors))))
-        ## Close the pooled processes and wrap up before returning.
-        pool.close()
-        pool.join()
-        return results
+        if all(isPosVector(item) for item in INPUT):
+            return self._getBmultiList(INPUT,processes=processes)
+        else:
+            return self._getBDisplacement(INPUT,processes=processes)
 
     def getB(self,pos): 
         """

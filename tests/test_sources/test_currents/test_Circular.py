@@ -55,14 +55,14 @@ def test_CircularMulticoreGetB():
     dim=3.1469
     pos=(4.4,5.24,0.5)
     angle=45
-    arrayPos=array([  [.5,5,.35],
+    arrayPos=[[.5,5,.35],
                 [.5,5,.35],
-                [.5,5,.35]])
+                [.5,5,.35]]
 
     pm = current.Circular(curr,dim,pos,angle)
 
     ## Positions list
-    result = pm.getBMulticore(arrayPos )
+    result = pm.getBparallel(arrayPos )
 
     ## Rounding for floating point error 
     rounding = 4 
