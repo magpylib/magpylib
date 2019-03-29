@@ -273,44 +273,50 @@ class RCS:
         -------
 
         For carousel simulation:
-        
-        >>> # Input
-        >>> from magpylib.source import magnet
-        >>> mag=[1,2,3]
-        >>> dim=[1,2,3]
-        >>> pos=[0,0,0]
-        >>> listOfArgs = [  [   [1,2,3],        #pos
-        ...                     [0,0,1],        #MPos
-        ...                     (180,(0,1,0)),],#Morientation
-        ...                 [   [1,2,3],
-        ...                     [0,1,0],
-        ...                     (90,(1,0,0)),],
-        ...                 [   [1,2,3],
-        ...                     [1,0,0],
-        ...                     (255,(0,1,0)),],]
-        >>> # Run
-        >>> pm = magnet.Box(mag,dim,pos)
-        >>> result = pm.getBparallel(listOfArgs)
-        >>> print(result)
-            ( [ 0.00453617, -0.07055326,  0.03153698],
-            [0.00488989, 0.04731373, 0.02416068],
-            [0.0249435,  0.00106315, 0.02894469])
+
+        >>> from multiprocessing import freeze_support
+        >>> if __name__ == "__main__":
+        >>>     freeze_support()
+        >>>     # Input
+        >>>     from magpylib.source import magnet
+        >>>     mag=[1,2,3]
+        >>>     dim=[1,2,3]
+        >>>     pos=[0,0,0]
+        >>>     listOfArgs = [  [   [1,2,3],        #pos
+        ...                         [0,0,1],        #MPos
+        ...                         (180,(0,1,0)),],#Morientation
+        ...                     [   [1,2,3],
+        ...                         [0,1,0],
+        ...                         (90,(1,0,0)),],
+        ...                     [   [1,2,3],
+        ...                         [1,0,0],
+        ...                         (255,(0,1,0)),],]
+        >>>     # Run
+        >>>     pm = magnet.Box(mag,dim,pos)
+        >>>     result = pm.getBparallel(listOfArgs)
+        >>>     print(result)
+                ( [ 0.00453617, -0.07055326,  0.03153698],
+                [0.00488989, 0.04731373, 0.02416068],
+                [0.0249435,  0.00106315, 0.02894469])
 
         For parallel field list calculation:
-        
-        >>> # Input
-        >>> from magpylib.source import magnet
-        >>> mag=[6,7,8]
-        >>> dim=[10,10,10]
-        >>> pos=[2,2,2]
-        >>> listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
-        >>> # Run
-        >>> pm = magnet.Box(mag,dim,pos)
-        >>> result = pm.getBparallel(listOfPos)
-        >>> print(result)
-            (   [3.99074612, 4.67238469, 4.22419432],
-                [3.99074612, 4.67238469, 4.22419432],
-                [3.99074612, 4.67238469, 4.22419432],)
+
+        >>> from multiprocessing import freeze_support
+        >>> if __name__ == "__main__":
+        >>>     freeze_support()  
+        >>>     # Input
+        >>>     from magpylib.source import magnet
+        >>>     mag=[6,7,8]
+        >>>     dim=[10,10,10]
+        >>>     pos=[2,2,2]
+        >>>     listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
+        >>>     # Run
+        >>>     pm = magnet.Box(mag,dim,pos)
+        >>>     result = pm.getBparallel(listOfPos)
+        >>>     print(result)
+                (   [3.99074612, 4.67238469, 4.22419432],
+                    [3.99074612, 4.67238469, 4.22419432],
+                    [3.99074612, 4.67238469, 4.22419432],)
 
         """
         if all(isPosVector(item) for item in INPUT):
