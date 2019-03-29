@@ -41,7 +41,7 @@ def Bfield_Box(MAG, pos, dim): #returns arr3
     
     # test if we are on two borders at the same time. This will lead to singularities in F2. To avoid this we shift the position slightly.
     onBorder = sum([x==a,x==-a,y==b,y==-b,z==c,z==-c])
-    print(onBorder)
+    #print(onBorder)
     if onBorder > 1:
         x += 1e-6
         y += 1e-6
