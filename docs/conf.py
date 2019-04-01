@@ -40,6 +40,7 @@ def setup(app):
             'enable_eval_rst': True
             }, True)
     app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
+    app.add_javascript('webcode/summaryOpen.js')
     app.add_javascript('webcode/copybutton.js') # Add the button for 
                                         # hiding ">>>" in examples
     sphinx.apidoc.main(['-f', #Overwrite existing files
