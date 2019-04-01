@@ -57,7 +57,7 @@ def test_DipoleMulticoreGetB():
     # Run
     pm = Dipole(moment,pos,angle,axis)
     ## Positions list
-    result = pm.getBMulticore(arrayOfPos) 
+    result = pm.getBparallel(arrayOfPos) 
 
     ## Rounding for floating point error 
     rounding = 4 

@@ -65,7 +65,7 @@ def test_SphereMulticoreGetB():
 
     # Run
     pm = magnet.Sphere(mag,dim,pos,angle,axis)
-    result = pm.getBMulticore(arrayOfPos  ) 
+    result = pm.getBparallel(arrayOfPos  ) 
 
     ## Rounding for floating point error 
     rounding = 4 

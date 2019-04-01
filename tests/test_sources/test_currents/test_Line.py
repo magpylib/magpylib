@@ -57,7 +57,7 @@ def test_CircularMulticoreGetB():
     pm = current.Line(curr,vertices,pos,angle)
 
     ## Positions list
-    result = pm.getBMulticore(arrayOfPos) 
+    result = pm.getBparallel(arrayOfPos) 
 
     ## Rounding for floating point error 
     rounding = 4 

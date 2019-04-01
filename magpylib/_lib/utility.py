@@ -190,17 +190,34 @@ def getBField(BCm,source_ref):
         
         return B
 
-def recoordinateAndGetB(source_ref,newPos=[0,0,0],rotationArgs=(0,(0,0,1)),Bpos=[0,0,0]):
+
+def recoordinateAndGetB(source_ref,args):
         ## Used in base.RCS.getBDisplacement(),
 
         # Take an object, a position to place the object in and magnet rotation arguments.
         # Apply the new position, rotate it, and return the B field value from position Bpos.
-        source_ref.setPosition(newPos)
-        if len(rotationArgs)==3: # Check for anchor, otherwise use default
-            source_ref.rotate(rotationArgs[0],rotationArgs[1],rotationArgs[2])
+        Bpos = args[0]
+        Mpos = args[1]
+        MOrient = args[2]
+        angle = MOrient[0]
+        axis = MOrient[1]
+        
+        assert isPosVector(Mpos)
+        assert isPosVector(Bpos)
+        assert isPosVector(axis)
+        assert isinstance(angle,float) or isinstance(angle,int)
+        
+        source_ref.setPosition(Mpos)
+        if len(MOrient)==3:
+            anchor = MOrient[3]
+            assert isPosVector(anchor)
+            source_ref.setOrientation(  angle,
+                                        axis,
+                                        anchor)    
         else:
-            source_ref.rotate(rotationArgs[0],rotationArgs[1])
-            
+            source_ref.setOrientation(  angle,
+                                        axis)
+
         return source_ref.getB(Bpos)
 
 def isPosVector(object_ref):

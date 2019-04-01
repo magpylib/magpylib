@@ -224,7 +224,7 @@ class Collection():
         """
 
         Btotal = []
-        calcFields = [s.getBMulticore(pos,processes=processes) for s in self.sources]
+        calcFields = [s.getBparallel(pos,processes=processes) for s in self.sources]
         
         for p in range(len(pos)): # For each position, calculate and sum all fields
             px=py=pz=0
