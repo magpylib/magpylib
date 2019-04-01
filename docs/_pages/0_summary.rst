@@ -2,6 +2,7 @@ MagPyLib Summary
 ----------------
 
 .. image:: ../_static/images/summary/lib.png
+   :scale: 50 %
 
 The core module of magpylib is :mod:`~magpylib.source`, whose subpackages
 offer the primitive building blocks for creating our simulation data.
