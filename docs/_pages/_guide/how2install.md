@@ -27,11 +27,11 @@ _Anaconda is a distribution of Python tools for Scientific Computing, making it 
 1. [Download Anaconda][anaconda]
 2. Start Anaconda Navigator 
 3. On the interface, go to `Environments` and choose the environment you wish to install MagPyLib in. For this example, we will use the base environment:
-   ![](./../_static/images/install_guide/anaconda0.png)
+   ![](../../_static/images/install_guide/anaconda0.png)
 4. Look for MagPyLib in the Package search bar
-   ![](./../_static/images/install_guide/anaconda.png)
+   ![](../../_static/images/install_guide/anaconda.png)
 5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
-   ![](./../_static/images/install_guide/anaconda2.png)
+   ![](../../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
 6. Run the example script :doc:`_guide/x_examples` .
@@ -79,11 +79,11 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 1. [Download Anaconda][anaconda]
 2. Open a terminal window and type `anaconda-navigator`
 3. On the interface, go to `Environments` and choose the environment you wish to install MagPyLib in. For this example, we will use the base environment:
-   ![](./../_static/images/install_guide/anaconda0.png)
+   ![](../../_static/images/install_guide/anaconda0.png)
 4. Look for MagPyLib in the Package search bar
-   ![](./../_static/images/install_guide/anaconda.png)
+   ![](../../_static/images/install_guide/anaconda.png)
 5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
-   ![](./../_static/images/install_guide/anaconda2.png)
+   ![](../../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
 6. Run the example script :doc:`_guide/x_examples` .
