@@ -7,6 +7,7 @@ numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
 #######################################
 #%% IMPORTS
+from copy import deepcopy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -543,7 +544,9 @@ class Collection():
                     SYSSIZE = maxSize
                     
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices = deepcopy(s) ## Send the Circular vertice information
+                    sCopyWithVertices.vertices=vs   ## to the object drawing list
+                    currentsList.append(sCopyWithVertices)
 
         
             elif type(s) is Dipole: 
