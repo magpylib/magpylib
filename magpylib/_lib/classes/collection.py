@@ -523,7 +523,9 @@ class Collection():
                     SYSSIZE = maxSize
 
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices=deepcopy(s) # These don't move in the original object,
+                    sCopyWithVertices.vertices=vs # We just draw the frame rotation, discard changes
+                    currentsList.append(sCopyWithVertices)
 
             elif type(s) is Circular:
                 P = s.position
