@@ -8,7 +8,8 @@ b = magpylib.source.magnet.Box( mag = [1,2,3],
                                 axis = (0,0,1))
 
 col = magpylib.Collection(b) ## Make a Collection of 1 source object
-print(col.getB(pointToCalculate)) ## Our GetB result
+print(col.getB(pointToCalculate)) ## Field Sample from the 1 item Collection
+                                  ## Output: [ 0.00730574  0.00181691 -0.00190384]
 
 
 markerZero = [0,0,0]              ## A Marker On Zero Coordinates
