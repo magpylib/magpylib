@@ -3,9 +3,11 @@
 >Note: This is a Work in Progress
 - [Getting Started with MagPylib](#getting-started-with-magpylib)
     - [Summary of the Library Structure](#summary-of-the-library-structure)
+    - [Input Types](#input-types)
     - [Defining Sources](#defining-sources)
     - [Calculating Fields](#calculating-fields)
     - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
+    - [Translations and Rotations](#translations-and-rotations)
     - [Multipoint Field Calculations](#multipoint-field-calculations)
 
 ### Summary of the Library Structure 
@@ -34,7 +36,23 @@ and angle information as well as rotation of position vectors.
 
 ```
 
+### Input Types
 
+MagPyLib utilizes a few arbitrary input types which are currently unchecked. 
+They are as follows:
+
+
+```eval_rst
++------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
+|  Type Name | Description                                             | Example                                                                     | Actual Type                              |
++============+=========================================================+=============================================================================+==========================================+
+| scalar     | A field element.                                        | scalar = 90.0                                                               |  numeric (instances of `int` or `float`) |
++------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
+| vec3       |  A Vector of 3 scalars.                                 | vec3 = (1,2.5,-3)                                                           | Tuple(numeric,numeric,numeric)           |
++------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
+| listVec3   |  A List Containing an N amount of Vectors of 3 scalars. | listOfVec3 = [(1,2,3),              (4.0,5.0,6.0),              (-7,-8,-9)] |  List[Tuple(numeric,numeric,numeric)]    |
++------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
+```
 
 ### Defining Sources
 
@@ -47,23 +65,24 @@ As an example we will define a :mod:`~magpylib.source.magnet.Box` source object 
 
 ```python
 import magpylib
-mag = [1,2,3]   # The magnetization vector in microTesla.
-dim = [4,5,6]   # The length, width and height of our box in mm.
-pos = [7,8,9]   # The position of this magnet 
-                # in a cartesian plane.
-angle = 90      # The angle of orientation around the given
-                # axis upon.
-axis = (0,0,1)  # The axis for orientation, 
-                # (x,y,z) respectively.
 
-b = magpylib.source.magnet.Box(mag,dim,pos,angle,axis)
 
-print(b.magnetization)  # The magnetization vector of this object
-print(b.dimension)      # The dimensions of this box
-print(b.position)       # The center position of the object in the cartesian plane
-print(b.angle)          # The angle of orientation of the object
-print(b.axis)           # The axis of orientation of the object
-print(b)                # Location in memory of our object
+b = magpylib.source.magnet.Box( mag = [1,2,3],   # The magnetization vector in microTesla.
+                                dim = [4,5,6],   # The length, width and height of our box in mm.
+                                pos = [7,8,9],   # The center position of this magnet 
+                                                 # in a cartesian plane.
+                                angle = 90,      # The angle of orientation around the given
+                                                 # axis upon.
+                                axis = (0,0,1))  # The axis for orientation, 
+                                                 # (x,y,z) respectively.)
+
+
+print(b.magnetization)  # Output: [1. 2. 3.]
+print(b.dimension)      # Output: [4. 5. 6.]
+print(b.position)       # Output: [7. 8. 9.]
+print(b.angle)          # Output: 90.0
+print(b.axis)           # Output: [0. 0. 1.]
+print(b)                # Output: Memory location of our Box Object
 
 ```
 ### Calculating Fields
@@ -81,7 +100,7 @@ b = magpylib.source.magnet.Box( mag = [1,2,3],
                                 axis = (0,0,1))
 
 fieldPoint = b.getB(pointToCalculate) # Get the B field at given point
-print(fieldPoint) # Result 
+print(fieldPoint) # Output: [ 0.00730574  0.00181691 -0.00190384] 
 ```
 
 This is most effective when paired with matplotlib, allowing you to visualize your simulation data.
@@ -113,6 +132,10 @@ Let's mark the position and retrieve the B field from our :mod:`~magpylib.source
 
 
 ```
+
+### Translations and Rotations
+
+All Objects, be it a Source Object or a Collection Object, have a set of methods that allow for Translations and Rotation 
 
 To be Completed
 
