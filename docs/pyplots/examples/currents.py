@@ -1,7 +1,6 @@
 """
-
 Define and display the Electromagnetic Field contour of 
-an assembly of a Line Current and a Circular Current.
+an assembly of Line and Circular Currents.
 """
 
 

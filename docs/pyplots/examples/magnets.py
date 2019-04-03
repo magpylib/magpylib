@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Define and display the Electromagnetic Field contour of 
-an assembly of a Cuboid, Cylindrical and Spherical magnets.
+an assembly of Cuboid, Cylindrical and Spherical magnets.
 """
 
 from magpylib import source, Collection

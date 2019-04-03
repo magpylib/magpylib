@@ -1,8 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 """
 Define and display the Electromagnetic Field contour of 
-an Dipole moment.
+a Dipole moment.
 """
 
 from magpylib import source, Collection
