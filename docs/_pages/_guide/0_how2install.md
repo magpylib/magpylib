@@ -34,7 +34,7 @@ _Anaconda is a distribution of Python tools for Scientific Computing, making it 
    ![](../../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
-6. Run the example script :doc:`_guide/x_examples` .
+6. Run the example script :doc:`x_examples` .
 ```
 
 </details>
@@ -86,7 +86,7 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
    ![](../../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
-6. Run the example script :doc:`_guide/x_examples` .
+6. Run the example script :doc:`x_examples` .
 ```
 
 </details>
