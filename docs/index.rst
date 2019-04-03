@@ -6,8 +6,6 @@
 Welcome to MagPyLib's documentation!
 ====================================
 
-About
-~~~~~
 *A simple and user friendly magnetic toolbox for Python 3.2+*
 
 
