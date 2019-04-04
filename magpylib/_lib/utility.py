@@ -10,6 +10,13 @@ def checkDimensions(expectedD: int, dim: Tuple[float,float,float], exitMsg: str=
     return dimension
 
 ##### Collection Helpers
+def addListToCollection(sourceList, inputList,dupWarning):
+    assert all(isSource(a) for a in inputList), "Non-source object in Collection initialization"
+    if dupWarning is True: ## Skip iterating both lists if warnings are off
+        for source in inputList:
+            addUniqueSource(source,sourceList) ## Checks if source is in list, throw warning
+    else:
+        sourceList.extend(inputList)  
 
 def isSource(theObject : any) -> bool:
     """
