@@ -74,7 +74,7 @@ class Dipole(RCS):
         #secure input type and check input format of moment
         self.moment = checkDimensions(3,moment,"Bad moment input")
         
-    def getB(self,pos):
+    def getB(self,pos): ## Particular Line current B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
         return getBField(   Bfield_Dipole(self.moment,rotatedPos)  , # The B field
                             self) #Object Angle/Axis properties

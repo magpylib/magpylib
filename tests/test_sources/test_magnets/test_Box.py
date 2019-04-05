@@ -53,16 +53,14 @@ def test_BoxGetBAngle():
     rounding = 4 ## Round for floating point error 
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
-        
 
 def test_BoxMulticoreGetB():
     erMsg = "Results from getB are unexpected"
     pm = magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
-    
+    pos = array([(.5,.5,5),(30,20,10),(1,.2,60)])
     ## Positions list
-    result = pm.multiGetB(  (.5,.5,5),
-                            (30,20,10),
-                            (1,.2,60), ) 
+    result = pm.getBparallel(pos) 
+
 
     ## Expected Results
     mockRes = ( ( 3.99074612, 4.67238469, 4.22419432), # .5,.5,.5
@@ -76,4 +74,3 @@ def test_BoxMulticoreGetB():
     for i in range(len(mockRes)):
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
-    

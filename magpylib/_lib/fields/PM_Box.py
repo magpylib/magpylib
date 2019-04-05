@@ -28,22 +28,8 @@ def F1(x,y,z,a,b,c):
 def F2(x,y,z,a,b,c):
     X = (sqrt((x+a)**2 + (y-b)**2 + (z+c)**2) + b - y)
     Y = (sqrt((x+a)**2 + (y+b)**2 + (z+c)**2) - b - y)
-    if Y == 0 and X == 0: #verhindere division by zero und log(0)
-        #ziehe den grenzwert anstelle von leichter Verschiebeung
-        x += 0.00000000123
-        y += 0.00000000223
-        z += 0.00000000323
-        X = (sqrt((x+a)**2 + (y-b)**2 + (z+c)**2) + b - y)
-        Y = (sqrt((x+a)**2 + (y+b)**2 + (z+c)**2) - b - y)
     return X/Y
 
-    #if Y != 0 and X!=0: 
-    #    return X/Y
-    #else: #verschiebung ist eine sehr unsaubere methode!!!!                MUSS VERBESSERT WERDEN!!!!!
-    #    x += 0.00000000123
-    #    y += 0.00000000223
-    #    z += 0.00000000323
-    #    return (sqrt((x+a)**2 + (y-b)**2 + (z+c)**2) + b - y) / (sqrt((x+a)**2 + (y+b)**2 + (z+c)**2) - b - y)
 
 #calculating the field
 def Bfield_Box(MAG, pos, dim): #returns arr3
@@ -52,7 +38,16 @@ def Bfield_Box(MAG, pos, dim): #returns arr3
     B0 = MAG[2]
     x,y,z = pos
     a,b,c = dim/2
-
+    
+    # test if we are on two borders at the same time. This will lead to singularities in F2. To avoid this we shift the position slightly.
+    onBorder = sum([x==a,x==-a,y==b,y==-b,z==c,z==-c])
+    #print(onBorder)
+    if onBorder > 1:
+        x += 1e-6
+        y += 1e-6
+        z += 1e-6
+	
+	
     BxZ = B0/4/pi*log( F2(-x,y,-z,a,b,c) * F2(x,y,z,a,b,c) / F2(x,y,-z,a,b,c) / F2(-x,y,z,a,b,c))
     ByZ = -B0/4/pi*log( F2(-y,-x,-z,b,-a,c) * F2(y,-x,z,b,-a,c) / F2(y,-x,-z,b,-a,c) / F2(-y,-x,z,b,-a,c))
     BzZ = -B0/4/pi*(F1(-x,y,z,a,b,c) + F1(-x,y,-z,a,b,c) + F1(-x,-y,z,a,b,c) + F1(-x,-y,-z,a,b,c) + F1(x,y,z,a,b,c) +  F1(x,y,-z,a,b,c)  + F1(x,-y,z,a,b,c)  + F1(x,-y,-z,a,b,c))

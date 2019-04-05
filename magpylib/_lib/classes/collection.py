@@ -3,9 +3,11 @@
 # in Spyder IDE. Pycharm recognizes it.
 from typing import Tuple
 x=y=z=0.0 # Position Vector
+numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
 #######################################
 #%% IMPORTS
+from copy import deepcopy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -13,7 +15,8 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource,  addUniqueSource, drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -46,7 +49,6 @@ class Collection():
     
     def __init__(self,*sources,dupWarning=True):
         
-        assert all(isSource(a) or type(a)==Collection for a in sources), "Non-source object in Collection initialization"
 
         self.sources = []
 
@@ -57,11 +59,9 @@ class Collection():
         # Iterating for this would compromise performance.
         for s in sources:
             if type(s) == Collection:
-                if dupWarning is True: ## Skip iterating both lists if warnings are off
-                    for colSource in s.sources:
-                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
-                else:
-                    self.sources.extend(s.sources)       
+                addListToCollection(self.sources,s.sources,dupWarning)
+            elif isinstance(s,list) or isinstance(s,tuple):
+                addListToCollection(self.sources,s,dupWarning)
             else:
                 assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
                 if dupWarning is True:
@@ -169,20 +169,70 @@ class Collection():
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
         """ 
         for s in sources:
-            if type(s) == Collection:
-                if dupWarning is True: ## Skip iterating both lists if warnings are off
-                    for colSource in s.sources:
-                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
+                if type(s) == Collection:
+                    addListToCollection(self.sources,s.sources,dupWarning)
+                elif isinstance(s,list) or isinstance(s,tuple):
+                    addListToCollection(self.sources,s,dupWarning)
                 else:
-                    self.sources.extend(s.sources)       
-            else:
-                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
-                if dupWarning is True:
-                    addUniqueSource(s,self.sources)
-                else:
-                    self.sources+=[s]
+                    assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                    if dupWarning is True:
+                        addUniqueSource(s,self.sources)
+                    else:
+                        self.sources+=[s]
 
-    def getB(self,pos):
+    def getBMulticore(self,pos=numpyArray,processes=0):
+        """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
+        
+        Parameters
+        ----------
+        pos : [numpyArray]
+            An n-dimension numpy array containing position vectors.
+        processes : [type], optional
+            Number of worker processes to multicore. (the default is Auto, 
+            which is all visible cores minus 1)
+        Returns
+        -------
+        [NumpyArray]
+            A matrix array, with the shame shape as pos, 
+            containing instead values of B fields for each input coordinate position.
+            from magpylib._lib.classes.magnets import Box
+
+        Example
+        -------
+        >>> from numpy import array
+        >>> from magpylib import source, Collection
+        >>> from multiprocessing import freeze_support # These three will
+        >>> if __name__ == '__main__':  ################ Prevent hanging 
+        >>>     freeze_support() ########################### on Windows OS
+        >>>     #Input
+        >>>     mag=(2,3,5)
+        >>>     dim=(2,2,2)
+        >>>     pos=array([ [2,2,2],  # Calculate the B Field in
+        ...                 [2,2,3]]) # these two positions
+        >>>     #Run   
+        >>>     b = magnet.source.Box(mag,dim) # Box 1
+        >>>     b2 = magnet.source.Box(mag,dim) # Box 2
+        >>>     c = Collection(b,b2) # Box 1 + Box 2
+        >>>     result = c.getBMulticore(pos) # Resulting B field from the interaction 
+        >>>                                   # of both Boxes in two Positions
+                    [ [0.24976596, 0.21854521, 0.15610372], # Position 1
+                      [0.12442073, 0.10615358, 0.151319  ],] # Position 2
+        
+        """
+
+        Btotal = []
+        calcFields = [s.getBparallel(pos,processes=processes) for s in self.sources]
+        
+        for p in range(len(pos)): # For each position, calculate and sum all fields
+            px=py=pz=0
+            for src in range(len(self.sources)):
+                px += calcFields[src][p][0] # x coord val of this position
+                py += calcFields[src][p][1] # y coord val of this position
+                pz += calcFields[src][p][2] # z coord val of this position
+            Btotal.append([px,py,pz])
+        return Btotal
+
+    def getB(self,pos,multicore=False, processes=0):
         """
         This method returns the magnetic field vector generated by the whole
         collection at the argument position `pos` in units of [mT]
@@ -198,7 +248,19 @@ class Collection():
             Magnetic field at the argument position `pos` generated by the
             collection in units of [mT].
         """
-        Btotal = sum([s.getB(pos) for s in self.sources])
+        Btotal = []
+        if type(pos[0]) == list or type(pos[0]) == tuple:
+            calcFields = [s.getB(pos) for s in self.sources]
+            
+            for p in range(len(pos)):
+                px=py=pz=0
+                for src in range(len(self.sources)):
+                    px += calcFields[src][p][0] # x coord val of this position
+                    py += calcFields[src][p][1] # y coord val of this position
+                    pz += calcFields[src][p][2] # z coord val of this position
+                Btotal.append([px,py,pz])
+        else:
+            Btotal = sum([s.getB(pos) for s in self.sources])
         return Btotal
 
 
@@ -351,9 +413,11 @@ class Collection():
         magnetsList=[]
         currentsList=[]
         markersList=[]
+
+        ## Check input and Add markers to the Markers list before plotting
         for m in markers:
             assert len(m) == 3, "A Position vector for markers is not 3D"
-            assert all(type(p)==int or type(p)==float for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
+            assert all(isinstance(p,int) or isinstance(p,float) for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
             markersList+=[m]
 
         for s in self.sources:
@@ -455,7 +519,9 @@ class Collection():
                     SYSSIZE = maxSize
 
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices=deepcopy(s) # These don't move in the original object,
+                    sCopyWithVertices.vertices=vs # We just draw the frame rotation, discard changes
+                    currentsList.append(sCopyWithVertices)
 
             elif type(s) is Circular:
                 P = s.position
@@ -476,7 +542,9 @@ class Collection():
                     SYSSIZE = maxSize
                     
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices = deepcopy(s) ## Send the Circular vertice information
+                    sCopyWithVertices.vertices=vs   ## to the object drawing list
+                    currentsList.append(sCopyWithVertices)
 
         
             elif type(s) is Dipole: 

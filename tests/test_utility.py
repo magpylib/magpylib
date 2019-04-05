@@ -1,5 +1,5 @@
 from typing import Tuple
-from magpylib._lib.utility import checkDimensions,rotateToCS,getBField
+from magpylib._lib.utility import checkDimensions,rotateToCS,getBField, isPosVector
 from numpy import float64, isnan, array
 import pytest
 
@@ -50,6 +50,23 @@ def test_rotateToCS():
     rounding=4
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg
+
+def test_isPosVector():
+    errMsg = "isPosVector returned unexpected False value"
+    position = [1,2,3]
+    assert isPosVector(position), errMsg
+
+def test_isPosVectorArray():
+    from numpy import array
+    errMsg = "isPosVector returned unexpected False value"
+    position = array([1,2,3])
+    assert isPosVector(position), errMsg
+
+def test_isPosVectorArray2():
+    from numpy import array
+    errMsg = "isPosVector returned unexpected False value"
+    position = array([1,4,-24.242])
+    assert isPosVector(position), errMsg
 
 def test_getBField():
     errMsg =  "Wrong field for Box in CS"
