@@ -180,7 +180,7 @@ class Collection():
                     else:
                         self.sources+=[s]
 
-    def getBMulticore(self,pos=numpyArray,processes=0):
+    def getBparallel(self,pos=numpyArray,processes=0):
         """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
         
         Parameters
