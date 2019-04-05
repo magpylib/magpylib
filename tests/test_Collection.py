@@ -98,7 +98,7 @@ def test_collectionGetBMulticoreList():
     b = Box(mag,dim)
     b2 = Box(mag,dim)
     c = Collection(b,b2)
-    result = c.getBMulticore(pos)
+    result = c.getBparallel(pos)
 
     rounding = 4
     for i in range(len(mockResult)):
@@ -132,6 +132,6 @@ def test_collectionGetBMulticoreArray():
         b = Box(mag,dim)
         b2 = Box(mag,dim)
         c = Collection(b,b2)
-        result = c.getBMulticore(pos)
+        result = c.getBparallel(pos)
 
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
