@@ -39,7 +39,14 @@ and angle information as well as rotation of position vectors.
 ### Input Types
 
 MagPyLib utilizes a few arbitrary input types which are currently unchecked. 
-They are as follows:
+
+All input is either `scalar`, `vector`, or a list-like object of either.
+Scalar can be of any data type (int, float, np.float64,...)
+Vector can be any list-like object (list, tuple, array,...) of arbitrary data type.
+The formulas are set up such that the input and output variables are given in the units of 
+Millimeter [`mm`], Millitesla [`mT`], Ampere [`A`] or Degree [`deg`]
+
+Here's a short table with further details:
 
 
 ```eval_rst
@@ -57,7 +64,7 @@ They are as follows:
 ### Defining Sources
 
 ```eval_rst
-The :class:`magpylib.source` module contains objects that represent electromagnetic sources. These objects are created in a unique 3D space with cartesian positioning, and generate different fields depending on their geometry and magnetization vectors.
+The :class:`magpylib.source` module contains objects that represent electromagnetic sources. These objects are created in an isolated, unique 3D space with cartesian positioning, and generate different fields depending on their geometry and magnetization vectors.
 
 As an example we will define a :mod:`~magpylib.source.magnet.Box` source object from the :mod:`magpylib.source.magnet` module.
 ```
@@ -135,10 +142,14 @@ Let's mark the position and retrieve the B field from our :mod:`~magpylib.source
 
 ### Translations and Rotations
 
-All Objects, be it a Source Object or a Collection Object, have a set of methods that allow for Translations and Rotation 
+All Objects, be it a Source Object or a Collection Object, have a set of methods that allow for Translations and Rotation.
+
+
 
 To be Completed
 
 ### Multipoint Field Calculations
 
-To be Defined
+One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
+
+

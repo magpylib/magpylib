@@ -24,7 +24,7 @@ In MagPyLib, multiple Classes have been defined to **represent different, fundam
 #### Geometric Equivalence of Source Classes
 ![](../_static/images/fundamentals/sources.png)
 
-These **Source Types** are what the **Source Classes** are based upon, and these are used to **define Source  Objects**. 
+These **Source Types** are what the **Source Classes** are based upon, and these are used to **define Source Objects**. 
 
 
 
@@ -44,22 +44,42 @@ One way of Electromagnetic Field Analysis can be seen as follows:
 
 All of the Source Objects can be manipulated in their own 3D Space, as **all Source Objects possess *Methods* for absolute reorienting, relative rotation and relative movement**.
 
-
-Movement may also be realized with the use of an **anchored pivot point**.
-
-![](../_static/images/fundamentals/pivot.gif)
-
 ---
 
 ## The Collection Class
 
-To group and display Source Objects or to perform group rotations and compound analysis, the Collection Class is utilized. 
+The linear nature of the field equations utilized provides a **superposition principle**. This means that **arbitrary magnet compounds can be generated** by “Union” and “Difference” operations.
 
-
-
-### Advanced Shapes with Collections
+To **group and display** Source Objects or to **perform group rotations and compound analysis**, the Collection Class is utilized. Otherwise, source objects will not interact.
 
 Collections can be utilized in many ways, and may include other Collections inside of themselves. 
+
+The following animation shows the creation of a 5mm long coil with 0.1mm spacing between each turn, constituting 50 turns.
+The Coil **Collection is then moved and rotated** in two axes (Y and Z Tilt). 
+
+<p align="center">
+    <img src="../_static/images/fundamentals/collectionExample.gif">
+</p>
+
+
+The coils are defined as having 10 Amps running through each. 
+The electromagnetic field **analysis of the compounded objects** looks like the following:
+
+<p align="center">
+    <img src="../_static/images/fundamentals/collectionAnalysis.png">
+</p>
+
+Movement may also be realized with the use of an **anchored pivot point**.
+
+<p align="center">
+    <img src="../_static/images/fundamentals/pivot.gif">
+</p>
+
+<p align="center">
+    <img src="../_static/images/fundamentals/pivotAnalysis.gif">
+</p>
+
+### Advanced Shapes with Collections
 
 Complex magnet formations may be created due to the superposition principle, where magnets of complex shapes are defined by Collections of basic ones.
 
