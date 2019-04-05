@@ -66,12 +66,24 @@ def test_collectionGetBList():
             for j in range(3):
                 assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)
 
+def test_CollectionAddList():
+    errMsg = "Failed to place items in collection, got: "
+    from magpylib._lib.classes.magnets import Box
+    def boxFactory():
+        mag=(2,3,5)
+        dim=(2,2,2)
+        return Box(mag,dim)
+    listSize = 5
+    boxList = list(boxFactory() for a in range(0,listSize))
+
+    c = Collection(boxList)
+    lenOfCol = len(c.sources)
+    assert lenOfCol == listSize, errMsg + str(lenOfCol) + "; expected: " + str(listSize)
+
 def test_collectionGetBMulticoreList():
     from magpylib._lib.classes.magnets import Box
 
     #Input
-
-
     mag=(2,3,5)
     dim=(2,2,2)
     pos=array([     [2,2,2],
@@ -100,7 +112,6 @@ def test_collectionGetBMulticoreArray():
     from numpy import allclose
     #Input
 
-
     mag=(2,3,5)
     dim=(2,2,2)
     pos=array([     [[2,2,2],
@@ -109,7 +120,6 @@ def test_collectionGetBMulticoreArray():
                     [[2,2,2],
                     [2,2,2],
                     [2,2,3]]])
-
 
     mockResult = [  [[0.24976596, 0.21854521, 0.15610372],
                     [0.24976596, 0.21854521, 0.15610372],

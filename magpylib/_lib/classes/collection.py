@@ -7,6 +7,7 @@ numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
 #######################################
 #%% IMPORTS
+from copy import deepcopy
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -14,7 +15,8 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import isSource,  addUniqueSource, drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -47,7 +49,6 @@ class Collection():
     
     def __init__(self,*sources,dupWarning=True):
         
-        assert all(isSource(a) or type(a)==Collection for a in sources), "Non-source object in Collection initialization"
 
         self.sources = []
 
@@ -58,11 +59,9 @@ class Collection():
         # Iterating for this would compromise performance.
         for s in sources:
             if type(s) == Collection:
-                if dupWarning is True: ## Skip iterating both lists if warnings are off
-                    for colSource in s.sources:
-                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
-                else:
-                    self.sources.extend(s.sources)       
+                addListToCollection(self.sources,s.sources,dupWarning)
+            elif isinstance(s,list) or isinstance(s,tuple):
+                addListToCollection(self.sources,s,dupWarning)
             else:
                 assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
                 if dupWarning is True:
@@ -170,18 +169,16 @@ class Collection():
           [9.93360625e+01 1.76697482e-14 3.12727683e+01]
         """ 
         for s in sources:
-            if type(s) == Collection:
-                if dupWarning is True: ## Skip iterating both lists if warnings are off
-                    for colSource in s.sources:
-                        addUniqueSource(colSource,self.sources) ## Checks if source is in list, throw warning
+                if type(s) == Collection:
+                    addListToCollection(self.sources,s.sources,dupWarning)
+                elif isinstance(s,list) or isinstance(s,tuple):
+                    addListToCollection(self.sources,s,dupWarning)
                 else:
-                    self.sources.extend(s.sources)       
-            else:
-                assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
-                if dupWarning is True:
-                    addUniqueSource(s,self.sources)
-                else:
-                    self.sources+=[s]
+                    assert isSource(s), "Argument " + str(s) + " in addSource is not a valid source for Collection"
+                    if dupWarning is True:
+                        addUniqueSource(s,self.sources)
+                    else:
+                        self.sources+=[s]
 
     def getBMulticore(self,pos=numpyArray,processes=0):
         """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
@@ -522,7 +519,9 @@ class Collection():
                     SYSSIZE = maxSize
 
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices=deepcopy(s) # These don't move in the original object,
+                    sCopyWithVertices.vertices=vs # We just draw the frame rotation, discard changes
+                    currentsList.append(sCopyWithVertices)
 
             elif type(s) is Circular:
                 P = s.position
@@ -543,7 +542,9 @@ class Collection():
                     SYSSIZE = maxSize
                     
                 if direc is True:
-                    currentsList.append(s)
+                    sCopyWithVertices = deepcopy(s) ## Send the Circular vertice information
+                    sCopyWithVertices.vertices=vs   ## to the object drawing list
+                    currentsList.append(sCopyWithVertices)
 
         
             elif type(s) is Dipole: 
