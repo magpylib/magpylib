@@ -1,7 +1,30 @@
 from typing import Tuple
-from magpylib._lib.utility import checkDimensions,rotateToCS,getBField, isPosVector
+from magpylib._lib.utility import checkDimensions,rotateToCS,getBField, isPosVector,isDisplayMarker
 from numpy import float64, isnan, array
 import pytest
+
+
+def test_IsDisplayMarker_error():
+    marker1=[0,0,0]
+    marker2=[0,0,1]
+    marker3=[0,0,1,"hello world!"] 
+    marker4=[0,0,1,-1] # Should fail!
+
+    markerList = [marker1,marker2,marker3,marker4]
+    with pytest.raises(AssertionError):
+        for marker in markerList:
+            assert isDisplayMarker(marker)
+
+def test_IsDisplayMarker():
+    errMsg = "marker identifier has failed: "
+    marker1=[0,0,0]
+    marker2=[0,0,1]
+    marker3=[0,0,1,"hello world!"]
+
+    markerList = [marker1,marker2,marker3]
+    for marker in markerList:
+        assert isDisplayMarker(marker), errMsg + str(marker)
+
 
 def test_checkDimensionZero():
     # errMsg = "Did not raise all zeros Error"
