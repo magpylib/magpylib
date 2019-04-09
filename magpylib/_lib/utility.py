@@ -248,6 +248,12 @@ def initializeMulticorePool(processes):
     assert processes > 0, "Could not identify multiple cores for getB. This machine may not support multiprocessing."
     return Pool(processes=processes) 
 
+def isDisplayMarker(object_ref):
+    m = object_ref
+    if len(m) == 3:# Check if it's [numeric,numeric,numeric]
+        return all(isinstance(p,int) or isinstance(p,float) for p in m)
+    if len(m) == 4: # Check if it's [numeric,numeric,numeric,"label"]
+        return all(isinstance(p,int) or isinstance(p,float) for p in m[:2]) and isinstance(m[3],str)
 def posVectorFinder(dArray,positionsList):
     # Explore an array and append all the indexed values 
     # that are position vectors to the given list.
