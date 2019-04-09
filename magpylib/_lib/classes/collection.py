@@ -15,7 +15,7 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
-from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole
+from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
@@ -350,14 +350,17 @@ class Collection():
 
         Parameters
         ----------
-        markers : list[vec3]
-            List of position vectors to add visual markers to the display
+        markers : list[scalar,scalar,scalar,[label]]
+            List of position vectors to add visual markers to the display, optional label.
             Default: [[0,0,0]]
 
         >>> from magpylib import Collection, source
         >>> c=source.current.Circular(3,7)
         >>> x = Collection(c)
-        >>> x.displaySystem([[2,3,5],[10,20,10],[5,5,5],[8,8,8]])
+        >>> marker0 = [0,0,0,"Neutral Position"]
+        >>> marker1 = [10,10,10]
+        >>> x.displaySystem(markers=[ marker0,
+        ...                           marker1])
 
         suppress : bool
             If True, only return Figure information, do not show. Interactive mode must be off.
@@ -416,8 +419,7 @@ class Collection():
 
         ## Check input and Add markers to the Markers list before plotting
         for m in markers:
-            assert len(m) == 3, "A Position vector for markers is not 3D"
-            assert all(isinstance(p,int) or isinstance(p,float) for p in m), "Position vector for marker has non-int or non-float types." #pylint: disable=not-an-iterable
+            assert isDisplayMarker(m), "Invalid marker definition in displaySystem:" + str(m) + ". Needs to be [vec3] or [vec3,string]"
             markersList+=[m]
 
         for s in self.sources:
@@ -558,7 +560,10 @@ class Collection():
 
         for m in markersList: ## Draw Markers
             ax.scatter(m[0],m[1],m[2],s=20,marker='x')
-            maxSize = amax(abs(max(m)))
+            if(len(m)>3):
+                zdir = None
+                ax.text(m[0], m[1], m[2], m[3], zdir)
+            maxSize = amax(abs(max(m[:2])))
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
         
