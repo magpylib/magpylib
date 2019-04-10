@@ -123,6 +123,6 @@ Magnets with holes may be described by adding sources of conflicting magnetism i
 
 ## Math Package
 
-The Math Package is utilized to assist users in performing Angle/Axis conversions and rotations utilizing the quaternion notation.
+The Math Package is utilized to assist users in performing Angle/Axis conversions and rotations utilizing [the quaternion notation](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation).
 
 [paper]: http://mystery-404.herokuapp.com
