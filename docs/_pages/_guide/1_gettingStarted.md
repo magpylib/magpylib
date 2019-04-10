@@ -12,9 +12,13 @@
 
 ### Summary of the Library Structure 
 
-Magpylib is defined by three main modules:
-
 ```eval_rst
+
+.. image:: ../../_static/images/summary/lib.png
+   :align: center
+   :scale: 50 %
+
+Magpylib is defined by three main modules:
 
 The core module of magpylib is :mod:`~magpylib.source`, whose subpackages
 offer the primitive building blocks for creating our simulation data.
@@ -39,13 +43,6 @@ and angle information as well as rotation of position vectors.
 ### Input Types
 
 MagPyLib utilizes a few arbitrary input types which are currently unchecked. 
-
-All input is either `scalar`, `vector`, or a list-like object of either.
-Scalar can be of any data type (int, float, np.float64,...)
-Vector can be any list-like object (list, tuple, array,...) of arbitrary data type.
-The formulas are set up such that the input and output variables are given in the units of 
-Millimeter [`mm`], Millitesla [`mT`], Ampere [`A`] or Degree [`deg`]
-
 Here's a short table with further details:
 
 
@@ -61,10 +58,25 @@ Here's a short table with further details:
 +------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
 ```
 
+Summary:
+
+- All input is either `scalar`, `vector`, or a list-like object of either.
+- `scalar` can be of any numeric data type (`int` , `float` , `np.float64`,...)
+- `vector` can be any iterable, list-like object (`list`, `tuple`, `np.array`,...) of arbitrary data type.
+  
+The formulas are set up such that the input and output variables are given in the units of: 
+- *Millimeter* [`mm`]
+- *Millitesla* [`mT`]
+- *Ampere* [`A`]
+-  *Degree* [`deg`]
+
+
 ### Defining Sources
 
 ```eval_rst
-The :class:`magpylib.source` module contains objects that represent electromagnetic sources. These objects are created in an isolated, unique 3D space with cartesian positioning, and generate different fields depending on their geometry and magnetization vectors.
+The :class:`magpylib.source` module contains objects that represent electromagnetic sources. 
+
+These objects are created in an isolated, unique 3D frame with cartesian positioning, and generate different fields depending on their geometry and magnetization vectors.
 
 As an example we will define a :mod:`~magpylib.source.magnet.Box` source object from the :mod:`magpylib.source.magnet` module.
 ```
@@ -74,14 +86,14 @@ As an example we will define a :mod:`~magpylib.source.magnet.Box` source object 
 import magpylib
 
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],   # The magnetization vector in microTesla.
-                                dim = [4,5,6],   # The length, width and height of our box in mm.
-                                pos = [7,8,9],   # The center position of this magnet 
-                                                 # in a cartesian plane.
-                                angle = 90,      # The angle of orientation around the given
-                                                 # axis upon.
-                                axis = (0,0,1))  # The axis for orientation, 
-                                                 # (x,y,z) respectively.)
+b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in microTesla.
+                                dim = [4,5,6],  # Length, width and height of our box in mm.
+                                pos = [7,8,9],  # The center position of this magnet 
+                                                # in a cartesian plane.
+                                angle = 90,     # The angle of orientation around the given
+                                                # axis upon.
+                                axis = (0,0,1)) # The axis for orientation, 
+                                                # (x,y,z) respectively.)
 
 
 print(b.magnetization)  # Output: [1. 2. 3.]
@@ -115,6 +127,7 @@ This is most effective when paired with matplotlib, allowing you to visualize yo
 ### Creating Collections and Visualizing Geometry
 
 ```eval_rst
+
 Top Level holds the :class:`magpylib.Collection` class, which represents a collection of source objects. 
 
 This means that you may define a space where multiple source objects interact, and acquire the resulting magnetic fields of multiple sources. 
@@ -126,13 +139,18 @@ Let's create a collection and visualize our :mod:`~magpylib.source.magnet.Box`.
 .. plot:: pyplots/guide/collection1.py
    :include-source:
 
-We can set markers to help us identify certain points in the 3D plane. By default, there is a marker at position `[0,0,0]`.
+We can set markers with labels to help us identify certain points in the 3D plane. By default, there is a marker at position `[0,0,0]`.
 
-To set a marker or more, we define a list of positions and utilize the marker keyword argument in the displaySystem method.
+```
 
-Collections also allow us to retrieve the getB field of all magnets in the position with its getB() method. 
+---
 
-Let's mark the position and retrieve the B field from our :mod:`~magpylib.source.magnet.Box` object.
+
+```eval_rst
+
+Collections also allow us to add Source Objects into a shared frame so they can interact, and to retrieve the getB field sample of this interaction with its :func:`~magpylib.Collection.getB` method. 
+
+Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **interacting** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
 
 .. plot:: pyplots/guide/collection2.py
    :include-source:
@@ -144,9 +162,78 @@ Let's mark the position and retrieve the B field from our :mod:`~magpylib.source
 
 All Objects, be it a Source Object or a Collection Object, have a set of methods that allow for Translations and Rotation.
 
+```python
+from magpylib import source
+
+neutral = [0,0,0]
+
+b = source.magnet.Box(mag=[1,2,3],
+                      dim=[2,2,2],
+                      pos=neutral)
+
+b.setPosition([2,0,0]) ## Place object in [2,0,0]
+print(b.position)      ## [2,0,0]
+
+b.move([5,0,0])        ## Move 5 units in X
+print(b.position)      ## [7,0,0]
+
+b.setPosition(neutral) ## Place object in [0,0,0]
+print(b.position)      ## [0,0,0]
+
+b.move([5,0,0])        ## Move 5 units in X
+print(b.position)      ## [5,0,0]
+
+```
+
+```eval_rst
+
+.. note::
+   Source Objects within a Collection will have their coordinates modified within the Collection frame, Collections do not create copies.
+   If you'd like to avoid this, create `a deep copy <https://docs.python.org/3/library/copy.html/>`_. of the source object and add the copy to the Collection instead.
 
 
-To be Completed
+Source Objects may be rotated in respect to themselves or an anchored pivot point.
+
+The result of :func:`~magpylib.source.magnet.Cylinder.rotate` is affected relative to the current position of the Source Object.
+
+If you'd like to set a position that is absolute to the Source's frame, use :func:`~magpylib.source.magnet.Cylinder.setPosition` instead as the manipulation is always the same. This is not available for Collection.
+
+.. plot:: pyplots/guide/rotate1.py
+   :include-source:
+
+```
+
+Rotations may also be done with an anchored pivot point. The following code adds two Objects to a Collection, and only moves one of them.
+
+```eval_rst
+
+.. plot:: pyplots/guide/rotate2.py
+   :include-source:
+
+```
+
+---
+
+Collections may be rotated using the previous logic as well. Keep in mind if an anchor is not provided, all objects will rotate relative to their own center.
+
+
+```eval_rst
+
+.. plot:: pyplots/guide/rotate3.py
+   :include-source:
+
+```
+
+---
+
+Ultimately, Collections can be added to other Collections, and rotated independently.
+
+```eval_rst
+
+.. plot:: pyplots/guide/rotate4.py
+   :include-source:
+
+```
 
 ### Multipoint Field Calculations
 

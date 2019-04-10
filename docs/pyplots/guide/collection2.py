@@ -1,19 +1,21 @@
 import magpylib 
 pointToCalculate = [-3,-2,-1] # Position Vector of the field point to calculate        
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],   
-                                dim = [4,5,6],  
-                                pos = [7,8,9],  
-                                angle = 90,     
-                                axis = (0,0,1))
+box = magpylib.source.magnet.Box( mag = [1,2,3],   
+                                  dim = [4,5,6],  
+                                  pos = [7,8,9])
 
-col = magpylib.Collection(b) ## Make a Collection of 1 source object
-print(col.getB(pointToCalculate)) ## Field Sample from the 1 item Collection
-                                  ## Output: [ 0.00730574  0.00181691 -0.00190384]
+sphere = magpylib.source.magnet.Sphere( mag = [1,2,3],   
+                                        dim = 5,  
+                                        pos = [-7,-8,-9],)
 
+col = magpylib.Collection(box,sphere)       ## Make a Collection of 2 source objects
+sampleValue = col.getB(pointToCalculate)    ## Field Sample from the 2 item Collection
+                                            ## Output: [0.02236098 0.02485036 0.02734824]
 
-markerZero = [0,0,0]              ## A Marker On Zero Coordinates
-markerPosition = pointToCalculate ## A Marker On the Field sample
+markerZero = [0,0,0] + ["Zero Mark"]                   ## A Marker On Zero Coordinates
+markerSample = pointToCalculate + [str(sampleValue)]   ## A Marker On the Field sample
 
 col.displaySystem(markers=[ markerZero, 
-                            markerPosition])
+                            markerSample], direc=True) ## Direc kwarg shows magnetization
+                                                       ## vector
