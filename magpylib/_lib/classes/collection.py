@@ -563,7 +563,7 @@ class Collection():
             if(len(m)>3):
                 zdir = None
                 ax.text(m[0], m[1], m[2], m[3], zdir)
-            maxSize = amax(abs(max(m[:3]))) # Goes up to 3rd Position
+            maxSize = max([abs(pos) for pos in m[:3]]) # Goes up to 3rd Position
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
         
