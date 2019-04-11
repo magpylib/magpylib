@@ -19,7 +19,7 @@ print(l.vertices)
 print(l.getB([0,0,0]))
 
 pmc = Collection(l,c)
-fig = pmc.displaySystem(direc=False)
+fig = pmc.displaySystem(direc=True)
 
 fig.suptitle("Source Currents")
 
