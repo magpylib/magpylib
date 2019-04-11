@@ -90,8 +90,8 @@ b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in mi
                                 dim = [4,5,6],  # Length, width and height of our box in mm.
                                 pos = [7,8,9],  # The center position of this magnet 
                                                 # in a cartesian plane.
-                                angle = 90,     # The angle of orientation around the given
-                                                # axis upon.
+                                angle = 90,     # The angle of orientation 
+                                                # around the given axis.
                                 axis = (0,0,1)) # The axis for orientation, 
                                                 # (x,y,z) respectively.)
 
@@ -148,7 +148,7 @@ We can set markers with labels to help us identify certain points in the 3D plan
 
 ```eval_rst
 
-Collections also allow us to add Source Objects into a shared frame so they can interact, and to retrieve the getB field sample of this interaction with its :func:`~magpylib.Collection.getB` method. 
+Collections also allow us to add Source Objects into a shared frame so they can interact, and to retrieve samples of the resulting B field sample of this interaction with its :func:`~magpylib.Collection.getB` method. 
 
 Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **interacting** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
 
@@ -238,5 +238,34 @@ Ultimately, Collections can be added to other Collections, and rotated independe
 ### Multipoint Field Calculations
 
 One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
+
+```eval_rst
+.. warning::
+
+    Due to how multiprocessing works on **Windows Systems, the following structure for your code is mandatory**:
+
+    .. code::
+    
+       from multiprocessing import freeze_support
+
+       def your_code():
+           ## Your code
+
+       if __name__ == "__main__":
+            freeze_support()
+            your_code()
+
+    Failure to comply to this will cause your code **to not yield any results.**
+```
+Here is an example calculating several marked points.
+
+```eval_rst
+.. plot::  pyplots/guide/multiprocessing1.py
+   :include-source:
+
+```
+
+
+
 
 
