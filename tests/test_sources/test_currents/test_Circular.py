@@ -62,7 +62,7 @@ def test_CircularMulticoreGetB():
     pm = current.Circular(curr,dim,pos,angle)
 
     ## Positions list
-    result = pm.getBparallel(arrayPos )
+    result = pm.getBsweep(arrayPos )
 
     ## Rounding for floating point error 
     rounding = 4 

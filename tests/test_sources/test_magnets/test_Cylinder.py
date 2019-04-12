@@ -64,7 +64,7 @@ def test_CylinderMulticoreGetB():
     pm = magnet.Cylinder(mag,dim,pos)
 
     ## Positions list
-    result = pm.getBparallel(arrayPos ) 
+    result = pm.getBsweep(arrayPos ) 
 
     ## Rounding for floating point error 
     rounding = 4 
