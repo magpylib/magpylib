@@ -214,15 +214,15 @@ def recoordinateAndGetB(source_ref,args):
         assert isinstance(angle,float) or isinstance(angle,int)
         
         source_ref.setPosition(Mpos)
-        if len(MOrient)==3:
-            anchor = MOrient[3]
-            assert isPosVector(anchor)
-            source_ref.setOrientation(  angle,
-                                        axis,
-                                        anchor)    
-        else:
-            source_ref.setOrientation(  angle,
-                                        axis)
+        # if len(MOrient)==3:
+        #     anchor = MOrient[3]
+        #     assert isPosVector(anchor)
+        #     source_ref.rotate(  angle,
+        #                         axis,
+        #                         anchor)    
+        # else:
+        source_ref.setOrientation(  angle,
+                                    axis)
 
         return source_ref.getB(Bpos)
 
