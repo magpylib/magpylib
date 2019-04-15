@@ -253,7 +253,7 @@ class RCS:
         pool.join()
         return results
         
-    def getBparallel(self,INPUT,processes=Auto):
+    def getBsweep(self,INPUT,multiprocessing=False,processes=Auto):
         """
         Advanced input for advanced people who want advanced results.
           
@@ -293,7 +293,7 @@ class RCS:
         ...                         (255,(0,1,0)),],]
         >>>     # Run
         >>>     pm = magnet.Box(mag,dim,pos)
-        >>>     result = pm.getBparallel(listOfArgs)
+        >>>     result = pm.getBsweep(listOfArgs)
         >>>     print(result)
                 ( [ 0.00453617, -0.07055326,  0.03153698],
                 [0.00488989, 0.04731373, 0.02416068],
@@ -312,17 +312,24 @@ class RCS:
         >>>     listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
         >>>     # Run
         >>>     pm = magnet.Box(mag,dim,pos)
-        >>>     result = pm.getBparallel(listOfPos)
+        >>>     result = pm.getBsweep(listOfPos)
         >>>     print(result)
                 (   [3.99074612, 4.67238469, 4.22419432],
                     [3.99074612, 4.67238469, 4.22419432],
                     [3.99074612, 4.67238469, 4.22419432],)
 
         """
-        if all(isPosVector(item) for item in INPUT):
-            return self._getBmultiList(INPUT,processes=processes)
+
+        if multiprocessing is True:
+            if all(isPosVector(item) for item in INPUT):
+                return self._getBmultiList(INPUT,processes=processes)
+            else:
+                return self._getBDisplacement(INPUT,processes=processes)
         else:
-            return self._getBDisplacement(INPUT,processes=processes)
+            if all(isPosVector(item) for item in INPUT):
+                return list(map(self.getB, INPUT))
+            else:
+                return list(map(recoordinateAndGetB, repeat(self,times=len(INPUT)),INPUT))
 
     def getB(self,pos): 
         """
