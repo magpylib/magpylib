@@ -180,7 +180,7 @@ class Collection():
                     else:
                         self.sources+=[s]
 
-    def getBparallel(self,pos=numpyArray,processes=0):
+    def getBsweep(self,pos=numpyArray,processes=0):
         """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
         
         Parameters
@@ -221,7 +221,7 @@ class Collection():
         """
 
         Btotal = []
-        calcFields = [s.getBparallel(pos,processes=processes) for s in self.sources]
+        calcFields = [s.getBsweep(pos,processes=processes) for s in self.sources]
         
         for p in range(len(pos)): # For each position, calculate and sum all fields
             px=py=pz=0
