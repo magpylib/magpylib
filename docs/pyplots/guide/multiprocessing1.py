@@ -27,8 +27,11 @@ def main():
     col = Collection(b)
     col.displaySystem(markers=markers,direc=True)
     
-    ## Calculate all marked points in parallel
-    fields = b.getBparallel(markers)
+    ## Calculate all marked points sequentially
+    fields = b.getBsweep(markers,multiprocessing=False)
+
+    ## Calculate all marked points in parallel, with multiple cores
+    fields = b.getBsweep(markers,multiprocessing=True)
     print(fields)
     
     ## Plot Results
@@ -40,7 +43,7 @@ def main():
     pyplot.legend(  [fig.axes[0].lines[0], fig.axes[0].lines[1], fig.axes[0].lines[2]], 
                     ['X Measure', 'Y Measure', 'Z Measure'])
 
-## Execute code safely for Windows OS
+## Execute parallelized code safely for Windows OS
 if __name__ == "__main__":
     freeze_support()
     main()

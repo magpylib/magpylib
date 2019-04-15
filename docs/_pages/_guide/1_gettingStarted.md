@@ -9,6 +9,7 @@
     - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
     - [Translations and Rotations](#translations-and-rotations)
     - [Multipoint Field Calculations](#multipoint-field-calculations)
+      - [Displacement Input](#displacement-input)
 
 ### Summary of the Library Structure 
 
@@ -189,7 +190,7 @@ print(b.position)      ## [5,0,0]
 
 .. note::
    Source Objects within a Collection will have their coordinates modified within the Collection frame, Collections do not create copies.
-   If you'd like to avoid this, create `a deep copy <https://docs.python.org/3/library/copy.html/>`_. of the source object and add the copy to the Collection instead.
+   If you'd like to avoid this, create `a deep copy <https://docs.python.org/3/library/copy.html>`_. of the source object and add the copy to the Collection instead.
 
 
 Source Objects may be rotated in respect to themselves or an anchored pivot point.
@@ -234,7 +235,6 @@ Ultimately, Collections can be added to other Collections, and rotated independe
    :include-source:
 
 ```
-
 ### Multipoint Field Calculations
 
 One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
@@ -257,13 +257,75 @@ One of the greatest strengths of the analytical approach is that all desired poi
 
     Failure to comply to this will cause your code **to not yield any results.**
 ```
-Here is an example calculating several marked points.
+Here is an example calculating several marked points in sequence.
 
 ```eval_rst
 .. plot::  pyplots/guide/multiprocessing1.py
    :include-source:
 
 ```
+
+#### Displacement Input
+
+The parallel function may also be utilized to calculate samples of several setups in parallel.
+
+Field sample position, Source object orientation and positioning may be adjusted in every setup, like the following structure:
+```eval_rst
+
+.. image:: ../../_static/images/user_guide/multiprocessing.gif
+   :align: center
+
+.. image:: ../../_static/images/user_guide/sweep.png
+   :align: center
+   :scale: 50 % 
+
+```
+
+```python
+from magpylib import source, Collection
+
+def setup_creator(sensorPos,magnetPos,angle):
+    axis = (0,0,1) # Z axis
+    setup = [sensorPos,
+            magnetPos,
+            (angle,axis)]
+    return setup
+
+## Define information for 8 setups
+sensors = [ [-1,-6,6], [-1,-5,5], 
+            [-1,-4,4.5],[-1,-6,3.5], 
+            [-1,-5,2.5], [-1,-4,1.5],
+            [-1,-5,-0.5], [-1,-4,-1.0] ]
+
+angles = [0,30,60,90,120,180,210,270]
+
+positions = [ [3,-4,6],[3,-4,5],
+              [3,-4,4],[3,-4,3,],
+              [3,-4,2],[3,-4,1],
+              [3,-4,0],[3,-4,-1] ]
+
+b = source.magnet.Box([1,2,3],
+                      [1,1,1])
+
+setups = [setup_creator(sensors[i],
+                        positions[i],
+                        angles[i]) for i in range(0,7)]
+
+results = b.getBsweep(setups)
+
+print(results)
+## Result for each of the 8 setups:
+# [array([ 0.0033804 ,  0.00035464, -0.00266834]), 
+#  array([ 0.00151226, -0.00219274, -0.00340392]), 
+#  array([-0.00427052, -0.00226601, -0.00292288]), 
+#  array([-0.00213505, -0.00281333, -0.00213425]), 
+#  array([-0.00567799, -0.00189228, -0.00231176]), 
+#  array([-0.00371514,  0.00242773, -0.00302629]), 
+#  array([-0.00030278,  0.00243991, -0.00334978])]
+```
+
+
+
 
 
 
