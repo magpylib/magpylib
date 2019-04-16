@@ -15,36 +15,60 @@ def test_BfieldBox_OLD():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg
 
+def test_BfieldBox_outside():
+    errMsg = "Field sample outside of Box is unexpected"
+    mockResults = [ [-487.520576, -575.369828, -104.423566],
+                    [364.861085, 382.575024, -106.896362],
+                    [-243.065706, 267.987035, -79.954987],
+                    [154.533798, -177.245393, -17.067326],
+                    [467.108616, -413.895715, 234.294815],
+                    [-364.043702, 300.956661, 72.402694],
+                    [242.976273, 191.057477, 54.841929],
+                    [-150.641259, -150.43341, 42.180744],]
 
-def test_Bfield_Box():
-    errMsg = "Wrong output of Bfield_Box function"
-
-    mag=array([-111,222,-333])
+    testPosOut = array([[5.5,6,7],[6,7,-8],[7,-8,9],
+                        [-8,9,10],[7,-6,-5],[-8,7,-6],
+                        [-9,-8,7],[-10,-9,-8]])                  
     
     #check field values to be within [1,100] adjust magnetization
+
+    mag=array([-11111,22222,-333333])
+    
+    a,b,c = 2,3,4
+    dim=array([a,b,c])
+
+    results=[Bfield_Box(mag,pos,dim) for pos in testPosOut]
+    rounding = 4
+    for i in range(0,len(mockResults)):
+        for j in range(0,3):
+            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+
+def test_BfieldBox_inside():
+    errMsg = "Field sample inside of Box is unexpected"
+    mockResults = [ [-115.690442, -473.627914, 113.62309],
+                    [130.518528, -264.213509, 358.713317],
+                    [-625.378401, 457.382421, -388.191264],
+                    [610.012102, 238.448129, -99.225648],
+                    [105.212958, -254.693617, 402.588708],
+                    [-595.183966, 577.902265, -344.315869],
+                    [640.206475, 247.968012, -221.850201],
+                    [-201.384834, -372.147757, -96.752349],]
+
+    mag=array([-111,222,-333])
 
     a,b,c = 2,3,4
     dim=array([a,b,c])
 
-    testPosOut = array([[5.5,6,7],[6,7,-8],[7,-8,9],[-8,9,10],[7,-6,-5],[-8,7,-6],[-9,-8,7],[-10,-9,-8]])
     testPosInside = array([[a,b,c],[-a,b,c],[a,-b,c],[a,b,-c],[a,-b,-c],[-a,b,-c],[-a,-b,c],[-a,-b,-c]])/2
+
+    results=[Bfield_Box(mag,pos,dim) for pos in testPosInside]
+    rounding = 4
+    for i in range(0,len(mockResults)):
+        for j in range(0,3):
+            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+            
     #add special cases (surface, edges, corners)
 
     #calc and test fields
+    
 
-def test_Bfield_Box():
-
-
-
-
-def test_Bfield_CurrentLine():
-    errMsg = "Wrong output of Bfield_CurrentLine function"
-
-    vertices = array([[-4,-4,-3],[3.5,-3.5,-2],[3,3,-1],[-2.5,2.5,0],[-2,-2,1],[1.5,-1.5,2],[1,1,3]])
-
-    #calcualte field - pick current so that Bfield values lie within [1,100]
-
-    testPosOut = array([[5.5,6,7],[6,7,-8],[7,-8,9],[-8,9,10],[7,-6,-5],[-8,7,-6],[-9,-8,7],[-10,-9,-8]])
-    #add special cases (surface, edges, corners)
-
-    #calc and test fields
