@@ -200,7 +200,8 @@ def getBField(BCm,source_ref):
 
 def recoordinateAndGetB(source_ref,args):
         ## Used in base.RCS.getBDisplacement(),
-        # Take an object, a position to place the object in and magnet orientiation arguments.
+        # Take an object, a sample position to place the object in 
+        # and magnet orientation arguments.
         # Apply the new position, orient it, and return the B field value from position Bpos.
         Bpos = args[0]
         Mpos = args[1]
