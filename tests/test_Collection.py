@@ -101,7 +101,7 @@ def test_collectionGetBSweep_displacement_error():
         rounding = 4
         for i in range(len(mockResults)):
             for j in range(3):
-                assert round(result[i][j],rounding) == round(mockResults[i][j],rounding)
+                assert round(result[i][j],rounding) == round(mockResults[i][j],rounding),erMsg
 
 def test_CollectionAddList():
     errMsg = "Failed to place items in collection, got: "
