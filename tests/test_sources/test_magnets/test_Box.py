@@ -10,12 +10,25 @@ def test_BoxZeroDimError():
     with pytest.raises(AssertionError):
         magnet.Box(mag=[1,1,1],dim=[0,0,0])
 
+
 def test_BoxEdgeCase1():
     ## For now this returns NaN, may be an analytical edge case
     ## Test the Methods in getB() before moving onto this
     pm = magnet.Box(mag=[0,0,1000],dim=[0.5,0.1,1],pos=[.25,.55,-1111])
     result = pm.getB([.5,.5,5])
     assert any(isnan(result)), "Results from getB is not NaN"
+
+# test rotation angle-axes-anchors
+# rot1 = 36, [1,2,3],[.1,.2,.3]
+# rot2 = -366, [3,-2,-1],[-.5,-.6,.7]
+# come up with rly weird ones
+
+# test getB (for different 3 pos angle-axes-anchor combinations)
+#[2,3,4], 36, [1,2,3],[.1,.2,.3]
+#[-3,-4,-5], -124, [3,-2,-1],[-.5,-.6,.7]
+#[-1,-3,-5], 275, [-2,-2,4],[0,0,0]
+
+
 
 def test_BoxGetB():
     erMsg = "Results from getB are unexpected"
@@ -25,6 +38,8 @@ def test_BoxGetB():
     mag=[6,7,8]
     dim=[10,10,10]
     pos=[2,2,2]
+
+
 
     # Run
     pm = magnet.Box(mag,dim,pos)
