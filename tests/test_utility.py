@@ -91,6 +91,23 @@ def test_isPosVectorArray2():
     position = array([1,4,-24.242])
     assert isPosVector(position), errMsg
 
+def test_isPosVectorArgs():
+    from numpy import array
+    errMsg = "isPosVector returned unexpected False value"
+    position = array([1,4,-24.242])
+    
+
+    listOfArgs = [  [   [1,2,3],        #pos
+                    [0,0,1],        #MPos
+                    (180,(0,1,0)),],#Morientation
+                 [   [1,2,3],
+                     [0,1,0],
+                     (90,(1,0,0)),],
+                 [   [1,2,3],
+                     [1,0,0],
+                     (255,(0,1,0)),],]
+    assert any(isPosVector(a)==False for a in listOfArgs)                 
+
 def test_getBField():
     errMsg =  "Wrong field for Box in CS"
     mockResults = array([-4.72365793e-05,  1.35515955e-05, -7.13360174e-05])

@@ -16,7 +16,7 @@ from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
-from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource
+from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -180,7 +180,7 @@ class Collection():
                     else:
                         self.sources+=[s]
 
-    def getBsweep(self,pos=numpyArray,processes=0):
+    def getBsweep(self,pos=numpyArray,multiprocessing=False,processes=0):
         """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
         
         Parameters
@@ -221,7 +221,10 @@ class Collection():
         """
 
         Btotal = []
-        calcFields = [s.getBsweep(pos,processes=processes) for s in self.sources]
+        
+        assert all(isPosVector(item) for item in pos), "Non-position vector in Collection getBsweep"
+        calcFields = [s.getBsweep(pos,multiprocessing=multiprocessing,
+                      processes=processes) for s in self.sources]
         
         for p in range(len(pos)): # For each position, calculate and sum all fields
             px=py=pz=0
