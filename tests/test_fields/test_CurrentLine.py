@@ -3,6 +3,7 @@ from numpy import array
 import pytest
 
 def test_Bfield_CurrentLine_outside():
+    # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"
     mockResults = [ [-15.426123, -42.10796, -12.922307],
                     [67.176642, -3.154985, -10.209148],
