@@ -16,6 +16,7 @@ def test_BfieldBox_OLD():
         assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg
 
 def test_BfieldBox_outside():
+    # Fundamental Positions in every 8 Octants, but inside
     errMsg = "Field sample outside of Box is unexpected"
     mockResults = [ [-487.520576, -575.369828, -104.423566],
                     [364.861085, 382.575024, -106.896362],
@@ -44,6 +45,7 @@ def test_BfieldBox_outside():
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
 def test_BfieldBox_inside():
+    # Fundamental Positions in every 8 Octants, but inside
     errMsg = "Field sample inside of Box is unexpected"
     mockResults = [ [-115.690442, -473.627914, 113.62309],
                     [130.518528, -264.213509, 358.713317],
