@@ -30,3 +30,35 @@ def test_Bfield_CurrentLine_outside():
     for i in range(0,len(mockResults)):
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+
+def test_Bfield_onLineSegment():
+    from magpylib import source,Collection
+    from numpy import array, isnan
+    vertices = [array([1,2,2]),array([1,2,30])]
+    current = 5
+
+    origin1 = vertices[0]
+    origin2 = vertices[1]
+    middle = ((vertices[0]) + (vertices[1])) / 2
+
+    testPos = [origin1,origin2,middle]
+    results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
+    assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
+
+def test_Bfield_onLine():
+    errMsg = "Points on Line (not on segment) are not being calculated"
+    from magpylib import source,Collection
+    from numpy import array
+    vertices = [array([1,2,2]),array([1,2,30])]
+    pos = [2,2,2]
+    current = 5
+    mockResults = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+
+    points = [vertices[0] + [0,0,-3], vertices[1] + [0,0,3]]
+
+    
+    results = [Bfield_CurrentLine(point,vertices,current) for point in points]
+    rounding = 4
+    for i in range(0,len(mockResults)):
+        for j in range(0,3):
+            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
