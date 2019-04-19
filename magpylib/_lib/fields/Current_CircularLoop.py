@@ -2,7 +2,7 @@
 # -*- coding: utf-8 -*-
 
 
-from numpy import sqrt,array,cos,sin
+from numpy import sqrt,array,cos,sin,NaN
 from magpylib._lib.mathLibPrivate import getPhi,ellipticK, ellipticE
 
 #%% CIRCULAR CURRENT LOOP
@@ -27,9 +27,14 @@ def Bfield_CircularCurrentLoop(i0,d0,pos):
     r0 = d0/2  #radius of current loop
 
     #avoid singularity at CL
-    if abs(r-r0)<1e-10 and abs(z)<1e-10:
-        print('WARNING: close to singularity - setting field to zero')
-        return array([0,0,0])
+    #if abs(r-r0)<1e-10 and abs(z)<1e-10:
+    #    print('WARNING: close to singularity - setting field to zero')
+    #    return array([0,0,0])
+
+    if (r==r0 and z==0):
+            print('Warning: getB Position directly on current line')
+            return array([NaN,NaN,NaN])
+        
 
     deltaP = sqrt((r+r0)**2+z**2)
     deltaM = sqrt((r-r0)**2+z**2)
@@ -37,7 +42,7 @@ def Bfield_CircularCurrentLoop(i0,d0,pos):
     kappaBar=1-kappa
 
     #avoid discontinuity at r=0
-    if r<1e-10: 
+    if r==0: 
         Br = 0.
     else:
         Br = -2*1e-7*i0*(z/r/deltaM)*(ellipticK(kappaBar)-(2-kappaBar)/(2-2*kappaBar)*ellipticE(kappaBar))    *1e3           #account for mm input
