@@ -1,3 +1,4 @@
+from magpylib.source.current import Line
 from magpylib.source import current
 from numpy import isnan, array
 import pytest 

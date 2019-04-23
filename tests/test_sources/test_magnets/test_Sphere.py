@@ -1,3 +1,4 @@
+from magpylib.source.magnet import Sphere
 from magpylib.source import magnet
 from numpy import isnan, array
 import pytest 
