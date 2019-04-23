@@ -27,7 +27,7 @@ from itertools import product, repeat
 from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
 from magpylib._lib.utility import checkDimensions, initializeMulticorePool,recoordinateAndGetB
-from magpylib._lib.utility import posVectorFinder,isPosVector
+from magpylib._lib.utility import isPosVector
 from multiprocessing import Pool,cpu_count
 import sys
 
