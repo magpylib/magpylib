@@ -56,7 +56,6 @@ def test_Bfield_onLine():
     from magpylib import source,Collection
     from numpy import array
     vertices = [array([1,2,2]),array([1,2,30])]
-    pos = [2,2,2]
     current = 5
     mockResults = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
 
