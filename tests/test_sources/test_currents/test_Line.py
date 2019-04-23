@@ -4,7 +4,18 @@ from numpy import isnan, array
 import pytest 
 
 
+
+def test_LineNumpyArray():
+    # Test some valid variations of numpy arrays for Line vertices.
+    cur=6
+    pos=(9,2,4)
+    vertices = [array([0,0,0]),array([4,6,2]),array([20,3,6])]
+    current.Line(cur,vertices,pos)
+    vertices = array([[0,0,0],[4,6,2],[20,3,6]])
+    current.Line(cur,vertices,pos)
+
 def test_LineGetB():
+    # Test a single getB calculation.
     erMsg = "Results from getB are unexpected"
     mockResults = array([ 0.00653909, -0.01204138,  0.00857173]) ## Expected 3 results for this input
     
@@ -99,6 +110,7 @@ def test_LineGetB_rotation():
         assert round(results[i]['ang'],rounding)==round(mockResults[i]['ang'],rounding), erMsg
 
 def test_LineGetBAngle():
+    # Create the line with a rotated position then verify with getB. 
     erMsg = "Results from getB are unexpected"
     mockResults = (-0.00493354,  0.00980648,  0.0119963 ) ## Expected 3 results for this input
     
@@ -117,7 +129,8 @@ def test_LineGetBAngle():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
 
-def test_LineMulticoreGetB():
+def test_LineGetBSweep():
+    # Perform multipoint getB calculations with Line (sequential).
     erMsg = "Results from getB are unexpected"
     mockResults = (     (-0.00493354,  0.00980648,  0.0119963 ),
                         (-0.00493354,  0.00980648,  0.0119963 ),
@@ -136,7 +149,7 @@ def test_LineMulticoreGetB():
     pm = current.Line(curr,vertices,pos,angle)
 
     ## Positions list
-    result = pm.getBsweep(arrayOfPos) 
+    result = pm.getBsweep(arrayOfPos,multiprocessing=False) 
 
     ## Rounding for floating point error 
     rounding = 4 
