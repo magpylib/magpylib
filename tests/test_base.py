@@ -4,18 +4,43 @@ from magpylib._lib.classes import base
 import pytest 
 
 def test_initialization_bad_pos_error():
-    errorPos = [23,2]
+    badPos = [23,2]
     angle = 90
     axis = (1,1,1)
     with pytest.raises(SystemExit):
-        base.RCS(errorPos, angle, axis)
+        base.RCS(badPos, angle, axis)
+
+def test_initialization_bad_angle_error():
+    pos = [23,2,20]
+    badAngle = "string"
+    axis = (1,1)
+    with pytest.raises(SystemExit):
+        base.RCS(pos, badAngle, axis)
 
 def test_initialization_bad_axis_error():
     pos = [23,2,20]
     angle = 90
-    errorAxis = (1,1)
+    badAxis = (1,1)
     with pytest.raises(SystemExit):
-        base.RCS(pos, angle, errorAxis)
+        base.RCS(pos, angle, badAxis)
+
+def test_RCSsetOrientation_bad_axis_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    angle = 90
+    badAxis = [1,2,3,4]
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.setOrientation(angle,badAxis)
+
+def test_RCSsetOrientation_bad_angle_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    badAngle = "string"
+    axis = [1,2,3]
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.setOrientation(badAngle,axis)
 
 def test_RCSsetOrientation():
     # Check if setOrientation() is working as expected.
@@ -35,6 +60,15 @@ def test_RCSsetOrientation():
     assert all(round(rcs.axis[i],rounding) == expectedAxis[i] for i in range(0,3)),errMsg_axis
 
 
+def test_RCSsetPosition_bad_pos_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    crashValue = [1,2,3,4]
+    
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.setPosition(crashValue)
+
 def test_RCSsetPosition():
     # Check if setPosition() is working as expected.
     errMsg = "Unexpected RCS position result for rotation"
@@ -45,8 +79,48 @@ def test_RCSsetPosition():
     rounding = 4
     assert all(round(rcs.position[i],rounding) == expectedPos[i] for i in range(0,3)), errMsg
 
-def test_RCSrotate():
-    # Check if rotate() is working as expected.
+
+def test_RCSrotate_bad_axis_error1():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    invalidAxis = [0,0,0]
+    angle=90
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.rotate(angle,invalidAxis)
+
+def test_RCSrotate_bad_axis_error2():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    invalidAxis = [0,0,1,2]
+    angle=90
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.rotate(angle,invalidAxis)
+
+def test_RCSrotate_bad_angle_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    axis = [0,0,1]
+    badAngle="string"
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.rotate(badAngle,axis)
+
+
+def test_RCSrotate_bad_anchor_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    axis = [0,0,1]
+    angle=90
+    badAnchor = [0,0,0,0]
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.rotate(angle,axis,badAnchor)
+
+
+def test_RCSrotate_anchor():
+    # Check if rotate() is working as expected WITH ANCHOR.
     errMsg_init = "Unexpected RCS position at initialization"
     errMsg_pos = "Unexpected RCS position result for rotation"
     errMsg_angle = "Unexpected RCS angle result for rotation"
@@ -56,12 +130,39 @@ def test_RCSrotate():
     angle = 90
     axis = (0,0,1)
     anchor = [0,0,0]
-    rcs = base.RCS(startPos,90,[0,0,1])
+    rcs = base.RCS(startPos,90,axis)
     rounding = 4
     assert all(round(rcs.position[i],rounding) == startPos[i] for i in range(0,3)), errMsg_init
     rcs.rotate(angle,axis,anchor)
     assert all(round(rcs.position[i],rounding) == expectedPos[i] for i in range(0,3)), errMsg_pos
     assert round(expectedAngle,rounding) == angle, errMsg_angle
+
+def test_RCSrotate():
+    # Check if rotate() is working as expected WITH ANCHOR.
+    errMsg_init = "Unexpected RCS position at initialization"
+    errMsg_pos = "Unexpected RCS position result for rotation"
+    errMsg_angle = "Unexpected RCS angle result for rotation"
+    startPos = [1,2,3.5]
+    expectedPos = [1,  2,  3.5]
+    expectedAngle = 90
+    angle = 90
+    axis = (0,0,1)
+    rcs = base.RCS(startPos,90,axis)
+    rounding = 4
+    assert all(round(rcs.position[i],rounding) == startPos[i] for i in range(0,3)), errMsg_init
+    rcs.rotate(angle,axis)
+    assert all(round(rcs.position[i],rounding) == expectedPos[i] for i in range(0,3)), errMsg_pos
+    assert round(expectedAngle,rounding) == angle, errMsg_angle
+
+
+def test_RCSmove_bad_pos_error():
+    # Check if setPosition() is working as expected.
+    startPos = [1,2,3.5]
+    crashValue = [1,2,3,4]
+    
+    with pytest.raises(SystemExit):
+        rcs = base.RCS(startPos,90,[0,0,1])
+        rcs.move(crashValue)
 
 def test_RCSmove():
     # Check if move() is working as expected.
@@ -250,4 +351,20 @@ def test_RCSGetBSequentialList_error():
         pm.getB(   (.5,.5,5), #pylint: disable=too-many-function-args
                     [30,20,10],
                     array([1,.2,60])) 
-        
+
+def test_RCSGetB_raw():
+    pos = [1,2,3.5]
+    angle = 90
+    axis = [1,2,4]
+    with pytest.warns(Warning):
+        rcs = base.RCS(pos,angle,axis)
+        rcs.getB(pos)
+
+def test_RCS_LineCurrent_badCurrent():
+    # Check if setPosition() is working as expected.
+    badCurrent = "string"
+    pos = [1,2,3.5]
+    angle = 90
+    axis = [1,2,3]
+    with pytest.raises(SystemExit):
+        base.LineCurrent(pos,angle,axis,badCurrent)
