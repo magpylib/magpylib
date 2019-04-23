@@ -126,6 +126,35 @@ def test_removeSource():
     case.assertCountEqual(removedSet,col1.sources)
 
 
+def test_removeSource_no_index_error():
+    # Check if removeSource is throwing an error for
+    # removing the an idnex that is not there.
+    from magpylib import source
+    mag=(2,3,5)
+    dim=(2,2,2)
+
+    with pytest.raises(IndexError):
+        ## Define boxes in different position of memory
+        b0 = source.magnet.Box(mag,dim)
+        # Run
+        col1 = Collection(b0)
+        col1.removeSource(2)
+
+def test_removeSource_no_source_error():
+    # Check if removeSource is throwing an error for
+    # removing the a source that is not there.
+    from magpylib import source
+    mag=(2,3,5)
+    dim=(2,2,2)
+
+    with pytest.raises(ValueError):
+        ## Define boxes in different position of memory
+        b0 = source.magnet.Box(mag,dim)
+        b1 = source.magnet.Box(mag,dim)
+        b2 = source.magnet.Box(mag,dim)
+        # Run
+        col1 = Collection(b0,b1)
+        col1.removeSource(b2)
 def test_initialization():
     # Check if initialization accepts mixed arguments
     # source objects, list, collection
