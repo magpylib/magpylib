@@ -31,7 +31,10 @@ def test_Bfield_CurrentLine_outside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
-def test_Bfield_onLineSegment():
+def test_Bfield_singularity():
+    # Test the result fo field sampleS on the line current
+    # Each origin vertix, collinear center point
+    # Expected: [nan,nan,nan]
     from magpylib import source,Collection
     from numpy import array, isnan
     vertices = [array([1,2,2]),array([1,2,30])]
@@ -46,6 +49,9 @@ def test_Bfield_onLineSegment():
     assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
 def test_Bfield_onLine():
+    # Check if points that are on the line but 
+    # not on the segment still return valid results
+    # Expected for collinear points: [0,0,0]
     errMsg = "Points on Line (not on segment) are not being calculated"
     from magpylib import source,Collection
     from numpy import array

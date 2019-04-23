@@ -1,8 +1,22 @@
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
-from numpy import array
+from numpy import array, isnan
 import pytest
 
-def test_Bfield_CurrentLoop_outside():
+def test_Bfield_singularity():
+    # Test the result for a field sample on the circular loop
+    # Expected: NaN
+    from numpy import array
+    
+    # Definitions
+    current = 5
+    diameter = 5
+    calcPos = [0,2.5,0]
+
+    # Run
+    results = Bfield_CircularCurrentLoop(current,diameter,calcPos)
+    assert all(isnan(axis) for axis in results)
+
+def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"
     mockResults = [ [-28.275526, -30.846029, -8.08718],
