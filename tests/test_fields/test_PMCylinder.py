@@ -16,7 +16,8 @@ def test_Bfield_singularity():
     sideSurface = [0,2.5,0]
     upperSurface = [0,1.5,1]
     lowerSurface = [0,1.5,-1]
-    testPos = [sideSurface,upperSurface,lowerSurface]
+    edge = [0,2.5,1]
+    testPos = [sideSurface,upperSurface,lowerSurface,edge]
 
     # Run
     results = [Bfield_Cylinder(mag,pos,dim,iterDia) for pos in testPos]
