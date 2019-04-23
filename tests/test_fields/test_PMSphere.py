@@ -1,8 +1,29 @@
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
-from numpy import array
+from numpy import array, isnan
 import pytest
 
-def test_Bfield_Sphere_outside():
+def test_Bfield_singularity():
+    # Test the result for a field sample on the Sphere
+    # 3 points in faces for each axis
+    # Expected: [nan,nan,nan]
+    from magpylib import source,Collection
+    from numpy import array
+    
+    # Definitions
+    mag = [1,2,3]
+    diam = 5
+    r = diam/2
+    pos1 = [0,0,r]
+    pos2 = [0,r,0]
+    pos3 = [r,0,0]
+    testPos = [pos1,pos2,pos3]
+
+    # Run
+    results = [Bfield_Sphere(mag,pos,diam) for pos in testPos]
+
+    assert all(all(isnan(axis) for axis in result) for result in results)
+
+def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"
     mockResults = [ [-84.219706, -101.128492, -21.194554],
@@ -23,15 +44,15 @@ def test_Bfield_Sphere_outside():
     mag=array([-11111,22222,-333333])
     
     a = 2
-    dim=array([a])
+    diam = a
 
-    results=[Bfield_Sphere(mag,pos,dim) for pos in testPosOut]
+    results=[Bfield_Sphere(mag,pos,diam) for pos in testPosOut]
     rounding = 4
     for i in range(0,len(mockResults)):
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
-def test_BfieldSphere_inside():
+def test_Bfield_inside():
     # Fundamental Positions in every 8 Octants, but inside
     from numpy import pi
     errMsg = "Field sample inside of Box is unexpected"
@@ -46,18 +67,14 @@ def test_BfieldSphere_inside():
                     [-7407.333333, 14814.666667, -222222.0],]
     mag=array([-11111,22222,-333333])
     a,b,c = 2,3,4
-    dim=a
+    diam=a
     testPosIn = array([ [0,0,0],[a,b,c],[-a,b,c],[a,-b,c],[a,b,-c],
                         [a,-b,-c],[-a,b,-c],[-a,-b,c],[-a,-b,-c]])/(2*pi)
 
-    results=[Bfield_Sphere(mag,pos,dim) for pos in testPosIn]
+    results=[Bfield_Sphere(mag,pos,diam) for pos in testPosIn]
     rounding = 4
     for i in range(0,len(mockResults)):
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
-            
-    #add special cases (surface, edges, corners)
-
-    #calc and test fields
     
 
