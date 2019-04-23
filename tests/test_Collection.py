@@ -43,7 +43,7 @@ def test_addSource_Duplicate():
     with pytest.warns(Warning):
         b0 = source.magnet.Box(mag,dim)
         col = Collection() 
-        col.addSources(b0,b0)
+        col.addSources([b0,b0])
         assert len(col.sources) == 1, errMsg
 
 def test_addSource_Duplicate_force():
