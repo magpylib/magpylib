@@ -54,7 +54,7 @@ class RCS:
         #check input format
         if any(isnan(self.position))  or  len(self.position)!= 3:
             sys.exit('Bad pos input')
-        if any(isnan(self.axis))  or  len(self.position)!= 3:
+        if any(isnan(self.axis))  or  len(self.axis)!= 3:
             sys.exit('Bad axis input')
    
         

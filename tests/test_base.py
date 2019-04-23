@@ -3,6 +3,20 @@ from numpy import isnan, array
 from magpylib._lib.classes import base
 import pytest 
 
+def test_initialization_bad_pos_error():
+    errorPos = [23,2]
+    angle = 90
+    axis = (1,1,1)
+    with pytest.raises(SystemExit):
+        base.RCS(errorPos, angle, axis)
+
+def test_initialization_bad_axis_error():
+    pos = [23,2,20]
+    angle = 90
+    errorAxis = (1,1)
+    with pytest.raises(SystemExit):
+        base.RCS(pos, angle, errorAxis)
+
 def test_RCSsetOrientation():
     # Check if setOrientation() is working as expected.
     errMsg_angle = "Unexpected RCS angle result for orientation"
