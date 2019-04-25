@@ -353,6 +353,7 @@ def test_RCSGetBSequentialList_error():
                     array([1,.2,60])) 
 
 def test_RCSGetB_raw():
+    # Test if unitialized getB in RCS throws a warning.
     pos = [1,2,3.5]
     angle = 90
     axis = [1,2,4]
