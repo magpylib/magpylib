@@ -48,7 +48,12 @@ def Bfield_Box(MAG, pos, dim): #returns arr3 of field vector in [mT], input in [
     #   1. on surfaces:      one quantity is zero
     #   2. on edge lines:    two quantities are zero
     #   3. on corners:       three quantities are zero
-    CASE = [xma,xpa,ymb,ypb,zmc,zpc].count(0)
+    CASE = 0
+    for case in array([xma,xpa,ymb,ypb,zmc,zpc]):
+        if (case<1e-15 and -1e-15<case):
+            CASE+=1
+    # rounding is required to catch numerical problem cases like .5-.55=.05000000000000001
+    #   which then result in 'normal' cases but the square eliminates the small digits
     
     # case 1(on magnet): catch on magnet surface cases------------------------
     if CASE == 1:
