@@ -11,12 +11,16 @@ def test_BoxZeroDimError():
         magnet.Box(mag=[1,1,1],dim=[0,0,0])
 
 
-def test_BoxEdgeCase1():
+def test_BoxEdgeCase_rounding():
     ## For now this returns NaN, may be an analytical edge case
     ## Test the Methods in getB() before moving onto this
+    expectedResult = [ 1.90833281e-12, -4.06404209e-13,  5.72529193e-09]
     pm = magnet.Box(mag=[0,0,1000],dim=[0.5,0.1,1],pos=[.25,.55,-1111])
     result = pm.getB([.5,.5,5])
-    assert any(isnan(result)), "Results from getB is not NaN"
+    rounding=10
+    for i in range(0,3):
+        assert round(result[i],rounding)==round(expectedResult[i],rounding), "Rounding edge case is wrong"
+        
 
 def test_Box_rotation_GetB():
     errMsg = "Results from getB are unexpected"
