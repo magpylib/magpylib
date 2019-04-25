@@ -16,6 +16,42 @@ def test_Bfield_singularity():
     results = Bfield_CircularCurrentLoop(current,diameter,calcPos)
     assert all(isnan(axis) for axis in results)
 
+
+def test_CircularGetB_OuterLines():
+    errMsg = "Results from getB are unexpected"
+    mockResults = [ [-0.0, -51.469971, 30.236739],
+                    [0.0, 51.469971, 30.236739],
+                    [0.0, 63.447185, -2.422005],
+                    [0.0, -63.447185, -2.422005],
+                    [-0.0, -63.447185, -2.422005],
+                    [-0.0, 63.447185, -2.422005],
+                    [-0.0, -36.0076, 68.740859],
+                    [0.0, 36.0076, 68.740859],
+                    [0.0, 0.0, -133.812661], ] 
+
+    sideSurface = [0,3,0]
+    upperSurface = [0,1.5,1.5]
+    lowerSurface = [0,1.5,-1.5]
+    edgeBot = [0,2.5,1.5]
+    edgeTop = [0,2.5,-1.5]
+    edge = [0,3,1]
+    edge2 = [0,-3,1]
+    edge3 = [0,3,-1]
+    edge4 = [0,-3,-1]
+
+    testPosOut = array([  edgeTop, edgeBot, edge, edge2,
+                          edge3, edge4, lowerSurface,upperSurface,
+                        sideSurface])                  
+
+    current = 500
+    diameter = 5
+
+    results=[Bfield_CircularCurrentLoop(current,diameter,pos) for pos in testPosOut]
+    rounding = 4
+    for i in range(0,len(mockResults)):
+        for j in range(0,3):
+            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"
