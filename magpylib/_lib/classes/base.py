@@ -27,7 +27,7 @@ from itertools import product, repeat
 from numpy import array,float64,pi,isnan,array,ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
 from magpylib._lib.utility import checkDimensions, initializeMulticorePool,recoordinateAndGetB
-from magpylib._lib.utility import posVectorFinder,isPosVector
+from magpylib._lib.utility import isPosVector
 from multiprocessing import Pool,cpu_count
 import sys
 
@@ -48,13 +48,16 @@ class RCS:
         # fundamental (unit)-orientation/rotation is [0,0,0,1]
         
         self.position = array(position, dtype=float64, copy=False)
-        self.angle = float(angle)
+        try:
+            self.angle = float(angle)
+        except ValueError:
+            sys.exit('Bad angle input')
         self.axis = array(axis, dtype=float64, copy=False)
         
         #check input format
         if any(isnan(self.position))  or  len(self.position)!= 3:
             sys.exit('Bad pos input')
-        if any(isnan(self.axis))  or  len(self.position)!= 3:
+        if any(isnan(self.axis))  or  len(self.axis)!= 3:
             sys.exit('Bad axis input')
    
         
@@ -147,9 +150,12 @@ class RCS:
         >>> print([pm.angle,pm.axis])
             [45.0, array([0., 1., 0.])]
         """
-        self.angle = float(angle)
+        try:
+            self.angle = float(angle)
+        except ValueError:
+            sys.exit('Bad angle input')
         self.axis = array(axis, dtype=float64, copy=False)
-        if any(isnan(self.axis))  or  len(self.position)!= 3:
+        if any(isnan(self.axis))  or  len(self.axis)!= 3:
             sys.exit('Bad axis input')
         
         
@@ -187,7 +193,12 @@ class RCS:
         """
         #secure type
         ax = array(axis, dtype=float64, copy=False)
-        ang = float(angle)
+
+        try:
+            ang = float(angle)
+        except ValueError:
+            sys.exit('Bad angle input')
+
         if str(anchor) == 'self.position':
             anchor = self.position
         else:
@@ -198,8 +209,6 @@ class RCS:
             sys.exit('Bad axis input')
         if fastSum3D(ax**2) == 0:
             sys.exit('Bad axis input')
-        if type(ang) != float:
-            sys.exit('Bad angle input')
         if any(isnan(anchor)) or len(anchor)!= 3:
             sys.exit('Bad anchor input')
         
@@ -388,8 +397,9 @@ class LineCurrent(RCS):
         RCS.__init__(self,position,angle,axis)
         
         #secure input types and check input format
-        self.current = float(current)
-        if type(self.current) != float:
+        try:
+            self.current = float(current)
+        except ValueError:
             sys.exit('Bad current input')
             
             
