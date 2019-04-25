@@ -24,9 +24,49 @@ def test_Bfield_singularity():
 
     assert all(all(isnan(axis) for axis in result) for result in results)
 
+def test_Bfield_OuterPlanes():
+    # Field samples that are coplanar with samples that lead to singularity 
+    # These should be fine
+    errMsg = "Unexpected Results for Cylinder getB in Outer Lines"
+    mockResults = [ [253.334094, -4272.910608, 5590.91282],
+                    [253.334094, 5986.100534, 4906.984899],
+                    [253.334094, 5986.100534, 4906.984899],
+                    [253.334094, -4272.910608, 5590.91282],
+                    [1111.337474, 45438.762267, 3550.174662],
+                    [1111.337474, -40140.199172, 9255.362182],
+                    [283.635853, 1039.317535, 7080.751148],
+                    [344.814448, -9923.631738, 4923.14504],
+                    [344.814448, 11862.477551, 3470.750825],]
+
+    sideSurface = [0,3,0]
+    upperSurface = [0,1.5,1.5]
+    lowerSurface = [0,1.5,-1.5]
+    edge = [0,3,1]
+    edge2 = [0,-3,1]
+    edge3 = [0,3,-1]
+    edge4 = [0,-3,-1]
+    edgeBot = [0,2.5,1.5]
+    edgeTop = [0,2.5,-1.5]
+
+    testPosOut = array([ edge, edge2,edge3,
+                        edge4,lowerSurface,upperSurface,
+                        sideSurface,edgeBot,edgeTop])                              
+
+    mag=array([-11111,22222,-333333])
+
+    a,b = 2,3
+    dim=array([a,b])
+    iterDia = 50 #  Iterations calculating B-field from non-axial magnetization
+    rounding = 4
+    results = [Bfield_Cylinder(mag,pos,dim,iterDia) for pos in testPosOut]
+    for i in range(0,len(mockResults)):
+        for j in range(0,3):
+            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+
+
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
-    errMsg = "Field sample outside of Box is unexpected"
+    errMsg = "Field sample outside of Cylinder is unexpected"
     mockResults = [ [-189.256324, -227.431954, -43.180409],
                     [141.959926, 151.027113, -43.199818],
                     [-94.766897, 105.650499, -32.010555],
@@ -56,7 +96,7 @@ def test_Bfield_outside():
 def test_Bfield_inside():
     # Fundamental Positions in every 8 Octants, but inside
     from numpy import pi
-    errMsg = "Field sample inside of Box is unexpected"
+    errMsg = "Field sample inside of Cylinder is unexpected"
     mockResults = [ [-6488.54459, 12977.08918, -277349.820763],
                     [-15392.748076, 350.405436, -269171.80507],
                     [2099.31683, 199.530241, -268598.798536],
