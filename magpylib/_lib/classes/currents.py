@@ -11,7 +11,7 @@ d=0.0 ## Default Diameter
 ######################################
 
 #%% IMPORTS
-from numpy import array,float64
+from numpy import array,float64, ndarray
 import sys
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.classes.base import LineCurrent
@@ -170,9 +170,10 @@ class Line(LineCurrent):
         LineCurrent.__init__(self,pos,angle,axis,curr)
         
         #secure input type and check input format of dim
-        assert type(vertices) != type(listOfPos), 'Line Current: enter a list of position vertices - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
-        assert all(type(pos)==tuple or type(pos)==list for pos in vertices), 'Line-current: Input position (3D) tuples or lists within the list - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
-        assert all(len(d)==3 for d in vertices), 'Line-current: Bad input dimension, tuple vectors in list must be 3D' 
+        assert isinstance(vertices,list) or isinstance(vertices,ndarray), 'Line Current: enter a list of position vertices - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
+        assert all(isinstance(pos,tuple) or isinstance(pos,list) 
+                or isinstance(pos,ndarray) for pos in vertices), 'Line-current: Input position (3D) tuples or lists within the list - Ex: Line(vertices=[(1,2,3),(3,2,1)])'
+        assert all(len(d)==3 for d in vertices), 'Line-current: Bad input dimension, vectors in list must be 3D' 
         self.vertices = array(vertices, dtype=float64,copy=False)
         
     def getB(self,pos): ## Particular Line current B field calculation. Check RCS for getB() interface

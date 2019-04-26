@@ -1,8 +1,7 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-from numpy import array
+from numpy import array,NaN
 from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
 
 
@@ -18,7 +17,6 @@ from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
 #source: http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 # FieldOfLineCurrent
 
-
 # observer at p0
 # current I0 flows in straight line from p1 to p2
 def Bfield_LineSegment(p0,p1,p2,I0):
@@ -32,9 +30,16 @@ def Bfield_LineSegment(p0,p1,p2,I0):
     norm_cross0 = fastNorm3D(cross0)
     if norm_cross0 != 0.:
         eB = cross0/norm_cross0
-    else:
-        print('ERROR: Bline - p0, p1, p2 do not span triangle')
-        sys.exit()
+    else: #on line case (p0,p1,p2) do not span a triangle
+        norm_12 = fastNorm3D(p1-p2)
+        norm_42 = fastNorm3D(p4-p2)
+        norm_41 = fastNorm3D(p4-p1)
+        
+        if (norm_41 <= norm_12 and norm_42 <= norm_12): #in-between the two points
+            print('Warning: getB Position directly on current line')
+            return array([NaN,NaN,NaN])
+        else:
+            return array([0,0,0])
 
     #determine sinTHs and R
     norm_04 = fastNorm3D(p0-p4) # =R

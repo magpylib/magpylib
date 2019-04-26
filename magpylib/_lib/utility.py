@@ -200,7 +200,8 @@ def getBField(BCm,source_ref):
 
 def recoordinateAndGetB(source_ref,args):
         ## Used in base.RCS.getBDisplacement(),
-        # Take an object, a position to place the object in and magnet orientiation arguments.
+        # Take an object, a sample position to place the object in 
+        # and magnet orientation arguments.
         # Apply the new position, orient it, and return the B field value from position Bpos.
         Bpos = args[0]
         Mpos = args[1]
@@ -253,26 +254,3 @@ def isDisplayMarker(object_ref):
         return all(isinstance(p,int) or isinstance(p,float) for p in m)
     if len(m) == 4: # Check if it's [numeric,numeric,numeric,"label"]
         return all(isinstance(p,int) or isinstance(p,float) for p in m[:2]) and isinstance(m[3],str)
-def posVectorFinder(dArray,positionsList):
-    # Explore an array and append all the indexed values 
-    # that are position vectors to the given list.
-    for index in range(len(dArray)):
-        if isPosVector(dArray[index]):
-            positionsList.append(dArray[index])
-        else:
-            posVectorFinder(dArray[index],positionsList) # Recursively call itself to explore all dimensions
-
-def equalizeListOfPos(listOfPos,listOfRotations,neutralPos=[0,0,0]):
-    ERR_REDUNDANT = "Both list of positions and Rotations are uninitizalized for getBdisplacement, so function call is redundant. Use getB for a single position"
-    ERR_UNEVENLISTS = "List of Positions is of different size than list of rotations. Enter repeating values or neutral values for matching Position and Rotation"
-    # Check if either list is omitted, 
-    # if only one is omitted then fill the other with neutral elements so they are equalized.
-    assert listOfPos is not None or listOfRotations is not None, ERR_REDUNDANT
-    if listOfPos == None:
-        listOfPos = [neutralPos for n in range(len(listOfRotations))]
-    else:
-        if listOfRotations == None:
-            listOfRotations = [(0,(0,0,1)) for n in range(len(listOfPos))]
-    
-    assert len(listOfPos)==len(listOfRotations), ERR_UNEVENLISTS
-    return (listOfPos,listOfRotations)
