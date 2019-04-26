@@ -1,7 +1,6 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
 from numpy import array,NaN
 from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
 
@@ -17,7 +16,6 @@ from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
     
 #source: http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 # FieldOfLineCurrent
-
 
 # observer at p0
 # current I0 flows in straight line from p1 to p2
