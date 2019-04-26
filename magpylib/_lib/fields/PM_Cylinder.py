@@ -3,11 +3,9 @@
 # MAGNETIC FIELD CALCULATION OF CYLINDER IN CANONICAL BASIS
 
 
-
 #%% IMPORTS
 from numpy import pi,sqrt,array,arctan,cos,sin,arange,NaN
 from magpylib._lib.mathLibPrivate import getPhi, elliptic
-
 
 
 #%% Cylinder Field Calculation
@@ -47,7 +45,13 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0): #returns arr3
     #   0. volume cases      no quantities are zero
     #   1. on surfaces:      one quantity is zero
     #   2. on edge lines:    two quantities are zero
-    CASE = [Rmr,zP,zM].count(0)
+    CASE = 0
+    for case in array([Rmr,zP,zM]):
+        if (case<1e-15 and -1e-15<case):
+            CASE+=1
+    # rounding is required to catch numerical problem cases like .5-.55=.05000000000000001
+    #   which then result in 'normal' cases but the square eliminates the small digits
+    
     
     #edge cases ----------------------------------------------
     if CASE == 2:

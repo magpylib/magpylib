@@ -27,14 +27,13 @@ def Bfield_CircularCurrentLoop(i0,d0,pos):
     r0 = d0/2  #radius of current loop
 
     #avoid singularity at CL
-    #if abs(r-r0)<1e-10 and abs(z)<1e-10:
     #    print('WARNING: close to singularity - setting field to zero')
     #    return array([0,0,0])
-
-    if (r==r0 and z==0):
+    rr0=r-r0
+    if (-1e-15<rr0 and rr0<1e-15): #rounding to eliminate the .5-.55 problem when sweeping
+        if (-1e-15<z and z<1e-15):
             print('Warning: getB Position directly on current line')
             return array([NaN,NaN,NaN])
-        
 
     deltaP = sqrt((r+r0)**2+z**2)
     deltaM = sqrt((r-r0)**2+z**2)
@@ -42,11 +41,11 @@ def Bfield_CircularCurrentLoop(i0,d0,pos):
     kappaBar=1-kappa
 
     #avoid discontinuity at r=0
-    if r==0: 
+    if (-1e-15<r and r<1e-15): 
         Br = 0.
     else:
-        Br = -2*1e-7*i0*(z/r/deltaM)*(ellipticK(kappaBar)-(2-kappaBar)/(2-2*kappaBar)*ellipticE(kappaBar))    *1e3           #account for mm input
-    Bz = -2*1e-7*i0*(1/deltaM)*(-ellipticK(kappaBar)+(2-kappaBar-4*(r0/deltaM)**2)/(2-2*kappaBar)*ellipticE(kappaBar))  *1e3 #account for mm input
+        Br = -2*1e-4*i0*(z/r/deltaM)*(ellipticK(kappaBar)-(2-kappaBar)/(2-2*kappaBar)*ellipticE(kappaBar))
+    Bz = -2*1e-4*i0*(1/deltaM)*(-ellipticK(kappaBar)+(2-kappaBar-4*(r0/deltaM)**2)/(2-2*kappaBar)*ellipticE(kappaBar))
 
     #transfer to cartesian coordinates
     Bcy = array([Br,0.,Bz])*1000. #mT output
@@ -54,4 +53,3 @@ def Bfield_CircularCurrentLoop(i0,d0,pos):
     Bkart = T_Cy_to_Kart.dot(Bcy)
 
     return Bkart
-
