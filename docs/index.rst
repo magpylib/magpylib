@@ -15,7 +15,6 @@ What is magpylib ?
 
 .. image:: _static/images/sourceBasics.JPG
    :align: center
-   :scale: 100%
 
 
 Table of Contents
@@ -24,16 +23,9 @@ Table of Contents
 .. toctree::
    :glob:
    :maxdepth: 2
-   :caption: Pages:
+   :caption: Content:
 
    _pages/*
-
-.. toctree::
-   :glob:
-   :maxdepth: 2
-   :caption: Guide:
-
-   _pages/_guide/*
 
 
 .. toctree::
