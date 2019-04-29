@@ -1,22 +1,42 @@
-# [WIP] Fundamentals of MagPyLib
+# Fundamentals of magpylib
 
-MagPyLib introduces a simplified programming environment for you to define and manipulate permanent magnets in order to quickly compute their homogeneous magnetic fields in a 3D coordinate space using [ analytical approaches][paper]. 
+The idea behind magpylib is to provide simple and easy to use classes for calculating magnetic fields. The core of the library is the [source class](#source-class) which represents a permanent magnet, a current distributions or a magnetic moment. The library provides simple methods to generate such source classes, to manipulate them geometrically, to group several sources into [Collections](#the-collection-class) and calculate the fields of such systems. 
 
-To utilize this toolbox effectively, the following concepts particular to the library need to be made clear. 
+In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
-  - [Source Classes](#source-classes)
+  - [Package Structure](#package)
+  - [Source Class](#source-class)
       - [Geometric Equivalence of Source Classes](#geometric-equivalence-of-source-classes)
     - [Positioning and Orientation](#positioning-and-orientation)
   - [The Collection Class](#the-collection-class)
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
 
-```eval_rst
-.. note::
-    For code examples, check out the :doc:`_guide/1_gettingStarted` guide and the :doc:`_guide/x_examples` page.
-```
+For code examples, check out the :doc:`1_gettingStarted` guide and the :doc:`x_examples` page.
 
-## Source Classes
+
+## Package Structure
+
+The top level of magpylib contains the sub-packages :mod:`~magpylib.math` and :mod:`~magpylib.source` as well as the class :class:`magpylib.Collection`.
+
+Within the :mod:`~magpylib.math` module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
+
+The :mod:`~magpylib.source` module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages :mod:`~magpylib.source.magnet`, :mod:`~magpylib.source.current` and :mod:`~magpylib.source.moment` which contain the respective source classes.
+
+The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
+
+.. image:: ../_static/images/summary/lib.png
+   :scale: 50 %
+
+.. currentmodule:: magpylib
+
+.. autosummary::
+
+   Collection
+   source
+   math
+
+## Source Class
 
 <details>
 <summary> <a>Primer: What's a Class?</a> </summary>
