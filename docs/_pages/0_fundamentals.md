@@ -17,7 +17,6 @@ For code examples, check out the [Getting Started with magpylib](2_gettingStarte
 
 ## Package Structure
 
-
 The top level of magpylib contains the sub-packages **magpylib.math** and **magpylib.source** as well as the class **magpylib.Collection**.
 
 Within the **magpylib.math** module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
@@ -26,7 +25,7 @@ The **magpylib.source** module includes the core classes of the library, i.e. th
 
 The **magpylib.Collection** class offers an easy way of grouping multiple source objects for common manipulation.
 
-![](../_static/images/summary/lib.png =250px)
+![](./_static/images/summary/lib.png =250x)
 
 
 ## The Source Class
