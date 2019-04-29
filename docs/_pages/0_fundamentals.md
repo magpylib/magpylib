@@ -4,7 +4,7 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
-  - [Package Structure](#package)
+  - [Package Structure](#package-structure)
   - [Source Class](#source-class)
       - [Geometric Equivalence of Source Classes](#geometric-equivalence-of-source-classes)
     - [Positioning and Orientation](#positioning-and-orientation)
@@ -17,6 +17,8 @@ For code examples, check out the :doc:`1_gettingStarted` guide and the :doc:`x_e
 
 ## Package Structure
 
+.. currentmodule:: magpylib
+
 The top level of magpylib contains the sub-packages :mod:`~magpylib.math` and :mod:`~magpylib.source` as well as the class :class:`magpylib.Collection`.
 
 Within the :mod:`~magpylib.math` module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
@@ -25,10 +27,10 @@ The :mod:`~magpylib.source` module includes the core classes of the library, i.e
 
 The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
 
-.. image:: ../_static/images/summary/lib.png
+.. image:: _static/images/summary/lib.png
    :scale: 50 %
 
-.. currentmodule:: magpylib
+
 
 .. autosummary::
 
