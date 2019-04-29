@@ -15,7 +15,7 @@ What is magpylib ?
 
 .. image:: _static/images/sourceBasics.JPG
    :align: center
-   :scale: 100 %
+   :scale: 100%
 
 
 Table of Contents
