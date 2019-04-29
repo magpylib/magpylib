@@ -17,9 +17,6 @@ What is magpylib ?
    :align: center
 
 
-Table of Contents
------------------
-
 .. toctree::
    :glob:
    :maxdepth: 2
@@ -40,8 +37,8 @@ Table of Contents
 
 
 
-Indices and tables
-==================
+Index and tables
+~~~~~~~~~~~~~~~~~~
 
 * :ref:`genindex`
 * :ref:`modindex`
