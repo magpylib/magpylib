@@ -5,6 +5,7 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
   - [Package Structure](#package-structure)
+  - [Units and IO Types](#units-and-IO-types)
   - [The Source Class](#the-source-class)
       - [Geometric Equivalence of Source Classes](#geometric-equivalence-of-source-classes)
     - [Positioning and Orientation](#positioning-and-orientation)
@@ -25,23 +26,44 @@ The **magpylib.source** module includes the core classes of the library, i.e. th
 
 The **magpylib.Collection** class offers an easy way of grouping multiple source objects for common manipulation.
 
-![](./_static/images/summary/lib.png =250x)
+![](../_static/images/summary/lib.png)
 
+
+## Units and IO Types
+
+In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization and magnetic field.
+
+The library is constructed so that any scalar input can be **float** or **int** type and any vector/matrix input can be given either in the form of a **list**, as a **tuple** or as a **numpy.array**.
+
+The library output is always a **float** or a **numpy.array**.
 
 ## The Source Class
 
-<details>
-<summary> <a>Primer: What's a Class?</a> </summary>
+This is the core class of the library. It is designed so that a source object represents a physical magnetic source in a cartesian three-dimensional space. Different source types are characterized by different variables given through their mathematical representation. 
 
-```eval_rst
-.. note::
-    A **Class in Object Oriented Programming** stands for **the grouping of Characteristics** that **define an Object** and its **behavior**, their interactions being **expressed through function calls known as Methods**. 
-    
-    Programmers can define instances of a Class, called Objects, then procedurally interact with these Objects by **updating** their attributes or by **executing** their Methods.
-```
-</details>
+The most fundamental properties of every source object **s** are position and orientation which are represented through the 3D-array **s**.*position*, the 3D-array **s**.*angle* and the float **s**.*axis*. The *position* refers to the geometric center of the source while the orientation (*angle*,*axis*) refers to a rotation of the source by *angle* about *axis* anchored at *position* RELATIVE TO the init orientation. The init orientation is defined to be (*0*,*(0,0,1)*). This is the default value of the orientation at initialization of a source object and it refers to sources standing upright, oriented along the cartesian coordinates axes. How the init orientation is specifically defined for each source type is outlined below. If no other values are given, a source object is initialized by default with *position=(0,0,0)*, *angle=0* and *axis=(0,0,1)*.
 
-&nbsp;
+The magnet sources represent homogeneously magnetized permanent magnets. They are described by the *dimension* and the *magnetization* variables. The *dimension* format is different for each magnet type. The *magnetization* is always a 3D vector which indicates the direction and amplitude of the material magnetization.
+
+For convenience *magnetization*, *dimension*, *position* are initializes through the keywords *mag*, *dim* and *pos*.
+
+
+
+
+
+
+
+In addition to the fundamental geometric variables the magnet sources 
+
+Magnet sources are 
+
+
+ This is defined specifically for 
+
+
+ which is the default value at initialization of a source object. 
+
+
 
 In MagPyLib, multiple Classes have been defined to **represent different, fundamental Electromagnetic Sources** with their own peculiarities and characteristics as defined by their Mathematical representations:
 
