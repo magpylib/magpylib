@@ -5,40 +5,31 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
   - [Package Structure](#package-structure)
-  - [Source Class](#source-class)
+  - [The Source Class](#the-source-class)
       - [Geometric Equivalence of Source Classes](#geometric-equivalence-of-source-classes)
     - [Positioning and Orientation](#positioning-and-orientation)
   - [The Collection Class](#the-collection-class)
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
 
-For code examples, check out the :doc:`1_gettingStarted` guide and the :doc:`x_examples` page.
+For code examples, check out the [Getting Started with magpylib](2_gettingStarted.md) guide and the [Examples](x_examples.rst) page.
 
 
 ## Package Structure
 
-.. currentmodule:: magpylib
 
-The top level of magpylib contains the sub-packages :mod:`~magpylib.math` and :mod:`~magpylib.source` as well as the class :class:`magpylib.Collection`.
+The top level of magpylib contains the sub-packages **magpylib.math** and **magpylib.source** as well as the class **magpylib.Collection**.
 
-Within the :mod:`~magpylib.math` module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
+Within the **magpylib.math** module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
 
-The :mod:`~magpylib.source` module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages :mod:`~magpylib.source.magnet`, :mod:`~magpylib.source.current` and :mod:`~magpylib.source.moment` which contain the respective source classes.
+The **magpylib.source** module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages **magpylib.source.magnet**, **magpylib.source.current** and **magpylib.source.moment** which contain the respective source classes.
 
-The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
+The **magpylib.Collection** class offers an easy way of grouping multiple source objects for common manipulation.
 
-.. image:: _static/images/summary/lib.png
-   :scale: 50 %
+![](../_static/images/summary/lib.png =250px)
 
 
-
-.. autosummary::
-
-   Collection
-   source
-   math
-
-## Source Class
+## The Source Class
 
 <details>
 <summary> <a>Primer: What's a Class?</a> </summary>
