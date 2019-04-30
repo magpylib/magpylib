@@ -15,8 +15,6 @@ In this part of the documentation the fundamental structure of the magpylib libr
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
 
-[comment]: <> For code examples, check out the [Getting Started with magpylib](2_gettingStarted.md) guide and the [Examples](x_examples.rst) page.
-
 
 ## Package Structure
 
@@ -53,7 +51,7 @@ This is the core class of the library. The idea is that source objects represent
 ```eval_rst
 .. image:: ../_static/images/SourceTypes.JPG
    :align: center
-   :scale: 100 %
+   :scale: 75 %
 ```
 
 
@@ -95,19 +93,18 @@ print(pm.axis)           # Output: [0. 0. 1.]
 ```
 
 
-
 ### Methods for Geometric Manipulation
 
-In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this, each with advantages and disadvantages.
+In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this, each with advantages and disadvantages:
 
 ```eval_rst
 At initialization:
   When initializing the source we can set all variables as desired.
 
 Manipulation after initialization: 
-  We initialize the source and manipulate it afterwards.
-    1. By directly setting the source variables to desired values
-    2. By using provided methods of manipulation
+  We initialize the source and manipulate it afterwards,
+  1. By directly setting the source variables to desired values
+  2. By using provided methods of manipulation
 ```
 
 The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
@@ -158,12 +155,12 @@ The following videos graphically show the application of the four methods for ge
 
 ### Calculating the Magnetic Field
 
-```eval_rst
-.. note::
-   **When a Source Object is created, it is spatially isolated from all other Source Objects** in program memory. This means that, **by themselves, methods for extracting electromagnetic field samples will only calculate the field belonging to the target object.**
-```
+field only from the source addressed
 
----
+superposition principle
+
+getBsweep
+
 
 ## The Collection Class
 
