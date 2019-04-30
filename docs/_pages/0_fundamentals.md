@@ -110,6 +110,18 @@ Manipulation after initialization:
 The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
 
 
+
+|  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
+|------------------|-------------------------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
+| `setPosition`    | 3D-vector                           | position Vector      | Moves the object to a desiganted position given by the inpVector. **s.position -> inpVector**                                                 |
+| `move`           | 3D-vector                           | position Vector      | Moves the object BY the inpVector. **s.position -> s.position + inpVector**                                                                   |
+| `setOrientation` | scalar, 3D-vector                   | angle, axis          | Changes object orientation to given input values (inpAngle,inpAxis). **s.angle -> inpAngle, s.axis -> inpAxis**                               |
+| `rotate`         | scalar, 3D-vector, anchor=3D-vector | angle, axis, anchor  | This method rotates the object by angle about axis anchored at anchor. As a result position and orientation variables                         |
+|                  |                                     |                      | are changed. If no value for anchor is specified, the anchor is set to object position, which means that the object rotates about itself.     |
+
+
+
+
 +------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 |  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
 +==================+=====================================+======================+===============================================================================================================================================+
