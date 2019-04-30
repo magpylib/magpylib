@@ -33,7 +33,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. image:: ../_static/images/summary/lib.png
    :align: center
-   :scale: 50 %
+   :scale: 75 %
 ```
 
 
@@ -41,7 +41,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization, magnetic moment and magnetic field and **Ampere** for currents.
 
-The library is constructed so that any scalar input can be `int`, `float` or `np.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
+The library is constructed so that any scalar input can be `int`, `float` or `numpy.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
 
 The library output and all object variables are either of `np.float64` or `numpy.array64` type.
 
@@ -51,7 +51,7 @@ The library output and all object variables are either of `np.float64` or `numpy
 This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space. They are characterized by the source type and the respective variables and can be manipulated by convenient methods as described below. The following source types are currently implemented.
 
 ```eval_rst
-.. image:: ../_static/images/sourceTypes.JPG
+.. image:: ../_static/images/SourceTypes.JPG
    :align: center
    :scale: 100 %
 ```
@@ -65,9 +65,9 @@ Different source types are characterized by different variables given through th
   Detailed information about the variables of each specific source type and how to initialize them can be found in the docstrings.
 ```
 
-The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), the `s.angle` (float) and `s.axis`(3D-array). If no other values are given, a source object is initialized by default with `position`=(0,0,0), and init orientation defined to be `angle`=0 and `axis`=(0,0,1).
+The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`.
 
-The `position` generally refers to the geometric center of the source while the orientation (`angle`,`axis`) refers to a rotation of the source by `angle` about `axis` anchored at `position` RELATIVE TO the init orientation. The init orientation generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+The `position` generally refers to the geometric center of the source while the orientation (`angle`,`axis`) refers to a rotation of the source by `angle` about `axis` anchored at `position` RELATIVE TO the **init orientation**. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
@@ -85,6 +85,7 @@ import magpylib as magpy
 
 pm = magpy.source.magnet.Cylinder( mag = [500,0,500], # The magnetization vector in mT.
                                    dim = [4,5])       # dimension (diameter,height) in mm.
+                                                      # no pos, angle, axis specified so default values are used
 
 print(pm.magnetization)  # Output: [500. 0. 500.]
 print(pm.dimension)      # Output: [4. 5.]
@@ -99,15 +100,20 @@ print(pm.axis)           # Output: [0. 0. 1.]
 
 In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this, each with advantages and disadvantages.
 
-1. At initialization: When initializing the source we can set all variables as desired.
-2. Manipulation after initialization: We initialize the source and manipulate it afterwards.
-  * By directly setting the source variables to desired values
-  * By using provided methods of manipulation
+```eval_rst
+At initialization:
+  When initializing the source we can set all variables as desired.
+
+Manipulation after initialization: 
+  We initialize the source and manipulate it afterwards.
+    1. By directly setting the source variables to desired values
+    2. By using provided methods of manipulation
+```
 
 The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
 
 ```eval_rst
-+------------------+-------------------------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------+
++------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 |  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
 +==================+=====================================+======================+===============================================================================================================================================+
 | `setPosition`    | 3D-vector                           | position Vector      | Moves the object to a desiganted position given by the inpVector. **s.position -> inpVector**                                                 |
