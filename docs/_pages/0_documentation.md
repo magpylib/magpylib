@@ -1,4 +1,4 @@
-# Fundamentals of magpylib
+# Documentation
 
 ```eval_rst
 The idea behind magpylib is to provide simple and easy to use classes for calculating magnetic fields. The core of the library is the :mod:`~magpylib.source` class which can be a permanent magnet, a current distributions or a magnetic moment. The library provides simple ways to generate such sources, to manipulate them geometrically, to group several sources into a :class:`~magpylib.Collection` and calculate the fields of such systems.
