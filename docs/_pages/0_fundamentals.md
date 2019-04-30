@@ -7,8 +7,8 @@ In this part of the documentation the fundamental structure of the magpylib libr
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-IO-types)
   - [The Source Class](#the-source-class)
-      - [Geometric Equivalence of Source Classes](#geometric-equivalence-of-source-classes)
-    - [Positioning and Orientation](#positioning-and-orientation)
+    - [Variables and Initialization](#variables-and-initialization)
+    - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
   - [The Collection Class](#the-collection-class)
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
@@ -18,14 +18,17 @@ For code examples, check out the [Getting Started with magpylib](2_gettingStarte
 
 ## Package Structure
 
-The top level of magpylib contains the sub-packages **magpylib.math** and **magpylib.source** as well as the class **magpylib.Collection**.
+```eval_rst
+The top level of magpylib contains the sub-packages :mod:`~magpylib.math` and :mod:`~magpylib.source` as well as the class :class:`magpylib.Collection`.
 
-Within the **magpylib.math** module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
+Within the :mod:`~magpylib.math` module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
 
-The **magpylib.source** module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages **magpylib.source.magnet**, **magpylib.source.current** and **magpylib.source.moment** which contain the respective source classes.
+The :mod:`~magpylib.source` module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages :mod:`~magpylib.source.magnet`, :mod:`~magpylib.source.current` and :mod:`~magpylib.source.moment` which contain the respective source classes.
 
-The **magpylib.Collection** class offers an easy way of grouping multiple source objects for common manipulation.
+The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
 
+.. currentmodule:: magpylib
+```
 ![](../_static/images/summary/lib.png)
 
 
@@ -37,17 +40,56 @@ The library is constructed so that any scalar input can be **float** or **int** 
 
 The library output is always a **float** or a **numpy.array**.
 
+
 ## The Source Class
 
-This is the core class of the library. It is designed so that a source object represents a physical magnetic source in a cartesian three-dimensional space. Different source types are characterized by different variables given through their mathematical representation. 
+This is the core class of the library. The idea is that source object represents a physical magnetic source in a cartesian three-dimensional space. The following source types are currently implemented.
 
-The most fundamental properties of every source object **s** are position and orientation which are represented through the 3D-array **s**.*position*, the 3D-array **s**.*angle* and the float **s**.*axis*. The *position* refers to the geometric center of the source while the orientation (*angle*,*axis*) refers to a rotation of the source by *angle* about *axis* anchored at *position* RELATIVE TO the init orientation. The init orientation is defined to be (*0*,*(0,0,1)*). This is the default value of the orientation at initialization of a source object and it refers to sources standing upright, oriented along the cartesian coordinates axes. How the init orientation is specifically defined for each source type is outlined below. If no other values are given, a source object is initialized by default with *position=(0,0,0)*, *angle=0* and *axis=(0,0,1)*.
-
-The magnet sources represent homogeneously magnetized permanent magnets. They are described by the *dimension* and the *magnetization* variables. The *dimension* format is different for each magnet type. The *magnetization* is always a 3D vector which indicates the direction and amplitude of the material magnetization.
-
-For convenience *magnetization*, *dimension*, *position* are initializes through the keywords *mag*, *dim* and *pos*.
+![](../_static/images/fundamentals/sourceTypes.JPG)
 
 
+### Variables:
+
+Different source types are characterized by different variables given through their mathematical representation. However, in general ...
+
+The most fundamental properties of every source object **s** are position and orientation which are represented through the 3D-array **s**.*position*, the 3D-array **s**.*angle* and the float **s**.*axis*. If no other values are given, a source object is initialized by default with *position=(0,0,0)*, and init orientation defined to be *angle=0* and *axis=(0,0,1)*.
+
+The *position* generally refers to the geometric center of the source while the orientation (*angle*,*axis*) refers to a rotation of the source by *angle* about *axis* anchored at *position* RELATIVE TO the init orientation. The init orientation generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+
+The source geometry is generally described by the *dimension* variable. However, as each source requires different input parameters the format is always different.
+
+Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the *magnetization* variable which is always a 3D vector indicating direction and amplitude. The current sources represent line currents. Instead of a magnetization they require a scalar *current* input. The moment class represents a magnetic dipole moment which requires a *moment* input.
+
+```eval_rst
+.. note::
+  For convenience *magnetization*, *current*, *dimension*, *position* are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
+```
+
+```python
+import magpylib
+
+
+b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in microTesla.
+                                dim = [4,5,6],  # Length, width and height of our box in mm.
+                                pos = [7,8,9],  # The center position of this magnet 
+                                                # in a cartesian plane.
+                                angle = 90,     # The angle of orientation 
+                                                # around the given axis.
+                                axis = (0,0,1)) # The axis for orientation, 
+                                                # (x,y,z) respectively.)
+
+
+print(b.magnetization)  # Output: [1. 2. 3.]
+print(b.dimension)      # Output: [4. 5. 6.]
+print(b.position)       # Output: [7. 8. 9.]
+print(b.angle)          # Output: 90.0
+print(b.axis)           # Output: [0. 0. 1.]
+print(b)                # Output: Memory location of our Box Object
+
+```
+
+
+### Methods for Geometric Manipulation
 
 
 
