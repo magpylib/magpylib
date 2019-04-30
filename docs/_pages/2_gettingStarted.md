@@ -1,7 +1,6 @@
-# Getting Started with MagPylib
+# Guide - Getting Started with magpylib
 
->Note: This is a Work in Progress
-- [Getting Started with MagPylib](#getting-started-with-magpylib)
+- [Guide - Getting Started with magpylib](#guide---getting-started-with-magpylib)
     - [Summary of the Library Structure](#summary-of-the-library-structure)
     - [Input Types](#input-types)
     - [Defining Sources](#defining-sources)
