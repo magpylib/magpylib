@@ -1,6 +1,8 @@
 # Fundamentals of magpylib
 
-The idea behind magpylib is to provide simple and easy to use classes for calculating magnetic fields. The core of the library is the [source class](#source-class) which represents a permanent magnet, a current distributions or a magnetic moment. The library provides simple methods to generate such source classes, to manipulate them geometrically, to group several sources into [Collections](#the-collection-class) and calculate the fields of such systems. 
+```eval_rst
+The idea behind magpylib is to provide simple and easy to use classes for calculating magnetic fields. The core of the library is the :mod:`~magpylib.source` class which can be a permanent magnet, a current distributions or a magnetic moment. The library provides simple ways to generate such sources, to manipulate them geometrically, to group several sources into a :class:`~magpylib.Collection` and calculate the fields of such systems.
+```
 
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
@@ -13,7 +15,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
 
-For code examples, check out the [Getting Started with magpylib](2_gettingStarted.md) guide and the [Examples](x_examples.rst) page.
+[comment]: <> For code examples, check out the [Getting Started with magpylib](2_gettingStarted.md) guide and the [Examples](x_examples.rst) page.
 
 
 ## Package Structure
@@ -32,7 +34,6 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 .. image:: ../_static/images/summary/lib.png
    :align: center
    :scale: 50 %
-
 ```
 
 
@@ -55,90 +56,71 @@ This is the core class of the library. The idea is that source objects represent
    :scale: 100 %
 ```
 
-### Variables:
+
+### Variables and Initialization:
 
 Different source types are characterized by different variables given through their mathematical representation.
 ```eval_rst
 .. note::
-  Detailed information about how to initialize each specific source type can be found in the docstrings.
+  Detailed information about the variables of each specific source type and how to initialize them can be found in the docstrings.
 ```
 
-The most fundamental properties of every source object `**s**` are position and orientation which are represented through the 3D-array `**s**.position`, the 3D-array `**s**.angle` and the float `**s**.axis`. If no other values are given, a source object is initialized by default with `position`=(0,0,0), and init orientation defined to be *angle=0* and *axis=(0,0,1)*.
+The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), the `s.angle` (float) and `s.axis`(3D-array). If no other values are given, a source object is initialized by default with `position`=(0,0,0), and init orientation defined to be `angle`=0 and `axis`=(0,0,1).
 
-The *position* generally refers to the geometric center of the source while the orientation (*angle*,*axis*) refers to a rotation of the source by *angle* about *axis* anchored at *position* RELATIVE TO the init orientation. The init orientation generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+The `position` generally refers to the geometric center of the source while the orientation (`angle`,`axis`) refers to a rotation of the source by `angle` about `axis` anchored at `position` RELATIVE TO the init orientation. The init orientation generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
 
-The source geometry is generally described by the *dimension* variable. However, as each source requires different input parameters the format is always different.
+The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
-Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the *magnetization* variable which is always a 3D vector indicating direction and amplitude. The current sources represent line currents. Instead of a magnetization they require a scalar *current* input. The moment class represents a magnetic dipole moment which requires a *moment* input.
+Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the `magnetization` variable which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
 
 ```eval_rst
 .. note::
-  For convenience *magnetization*, *current*, *dimension*, *position* are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
+  For convenience `magnetization`, `current`, `dimension`, `position` are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
 ```
 
-
-
+The following code shows how to initialize a source object, a permanent magnet D4H5 cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
 
 ```python
-import magpylib
+import magpylib as magpy
 
+pm = magpy.source.magnet.Cylinder( mag = [500,0,500], # The magnetization vector in mT.
+                                   dim = [4,5])       # dimension (diameter,height) in mm.
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in microTesla.
-                                dim = [4,5,6],  # Length, width and height of our box in mm.
-                                pos = [7,8,9],  # The center position of this magnet 
-                                                # in a cartesian plane.
-                                angle = 90,     # The angle of orientation 
-                                                # around the given axis.
-                                axis = (0,0,1)) # The axis for orientation, 
-                                                # (x,y,z) respectively.)
-
-
-print(b.magnetization)  # Output: [1. 2. 3.]
-print(b.dimension)      # Output: [4. 5. 6.]
-print(b.position)       # Output: [7. 8. 9.]
-print(b.angle)          # Output: 90.0
-print(b.axis)           # Output: [0. 0. 1.]
-print(b)                # Output: Memory location of our Box Object
-
+print(pm.magnetization)  # Output: [500. 0. 500.]
+print(pm.dimension)      # Output: [4. 5.]
+print(pm.position)       # Output: [0. 0. 0.]
+print(pm.angle)          # Output: 0.0
+print(pm.axis)           # Output: [0. 0. 1.]
 ```
+
 
 
 ### Methods for Geometric Manipulation
 
+In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this, each with advantages and disadvantages.
 
+1. At initialization: When initializing the source we can set all variables as desired.
+2. Manipulation after initialization: We initialize the source and manipulate it afterwards.
+  * By directly setting the source variables to desired values
+  * By using provided methods of manipulation
 
-
-
-In addition to the fundamental geometric variables the magnet sources 
-
-Magnet sources are 
-
-
- This is defined specifically for 
-
-
- which is the default value at initialization of a source object. 
-
-
-
-In MagPyLib, multiple Classes have been defined to **represent different, fundamental Electromagnetic Sources** with their own peculiarities and characteristics as defined by their Mathematical representations:
-
-#### Geometric Equivalence of Source Classes
-
-These **Source Types** are what the **Source Classes** are based upon, and these are used to **define Source Objects**. 
-
-After describing their Source Object characteristics, calling **their Field Methods** will let users quickly compose their data for fast Electromagnetic Field Analysis.
-
-![](../_static/images/fundamentals/sourceEquivalent.png)
+The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
 
 ```eval_rst
-.. note::
-   **When a Source Object is created, it is spatially isolated from all other Source Objects** in program memory. This means that, **by themselves, methods for extracting electromagnetic field samples will only calculate the field belonging to the target object.**
++------------------+-------------------------------------+-------------------+--------------------------------------------------------------------------------------------------------------------------------------------------+
+|  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
++==================+=====================================+======================+===============================================================================================================================================+
+| `setPosition`    | 3D-vector                           | position Vector      | Moves the object to a desiganted position given by the inpVector. **s.position -> inpVector**                                                 |
++------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| `move`           | 3D-vector                           | position Vector      | Moves the object BY the inpVector. **s.position -> s.position + inpVector**                                                                   |
++------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| `setOrientation` | scalar, 3D-vector                   | angle, axis          | Changes object orientation to given input values (inpAngle,inpAxis). **s.angle -> inpAngle, s.axis -> inpAxis**                               |
++------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+| `rotate`         | scalar, 3D-vector, anchor=3D-vector | angle, axis, anchor  | This method rotates the object by angle about axis anchored at anchor. As a result position and orientation variables                         |
+|                  |                                     |                      | are changed. If no value for anchor is specified, the anchor is set to object position, which means that the object rotates about itself.     |
++------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
 ```
-
-### Positioning and Orientation
-
-All of the Source Objects can be manipulated in their own 3D Space, as **all Source Objects possess *Methods* for absolute reorienting, relative rotation and relative movement**.
+The following videos graphically show the application of the four methods for geometric manipulation.
 
 <i><p align="center" style="font-weight: 600;"> Rotating and Orienting </p></i>
 
@@ -166,6 +148,15 @@ All of the Source Objects can be manipulated in their own 3D Space, as **all Sou
 .. |move| image:: ../_static/images/fundamentals/move.gif
    :width: 45%
 ```
+
+
+### Calculating the Magnetic Field
+
+```eval_rst
+.. note::
+   **When a Source Object is created, it is spatially isolated from all other Source Objects** in program memory. This means that, **by themselves, methods for extracting electromagnetic field samples will only calculate the field belonging to the target object.**
+```
+
 ---
 
 ## The Collection Class
