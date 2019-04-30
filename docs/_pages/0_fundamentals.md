@@ -28,31 +28,42 @@ The :mod:`~magpylib.source` module includes the core classes of the library, i.e
 The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
 
 .. currentmodule:: magpylib
+
+.. image:: ../_static/images/summary/lib.png
+   :align: center
+   :scale: 50 %
+
 ```
-![](../_static/images/summary/lib.png)
 
 
 ## Units and IO Types
 
-In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization and magnetic field.
+In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization, magnetic moment and magnetic field and **Ampere** for currents.
 
-The library is constructed so that any scalar input can be **float** or **int** type and any vector/matrix input can be given either in the form of a **list**, as a **tuple** or as a **numpy.array**.
+The library is constructed so that any scalar input can be `int`, `float` or `np.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
 
-The library output is always a **float** or a **numpy.array**.
+The library output and all object variables are either of `np.float64` or `numpy.array64` type.
 
 
 ## The Source Class
 
-This is the core class of the library. The idea is that source object represents a physical magnetic source in a cartesian three-dimensional space. The following source types are currently implemented.
+This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space. They are characterized by the source type and the respective variables and can be manipulated by convenient methods as described below. The following source types are currently implemented.
 
-![](../_static/images/fundamentals/sourceTypes.JPG)
-
+```eval_rst
+.. image:: ../_static/images/sourceTypes.JPG
+   :align: center
+   :scale: 100 %
+```
 
 ### Variables:
 
-Different source types are characterized by different variables given through their mathematical representation. However, in general ...
+Different source types are characterized by different variables given through their mathematical representation.
+```eval_rst
+.. note::
+  Detailed information about how to initialize each specific source type can be found in the docstrings.
+```
 
-The most fundamental properties of every source object **s** are position and orientation which are represented through the 3D-array **s**.*position*, the 3D-array **s**.*angle* and the float **s**.*axis*. If no other values are given, a source object is initialized by default with *position=(0,0,0)*, and init orientation defined to be *angle=0* and *axis=(0,0,1)*.
+The most fundamental properties of every source object `**s**` are position and orientation which are represented through the 3D-array `**s**.position`, the 3D-array `**s**.angle` and the float `**s**.axis`. If no other values are given, a source object is initialized by default with `position`=(0,0,0), and init orientation defined to be *angle=0* and *axis=(0,0,1)*.
 
 The *position* generally refers to the geometric center of the source while the orientation (*angle*,*axis*) refers to a rotation of the source by *angle* about *axis* anchored at *position* RELATIVE TO the init orientation. The init orientation generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
 
@@ -64,6 +75,9 @@ Magnet sources represent homogeneously magnetized permanent magnets. The magneti
 .. note::
   For convenience *magnetization*, *current*, *dimension*, *position* are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
 ```
+
+
+
 
 ```python
 import magpylib
