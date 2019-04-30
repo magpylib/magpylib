@@ -11,6 +11,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
   - [The Source Class](#the-source-class)
     - [Variables and Initialization](#variables-and-initialization)
     - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
+    - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
   - [The Collection Class](#the-collection-class)
     - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
   - [Math Package](#math-package)
@@ -109,31 +110,17 @@ Manipulation after initialization:
 
 The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
 
-
-
-|  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
-|------------------|-------------------------------------|----------------------|-----------------------------------------------------------------------------------------------------------------------------------------------|
-| `setPosition`    | 3D-vector                           | position Vector      | Moves the object to a desiganted position given by the inpVector. **s.position -> inpVector**                                                 |
-| `move`           | 3D-vector                           | position Vector      | Moves the object BY the inpVector. **s.position -> s.position + inpVector**                                                                   |
-| `setOrientation` | scalar, 3D-vector                   | angle, axis          | Changes object orientation to given input values (inpAngle,inpAxis). **s.angle -> inpAngle, s.axis -> inpAxis**                               |
-| `rotate`         | scalar, 3D-vector, anchor=3D-vector | angle, axis, anchor  | This method rotates the object by angle about axis anchored at anchor. As a result position and orientation variables                         |
-|                  |                                     |                      | are changed. If no value for anchor is specified, the anchor is set to object position, which means that the object rotates about itself.     |
-
-
-
-
-+------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
-|  Method name     | Argument Type                       | Argument Designation | Description of the method                                                                                                                     |
-+==================+=====================================+======================+===============================================================================================================================================+
-| `setPosition`    | 3D-vector                           | position Vector      | Moves the object to a desiganted position given by the inpVector. **s.position -> inpVector**                                                 |
-+------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
-| `move`           | 3D-vector                           | position Vector      | Moves the object BY the inpVector. **s.position -> s.position + inpVector**                                                                   |
-+------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
-| `setOrientation` | scalar, 3D-vector                   | angle, axis          | Changes object orientation to given input values (inpAngle,inpAxis). **s.angle -> inpAngle, s.axis -> inpAxis**                               |
-+------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
-| `rotate`         | scalar, 3D-vector, anchor=3D-vector | angle, axis, anchor  | This method rotates the object by angle about axis anchored at anchor. As a result position and orientation variables                         |
-|                  |                                     |                      | are changed. If no value for anchor is specified, the anchor is set to object position, which means that the object rotates about itself.     |
-+------------------+-------------------------------------+----------------------+-----------------------------------------------------------------------------------------------------------------------------------------------+
+`s.setPosition(newPos)`
+  Moves the source to the position given by the argument vector *newPos*.
+  **s.position -> newPos**
+`s.move(displacement)`
+  Moves the source by the argument vector *displacement*.
+  **s.position -> s.position + inpVector** 
+`s.setOrientation(angle,axis)`
+  This method sets a new source orientation given by *angle* and *axis*
+  **s.angle -> angle, s.axis -> axis**
+`s.rotate(angle,axis,anchor=self.position)`
+  Rotates the source object by *angle about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation variables are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
 
 The following videos graphically show the application of the four methods for geometric manipulation.
 
@@ -166,6 +153,11 @@ The following videos graphically show the application of the four methods for ge
 
 
 ### Calculating the Magnetic Field
+
+Once a source object `s`  is defined one can calculate the magnetic field using the method `s.getB`. where pos refes to a position vector where the field should be determined.
+
+magpylib provides the two methods `getB` and `getBsweep` to calculate the magnetic field.
+
 
 field only from the source addressed
 
