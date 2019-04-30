@@ -55,6 +55,13 @@ This is the core class of the library. The idea is that source objects represent
    :scale: 60 %
 ```
 
+The source class provides a rich collection of variables and methods that describe the sources, can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The following figure gives a graphical overview.
+
+```eval_rst
+.. image:: ../_static/images/sourceVars_Methods.JPG
+   :align: center
+   :scale: 60 %
+```
 
 ### Variables and Initialization:
 
