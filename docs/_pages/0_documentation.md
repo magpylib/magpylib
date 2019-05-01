@@ -38,7 +38,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 ## Units and IO Types
 
-In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization, magnetic moment and magnetic field and **Ampere** for currents. Details about how the solutions are set up can be found in the [Physics](/9_physics.md) section.
+In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization, magnetic moment and magnetic field and **Ampere** for currents. Details about how the solutions are set up can be found in the [Physics section](9_physics.md).
 
 The library is constructed so that any scalar input can be `int`, `float` or `numpy.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
 
@@ -160,7 +160,7 @@ In most cases, however, one will be interested to determine the field for a set 
 1. *input* is a list of *N* sensor positions. In this case the magnetic field of the source is determined for all *N* sensor positions and returned in an *Nx3* matrix.
 2. *input* is a list of the following format [(sensorPos1, sourcePos1, sourceOrient1),...]. Here for each case of sensor position and source state the field is evaluated and returned in an *Nx3* matrix. This corresponds to a system where sensor and magnet move simultaneously.
 
-To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of this solution can be found in the [Physics section](9_physics.md)**CITEPAPER**.
+To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of this solution can be found in the [Physics section](9_physics.md).
 
 
 ## The Collection Class
