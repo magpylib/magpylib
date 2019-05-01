@@ -2,7 +2,10 @@
 
 Here we clarify some of the physics behind the analytical expressions that are provided by magpylib. Most also reflected in the paper **CITE PAPER HERE**
 
-## The analytical solution
+## The analytical solutions
+
+Details about how they are set up
+
 
 ### Description of the anaytical solution
 Formulas and expressions used in magpylib, references to literature
