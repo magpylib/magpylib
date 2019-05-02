@@ -14,7 +14,7 @@
 
 ```eval_rst
 
-.. image:: ../../_static/images/summary/lib.png
+.. image:: ../_static/images/summary/lib.png
    :align: center
    :scale: 50 %
 
@@ -271,10 +271,10 @@ The parallel function may also be utilized to calculate samples of several setup
 Field sample position, Source object orientation and positioning may be adjusted in every setup, like the following structure:
 ```eval_rst
 
-.. image:: ../../_static/images/user_guide/multiprocessing.gif
+.. image:: ../_static/images/user_guide/multiprocessing.gif
    :align: center
 
-.. image:: ../../_static/images/user_guide/sweep.png
+.. image:: ../_static/images/user_guide/sweep.png
    :align: center
    :scale: 50 % 
 
