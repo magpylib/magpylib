@@ -1,8 +1,8 @@
 from magpylib.source import magnet
 from numpy import isnan, array
 from magpylib._lib.classes import base
+from magpylib._lib.classes.base import MagMoment
 import pytest
-
 
 
 def test_initialization_bad_pos_error():
@@ -207,11 +207,12 @@ def test_LineCurrent_badCurrent():
     with pytest.raises(SystemExit):
         base.LineCurrent(pos, angle, axis, badCurrent)
 
+
 def test_MagMoment_initialization_bad_Mag():
-    badMoment = [0,0,0]
-    pos = [23, 2,2]
+    badMoment = [0, 0, 0]
+    pos = [23, 2, 2]
     angle = 90
     axis = (1, 1, 1)
     with pytest.raises(AssertionError):
-        base.MagMoment(moment=badMoment,pos=pos, 
-                       angle=angle, axis=axis)
+        MagMoment(moment=badMoment, pos=pos,
+                  angle=angle, axis=axis)
