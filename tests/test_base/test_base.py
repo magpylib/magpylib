@@ -4,6 +4,7 @@ from magpylib._lib.classes import base
 import pytest
 
 
+
 def test_initialization_bad_pos_error():
     badPos = [23, 2]
     angle = 90
@@ -205,3 +206,12 @@ def test_LineCurrent_badCurrent():
     axis = [1, 2, 3]
     with pytest.raises(SystemExit):
         base.LineCurrent(pos, angle, axis, badCurrent)
+
+def test_MagMoment_initialization_bad_Mag():
+    badMoment = [0,0,0]
+    pos = [23, 2,2]
+    angle = 90
+    axis = (1, 1, 1)
+    with pytest.raises(AssertionError):
+        base.MagMoment(moment=badMoment,pos=pos, 
+                       angle=angle, axis=axis)

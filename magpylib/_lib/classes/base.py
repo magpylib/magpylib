@@ -9,6 +9,7 @@ Define base classes here on which the magnetic source objects are built on
     2. HomoMag class: initializes the homogeneous magnetization for all homogeneous
                     magnet classes
     3. LineCurrent class: initializes a current for all line current classes
+    4. MagMoment class: initializes a Moment for all line moment classes
 
 '''
 
@@ -20,6 +21,7 @@ Auto = 0 # Maximum cores, for multicore
         # function. if 0 find max.
 numpyArray = 0
 constant = None
+Mx=My=Mz=0.0 # Zero Moment
 #######################################
 
 #%% IMPORTS
@@ -274,7 +276,20 @@ class LineCurrent(RCS,FieldSampler):
             self.current = float(current)
         except ValueError:
             sys.exit('Bad current input')
-            
+
+class MagMoment(RCS,FieldSampler):
+
+    def __init__(self, moment=(Mx,My,Mz), 
+                       pos=(0.0,0.0,0.0), 
+                       angle=0.0, axis=(0.0,0.0,1.0)):
+
+        #inherit class RCS
+        RCS.__init__(self,pos,angle,axis)
+        
+        #secure input type and check input format of moment
+        self.moment = checkDimensions(3,moment,"Bad moment input")
+
+ 
             
             
             
