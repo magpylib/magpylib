@@ -15,13 +15,14 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
 
-class Collection():
+class Collection(FieldSampler):
     """
     Create a collection of :mod:`magpylib.source` objects for common manipulation.
     
