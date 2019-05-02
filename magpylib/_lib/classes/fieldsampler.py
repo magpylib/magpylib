@@ -19,6 +19,19 @@ constant = None
 
 
 class FieldSampler:
+    """Field Sampler Class
+
+    This class keeps track of all the methods for interfacing between Field
+    calculation methods and the user.
+
+    All source classes will inherit this, so non-implemented methods for some
+    objects that are here should throw a warning if called.
+    
+    Returns
+    -------
+    [FieldSampler]
+        [Interfaces for Field calculations]
+    """
     def _getBmultiList(self, listOfArgs, processes=Auto):
         # Used in getBsweep() For lists of positions for B field samples to be
         # calculated in parallel. Return a list of calculated B field samples.
