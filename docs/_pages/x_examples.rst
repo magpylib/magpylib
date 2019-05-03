@@ -3,7 +3,7 @@ Examples
 
 The following code executes a mixed simulation with most features.
 
-:download:`examples.py <../../pyplots/examples/examples.py>`
+:download:`examples.py <../pyplots/examples/examples.py>`
 
 Master-Example
 --------------
