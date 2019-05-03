@@ -73,7 +73,7 @@ Different source types are characterized by different variables given through th
 
 The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`.
 
-The `position` generally refers to the geometric center of the source while the orientation (`angle`,`axis`) refers to a rotation of the source by `angle` about `axis` anchored at `position` RELATIVE TO the **init orientation**. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+The `position` generally refers to the geometric center of the source. The orientation (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** by `angle` about an axis specified by the `axis` vector which starts at the source `position`. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
@@ -162,48 +162,55 @@ In most cases, however, one will be interested to determine the field for a set 
 
 To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of this solution can be found in the [Physics section](9_physics.md).
 
+```eval_rst
+.. note::
+  It is critical to note that the analytical solution does not treat interaction between the sources. This means that the total magnetic field is simply given by the superposition of the field of each source, and each source can be evaluate individually.
+```
+
 
 ## The Collection Class
 
-The linear nature of the field equations utilized **provides a superposition principle**. This means that **arbitrary magnet compounds can be generated** by “Union” and “Difference” operations.
 
-To **group and display** Source Objects or to **perform group rotations and compound analysis**, the Collection Class is utilized. Otherwise, source objects will not interact.
+#### Common Manipulation
 
-Collections can be utilized in many ways, and may include other Collections inside of themselves. 
+The idea behind the collection class is to group multiple source objects for common evaluation and manipulation. In principle a collection is simply a list of source objects. An operation that is applied to such a collection is applied to each object within the collection. This includes geometric manipulation through `setPosition`, `move`, `setOrientation` and `rotate`, but also evaluation of the total magnetic field  using `getB` and `getBsweep`. All of these methods are also methods of the collection class.
 
-The following animation shows the creation of a 5mm long coil with 0.1mm spacing between each turn, constituting 50 turns.
-The Coil **Collection is then moved and rotated** in two axes (Y and Z Tilt). 
-
+<i><p align="center" style="font-weight: 600;"> Grouping Sources in Collections </p></i>
 ```eval_rst
-.. image:: ../_static/images/fundamentals/collectionExample.gif
-   :align: center
+
+|Collection| |total Field|
+
+.. |Collection| image:: ../_static/images/fundamentals/collectionExample.gif
+   :width: 45%
+
+.. |total Field| image:: ../_static/images/fundamentals/collectionAnalysis.png
+   :width: 45%
+
 ```
 
-The coils are defined as having 10 Amps running through each. 
-The electromagnetic field **analysis of the compounded objects** looks like the following:
+#### Constructing Collections and Display
 
-```eval_rst
-.. image:: ../_static/images/fundamentals/collectionAnalysis.png
-   :align: center
+Collections can be constructed at initialization by simply giving the sources as arguments. It is possible not only to add sources, but also to add lists od sources as well as other collections. With the default kwarg *dupWarning=True*, a warning will be displayed if one source object has been added multiple times to the collection. In this case an operation applied to the collection will be applied multiple times to that source.
+
+In addition, the collection class features methods to add and remove sources for command line like manipulation. The method `coll.addSources(*sources)` will add all sources given to it to the collection `coll`. The method `coll.removeSource(ref)` will remove the referenced source from the collection. Here *ref* can be either a source or an integer indicating the reference position in the collection.
+
+Finally, collections provide a method for graphical display of the system, termed `coll.displaySystem()`. The idea is to quickly check the geometry of the source assembly. For convenient display the *displaySystem* method has three * *kwargs*. The *marker* arg to provide markers for specific reference positions of interest, the *supress* arg which suppresses the figure display so that only the figure object is returned and the *direct* arg which additionally displays current and magnetization directions in the figure. The following example code shows how a collection is initialized and displayed.
+
+```python
+import magpylib as magpy
+
+s1 = magpy.source.magnet.Cylinder( mag = [0,0,1],dim = [4,5])
+s2 = magpy.source.magnet.Cylinder( mag = [0,1,1],dim = [3,4])
+s3 = magpy.source.magnet.Cylinder( mag = [1,0,1],dim = [2,3])
+
+coll = magpy.Collection(s1,s2)
+coll.addSources(s3,s1)
+coll.removeSource(3)
+
+WORK IN PROGRESSS
+
 ```
 
-Movement may also be realized with the use of an **anchored pivot point**.
-
-```eval_rst
-.. image:: ../_static/images/fundamentals/pivot.gif
-   :align: center
-```
-
-```eval_rst
-.. image:: ../_static/images/fundamentals/pivotAnalysis.gif
-   :align: center
-```
-
-### Advanced Shapes with Collections
-
-Complex magnet formations may be created due to the superposition principle, where magnets of complex shapes are defined by Collections of basic ones.
-
-Magnets with holes may be described by adding sources of conflicting magnetism inside of other sources.
 
 
 ## Math Package
