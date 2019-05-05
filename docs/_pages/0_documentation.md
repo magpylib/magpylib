@@ -47,7 +47,7 @@ The library output and all object variables are either of `np.float64` or `numpy
 
 ## The Source Class
 
-This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space. They are characterized by the source type and the respective variables and can be manipulated by convenient methods as described below. The following source types are currently implemented.
+This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space. The following source types are currently implemented in magpylib.
 
 ```eval_rst
 .. image:: ../_static/images/SourceTypes.JPG
@@ -55,7 +55,7 @@ This is the core class of the library. The idea is that source objects represent
    :scale: 60 %
 ```
 
-The source class provides a rich collection of variables and methods that describe the sources, can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The following figure gives a graphical overview.
+The different source types contain various variables and methods. The variables characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
 .. image:: ../_static/images/sourceVars_Methods.JPG
@@ -65,13 +65,11 @@ The source class provides a rich collection of variables and methods that descri
 
 ### Variables and Initialization:
 
-Different source types are characterized by different variables given by their mathematical representation. 
+The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. 
 
+Due to their different nature each source type is characterized by different variables. However, in general the `position` variable refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the cartesian coordinates axes, see e.g. the following image. 
 
-
-The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
-
-The `position` generally refers to the geometric center of the source. The orientation (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` variable.
+An orientation given by (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` variable. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation.
 
 ```eval_rst
 .. image:: ../_static/images/source_Orientation.JPG
