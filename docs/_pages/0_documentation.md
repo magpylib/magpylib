@@ -73,12 +73,11 @@ The most fundamental properties of every source object `s` are position and orie
 
 The `position` generally refers to the geometric center of the source. The orientation (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` variable.
 
-
-
-
-
-
-
+```eval_rst
+.. image:: ../_static/images/source_Orientation.JPG
+   :align: center
+   :scale: 60 %
+```
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
