@@ -65,19 +65,30 @@ The source class provides a rich collection of variables and methods that descri
 
 ### Variables and Initialization:
 
-Different source types are characterized by different variables given through their mathematical representation.
-```eval_rst
-.. note::
-  Detailed information about the variables of each specific source type and how to initialize them can be found in the package docstrings.
-```
+Different source types are characterized by different variables given by their mathematical representation. 
 
-The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`.
 
-The `position` generally refers to the geometric center of the source. The orientation (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** by `angle` about an axis specified by the `axis` vector which starts at the source `position`. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+
+The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. The **init orientation** generally refers to sources standing upright (see previous image), oriented along the cartesian coordinates axes.
+
+The `position` generally refers to the geometric center of the source. The orientation (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` variable.
+
+
+
+
+
+
+
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
 Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the `magnetization` variable which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
+
+
+```eval_rst
+.. note::
+Detailed information about the source parameters of each specific source type and how to initialize them can be found in the respecive class docstrings accessible through your IDE.
+```
 
 ```eval_rst
 .. note::
