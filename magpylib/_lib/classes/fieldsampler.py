@@ -57,29 +57,56 @@ class FieldSampler:
 
     def getBsweep(self, INPUT, multiprocessing=False, processes=Auto):
         """
-        Advanced input for advanced people who want advanced results.
+        This method can be used to determine the field for a given set
+        of sensor positions, or for different magnet positions and orientations.
+        While this can manually be achieved by looping getB, this getBsweep
+        implements the possibility of parallelization. 
 
-        Enter a list of positions to calculate field samples in a parallelized
-        environment. Alternatively, enter a list of lists - where each list in
-        the list each contain a field sample position vector in the first
-        index, an absolute magnet position vector in the 2nd index, and an
-        orientation argument tuple where the first index is an angle scalar and
-        the second index is an axis (also a tuple). You can also add a third
-        index position for the anchor if you really want to.
-
-        The possibilities are only limited by your imagination plus the number
-        of CPU cores.
-
+        The input can have two different formats (ONLY THE FIRST ONE CAN BE
+        USED FOR COLLECTIONS!):
 
         Parameters
         ----------
-        INPUT : [list of vec3] or [list of [Bfield Sample, Magnet Position,
-        Magnet Rotation]]
+        INPUT : type 1 or type 2 input
+        
+        INPUT TYPE 1 is a list of N sensor positions. In this case the magnetic 
+        field of the source is determined for all N sensor positions and 
+        returned in an Nx3 array.
+        
+        INPUT TYPE 2 is a list of the following format [(sensorPos1, 
+        sourcePos1, sourceOrient1),…]. Here for each case of sensor position 
+        and source state the field is evaluated and returned in an 
+        Nx3 array. This corresponds to a system where sensor and magnet
+        move simultaneously. DOES NOT WORK FOR COLLECTIONS !
+
+        multiprocessing : Default = False, enable/disable multiprocessing, This 
+        requires additional code. Please refer to example below.
+
+        processes : Default = Auto, define the number of allowed processes 
+        when multiprocessing is enabled
 
         Example
         -------
+        For INPUT of type 1:
 
-        For carousel simulation:
+        >>> from multiprocessing import freeze_support
+        >>> if __name__ == "__main__":
+        >>>     freeze_support()
+        >>>     # Input
+        >>>     from magpylib.source import magnet
+        >>>     mag=[6,7,8]
+        >>>     dim=[10,10,10]
+        >>>     pos=[2,2,2]
+        >>>     listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
+        >>>     # Run
+        >>>     pm = magnet.Box(mag,dim,pos)
+        >>>     result = pm.getBsweep(listOfPos)
+        >>>     print(result)
+                (   [3.99074612, 4.67238469, 4.22419432],
+                    [3.99074612, 4.67238469, 4.22419432],
+                    [3.99074612, 4.67238469, 4.22419432],)
+
+        For INPUT of type 2:
 
         >>> from multiprocessing import freeze_support
         >>> if __name__ == "__main__":
@@ -106,24 +133,6 @@ class FieldSampler:
                 [0.00488989, 0.04731373, 0.02416068],
                 [0.0249435,  0.00106315, 0.02894469])
 
-        For parallel field list calculation:
-
-        >>> from multiprocessing import freeze_support
-        >>> if __name__ == "__main__":
-        >>>     freeze_support()
-        >>>     # Input
-        >>>     from magpylib.source import magnet
-        >>>     mag=[6,7,8]
-        >>>     dim=[10,10,10]
-        >>>     pos=[2,2,2]
-        >>>     listOfPos = [[.5,.5,5],[.5,.5,5],[.5,.5,5]]
-        >>>     # Run
-        >>>     pm = magnet.Box(mag,dim,pos)
-        >>>     result = pm.getBsweep(listOfPos)
-        >>>     print(result)
-                (   [3.99074612, 4.67238469, 4.22419432],
-                    [3.99074612, 4.67238469, 4.22419432],
-                    [3.99074612, 4.67238469, 4.22419432],)
 
         """
 
