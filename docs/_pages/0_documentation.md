@@ -241,7 +241,7 @@ c.displaySystem(markers=[(0,0,6),(10,10,10),(-10,-10,-10)])
 
 The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
-<br/>
+
 `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles $(\varphi,\theta)$ that are defined as in spherical coordinates. $\varphi$ is the azimuth angle and $\theta$ is the polar angle.
 ```python
 import magpylib as magpy
@@ -249,7 +249,7 @@ angles = magpy.math.anglesFromAxis([1,1,0])
 print(angles)                             #Output = [45. 90.]
 ```
 
-<br/>
+
 `axisFromAngles(angles)`: This function generates an axis (3-vector) from the `angles` input $(\varphi,\theta)$ where $\varphi$ is the azimuth angle and $\theta$ is the polar angle of a spherical coordinate system.
 ```python
 import magpylib as magpy
@@ -257,14 +257,14 @@ ax = magpy.math.axisFromAngles([90,90])
 print(ax)                                 #Output = [0.0 1.0 0.0]
 ```
 
-<br/>
+
 `randomAxis()`: For Monte Carlo simualtions this function returns a random axis of length 1 with equal angular distribution.
 ```python
 import magpylib as magpy
 ax = magpy.math.randomAxis()
 print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
 ```
-<br/>
+
 `rotatePosition(position, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the angle argument about an axis defined by the `axis` vector which passes through the `anchor` vector.
 ```python
 import magpylib as magpy
