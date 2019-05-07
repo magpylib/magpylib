@@ -195,7 +195,7 @@ The idea behind the collection class is to group multiple source objects for com
    :width: 45%
 
 .. |total Field| image:: ../_static/images/documentation/collectionAnalysis.png
-   :width: 60%
+   :width: 55%
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Circular current sources are grouped into a collectin to form a coil. The whole coil is then geometrically manipulated and the total magnetic field is shown in the xz-plane </p></i>
 
