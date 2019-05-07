@@ -8,7 +8,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-io-types)
   - [The Source Class](#the-source-class)
-    - [Variables and Initialization](#variables-and-initialization)
+    - [Attributes and Keyword Initialization](#attributes-and-keyword-initialization)
     - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
     - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
   - [The Collection Class](#the-collection-class)
@@ -41,7 +41,7 @@ In magpylib all inputs and outputs are made in the physical units of **Millimete
 
 The library is constructed so that any scalar input can be `int`, `float` or `numpy.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
 
-The library output and all object variables are either of `np.float64` or `numpy.array64` type.
+The library output and all object attributes are either of `np.float64` or `numpy.array64` type.
 
 
 ## The Source Class
@@ -55,22 +55,22 @@ This is the core class of the library. The idea is that source objects represent
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Source types currently available in magpylib. </p></i>
 
-The different source types contain various variables and methods. The variables characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
+The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
 .. image:: ../_static/images/documentation/sourceVars_Methods.JPG
    :align: center
    :scale: 60 %
 ```
-<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of variables and methods of the source class. </p></i>
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of attributes and methods of the source class. </p></i>
 
-### Variables and Initialization:
+### Attributes and Keyword Initialization:
 
-The most fundamental properties of every source object `s` are position and orientation which are represented through the variables `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. 
+The most fundamental properties of every source object `s` are position and orientation which are represented through the attributes `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. 
 
-Due to their different nature each source type is characterized by different variables. However, in general the `position` variable refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the cartesian coordinates axes, see e.g. the following image. 
+Due to their different nature each source type is characterized by different attributes. However, in general the `position` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the cartesian coordinates axes, see e.g. the following image. 
 
-An orientation given by (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` variable. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the [math package](#math-package) provides some useful methods. 
+An orientation given by (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` attribute. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the [math package](#math-package) provides some useful methods. 
 
 ```eval_rst
 .. image:: ../_static/images/documentation/source_Orientation.JPG
@@ -79,9 +79,9 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of the angle-axis system for source orientations. </p></i>
 
-The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
+The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters the format is always different.
 
-Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the `magnetization` variable which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
+Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the `magnetization` attribute which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
 
 
 ```eval_rst
@@ -122,22 +122,22 @@ In most cases we want to move the magnet to a designated position, orient it in 
 
 ```eval_rst
 At initialization:
-  When initializing the source we can set all variables as desired.
+  When initializing the source we can set all attributes as desired.
 
 Manipulation after initialization: 
   We initialize the source and manipulate it afterwards,
   
-  1. By directly setting the source variables to desired values.
+  1. By directly setting the source attributes to desired values.
   
   2. By using provided methods of manipulation.
 ```
 
-The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
+The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object attributes accordingly.
 
 - `s.setPosition(newPos)`: Moves the source to the position given by the argument vector (*newPos*. *s.position -> newPos*)
 - `s.move(displacement)`: Moves the source by the argument vector *displacement*. (*s.position -> s.position + displacement*) 
 - `s.setOrientation(angle,axis)`: This method sets a new source orientation given by *angle* and *axis*. (*s.angle -> angle, s.axis -> axis*)
-- `s.rotate(angle,axis,anchor=self.position)`: Rotates the source object by *angle* about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation variables are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
+- `s.rotate(angle,axis,anchor=self.position)`: Rotates the source object by *angle* about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation attributes are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
 
 The following videos graphically show the application of the four methods for geometric manipulation.
 
@@ -202,9 +202,9 @@ The idea behind the collection class is to group multiple source objects for com
 
 #### Constructing Collections
 
-In principle a collection `c` is simply a list of source objects that are collected in the variable `c.sources`.
+In principle a collection `c` is simply a list of source objects that are collected in the attribute `c.sources`.
 
-Collections can be constructed at initialization by simply giving the sources as arguments. It is possible not only to add sources, but also to add lists of sources as well as other collections. All sources are simply added to the `sources` variable.
+Collections can be constructed at initialization by simply giving the sources as arguments. It is possible not only to add sources, but also to add lists of sources as well as other collections. All sources are simply added to the `sources` attribute.
 
 With the collection kwarg `dupWarning=True`, a warning will be displayed if one source object has been added multiple times to the collection. In this case an operation applied to the collection will be applied multiple times to that source.
 
