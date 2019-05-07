@@ -52,7 +52,7 @@ This is the core class of the library. The idea is that source objects represent
 ```eval_rst
 .. image:: ../_static/images/documentation/SourceTypes.JPG
    :align: center
-   :scale: 60 %
+   :scale: 65 %
 ```
 
 The different source types contain various variables and methods. The variables characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
@@ -74,7 +74,7 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
 ```eval_rst
 .. image:: ../_static/images/documentation/source_Orientation.JPG
    :align: center
-   :scale: 60 %
+   :scale: 50 %
 ```
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
@@ -119,8 +119,10 @@ At initialization:
 
 Manipulation after initialization: 
   We initialize the source and manipulate it afterwards,
-  1. By directly setting the source variables to desired values
-  2. By using provided methods of manipulation
+  
+  1. By directly setting the source variables to desired values.
+  
+  2. By using provided methods of manipulation.
 ```
 
 The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object variables accordingly.
