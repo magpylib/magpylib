@@ -253,43 +253,38 @@ c.displaySystem(markers=[(0,0,6),(10,10,10),(-10,-10,-10)])
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Code output. </p></i>
 
-
 ## Math Package
 
 The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
-<i></i>
-`anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles $(\varphi,\theta)$ that are defined as in spherical coordinates. $\varphi$ is the azimuth angle and $\theta$ is the polar angle.
-```python
-import magpylib as magpy
-angles = magpy.math.anglesFromAxis([1,1,0])
-print(angles)                             #Output = [45. 90.]
-```
+- `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles (PHI,THETA)) that are defined as in spherical coordinates. PHI is the azimuth angle and THETA is the polar angle.
+  ```python
+  import magpylib as magpy
+  angles = magpy.math.anglesFromAxis([1,1,0])
+  print(angles)                             #Output = [45. 90.]
+  ```
 
-<i></i>
-`axisFromAngles(angles)`: This function generates an axis (3-vector) from the `angles` input $(\varphi,\theta)$ where $\varphi$ is the azimuth angle and $\theta$ is the polar angle of a spherical coordinate system.
-```python
-import magpylib as magpy
-ax = magpy.math.axisFromAngles([90,90])
-print(ax)                                 #Output = [0.0 1.0 0.0]
-```
+- `axisFromAngles(angles)`: This function generates an axis (3-vector) from the `angles` input (PHI,THETA) where PHI is the azimuth angle and THETA is the polar angle of a spherical coordinate system.
+  ```python
+  import magpylib as magpy
+  ax = magpy.math.axisFromAngles([90,90])
+  print(ax)                                 #Output = [0.0 1.0 0.0]
+  ```
 
-<i></i>
-`randomAxis()`: For Monte Carlo simualtions this function returns a random axis of length 1 with equal angular distribution.
-```python
-import magpylib as magpy
-ax = magpy.math.randomAxis()
-print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
-```
+- `randomAxis()`: Designed for Monte Carlo simulations, this function returns a random axis of length 1 with equal angular distribution.
+  ```python
+  import magpylib as magpy
+  ax = magpy.math.randomAxis()
+  print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
+  ```
 
-<i></i>
-`rotatePosition(position, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the angle argument about an axis defined by the `axis` vector which passes through the `anchor` vector.
-```python
-import magpylib as magpy
-pos0 = [1,1,0]
-angle = -90
-axis = [0,0,1]
-anchor = [1,0,0]
-positionNew = magpy.math.rotatePosition(position0,angle,axis,anchor)
-print(positionNew)                  #Output = [2. 0. 0.]
-```
+- `rotatePosition(pos, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the `angle` argument about an axis defined by the `axis` vector which passes through the `anchor` position.
+  ```python
+  import magpylib as magpy
+  pos0 = [1,1,0]
+  angle = -90
+  axis = [0,0,1]
+  anchor = [1,0,0]
+  positionNew = magpy.math.rotatePosition(pos0,angle,axis,anchor)
+  print(positionNew)                  #Output = [2. 0. 0.]
+  ```
