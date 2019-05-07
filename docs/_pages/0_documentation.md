@@ -236,7 +236,7 @@ The :meth:`~magpylib.Collection.getB` and :meth:`~magpylib.Collection.getBsweep`
    :width: 50%
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b>
-Circular current sources are grouped into a collectin to form a coil. The whole
+Circular current sources are grouped into a collection to form a coil. The whole
 coil is then geometrically manipulated and the total magnetic field is shown in
 the xz-plane </p></i>
 
