@@ -32,9 +32,9 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. image:: ../_static/images/documentation/lib_structure.JPG
    :align: center
-   :scale: 70 %
+   :scale: 50 %
 ```
-
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Outline of the magpylib package structure. </p></i>
 
 ## Units and IO Types
 
@@ -137,7 +137,7 @@ The source class provides a set of methods for convenient geometric manipulation
 
 The following videos graphically show the application of the four methods for geometric manipulation.
 
-<i><p align="center" style="font-weight: 600;"> setPosition and move </p></i>
+<i><p align="center" style="font-weight: 600;"> move and setPosition </p></i>
 
 ```eval_rst
 
@@ -150,7 +150,7 @@ The following videos graphically show the application of the four methods for ge
    :width: 45%
 ```
 
-<i><p align="center" style="font-weight: 600;"> setOrientation and rotate </p></i>
+<i><p align="center" style="font-weight: 600;"> rotate and setOrientation </p></i>
 
 ```eval_rst
 
@@ -200,7 +200,7 @@ The idea behind the collection class is to group multiple source objects for com
    :width: 45%
 
 .. |total Field| image:: ../_static/images/documentation/collectionAnalysis.png
-   :width: 55%
+   :width: 50%
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Circular current sources are grouped into a collectin to form a coil. The whole coil is then geometrically manipulated and the total magnetic field is shown in the xz-plane </p></i>
 
@@ -236,10 +236,12 @@ c.displaySystem(markers=[(0,0,6),(10,10,10),(-10,-10,-10)])
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Code output. </p></i>
 
+
 ## Math Package
 
-The math package provides some functions for easier use of the angle-axis rotation used in magpylib.
+The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
+\
 `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles $(\varphi,\theta)$ that are defined as in spherical coordinates. $\varphi$ is the azimuth angle and $\theta$ is the polar angle.
 ```python
 import magpylib as magpy
@@ -247,6 +249,7 @@ angles = magpy.math.anglesFromAxis([1,1,0])
 print(angles)                             #Output = [45. 90.]
 ```
 
+\
 `axisFromAngles(angles)`: This function generates an axis (3-vector) from the `angles` input $(\varphi,\theta)$ where $\varphi$ is the azimuth angle and $\theta$ is the polar angle of a spherical coordinate system.
 ```python
 import magpylib as magpy
@@ -254,6 +257,7 @@ ax = magpy.math.axisFromAngles([90,90])
 print(ax)                                 #Output = [0.0 1.0 0.0]
 ```
 
+\
 `randomAxis()`: For Monte Carlo simualtions this function returns a random axis of length 1 with equal angular distribution.
 ```python
 import magpylib as magpy
@@ -261,6 +265,7 @@ ax = magpy.math.randomAxis()
 print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
 ```
 
+\
 `rotatePosition(position, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the angle argument about an axis defined by the `axis` vector which passes through the `anchor` vector.
 ```python
 import magpylib as magpy
@@ -272,7 +277,7 @@ positionNew = magpy.math.rotatePosition(position0,angle,axis,anchor)
 >>> print(positionNew)                  #Output = [2. 0. 0.]
 ```
 
-
+\
 At this point the main function of the math package is to provide function that allow the user to 
 
 The Math Package is utilized to assist users in performing Angle/Axis conversions and rotations utilizing [the quaternion notation](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation).
