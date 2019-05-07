@@ -214,7 +214,7 @@ In addition, the collection class features methods to add and remove sources for
 
 #### Display Collection Graphically
 
-Finally, the collection class provides a method `c.displaySystem(markers=listOfPos, supress=False, direc=False)` for graphical display of the source system using matplotlib. The idea is to quickly check the geometry of the source assembly. The `markers` kwarg can be used to display reference positions given by a list of positions `listOfPos`. The figure output can be suppressed by setting `supress=True`. Seeting `direc=True` additionally displays current and magnetization directions in the figure. The following example code shows how a collection is initialized and displayed.
+Finally, the collection class provides a method `c.displaySystem(markers=listOfPos, supress=False, direc=False)` for graphical display of the source system using matplotlib. The idea is to quickly check the geometry of the source assembly. The `markers` kwarg can be used to display reference positions given by a list of positions `listOfPos`. The figure output can be suppressed by setting `supress=True`. Setting `direc=True` additionally displays current and magnetization directions in the figure. The following example code shows how a collection is initialized and displayed.
 
 ```python
 import magpylib as magpy
@@ -241,7 +241,7 @@ c.displaySystem(markers=[(0,0,6),(10,10,10),(-10,-10,-10)])
 
 The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
-\
+<br/>
 `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles $(\varphi,\theta)$ that are defined as in spherical coordinates. $\varphi$ is the azimuth angle and $\theta$ is the polar angle.
 ```python
 import magpylib as magpy
@@ -249,7 +249,7 @@ angles = magpy.math.anglesFromAxis([1,1,0])
 print(angles)                             #Output = [45. 90.]
 ```
 
-\
+<br/>
 `axisFromAngles(angles)`: This function generates an axis (3-vector) from the `angles` input $(\varphi,\theta)$ where $\varphi$ is the azimuth angle and $\theta$ is the polar angle of a spherical coordinate system.
 ```python
 import magpylib as magpy
@@ -257,15 +257,14 @@ ax = magpy.math.axisFromAngles([90,90])
 print(ax)                                 #Output = [0.0 1.0 0.0]
 ```
 
-\
+<br/>
 `randomAxis()`: For Monte Carlo simualtions this function returns a random axis of length 1 with equal angular distribution.
 ```python
 import magpylib as magpy
 ax = magpy.math.randomAxis()
 print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
 ```
-
-\
+<br/>
 `rotatePosition(position, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the angle argument about an axis defined by the `axis` vector which passes through the `anchor` vector.
 ```python
 import magpylib as magpy
@@ -274,12 +273,5 @@ angle = -90
 axis = [0,0,1]
 anchor = [1,0,0]
 positionNew = magpy.math.rotatePosition(position0,angle,axis,anchor)
->>> print(positionNew)                  #Output = [2. 0. 0.]
+print(positionNew)                  #Output = [2. 0. 0.]
 ```
-
-\
-At this point the main function of the math package is to provide function that allow the user to 
-
-The Math Package is utilized to assist users in performing Angle/Axis conversions and rotations utilizing [the quaternion notation](https://en.wikipedia.org/wiki/Quaternions_and_spatial_rotation).
-
-[paper]: http://mystery-404.herokuapp.com
