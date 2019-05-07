@@ -30,7 +30,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. currentmodule:: magpylib
 
-.. image:: ../_static/images/documentation/summary/lib.png
+.. image:: ../_static/images/documentation/summary/lib_structure.JPG
    :align: center
    :scale: 70 %
 ```
@@ -54,6 +54,7 @@ This is the core class of the library. The idea is that source objects represent
    :align: center
    :scale: 65 %
 ```
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Source types currently available in magpylib. </p></i>
 
 The different source types contain various variables and methods. The variables characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
 
@@ -62,6 +63,7 @@ The different source types contain various variables and methods. The variables 
    :align: center
    :scale: 60 %
 ```
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of variables and methods of the source class. </p></i>
 
 ### Variables and Initialization:
 
@@ -76,6 +78,7 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
    :align: center
    :scale: 50 %
 ```
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of the angle-axis system for source orientations. </p></i>
 
 The source geometry is generally described by the `dimension` variable. However, as each source requires different input parameters the format is always different.
 
@@ -134,7 +137,7 @@ The source class provides a set of methods for convenient geometric manipulation
 
 The following videos graphically show the application of the four methods for geometric manipulation.
 
-<i><p align="center" style="font-weight: 600;"> Moving and Positioning </p></i>
+<i><p align="center" style="font-weight: 600;"> setPosition and move </p></i>
 
 ```eval_rst
 
@@ -147,7 +150,7 @@ The following videos graphically show the application of the four methods for ge
    :width: 45%
 ```
 
-<i><p align="center" style="font-weight: 600;"> Rotating and Orienting </p></i>
+<i><p align="center" style="font-weight: 600;"> setOrientation and rotate </p></i>
 
 ```eval_rst
 
@@ -231,6 +234,7 @@ c.displaySystem(markers=[(0,0,6),(10,10,10),(-10,-10,-10)])
    :align: center
    :scale: 60 %
 ```
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Code output. </p></i>
 
 ## Math Package
 
