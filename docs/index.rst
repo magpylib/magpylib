@@ -12,7 +12,7 @@ What is magpylib ?
  - It provides convenient methods to generate, geometrically manipulate, group and vizualize assemblies of sources.
  - The magnetic fields are determined from underlying (semi-analytical) solutions which results in fast computation times (sub-millisecond) and requires little computation power.
 
-.. image:: _static/images/index/sourceBasics2.JPG
+.. image:: _static/images/index/sourceBasics.JPG
    :align: center
 
 .. toctree::
