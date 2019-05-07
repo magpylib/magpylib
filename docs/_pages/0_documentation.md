@@ -61,7 +61,7 @@ This is the core class of the library. The idea is that source objects represent
 The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
-.. image:: ../_static/images/documentation/sourceVars_Methods.JPG
+.. image:: ../_static/images/documentation/sourceVars_Methods.svg
    :align: center
    :scale: 60 %
 ```
