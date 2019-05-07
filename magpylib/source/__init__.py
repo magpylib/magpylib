@@ -36,7 +36,7 @@ Quicklist for :mod:`~magpylib.source.moment` sources:
 
 All source objects possess the following attributes and methods:
 
-.. image:: ../_static/images/summary/source.png
+.. image:: ../_static/images/documentation/lib_structure.JPG
    :scale: 50 %
 
 """
