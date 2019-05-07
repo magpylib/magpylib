@@ -14,7 +14,7 @@
 
 ```eval_rst
 
-.. image:: ../_static/images/summary/lib.png
+.. image:: ../_static/images/documentation/lib_structure.JPG
    :align: center
    :scale: 50 %
 
