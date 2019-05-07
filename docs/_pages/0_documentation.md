@@ -5,14 +5,17 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
+- [Library Documentation](#library-documentation)
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-io-types)
   - [The Source Class](#the-source-class)
-    - [Attributes and Keyword Initialization](#attributes-and-keyword-initialization)
+    - [Attributes and Keyword Initialization:](#attributes-and-keyword-initialization)
     - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
     - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
   - [The Collection Class](#the-collection-class)
-    - [Advanced Shapes with Collections](#advanced-shapes-with-collections)
+      - [Constructing Collections](#constructing-collections)
+      - [Common Manipulation and total Magnetic Field](#common-manipulation-and-total-magnetic-field)
+      - [Display Collection Graphically](#display-collection-graphically)
   - [Math Package](#math-package)
 
 
