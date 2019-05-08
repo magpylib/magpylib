@@ -18,7 +18,15 @@ documentation](https://www.mathworks.com/help/matlab/call-python-libraries.html)
  with a focus on utilizing this interface for applying MagPyLib.
 
 
-## Linking the user space Interpreter
+- [Guide - MATLAB Integration](#guide---matlab-integration)
+  - [Linking Python to Matlab](#linking-python-to-matlab)
+    - [Linking the user space Interpreter](#linking-the-user-space-interpreter)
+    - [Linking the Anaconda Interpreter](#linking-the-anaconda-interpreter)
+  - [Calling MagPylib](#calling-magpylib)
+    - [Limitations](#limitations)
+
+## Linking Python to Matlab
+### Linking the user space Interpreter
 
 Running the following should yield you the information about the user space interpreter:
 
@@ -26,34 +34,38 @@ Running the following should yield you the information about the user space inte
 >>> pyversion
 ```
 
-## Linking the Anaconda Interpreter
+### Linking the Anaconda Interpreter
 
  Anaconda provides Python environments with scientific packages.
 
-To couple an anaconda environment with Matlab, do the following in Anaconda Navigator:
+<details>
+
+<a href=#linking-the-anaconda-interpreter><summary> Click here for Steps </summary></a>
+
+To couple an Anaconda environment with Matlab, do the following in **Anaconda Navigator**:
 
 ````eval_rst
 
-1. Select your environments tab
+**1.** Select your environments tab
 
-2. Create a new environment
+**2.** Create a new environment
 
 |install1| 
 
-3. Name your environment
+**3.** Name your environment
 
-4. Choose the Python version (3.5 and up)
+**4.** Choose the Python version (3.5 and up)
 
 
 |install2|
 
 Keep note of the location as this will be necessary.
 
-5. Start conda terminal and install magpylib into the environment.
+**5.** Start conda terminal and install magpylib into the environment.
 
 |install3|
 
-6. Start Matlab, enter the following snippet with your environment location:
+**6.** Find your environment location:
 
 |install4|
 
@@ -65,22 +77,24 @@ Keep note of the location as this will be necessary.
 
 .. |install4| image:: ../_static/images/matlab_guide/install4.png
 
+**7.** Enter the following snippet **into your MATLAB console** with your environment's Python Interpreter location:
 
 ````
 
 ```matlab
 >>> pyversion C:\Users\Gabriel\AppData\Local\Continuum\anaconda3\envs\magpy\python.exe
 ```
+</details>
 
 ---
 
-### Calling MagPylib
+## Calling MagPylib
 
 The following MATLAB script showcases most functionalities.
 
 ```
 %%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%&&&&&
-%% Showcase Python + MATLAB Interoperability.         %%
+%% Showcase Python + MATLAB Interoperability.    
 %% Define and calculate the field of a 
 %% Cuboid magnet inside a Collection.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -99,7 +113,8 @@ angle = scalar
 sensorPos = vec3
 
 %% Execute Python
-box = py.magpylib.source.magnet.Box(mag,dim,pyargs('angle',angle)) % 2 positional and 1 keyword argument
+% 2 positional and 1 keyword argument in Box
+box = py.magpylib.source.magnet.Box(mag,dim,pyargs('angle',angle))
 col = py.magpylib.Collection(box)
 pythonResult = col.getB(sensorPos)
 
