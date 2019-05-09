@@ -6,6 +6,16 @@
 Welcome to magpylib's documentation!
 ====================================
 
+.. rst-class:: center
+
+   *(Hopefully) powered by:*
+
+.. image:: _static/images/index/sal.svg
+   :align: center
+   :target: https://silicon-austria-labs.com/en/
+
+|
+
 What is magpylib ?
 ~~~~~~~~~~~~~~~~~~
 - Python package for calculating magnetic fields of magnets, currents and
