@@ -93,7 +93,7 @@ Keep note of the location as this will be necessary.
 The following MATLAB script showcases most functionalities.
 
 ```
-%%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%&&&&&
+%%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%%%%%%
 %% Showcase Python + MATLAB Interoperability.    
 %% Define and calculate the field of a 
 %% Cuboid magnet inside a Collection.
