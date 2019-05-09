@@ -15,13 +15,14 @@ from numpy import array,amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box,Cylinder,Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
 from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
 from magpylib._lib.mathLibPublic import rotatePosition
 
 
-class Collection():
+class Collection(FieldSampler):
     """
     Create a collection of :mod:`magpylib.source` objects for common manipulation.
     
@@ -181,45 +182,7 @@ class Collection():
                         self.sources+=[s]
 
     def getBsweep(self,pos=numpyArray,multiprocessing=False,processes=0):
-        """Calculate several B fields positions in parallel by entering a numpy array matrix of position vectors.
         
-        Parameters
-        ----------
-        pos : [numpyArray]
-            An n-dimension numpy array containing position vectors.
-        processes : [type], optional
-            Number of worker processes to multicore. (the default is Auto, 
-            which is all visible cores minus 1)
-        Returns
-        -------
-        [NumpyArray]
-            A matrix array, with the shame shape as pos, 
-            containing instead values of B fields for each input coordinate position.
-            from magpylib._lib.classes.magnets import Box
-
-        Example
-        -------
-        >>> from numpy import array
-        >>> from magpylib import source, Collection
-        >>> from multiprocessing import freeze_support # These three will
-        >>> if __name__ == '__main__':  ################ Prevent hanging 
-        >>>     freeze_support() ########################### on Windows OS
-        >>>     #Input
-        >>>     mag=(2,3,5)
-        >>>     dim=(2,2,2)
-        >>>     pos=array([ [2,2,2],  # Calculate the B Field in
-        ...                 [2,2,3]]) # these two positions
-        >>>     #Run   
-        >>>     b = magnet.source.Box(mag,dim) # Box 1
-        >>>     b2 = magnet.source.Box(mag,dim) # Box 2
-        >>>     c = Collection(b,b2) # Box 1 + Box 2
-        >>>     result = c.getBMulticore(pos) # Resulting B field from the interaction 
-        >>>                                   # of both Boxes in two Positions
-                    [ [0.24976596, 0.21854521, 0.15610372], # Position 1
-                      [0.12442073, 0.10615358, 0.151319  ],] # Position 2
-        
-        """
-
         Btotal = []
         
         assert all(isPosVector(item) for item in pos), "Non-position vector in Collection getBsweep"

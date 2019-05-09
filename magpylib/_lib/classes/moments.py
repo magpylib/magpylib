@@ -10,11 +10,12 @@ Mx=My=Mz=0.0 # Zero Dipole Moment
 from numpy import float64,isnan,array
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
-from magpylib._lib.classes.base import RCS
+from magpylib._lib.classes.base import MagMoment
+from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
 
 
-class Dipole(RCS):
+class Dipole(MagMoment):
     """ 
     This class represents a magnetic dipole. The dipole is constructed such that 
     its moment :math:`|M|` is given in :math:`[mT*mm^3]` and corresponds to the moment of a cuboid
@@ -65,14 +66,7 @@ class Dipole(RCS):
     Note
     ----
     The following Methods are available to all source objects.
-    """    
-    def __init__(self, moment=(Mx,My,Mz), pos=(0.0,0.0,0.0), angle=0.0, axis=(0.0,0.0,1.0)):
-
-        #inherit class RCS
-        RCS.__init__(self,pos,angle,axis)
-        
-        #secure input type and check input format of moment
-        self.moment = checkDimensions(3,moment,"Bad moment input")
+    """   
         
     def getB(self,pos): ## Particular Line current B field calculation. Check RCS for getB() interface
         rotatedPos = rotateToCS(pos,self)
