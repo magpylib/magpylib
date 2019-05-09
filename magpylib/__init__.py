@@ -1,6 +1,6 @@
 """
-Magpylib Top Level
-==================
+magpylib.Collection
+===================
 
 This package serves the :class:`~magpylib.Collection` class, which
 is used to group up and manipulate sources created with :py:mod:`magpylib.source`
