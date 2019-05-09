@@ -1,6 +1,6 @@
 # About tests
 
-The current tests are [standard unit tests](https://en.wikipedia.org/wiki/Unit_testing), running methods of each class expecting certain ouputs, accounting for certain edge-cases present within the intrinsic nature of magpylib. These make sure that the codebase is behaving as expected whenever changes are introduced.
+The current tests are [standard unit tests](https://en.wikipedia.org/wiki/Unit_testing), running methods of each class with certain inputs, programatically expecting certain ouputs; accounting for certain edge-cases present within the intrinsic nature of magpylib. These make sure that the codebase is behaving as expected whenever changes are introduced.
 
 >It is important that for every introduced method there should be at least one test case showcasing its main functionality.
 
