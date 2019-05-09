@@ -20,7 +20,7 @@ $ tox
 
 ## Automated Checks
 
-Automated "checks" are done by the continuous integration service [CircleCI](https://circleci.com/) whenever a push is made to any branch on the remote GitHub repository. This makes sure the Codebase always remains tested. 
+Automated "checks" are done by the continuous integration service [CircleCI](https://circleci.com/) whenever a push is made to any branch on the remote repository at GitHub. This makes sure the Codebase always remains tested. 
 
 CircleCI will utilize [the configuration file](../.circleci/config.yml), running all the steps necessary (seen above) to properly perform the tests in a cloud environment.  
 
