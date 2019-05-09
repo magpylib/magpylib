@@ -130,7 +130,7 @@ This is most effective when paired with matplotlib, allowing you to visualize yo
 
 Top Level holds the :class:`magpylib.Collection` class, which represents a collection of source objects. 
 
-This means that you may define a space where multiple source objects interact, and acquire the resulting magnetic fields of multiple sources. 
+This means that you may define a space where multiple source objects are compounding, and acquire the resulting magnetic fields of multiple sources. 
 
 A :class:`~magpylib.Collection` object also allows you to manipulate the listed source objects and show them in a 3D display.
 
@@ -148,9 +148,9 @@ We can set markers with labels to help us identify certain points in the 3D plan
 
 ```eval_rst
 
-Collections also allow us to add Source Objects into a shared frame so they can interact, and to retrieve samples of the resulting B field sample of this interaction with its :func:`~magpylib.Collection.getB` method. 
+Collections also allow us to add Source Objects into a shared frame so they can superimpose their fields, and to retrieve samples of the resulting B field sample of this field compounding with its :func:`~magpylib.Collection.getB` method. 
 
-Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **interacting** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
+Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **superimposed** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
 
 .. plot:: pyplots/guide/collection2.py
    :include-source:
