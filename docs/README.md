@@ -1,6 +1,4 @@
-## Documentation
-
-### Details
+## About magPyLib Documentation
 
 - Documentation is done with [Sphinx](http://www.sphinx-doc.org/en/master/) v1.8.2.
 - Sphinx configuration is [conf.py](./conf.py);
