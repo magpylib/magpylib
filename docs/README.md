@@ -4,6 +4,7 @@
 
 - Docstring format is under the [Numpy Convention](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html).
 - Documentation is done with Sphinx v1.8.2.
+- Sphinx configuration is [conf.py](./conf.py);
 - Sphinx is configured to read Docstring information from the codebase and convert it into pages utilizing the [autodoc extension](http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html). 
    
   - These generated files are created at build time and put into a folder called `_autogen`
