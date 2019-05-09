@@ -99,7 +99,7 @@ The following MATLAB script showcases most functionalities.
 %% Cuboid magnet inside a Collection.
 %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-%% Impor the library
+%% Import the library
 py.importlib.import_module("magpylib")
 
 %% Define Python types for input
