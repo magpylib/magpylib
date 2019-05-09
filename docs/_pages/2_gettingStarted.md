@@ -281,46 +281,61 @@ Field sample position, Source object orientation and positioning may be adjusted
 ```
 
 ```python
-from magpylib import source, Collection
+from magpylib import source
+from multiprocessing import freeze_support
 
 def setup_creator(sensorPos,magnetPos,angle):
+    # Return a properly defined setup
     axis = (0,0,1) # Z axis
-    setup = [sensorPos,
-            magnetPos,
-            (angle,axis)]
+    setup = [sensorPos,    # field sampler position
+             magnetPos,    # magnet position
+             (angle,axis)] # Rotation arguments
     return setup
 
-## Define information for 8 setups
-sensors = [ [-1,-6,6], [-1,-5,5], 
-            [-1,-4,4.5],[-1,-6,3.5], 
-            [-1,-5,2.5], [-1,-4,1.5],
-            [-1,-5,-0.5], [-1,-4,-1.0] ]
+def main():
+    ## Define information for 8 setups
+    sensors = [ [-1,-6,6], [-1,-5,5], 
+                [-1,-4,4.5],[-1,-6,3.5], 
+                [-1,-5,2.5], [-1,-4,1.5],
+                [-1,-5,-0.5], [-1,-4,-1.0] ]
 
-angles = [0,30,60,90,120,180,210,270]
+    angles = [  0, 30,
+                60, 90,
+                120,180,
+                210,270 ]
 
-positions = [ [3,-4,6],[3,-4,5],
-              [3,-4,4],[3,-4,3,],
-              [3,-4,2],[3,-4,1],
-              [3,-4,0],[3,-4,-1] ]
+    positions = [ [3,-4,6],[3,-4,5],
+                  [3,-4,4],[3,-4,3,],
+                  [3,-4,2],[3,-4,1],
+                  [3,-4,0],[3,-4,-1] ]
 
-b = source.magnet.Box([1,2,3],
-                      [1,1,1])
+    ## Define magnet
+    b = source.magnet.Box([1,2,3],
+                        [1,1,1])
 
-setups = [setup_creator(sensors[i],
-                        positions[i],
-                        angles[i]) for i in range(0,7)]
+    setups = [setup_creator(sensors[i],
+                            positions[i],
+                            angles[i]) for i in range(0,8)]
 
-results = b.getBsweep(setups)
+    # Calculate results sequentially
+    results = b.getBsweep(setups)
+    # Calculate results again but in parallel
+    results = b.getBsweep(setups,multiprocessing=True)
 
-print(results)
-## Result for each of the 8 setups:
-# [array([ 0.0033804 ,  0.00035464, -0.00266834]), 
-#  array([ 0.00151226, -0.00219274, -0.00340392]), 
-#  array([-0.00427052, -0.00226601, -0.00292288]), 
-#  array([-0.00213505, -0.00281333, -0.00213425]), 
-#  array([-0.00567799, -0.00189228, -0.00231176]), 
-#  array([-0.00371514,  0.00242773, -0.00302629]), 
-#  array([-0.00030278,  0.00243991, -0.00334978])]
+    print(results)
+    ## Result for each of the 8 setups:
+    # [array([ 0.0033804 ,  0.00035464, -0.00266834]), 
+    #  array([ 0.00151226, -0.00219274, -0.00340392]), 
+    #  array([-0.00427052, -0.00226601, -0.00292288]), 
+    #  array([-0.00213505, -0.00281333, -0.00213425]), 
+    #  array([-0.00567799, -0.00189228, -0.00231176]), 
+    #  array([-0.00371514,  0.00242773, -0.00302629]), 
+    #  array([-0.00030278,  0.00243991, -0.00334978]),
+    #  array([ 0.0049694 ,  0.00124235, -0.00372705])]
+
+if __name__ == "__main__":
+    freeze_support()
+    main()
 ```
 
 
