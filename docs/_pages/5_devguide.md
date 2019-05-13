@@ -19,9 +19,9 @@ Please run an [aggressive autopep8](https://github.com/hhatto/autopep8) over you
 
 All actual code is placed in `magpylib/_lib` in their relevant submodules. Organization is done by imports in top folders (`magpylib`, `math`, and `source`'s `__init__.py` files).
 
-- `classes/` are classes or modules for *sources*, *collection*, *base* and *field sampler* classes.
+- `magpylib/_lib/classes/` are classes or modules for *sources*, *collection*, *base* and *field sampler* classes.
 
-- `field/` are the interfaces for calculating electromagnetic fields of different sources.
+- `magpylib/_lib/field/` are the interfaces for calculating electromagnetic fields of different sources.
 
 ## Adding new Sources
   When adding new sources to an existing category:

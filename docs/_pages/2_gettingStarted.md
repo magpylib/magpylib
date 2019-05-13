@@ -148,7 +148,7 @@ We can set markers with labels to help us identify certain points in the 3D plan
 
 ```eval_rst
 
-Collections also allow us to add Source Objects into a shared frame so they can superimpose their fields, and to retrieve samples of the resulting B field sample of this field compounding with its :func:`~magpylib.Collection.getB` method. 
+Collections also allow us to add Source Objects into a shared frame so they can superimpose their fields. We may retrieve samples of the resulting B field of this compounding effect with its :func:`~magpylib.Collection.getB` method. 
 
 Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **superimposed** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
 
