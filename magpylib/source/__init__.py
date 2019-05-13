@@ -34,6 +34,11 @@ Quicklist for :mod:`~magpylib.source.moment` sources:
 
    Dipole
 
+All source objects possess the following attributes and methods:
+
+.. image:: ../_static/images/documentation/lib_structure.JPG
+   :scale: 50 %
+
 """
 __all__ = ["magnet","current","moment"] # This is for Sphinx
 

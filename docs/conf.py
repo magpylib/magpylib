@@ -29,8 +29,20 @@ autodoc_default_options = {
     'inherited-members':True,
 }
 
+# Recommon Mark Configuration
+from recommonmark.transform import AutoStructify
+github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/' 
+
 def setup(app):
-    app.add_javascript('copybutton.js') # Add the button for 
+    app.add_stylesheet('css/stylesheet.css')
+    app.add_config_value('recommonmark_config', {
+            'url_resolver': lambda url: github_doc_root + url,
+            'auto_toc_tree_section': 'Contents',
+            'enable_eval_rst': True
+            }, True)
+    app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
+    app.add_javascript('webcode/summaryOpen.js')
+    app.add_javascript('webcode/copybutton.js') # Add the button for 
                                         # hiding ">>>" in examples
     sphinx.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
@@ -76,6 +88,7 @@ extensions = [
     'sphinx.ext.ifconfig',
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
+    'matplotlib.sphinxext.plot_directive',
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -112,7 +125,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-
+html_logo = './_static/images/magpylib_logo.png'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.

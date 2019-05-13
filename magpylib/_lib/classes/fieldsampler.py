@@ -65,25 +65,20 @@ class FieldSampler:
         The input can have two different formats (ONLY THE FIRST ONE CAN BE
         USED FOR COLLECTIONS!):
 
+        Warning
+        -------
+           Multiprocessing enabled calculations will drastically reduce performance if done for small sets, i.e. under a few hundred.
+
         Parameters
         ----------
-        INPUT : type 1 or type 2 input
-        
-        INPUT TYPE 1 is a list of N sensor positions. In this case the magnetic 
-        field of the source is determined for all N sensor positions and 
-        returned in an Nx3 array.
-        
-        INPUT TYPE 2 is a list of the following format [(sensorPos1, 
-        sourcePos1, sourceOrient1),…]. Here for each case of sensor position 
-        and source state the field is evaluated and returned in an 
-        Nx3 array. This corresponds to a system where sensor and magnet
-        move simultaneously. DOES NOT WORK FOR COLLECTIONS !
+        INPUT : TYPE [type 1 or type 2 input] 
+           INPUT TYPE 1 is a list of N sensor positions. In this case the magnetic field of the source is determined for all N sensor positions and returned in an Nx3 array. INPUT TYPE 2 is a list of the following format [(sensorPos1, sourcePos1, sourceOrient1),…]. Here for each case of sensor position and source state the field is evaluated and returned in an Nx3 array. This corresponds to a system where sensor and magnet move simultaneously. TYPE 2 DOES NOT WORK FOR COLLECTIONS !
 
-        multiprocessing : Default = False, enable/disable multiprocessing, This 
-        requires additional code. Please refer to example below.
+        multiprocessing : bool [bool] Default = False
+           Enable/disable parallel multiprocessing; This requires some additional code on Windows, please refer to example below.
 
-        processes : Default = Auto, define the number of allowed processes 
-        when multiprocessing is enabled
+        processes : cores [int]
+           Define the number of allowed processes when multiprocessing is enabled.
 
         Example
         -------

@@ -308,6 +308,8 @@ class Collection(FieldSampler):
             List of position vectors to add visual markers to the display, optional label.
             Default: [[0,0,0]]
 
+        Example
+        -------
         >>> from magpylib import Collection, source
         >>> c=source.current.Circular(3,7)
         >>> x = Collection(c)
@@ -316,17 +318,24 @@ class Collection(FieldSampler):
         >>> x.displaySystem(markers=[ marker0,
         ...                           marker1])
 
+
+        Parameters
+        ----------
         suppress : bool
             If True, only return Figure information, do not show. Interactive mode must be off.
             Default: False.
 
 
+        Example
+        -------
         >>> ## Suppress matplotlib.pyplot.show() 
         >>> ## and returning figure from showing up
         >>> from matplotlib import pyplot 
         >>> pyplot.ioff()
         >>> figureData = Collection.displayFigure(suppress=True)
 
+        Parameters
+        ----------
         direc : bool
             Set to True to show current directions and magnetization vectors.
             Default: False

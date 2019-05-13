@@ -3,43 +3,43 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to MagPyLib's documentation!
+Welcome to magpylib's documentation!
 ====================================
 
-About
------
-*A simple and user friendly magnetic toolbox for Python 3.2+*
+.. rst-class:: center
 
+   *(Hopefully) powered by:*
 
-What is Magpylib ?
-------------------
- - Magpylib is a Python library for calculating magnetic fields from permanent magnets and current distributions. 
- - It provides an intuitive magnetic source class to quickly generate, group, geometrically manipulate and visualize assemblies of magnets and currents and the fields they generate.
- - The magnetic fields are determined from underlying (semi-) analytical solutions that are found in the literature.
+.. image:: _static/images/index/sal.svg
+   :align: center
+   :target: https://silicon-austria-labs.com/en/
 
-Why Magpylib ?
---------------
-- Provide a fast and convenient tool to quickly calculate magnetic fields directly in a local Python work-environment for immediate analysis, test and manipulation.
-- This is made possible by the fast computation times of the underlying analytical solutions which can be in the sub millisecond range and require no computation power as opposed to heavy numerical simulation like FEM.
-- Practical tool for magnetic system design
-    - Efficient for multivariate global optimization problems (for geometric shape variation).
-    - Quick visualization of fields of complex assemblies (for finding a magnetic map concept).
+|
 
+What is magpylib ?
+~~~~~~~~~~~~~~~~~~
+- Python package for calculating magnetic fields of magnets, currents and
+  moments (sources).
+- It provides convenient methods to generate, geometrically manipulate, group
+  and vizualize assemblies of sources.
+- The magnetic fields are determined from underlying (semi-analytical)
+  solutions which results in fast computation times (sub-millisecond) and
+  requires little computation power.
 
-Table of Contents
------------------
+.. image:: _static/images/index/sourceBasics.svg
+   :align: center
 
 .. toctree::
    :glob:
    :maxdepth: 2
-   :caption: Pages:
+   :caption: Content:
 
    _pages/*
 
 .. toctree::
    :glob:
    :maxdepth: 1
-   :caption: Contents:
+   :caption: Library Docstrings:
 
    _autogen/magpylib
    _autogen/magpylib.source
@@ -48,8 +48,8 @@ Table of Contents
 
 
 
-Indices and tables
-==================
+Index and tables
+~~~~~~~~~~~~~~~~~~
 
 * :ref:`genindex`
 * :ref:`modindex`
