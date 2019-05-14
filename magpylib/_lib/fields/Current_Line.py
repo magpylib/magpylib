@@ -1,5 +1,24 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
+# -------------------------------------------------------------------------------
+# MagPyLib -- A Python 3.2+ toolbox for calculating magnetic fields from
+# permanent magnets and current distributions. 
+# Copyright (C) 2019  Michael Ortner <magpylib@gmail.com>
+#
+# This program is free software: you can redistribute it and/or modify it under
+# the terms of the GNU Affero General Public License as published by the Free
+# Software Foundation, either version 3 of the License, or (at your option) any
+# later version.
+#
+# This program is distributed in the hope that it will be useful, but WITHOUT ANY
+# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
+# PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
+# details.
+#
+# You should have received a copy of the GNU Affero General Public License along
+# with this program.  If not, see <https://www.gnu.org/licenses/>.
+#
+# For contact information, reach out over at <magpylib@gmail.com> or our issues
+# page at https://www.github.com/OrtnerMichael/magpylib/issues.
+# -------------------------------------------------------------------------------
 
 from numpy import array,NaN
 from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
@@ -73,5 +92,3 @@ def Bfield_CurrentLine(p0,possis,I0):
         p2 = possis[i+1]
         B += Bfield_LineSegment(p0,p1,p2,I0)
     return B
-
-
