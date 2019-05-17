@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------
 # MagPyLib -- A Python 3.2+ toolbox for working with magnetic fields.
-# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,  
+# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
 #               Michael Ortner <magpylib@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -14,8 +14,8 @@
 # details.
 #
 # You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>. 
-# The acceptance of the conditions of the GNU Affero General Public License are 
+# with this program.  If not, see <https://www.gnu.org/licenses/>.
+# The acceptance of the conditions of the GNU Affero General Public License are
 # compulsory for the usage of the software.
 #
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
@@ -36,6 +36,7 @@ Define base classes here on which the magnetic source objects are built on
 
 '''
 
+
 ######### Type hint definitions ########
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
@@ -47,18 +48,18 @@ constant = None
 Mx=My=Mz=0.0 # Zero Moment
 #######################################
 
-#%% IMPORTS
+# %% IMPORTS
 from itertools import product, repeat
-from numpy import array,float64,pi,isnan,array,ndarray
+from numpy import array, float64, pi, isnan, array, ndarray
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions, initializeMulticorePool,recoordinateAndGetB
+from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB
 from magpylib._lib.utility import isPosVector
-from multiprocessing import Pool,cpu_count
+from multiprocessing import Pool, cpu_count
 from magpylib._lib.classes.fieldsampler import FieldSampler
 import sys
 
-        
-#%% FUNDAMENTAL CLASS - RCS (RELATIVE COORDINATE SYSTEM)
+
+# %% FUNDAMENTAL CLASS - RCS (RELATIVE COORDINATE SYSTEM)
 #       - initiates position, orientation
 #       - adds moveBY, rotateBy
 
@@ -69,39 +70,38 @@ class RCS:
     initiates position, orientation
     - adds moveBY, rotateBy
     """
-   
+
     def __init__(self, position, angle, axis):
         # fundamental (unit)-orientation/rotation is [0,0,0,1]
-        
+
         self.position = array(position, dtype=float64, copy=False)
         try:
             self.angle = float(angle)
         except ValueError:
             sys.exit('Bad angle input')
         self.axis = array(axis, dtype=float64, copy=False)
-        
-        #check input format
-        if any(isnan(self.position))  or  len(self.position)!= 3:
+
+        # check input format
+        if any(isnan(self.position)) or len(self.position) != 3:
             sys.exit('Bad pos input')
-        if any(isnan(self.axis))  or  len(self.axis)!= 3:
+        if any(isnan(self.axis)) or len(self.axis) != 3:
             sys.exit('Bad axis input')
-   
-        
-    def setPosition(self,newPos):
+
+    def setPosition(self, newPos):
         """
         This method moves the source to the position given by the argument 
         vector `newPos`. Vector input format can be either list, tuple or array
         of any data type (float, int)
-        
+
         Parameters
         ----------
         newPos : vec3 [mm]
             Set new position of the source.
-            
+
         Returns
         -------
         None
-            
+
         Example
         -------
         >>> from magpylib import source
@@ -113,25 +113,24 @@ class RCS:
             [5. 5. 5.]
         """
         self.position = array(newPos, dtype=float64, copy=False)
-        if any(isnan(self.position))  or  len(self.position)!= 3:
+        if any(isnan(self.position)) or len(self.position) != 3:
             sys.exit('Bad pos input')
 
-
-    def move(self,displacement):
+    def move(self, displacement):
         """
         This method moves the source by the argument vector `displacement`. 
         Vector input format can be either list, tuple or array of any data
         type (float, int).
-        
+
         Parameters
         ----------
         displacement : vec3 [mm]
             Set displacement vector
-            
+
         Returns
         -------
         None
-            
+
         Example
         -------
         >>> from magpylib import source
@@ -143,29 +142,28 @@ class RCS:
             [4. 4. 4.]
         """
         mV = array(displacement, dtype=float64, copy=False)
-        if any(isnan(mV))  or  len(mV)!= 3:
+        if any(isnan(mV)) or len(mV) != 3:
             sys.exit('Bad move vector input')
         self.position = self.position + mV
-        
-            
-    def setOrientation(self,angle,axis):
+
+    def setOrientation(self, angle, axis):
         """
         This method sets a new source orientation given by `angle` and `axis`.
         Scalar input is either integer or float. Vector input format can be
         either list, tuple or array of any data type (float, int).
-        
+
         Parameters
         ----------
         angle  : scalar [deg]
             Set new angle of source orientation.
-        
+
         axis : vec3 []
             Set new axis of source orientation.
-            
+
         Returns
         -------
         None            
-        
+
         Example
         -------
         >>> from magpylib import source
@@ -181,17 +179,16 @@ class RCS:
         except ValueError:
             sys.exit('Bad angle input')
         self.axis = array(axis, dtype=float64, copy=False)
-        if any(isnan(self.axis))  or  len(self.axis)!= 3:
+        if any(isnan(self.axis)) or len(self.axis) != 3:
             sys.exit('Bad axis input')
-        
-        
+
     def rotate(self, angle, axis, anchor='self.position'):
         """
         This method rotates the source about `axis` by `angle`. The axis passes
         through the center of rotation anchor. Scalar input is either integer or
         float. Vector input format can be either list, tuple or array of any
         data type (float, int).
-        
+
         Parameters
         ----------
         angle  : scalar [deg]
@@ -202,11 +199,11 @@ class RCS:
             Specify the Center of rotation which defines the position of the
             axis of rotation. If not specified the source will rotate about its
             own center.
-        
+
         Returns
         -------
         None
-        
+
         Example
         -------
         >>> from magpylib import source
@@ -217,7 +214,7 @@ class RCS:
         >>> print(pm.position, pm.angle, pm.axis)
           [1., 0., 1.] 90.0 [0., 1., 0.]
         """
-        #secure type
+        # secure type
         ax = array(axis, dtype=float64, copy=False)
 
         try:
@@ -229,91 +226,85 @@ class RCS:
             anchor = self.position
         else:
             anchor = array(anchor, dtype=float64, copy=False)
-        
-        #check input
-        if any(isnan(ax)) or len(ax)!= 3:
+
+        # check input
+        if any(isnan(ax)) or len(ax) != 3:
             sys.exit('Bad axis input')
         if fastSum3D(ax**2) == 0:
             sys.exit('Bad axis input')
-        if any(isnan(anchor)) or len(anchor)!= 3:
+        if any(isnan(anchor)) or len(anchor) != 3:
             sys.exit('Bad anchor input')
-        
+
         # determine Rotation Quaternion Q from self.axis-angle
-        Q = getRotQuat(self.angle,self.axis)
-        
+        Q = getRotQuat(self.angle, self.axis)
+
         # determine rotation Quaternion P from rot input
-        P = getRotQuat(ang,ax)
-        
+        P = getRotQuat(ang, ax)
+
         # determine new orientation quaternion which follows from P.Q v (P.Q)*
-        R = Qmult(P,Q)
-        
-        #reconstruct new axis-angle from new orientation quaternion
+        R = Qmult(P, Q)
+
+        # reconstruct new axis-angle from new orientation quaternion
         ang3 = arccosSTABLE(R[0])*180/pi*2
-        
-        ax3 = R[1:] #konstanter mult faktor ist wurscht für ax3
+
+        ax3 = R[1:]  # konstanter mult faktor ist wurscht für ax3
         self.angle = ang3
-        if ang3 == 0: #avoid returning a [0,0,0] axis
-            self.axis = array([0,0,1])
+        if ang3 == 0:  # avoid returning a [0,0,0] axis
+            self.axis = array([0, 0, 1])
         else:
             Lax3 = fastNorm3D(ax3)
             self.axis = array(ax3)/Lax3
-        
+
         # set new position using P.v.P*
         posOld = self.position-anchor
         Vold = [0] + [p for p in posOld]
-        Vnew = Qmult(P,Qmult(Vold,Qconj(P)))
+        Vnew = Qmult(P, Qmult(Vold, Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
 
-
-#%% HOMOGENEOUS MAGNETIZATION CLASS
+# %% HOMOGENEOUS MAGNETIZATION CLASS
 #       - initiates magnetization
 
-class HomoMag(RCS,FieldSampler):
-    
+class HomoMag(RCS, FieldSampler):
+
     def __init__(self, position, angle, axis, magnetization):
-        
-        #inherit class RCS
-        RCS.__init__(self,position,angle,axis)
-        assert all(a == 0 for a in magnetization) is False, "Bad mag input, all values are zero"
 
-        #secure input type and check input format of mag
+        # inherit class RCS
+        RCS.__init__(self, position, angle, axis)
+        assert all(
+            a == 0 for a in magnetization) is False, "Bad mag input, all values are zero"
+
+        # secure input type and check input format of mag
         self.magnetization = array(magnetization, dtype=float64, copy=False)
-        assert (not any(isnan(self.magnetization))  and  len(self.magnetization)== 3), "Bad mag input, invalid vector dimension"
-    
+        assert (not any(isnan(self.magnetization)) and len(
+            self.magnetization) == 3), "Bad mag input, invalid vector dimension"
 
 
-
-#%% LINE CURRENT CLASS
+# %% LINE CURRENT CLASS
 #       - initiates current
 
-class LineCurrent(RCS,FieldSampler):
-    
+class LineCurrent(RCS, FieldSampler):
+
     def __init__(self, position, angle, axis, current):
-        
-        #inherit class RCS
-        RCS.__init__(self,position,angle,axis)
-        
-        #secure input types and check input format
+
+        # inherit class RCS
+        RCS.__init__(self, position, angle, axis)
+
+        # secure input types and check input format
         try:
             self.current = float(current)
         except ValueError:
             sys.exit('Bad current input')
 
-class MagMoment(RCS,FieldSampler):
 
-    def __init__(self, moment=(Mx,My,Mz), 
-                       pos=(0.0,0.0,0.0), 
-                       angle=0.0, axis=(0.0,0.0,1.0)):
+class MagMoment(RCS, FieldSampler):
 
-        #inherit class RCS
-        RCS.__init__(self,pos,angle,axis)
-        
-        #secure input type and check input format of moment
-        self.moment = checkDimensions(3,moment,"Bad moment input")
+    def __init__(self, moment=(Mx, My, Mz),
+                 pos=(0.0, 0.0, 0.0),
+                 angle=0.0, axis=(0.0, 0.0, 1.0)):
 
- 
-            
-            
-            
-            
+        # inherit class RCS
+        RCS.__init__(self, pos, angle, axis)
+
+        # secure input type and check input format of moment
+        self.moment = checkDimensions(3, moment, "Bad moment input")

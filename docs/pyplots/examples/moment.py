@@ -25,10 +25,8 @@ ax1 = AXS[0]
 X,Y = np.meshgrid(xs,zs)
 U,V = Bs[:,:,0], Bs[:,:,2]
 amp = np.sqrt(U**2+V**2)
-#ax1.pcolormesh(X,Y,amp, cmap=plt.cm.jet, vmin=np.amin(0), vmax=np.amax(100))
 ax1.contourf( X, Y, amp,np.linspace(0,130,100),cmap=plt.cm.brg) # pylint: disable=no-member
 ax1.streamplot(X, Y, U, V, color='w', density=3,linewidth=0.8)
-#ax1.pcolormesh(X,Y,amp, cmap=plt.cm.RdBu, vmin=np.amin(amp), vmax=np.amax(amp))
 
 ax1.set(
        title = 'B-field of Dipole Moment',

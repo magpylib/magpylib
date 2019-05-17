@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------
 # MagPyLib -- A Python 3.2+ toolbox for working with magnetic fields.
-# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,  
+# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
 #               Michael Ortner <magpylib@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -14,8 +14,8 @@
 # details.
 #
 # You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>. 
-# The acceptance of the conditions of the GNU Affero General Public License are 
+# with this program.  If not, see <https://www.gnu.org/licenses/>.
+# The acceptance of the conditions of the GNU Affero General Public License are
 # compulsory for the usage of the software.
 #
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
@@ -63,7 +63,7 @@ All source objects possess the following attributes and methods:
    :scale: 50 %
 
 """
-__all__ = ["magnet","current","moment"] # This is for Sphinx
+__all__ = ["magnet", "current", "moment"]  # This is for Sphinx
 
 import magpylib._lib.classes.magnets as magnet
 import magpylib._lib.classes.currents as current
