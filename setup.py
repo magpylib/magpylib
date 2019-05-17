@@ -20,12 +20,12 @@
 _SphinxVersion = "1.8.2"
 
 _name = "magpylib"
-_magPyVersion = "1.0a0"
+_magPyVersion = "1.0.0-beta"
 _description = "A simple, user friendly Python 3.2+ toolbox for calculating magnetic fields from permanent magnets and current distributions."
 _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"
-_release = "alpha"
+_release = "beta"
 
 import setuptools
 
