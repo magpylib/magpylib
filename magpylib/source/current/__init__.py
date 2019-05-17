@@ -1,7 +1,7 @@
 # -------------------------------------------------------------------------------
-# MagPyLib -- A Python 3.2+ toolbox for calculating magnetic fields from
-# permanent magnets and current distributions. 
-# Copyright (C) 2019  Michael Ortner <magpylib@gmail.com>
+# MagPyLib -- A Python 3.2+ toolbox for working with magnetic fields.
+# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,  
+#               Michael Ortner <magpylib@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
 # the terms of the GNU Affero General Public License as published by the Free
@@ -14,10 +14,12 @@
 # details.
 #
 # You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>.
+# with this program.  If not, see <https://www.gnu.org/licenses/>. 
+# The acceptance of the conditions of the GNU Affero General Public License are 
+# compulsory for the usage of the software.
 #
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
-# page at https://www.github.com/OrtnerMichael/magpylib/issues.
+# page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
 Current Sources
