@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------
 # MagPyLib -- A Python 3.2+ toolbox for working with magnetic fields.
-# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,  
+# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
 #               Michael Ortner <magpylib@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -14,8 +14,8 @@
 # details.
 #
 # You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>. 
-# The acceptance of the conditions of the GNU Affero General Public License are 
+# with this program.  If not, see <https://www.gnu.org/licenses/>.
+# The acceptance of the conditions of the GNU Affero General Public License are
 # compulsory for the usage of the software.
 #
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
@@ -25,10 +25,10 @@
 # -*- coding: utf-8 -*-
 
 from magpylib._lib.mathLibPrivate import fastNorm3D, fastSum3D
-from numpy import pi,dot,array,NaN
+from numpy import pi, dot, array, NaN
 
 
-#%% DIPOLE field
+# %% DIPOLE field
 
 # describes the field of a dipole positioned at posM and pointing into the direction of M
 
@@ -39,13 +39,13 @@ from numpy import pi,dot,array,NaN
 # |M| corresponds to the magnetic moment of a cube with remanence Br and Volume V such that
 #       |M| [mT*mm^3]  =  Br[mT] * V[mm^3]
 
-def Bfield_Dipole(M,pos):
+def Bfield_Dipole(M, pos):
     R = pos
     rr = fastSum3D(R*R)
     mr = fastSum3D(M*R)
-    
+
     if rr == 0:
         print('Warning: getB Position directly on magnet surface')
-        return array([NaN,NaN,NaN])
-    
+        return array([NaN, NaN, NaN])
+
     return (3*R*mr-M*rr)/rr**(5/2)/(4*pi)

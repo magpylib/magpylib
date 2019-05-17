@@ -1,6 +1,6 @@
 # -------------------------------------------------------------------------------
 # MagPyLib -- A Python 3.2+ toolbox for working with magnetic fields.
-# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,  
+# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
 #               Michael Ortner <magpylib@gmail.com>
 #
 # This program is free software: you can redistribute it and/or modify it under
@@ -14,8 +14,8 @@
 # details.
 #
 # You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>. 
-# The acceptance of the conditions of the GNU Affero General Public License are 
+# with this program.  If not, see <https://www.gnu.org/licenses/>.
+# The acceptance of the conditions of the GNU Affero General Public License are
 # compulsory for the usage of the software.
 #
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
@@ -26,21 +26,21 @@
 # MAGNETIC FIELD CALCULATION FOR SPHERICAL MAGNET IN CANONICAL BASIS
 
 
-
-#%% IMPORTS
+# %% IMPORTS
 from magpylib._lib.mathLibPrivate import fastNorm3D, fastSum3D
-from numpy import array,NaN
+from numpy import array, NaN
 
-#%% CALCULATION
+# %% CALCULATION
 
 # The magnetic field of a spherical magnet with the center in the origin
 
 # MAG = magnetization vector     [mT]  - takes arr3
 # pos = position of the observer [mm]  - takes arr3
-# D = diameter of sphere         [mm]  - takes float  
+# D = diameter of sphere         [mm]  - takes float
 
-def Bfield_Sphere(MAG, pos, D): #returns array, takes (arr3, arr3, float)
-    
+
+def Bfield_Sphere(MAG, pos, D):  # returns array, takes (arr3, arr3, float)
+
     radius = D/2
     r = fastNorm3D(pos)
 
@@ -48,6 +48,6 @@ def Bfield_Sphere(MAG, pos, D): #returns array, takes (arr3, arr3, float)
         return radius**3/3*(-MAG/r**3 + 3*fastSum3D(MAG*pos)*pos/r**5)
     elif r == radius:
         print('Warning: getB Position directly on magnet surface')
-        return array([NaN,NaN,NaN])
+        return array([NaN, NaN, NaN])
     else:
         return 2/3*MAG
