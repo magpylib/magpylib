@@ -62,13 +62,13 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = 'MagPyLib'
-copyright = '2019, Michael Ortner'
-author = 'Michael Ortner'
+copyright = '2019, SAL - Silicon Austria Labs'
+author = 'Michael Ortner <magpylib@gmail.com>'
 
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '1.0'
+release = '1.0.0-alpha'
 
 
 # -- General configuration ---------------------------------------------------
