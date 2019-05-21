@@ -1,4 +1,4 @@
-# Physics behind magpylib
+# [WIP] Physics behind magpylib
 
 Here we clarify some of the physics behind the analytical expressions that are provided by magpylib. Most also reflected in the paper **CITE PAPER HERE**
 

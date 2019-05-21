@@ -1,4 +1,4 @@
-.. MagPyLib documentation master file, created by
+.. magpylib documentation master file, created by
    sphinx-quickstart on Tue Feb 26 11:58:33 2019.
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
@@ -8,7 +8,7 @@ Welcome to magpylib's documentation!
 
 .. rst-class:: center
 
-   *(Hopefully) powered by:*
+   *Powered by:*
 
 .. image:: _static/images/index/sal.svg
    :align: center

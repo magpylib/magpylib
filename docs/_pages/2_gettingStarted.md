@@ -1,6 +1,6 @@
-# Guide - Getting Started with magpylib
+# [WIP] Guide - Getting Started with magpylib
 
-- [Guide - Getting Started with magpylib](#guide---getting-started-with-magpylib)
+- [[WIP] Guide - Getting Started with magpylib](#wip-guide---getting-started-with-magpylib)
     - [Summary of the Library Structure](#summary-of-the-library-structure)
     - [Input Types](#input-types)
     - [Defining Sources](#defining-sources)
@@ -42,7 +42,7 @@ and angle information as well as rotation of position vectors.
 
 ### Input Types
 
-MagPyLib utilizes a few arbitrary input types which are currently unchecked. 
+magpylib utilizes a few arbitrary input types which are currently unchecked. 
 Here's a short table with further details:
 
 
@@ -86,7 +86,7 @@ As an example we will define a :mod:`~magpylib.source.magnet.Box` source object 
 import magpylib
 
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in microTesla.
+b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in milliTesla.
                                 dim = [4,5,6],  # Length, width and height of our box in mm.
                                 pos = [7,8,9],  # The center position of this magnet 
                                                 # in a cartesian plane.
