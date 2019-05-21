@@ -25,6 +25,16 @@ _Python3.2+_, _Numpy_, _Matplotlib_
 
 ---
 
+### Guides & Installation:
+
+**Please [check out our documentation](https://magpylib-magpylib.readthedocs-hosted.com/) for [getting started](https://magpylib-magpylib.readthedocs-hosted.com/) and more info!**
+_Installation methods are still WIP._
+
+Installing this project locally:
+- Clone this repository to your machine.
+- In the directory, run `pip install .` in your conda terminal.
+
+
 ### Example:
 
 - Two permanent magnets with axial magnetization are created and geometrically manipulated. They are grouped in a single collection and the system geometry is displayed using a supplied method.
@@ -67,33 +77,6 @@ ax.streamplot(X, Y, U, V, color=np.log(U**2+V**2), density=1.5)
 plt.show() 
 ```
 
----
 
-### Installation:
-
-- Clone this repository 
-```bash
-$ git clone https://github.com/magpylib/magpylib
-```
-- Create virtual environment:
-```bash
-$ conda create -n packCondaTest 
-```
-- Activate:
-
-```bash
-$ conda activate packCondaTest
-```
-
-- Install the generated library for the environment:
-```bash
-(packCondaTest) $ cd magpylib/
-```
-
-```bash
-(packCondaTest) $ pip install .
-```
-
-The library is now in the packCondaTest environment.
 
 
