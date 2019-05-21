@@ -18,6 +18,7 @@
 <p align="center">
     <img align='center' src="./docs/_static/images/index/sourceBasics.svg"></center>
 </p>
+
 ---
 ### Dependencies: 
 _Python3.2+_, _Numpy_, _Matplotlib_
