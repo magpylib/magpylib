@@ -587,7 +587,6 @@ class Collection(FieldSampler):
             xlim=(-SYSSIZE, SYSSIZE),
             ylim=(-SYSSIZE, SYSSIZE),
             zlim=(-SYSSIZE, SYSSIZE),
-            aspect=1
         )
         plt.tight_layout()
 
