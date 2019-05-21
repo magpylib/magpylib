@@ -1,7 +1,6 @@
-[![CircleCI](https://circleci.com/gh/OrtnerMichael/magPyLib.svg?style=svg)](https://circleci.com/gh/OrtnerMichael/magPyLib) 
-[![](https://readthedocs.com/projects/magpylib-magpylib/badge/?version=sphinx-docs)](https://magpylib-magpylib.readthedocs-hosted.com/)
+[![CircleCI](https://circleci.com/gh/magpylib/magpylib.svg?style=svg)](https://circleci.com/gh/magpylib/magpylib)
+[![Documentation Status](https://readthedocs.org/projects/magpylib/badge/?version=latest)](https://magpylib.readthedocs.io/en/latest/?badge=latest)
 
----
 
 # About
 *A simple and user friendly magnetic toolbox for Python 3.2+*
