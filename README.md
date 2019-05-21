@@ -18,39 +18,13 @@
 <p align="center">
     <img align='center' src="./docs/_static/images/index/sourceBasics.svg"></center>
 </p>
----
+
+
 ### Dependencies: 
 _Python3.2+_, _Numpy_, _Matplotlib_
 
-### Installation:
-
-- Clone this repository 
-```bash
-$ git clone https://github.com/magpylib/magpylib
-```
-- Create virtual environment:
-```bash
-$ conda create -n packCondaTest 
-```
-- Activate:
-
-```bash
-$ conda activate packCondaTest
-```
-
-- Install the generated library for the environment:
-```bash
-(packCondaTest) $ cd magpylib/
-```
-
-```bash
-(packCondaTest) $ pip install .
-```
-
-The library is now in the packCondaTest environment.
-
-
 ---
+
 ### Example:
 
 - Two permanent magnets with axial magnetization are created and geometrically manipulated. They are grouped in a single collection and the system geometry is displayed using a supplied method.
@@ -92,3 +66,34 @@ U,V = Bs[:,:,0], Bs[:,:,2]
 ax.streamplot(X, Y, U, V, color=np.log(U**2+V**2), density=1.5)
 plt.show() 
 ```
+
+---
+
+### Installation:
+
+- Clone this repository 
+```bash
+$ git clone https://github.com/magpylib/magpylib
+```
+- Create virtual environment:
+```bash
+$ conda create -n packCondaTest 
+```
+- Activate:
+
+```bash
+$ conda activate packCondaTest
+```
+
+- Install the generated library for the environment:
+```bash
+(packCondaTest) $ cd magpylib/
+```
+
+```bash
+(packCondaTest) $ pip install .
+```
+
+The library is now in the packCondaTest environment.
+
+
