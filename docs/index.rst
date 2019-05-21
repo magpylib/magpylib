@@ -8,7 +8,7 @@ Welcome to magpylib's documentation!
 
 .. rst-class:: center
 
-   *(Hopefully) powered by:*
+   *Powered by:*
 
 .. image:: _static/images/index/sal.svg
    :align: center

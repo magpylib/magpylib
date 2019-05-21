@@ -1,4 +1,4 @@
-# Guide - Developer's Manual
+# [WIP] Guide - Developer's Manual
 
 This is meant as a quickstart guide to aid in contributing to the project. 
 Please shoot an email at magpylib@gmail.com if there is any confusion.
