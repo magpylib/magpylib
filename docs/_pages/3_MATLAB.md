@@ -15,7 +15,7 @@ Python, which enables users to run Magpylib from the MATLAB interface.
 
 The following guide intends to provide a digest of the [Official MATLAB
 documentation](https://www.mathworks.com/help/matlab/call-python-libraries.html)
- with a focus on utilizing this interface for applying MagPyLib.
+ with a focus on utilizing this interface for applying magpylib.
 
 
 - [[WIP] Guide - MATLAB Integration](#wip-guide---matlab-integration)

@@ -1,6 +1,6 @@
 # [WIP] Installation Instructions
 
-Here you'll find instructions to Install MagPyLib. This is a work in progress.
+Here you'll find instructions to Install magpylib. This is a work in progress.
 
 - [[WIP] Installation Instructions](#wip-installation-instructions)
   - [Windows Install](#windows-install)
@@ -26,9 +26,9 @@ _Anaconda is a distribution of Python tools for Scientific Computing, making it 
 
 1. [Download Anaconda][anaconda]
 2. Start Anaconda Navigator 
-3. On the interface, go to `Environments` and choose the environment you wish to install MagPyLib in. For this example, we will use the base environment:
+3. On the interface, go to `Environments` and choose the environment you wish to install magpylib in. For this example, we will use the base environment:
    ![](../_static/images/install_guide/anaconda0.png)
-4. Look for MagPyLib in the Package search bar
+4. Look for magpylib in the Package search bar
    ![](../_static/images/install_guide/anaconda.png)
 5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
@@ -78,9 +78,9 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 
 1. [Download Anaconda][anaconda]
 2. Open a terminal window and type `anaconda-navigator`
-3. On the interface, go to `Environments` and choose the environment you wish to install MagPyLib in. For this example, we will use the base environment:
+3. On the interface, go to `Environments` and choose the environment you wish to install magpylib in. For this example, we will use the base environment:
    ![](../_static/images/install_guide/anaconda0.png)
-4. Look for MagPyLib in the Package search bar
+4. Look for magpylib in the Package search bar
    ![](../_static/images/install_guide/anaconda.png)
 5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
@@ -116,7 +116,7 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 
 ## Download Pages
 
-_Currently MagPyLib is hosted over at:_
+_Currently magpylib is hosted over at:_
 - [Conda Cloud][CondaCloud]
 - [PyPi][PyPi]
 

@@ -42,7 +42,7 @@ and angle information as well as rotation of position vectors.
 
 ### Input Types
 
-MagPyLib utilizes a few arbitrary input types which are currently unchecked. 
+magpylib utilizes a few arbitrary input types which are currently unchecked. 
 Here's a short table with further details:
 
 
