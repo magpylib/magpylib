@@ -43,6 +43,7 @@ pip-delete-this-directory.txt
 
 # Unit test / coverage reports
 htmlcov/
+test-results/
 .tox/
 .nox/
 .coverage
@@ -72,7 +73,7 @@ instance/
 
 # Sphinx documentation
 docs/_build/
-
+docs/_autogen/
 # PyBuilder
 target/
 
@@ -93,6 +94,7 @@ celerybeat-schedule
 *.sage.py
 
 # Environments
+.vscode/
 .env
 .venv
 env/
@@ -121,5 +123,7 @@ dmypy.json
 
 ### Python Patch ###
 .venv/
+
+
 
 # End of https://www.gitignore.io/api/python
