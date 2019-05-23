@@ -1,86 +1,24 @@
-# [WIP] Guide - Getting Started with magpylib
+# Guide - Getting started with magpylib
 
-- [[WIP] Guide - Getting Started with magpylib](#wip-guide---getting-started-with-magpylib)
-    - [Summary of the Library Structure](#summary-of-the-library-structure)
-    - [Input Types](#input-types)
-    - [Defining Sources](#defining-sources)
-    - [Calculating Fields](#calculating-fields)
-    - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
-    - [Translations and Rotations](#translations-and-rotations)
-    - [Multipoint Field Calculations](#multipoint-field-calculations)
-      - [Displacement Input](#displacement-input)
+Welcome to magpylibs getting started guide. It is the aim of this section to give a few code examples that show how the library can be optimally used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
-### Summary of the Library Structure 
-
-```eval_rst
-
-.. image:: ../_static/images/documentation/lib_structure.JPG
-   :align: center
-   :scale: 50 %
-
-Magpylib is defined by three main modules:
-
-The core module of magpylib is :mod:`~magpylib.source`, whose subpackages
-offer the primitive building blocks for creating our simulation data.
-
-The top level serves the :class:`magpylib.Collection`
-class, which offers easy grouping of :mod:`~magpylib.source` objects,
-allowing for the display and combination of fields.
-
-The :mod:`~magpylib.math` module provides on-hand methods for handling axis
-and angle information as well as rotation of position vectors.
-
-.. currentmodule:: magpylib
-
-.. autosummary::
-
-   Collection
-   source
-   math
-
-```
-
-### Input Types
-
-magpylib utilizes a few arbitrary input types which are currently unchecked. 
-Here's a short table with further details:
-
-
-```eval_rst
-+------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
-|  Type Name | Description                                             | Example                                                                     | Actual Type                              |
-+============+=========================================================+=============================================================================+==========================================+
-| scalar     | A field element.                                        | scalar = 90.0                                                               |  numeric (instances of `int` or `float`) |
-+------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
-| vec3       |  A Vector of 3 scalars.                                 | vec3 = (1,2.5,-3)                                                           | Tuple(numeric,numeric,numeric)           |
-+------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
-| listVec3   |  A List Containing an N amount of Vectors of 3 scalars. | listOfVec3 = [(1,2,3),              (4.0,5.0,6.0),              (-7,-8,-9)] |  List[Tuple(numeric,numeric,numeric)]    |
-+------------+---------------------------------------------------------+-----------------------------------------------------------------------------+------------------------------------------+
-```
-
-Summary:
-
-- All input is either `scalar`, `vector`, or a list-like object of either.
-- `scalar` can be of any numeric data type (`int` , `float` , `np.float64`,...)
-- `vector` can be any iterable, list-like object (`list`, `tuple`, `np.array`,...) of arbitrary data type.
+- Content
+  - [First program](#First-program)
+  - [getBsweep]()
+  - [Collections and Superposition]()
   
-The formulas are set up such that the input and output variables are given in the units of: 
-- *Millimeter* [`mm`]
-- *Millitesla* [`mT`]
-- *Ampere* [`A`]
--  *Degree* [`deg`]
 
+  - [Input Types](#input-types)
+  - [Defining Sources](#defining-sources)
+  - [Calculating Fields](#calculating-fields)
+  - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
+  - [Translations and Rotations](#translations-and-rotations)
+  - [Multipoint Field Calculations](#multipoint-field-calculations)
+    - [Displacement Input](#displacement-input)
 
-### Defining Sources
+### First program 
 
-```eval_rst
-The :class:`magpylib.source` module contains objects that represent electromagnetic sources. 
-
-These objects are created in an isolated, unique 3D frame with cartesian positioning, and generate different fields depending on their geometry and magnetization vectors.
-
-As an example we will define a :mod:`~magpylib.source.magnet.Box` source object from the :mod:`magpylib.source.magnet` module.
-```
-
+In the first program we will simply 
 
 ```python
 import magpylib
