@@ -51,8 +51,8 @@ def Bfield_CircularCurrentLoop(i0, d0, pos):
     #    print('WARNING: close to singularity - setting field to zero')
     #    return array([0,0,0])
     rr0 = r-r0
-    if (-1e-15 < rr0 and rr0 < 1e-15):  # rounding to eliminate the .5-.55 problem when sweeping
-        if (-1e-15 < z and z < 1e-15):
+    if (-1e-12 < rr0 and rr0 < 1e-12):  # rounding to eliminate the .5-.55 problem when sweeping
+        if (-1e-12 < z and z < 1e-12):
             print('Warning: getB Position directly on current line')
             return array([NaN, NaN, NaN])
 
@@ -62,7 +62,7 @@ def Bfield_CircularCurrentLoop(i0, d0, pos):
     kappaBar = 1-kappa
 
     # avoid discontinuity at r=0
-    if (-1e-15 < r and r < 1e-15):
+    if (-1e-12 < r and r < 1e-12):
         Br = 0.
     else:
         Br = -2*1e-4*i0*(z/r/deltaM)*(ellipticK(kappaBar) -
