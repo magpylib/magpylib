@@ -26,7 +26,7 @@ _Python3.2+_, _Numpy_, _Matplotlib_
 
 ### Guides & Installation:
 
-**Please [check out our documentation](https://magpylib-magpylib.readthedocs-hosted.com/) for [getting started](https://magpylib-magpylib.readthedocs-hosted.com/) and more info!**
+**Please [check out our documentation](https://magpylib.readthedocs.io/en/latest) for getting started and more info!**
 _Installation methods are still WIP._
 
 Installing this project locally:
