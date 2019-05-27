@@ -9,7 +9,8 @@ environment:
 build: off
 
 install:
-- pip install .
+- pip install . 
+- pip install pytest
 
 test_script:
 - pytest
