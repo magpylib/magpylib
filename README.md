@@ -1,9 +1,31 @@
-[![CircleCI](https://circleci.com/gh/magpylib/magpylib.svg?style=svg)](https://circleci.com/gh/magpylib/magpylib)
-[![Documentation Status](https://readthedocs.org/projects/magpylib/badge/?version=latest)](https://magpylib.readthedocs.io/en/latest/?badge=latest)
+
+<p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
+<p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3.2+</i><p>
 
 
-# About
-*A simple and user friendly magnetic toolbox for Python 3.2+*
+
+
+---
+<div>
+<p align="center"> Builds: 
+<a href="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
+<a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
+<a href="https://ci.appveyor.com/project/OrtnerMichael/magpylib/branch/master"> <img align='center' src="https://ci.appveyor.com/api/projects/status/0mka52e1tqnkgnx3/branch/master?svg=true"> </a>
+</p>
+
+<p align="center"> Documentation: 
+<a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
+<a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
+</p>
+
+<p align="center"> Test Coverage: 
+<a href="https://codecov.io/gh/magpylib/magpylib">
+  <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
+</a>
+</p>
+
+</div>
+
 
 ## What is magpylib ?
 - Python package for calculating magnetic fields of magnets, currents and
@@ -27,7 +49,8 @@ _Python3.2+_, _Numpy_, _Matplotlib_
 ### Guides & Installation:
 
 **Please [check out our documentation](https://magpylib.readthedocs.io/en/latest) for getting started and more info!**
-_Installation methods are still WIP._
+
+(_Installation methods are still WIP._)
 
 Installing this project locally:
 - Clone this repository to your machine.
