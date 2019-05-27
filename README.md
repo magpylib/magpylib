@@ -1,9 +1,6 @@
 
-# About
-
-
 <p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
-<p align="center"><i>A simple and user friendly magnetic toolbox for Python 3.2+</i><p>
+<p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3.2+</i><p>
 
 
 
