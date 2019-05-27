@@ -40,6 +40,6 @@ test_script:
   
   - ps: |
       # this produces nosetests.xml which is uploaded on_finish
-      &$env:PYTHON\python pytest
+      &$env:PYTHON\python -m pytest
       if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
 
