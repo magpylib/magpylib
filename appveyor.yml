@@ -14,4 +14,4 @@ install:
 - pip install pytest
 
 test_script:
-- pytest
+- python3 pytest
