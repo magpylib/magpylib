@@ -1,9 +1,24 @@
-[![CircleCI](https://circleci.com/gh/magpylib/magpylib.svg?style=svg)](https://circleci.com/gh/magpylib/magpylib)
-[![Documentation Status](https://readthedocs.org/projects/magpylib/badge/?version=latest)](https://magpylib.readthedocs.io/en/latest/?badge=latest)
-
 
 # About
 *A simple and user friendly magnetic toolbox for Python 3.2+*
+
+---
+
+<p align="center"> Builds: 
+<a href="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
+<a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
+</p>
+
+<p align="center"> Documentation: 
+<a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
+</p>
+
+<p align="center"> Test Coverage: 
+<a href="https://codecov.io/gh/magpylib/magpylib">
+  <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
+</a>
+</p>
+
 
 ## What is magpylib ?
 - Python package for calculating magnetic fields of magnets, currents and
