@@ -1,12 +1,10 @@
 
 # About
-<div>
-<center>
-<img align="center" src=https://i.imgur.com/xXMmGG8.png>
 
-<i>A simple and user friendly magnetic toolbox for Python 3.2+</i>
-</center>
-</div>
+
+<p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
+<p align="center"><i>A simple and user friendly magnetic toolbox for Python 3.2+</i><p>
+
 
 
 
