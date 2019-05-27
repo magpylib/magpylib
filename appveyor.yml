@@ -1,14 +1,12 @@
 # appveyor.yml
 ---
-only:
-  - master
-  - azure-pipelines
+branches:
+  only:
+    - master
+    - azure-pipelines
+
 environment:
   matrix:
-    - PYTHON: "C:\\Python27-x64"
-      PYTHON_VERSION: "2.7.x" # currently 2.7.9
-      PYTHON_ARCH: "64"
-
     - PYTHON: "C:\\Python33"
       PYTHON_VERSION: "3.3.x" # currently 3.3.5
       PYTHON_ARCH: "32"
