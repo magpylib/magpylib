@@ -43,5 +43,3 @@ test_script:
       &$env:PYTHON\python pytest
       if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
 
-test_script:
-- python pytest
