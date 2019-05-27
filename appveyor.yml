@@ -2,16 +2,46 @@
 ---
 environment:
   matrix:
-
-  - PYTHON: "C:\\Python35-x64"
-    PYTHON_VERSION: "3.5.0"
-    PYTHON_ARCH: "64"
+    - PYTHON: "C:\\Python36"
+      PYTHON_VERSION: "3.6.x" # currently 3.6.5
+      PYTHON_ARCH: "32"
   
 build: off
 
 install:
-- pip install . 
-- pip install pytest
+  ## This install step is modified from 
+  ## https://github.com/ogrisel/python-appveyor-demo/blob/master/appveyor.yml
+  # Install Python (from the official .msi of https://python.org) and pip when
+  # not already installed.
+  - ps: if (-not(Test-Path($env:PYTHON))) { & appveyor\install.ps1 }
+
+  # Prepend newly installed Python to the PATH of this build (this cannot be
+  # done from inside the powershell script as it would require to restart
+  # the parent CMD process).
+  - "SET PATH=%PYTHON%;%PYTHON%\\Scripts;%PATH%"
+
+  # Check that we have the expected version and architecture for Python
+  - "python --version"
+  - "python -c \"import struct; print(struct.calcsize('P') * 8)\""
+
+  # Upgrade to the latest version of pip to avoid it displaying warnings
+  # about it being out of date.
+  - "python -m pip install --upgrade pip"
+
+  # Install the build dependencies of the project. If some dependencies contain
+  # compiled extensions and are not provided as pre-built wheel packages,
+  # pip will build them from source using the MSVC compiler matching the
+  # target Python version and architecture
+  - "%CMD_IN_ENV% pip install ."
+  - "%CMD_IN_ENV% pip install pytest"
 
 test_script:
-- python3 pytest
+  # Run the project tests and store results in .xml log
+  
+  - ps: |
+      # this produces nosetests.xml which is uploaded on_finish
+      &$env:PYTHON\python pytest
+      if ($LastExitCode -ne 0) { $host.SetShouldExit($LastExitCode) }
+
+test_script:
+- python pytest
