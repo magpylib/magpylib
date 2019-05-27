@@ -12,8 +12,6 @@ pool:
   vmImage: 'vs2017-win2016'
 strategy:
   matrix:
-    Python27:
-      python.version: '2.7'
     Python35:
       python.version: '3.5'
     Python36:
@@ -34,5 +32,5 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest
+    pytest --cov-report term:skip-covered --cov=magpylib 
   displayName: 'pytest'
