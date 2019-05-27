@@ -2,15 +2,16 @@
 ---
 environment:
   matrix:
-  - TOXENV: py35
-  - TOXENV: py36
-  - TOXENV: py37
 
+  - PYTHON: "C:\\Python35-x64"
+    PYTHON_VERSION: "3.5.0"
+    PYTHON_ARCH: "64"
+  
 build: off
 
 install:
-- pip3 install . 
-- pip3 install pytest
+- pip install . 
+- pip install pytest
 
 test_script:
-- python3 pytest
+- pytest
