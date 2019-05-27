@@ -4,9 +4,9 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- azure-pipelines
-- development
 - master
+- development 
+- feature/*
 
 pool:
   vmImage: 'vs2017-win2016'

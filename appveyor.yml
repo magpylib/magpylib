@@ -3,11 +3,10 @@
 branches:
   only:
     - master
-    - azure-pipelines
 
 environment:
   matrix:
-  
+
     - PYTHON: "C:\\Python36"
       PYTHON_VERSION: "3.6.x" # currently 3.6.5
       PYTHON_ARCH: "32"
