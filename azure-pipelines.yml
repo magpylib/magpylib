@@ -32,5 +32,5 @@ steps:
 
 - script: |
     pip install pytest pytest-azurepipelines
-    pytest --cov-report term:skip-covered --cov=magpylib 
+    pytest
   displayName: 'pytest'
