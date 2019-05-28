@@ -19,7 +19,7 @@
 </p>
 
 <p align="center"> Downloads: 
-<a href="https://badge.fury.io/py/magpylib">
+<a href="https://pypi.org/project/magpylib/">
 <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
 </p>
 
