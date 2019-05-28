@@ -18,16 +18,17 @@
 <a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
 </p>
 
-<p align="center"> Downloads: 
-<a href="https://pypi.org/project/magpylib/">
-<img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
-</p>
-
 <p align="center"> Test Coverage: 
 <a href="https://codecov.io/gh/magpylib/magpylib">
   <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
 </a>
 </p>
+
+<p align="center"> Downloads: 
+<a href="https://pypi.org/project/magpylib/">
+<img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
+</p>
+
 
 </div>
 
