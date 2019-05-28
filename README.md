@@ -1,6 +1,6 @@
 
 <p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
-<p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3.5+</i><p>
+<p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python</i><p>
 
 
 
@@ -42,7 +42,7 @@
 
 
 ### Dependencies: 
-_Python3.5+_, _Numpy_, _Matplotlib_
+_Python3.6+_, _Numpy_, _Matplotlib_
 
 ---
 
