@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
+<p align="center"><img align="center" src=https://i.imgur.com/n9oeT4C.png><p>
 <p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3</i><p>
 
 
