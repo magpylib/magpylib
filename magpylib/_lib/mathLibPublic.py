@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------
-# magpylib -- A Python 3.2+ toolbox for working with magnetic fields.
+# magpylib -- A Python 3.5+ toolbox for working with magnetic fields.
 # Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
 #               Michael Ortner <magpylib@gmail.com>
 #
