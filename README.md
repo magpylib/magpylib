@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=https://i.imgur.com/xXMmGG8.png><p>
+<p align="center"><img align="center" src=https://i.imgur.com/n9oeT4C.png><p>
 <p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3</i><p>
 
 
@@ -24,6 +24,12 @@
 </a>
 </p>
 
+<p align="center"> Downloads: 
+<a href="https://pypi.org/project/magpylib/">
+<img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
+</p>
+
+
 </div>
 
 
@@ -37,7 +43,7 @@
   requires little computation power.
 
 <p align="center">
-    <img align='center' src="https://magpylib.readthedocs.io/en/latest/_images/sourceBasics.svg"></center>
+    <img align='center' src="https://magpylib.readthedocs.io/en/latest/_images/sourceBasics.svg">
 </p>
 
 
@@ -51,6 +57,12 @@ _Python3.6+_, _Numpy_, _Matplotlib_
 **Please [check out our documentation](https://magpylib.readthedocs.io/en/latest) for getting started and more info!**
 
 (_Installation methods are still WIP._)
+
+Installing this project using pip:
+- run the following in your Python environment terminal:
+  ```
+  pip install magpylib
+  ```
 
 Installing this project locally:
 - Clone this repository to your machine.
