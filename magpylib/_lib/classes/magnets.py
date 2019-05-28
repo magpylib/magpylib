@@ -1,5 +1,5 @@
 # -------------------------------------------------------------------------------
-# magpylib -- A Python 3.5+ toolbox for calculating magnetic fields from
+# magpylib -- A Python toolbox for calculating magnetic fields from
 # permanent magnets and current distributions.
 # Copyright (C) 2019  Michael Ortner <magpylib@gmail.com>
 #
