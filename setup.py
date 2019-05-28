@@ -44,8 +44,8 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     zip_safe = False, ## Gives the environment files so we can access docs, enables tooltips but may decrease performance
     install_requires=[
-          'numpy',
-          'matplotlib',
+          'numpy>=1.16',
+          'matplotlib>=3.1',
       ],
     classifiers=[
         "Programming Language :: Python :: 3",
