@@ -52,6 +52,12 @@ _Python3.6+_, _Numpy_, _Matplotlib_
 
 (_Installation methods are still WIP._)
 
+Installing this project using pip:
+- run the following in your Python environment terminal:
+  ```
+  pip install magpylib
+  ```
+
 Installing this project locally:
 - Clone this repository to your machine.
 - In the directory, run `pip install .` in your conda terminal.
