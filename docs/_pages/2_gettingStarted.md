@@ -1,47 +1,58 @@
-# Guide - Getting started with magpylib
+# Guide - Examples and How to Use
 
-Welcome to magpylibs getting started guide. It is the aim of this section to give a few code examples that show how the library can be optimally used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
+It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
 - Content
-  - [First program](#First-program)
+  - [A Simple Collection and its Field](#A-Simple-Collection-and-its-Field)
   - [getBsweep]()
+  - [Multi Processing]()
   - [Collections and Superposition]()
-  
+  - [Creating complex shapes(addition + subtration)]()
 
-  - [Input Types](#input-types)
-  - [Defining Sources](#defining-sources)
-  - [Calculating Fields](#calculating-fields)
-  - [Creating Collections and Visualizing Geometry](#creating-collections-and-visualizing-geometry)
-  - [Translations and Rotations](#translations-and-rotations)
-  - [Multipoint Field Calculations](#multipoint-field-calculations)
-    - [Displacement Input](#displacement-input)
+### A Simple Collection and its Field
 
-### First program 
+In this first example a simple collection is created from two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem`method. The field is then calculated on a grid and displayed in the xz-plane.
 
-In the first program we will simply 
+```eval_rst
+
+.. plot:: pyplots/examples/examples.py
+   :include-source:
+
+:download:`examples.py <../pyplots/examples/examples.py>`
+```
+
+### Source Manipulation
+
+In the first program we will simply simulate a rotary encoder for end-shaft application. In such systems a diametral magnetized cylindrical magnet (D=10, H=5) made of Neodyme (remanence field 1.2 T) is placed at the end of a rotating shaft. A magnetic sensor is directly positioned below at a distance of 5 mm.
 
 ```python
-import magpylib
+from magpylib.source.magnet import Cylinder
+import matplotlib.pyplot as plt
+from numpy import zeros
 
+D,H = 10,5 #magnet dimension
+M0 = 1200  #magnet remanence field
+gap = 5    #airgap
 
-b = magpylib.source.magnet.Box( mag = [1,2,3],  # The magnetization vector in milliTesla.
-                                dim = [4,5,6],  # Length, width and height of our box in mm.
-                                pos = [7,8,9],  # The center position of this magnet 
-                                                # in a cartesian plane.
-                                angle = 90,     # The angle of orientation 
-                                                # around the given axis.
-                                axis = (0,0,1)) # The axis for orientation, 
-                                                # (x,y,z) respectively.)
+#create magnet
+s = Cylinder(dim=[D,H],mag=[M0,0,0],pos=[0,0,H/2+gap])
 
+N = 101 #rotation steps
+Bs = zeros([N,3]) #store fields here
+for i in range(N):
+    #calculate fields (sensor at [0,0,0])
+    Bs[i] = s.getB([0,0,0])
+    
+    #rotate magnet for next step
+    s.rotate(360/N,[0,0,1])
 
-print(b.magnetization)  # Output: [1. 2. 3.]
-print(b.dimension)      # Output: [4. 5. 6.]
-print(b.position)       # Output: [7. 8. 9.]
-print(b.angle)          # Output: 90.0
-print(b.axis)           # Output: [0. 0. 1.]
-print(b)                # Output: Memory location of our Box Object
-
+#plot field
+plt.plot(Bs)
 ```
+
+
+
+
 ### Calculating Fields
 
 The magnetic field at a single point may be calculated by entering a position vector into the source object's getB() method. This method is available in all source classes.
