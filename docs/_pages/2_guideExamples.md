@@ -3,7 +3,8 @@
 It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
 - Content
-  - [A Simple Collection and its Field](#A-Simple-Collection-and-its-Field)
+  - [A Simple Collection and its Field](#A-simple-collection-and-its-field)
+  - [Simulating Magnet Motion](#Simulating-magnet-motion)
   - [getBsweep]()
   - [Multi Processing]()
   - [Collections and Superposition]()
@@ -11,67 +12,29 @@ It is the aim of this section to give a few code examples that show how the libr
 
 ### A Simple Collection and its Field
 
-In this first example a simple collection is created from two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem`method. The field is then calculated on a grid and displayed in the xz-plane.
+In this first example a simple collection is created from two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem` method. The field is then calculated on a grid and displayed in the xz-plane.
 
 ```eval_rst
 
-.. plot:: pyplots/examples/examples.py
+.. plot:: pyplots/examples/01_SimpleCollection.py
    :include-source:
 
-:download:`examples.py <../pyplots/examples/examples.py>`
+:download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
 ```
 
-### Source Manipulation
+### Simulating Magnet Motion
 
-In the first program we will simply simulate a rotary encoder for end-shaft application. In such systems a diametral magnetized cylindrical magnet (D=10, H=5) made of Neodyme (remanence field 1.2 T) is placed at the end of a rotating shaft. A magnetic sensor is directly positioned below at a distance of 5 mm.
+In this example a joystick is simulated. A magnetic joystick is realized by a rod that can tilt freely (two degrees of freedom) about a center of tilt. The upper part of the rod is the joystick handle. At the bottom of the rod a cylindrical magnet (dimension *D/H*) with axial magnetization (amplitude *M0*) is fixed. The magnet lies at a distance *d* below the center of tilt. The system is constructed such that, when the joystick is in the center position a sensor lies at distance *gap* below the magnet and in the origin of a cartesian coordinate system. The magnet thus moves with the joystick above the fixed sensor.
 
-```python
-from magpylib.source.magnet import Cylinder
-import matplotlib.pyplot as plt
-from numpy import zeros
+In the following program the magnetic field is calculated for all degrees of freedom. Different tilt angles are set by rotation about the center of tilt by the angle *th* (different colors). Then the tilt direction is varied from 0 to 360 degrees by simulating the magnet 'motion' as rotation about the z-axis.
 
-D,H = 10,5 #magnet dimension
-M0 = 1200  #magnet remanence field
-gap = 5    #airgap
+```eval_rst
 
-#create magnet
-s = Cylinder(dim=[D,H],mag=[M0,0,0],pos=[0,0,H/2+gap])
+.. plot:: pyplots/examples/02_MagnetMotion.py
+   :include-source:
 
-N = 101 #rotation steps
-Bs = zeros([N,3]) #store fields here
-for i in range(N):
-    #calculate fields (sensor at [0,0,0])
-    Bs[i] = s.getB([0,0,0])
-    
-    #rotate magnet for next step
-    s.rotate(360/N,[0,0,1])
-
-#plot field
-plt.plot(Bs)
+:download:`02_MagnetMotion.py <../pyplots/examples/02_MagnetMotion.py>`
 ```
-
-
-
-
-### Calculating Fields
-
-The magnetic field at a single point may be calculated by entering a position vector into the source object's getB() method. This method is available in all source classes.
-
-```python
-import magpylib         
-
-pointToCalculate = [-3,-2,-1] # Position Vector of the field point to calculate
-b = magpylib.source.magnet.Box( mag = [1,2,3],   
-                                dim = [4,5,6],  
-                                pos = [7,8,9],  
-                                angle = 90,     
-                                axis = (0,0,1))
-
-fieldPoint = b.getB(pointToCalculate) # Get the B field at given point
-print(fieldPoint) # Output: [ 0.00730574  0.00181691 -0.00190384] 
-```
-
-This is most effective when paired with matplotlib, allowing you to visualize your simulation data.
 
 ### Creating Collections and Visualizing Geometry
 
