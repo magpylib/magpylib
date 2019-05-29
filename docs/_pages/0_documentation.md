@@ -238,28 +238,12 @@ In most cases, however, one will be interested to determine the field for a set 
 
 The following example code shows how to quickly calculate the magnetic field using `getBsweep` with *INPUT TYPE 1*:
 
-```Python
-from magpylib.source.magnet import Box
-from numpy import linspace
-import matplotlib.pyplot as plt
-
-#create magnet
-pm = Box(mag=[0,0,1],dim=[1,1,1])
-
-#create sensor positions
-posis = [[x,0,3] for x in linspace(-10,10,100)]
-
-#calcualte fields
-Bs = pm.getBsweep(posis)
-
-#plot fields
-plt.plot(Bs)
-```
-
 ```eval_rst
-.. image:: ../_static/images/documentation/getBsweep.png
-   :align: center
-   :scale: 65 %
+
+.. plot:: pyplots/doku/getBsweep.py
+   :include-source:
+
+:download:`getBsweep.py <../pyplots/doku/getBsweep.py>`
 ```
 
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Output of the above code. Three components of the field in millitesla along a linear stroke above the magnet. </p></i>

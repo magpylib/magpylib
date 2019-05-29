@@ -22,6 +22,12 @@ In this first example a simple collection is created from two magnets. The magne
 :download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
 ```
 
+### Orientation and Rotation Basics
+
+display würfel der in alle richtungen gedreht wird
+REFERENZEN von der DOKU zu den EXAMPLES.
+
+
 ### Simulating Magnet Motion
 
 In this example a joystick is simulated. A magnetic joystick is realized by a rod that can tilt freely (two degrees of freedom) about a center of tilt. The upper part of the rod is the joystick handle. At the bottom of the rod a cylindrical magnet (dimension *D/H*) with axial magnetization (amplitude *M0*) is fixed. The magnet lies at a distance *d* below the center of tilt. The system is constructed such that, when the joystick is in the center position a sensor lies at distance *gap* below the magnet and in the origin of a cartesian coordinate system. The magnet thus moves with the joystick above the fixed sensor.
@@ -36,39 +42,6 @@ In the following program the magnetic field is calculated for all degrees of fre
 :download:`02_MagnetMotion.py <../pyplots/examples/02_MagnetMotion.py>`
 ```
 
-### Creating Collections and Visualizing Geometry
-
-```eval_rst
-
-Top Level holds the :class:`magpylib.Collection` class, which represents a collection of source objects. 
-
-This means that you may define a space where multiple source objects are compounding, and acquire the resulting magnetic fields of multiple sources. 
-
-A :class:`~magpylib.Collection` object also allows you to manipulate the listed source objects and show them in a 3D display.
-
-Let's create a collection and visualize our :mod:`~magpylib.source.magnet.Box`.
-
-.. plot:: pyplots/guide/collection1.py
-   :include-source:
-
-We can set markers with labels to help us identify certain points in the 3D plane. By default, there is a marker at position `[0,0,0]`.
-
-```
-
----
-
-
-```eval_rst
-
-Collections also allow us to add Source Objects into a shared frame so they can superimpose their fields. We may retrieve samples of the resulting B field of this compounding effect with its :func:`~magpylib.Collection.getB` method. 
-
-Let's **retrieve the B field** sample from our :mod:`~magpylib.source.magnet.Box` **superimposed** with a :mod:`~magpylib.source.magnet.Sphere` object, and show it in the display.
-
-.. plot:: pyplots/guide/collection2.py
-   :include-source:
-
-
-```
 
 ### Translations and Rotations
 
