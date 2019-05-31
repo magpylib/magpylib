@@ -1,8 +1,8 @@
-# [WIP] Installation Instructions
+# Installation Instructions
 
 Here you'll find instructions to Install magpylib. This is a work in progress.
 
-- [[WIP] Installation Instructions](#wip-installation-instructions)
+- [Installation Instructions](#installation-instructions)
   - [Windows Install](#windows-install)
       - [Anaconda 3 Install for Spyder or Jupyter Notebook](#anaconda-3-install-for-spyder-or-jupyter-notebook)
       - [Clean Python 3 install](#clean-python-3-install)
