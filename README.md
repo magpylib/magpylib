@@ -62,7 +62,7 @@ _Python3.6+_, _Numpy_, _Matplotlib_
 
 **Please [check out our documentation](https://magpylib.readthedocs.io/en/latest) for getting started and more info!**
 
-(_Installation methods are still WIP._)
+Quickstart:
 
 Installing this project using pip:
 - run the following in your Python environment terminal:
