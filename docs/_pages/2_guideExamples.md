@@ -3,8 +3,8 @@
 It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
 - Content
-  - [A Simple Collection and its Field](#A-simple-collection-and-its-field)
-  - [Simulating Magnet Motion](#Simulating-magnet-motion)
+  - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
+  - [Simulating Magnet Motion](#simulating-magnet-motion)
   - [getBsweep]()
   - [Multi Processing]()
   - [Collections and Superposition]()
@@ -24,9 +24,35 @@ In this first example a simple collection is created from two magnets. The magne
 
 ### Orientation and Rotation Basics
 
-display würfel der in alle richtungen gedreht wird
-REFERENZEN von der DOKU zu den EXAMPLES.
+In the following examples we show orientations and rotations of source objects. The first example shows a cubical magnet initialized with four different orientations defined by the classical Euler angle rotations about the three cartesian axes.
 
+```eval_rst
+
+.. plot:: pyplots/examples/00a_OrientRot1.py
+   :include-source:
+
+:download:`00a_OrientRot1.py <../pyplots/examples/00a_OrientRot1.py>`
+```
+
+The second example shows a general form of orientation for different angles about an axis (1,-1,1). The upper three boxes are initilized with different orientations. The lower three boxes are all initialized with INIT ORIENTATION and are then rotated (about themselves) to achive the same result as above.
+
+```eval_rst
+
+.. plot:: pyplots/examples/00b_OrientRot2.py
+   :include-source:
+
+:download:`00b_OrientRot2.py <../pyplots/examples/00b_OrientRot2.py>`
+```
+
+Finally, the last example shows rotations with desiganted anchor-axis combinations. Here we distinguish between pivot points (the closest point on the rotation axis to the magnet) and anchor points which are simply required to define an axis in 3D space (together with the direction).
+
+```eval_rst
+
+.. plot:: pyplots/examples/00c_OrientRot3.py
+   :include-source:
+
+:download:`00c_OrientRot3.py <../pyplots/examples/00c_OrientRot3.py>`
+```
 
 ### Simulating Magnet Motion
 

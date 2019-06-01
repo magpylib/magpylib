@@ -9,7 +9,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-io-types)
   - [The Source Class](#the-source-class)
-    - [Attributes and Keyword Initialization:](#attributes-and-keyword-initialization)
+    - [Source Attributes and Initialization:](#source-attributes-and-initialization)
     - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
     - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
   - [The Collection Class](#the-collection-class)
@@ -67,7 +67,18 @@ This is the core class of the library. The idea is that source objects represent
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Source types currently available in magpylib. </p></i>
 
-The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
+The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the docstrings
+
+```eval_rst
+ - :mod:`~magpylib.source.magnet.Box`
+ - :mod:`~magpylib.source.magnet.Cylinder`
+ - :mod:`~magpylib.source.magnet.Box`
+ - :mod:`~magpylib.source.current.Line`
+ - :mod:`~magpylib.source.current.Circular`
+ - :mod:`~magpylib.source.moment.Dipole`
+```
+
+and in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
 .. image:: ../_static/images/documentation/sourceVars_Methods.svg
@@ -97,15 +108,7 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
 
 While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized by hand.
 
-The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respecive class docstrings:
-```eval_rst
- - :mod:`~magpylib.source.magnet.Box`
- - :mod:`~magpylib.source.magnet.Cylinder`
- - :mod:`~magpylib.source.magnet.Box`
- - :mod:`~magpylib.source.current.Line`
- - :mod:`~magpylib.source.current.Circular`
- - :mod:`~magpylib.source.moment.Dipole`
-```
+The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respecive class docstrings ```eval_rst :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` ```.
 
 The excitation is either the magnet magnetization, the current or the magnetic moment. Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). The magnetization vector is described by the `magnetization` attribute which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
 
@@ -197,11 +200,9 @@ s = Cylinder( mag = [500,0,500], dim = [4,5])
 print(s.position)       # Output: [0. 0. 0.]
 
 s.move([1,2,3])
-
 print(s.position)       # Output: [1. 2. 3.]
 
 s.move([1,2,3])
-
 print(s.position)       # Output: [2. 4. 6.]
 ```
 
@@ -318,7 +319,7 @@ Finally, the collection class provides the method `displaySystem` to quickly che
 `displaySystem()` comes with three keyword arguments:
 
 - `markers=listOfPos` for displaying reference positions. By default a marker is set at the origin. By giving *[a,b,c,'text']* instead of just a simple 3vector *'text'* is displayed with the marker.
-- `suppress=True` for suppressing the figure output.
+- `suppress=True` for suppressing the figure output. To suppress the output it is necessary to deactivate the interactive mode by calling *pyplot.ioff()*.
 - `direc=True` for displaying current and magnetization directions in the figure.
 
 The following example code shows how a collection is initialized and displayed.
