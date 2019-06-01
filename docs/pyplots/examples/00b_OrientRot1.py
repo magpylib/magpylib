@@ -2,7 +2,7 @@ from magpylib.source.magnet import Box
 import magpylib as magpy
 
 #fixed magnet parameters
-M = [0,0,1] #magnetization
+M = [1,0,0] #magnetization
 D = [3,3,3] #dimension
 
 # magnets with Euler angle orientations
@@ -15,5 +15,5 @@ s4 = Box(mag=M, dim=D, pos = [ 4,0,-4], angle=45, axis=[1,0,0])
 c = magpy.Collection(s1,s2,s3,s4)
 
 #display collection
-fig = c.displaySystem()
+fig = c.displaySystem(direc=True)
 fig.set_size_inches(6, 6)
