@@ -6,9 +6,10 @@ It is the aim of this section to give a few code examples that show how the libr
   - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
   - [Translation, Orientation and Rotation Basics](#translation,-orientation-and-rotation-basics)
   - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion:simulating-a-magnetic-joystick)
-  - [getBsweep]()
+  - [Complex Magnet Shapes](complex-magnet-shapes)
+  - [Applying getBsweep]()
   - [Multi Processing]()
-  - [Complex shapes Superposition]()
+  
 
 ### A Simple Collection and its Field
 
@@ -89,6 +90,32 @@ In the following program the magnetic field is calculated for all degrees of fre
 ```
 
 ### Using getBSweep
+
+In the first example getBsweep with INPUT TYPE 1 is used to calculate the field of a collection of four magnets in the xz-plane and display it graphically.
+
+```eval_rst
+
+.. plot:: pyplots/examples/03a_Bsweep1.py
+   :include-source:
+
+:download:`03a_Bsweep1.py <../pyplots/examples/03a_Bsweep1.py>`
+```
+
+second example ... think of something
+
+### Complex Magnet Shapes: Hollow Cylinder
+
+The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtration' operations. A common application for this is the field of an axially magnetized hollow cylinder which is generated from two cocentric ones with opposite magnetization. In this example the field amplitude is calculated in planes parallel to the xz-plane and an animation is generated from subsequent cuts.
+
+```eval_rst
+
+.. plot:: pyplots/examples/04_ComplexShape.py
+   :include-source:
+
+:download:`04_ComplexShape.py <../pyplots/examples/04_ComplexShape.py>`
+```
+
+### OLD
 
 One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
 
