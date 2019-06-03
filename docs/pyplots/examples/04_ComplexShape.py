@@ -1,37 +1,32 @@
-from magpylib.source.magnet import Cylinder
-from magpylib import Collection
 import numpy as np
 import matplotlib.pyplot as plt
-from matplotlib import animation
+from magpylib.source.magnet import Cylinder
+from magpylib import Collection
 
-#define figure
-fig = plt.figure()
-
-#create collection of 
-s1 = Cylinder(mag=[0,0, 1000], dim=[5,5], pos=[0,0,0])
-s2 = Cylinder(mag=[0,0,-1000], dim=[3,5], pos=[0,0,0])
+#create collection of four magnets
+s1 = Cylinder(mag=[0,0,1000], dim=[5,5])
+s2 = Cylinder(mag=[0,0,-1000], dim=[2,6])
 c = Collection(s1,s2)
 
-#calculate images of animation
-ims = []
-for y in np.linspace(-4,4,50):
+#create positions
+xs = np.linspace(-8,8,100)
+zs = np.linspace(-6,6,100)
+posis = [[x,0,z] for z in zs for x in xs]
 
-    #create grid positions
-    N = 50
-    xs = np.linspace(-6,6,N)
-    zs = np.linspace(-5,5,N)
-    posis = [[x,y,z] for z in zs for x in xs]
-    
-    #calculate fields
-    Bs = c.getBsweep(posis)
-    Bs = np.array(Bs).reshape([N,N,3])
-    Bamp = np.linalg.norm(Bs,axis=2)
-    
-    #add image to list
-    ims.append((plt.pcolor(xs,zs,Bamp,vmax=1000,vmin=0,cmap="jet"),))
+#calculate fields
+Bs = c.getBsweep(posis)
 
-#create animation
-im_ani = animation.ArtistAnimation(fig, ims, interval=300, repeat_delay=2000,
-                                   blit=True)
+#reshape array and calculate amplitude
+Bs = np.array(Bs).reshape([100,100,3])
+Bamp = np.linalg.norm(Bs,axis=2)
+
+##amplitude plot
+X,Z = np.meshgrid(xs,zs)
+plt.pcolor(xs,zs,Bamp,cmap='jet',vmin=-200)
+
+#plot field lines
+U,V = Bs[:,:,0], Bs[:,:,2]
+plt.streamplot(X,Z,U,V,color='k',density=2)
+
 #display
 plt.show()

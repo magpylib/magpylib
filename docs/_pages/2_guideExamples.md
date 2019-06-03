@@ -105,7 +105,7 @@ second example ... think of something
 
 ### Complex Magnet Shapes: Hollow Cylinder
 
-The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtration' operations. A common application for this is the field of an axially magnetized hollow cylinder which is generated from two cocentric ones with opposite magnetization. In this example the field amplitude is calculated in planes parallel to the xz-plane and an animation is generated from subsequent cuts.
+The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtration' operations. A common application for this is the field of an axially magnetized hollow cylinder. The hollow part is cut out of the first cylinder by placing a second, smaller cylinder inside with opposite magnetization. Unfortunately the `displaySystem` method cannot properly display such objects intersecting with each other.
 
 ```eval_rst
 
