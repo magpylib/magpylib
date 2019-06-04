@@ -19,6 +19,7 @@
 <p align="center"> Documentation: 
 <a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
 <a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
+<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib?ref=badge_shield" alt="FOSSA Status"><img align='center' src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib.svg?type=shield"/></a>
 </p>
 
 <p align="center"> Test Coverage: 
@@ -26,6 +27,7 @@
   <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
   
 </a>
+<a href="https://lgtm.com/projects/g/magpylib/magpylib/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/magpylib/magpylib.svg?logo=lgtm&logoWidth=18"/></a>
 </p>
 
 <p align="center"> Downloads: 
