@@ -1,4 +1,3 @@
-
 <p align="center"><img align="center" src=https://i.imgur.com/n9oeT4C.png><p>
 <p align="center"><i>magpylib - A simple and user friendly magnetic toolbox for Python 3</i><p>
 
@@ -11,6 +10,7 @@
 <a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
 <a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
 <a href="https://ci.appveyor.com/project/OrtnerMichael/magpylib/branch/master"> <img align='center' src="https://ci.appveyor.com/api/projects/status/0mka52e1tqnkgnx3/branch/master?svg=true"> </a>
+<a href="https://app.fossa.io/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib?ref=badge_shield" alt="FOSSA Status"><img src="https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib.svg?type=shield"/></a>
 </p>
 
 <p align="center"> Documentation: 
@@ -114,3 +114,7 @@ plt.show()
 
 
 
+
+
+## License
+[![FOSSA Status](https://app.fossa.io/api/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib.svg?type=large)](https://app.fossa.io/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib?ref=badge_large)
