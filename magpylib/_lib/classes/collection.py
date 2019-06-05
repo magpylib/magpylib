@@ -316,7 +316,8 @@ class Collection(FieldSampler):
         for s in self.sources:
             s.rotate(angle, axis, anchor=anchor)
 
-    def displaySystem(self, markers=listOfPos, suppress=False, direc=False):
+    def displaySystem(self, markers=listOfPos, suppress=False, direc=False, 
+                            externalFig=None, subplotArg=None):
         """
         Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
 
@@ -381,14 +382,61 @@ class Collection(FieldSampler):
         >>> C1 = source.current.Circular(curr=100,dim=6)
         >>> col = Collection(pm1,pm2,pm3,C1)
         >>> col.displaySystem()
-
+        
+        Parameters
+        ----------
+        externalFig : pyplot.figure
+            Use an existing figure to draw the 3D system plot as subplot.
+            Default: None
+        
+        subplotArg : list
+            Subplot arguments for pyplot.figure.add_subplot(), this defines
+            the position the 3D figure will appear in.
+            Default: [1,2,2]
+            
+        Example
+        -------
+        >>> import numpy as np
+        >>> import matplotlib.pyplot as plt
+        >>> from magpylib.source.magnet import Box
+        >>> from magpylib import Collection
+        >>> #create collection of one magnet
+        >>> s1 = Box(mag=[ 500,0, 500], dim=[3,3,3], pos=[ 0,0, 3], angle=45, axis=[0,1,0])
+        >>> c = Collection(s1)
+        >>> #create positions
+        >>> xs = np.linspace(-8,8,100)
+        >>> zs = np.linspace(-6,6,100)
+        >>> posis = [[x,0,z] for z in zs for x in xs]
+        >>> #calculate fields
+        >>> Bs = c.getBsweep(posis)
+        >>> #reshape array and calculate amplitude
+        >>> Bs = np.array(Bs).reshape([100,100,3])
+        >>> Bamp = np.linalg.norm(Bs,axis=2)
+        >>> ##amplitude plot
+        >>> X,Z = np.meshgrid(xs,zs)
+        >>> ##Define subplot for 2D
+        >>> fig = plt.figure()
+        >>> ax1 = fig.add_subplot(1, 2, 1, axisbelow=True)
+        >>> ##plot 2D
+        >>> plt.contourf(X,Z,Bamp,100,cmap='rainbow')
+        >>> U,V = Bs[:,:,0], Bs[:,:,2]
+        >>> plt.streamplot(X, Z, U, V, color='k', density=2)
+        >>> ##Define sublot for 3D and plot 3D
+        >>> c.displaySystem(subplotArg=[1,2,2],externalFig=fig)
+        
         Raises
         ------
         AssertionError
             If Marker position list is poorly defined. i.e. listOfPos=(x,y,z) instead of lisOfPos=[(x,y,z)]
         """
-        fig = plt.figure(dpi=80, figsize=(8, 8))
-        ax = fig.gca(projection='3d')
+        
+        if externalFig is None:
+            fig = plt.figure(dpi=80, figsize=(8, 8))
+            ax = fig.gca(projection='3d')
+        else:
+            subplotArg = [1,2,2] if subplotArg is None else subplotArg
+            ax = externalFig.add_subplot(subplotArg[0], subplotArg[1], subplotArg[2], 
+                                         projection='3d')
 
         # count magnets
         Nm = 0
