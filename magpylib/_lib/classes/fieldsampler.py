@@ -63,7 +63,7 @@ class FieldSampler:
         results = pool.map(self.getB, listOfArgs)
         pool.close()
         pool.join()
-        return results
+        return array(results)
 
     def _getBDisplacement(self, listOfArgs, processes=Auto):
         # Used in getBparallel() For lists of arguments where first argument is
@@ -77,7 +77,7 @@ class FieldSampler:
                                    listOfArgs))
         pool.close()
         pool.join()
-        return results
+        return array(results)
 
     def getBsweep(self, INPUT, multiprocessing=False, processes=Auto):
         """
@@ -162,10 +162,10 @@ class FieldSampler:
                 return self._getBDisplacement(INPUT, processes=processes)
         else:
             if all(isPosVector(item) for item in INPUT):
-                return list(map(self.getB, INPUT))
+                return array(list(map(self.getB, INPUT)))
             else:
-                return list(map(recoordinateAndGetB,
-                                repeat(self, times=len(INPUT)), INPUT))
+                return array(list(map(recoordinateAndGetB,
+                                repeat(self, times=len(INPUT)), INPUT)))
 
     def getB(self, pos):
         """
