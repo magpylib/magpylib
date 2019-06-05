@@ -1,6 +1,6 @@
 
 from magpylib.source import magnet
-from numpy import isnan, array
+from numpy import isnan, array,ndarray
 from magpylib._lib.classes import fieldsampler
 import pytest
 
@@ -9,9 +9,10 @@ def test_getBsweepRot_sequential():
     # Check if getBsweep for Box is performing
     # displacement input sequentially.
     erMsg = "Results from getB are unexpected"
-    mockResults = ([0.00453617, -0.07055326,  0.03153698],
-                   [0.00488989, 0.04731373, 0.02416068],
-                   [0.0249435,  0.00106315, 0.02894469])
+    type_erMsg =  "getBsweep did not return a numpy array."
+    mockResults = array(([0.00453617, -0.07055326,  0.03153698],
+                         [0.00488989, 0.04731373, 0.02416068],
+                         [0.0249435,  0.00106315, 0.02894469]))
 
     # Input
     mag = [1, 2, 3]
@@ -31,7 +32,7 @@ def test_getBsweepRot_sequential():
     # Run
     pm = magnet.Box(mag, dim, pos)
     result = pm.getBsweep(listOfArgs, multiprocessing=False)
-
+    assert isinstance(result,ndarray), type_erMsg
     rounding = 4  # Round for floating point error
     for i in range(len(mockResults)):
         for j in range(3):
@@ -43,9 +44,10 @@ def test_getBsweepRot_multiprocessing():
     # Check if getBsweep for Box is performing
     # displacement input with multiprocessing.
     erMsg = "Results from getB are unexpected"
-    mockResults = ([0.00453617, -0.07055326,  0.03153698],
-                   [0.00488989, 0.04731373, 0.02416068],
-                   [0.0249435,  0.00106315, 0.02894469])
+    type_erMsg =  "getBsweep did not return a numpy array."
+    mockResults = array(([0.00453617, -0.07055326,  0.03153698],
+                         [0.00488989, 0.04731373, 0.02416068],
+                         [0.0249435,  0.00106315, 0.02894469]))
 
     # Input
     mag = [1, 2, 3]
@@ -65,7 +67,7 @@ def test_getBsweepRot_multiprocessing():
     # Run
     pm = magnet.Box(mag, dim, pos)
     result = pm.getBsweep(listOfArgs, multiprocessing=True)
-
+    assert isinstance(result,ndarray), type_erMsg
     rounding = 4  # Round for floating point error
     for i in range(len(mockResults)):
         for j in range(3):
@@ -77,9 +79,9 @@ def test_getBsweepList():
     # Check if getBsweep for Box is calculating
     # multipoint input sequentially over a List.
     erMsg = "Results from getB are unexpected"
-    mockResults = ((3.99074612, 4.67238469, 4.22419432),
-                   (3.99074612, 4.67238469, 4.22419432),
-                   (3.99074612, 4.67238469, 4.22419432))
+    mockResults = array(((3.99074612, 4.67238469, 4.22419432),
+                         (3.99074612, 4.67238469, 4.22419432),
+                         (3.99074612, 4.67238469, 4.22419432)))
 
     # Input
     mag = [6, 7, 8]
@@ -102,9 +104,10 @@ def test_getBsweepList_multiprocessing():
     # Check if getBsweep for Box is calculating
     # multipoint input with multiprocessing over a List.
     erMsg = "Results from getB are unexpected"
-    mockResults = ((3.99074612, 4.67238469, 4.22419432),
-                   (3.99074612, 4.67238469, 4.22419432),
-                   (3.99074612, 4.67238469, 4.22419432))
+    type_erMsg =  "getBsweep did not return a numpy array."
+    mockResults = array(((3.99074612, 4.67238469, 4.22419432),
+                         (3.99074612, 4.67238469, 4.22419432),
+                         (3.99074612, 4.67238469, 4.22419432)))
 
     # Input
     mag = [6, 7, 8]
@@ -115,7 +118,7 @@ def test_getBsweepList_multiprocessing():
     # Run
     pm = magnet.Box(mag, dim, pos)
     result = pm.getBsweep(listOfPos, multiprocessing=True)
-
+    assert isinstance(result,ndarray), type_erMsg
     rounding = 4  # Round for floating point error
     for i in range(len(mockResults)):
         for j in range(3):
@@ -148,8 +151,8 @@ def test_GetB():
 def test_GetBsweep_Array():
     # Check if getB sweep for box is calculating for an array
     # of field positions.
-
     erMsg = "Results from getB are unexpected"
+    type_erMsg =  "getBsweep did not return a numpy array."
     pm = magnet.Box(mag=[6, 7, 8], dim=[10, 10, 10], pos=[2, 2, 2])
 
     # Positions list
@@ -158,11 +161,11 @@ def test_GetBsweep_Array():
                         [1, .2, 60], ])
 
     result = pm.getBsweep(arrayOfPos)
-
+    assert isinstance(result,ndarray), type_erMsg
     # Expected Results
-    mockRes = ((3.99074612, 4.67238469, 4.22419432),  # .5,.5,.5
-               (0.03900578,  0.01880832, -0.00134112),  # 30,20,10
-               (-0.00260347, -0.00313962,  0.00610886), )
+    mockRes = array(((3.99074612, 4.67238469, 4.22419432),  # .5,.5,.5
+                    (0.03900578,  0.01880832, -0.00134112),  # 30,20,10
+                    (-0.00260347, -0.00313962,  0.00610886), ))
 
     # Rounding for floating point error
     rounding = 4
