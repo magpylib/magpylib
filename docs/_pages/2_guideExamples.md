@@ -101,7 +101,17 @@ In the first example getBsweep with INPUT TYPE 1 is used to calculate the field 
 :download:`03a_Bsweep1.py <../pyplots/examples/03a_Bsweep1.py>`
 ```
 
-second example ... think of something
+In this second example we demonstrate how to realize the [magnet motion of a joystick](magnet-motion:-simulating-a-magnetic-joystick) using getBsweep with INPUT TYPE 2. For this we must create a list with all magnet positions, sensor position and magnet orientations. This is realized in the program by rotation the magnet from its central position outwards,
+
+The advantage of this approach is that it allows the use of multi processing for calculation of the magnetic fields, see [multiprocessing examples](multiprocessing).
+
+```eval_rst
+
+.. plot:: pyplots/examples/03b_Bsweep2.py
+   :include-source:
+
+:download:`03b_Bsweep2.py <../pyplots/examples/03b_Bsweep2.py>`
+```
 
 ### Complex Magnet Shapes: Hollow Cylinder
 
@@ -115,7 +125,9 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 :download:`04_ComplexShape.py <../pyplots/examples/04_ComplexShape.py>`
 ```
 
-### OLD
+### Multiprocessing
+
+multiprocessing stuff .... 
 
 One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
 
