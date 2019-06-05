@@ -22,16 +22,10 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 # %% IMPORTS
-from numpy import array, float64, isnan, ndarray, pi
+from itertools import repeat
+from numpy import array
 from magpylib._lib.utility import (initializeMulticorePool, isPosVector,
                                    recoordinateAndGetB)
-from magpylib._lib.mathLibPrivate import (Qconj, Qmult, arccosSTABLE,
-                                          fastNorm3D, fastSum3D, getRotQuat)
-from typing import Tuple
-from multiprocessing import Pool, cpu_count
-from itertools import product, repeat
-import sys
-
 # Type hint definitions
 # These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
