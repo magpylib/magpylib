@@ -317,7 +317,7 @@ class Collection(FieldSampler):
             s.rotate(angle, axis, anchor=anchor)
 
     def displaySystem(self, markers=listOfPos, suppress=False, direc=False, 
-                            externalFig=None, subplotArg=None):
+                            subplotAx=None):
         """
         Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
 
@@ -385,8 +385,8 @@ class Collection(FieldSampler):
         
         Parameters
         ----------
-        externalFig : pyplot.figure
-            Use an existing figure to draw the 3D system plot as subplot.
+        externalFig : matplotlib subplot axe instance
+            Use an existing matplotlib subplot instance to draw the 3D system plot into.
             Default: None
         
         subplotArg : list
@@ -412,17 +412,19 @@ class Collection(FieldSampler):
         >>> #reshape array and calculate amplitude
         >>> Bs = np.array(Bs).reshape([100,100,3])
         >>> Bamp = np.linalg.norm(Bs,axis=2)
-        >>> ##amplitude plot
         >>> X,Z = np.meshgrid(xs,zs)
-        >>> ##Define subplot for 2D
+        >>> # Define figure
         >>> fig = plt.figure()
+        >>> ## Define ax for 2D
         >>> ax1 = fig.add_subplot(1, 2, 1, axisbelow=True)
-        >>> ##plot 2D
-        >>> plt.contourf(X,Z,Bamp,100,cmap='rainbow')
+        >>> ## Define ax for 3D displaySystem
+        >>> ax2 = fig.add_subplot(1, 2, 2, axisbelow=True,projection='3d')
+        >>> ## field plot 2D
+        >>> ax1.contourf(X,Z,Bamp,100,cmap='rainbow')
         >>> U,V = Bs[:,:,0], Bs[:,:,2]
-        >>> plt.streamplot(X, Z, U, V, color='k', density=2)
-        >>> ##Define sublot for 3D and plot 3D
-        >>> c.displaySystem(subplotArg=[1,2,2],externalFig=fig)
+        >>> ax1.streamplot(X, Z, U, V, color='k', density=2)
+        >>> ## plot Collection system in 3D ax subplot
+        >>> c.displaySystem(subplotAx=ax2)
         
         Raises
         ------
@@ -430,13 +432,11 @@ class Collection(FieldSampler):
             If Marker position list is poorly defined. i.e. listOfPos=(x,y,z) instead of lisOfPos=[(x,y,z)]
         """
         
-        if externalFig is None:
+        if subplotAx is None:
             fig = plt.figure(dpi=80, figsize=(8, 8))
             ax = fig.gca(projection='3d')
         else:
-            subplotArg = [1,2,2] if subplotArg is None else subplotArg
-            ax = externalFig.add_subplot(subplotArg[0], subplotArg[1], subplotArg[2], 
-                                         projection='3d')
+            ax = subplotAx
 
         # count magnets
         Nm = 0
