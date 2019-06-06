@@ -157,8 +157,6 @@ Here is an example calculating several marked points in sequence.
 
 ```
 
-#### Displacement Input
-
 The parallel function may also be utilized to calculate samples of several setups in parallel.
 
 Field sample position, Source object orientation and positioning may be adjusted in every setup, like the following structure:
