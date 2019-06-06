@@ -225,7 +225,7 @@ class Collection(FieldSampler):
                 py += calcFields[src][p][1]  # y coord val of this position
                 pz += calcFields[src][p][2]  # z coord val of this position
             Btotal.append([px, py, pz])
-        return Btotal
+        return array(Btotal)
 
     def getB(self, pos):
         """
