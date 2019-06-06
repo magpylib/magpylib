@@ -1,7 +1,7 @@
 import unittest
 from magpylib._lib.classes.collection import Collection
 from magpylib._lib.classes.base import RCS
-from numpy import array
+from numpy import array, ndarray
 import pytest
 
 def test_motion():
@@ -280,9 +280,11 @@ def test_GetBSweep_displacement_error():
     from magpylib._lib.classes.magnets import Box
     #Input
     erMsg = "Results from getB are unexpected"
-    mockResults = ( [ 0.00453617, -0.07055326,  0.03153698],
-                    [0.00488989, 0.04731373, 0.02416068],
-                    [0.0249435,  0.00106315, 0.02894469])
+    type_erMsg =  "getBsweep did not return a numpy array."
+    
+    mockResults = array((   [ 0.00453617, -0.07055326,  0.03153698],
+                            [0.00488989, 0.04731373, 0.02416068],
+                            [0.0249435,  0.00106315, 0.02894469]))
     
     # Input
     mag=[1,2,3]
@@ -307,7 +309,7 @@ def test_GetBSweep_displacement_error():
     #Run   
         c = Collection(pm)
         result = c.getBsweep(listOfArgs) 
-
+        assert isinstance(result,ndarray), type_erMsg
         rounding = 4
         for i in range(len(mockResults)):
             for j in range(3):
@@ -333,7 +335,7 @@ def test_GetBSweepList():
     # Check if getB sweep is performing multipoint
     # calculations sequentially
     from magpylib._lib.classes.magnets import Box
-
+    type_erMsg =  "getBsweep did not return a numpy array."
     #Input
     mag=(2,3,5)
     dim=(2,2,2)
@@ -350,7 +352,7 @@ def test_GetBSweepList():
     b2 = Box(mag,dim)
     c = Collection(b,b2)
     result = c.getBsweep(pos,multiprocessing=False)
-
+    assert isinstance(result,ndarray), type_erMsg
     rounding = 4
     for i in range(len(mockResult)):
         for j in range(3):
@@ -361,7 +363,7 @@ def test_GetBSweepList_multiprocessing():
     # calculations utilizing multiple processes
 
     from magpylib._lib.classes.magnets import Box
-
+    type_erMsg =  "getBsweep did not return a numpy array."
     #Input
     mag=(2,3,5)
     dim=(2,2,2)
@@ -378,7 +380,7 @@ def test_GetBSweepList_multiprocessing():
     b2 = Box(mag,dim)
     c = Collection(b,b2)
     result = c.getBsweep(pos,multiprocessing=True)
-
+    assert isinstance(result,ndarray), type_erMsg
     rounding = 4
     for i in range(len(mockResult)):
         for j in range(3):
@@ -389,7 +391,7 @@ def test_GetBSweepArray_Error():
     # crazy n dimensional arrays are provided
 
     errMsg = "unexpected getB for collection"
-    
+    type_erMsg =  "getBsweep did not return a numpy array."
     from magpylib._lib.classes.magnets import Box
     from numpy import allclose
     #Input
@@ -415,7 +417,7 @@ def test_GetBSweepArray_Error():
         b2 = Box(mag,dim)
         c = Collection(b,b2)
         result = c.getBsweep(pos,multiprocessing=False)
-
+        assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
 
 def test_GetSweepArray_multiprocessing_error():
@@ -424,6 +426,7 @@ def test_GetSweepArray_multiprocessing_error():
     # when multiprocessing is on
 
     errMsg = "unexpected getB for collection"
+    type_erMsg =  "getBsweep did not return a numpy array."
     
     from magpylib._lib.classes.magnets import Box
     from numpy import allclose
@@ -443,12 +446,12 @@ def test_GetSweepArray_multiprocessing_error():
                     [0.12442073, 0.10615358, 0.151319  ],],
                     [[0.24976596, 0.21854521, 0.15610372],
                     [0.24976596, 0.21854521, 0.15610372],
-                    [0.12442073, 0.10615358, 0.151319  ],]]
+                    [0.12442073, 0.1061 ],]]
     # Run   
-    with pytest.raises(AssertionError):
+    with pytest.raises(AssertionError):    
         b = Box(mag,dim)
         b2 = Box(mag,dim)
         c = Collection(b,b2)
         result = c.getBsweep(pos,multiprocessing=True)
-
+        assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
