@@ -1,8 +1,8 @@
-# [WIP] Installation Instructions
+# Installation Instructions
 
 Here you'll find instructions to Install magpylib. This is a work in progress.
 
-- [[WIP] Installation Instructions](#wip-installation-instructions)
+- [Installation Instructions](#installation-instructions)
   - [Windows Install](#windows-install)
       - [Anaconda 3 Install for Spyder or Jupyter Notebook](#anaconda-3-install-for-spyder-or-jupyter-notebook)
       - [Clean Python 3 install](#clean-python-3-install)
@@ -28,13 +28,17 @@ _Anaconda is a distribution of Python tools for Scientific Computing, making it 
 2. Start Anaconda Navigator 
 3. On the interface, go to `Environments` and choose the environment you wish to install magpylib in. For this example, we will use the base environment:
    ![](../_static/images/install_guide/anaconda0.png)
-4. Look for magpylib in the Package search bar
-   ![](../_static/images/install_guide/anaconda.png)
-5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
+4. Click the arrow, and open the conda terminal 
+   ![](../_static/images/install_guide/anaconda1.png)
+5. Input the following to install from conda-forge:
+   ```
+   conda install -c conda-forge magpylib 
+   ```
+6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
-6. Run the example script :doc:`x_examples` .
+7. Run the example script :doc:`x_examples` .
 ```
 
 </details>
@@ -80,13 +84,17 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 2. Open a terminal window and type `anaconda-navigator`
 3. On the interface, go to `Environments` and choose the environment you wish to install magpylib in. For this example, we will use the base environment:
    ![](../_static/images/install_guide/anaconda0.png)
-4. Look for magpylib in the Package search bar
-   ![](../_static/images/install_guide/anaconda.png)
-5. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
+4. Click the arrow, and open the conda terminal 
+   ![](../_static/images/install_guide/anaconda1.png)
+5. Open the conda terminal and input the following to install from conda-forge:
+   ```
+   conda install -c conda-forge magpylib 
+   ```
+6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
 
 ```eval_rst
-6. Run the example script :doc:`x_examples` .
+7. Run the example script :doc:`x_examples` .
 ```
 
 </details>
@@ -128,6 +136,6 @@ _Source code:_
 [pip]: https://pip.pypa.io/en/stable/installing/
 [anaconda]: https://www.anaconda.com/distribution/
 [python3]: https://www.python.org/downloads/
-[CondaCloud]:  https://mystery-404.herokuapp.com/
-[GitHub]:  https://mystery-404.herokuapp.com/
-[PyPi]:  https://mystery-404.herokuapp.com/
+[CondaCloud]:  https://anaconda.org/conda-forge/magpylib
+[GitHub]: https://github.com/magpylib/magpylib
+[PyPi]:  https://pypi.org/project/magpylib/
