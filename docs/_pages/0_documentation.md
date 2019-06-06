@@ -329,6 +329,7 @@ Finally, the collection class provides the method `displaySystem` to quickly che
 - `markers=listOfPos` for displaying reference positions. By default a marker is set at the origin. By giving *[a,b,c,'text']* instead of just a simple 3vector *'text'* is displayed with the marker.
 - `suppress=True` for suppressing the figure output. To suppress the output it is necessary to deactivate the interactive mode by calling *pyplot.ioff()*.
 - `direc=True` for displaying current and magnetization directions in the figure.
+- `subplotAx=None` for displaying the plot on a designated figure subplot instance.
 
 The following example code shows how a collection is initialized and displayed.
 

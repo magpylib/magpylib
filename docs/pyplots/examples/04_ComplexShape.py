@@ -20,13 +20,22 @@ Bs = c.getBsweep(posis)
 Bs = np.array(Bs).reshape([100,100,3])
 Bamp = np.linalg.norm(Bs,axis=2)
 
-##amplitude plot
-X,Z = np.meshgrid(xs,zs)
-plt.pcolor(xs,zs,Bamp,cmap='jet',vmin=-200)
+##define figure with 2d and 3d axes
+fig = plt.figure(figsize=(8,4))
+ax1 = fig.add_subplot(121,projection='3d')
+ax2 = fig.add_subplot(122)
 
-#plot field lines
+#add displaySystem on ax1
+c.displaySystem(subplotAx=ax1)
+ax1.view_init(elev=75)
+
+##amplitude plot on ax2
+X,Z = np.meshgrid(xs,zs)
+ax2.pcolor(xs,zs,Bamp,cmap='jet',vmin=-200)
+
+#plot field lines on ax2
 U,V = Bs[:,:,0], Bs[:,:,2]
-plt.streamplot(X,Z,U,V,color='k',density=2)
+ax2.streamplot(X,Z,U,V,color='k',density=2)
 
 #display
 plt.show()

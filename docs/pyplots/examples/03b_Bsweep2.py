@@ -21,7 +21,7 @@ axes = [[np.cos(phi),np.sin(phi),0] for phi in np.linspace(0,2*np.pi,180)]
 
 #generate a type2 INPUT
 INPUT = []
-for th in np.linspace(1,thMAX,15):
+for th in np.linspace(1,thMAX,30):
         
     #rotation of the magnet position outwards
     posis = [math.rotatePosition(p0,th,ax,anchor=[0,0,gap+H+d]) for ax in axes]
@@ -30,14 +30,14 @@ for th in np.linspace(1,thMAX,15):
     INPUT += [[[0,0,0],pos,[th,ax]] for pos,ax in zip(posis,axes)]
 
 #calculate all fields in one sweep
-Bs = np.array(s.getBsweep(INPUT)).reshape(15,180,3)    
+Bs = s.getBsweep(INPUT).reshape(30,180,3)    
 
 #plot fields
 fig = plt.figure()
 ax = plt.axes(projection='3d')
 cm = plt.get_cmap("jet") #colormap
-for i in range(15):
-    ax.plot(Bs[i,:,0],Bs[i,:,1],Bs[i,:,2],color=cm(i/15))
+for i in range(30):
+    ax.plot(Bs[i,:,0],Bs[i,:,1],Bs[i,:,2],color=cm(i/30))
 
 #annotate
 ax.set(
