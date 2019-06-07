@@ -126,8 +126,6 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 
 ### Multiprocessing
 
-multiprocessing stuff .... 
-
 One of the greatest strengths of the analytical approach is that all desired points of a field computation may be done in parallel, reducing computation overhead.
 
 ```eval_rst
