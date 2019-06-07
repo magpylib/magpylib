@@ -3,7 +3,7 @@
 It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
 - Content
-  - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
+    - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
     - [Using getBSweep](#using-getbsweep)
@@ -44,7 +44,7 @@ The next example shows a cubical magnet initialized with four different orientat
 :download:`00b_OrientRot1.py <../pyplots/examples/00b_OrientRot1.py>`
 ```
 
-This example shows a general form of orientation for different angles about an axis (1,-1,1). The upper three boxes are initilized with different orientations. The lower three boxes are all initialized with INIT ORIENTATION and are then rotated (about themselves) to achive the same result as above.
+The following example shows a general form of orientation for different angles about an axis (1,-1,1). The upper three boxes are initialized with different orientations. The lower three boxes are all initialized with INIT ORIENTATION and are then rotated (about themselves) to achieve the same result as above.
 
 ```eval_rst
 
@@ -54,7 +54,7 @@ This example shows a general form of orientation for different angles about an a
 :download:`00c_OrientRot2.py <../pyplots/examples/00c_OrientRot2.py>`
 ```
 
-This example shows rotations with desiganted anchor-axis combinations. Here we distinguish between pivot points (the closest point on the rotation axis to the magnet) and anchor points which are simply required to define an axis in 3D space (together with the direction).
+The following example shows rotations with designated anchor-axis combinations. Here we distinguish between pivot points (the closest point on the rotation axis to the magnet) and anchor points which are simply required to define an axis in 3D space (together with the direction).
 
 ```eval_rst
 
@@ -114,7 +114,7 @@ The advantage of this approach is that it allows the use of multi processing for
 
 ### Complex Magnet Shapes: Hollow Cylinder
 
-The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtration' operations. A common application for this is the field of an axially magnetized hollow cylinder. The hollow part is cut out of the first cylinder by placing a second, smaller cylinder inside with opposite magnetization. Unfortunately the `displaySystem` method cannot properly display such objects intersecting with each other.
+The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtraction' operations. A common application for this is the field of an axially magnetized hollow cylinder. The hollow part is cut out of the first cylinder by placing a second, smaller cylinder inside with opposite magnetization. Unfortunately the `displaySystem` method cannot properly display such objects intersecting with each other.
 
 ```eval_rst
 
