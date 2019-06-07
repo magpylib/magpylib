@@ -126,7 +126,7 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 
 ### Multiprocessing
 
-The independence of the analytical solution makes it possible to simulataneously run all `getB` functions (for different sources and positions) at the same time. The option for multi processing is implemented directly in the `getBsweep` function which is demonstrated in this example.
+The independence of the analytical solution makes it possible to simultaneously run all `getB` functions (for different sources and positions) at the same time. The option for multi processing is implemented directly in the `getBsweep` function which is demonstrated in this example.
 
 ```eval_rst
 
