@@ -102,7 +102,7 @@ In the first example getBsweep with INPUT TYPE 1 is used to calculate the field 
 
 In this second example we demonstrate how to realize the [magnet motion of a joystick](magnet-motion:-simulating-a-magnetic-joystick) using getBsweep with INPUT TYPE 2. For this we must create a list with all magnet positions, sensor position and magnet orientations. This is realized in the program by rotation the magnet from its central position outwards,
 
-The advantage of this approach is that it allows the use of multi processing for calculation of the magnetic fields, see [multiprocessing examples](multiprocessing).
+The advantage of this approach is that it allows the use of multi processing for calculation of the magnetic fields, see [multiprocessing examples](#multiprocessing).
 
 ```eval_rst
 
