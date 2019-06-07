@@ -4,12 +4,11 @@ It is the aim of this section to give a few code examples that show how the libr
 
 - Content
   - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
-  - [Translation, Orientation and Rotation Basics](#translation,-orientation-and-rotation-basics)
-  - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion:simulating-a-magnetic-joystick)
-  - [Complex Magnet Shapes](complex-magnet-shapes)
-  - [Applying getBsweep]()
-  - [Multi Processing]()
-  
+    - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
+    - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
+    - [Using getBSweep](#using-getbsweep)
+    - [Complex Magnet Shapes: Hollow Cylinder](#complex-magnet-shapes-hollow-cylinder)
+    - [Multiprocessing](#multiprocessing)
 
 ### A Simple Collection and its Field
 
