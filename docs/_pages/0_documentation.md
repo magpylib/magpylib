@@ -227,7 +227,7 @@ print(s.getB([4,4,4]))
 # Output: [ 7.69869084 15.407166    6.40155549]
 ```
 
-In most cases, however, one will be interested to determine the field for a set of sensor positions, or for different magnet positions and orientations. While this can manually be achieved by looping `getB`, magpylib also provides the advanced method `s.getBsweep(INPUT)` for ease of use and for the possibility of parallelization (example code below). Here *INPUT* can have two possible formats:
+In most cases, however, one will be interested to determine the field for a set of sensor positions, or for different magnet positions and orientations. While this can manually be achieved by looping `getB`, magpylib also provides the advanced method `s.getBsweep(INPUT)` for ease of use and for the possibility of multiprocessing. Here *INPUT* can have two possible formats:
 
 1. *INPUT TYPE 1* is a list of *N* sensor positions. In this case the magnetic field of the source is determined for all *N* sensor positions and returned in an *Nx3* matrix.
 2. *INPUT TYPE 2* is a list of the following format [(sensorPos1, sourcePos1, sourceOrient1),...]. Here for each case of sensor position and source state the field is evaluated and returned in an *Nx3* matrix. This corresponds to a system where sensor and magnet move simultaneously.
@@ -245,6 +245,16 @@ In most cases, however, one will be interested to determine the field for a set 
 
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustrations of the two getBsweep input types. </p></i>
 
+
+```eval_rst
+.. note::
+    With getBsweep's keyword argument `multiprocessing=True`, it is possible to utilize the host computer's multiple cores to calculate points in parallel.
+    
+    
+    Please check out our :doc:`2_guideExamples` page for more details on multiprocessing.    
+```
+
+Please check out our [Guide and Examples](2_guideExamples.md) page for more details.
 The following example code shows how to quickly calculate the magnetic field using `getBsweep` with *INPUT TYPE 1*:
 
 ```eval_rst
