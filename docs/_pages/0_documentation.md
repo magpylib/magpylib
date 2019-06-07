@@ -61,7 +61,7 @@ The library output and all object attributes are either of `numpy.float64` or `n
 
 ## The Source Class
 
-This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space and their respective fields can be calculated. The following source types are currently implemented in magpylib.
+This is the core class of the library. The idea is that source objects represent physical magnetic sources in Cartesian three-dimensional space and their respective fields can be calculated. The following source types are currently implemented in magpylib.
 
 ```eval_rst
 .. image:: ../_static/images/documentation/SourceTypes.JPG
@@ -96,7 +96,7 @@ and in the following sections. The figure below gives a graphical overview.
 
 The most fundamental properties of every source object `s` are position and orientation which are represented through the attributes `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`.
 
-Due to their different nature each source type is characterized by different attributes. However, in general the `position` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the cartesian coordinates axes, see e.g. the following image.
+Due to their different nature each source type is characterized by different attributes. However, in general the `position` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the Cartesian coordinates axes, see e.g. the following image.
 
 An orientation given by (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` attribute. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the [math package](#math-package) provides some useful methods. 
 
@@ -111,7 +111,7 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
 
 While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized by hand.
 
-The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respecive class docstrings:
+The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respective class docstrings:
 
 ```eval_rst
 :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
@@ -162,7 +162,7 @@ We initialize the source and manipulate it afterwards as desired by
  1. directly setting the source attributes.
  2. using provided methods of manipulation.
 
-The latter is often the most practical and intuative way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
+The latter is often the most practical and intuitive way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition` and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
 
 - `s.setPosition(newPos)`: Moves the source to the position given by the argument vector (*newPos*. *s.position -> newPos*)
 - `s.move(displacement)`: Moves the source by the argument vector *displacement*. (*s.position -> s.position + displacement*) 
@@ -350,7 +350,7 @@ The following example code shows how a collection is initialized and displayed.
 
 The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
-- `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles (PHI,THETA)) that are defined as in spherical coordinates. PHI is the azimuth angle and THETA is the polar angle.
+- `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles (PHI,THETA) that are defined as in spherical coordinates. PHI is the azimuth angle and THETA is the polar angle.
   ```python
   import magpylib as magpy
   angles = magpy.math.anglesFromAxis([1,1,0])
