@@ -127,7 +127,23 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 
 ### Multiprocessing
 
-The indepence of the analytical solution makes it possible to simulataneously run all `getB` functions (for different sources and positions) at the same time. The option for multi processing is implemented directly in the `getBsweep` function which is demonstrated in this example.
+```eval_rst
+.. warning::
+    Due to how multiprocessing works on **Windows Systems, the following structure for your code is mandatory**:
+    
+    .. code::
+    
+       from multiprocessing import freeze_support
+       def your_code():
+           ## Your code
+       if __name__ == "__main__":
+            freeze_support()
+            your_code()
+    Failure to comply to this will cause your code **to not yield any results.**
+```
+
+The independence of the analytical solution makes it possible to simultaneously run all `getB` functions (for different sources and positions) at the same time. The option for multi processing is implemented directly in the `getBsweep` function which is demonstrated in this example.
+
 
 ```eval_rst
 
