@@ -49,7 +49,7 @@ jobs:
             command: |
               echo -e "[pypi]" >> ~/.pypirc
               echo -e "repository: https://test.pypi.org/legacy/" >> ~/.pypirc
-              echo -e "username: OrtnerMichael" >> ~/.pypirc
+              echo -e "username: magpylib" >> ~/.pypirc
               echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
         - run:
             name: create packages
