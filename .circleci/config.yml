@@ -1,4 +1,22 @@
-version: 2
+version: 2.1
+workflows:
+  build_and_deploy:
+    jobs:
+      - build:
+          filters:
+            tags:
+              only: /.*/
+      - deploy:
+          requires:
+            - build
+          filters:
+            tags:
+              only: /[0-9]+(\.[0-9]+)*(\-beta|\-alpha|\-rc)?/
+            branches:
+              only:
+                - master
+                - /rc-.*/
+              
 jobs:
   build:
     docker:
@@ -11,7 +29,36 @@ jobs:
       - run:
           name: Run Test Suite
           command: tox
-      - store_artifacts:
-          path: test-results/magpylib/
-      - store_test_results:
-          path: test-results/magpylib/
+  deploy:
+    docker:
+      - image: python:3
+    steps:
+        - checkout
+        - run:
+            name: install python dependencies
+            command: |
+              python3 -m venv venv
+              . venv/bin/activate
+              make dev
+        - run:
+            name: verify git tag vs. version
+            command: |
+              python3 -m venv venv
+              . venv/bin/activate
+              python setup.py verify
+        - run:
+            name: init .pypirc
+            command: |
+              echo -e "[pypi]" >> ~/.pypirc
+              echo -e "repository: https://test.pypi.org/legacy/" >> ~/.pypirc
+              echo -e "username: magpylib" >> ~/.pypirc
+              echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
+        - run:
+            name: create packages
+            command: |
+              make package
+        - run:
+            name: upload to pypi
+            command: |
+              . venv/bin/activate
+              twine upload --repository pypi dist/*
