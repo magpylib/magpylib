@@ -1,7 +1,6 @@
 ####
 # This is a basic setup.py structure so we can generate 
 # distributable package information with setuptools.
-# Testing environment for later: https://test.pypi.org/
 # More information: https://packaging.python.org/tutorials/packaging-projects/
 ####
 
@@ -28,11 +27,28 @@ _projectUrl = "https://github.com/magpylib/magpylib"
 _release = "beta"
 _license='GNU Affero General Public License v3 or later (AGPLv3+) (AGPL-3.0-or-later)'
 
+import sys
+import os
 import setuptools
+from setuptools.command.install import install
+
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
 
+class VerifyVersionCommand(install):
+    """Custom command to verify that the git tag matches CircleCI version"""
+    description = 'verify that the git tag matches CircleCI version'
+
+    def run(self):
+        tag = os.getenv('CIRCLE_TAG')
+
+        if tag != _magPyVersion:
+            info = "Git tag: {0} does not match the version of this app: {1}".format(
+                tag, _magPyVersion
+            )
+            sys.exit(info)
+    
 setuptools.setup(
     name=_name,
     version=_magPyVersion,
@@ -67,5 +83,8 @@ setuptools.setup(
             'project': ('setup.py', _name),
             'version': ('setup.py', _SphinxVersion),
             'release': ('setup.py', _release),
-            'source_dir': ('setup.py', './..')}},
+            'source_dir': ('setup.py', './docs')}},
+    cmdclass={
+    'verify': VerifyVersionCommand,
+    }
 )
