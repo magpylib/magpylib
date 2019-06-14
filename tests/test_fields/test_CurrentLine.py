@@ -2,9 +2,26 @@ from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from numpy import array
 import pytest
 
+def test_Bfield_Zero_Length_segment():
+    # Check if Zero-length segments in vertices return valid 
+    errMsg = "Field sample outside of Line is unexpected"
+    mockResult = [0,0.72951356,0]
+
+    current = 5
+    pos = [0,0,0]
+
+    vertices = array([[-1,0,0],[1,0,5],[1,0,5]])
+    with pytest.warns(Warning):
+        results=Bfield_CurrentLine(pos,vertices,current)
+        rounding = 4
+
+        for i in range(0,3):
+            assert round(mockResult[i],rounding)==round(results[i],rounding), errMsg
+
+
 def test_Bfield_CurrentLine_outside():
     # Fundamental Positions in every 8 Octants
-    errMsg = "Field sample outside of Box is unexpected"
+    errMsg = "Field sample outside of Line is unexpected"
     mockResults = [ [-15.426123, -42.10796, -12.922307],
                     [67.176642, -3.154985, -10.209148],
                     [-52.57675, 14.702422, 16.730058],

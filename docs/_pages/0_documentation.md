@@ -9,12 +9,15 @@ In this part of the documentation the fundamental structure of the magpylib libr
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-io-types)
   - [The Source Class](#the-source-class)
-    - [Attributes and Keyword Initialization:](#attributes-and-keyword-initialization)
+    - [Source Attributes and Initialization](#source-attributes-and-initialization)
+      - [Position and Orientation](#position-and-orientation)
+      - [Geometry and Excitation](#geometry-and-excitation)
     - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
     - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
   - [The Collection Class](#the-collection-class)
       - [Constructing Collections](#constructing-collections)
       - [Common Manipulation and total Magnetic Field](#common-manipulation-and-total-magnetic-field)
+      - [Complex Magnet Geometries](#complex-magnet-geometries)
       - [Display Collection Graphically](#display-collection-graphically)
   - [Math Package](#math-package)
 
@@ -40,16 +43,25 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 ## Units and IO Types
 
-In magpylib all inputs and outputs are made in the physical units of **Millimeter** for lengths, **Degree** for angles and **Millitesla** for magnetization, magnetic moment and magnetic field and **Ampere** for currents. Details about how the solutions are set up can be found in the [Physics section](9_physics.md).
+In magpylib all inputs and outputs are made in the physical units of
 
-The library is constructed so that any scalar input can be `int`, `float` or `numpy.float` type and any vector/matrix input can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
+- **Millimeter** for lengths
+- **Degree** for angles
+- **Millitesla** for magnetization, magnetic moment and magnetic field,
+- **Ampere** for currents.
 
-The library output and all object attributes are either of `np.float64` or `numpy.array64` type.
+Details about how the solutions are set up can be found in the [Physics section](9_physics.md).
 
+The library is constructed so that any
+
+- **scalar input** can be `int`, `float` or of `numpy.float` type
+- **vector/matrix input** can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`.
+
+The library output and all object attributes are either of `numpy.float64` or `numpy.array64` type.
 
 ## The Source Class
 
-This is the core class of the library. The idea is that source objects represent physical magnetic sources in cartesian three-dimensional space. The following source types are currently implemented in magpylib.
+This is the core class of the library. The idea is that source objects represent physical magnetic sources in Cartesian three-dimensional space and their respective fields can be calculated. The following source types are currently implemented in magpylib.
 
 ```eval_rst
 .. image:: ../_static/images/documentation/SourceTypes.JPG
@@ -58,7 +70,18 @@ This is the core class of the library. The idea is that source objects represent
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Source types currently available in magpylib. </p></i>
 
-The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the following sections. The figure below gives a graphical overview.
+The different source types contain various attributes and methods. The attributes characterize the source (e.g. position) while the methods can be used for geometric manipulation and calculating the magnetic fields. They are described in detail in the docstrings
+
+```eval_rst
+ - :mod:`~magpylib.source.magnet.Box`
+ - :mod:`~magpylib.source.magnet.Cylinder`
+ - :mod:`~magpylib.source.magnet.Box`
+ - :mod:`~magpylib.source.current.Line`
+ - :mod:`~magpylib.source.current.Circular`
+ - :mod:`~magpylib.source.moment.Dipole`
+```
+
+and in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
 .. image:: ../_static/images/documentation/sourceVars_Methods.svg
@@ -67,11 +90,13 @@ The different source types contain various attributes and methods. The attribute
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of attributes and methods of the source class. </p></i>
 
-### Attributes and Keyword Initialization:
+### Source Attributes and Initialization
 
-The most fundamental properties of every source object `s` are position and orientation which are represented through the attributes `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`. 
+#### Position and Orientation
 
-Due to their different nature each source type is characterized by different attributes. However, in general the `position` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the cartesian coordinates axes, see e.g. the following image. 
+The most fundamental properties of every source object `s` are position and orientation which are represented through the attributes `s.position` (3D-array), `s.angle` (float) and `s.axis`(3D-array). If no values are specified, a source object is initialized by default with `position=(0,0,0)`, and **init orientation** defined to be `angle=0` and `axis=(0,0,1)`.
+
+Due to their different nature each source type is characterized by different attributes. However, in general the `position` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the Cartesian coordinates axes, see e.g. the following image.
 
 An orientation given by (`angle`,`axis`) refers to a rotation of the source RELATIVE TO the **init orientation** about an axis specified by the `axis` vector anchored at the source `position`. The angle of this rotation is given by the `angle` attribute. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the [math package](#math-package) provides some useful methods. 
 
@@ -82,29 +107,32 @@ An orientation given by (`angle`,`axis`) refers to a rotation of the source RELA
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of the angle-axis system for source orientations. </p></i>
 
-The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters the format is always different.
+#### Geometry and Excitation
 
-Magnet sources represent homogeneously magnetized permanent magnets. The magnetization vector is described by the `magnetization` attribute which is always a 3D-array indicating direction and magnitude. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
+While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized by hand.
 
+The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respective class docstrings:
 
 ```eval_rst
-.. note::
-   Detailed information about the source parameters of each specific source type and how to initialize them can be found in the respecive class docstrings accessible through your IDE.
+:mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
 ```
+
+The excitation is either the magnet magnetization, the current or the magnetic moment. Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). The magnetization vector is described by the `magnetization` attribute which is always a 3D-array indicating direction and magnitude. The magnetization vector is always given with respect to the INIT ORIENTATION of the magnet. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (3D-array) input.
 
 ```eval_rst
 .. note::
   For convenience `magnetization`, `current`, `dimension`, `position` are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
 ```
 
-The following code shows how to initialize a source object, a permanent magnet D4H5 cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
+The following code shows how to initialize a source object, a D4H5 permanent magnet cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
 
 ```python
-import magpylib as magpy
+from magpylib.source.magnet import Cylinder
 
-s = magpy.source.magnet.Cylinder( mag = [500,0,500], # The magnetization vector in mT.
-                                   dim = [4,5])       # dimension (diameter,height) in mm.
-                                                      # no pos, angle, axis specified so default values are used
+s = Cylinder( mag = [500,0,500], # The magnetization vector in mT.
+              dim = [4,5])       # dimension (diameter,height) in mm.
+              
+# no pos, angle, axis specified so default values are used
 
 print(s.magnetization)  # Output: [500. 0. 500.]
 print(s.dimension)      # Output: [4. 5.]
@@ -112,37 +140,36 @@ print(s.position)       # Output: [0. 0. 0.]
 print(s.angle)          # Output: 0.0
 print(s.axis)           # Output: [0. 0. 1.]
 ```
+
 ```eval_rst
 .. image:: ../_static/images/documentation/Source_Display.JPG
    :align: center
    :scale: 50 %
 ```
-<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Magnet geometry created by above code. </p></i>
+
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Magnet geometry created by above code: A cylinder which stands upright with geometric center at the origin. </p></i>
 
 ### Methods for Geometric Manipulation
 
-In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this, each with advantages and disadvantages:
+In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this:
 
-```eval_rst
-At initialization:
-  When initializing the source we can set all attributes as desired.
+**At initialization:**
+When initializing the source we can set all attributes as desired. So instead of 'moving' one source around one could create a new one for each set of parameters of interest.
 
-Manipulation after initialization: 
-  We initialize the source and manipulate it afterwards,
-  
-  1. By directly setting the source attributes to desired values.
-  
-  2. By using provided methods of manipulation.
-```
+**Manipulation after initialization**
+We initialize the source and manipulate it afterwards as desired by
 
-The source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition`and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. These methods are implementations of the respective geometric operations. Upon application to source objects they will simply modify the object attributes accordingly.
+ 1. directly setting the source attributes.
+ 2. using provided methods of manipulation.
+
+The latter is often the most practical and intuitive way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition` and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
 
 - `s.setPosition(newPos)`: Moves the source to the position given by the argument vector (*newPos*. *s.position -> newPos*)
 - `s.move(displacement)`: Moves the source by the argument vector *displacement*. (*s.position -> s.position + displacement*) 
 - `s.setOrientation(angle,axis)`: This method sets a new source orientation given by *angle* and *axis*. (*s.angle -> angle, s.axis -> axis*)
 - `s.rotate(angle,axis,anchor=self.position)`: Rotates the source object by *angle* about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation attributes are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
 
-The following videos graphically show the application of the four methods for geometric manipulation.
+The following videos show the application of the four methods for geometric manipulation.
 
 <i><p align="center" style="font-weight: 600;"> move and setPosition </p></i>
 
@@ -171,11 +198,37 @@ The following videos graphically show the application of the four methods for ge
 
 ```
 
+The following example code shows how geometric operations are applied to source objects.
+
+```python
+from magpylib.source.magnet import Cylinder
+
+s = Cylinder( mag = [500,0,500], dim = [4,5])
+
+print(s.position)       # Output: [0. 0. 0.]
+
+s.move([1,2,3])
+print(s.position)       # Output: [1. 2. 3.]
+
+s.move([1,2,3])
+print(s.position)       # Output: [2. 4. 6.]
+```
+
 ### Calculating the Magnetic Field
 
-Once a source object `s` is defined one can calculate the magnetic field generated by it using the two methods `getB` and `getBsweep`. Here the call `s.getB(pos)` simply returns the value of the field which is generated by the source *s* at the sensor position *pos*.
+Once a source object `s` is defined one can calculate the magnetic field generated by it using the two methods `getB` and `getBsweep`. Here the call `s.getB(pos)` simply returns the value of the field which is generated by the source `s` at the sensor position `pos`.
 
-In most cases, however, one will be interested to determine the field for a set of sensor positions, or for different magnet positions and orientations. While this can manually be achieved by looping `getB`, magpylib also provides the advanced method `s.getBsweep(INPUT)` for ease of use and for the possibility of parallelization (to be discussed below). Here *INPUT* can have two possible formats:
+```python
+from magpylib.source.magnet import Cylinder
+
+s = Cylinder( mag = [500,0,500], dim = [4,5])
+print(s.getB([4,4,4]))       
+
+# Output: [ 7.69869084 15.407166    6.40155549]
+```
+
+In most cases, however, one will be interested to determine the field for a set of sensor positions, or for different magnet positions and orientations. While this can manually be achieved by looping `getB`, magpylib also provides the advanced method `s.getBsweep(INPUT)` for ease of use and for the possibility of multiprocessing. Here *INPUT* can have two possible formats:
+
 1. *INPUT TYPE 1* is a list of *N* sensor positions. In this case the magnetic field of the source is determined for all *N* sensor positions and returned in an *Nx3* matrix.
 2. *INPUT TYPE 2* is a list of the following format [(sensorPos1, sourcePos1, sourceOrient1),...]. Here for each case of sensor position and source state the field is evaluated and returned in an *Nx3* matrix. This corresponds to a system where sensor and magnet move simultaneously.
 
@@ -189,42 +242,80 @@ In most cases, however, one will be interested to determine the field for a set 
 .. |sweep2| image:: ../_static/images/documentation/sweep2.gif
    :width: 45%
 ```
+
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustrations of the two getBsweep input types. </p></i>
 
-To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of this solution can be found in the [Physics section](9_physics.md).
+
+```eval_rst
+.. note::
+    With getBsweep's keyword argument `multiprocessing=True`, it is possible to utilize the host computer's multiple cores to calculate points in parallel.
+    
+    
+    Please check out our :doc:`2_guideExamples` page for more details on multiprocessing.    
+```
+
+Please check out our [Guide and Examples](2_guideExamples.md) page for more details.
+The following example code shows how to quickly calculate the magnetic field using `getBsweep` with *INPUT TYPE 1*:
+
+```eval_rst
+
+.. plot:: pyplots/doku/getBsweep.py
+   :include-source:
+
+:download:`getBsweep.py <../pyplots/doku/getBsweep.py>`
+```
+
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Output of the above code. Three components of the field in millitesla along a linear stroke above the magnet. </p></i>
+
+To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of these solutions can be found in the [Physics section](9_physics.md). In a nutshell for the magnet classes: The analytical solution fixes the magnetization and can therefore not treat magnetization effects based on interactions. This means that Hysteresis effects, demagnetization and soft magnetic materials cannot be treated. But for typical hard ferromagnets like Ferrite, Neodyme and SmCo the accuracy of the solution easily exceeds 98%.
 
 ```eval_rst
 .. note::
   It is critical to note that the analytical solution does not treat interaction between the sources. This means that even if multiple sources are defined, `s.getB` will return only the unperturbed field from the source `s`. The total magnetic field is simply given by the superposition of the fields of all sources.
 ```
 
-
 ## The Collection Class
 
-The idea behind the collection class is to group multiple source objects for common evaluation and manipulation.
+The idea behind the collection class is to group multiple source objects for common manipulation and evaluation of the fields.
 
 #### Constructing Collections
 
 In principle a collection `c` is simply a list of source objects that are collected in the attribute `c.sources`.
 
-Collections can be constructed at initialization by simply giving the sources as arguments. It is possible to add single sources, lists of multiple sources and even other collection objects. All sources are simply added to the `sources` attribute of the target collection.
+Collections can be constructed at initialization by simply giving the sources objects as arguments. It is possible to add single sources, lists of multiple sources and even other collection objects. All sources are simply added to the `sources` attribute of the target collection.
 
 With the collection kwarg `dupWarning=True`, adding multiples of the same source will be blocked, and a warning will be displayed informing the user that a source object is already in the collection's `source` attribute. This can be unblocked by providing the `dupWarning=False` kwarg.
 
 In addition, the collection class features methods to add and remove sources for command line like manipulation. The method `c.addSources(*sources)` will add all sources given to it to the collection `c`. The method `c.removeSource(ref)` will remove the referenced source from the collection. Here the `ref` argument can be either a source or an integer indicating the reference position in the collection, and it defaults to the latest added source in the Collection.
 
+```Python
+import magpylib as magpy
+
+#define some magnet objects
+mag1 = magpy.source.magnet.Box(mag=[1,2,3],dim=[1,2,3])
+mag2 = magpy.source.magnet.Box(mag=[1,2,3],dim=[1,2,3],pos=[5,5,5])
+mag3 = magpy.source.magnet.Box(mag=[1,2,3],dim=[1,2,3],pos=[-5,-5,-5])
+
+#create/manipulate collection and print source positions
+c = magpy.Collection(mag1,mag2,mag3)
+print([s.position for s in c.sources])
+#OUTPUT: [array([0., 0., 0.]), array([5., 5., 5.]), array([-5., -5., -5.])]
+
+c.removeSource(1)
+print([s.position for s in c.sources])
+#OUTPUT: [array([0., 0., 0.]), array([-5., -5., -5.])]
+
+c.addSources(mag2)
+print([s.position for s in c.sources])
+#OUTPUT: [array([0., 0., 0.]), array([-5., -5., -5.]), array([5., 5., 5.])]
+```
+
 #### Common Manipulation and total Magnetic Field
 
-```eval_rst
-All methods for geometric operations (`setPosition`, `move`, `setOrientation` and `rotate`) are also methods of the collection class. A geometric operation applied to a collection is applied to each object within that collection individually. 
+All methods for geometric operations (`setPosition`, `move`, `setOrientation` and `rotate`) are also methods of the collection class. A geometric operation applied to a collection is directly applied to each object within that collection individually. In practice this means e.g. that a whole group of magnets can be rotated about a common pivot point with a single command.
 
-The :meth:`~magpylib.Collection.getB` and :meth:`~magpylib.Collection.getBsweep` methods for calculating magnetic field are also present, calculating the total magnetic field generated by all sources in the collection. 
+For calculating the magnetic field that is generated by a whole collection the methods `getB` and `getBsweep` are also available. Just as for geometric operations these methods will be applied to all sources individually, and the total magnetic field will be given by the sum of all parts. For obvious reasons the `getBsweep` method works only for INPUT TYPE 1 with collections.
 
-``` 
-
-<!--
-<i><p align="center" style="font-weight: 600;"> Grouping Sources in Collections, Common Manipulation and Total Field </p></i> 
--->
 ```eval_rst
 
 |Collection| |total Field|
@@ -235,54 +326,41 @@ The :meth:`~magpylib.Collection.getB` and :meth:`~magpylib.Collection.getBsweep`
 .. |total Field| image:: ../_static/images/documentation/collectionAnalysis.png
    :width: 50%
 ```
-<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b>
-Circular current sources are grouped into a collection to form a coil. The whole
-coil is then geometrically manipulated and the total magnetic field is shown in
-the xz-plane </p></i>
 
-```eval_rst
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Collection Example. Circular current sources are grouped into a collection to form a coil. The whole coil is then geometrically manipulated and the total magnetic field is calculated and shown in the xz-plane </p></i>
 
-.. note::
-   Due to abstraction restraints, Collections' :meth:`~magpylib.Collection.getBsweep` can only be called using `INPUT Type 1 <#calculating-the-magnetic-field>`_. 
-  
-```
+#### Complex Magnet Geometries
+
+As a result of the superposition principle complex magnet shapes and some inhomogeneous magnetizations can be generated by combining multiple sources. Geometrically this corresponds to addition and subtraction operations. For example, by placing a small magnet inside a larger magnet with opposite magnetization the small magnet volume is "cut out" from the larger one.
 
 #### Display Collection Graphically
 
-Finally, the collection class provides the method `displaySystem` to quickly check the geometry of the source assembly. 
-It comes with three keyword arguments (kwargs): 
+Finally, the collection class provides the method `displaySystem` to quickly check the geometry of the source assembly. It uses the matplotlib package and its limited capabilities of 3D plotting which often results in bad object overlapping.
 
-- `markers=listOfPos` - For displaying reference positions defined in a list.
-- `suppress=True` - For suppressing the figure output once `matplotlib.pyplot.ioff()` is set.
-- `direc=True` - For displaying current and magnetization directions in the figure. 
+`displaySystem()` comes with three keyword arguments:
+
+- `markers=listOfPos` for displaying reference positions. By default a marker is set at the origin. By giving *[a,b,c,'text']* instead of just a simple 3vector *'text'* is displayed with the marker.
+- `suppress=True` for suppressing the figure output. To suppress the output it is necessary to deactivate the interactive mode by calling *pyplot.ioff()*.
+- `direc=True` for displaying current and magnetization directions in the figure.
+- `subplotAx=None` for displaying the plot on a designated figure subplot instance.
 
 The following example code shows how a collection is initialized and displayed.
 
-```python
-import magpylib as magpy
-
-s1 = magpy.source.magnet.Cylinder( mag = [0,0,1],dim = [4,5], pos = [-10,0,0])
-s2 = magpy.source.magnet.Box( mag = [0,1,1],dim = [3,4,5], pos = [0,0,0])
-s3 = magpy.source.magnet.Sphere( mag = [1,0,1],dim = 4, pos = [10,0,0])
-
-c = magpy.Collection(s1,s2,s3)
-
-c.rotate(45,[0,0,1],anchor=[0,0,0])
-listOfPos = [(0,0,6),(10,10,10),(-10,-10,-10)]
-c.displaySystem(markers=listOfPos)
-```
 ```eval_rst
-.. image:: ../_static/images/documentation/Collection_Display.JPG
-   :align: center
-   :scale: 60 %
+
+.. plot:: pyplots/doku/displaySys.py
+   :include-source:
+
+:download:`displaySys.py <../pyplots/examples/displaySys.py>`
 ```
-<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Code output. </p></i>
+
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Output of the above code demonstrating the `displaySystem()` method. </p></i>
 
 ## Math Package
 
 The math package provides some functions for easier use of the angle-axis (Quaternion) rotation used in magpylib. 
 
-- `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles (PHI,THETA)) that are defined as in spherical coordinates. PHI is the azimuth angle and THETA is the polar angle.
+- `anglesFromAxis(axis)`: This function takes an arbitrary `axis` argument (3-vector) and returns its orientation given by the angles (PHI,THETA) that are defined as in spherical coordinates. PHI is the azimuth angle and THETA is the polar angle.
   ```python
   import magpylib as magpy
   angles = magpy.math.anglesFromAxis([1,1,0])

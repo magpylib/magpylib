@@ -42,7 +42,7 @@ from magpylib._lib.classes.moments import Dipole
 from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
-from magpylib._lib.mathLibPrivate import angleAxisRotation, fastNorm3D
+from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.mathLibPublic import rotatePosition
 
 
@@ -225,7 +225,7 @@ class Collection(FieldSampler):
                 py += calcFields[src][p][1]  # y coord val of this position
                 pz += calcFields[src][p][2]  # z coord val of this position
             Btotal.append([px, py, pz])
-        return Btotal
+        return array(Btotal)
 
     def getB(self, pos):
         """
@@ -316,7 +316,8 @@ class Collection(FieldSampler):
         for s in self.sources:
             s.rotate(angle, axis, anchor=anchor)
 
-    def displaySystem(self, markers=listOfPos, suppress=False, direc=False):
+    def displaySystem(self, markers=listOfPos, suppress=False, direc=False, 
+                            subplotAx=None):
         """
         Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
 
@@ -381,14 +382,61 @@ class Collection(FieldSampler):
         >>> C1 = source.current.Circular(curr=100,dim=6)
         >>> col = Collection(pm1,pm2,pm3,C1)
         >>> col.displaySystem()
-
+        
+        Parameters
+        ----------
+        externalFig : matplotlib subplot axe instance
+            Use an existing matplotlib subplot instance to draw the 3D system plot into.
+            Default: None
+        
+        subplotArg : list
+            Subplot arguments for pyplot.figure.add_subplot(), this defines
+            the position the 3D figure will appear in.
+            Default: [1,2,2]
+            
+        Example
+        -------
+        >>> import numpy as np
+        >>> import matplotlib.pyplot as plt
+        >>> from magpylib.source.magnet import Box
+        >>> from magpylib import Collection
+        >>> #create collection of one magnet
+        >>> s1 = Box(mag=[ 500,0, 500], dim=[3,3,3], pos=[ 0,0, 3], angle=45, axis=[0,1,0])
+        >>> c = Collection(s1)
+        >>> #create positions
+        >>> xs = np.linspace(-8,8,100)
+        >>> zs = np.linspace(-6,6,100)
+        >>> posis = [[x,0,z] for z in zs for x in xs]
+        >>> #calculate fields
+        >>> Bs = c.getBsweep(posis)
+        >>> #reshape array and calculate amplitude
+        >>> Bs = np.array(Bs).reshape([100,100,3])
+        >>> Bamp = np.linalg.norm(Bs,axis=2)
+        >>> X,Z = np.meshgrid(xs,zs)
+        >>> # Define figure
+        >>> fig = plt.figure()
+        >>> ## Define ax for 2D
+        >>> ax1 = fig.add_subplot(1, 2, 1, axisbelow=True)
+        >>> ## Define ax for 3D displaySystem
+        >>> ax2 = fig.add_subplot(1, 2, 2, axisbelow=True,projection='3d')
+        >>> ## field plot 2D
+        >>> ax1.contourf(X,Z,Bamp,100,cmap='rainbow')
+        >>> U,V = Bs[:,:,0], Bs[:,:,2]
+        >>> ax1.streamplot(X, Z, U, V, color='k', density=2)
+        >>> ## plot Collection system in 3D ax subplot
+        >>> c.displaySystem(subplotAx=ax2)
+        
         Raises
         ------
         AssertionError
             If Marker position list is poorly defined. i.e. listOfPos=(x,y,z) instead of lisOfPos=[(x,y,z)]
         """
-        fig = plt.figure(dpi=80, figsize=(8, 8))
-        ax = fig.gca(projection='3d')
+        
+        if subplotAx is None:
+            fig = plt.figure(dpi=80, figsize=(8, 8))
+            ax = fig.gca(projection='3d')
+        else:
+            ax = subplotAx
 
         # count magnets
         Nm = 0

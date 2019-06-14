@@ -24,7 +24,7 @@
 
 from numpy import array, NaN
 from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
-
+from warnings import warn
 
 # %% CURRENT LINE
 # Describes the magnetic field of a line current. The line is given by a set of
@@ -42,6 +42,11 @@ from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
 # current I0 flows in straight line from p1 to p2
 def Bfield_LineSegment(p0, p1, p2, I0):
     # must receive FLOAT only !!!!
+    # Check for zero-length segment
+    if all(p1==p2):
+        warn("Zero-length segment line detected in vertices list,"
+             "returning [0,0,0]", RuntimeWarning)
+        return array([0, 0, 0])
 
     # projection of p0 onto line p1-p2
     p4 = p1+(p1-p2)*fastSum3D((p0-p1)*(p1-p2))/fastSum3D((p1-p2)*(p1-p2))
@@ -57,7 +62,7 @@ def Bfield_LineSegment(p0, p1, p2, I0):
         norm_41 = fastNorm3D(p4-p1)
 
         if (norm_41 <= norm_12 and norm_42 <= norm_12):  # in-between the two points
-            print('Warning: getB Position directly on current line')
+            warn('Warning: getB Position directly on current line', RuntimeWarning)
             return array([NaN, NaN, NaN])
         else:
             return array([0, 0, 0])
