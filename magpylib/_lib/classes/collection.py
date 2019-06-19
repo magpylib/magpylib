@@ -32,6 +32,8 @@ listOfPos=[[x,y,z]] # List of Positions
 #######################################
 # %% IMPORTS
 from copy import deepcopy
+from itertools import repeat
+from multiprocessing import cpu_count
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -42,8 +44,10 @@ from magpylib._lib.classes.moments import Dipole
 from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
+from magpylib._lib.utility import initializeMulticorePool
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.mathLibPublic import rotatePosition
+
 
 
 class Collection(FieldSampler):
@@ -209,14 +213,33 @@ class Collection(FieldSampler):
                 else:
                     self.sources += [s]
 
+    def _getBsweepObj_pickle(self,positions,item):
+        return item.getBsweep(positions,multiprocessing=False)
+
+    def _getBsweepObj(self, pos, processes):
+        # In the case there are many objects and few positions in the collection
+        # treat parallelization this way:
+        # Take every object in parallel and sequentially calculate getB for each.
+        pool = initializeMulticorePool(processes)
+        results = pool.starmap(self._getBsweepObj_pickle,
+                                zip(repeat(pos,
+                                    times=len(self.sources)),
+                                    self.sources))
+        pool.close()
+        pool.join()
+        return array(results)
+
     def getBsweep(self, pos=numpyArray, multiprocessing=False, processes=0):
 
         Btotal = []
 
         assert all(isPosVector(item)
                    for item in pos), "Non-position vector in Collection getBsweep"
-        calcFields = [s.getBsweep(pos, multiprocessing=multiprocessing,
-                                  processes=processes) for s in self.sources]
+        if cpu_count() < len(numpyArray) or multiprocessing is False: # If there are too few positions to parallelize in 
+            calcFields = [s.getBsweep(pos, multiprocessing=multiprocessing,
+                                    processes=processes) for s in self.sources]
+        else:
+            calcFields = self._getBsweepObj(pos,processes)
 
         for p in range(len(pos)):  # For each position, calculate and sum all fields
             px = py = pz = 0
@@ -639,6 +662,6 @@ class Collection(FieldSampler):
         plt.tight_layout()
 
         if suppress is False:
-            plt.show()
+            plt.show(block=False)
 
         return plt.gcf()
