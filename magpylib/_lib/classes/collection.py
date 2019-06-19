@@ -639,6 +639,6 @@ class Collection(FieldSampler):
         plt.tight_layout()
 
         if suppress is False:
-            plt.show()
+            plt.show(block=False)
 
         return plt.gcf()
