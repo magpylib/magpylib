@@ -4,6 +4,7 @@ It is the aim of this section to give a few code examples that show how the libr
 
 - Content
     - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
+    - [The Source Objects and their Fields](#source-objects-and-their-fields)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
     - [Using getBSweep](#using-getbsweep)
@@ -20,6 +21,18 @@ In this first example a simple collection is created from two magnets. The magne
    :include-source:
 
 :download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
+```
+
+### The Source Objects and their Fields
+
+In this example we define all existing source objects and display their fields. Notice that the respective magnetization vectors are chosen arbitrarily.
+
+```eval_rst
+
+.. plot:: pyplots/examples/01b_AllSources.py
+   :include-source:
+
+:download:`01b_AllSources.py <../pyplots/examples/01b_AllSources.py>`
 ```
 
 ### Translation, Orientation and Rotation Basics

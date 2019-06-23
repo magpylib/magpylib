@@ -1,22 +1,21 @@
 # [WIP] Physics behind magpylib
 
-Here we clarify some of the physics behind the analytical expressions that are provided by magpylib. Most also reflected in the paper **CITE PAPER HERE**
-
 ## The analytical solutions
 
 Details about how they are set up
 
-
-### Description of the anaytical solution
+### Description of the analytical solution
 Formulas and expressions used in magpylib, references to literature
 
 ### Hard and soft magnetic materials
 We cannot do soft, theres a lot of reasons we we dont need to
 
 ### Demagnetization
-Solution accuracy
+Solution accuracy, analytical modeling of demagnetization and interaction
 
+### Limits and Convergence
 
-## Limits and Convergence
+### Multiprocessing Speed Gain
 
 ### Convergence of diametral Cylinder
+No. iterations

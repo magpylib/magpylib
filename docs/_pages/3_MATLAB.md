@@ -1,11 +1,12 @@
-# [WIP] Guide - MATLAB Integration
+# Guide - MATLAB Integration
 
-MATLAB is a numerical computing environment proprietary of MathWorks, widely
-used in the scientific and engineering industry. 
+## Setting Python Interpreter
 
-As of version R2015b, MATLAB
-allows you to call libraries made in other programming languages, including
-Python, which enables users to run Magpylib from the MATLAB interface.
+As of version R2015b, Matlab allows you to call libraries from other 
+programming languages, including Python, which enables users to run 
+magpylib from the Matlab interface. The following guide intends to 
+provide a digest of the [Official MATLAB documentation](https://www.mathworks.com/help/matlab/call-python-libraries.html) 
+with a focus on utilizing this interface with magpylib.
 
 <div style="text-align:center;">
     <img src="https://www.mathworks.com/content/mathworks/www/en/products/matlab/matlab-and-python/jcr:content/mainParsys/columns_copy/2/image.adapt.full.high.svg/1535462691919.svg">
@@ -13,86 +14,31 @@ Python, which enables users to run Magpylib from the MATLAB interface.
 
 &nbsp;
 
-The following guide intends to provide a digest of the [Official MATLAB
-documentation](https://www.mathworks.com/help/matlab/call-python-libraries.html)
- with a focus on utilizing this interface for applying magpylib.
-
-
-- [[WIP] Guide - MATLAB Integration](#wip-guide---matlab-integration)
-  - [Linking Python to Matlab](#linking-python-to-matlab)
-    - [Linking the user space Interpreter](#linking-the-user-space-interpreter)
-    - [Linking the Anaconda Interpreter](#linking-the-anaconda-interpreter)
-  - [Calling MagPylib](#calling-magpylib)
-    - [Limitations](#limitations)
-
-## Linking Python to Matlab
-### Linking the user space Interpreter
-
-Running the following should yield you the information about the user space interpreter:
+Running the following line in the Matlab console tells you which 
+Python environment (user space interpreter) is connected to your Matlab.
 
 ```matlab
 >>> pyversion
 ```
 
-### Linking the Anaconda Interpreter
+If magpylib is already installed in this environment you can directly 
+call it, as shown in the [example](#example:-Calling-magpylib-from-Matlab) below.
+If not please follow the [installation guide](1_how2install.md) and install magpylib.
 
- Anaconda provides Python environments with scientific packages.
-
-<details>
-
-<a href=#linking-the-anaconda-interpreter><summary> Click here for Steps </summary></a>
-
-To couple an Anaconda environment with Matlab, do the following in **Anaconda Navigator**:
-
-````eval_rst
-
-**1.** Select your environments tab
-
-**2.** Create a new environment
-
-|install1| 
-
-**3.** Name your environment
-
-**4.** Choose the Python version (3.5 and up)
-
-
-|install2|
-
-Keep note of the location as this will be necessary.
-
-**5.** Start conda terminal and install magpylib into the environment.
-
-|install3|
-
-**6.** Find your environment location:
-
-|install4|
-
-.. |install1| image:: ../_static/images/matlab_guide/install1.png
-
-.. |install2| image:: ../_static/images/matlab_guide/install2.png
-
-.. |install3| image:: ../_static/images/matlab_guide/install3.png
-
-.. |install4| image:: ../_static/images/matlab_guide/install4.png
-
-**7.** Enter the following snippet **into your MATLAB console** with your environment's Python Interpreter location:
-
-````
+If you choose to install magplyib in a different environment than the one that is
+currently connected to your Matlab interpreter, use the following command 
+in the Matlab console to connect the new environment instead (choose correct 
+path pointing at your Python interpreter).
 
 ```matlab
->>> pyversion C:\Users\Gabriel\AppData\Local\Continuum\anaconda3\envs\magpy\python.exe
+>>> pyversion C:\Users\...\AppData\Local\Continuum\anaconda3\envs\magpy\python.exe
 ```
-</details>
 
----
+## Example: Calling magpylib from Matlab
 
-## Calling MagPylib
+The following Matlab script showcases most functionalities.
 
-The following MATLAB script showcases most functionalities.
-
-```
+```matlab
 %%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%%%%%%
 %% Showcase Python + MATLAB Interoperability.    
 %% Define and calculate the field of a 
@@ -121,8 +67,8 @@ pythonResult = col.getB(sensorPos)
 %% Convert Python Result to MATLAB data format
 matlabResult = double(pythonResult) 
 ```
-### Limitations
 
 ```eval_rst
-MATLAB does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
+.. note::
+Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
 ```
