@@ -5,22 +5,21 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
-- [Library Documentation](#library-documentation)
-  - [Package Structure](#package-structure)
-  - [Units and IO Types](#units-and-io-types)
-  - [The Source Class](#the-source-class)
-    - [Source Attributes and Initialization](#source-attributes-and-initialization)
-      - [Position and Orientation](#position-and-orientation)
-      - [Geometry and Excitation](#geometry-and-excitation)
-    - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
-    - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
-  - [The Collection Class](#the-collection-class)
-      - [Constructing Collections](#constructing-collections)
-      - [Common Manipulation and total Magnetic Field](#common-manipulation-and-total-magnetic-field)
-      - [Complex Magnet Geometries](#complex-magnet-geometries)
-      - [Display Collection Graphically](#display-collection-graphically)
-  - [Math Package](#math-package)
-
+- [Library Documentation](#Library-Documentation)
+  - [Package Structure](#Package-Structure)
+  - [Units and IO Types](#Units-and-IO-Types)
+  - [The Source Class](#The-Source-Class)
+    - [Source Attributes and Initialization](#Source-Attributes-and-Initialization)
+      - [Position and Orientation](#Position-and-Orientation)
+      - [Geometry and Excitation](#Geometry-and-Excitation)
+    - [Methods for Geometric Manipulation](#Methods-for-Geometric-Manipulation)
+    - [Calculating the Magnetic Field](#Calculating-the-Magnetic-Field)
+  - [The Collection Class](#The-Collection-Class)
+      - [Constructing Collections](#Constructing-Collections)
+      - [Common Manipulation and total Magnetic Field](#Common-Manipulation-and-total-Magnetic-Field)
+      - [Complex Magnet Geometries](#Complex-Magnet-Geometries)
+      - [Display Collection Graphically](#Display-Collection-Graphically)
+  - [Math Package](#Math-Package)
 
 ## Package Structure
 
