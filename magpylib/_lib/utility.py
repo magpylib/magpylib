@@ -22,7 +22,7 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 from typing import Tuple
-from numpy import float64, isnan, array, sqrt
+from numpy import float64, isnan, array
 # Helper function for validating input dimensions
 
 
