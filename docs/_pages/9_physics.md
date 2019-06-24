@@ -3,8 +3,6 @@
 ## The analytical solutions
 
 Details about how they are set up
-
-### Description of the analytical solution
 Formulas and expressions used in magpylib, references to literature
 
 ### Hard and soft magnetic materials
