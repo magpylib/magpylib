@@ -20,10 +20,6 @@ In this part of the documentation the fundamental structure of the magpylib libr
       - [Complex Magnet Geometries](#Complex-Magnet-Geometries)
       - [Display Collection Graphically](#Display-Collection-Graphically)
   - [Math Package](#Math-Package)
-<<<<<<< HEAD
-=======
-
->>>>>>> development
 
 ## Package Structure
 
