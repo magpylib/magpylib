@@ -20,6 +20,10 @@ In this part of the documentation the fundamental structure of the magpylib libr
       - [Complex Magnet Geometries](#Complex-Magnet-Geometries)
       - [Display Collection Graphically](#Display-Collection-Graphically)
   - [Math Package](#Math-Package)
+<<<<<<< HEAD
+=======
+
+>>>>>>> development
 
 ## Package Structure
 
@@ -358,7 +362,7 @@ The following example code shows how a collection is initialized and displayed.
 .. plot:: pyplots/doku/displaySys.py
    :include-source:
 
-:download:`displaySys.py <../pyplots/examples/displaySys.py>`
+:download:`displaySys.py <../pyplots/doku/displaySys.py>`
 ```
 
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Output of the above code demonstrating the `displaySystem()` method. </p></i>
