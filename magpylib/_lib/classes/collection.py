@@ -620,17 +620,17 @@ class Collection(FieldSampler):
         for d in dipolesList:
             drawDipole(d.position, d.moment,
                        d.angle, d.axis,
-                       SYSSIZE, plt)
+                       SYSSIZE, ax)
 
         if direc is True:  # Draw the Magnetization axes and current directions
-            drawCurrentArrows(currentsList, SYSSIZE, plt)
-            drawMagAxis(magnetsList, SYSSIZE, plt)
+            drawCurrentArrows(currentsList, SYSSIZE, ax)
+            drawMagAxis(magnetsList, SYSSIZE, ax)
 
-        for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
-            tick.set_fontsize(12)
-        ax.set_xlabel('x[mm]', fontsize=12)
-        ax.set_ylabel('y[mm]', fontsize=12)
-        ax.set_zlabel('z[mm]', fontsize=12)
+        #for tick in ax.xaxis.get_ticklabels()+ax.yaxis.get_ticklabels()+ax.zaxis.get_ticklabels():
+        #    tick.set_fontsize(12)
+        ax.set_xlabel('x[mm]')#, fontsize=12)
+        ax.set_ylabel('y[mm]')#, fontsize=12)   #change font size through rc parameters
+        ax.set_zlabel('z[mm]')#, fontsize=12)
         ax.set(
             xlim=(-SYSSIZE, SYSSIZE),
             ylim=(-SYSSIZE, SYSSIZE),
