@@ -385,15 +385,10 @@ class Collection(FieldSampler):
         
         Parameters
         ----------
-        externalFig : matplotlib subplot axe instance
+        subplotAx : matplotlib subplot axe instance
             Use an existing matplotlib subplot instance to draw the 3D system plot into.
             Default: None
         
-        subplotArg : list
-            Subplot arguments for pyplot.figure.add_subplot(), this defines
-            the position the 3D figure will appear in.
-            Default: [1,2,2]
-            
         Example
         -------
         >>> import numpy as np
