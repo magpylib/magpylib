@@ -4,7 +4,7 @@ It is the aim of this section to give a few code examples that show how the libr
 
 - Content
     - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
-    - [The Source Objects and their Fields](#source-objects-and-their-fields)
+    - [The Source Objects and their Fields](#the-source-objects-and-their-fields)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
     - [Using getBSweep](#using-getbsweep)
