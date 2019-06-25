@@ -69,6 +69,9 @@ matlabResult = double(pythonResult)
 ```
 
 ```eval_rst
+
 .. note::
-Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
+
+   Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
+
 ```
