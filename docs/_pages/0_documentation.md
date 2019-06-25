@@ -1,25 +1,27 @@
 # Library Documentation
 ```eval_rst
+
 The idea behind magpylib is to provide simple and easy to use classes for calculating magnetic fields. The core of the library is the :mod:`~magpylib.source` class which can represent permanent magnets, current distributions or magnetic moments. The library provides simple ways to generate such source objects, to manipulate them geometrically, to group several sources into a :class:`~magpylib.Collection` and to calculate the fields of such systems.
+
 ```
 
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
-- [Library Documentation](#Library-Documentation)
-  - [Package Structure](#Package-Structure)
-  - [Units and IO Types](#Units-and-IO-Types)
-  - [The Source Class](#The-Source-Class)
-    - [Source Attributes and Initialization](#Source-Attributes-and-Initialization)
-      - [Position and Orientation](#Position-and-Orientation)
-      - [Geometry and Excitation](#Geometry-and-Excitation)
-    - [Methods for Geometric Manipulation](#Methods-for-Geometric-Manipulation)
-    - [Calculating the Magnetic Field](#Calculating-the-Magnetic-Field)
-  - [The Collection Class](#The-Collection-Class)
-      - [Constructing Collections](#Constructing-Collections)
-      - [Common Manipulation and total Magnetic Field](#Common-Manipulation-and-total-Magnetic-Field)
-      - [Complex Magnet Geometries](#Complex-Magnet-Geometries)
-      - [Display Collection Graphically](#Display-Collection-Graphically)
-  - [Math Package](#Math-Package)
+- Content
+  - [Package Structure](#package-structure)
+  - [Units and IO Types](#units-and-io-types)
+  - [The Source Class](#the-source-class)
+    - [Source Attributes and Initialization](#source-attributes-and-initialization)
+      - [Position and Orientation](#position-and-orientation)
+      - [Geometry and Excitation](#geometry-and-excitation)
+    - [Methods for Geometric Manipulation](#methods-for-geometric-manipulation)
+    - [Calculating the Magnetic Field](#calculating-the-magnetic-field)
+  - [The Collection Class](#the-collection-class)
+      - [Constructing Collections](#constructing-collections)
+      - [Common Manipulation and total Magnetic Field](#common-manipulation-and-total-magnetic-field)
+      - [Complex Magnet Geometries](#complex-magnet-geometries)
+      - [Display Collection Graphically](#display-collection-graphically)
+  - [Math Package](#math-package)
 
 ## Package Structure
 
@@ -89,7 +91,7 @@ and in the following sections. The figure below gives a graphical overview.
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of attributes and methods of the source class. </p></i>
 
-A simple program which includes most features of the library can be found [here](2_guideExamples.md#A-Simple-Collection-and-its-Field). A program which shows the fields of the fundamental classes is found [here](2_guideExamples.md#The-Source-Objects-and-their-Fields).
+A simple program which includes most features of the library can be found [here](2_guideExamples.html#a-simple-collection-and-its-field). A program which shows the fields of the fundamental classes is found [here](2_guideExamples.html#the-source-objects-and-their-fields).
 
 ### Source Attributes and Initialization
 
