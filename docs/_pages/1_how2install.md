@@ -122,11 +122,11 @@ If you want to have a custom environment without using conda, you may simply ins
 
 ## Download Sites
 
-_Currently magpylib is hosted over at:_
+Currently magpylib is hosted over at:
 - [Conda Cloud][CondaCloud]
 - [PyPi][PyPi]
 
-_Source code:_
+Find the source code at GitHub:
 - [GitHub repository][GitHub]
 
 
