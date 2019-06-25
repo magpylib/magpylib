@@ -82,7 +82,7 @@ def addUniqueSource(source, sourceList):
 ####
 
 
-def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE, pyplot):
+def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE, ax):
     """Draw the magnetization vector of a magnet.
 
     Parameters
@@ -108,14 +108,14 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
     P = position
     # Get a lil different but unique tone
     c = [color[0]/2, color[1]/2, color[2]/2, color[3]]
-    pyplot.quiver(P[0], P[1], P[2],  # X,Y,Z position
+    ax.quiver(P[0], P[1], P[2],  # X,Y,Z position
                   M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
                   length=SYSSIZE,
                   color=c)
 
 
-def drawMagAxis(magnetList, SYSSIZE, pyplot):
+def drawMagAxis(magnetList, SYSSIZE, ax):
     """
     Draws the magnetization vectors of magnet objects in a list.
 
@@ -136,12 +136,12 @@ def drawMagAxis(magnetList, SYSSIZE, pyplot):
     for s in magnetList:
         drawMagnetizationVector(s.position, s.magnetization,
                                 s.angle, s.axis, s.color,
-                                SYSSIZE, pyplot)
+                                SYSSIZE, ax)
 
 ####
 
 
-def drawLineArrows(vertices, current, SYSSIZE, pyplot):
+def drawLineArrows(vertices, current, SYSSIZE, ax):
     """
     Helper function for Collection.displaySystem()
     Draw Arrows inside the line to show current orientation
@@ -165,14 +165,14 @@ def drawLineArrows(vertices, current, SYSSIZE, pyplot):
         x = vertices[(-(v+1), v)[current <= 0]]
         y = vertices[(-((v+2) % lenli), (v+1) % lenli)
                      [current <= 0]]  # Get second to last
-        pyplot.quiver((x[0]+y[0])/2, (x[1]+y[1])/2, (x[2]+y[2])/2,  # Mid point in line
+        ax.quiver((x[0]+y[0])/2, (x[1]+y[1])/2, (x[2]+y[2])/2,  # Mid point in line
                       # Components of the Vector
                       x[0]-y[0], x[1]-y[1], x[2]-y[2],
                       normalize=True,
                       length=SYSSIZE/12,
                       color='k')
 
-        pyplot.quiver(y[0], y[1], y[2],  # Arrow at start
+        ax.quiver(y[0], y[1], y[2],  # Arrow at start
                       # Components of the Vector
                       x[0]-y[0], x[1]-y[1], x[2]-y[2],
                       normalize=True,
@@ -180,14 +180,14 @@ def drawLineArrows(vertices, current, SYSSIZE, pyplot):
                       color='k')
 
 
-def drawCurrentArrows(currentList, SYSSIZE, pyplot):
+def drawCurrentArrows(currentList, SYSSIZE, ax):
     for s in currentList:
-        drawLineArrows(s.vertices, s.current, SYSSIZE, pyplot)
+        drawLineArrows(s.vertices, s.current, SYSSIZE, ax)
 
 ###
 
 
-def drawDipole(position, moment, angle, axis, SYSSIZE, pyplot):
+def drawDipole(position, moment, angle, axis, SYSSIZE, ax):
     """
     Draw a dipole moment arrow.
 
@@ -206,8 +206,8 @@ def drawDipole(position, moment, angle, axis, SYSSIZE, pyplot):
     from magpylib._lib.mathLibPublic import rotatePosition
     P = rotatePosition(position, angle, axis)
     M = rotatePosition(moment, angle, axis)
-
-    pyplot.quiver(P[0], P[1], P[2],  # X,Y,Z position
+    
+    ax.quiver(P[0], P[1], P[2],  # X,Y,Z position
                   M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
                   length=SYSSIZE/12,
