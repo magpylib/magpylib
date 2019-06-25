@@ -36,7 +36,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. image:: ../_static/images/documentation/lib_structure.JPG
    :align: center
-   :scale: 50 %
+   :scale: 45 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Outline of the magpylib package structure. </p></i>
 
@@ -65,7 +65,7 @@ This is the core class of the library. The idea is that source objects represent
 ```eval_rst
 .. image:: ../_static/images/documentation/SourceTypes.JPG
    :align: center
-   :scale: 65 %
+   :scale: 60 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Source types currently available in magpylib. </p></i>
 
@@ -85,11 +85,11 @@ and in the following sections. The figure below gives a graphical overview.
 ```eval_rst
 .. image:: ../_static/images/documentation/sourceVars_Methods.JPG
    :align: center
-   :scale: 45 %
+   :scale: 50 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of attributes and methods of the source class. </p></i>
 
-A simple program  which includes most features of the library can be found [here](2_guideExamples.md#A-Simple-Collection-and-its-Field). A program which shows the fields of the fundamental classes is found [here](2_guideExamples.md#The-Source-Objects-and-their-Fields).
+A simple program which includes most features of the library can be found [here](2_guideExamples.md#A-Simple-Collection-and-its-Field). A program which shows the fields of the fundamental classes is found [here](2_guideExamples.md#The-Source-Objects-and-their-Fields).
 
 ### Source Attributes and Initialization
 
