@@ -9,8 +9,11 @@
       - [Anaconda 3 Install](#anaconda-3-install)
       - [Terminal Python 3 Install](#terminal-python-3-install)
   - [Download Sites](#download-pages)
-  
----
+
+```eval_rst
+.. warning::
+    Magpylib works only with Python 3.6 or later !
+```
 
 ## Install with pip
 
