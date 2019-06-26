@@ -11,6 +11,12 @@ It is the aim of this section to give a few code examples that show how the libr
     - [Complex Magnet Shapes: Hollow Cylinder](#complex-magnet-shapes-hollow-cylinder)
     - [Multiprocessing](#multiprocessing)
 
+```eval_rst
+
+.. warning::
+    With Spyder inline plotting the graphics output can be false. Use graphic backend *Qt5* instead of *Inline* in settings/IPython console/Graphics.
+```
+
 ### A Simple Collection and its Field
 
 In this first example a simple collection is created from two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem` method. The field is then calculated on a grid and displayed in the xz-plane.

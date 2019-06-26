@@ -11,6 +11,7 @@
   - [Download Sites](#download-pages)
 
 ```eval_rst
+
 .. warning::
     Magpylib works only with Python 3.6 or later !
 ```

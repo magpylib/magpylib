@@ -1,5 +1,13 @@
 # Guide - MATLAB Integration
 
+```eval_rst
+
+.. note::
+
+   Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
+
+```
+
 ## Setting Python Interpreter
 
 As of version R2015b, Matlab allows you to call libraries from other 
@@ -66,12 +74,4 @@ pythonResult = col.getB(sensorPos)
 
 %% Convert Python Result to MATLAB data format
 matlabResult = double(pythonResult) 
-```
-
-```eval_rst
-
-.. note::
-
-   Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
-
 ```
