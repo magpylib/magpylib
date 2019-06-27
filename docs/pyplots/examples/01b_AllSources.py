@@ -28,13 +28,16 @@ s5 = source.current.Circular(curr=10, dim=5)                        #Circular
 s6 = source.moment.Dipole(moment=[0,0,100])                         #Dipole
 
 for i,s in enumerate([s1,s2,s3,s4,s5,s6]):
-    
-    #plot geometry
+
+    #plot geometry in memory
     c = Collection(s)
-    c.displaySystem(subplotAx=axsA[i],markers=[(6,0,6)])
+    c.displaySystem(subplotAx=axsA[i],markers=[(6,0,6)],suppress=True)
     axsA[i].plot([-6,6,6,-6,-6],[0,0,0,0,0],[-6,-6,6,6,-6])
 
-    #plot field
+    #plot field in memory
     B = array([s.getB(p) for p in posis]).reshape(50,50,3)
     axsB[i].pcolor(X,Y,norm(B,axis=2),cmap=plt.cm.get_cmap('coolwarm'))
     axsB[i].streamplot(X, Y, B[:,:,0], B[:,:,2], color='k',linewidth=1)
+
+#display plots
+plt.show()

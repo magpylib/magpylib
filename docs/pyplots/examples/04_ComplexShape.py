@@ -26,7 +26,7 @@ ax1 = fig.add_subplot(121,projection='3d')
 ax2 = fig.add_subplot(122)
 
 #add displaySystem on ax1
-c.displaySystem(subplotAx=ax1)
+c.displaySystem(subplotAx=ax1,suppress=True)
 ax1.view_init(elev=75)
 
 ##amplitude plot on ax2

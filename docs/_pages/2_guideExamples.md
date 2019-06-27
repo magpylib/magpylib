@@ -14,7 +14,7 @@ It is the aim of this section to give a few code examples that show how the libr
 ```eval_rst
 
 .. warning::
-    With Spyder inline plotting the graphics output can be false. Use graphic backend *Qt5* instead of *Inline* in settings/IPython console/Graphics.
+    With Spyder's IPython *Inline* graphics plotting, plots made after calling :meth:`~magpylib.Collection.displaySystem()` can come out blank. Set the IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
 ```
 
 ### A Simple Collection and its Field

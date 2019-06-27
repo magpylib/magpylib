@@ -1,14 +1,15 @@
 # Installation Instructions
 
-- [Installation Instructions](#installation-instructions)
-  - [Install with pip](#install-with-pip)
-  - [Windows Install](#windows-install)
-      - [Anaconda 3 Install](#anaconda-3-install-for-spyder-or-jupyter-notebook)
-      - [Clean Python 3 install](#clean-python-3-install)
-  - [Linux Install](#linux-install)
-      - [Anaconda 3 Install](#anaconda-3-install)
-      - [Terminal Python 3 Install](#terminal-python-3-install)
-  - [Download Sites](#download-pages)
+- Content 
+  - [Installation Instructions](#installation-instructions)
+    - [Install with pip](#install-with-pip)
+    - [Windows Install](#windows-install)
+        - [Anaconda 3 Install](#anaconda-3-install)
+        - [Clean Python 3 Install](#clean-python-3-install)
+    - [Linux Install](#linux-install)
+        - [Anaconda 3 Linux Install](#anaconda-3-linux-install)
+        - [Terminal Python 3 Install](#terminal-python-3-install)
+    - [Download Sites](#download-sites)
 
 ```eval_rst
 
@@ -18,13 +19,13 @@
 
 ## Install with pip
 
-The quickest installation on any platform ist through pip.
+The quickest installation on any platform is through pip.
 
 ```
 pip install magpylib
 ```
 
-If you are unfamiliar with pip please follow the detailed guides below
+If you are unfamiliar with pip, please follow the detailed guides below:
 
 ---
 
@@ -81,11 +82,11 @@ If you want to have a custom environment without using conda, you may simply ins
 
 ## Linux Install
 
-#### Anaconda 3 Install
+#### Anaconda 3 Linux Install
 
 <details>
 
-<a href="#anaconda-3-install"><summary> Click here for Steps </summary></a>
+<a href="#anaconda-3-linux-install"><summary> Click here for Steps </summary></a>
 
 1. [Download Anaconda][anaconda]
 2. Open a terminal window and type `anaconda-navigator`

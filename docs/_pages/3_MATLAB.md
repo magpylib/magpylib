@@ -4,15 +4,15 @@
 
 .. note::
 
-   Matlab does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
+   MATLAB does not support Tkinter, which disables matplotlib. This means that :meth:`~magpylib.Collection.displaySystem()` will not generate a display and might interrupt the program.
 
 ```
 
 ## Setting Python Interpreter
 
-As of version R2015b, Matlab allows you to call libraries from other 
+As of version R2015b, MATLAB allows you to call libraries from other 
 programming languages, including Python, which enables users to run 
-magpylib from the Matlab interface. The following guide intends to 
+magpylib from the MATLAB interface. The following guide intends to 
 provide a digest of the [Official MATLAB documentation](https://www.mathworks.com/help/matlab/call-python-libraries.html) 
 with a focus on utilizing this interface with magpylib.
 
@@ -22,29 +22,29 @@ with a focus on utilizing this interface with magpylib.
 
 &nbsp;
 
-Running the following line in the Matlab console tells you which 
-Python environment (user space interpreter) is connected to your Matlab.
+Running the following line in the MATLAB console tells you which 
+Python environment (user space interpreter) is connected to your MATLAB interface.
 
 ```matlab
 >>> pyversion
 ```
 
 If magpylib is already installed in this environment you can directly 
-call it, as shown in the [example](#example:-Calling-magpylib-from-Matlab) below.
+call it, as shown in the [example](#example:-Calling-magpylib-from-MATLAB) below.
 If not please follow the [installation guide](1_how2install.md) and install magpylib.
 
-If you choose to install magplyib in a different environment than the one that is
-currently connected to your Matlab interpreter, use the following command 
-in the Matlab console to connect the new environment instead (choose correct 
+If you choose to install magpylib in a different environment than the one that is
+currently connected to your MATLAB interpreter, use the following command 
+in the MATLAB console to connect the new environment instead (choose correct 
 path pointing at your Python interpreter).
 
 ```matlab
 >>> pyversion C:\Users\...\AppData\Local\Continuum\anaconda3\envs\magpy\python.exe
 ```
 
-## Example: Calling magpylib from Matlab
+## Example: Calling magpylib from MATLAB
 
-The following Matlab script showcases most functionalities.
+The following MATLAB script showcases most functionalities.
 
 ```matlab
 %%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%%%%%%
