@@ -33,7 +33,7 @@ If magpylib is already installed in this environment you can directly
 call it, as shown in the [example](#example:-Calling-magpylib-from-Matlab) below.
 If not please follow the [installation guide](1_how2install.md) and install magpylib.
 
-If you choose to install magplyib in a different environment than the one that is
+If you choose to install magpylib in a different environment than the one that is
 currently connected to your Matlab interpreter, use the following command 
 in the Matlab console to connect the new environment instead (choose correct 
 path pointing at your Python interpreter).
