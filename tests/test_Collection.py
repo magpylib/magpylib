@@ -358,7 +358,42 @@ def test_GetBSweepList():
         for j in range(3):
             assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)
 
-def test_GetBSweepList_multiprocessing():
+def test_GetBSweepList_multiprocessing_many_positions_few_objects():
+    # Check if getB sweep is performing multipoint
+    # calculations utilizing multiple processes
+
+    from magpylib._lib.classes.magnets import Box
+    type_erMsg =  "getBsweep did not return a numpy array."
+    #Input
+    mag=(2,3,5)
+    dim=(2,2,2)
+    pos=array([     [2,2,2],
+                    [2,2,2],
+                    [2,2,3],
+                    [2,2,2],
+                    [2,2,2],
+                    [2,2,3]])
+
+
+    mockResult = [  [0.24976596, 0.21854521, 0.15610372],
+                    [0.24976596, 0.21854521, 0.15610372],
+                    [0.12442073, 0.10615358, 0.151319  ],
+                    [0.24976596, 0.21854521, 0.15610372],
+                    [0.24976596, 0.21854521, 0.15610372],
+                    [0.12442073, 0.10615358, 0.151319  ],]
+    #Run   
+    b = Box(mag,dim)
+    b2 = Box(mag,dim)
+    c = Collection(b,b2)
+    result = c.getBsweep(pos,multiprocessing=True)
+    assert isinstance(result,ndarray), type_erMsg
+    rounding = 4
+    for i in range(len(mockResult)):
+        for j in range(3):
+            assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)
+
+
+def test_GetBSweepList_multiprocessing_many_objects_few_positions():
     # Check if getB sweep is performing multipoint
     # calculations utilizing multiple processes
 
@@ -371,17 +406,16 @@ def test_GetBSweepList_multiprocessing():
                     [2,2,2],
                     [2,2,3]])
 
-
-    mockResult = [  [0.24976596, 0.21854521, 0.15610372],
-                    [0.24976596, 0.21854521, 0.15610372],
-                    [0.12442073, 0.10615358, 0.151319  ],]
+    numberOfBoxes = 30 
+    mockResult = [  array([0.12488298, 0.10927261, 0.07805186]) * numberOfBoxes,
+                    array([0.12488298, 0.10927261, 0.07805186]) * numberOfBoxes,
+                    array([0.06221036, 0.05307679, 0.0756595 ]) * numberOfBoxes,]
     #Run   
-    b = Box(mag,dim)
-    b2 = Box(mag,dim)
-    c = Collection(b,b2)
+    
+    c = Collection([Box(mag,dim) for i in range(numberOfBoxes)])
     result = c.getBsweep(pos,multiprocessing=True)
     assert isinstance(result,ndarray), type_erMsg
-    rounding = 4
+    rounding = 3
     for i in range(len(mockResult)):
         for j in range(3):
             assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)

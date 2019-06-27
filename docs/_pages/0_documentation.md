@@ -23,6 +23,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
       - [Display Collection Graphically](#display-collection-graphically)
   - [Math Package](#math-package)
 
+
 ## Package Structure
 
 ```eval_rst
