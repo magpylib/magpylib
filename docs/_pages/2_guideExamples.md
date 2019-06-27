@@ -3,7 +3,8 @@
 It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
 
 - Content
-    - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
+    - [Simplest Example](#simplest-example)
+    - [Basic Functionality: The Field of a Collection](#basic-functionality:-the-field-of-a-collection)
     - [The Source Objects and their Fields](#the-source-objects-and-their-fields)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
@@ -17,9 +18,22 @@ It is the aim of this section to give a few code examples that show how the libr
     With Spyder's IPython *Inline* graphics plotting, plots made after calling :meth:`~magpylib.Collection.displaySystem()` can come out blank. Set the IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
 ```
 
-### A Simple Collection and its Field
+### Simplest Example
 
-In this first example a simple collection is created from two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem` method. The field is then calculated on a grid and displayed in the xz-plane.
+The simplest possible example - calculate the B-field of a cylinder with 3 lines of code.
+
+```python
+
+from magpylib.source.magnet import Cylinder
+s = Cylinder( mag = [500,0,500], dim = [4,5])
+print(s.getB([4,4,4]))       
+
+# Output: [ 7.69869084    15.407166    6.40155549]
+```
+
+### Basic Functionality: The Field of a Collection
+
+In this example the basic functionality is outlined by calculating the field of two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem` method. The field is then calculated on a grid and displayed in the xz-plane.
 
 ```eval_rst
 
