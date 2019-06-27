@@ -4,11 +4,18 @@ It is the aim of this section to give a few code examples that show how the libr
 
 - Content
     - [A Simple Collection and its Field](#a-simple-collection-and-its-field)
+    - [The Source Objects and their Fields](#the-source-objects-and-their-fields)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
     - [Using getBSweep](#using-getbsweep)
     - [Complex Magnet Shapes: Hollow Cylinder](#complex-magnet-shapes-hollow-cylinder)
     - [Multiprocessing](#multiprocessing)
+
+```eval_rst
+
+.. warning::
+    With Spyder's IPython *Inline* graphics plotting, plots made after calling :meth:`~magpylib.Collection.displaySystem()` can come out blank. Set the IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
+```
 
 ### A Simple Collection and its Field
 
@@ -20,6 +27,18 @@ In this first example a simple collection is created from two magnets. The magne
    :include-source:
 
 :download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
+```
+
+### The Source Objects and their Fields
+
+In this example we define all existing source objects and display their fields. Notice that the respective magnetization vectors are chosen arbitrarily.
+
+```eval_rst
+
+.. plot:: pyplots/examples/01b_AllSources.py
+   :include-source:
+
+:download:`01b_AllSources.py <../pyplots/examples/01b_AllSources.py>`
 ```
 
 ### Translation, Orientation and Rotation Basics
@@ -78,9 +97,13 @@ Collections can be manipulated using the previous logic as well. Notice how obje
 
 In this example a joystick is simulated. A magnetic joystick is realized by a rod that can tilt freely (two degrees of freedom) about a center of tilt. The upper part of the rod is the joystick handle. At the bottom of the rod a cylindrical magnet (dimension *D/H*) with axial magnetization (amplitude *M0*) is fixed. The magnet lies at a distance *d* below the center of tilt. The system is constructed such that, when the joystick is in the center position a sensor lies at distance *gap* below the magnet and in the origin of a Cartesian coordinate system. The magnet thus moves with the joystick above the fixed sensor.
 
-In the following program the magnetic field is calculated for all degrees of freedom. Different tilt angles are set by rotation about the center of tilt by the angle *th* (different colors). Then the tilt direction is varied from 0 to 360 degrees by simulating the magnet 'motion' as rotation about the z-axis.
+In the following program the magnetic field is calculated for all degrees of freedom. Different tilt angles are set by rotation about the center of tilt by the angle *th* (different colors). Then the tilt direction is varied from 0 to 360 degrees by simulating the magnet 'motion' as rotation about the z-axis, see also the following sketch.
 
 ```eval_rst
+
+.. image:: ../_static/images/examples/JoystickExample1.JPG
+   :align: center
+   :scale: 50 %
 
 .. plot:: pyplots/examples/02_MagnetMotion.py
    :include-source:
@@ -100,7 +123,14 @@ In the first example getBsweep with INPUT TYPE 1 is used to calculate the field 
 :download:`03a_Bsweep1.py <../pyplots/examples/03a_Bsweep1.py>`
 ```
 
-In this second example we demonstrate how to realize the [magnet motion of a joystick](magnet-motion:-simulating-a-magnetic-joystick) using getBsweep with INPUT TYPE 2. For this we must create a list with all magnet positions, sensor position and magnet orientations. This is realized in the program by rotation the magnet from its central position outwards,
+In this second example we demonstrate how to realize the [magnet motion of a joystick](magnet-motion:-simulating-a-magnetic-joystick) using getBsweep with INPUT TYPE 2. For this we must create a list with all magnet positions, sensor position and magnet orientations. This is realized in the program by rotation of the tilt axis and subsequent tilt of the magnet from its central position outwards, see sketch.
+
+```eval_rst
+
+.. image:: ../_static/images/examples/JoystickExample2.JPG
+   :align: center
+   :scale: 50 %
+```
 
 The advantage of this approach is that it allows the use of multi processing for calculation of the magnetic fields, see [multiprocessing examples](#multiprocessing).
 
