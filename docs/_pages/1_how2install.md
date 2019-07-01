@@ -1,28 +1,43 @@
 # Installation Instructions
 
-Here you'll find instructions to Install magpylib. This is a work in progress.
+- Content 
+  - [Installation Instructions](#installation-instructions)
+    - [Install with pip](#install-with-pip)
+    - [Windows Install](#windows-install)
+        - [Anaconda 3 Install](#anaconda-3-install)
+        - [Clean Python 3 Install](#clean-python-3-install)
+    - [Linux Install](#linux-install)
+        - [Anaconda 3 Linux Install](#anaconda-3-linux-install)
+        - [Terminal Python 3 Install](#terminal-python-3-install)
+    - [Download Sites](#download-sites)
 
-- [Installation Instructions](#installation-instructions)
-  - [Windows Install](#windows-install)
-      - [Anaconda 3 Install for Spyder or Jupyter Notebook](#anaconda-3-install-for-spyder-or-jupyter-notebook)
-      - [Clean Python 3 install](#clean-python-3-install)
-  - [Linux Install](#linux-install)
-      - [Anaconda 3 Install](#anaconda-3-install)
-      - [Terminal Python 3 Install](#terminal-python-3-install)
-  - [Download Pages](#download-pages)
-  
-  
+```eval_rst
+
+.. warning::
+    Magpylib works only with Python 3.6 or later !
+```
+
+## Install with pip
+
+The quickest installation on any platform is through pip.
+
+```
+pip install magpylib
+```
+
+If you are unfamiliar with pip, please follow the detailed guides below:
+
 ---
 
 ## Windows Install
 
-#### Anaconda 3 Install for Spyder or Jupyter Notebook
+#### Anaconda 3 Install
 
-_Anaconda is a distribution of Python tools for Scientific Computing, making it easier to set up and run projects with that goal in mind._
+If you have little experience with Python we recommand using [Anaconda](https://www.anaconda.com).
 
 <details>
 
-<a href=#anaconda-3-install-for-spyder-or-jupyter-notebook><summary> Click here for Steps </summary></a>
+<a href=#anaconda-3-install><summary> Click here for Steps </summary></a>
 
 1. [Download Anaconda][anaconda]
 2. Start Anaconda Navigator 
@@ -37,23 +52,16 @@ _Anaconda is a distribution of Python tools for Scientific Computing, making it 
 6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
 
-```eval_rst
-7. Run the example script :doc:`x_examples` .
-```
-
 </details>
 
 &nbsp;
 &nbsp;
 
---- 
+#### Clean Python 3 Install
 
-#### Clean Python 3 install
-
-_If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if you want to have a custom environment without using conda, you may simply install the library with [pip]_
+If you want to have a custom environment without using conda, you may simply install the library with [pip]
 
 <details>
-
 
 <a href=#clean-python-3-install><summary> Click here for Steps </summary></a>
 
@@ -74,11 +82,11 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 
 ## Linux Install
 
-#### Anaconda 3 Install
+#### Anaconda 3 Linux Install
 
 <details>
 
-<a href="#anaconda-3-install"><summary> Click here for Steps </summary></a>
+<a href="#anaconda-3-linux-install"><summary> Click here for Steps </summary></a>
 
 1. [Download Anaconda][anaconda]
 2. Open a terminal window and type `anaconda-navigator`
@@ -88,26 +96,19 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
    ![](../_static/images/install_guide/anaconda1.png)
 5. Open the conda terminal and input the following to install from conda-forge:
    ```
-   conda install -c conda-forge magpylib 
+   conda install -c conda-forge magpylib
    ```
 6. On the Anaconda interface, in the Home tab, select your environment and Open Spyder/Jupyter 
    ![](../_static/images/install_guide/anaconda2.png)
-
-```eval_rst
-7. Run the example script :doc:`x_examples` .
-```
 
 </details>
 
 &nbsp;
 &nbsp;
 
----
-
 #### Terminal Python 3 Install
 
 <details>
-
 
 <a href="#terminal-python-3-install"><summary> Click here for Steps </summary></a>
 
@@ -122,13 +123,15 @@ _If [Anaconda][anaconda] is either overkill or unfit for your purposes, or if yo
 &nbsp;
 &nbsp;
 
-## Download Pages
+---
 
-_Currently magpylib is hosted over at:_
+## Download Sites
+
+Currently magpylib is hosted over at:
 - [Conda Cloud][CondaCloud]
 - [PyPi][PyPi]
 
-_Source code:_
+Find the source code at GitHub:
 - [GitHub repository][GitHub]
 
 
