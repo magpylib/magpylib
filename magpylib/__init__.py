@@ -34,8 +34,9 @@ and generated with the methods in :py:mod:`magpylib.math`
 """
 
 
-__all__ = ["Collection", "source", "math"]  # This is for Sphinx
+__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
 
 from ._lib.classes.collection import Collection
+from ._lib.classes.sensor import Sensor
 from . import source, math
 from . import _lib
