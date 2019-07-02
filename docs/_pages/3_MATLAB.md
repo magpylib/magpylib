@@ -44,7 +44,7 @@ path pointing at your Python interpreter).
 
 ## Example: Calling magpylib from MATLAB
 
-The following MATLAB script showcases most functionalities.
+The following MATLAB 2019 script showcases most functionalities.
 
 ```matlab
 %%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%%%%%%
@@ -74,4 +74,10 @@ pythonResult = col.getB(sensorPos)
 
 %% Convert Python Result to MATLAB data format
 matlabResult = double(pythonResult) 
+```
+
+```eval_rst
+
+.. note::
+    With old versions of Matlab the *double(pythonResult)* type conversion might give an error message.
 ```

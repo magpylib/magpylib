@@ -12,12 +12,6 @@ It is the aim of this section to give a few code examples that show how the libr
     - [Complex Magnet Shapes: Hollow Cylinder](#complex-magnet-shapes-hollow-cylinder)
     - [Multiprocessing](#multiprocessing)
 
-```eval_rst
-
-.. warning::
-    With Spyder's IPython *Inline* graphics plotting, plots made after calling :meth:`~magpylib.Collection.displaySystem()` can come out blank. Set the IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
-```
-
 ### Simplest Example
 
 The simplest possible example - calculate the B-field of a cylinder with 3 lines of code.
@@ -25,10 +19,16 @@ The simplest possible example - calculate the B-field of a cylinder with 3 lines
 ```python
 
 from magpylib.source.magnet import Cylinder
-s = Cylinder( mag = [500,0,500], dim = [4,5])
+s = Cylinder( mag = [0,0,350], dim = [4,5])
 print(s.getB([4,4,4]))       
 
-# Output: [ 7.69869084    15.407166    6.40155549]
+# Output: [ 5.08641867  5.08641867 -0.60532983]
+```
+
+```eval_rst
+
+.. note::
+    With [Spyder's](https://www.spyder-ide.org/) IPython *Inline* plotting, graphs made with :meth:`~magpylib.Collection.displaySystem()` can be blank if the suppress=True option is not used. Set IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
 ```
 
 ### Basic Functionality: The Field of a Collection
