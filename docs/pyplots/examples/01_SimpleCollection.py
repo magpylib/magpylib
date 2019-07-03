@@ -15,7 +15,7 @@ s2.move([5,0,-4])
 c = magpy.Collection(s1,s2)
 
 #display system geometry
-fig1 = c.displaySystem()
+fig1 = c.displaySystem(suppress=True)
 fig1.set_size_inches(6, 6)
 
 #calculate B-field on a grid
