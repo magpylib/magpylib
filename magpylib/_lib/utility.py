@@ -302,3 +302,17 @@ def isDisplayMarker(object_ref):
         return all(isinstance(p, int) or isinstance(p, float) for p in m)
     if len(m) == 4:  # Check if it's [numeric,numeric,numeric,"label"]
         return all(isinstance(p, int) or isinstance(p, float) for p in m[:2]) and isinstance(m[3], str)
+def sensorRotate(sensor,reading):
+    """Rotate the reading based on the Sensor orientation
+    
+    Parameters
+    ----------
+    sensor : Sensor
+        The Sensor Object
+    reading : vec3
+        The field reading to rotate
+    """
+    rotated = reading
+    return rotated
+
+

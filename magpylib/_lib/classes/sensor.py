@@ -1,8 +1,8 @@
 from magpylib._lib.classes.base import RCS 
 from magpylib._lib.classes.collection import Collection 
-from magpylib._lib.utility import addListToCollection, addUniqueSource, isSource
+from magpylib._lib.utility import addListToCollection, addUniqueSource, isSource, sensorRotate
 from itertools import repeat
-from magpylib._lib.mathLibPublic import rotatePosition
+
 class Sensor(RCS):
     """
     Create a rotation-enabled sensor to extract B-fields from Source and Source Collections.
@@ -36,5 +36,5 @@ class Sensor(RCS):
     
     def getB(self,*sources, dupWarning=True):
         Btotal = sum([s.getB(self.position) for s in sources])
-        return rotatePosition(Btotal,self.angle,self.axis,self.anchor)
+        return sensorRotate(self,Btotal)
         
