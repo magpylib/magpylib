@@ -24,6 +24,7 @@
 
 from numpy import sqrt, array, cos, sin, NaN
 from magpylib._lib.mathLibPrivate import getPhi, ellipticK, ellipticE
+from warnings import warn
 
 # %% CIRCULAR CURRENT LOOP
 # Describes the magnetic field of a circular current loop that lies parallel to
@@ -53,7 +54,7 @@ def Bfield_CircularCurrentLoop(i0, d0, pos):
     rr0 = r-r0
     if (-1e-12 < rr0 and rr0 < 1e-12):  # rounding to eliminate the .5-.55 problem when sweeping
         if (-1e-12 < z and z < 1e-12):
-            print('Warning: getB Position directly on current line')
+            warn('Warning: getB Position directly on current line')
             return array([NaN, NaN, NaN])
 
     deltaP = sqrt((r+r0)**2+z**2)

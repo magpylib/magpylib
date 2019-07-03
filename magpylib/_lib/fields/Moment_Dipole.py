@@ -26,6 +26,7 @@
 
 from magpylib._lib.mathLibPrivate import fastNorm3D, fastSum3D
 from numpy import pi, dot, array, NaN
+from warnings import warn
 
 
 # %% DIPOLE field
@@ -45,7 +46,7 @@ def Bfield_Dipole(M, pos):
     mr = fastSum3D(M*R)
 
     if rr == 0:
-        print('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface')
         return array([NaN, NaN, NaN])
 
     return (3*R*mr-M*rr)/rr**(5/2)/(4*pi)
