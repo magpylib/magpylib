@@ -30,8 +30,9 @@ def test_BfieldBox_Edges():
     testPosEdge.extend(corners  / array([1,2,1])) # testPosEdgesY = 
     testPosEdge.extend(corners / array([1,1,2])) # testPosEdgesZ =
 
-    results = [Bfield_Box(mag,pos,dim) for pos in testPosEdge]
-    assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_Box(mag,pos,dim) for pos in testPosEdge]
+        assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
 
 def test_BfieldBox_Faces():
@@ -47,8 +48,9 @@ def test_BfieldBox_Faces():
     testPosFaces.extend(corners / array([2,1,2])) # testPosFaceY = 
     testPosFaces.extend(corners / array([1,2,2])) # testPosFaceZ = 
 
-    results = [Bfield_Box(mag,pos,dim) for pos in testPosFaces]
-    assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_Box(mag,pos,dim) for pos in testPosFaces]
+        assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
 def test_BfieldBox_OuterLines():
     errMsg = "Unexpected Results for getB in Outer Lines"
@@ -93,8 +95,9 @@ def test_BfieldBox_Corners():
 
     testPosCorners = array([[a,b,c],[-a,b,c],[a,-b,c],[a,b,-c],[a,-b,-c],[-a,b,-c],[-a,-b,c],[-a,-b,-c]])/2
 
-    results = [Bfield_Box(mag,pos,dim) for pos in testPosCorners]
-    assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_Box(mag,pos,dim) for pos in testPosCorners]
+        assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
     
 
 def test_BfieldBox_outside():

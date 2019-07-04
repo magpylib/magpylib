@@ -13,8 +13,9 @@ def test_Bfield_singularity():
     calcPos = array([0,0,0])
     
     # Run
-    results = Bfield_Dipole(mag,calcPos)
-    assert all(isnan(axis) for axis in results)
+    with pytest.warns(RuntimeWarning):
+        results = Bfield_Dipole(mag,calcPos)
+        assert all(isnan(axis) for axis in results)
 
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
