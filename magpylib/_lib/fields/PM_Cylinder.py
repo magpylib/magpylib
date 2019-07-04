@@ -80,7 +80,7 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
 
     # edge cases ----------------------------------------------
     if CASE == 2:
-        print('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface')
         return array([NaN, NaN, NaN])
 
     # on-magnet surface cases----------------------------------
