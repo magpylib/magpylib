@@ -20,9 +20,9 @@ def test_Bfield_singularity():
     testPos = [sideSurface,upperSurface,lowerSurface,edge]
 
     # Run
-    results = [Bfield_Cylinder(mag,pos,dim,iterDia) for pos in testPos]
-
-    assert all(all(isnan(axis) for axis in result) for result in results)
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_Cylinder(mag,pos,dim,iterDia) for pos in testPos]
+        assert all(all(isnan(axis) for axis in result) for result in results)
 
 def test_Bfield_OuterPlanes():
     # Field samples that are coplanar with samples that lead to singularity 

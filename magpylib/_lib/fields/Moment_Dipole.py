@@ -46,7 +46,7 @@ def Bfield_Dipole(M, pos):
     mr = fastSum3D(M*R)
 
     if rr == 0:
-        warn('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
         return array([NaN, NaN, NaN])
 
     return (3*R*mr-M*rr)/rr**(5/2)/(4*pi)

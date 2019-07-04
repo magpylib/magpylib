@@ -80,18 +80,18 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
 
     # edge cases ----------------------------------------------
     if CASE == 2:
-        warn('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
         return array([NaN, NaN, NaN])
 
     # on-magnet surface cases----------------------------------
     elif CASE == 1:
         if Rmr == 0:  # on cylinder surface
             if abs(z) < H/2:  # directly on magnet
-                warn('Warning: getB Position directly on magnet surface')
+                warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
                 return array([NaN, NaN, NaN])
         else:  # on top or bottom surface
             if Rmr > 0:  # directly on magnet
-                warn('Warning: getB Position directly on magnet surface')
+                warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
                 return array([NaN, NaN, NaN])
 
     # Volume Cases and off-magnet surface cases----------------

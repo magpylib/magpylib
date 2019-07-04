@@ -84,7 +84,7 @@ def Bfield_Box(MAG, pos, dim):
         if abs(x) <= a:
             if abs(y) <= b:
                 if abs(z) <= c:
-                    warn('Warning: getB Position directly on magnet surface')
+                    warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
                     return array([NaN, NaN, NaN])
 
     # cases 2 & 3 (edgelines edges and corners) ------------------------------
@@ -93,7 +93,7 @@ def Bfield_Box(MAG, pos, dim):
         # on corner and on edge cases - no phys solution
         # directly on magnet edge or corner - log singularity here as result of unphysical model
         if all([abs(x) <= a, abs(y) <= b, abs(z) <= c]):
-            warn('Warning: getB Position directly on magnet surface')
+            warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
             return array([NaN, NaN, NaN])
 
         # problematic edgeline cases (here some specific LOG quantites become problematic and are obtained from a mirror symmetry)

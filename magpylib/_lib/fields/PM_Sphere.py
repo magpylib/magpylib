@@ -48,7 +48,7 @@ def Bfield_Sphere(MAG, pos, D):  # returns array, takes (arr3, arr3, float)
     if r > radius:
         return radius**3/3*(-MAG/r**3 + 3*fastSum3D(MAG*pos)*pos/r**5)
     elif r == radius:
-        warn('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
         return array([NaN, NaN, NaN])
     else:
         return 2/3*MAG

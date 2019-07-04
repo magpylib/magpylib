@@ -61,9 +61,11 @@ def test_Bfield_singularity():
     origin2 = vertices[1]
     middle = ((vertices[0]) + (vertices[1])) / 2
 
+    
     testPos = [origin1,origin2,middle]
-    results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
-    assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
+        assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
 def test_Bfield_onLine():
     # Check if points that are on the line but 

@@ -19,9 +19,9 @@ def test_Bfield_singularity():
     testPos = [pos1,pos2,pos3]
 
     # Run
-    results = [Bfield_Sphere(mag,pos,diam) for pos in testPos]
-
-    assert all(all(isnan(axis) for axis in result) for result in results)
+    with pytest.warns(RuntimeWarning):
+        results = [Bfield_Sphere(mag,pos,diam) for pos in testPos]
+        assert all(all(isnan(axis) for axis in result) for result in results)
 
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
