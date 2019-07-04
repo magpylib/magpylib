@@ -13,8 +13,9 @@ def test_Bfield_singularity():
     calcPos = [0,2.5,0]
 
     # Run
-    results = Bfield_CircularCurrentLoop(current,diameter,calcPos)
-    assert all(isnan(axis) for axis in results)
+    with pytest.warns(RuntimeWarning):
+        results = Bfield_CircularCurrentLoop(current,diameter,calcPos)
+        assert all(isnan(axis) for axis in results)
 
 
 def test_CircularGetB_OuterLines():
