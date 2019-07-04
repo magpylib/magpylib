@@ -23,25 +23,25 @@
 # -------------------------------------------------------------------------------
 
 ####### Type hint definitions ########
-from typing import List, Tuple,TypeVar 
-## Magnetization Vector Typehints
-x_i=TypeVar('x_i',int,float) 
-y_i=TypeVar('y_i',int,float)
-z_i=TypeVar('z_i',int,float)
-listOfPos = List[Tuple[x_i,y_i,z_i]]
+from magpylib._lib.utility import getBField, rotateToCS
+from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
+from magpylib._lib.classes.base import LineCurrent
+from magpylib._lib.mathLibPrivate import angleAxisRotation
+import sys
+from numpy import array, float64, ndarray
+from typing import List, Tuple, TypeVar
+# Magnetization Vector Typehints
+x_i = TypeVar('x_i', int, float)
+y_i = TypeVar('y_i', int, float)
+z_i = TypeVar('z_i', int, float)
+listOfPos = List[Tuple[x_i, y_i, z_i]]
 
-I=0.0 ## Default Current
-d=0.0 ## Default Diameter
+I = 0.0  # Default Current
+d = 0.0  # Default Diameter
 ######################################
 
 # %% IMPORTS
-from numpy import array, float64, ndarray
-import sys
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from magpylib._lib.classes.base import LineCurrent
-from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
-from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
-from magpylib._lib.utility import getBField, rotateToCS
 
 
 # %% THE CIRCULAR CLASS
@@ -205,3 +205,7 @@ class Line(LineCurrent):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_CurrentLine(rotatedPos, self.vertices, self.current),  # The B field
                          self)
+
+
+def __repr__(self):
+    return f"current:  {self.current}, vertices: {self.vertices}, position:  {self.position}, angle:  {self.angle}, axis:  {self.axis}"
