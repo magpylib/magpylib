@@ -61,7 +61,6 @@ def test_Bfield_singularity():
     origin2 = vertices[1]
     middle = ((vertices[0]) + (vertices[1])) / 2
 
-    
     testPos = [origin1,origin2,middle]
     with pytest.warns(RuntimeWarning):
         results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
