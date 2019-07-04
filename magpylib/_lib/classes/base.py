@@ -40,7 +40,6 @@ Define base classes here on which the magnetic source objects are built on
 ######### Type hint definitions ########
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
-from typing import Tuple
 Auto = 0 # Maximum cores, for multicore
         # function. if 0 find max.
 numpyArray = 0
@@ -49,12 +48,9 @@ Mx=My=Mz=0.0 # Zero Moment
 #######################################
 
 # %% IMPORTS
-from itertools import product, repeat
-from numpy import array, float64, pi, isnan, array, ndarray
+from numpy import array, float64, pi, isnan, array
 from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions, initializeMulticorePool, recoordinateAndGetB
-from magpylib._lib.utility import isPosVector
-from multiprocessing import Pool, cpu_count
+from magpylib._lib.utility import checkDimensions
 from magpylib._lib.classes.fieldsampler import FieldSampler
 import sys
 

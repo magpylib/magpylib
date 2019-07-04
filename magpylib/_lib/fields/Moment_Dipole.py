@@ -24,10 +24,8 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-from magpylib._lib.mathLibPrivate import fastNorm3D, fastSum3D
-from numpy import pi, dot, array, NaN
-from warnings import warn
-
+from magpylib._lib.mathLibPrivate import fastSum3D
+from numpy import pi, array, NaN
 
 # %% DIPOLE field
 
