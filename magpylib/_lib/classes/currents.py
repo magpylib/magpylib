@@ -36,8 +36,6 @@ d=0.0 ## Default Diameter
 
 # %% IMPORTS
 from numpy import array, float64, ndarray
-import sys
-from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.classes.base import LineCurrent
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine

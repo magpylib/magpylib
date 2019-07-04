@@ -22,7 +22,6 @@
 ######### Type hint definitions ########
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
-from typing import Tuple
 Mx=My=Mz=0.0 # Def.Magnetization Vector
 a=b=c=0.0 #Default Cuboid dimensions
 d=0.0 # Default Diameter 
@@ -32,9 +31,6 @@ Max=0 # Multicore flag
 
 
 # %% IMPORTS
-from numpy import float64, isnan, array
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-import sys
 from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere

@@ -25,7 +25,6 @@
 ######### Type hint definitions ########
 # These aren't type hints, but look good 
 # in Spyder IDE. Pycharm recognizes it.
-from typing import Tuple
 x=y=z=0.0 # Position Vector
 numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
@@ -35,7 +34,6 @@ from copy import deepcopy
 from itertools import repeat
 from multiprocessing import cpu_count
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array, amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box, Cylinder, Sphere
