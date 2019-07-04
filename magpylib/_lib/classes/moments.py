@@ -95,3 +95,11 @@ class Dipole(MagMoment):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_Dipole(self.moment, rotatedPos),  # The B field
                          self)  # Object Angle/Axis properties
+
+def __repr__(self):
+
+    mom = self.moment
+    pos = self.position
+    ang = self.angle
+    axi = self.axis
+    return f"moment:  {mom}, position:  {pos}, angle:  {ang}, axis:  {axi}"
