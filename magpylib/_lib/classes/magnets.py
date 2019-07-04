@@ -20,26 +20,26 @@
 # page at https://www.github.com/OrtnerMichael/magpylib/issues.
 # -------------------------------------------------------------------------------
 ######### Type hint definitions ########
-# These aren't type hints, but look good 
+# These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
+from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
+from magpylib._lib.classes.base import HomoMag
+from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
+from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
+from magpylib._lib.fields.PM_Box import Bfield_Box
+import sys
+from magpylib._lib.mathLibPrivate import angleAxisRotation
+from numpy import float64, isnan, array
 from typing import Tuple
-Mx=My=Mz=0.0 # Def.Magnetization Vector
-a=b=c=0.0 #Default Cuboid dimensions
-d=0.0 # Default Diameter 
-h=0.0 # Default Height 
-Max=0 # Multicore flag
+Mx = My = Mz = 0.0  # Def.Magnetization Vector
+a = b = c = 0.0  # Default Cuboid dimensions
+d = 0.0  # Default Diameter
+h = 0.0  # Default Height
+Max = 0  # Multicore flag
 #######################################
 
 
 # %% IMPORTS
-from numpy import float64, isnan, array
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-import sys
-from magpylib._lib.fields.PM_Box import Bfield_Box
-from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
-from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
-from magpylib._lib.classes.base import HomoMag
-from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
 
 # %% THE CUBE CLASS
 
@@ -284,3 +284,7 @@ class Sphere(HomoMag):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_Sphere(self.magnetization, rotatedPos, self.dimension),  # The B Field
                          self)  # Object Angle/Axis properties
+
+
+def __repr__(self):
+    return f"magnetization:  {self.magnetization}, dimension: {self.dimension}, position:  {self.position}, angle:  {self.angle}, axis:  {self.axis}"

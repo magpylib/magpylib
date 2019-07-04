@@ -22,20 +22,20 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 ######### Type hint definitions ########
-# These aren't type hints, but look good 
+# These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
+from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
+from magpylib._lib.classes.fieldsampler import FieldSampler
+from magpylib._lib.classes.base import MagMoment
+from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
+from magpylib._lib.mathLibPrivate import angleAxisRotation
+from numpy import float64, isnan, array
 from typing import Tuple
-Mx=My=Mz=0.0 # Zero Dipole Moment
+Mx = My = Mz = 0.0  # Zero Dipole Moment
 #######################################
 
 
 # %% IMPORTS
-from numpy import float64, isnan, array
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
-from magpylib._lib.classes.base import MagMoment
-from magpylib._lib.classes.fieldsampler import FieldSampler
-from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
 
 
 class Dipole(MagMoment):
@@ -96,10 +96,6 @@ class Dipole(MagMoment):
         return getBField(Bfield_Dipole(self.moment, rotatedPos),  # The B field
                          self)  # Object Angle/Axis properties
 
-def __repr__(self):
 
-    mom = self.moment
-    pos = self.position
-    ang = self.angle
-    axi = self.axis
-    return f"moment:  {mom}, position:  {pos}, angle:  {ang}, axis:  {axi}"
+def __repr__(self):
+    return f"moment:  {self.moment}, position:  {self.position}, angle:  {self.angle}, axis:  {self.axis}"
