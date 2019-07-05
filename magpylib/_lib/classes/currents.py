@@ -206,4 +206,4 @@ class Line(LineCurrent):
 
 
 def __repr__(self):
-    return "name: {} \n current: {}A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {}degrees \n axis: {}".format(*self.name, *self.current, *self.position, *self.angle, *self.axis)
+    return "name: {} \n current: {}A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {}degrees \n axis: x: {}, y: {}, z: {}".format(*self.name, *self.current, *self.position, *self.angle, *self.axis)

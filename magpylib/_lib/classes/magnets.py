@@ -283,4 +283,4 @@ class Sphere(HomoMag):
 
 
 def __repr__(self):
-    return "name: {} \n magnetization: x: {}mt, y: {}mt, z: {}mt \n dimensions: x: {}mm, y: {}mm, z: {}mm \n position: x: {}mm, y:{}mm, z: {} \n axis: {}".format(*self.name, *self.magnetization, *self.dimension, *self.position, *self.axis)
+    return "name: {} \n magnetization: x: {}mt, y: {}mt, z: {}mt \n dimensions: x: {}mm, y: {}mm, z: {}mm \n position: x: {}mm, y:{}mm, z: {} \n axis: x: {}, y: {}, z:{}".format(*self.name, *self.magnetization, *self.dimension, *self.position, *self.axis)
