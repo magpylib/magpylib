@@ -27,10 +27,6 @@ from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Box import Bfield_Box
-import sys
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from numpy import float64, isnan, array
-from typing import Tuple
 Mx = My = Mz = 0.0  # Def.Magnetization Vector
 a = b = c = 0.0  # Default Cuboid dimensions
 d = 0.0  # Default Diameter

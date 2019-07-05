@@ -24,13 +24,9 @@
 ######### Type hint definitions ########
 # These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
-from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
-from magpylib._lib.classes.fieldsampler import FieldSampler
+from magpylib._lib.utility import getBField, rotateToCS
 from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from numpy import float64, isnan, array
-from typing import Tuple
 Mx = My = Mz = 0.0  # Zero Dipole Moment
 #######################################
 

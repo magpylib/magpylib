@@ -27,8 +27,6 @@ from magpylib._lib.utility import getBField, rotateToCS
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.classes.base import LineCurrent
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-import sys
 from numpy import array, float64, ndarray
 from typing import List, Tuple, TypeVar
 # Magnetization Vector Typehints
