@@ -98,4 +98,4 @@ class Dipole(MagMoment):
 
 
 def __repr__(self):
-    return f"moment:  {self.moment}, position:  {self.position}, angle:  {self.angle}, axis:  {self.axis}"
+    return "name: {} \n moment: x: {}mt, y: {}mt, z: {}mt \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {}degrees \n axis: {}".format(*self.name, *self.moment, *self.position, *self.angle, *self.axis)

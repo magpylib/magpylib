@@ -208,4 +208,4 @@ class Line(LineCurrent):
 
 
 def __repr__(self):
-    return f"current:  {self.current}, vertices: {self.vertices}, position:  {self.position}, angle:  {self.angle}, axis:  {self.axis}"
+    return "name: {} \n current: {}A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {}degrees \n axis: {}".format(*self.name, *self.current, *self.position, *self.angle, *self.axis)
