@@ -135,3 +135,15 @@ def test_DipoleMulticoreGetB():
     for i in range(len(mockResults)):
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
+
+def test_ToString():
+    moment=(0.2,32.5,5.3)
+    position=(1.0,0.2,3.0)
+    axis=[0.2,1.0,0.0]
+    angle=90.0
+    expected="name: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Dipole", *moment, *position, angle, *axis)
+
+    myDipole = Dipole(moment, position, angle, axis)
+
+    result = myDipole.__repr__()
+    assert result == expected

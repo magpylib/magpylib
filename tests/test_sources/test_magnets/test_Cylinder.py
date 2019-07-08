@@ -147,4 +147,16 @@ def test_CylinderMulticoreGetB():
     for i in range(len(mockResults)):
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
-    
+
+def test_ToString():
+    magnetization=(0.2,32.5,5.3)
+    dimension=(2.0,9.0)
+    position=(1.0,0.2,3.0)
+    axis=[0.2,1.0,0.0]
+    angle=90.0
+    expected="name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: d: {}mm, h: {}mm \n position: x: {}mm, y:{}mm, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Cylinder", *magnetization, *dimension, *position, angle, *axis)
+
+    myCylinder = magnet.Cylinder(magnetization, dimension, position, angle, axis)
+
+    result = myCylinder.__repr__()
+    assert result == expected
