@@ -154,7 +154,7 @@ def test_ToString():
     position=(1.0,0.2,3.0)
     axis=[0.2,1.0,0.0]
     angle=90.0
-    expected="name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: d: {}mm, h: {}mm \n position: x: {}mm, y:{}mm, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Cylinder", *magnetization, *dimension, *position, angle, *axis)
+    expected="name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: d: {}mm, h: {}mm \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Cylinder", *magnetization, *dimension, *position, angle, *axis)
 
     myCylinder = magnet.Cylinder(magnetization, dimension, position, angle, axis)
 
