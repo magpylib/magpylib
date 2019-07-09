@@ -27,8 +27,10 @@
 # in Spyder IDE. Pycharm recognizes it.
 from typing import Tuple
 x=y=z=0.0 # Position Vector
+sensor1=sensor2="sensor type"
 numpyArray=[[x,y,z]] # List of Positions
 listOfPos=[[x,y,z]] # List of Positions
+listOfSensors=[sensor1,sensor2] # List of Sensors
 #######################################
 # %% IMPORTS
 from copy import deepcopy
@@ -41,10 +43,11 @@ from numpy import array, amax, linspace, pi, sin, cos, finfo
 from magpylib._lib.classes.magnets import Box, Cylinder, Sphere
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
+from magpylib._lib.classes.sensor import Sensor
 from magpylib._lib.classes.fieldsampler import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
-from magpylib._lib.utility import initializeMulticorePool
+from magpylib._lib.utility import initializeMulticorePool, drawSensor, isSensor
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.mathLibPublic import rotatePosition
 
@@ -339,8 +342,8 @@ class Collection(FieldSampler):
         for s in self.sources:
             s.rotate(angle, axis, anchor=anchor)
 
-    def displaySystem(self, markers=listOfPos, suppress=False, direc=False, 
-                            subplotAx=None):
+    def displaySystem(self, markers=listOfPos, subplotAx=None,
+                            sensors=listOfSensors, suppress=False, direc=False):
         """
         Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
 
@@ -461,6 +464,7 @@ class Collection(FieldSampler):
         for s in self.sources:
             if type(s) is Box or type(s) is Cylinder or type(s) is Sphere:
                 Nm += 1
+        
         cm = plt.cm.hsv  # Linter complains about this but it is working pylint: disable=no-member
         # select colors
         colors = [cm(x) for x in linspace(0, 1, Nm+1)]
@@ -469,6 +473,7 @@ class Collection(FieldSampler):
         SYSSIZE = finfo(float).eps  # Machine Epsilon for moment
         dipolesList = []
         magnetsList = []
+        sensorsList = []
         currentsList = []
         markersList = []
 
@@ -477,6 +482,14 @@ class Collection(FieldSampler):
             assert isDisplayMarker(m), "Invalid marker definition in displaySystem:" + str(
                 m) + ". Needs to be [vec3] or [vec3,string]"
             markersList += [m]
+        
+        for s in sensors:    
+            if s == sensor1:
+                continue
+            else:
+                assert isSensor(s), "Invalid sensor definition in displaySystem:" + str(
+                s) 
+                sensorsList.append(s)
 
         for s in self.sources:
             if type(s) is Box:
@@ -634,6 +647,12 @@ class Collection(FieldSampler):
             maxSize = max([abs(pos) for pos in m[:3]])
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize
+
+        for s in sensorsList: # Draw Sensors
+            maxSize = max([abs(pos) for pos in s.position])
+            if maxSize > SYSSIZE:
+                SYSSIZE = maxSize
+            drawSensor(s,SYSSIZE,ax)
 
         for d in dipolesList:
             drawDipole(d.position, d.moment,

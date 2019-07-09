@@ -1,5 +1,6 @@
 from typing import Tuple
 from magpylib._lib.utility import checkDimensions,rotateToCS,getBField, isPosVector,isDisplayMarker
+from magpylib._lib.utility import isSensor
 from numpy import float64, isnan, array
 import pytest
 
@@ -90,6 +91,12 @@ def test_isPosVectorArray2():
     errMsg = "isPosVector returned unexpected False value"
     position = array([1,4,-24.242])
     assert isPosVector(position), errMsg
+
+def test_isSensor():
+    from magpylib._lib.classes.sensor import Sensor 
+    s = Sensor()
+
+    assert isSensor(s)
 
 def test_isPosVectorArgs():
     from numpy import array

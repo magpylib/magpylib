@@ -71,6 +71,10 @@ def isSource(theObject: any) -> bool:
         source.moment.Dipole)
     return any(isinstance(theObject, src) for src in sourcesList)
 
+def isSensor(theObject: any) -> bool:
+    from magpylib._lib.classes.sensor import Sensor 
+    return isinstance(theObject,Sensor)
+
 
 def addUniqueSource(source, sourceList):
     import warnings
@@ -99,7 +103,7 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
         Color of the axis. No default value specified
     SYSSIZE : float
         Size of the display syste
-    pyplot : [pyploy]
+    ax : [pyploy]
         pyplot canvas to draw on
 
     """
@@ -114,6 +118,44 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
                   length=SYSSIZE,
                   color=c)
 
+def drawSensor(sensor, SYSSIZE, ax):
+    """Draw the sensor coordinates and x,y,z labels
+
+    Parameters
+    ----------
+    sensor: Sensor
+        Sensor to draw
+    SYSSIZE : float
+        Size of the display system
+    ax : [pyplot]
+        pyplot canvas to draw on
+
+    """
+    from magpylib._lib.mathLibPublic import rotatePosition
+    M = rotatePosition([1,0,0],sensor.angle,sensor.axis)
+    P = sensor.position
+    ax.quiver(P[0], P[1], P[2],  # X position
+              M[0], M[1], M[2],  # Components of the Vector
+                  normalize=True,
+                  length=SYSSIZE-SYSSIZE/2,
+                  color='r')
+    ax.text(M[0], M[1], M[2], "x", None)
+    
+    M = rotatePosition([0,1,0],sensor.angle,sensor.axis)
+    ax.quiver(P[0], P[1], P[2],  # Y position
+              M[0], M[1], M[2],  # Components of the Vector
+                  normalize=True,
+                  length=SYSSIZE-SYSSIZE/2,
+                  color='g')
+    ax.text(M[0], M[1], M[2], "y", None)
+    
+    M = rotatePosition([0,0,1],sensor.angle,sensor.axis)
+    ax.quiver(P[0], P[1], P[2],  # Z position
+              M[0], M[1], M[2],  # Components of the Vector
+                  normalize=True,
+                  length=SYSSIZE-SYSSIZE/2,
+                  color='b')
+    ax.text(M[0], M[1], M[2], "z", None)
 
 def drawMagAxis(magnetList, SYSSIZE, ax):
     """
@@ -302,6 +344,7 @@ def isDisplayMarker(object_ref):
         return all(isinstance(p, int) or isinstance(p, float) for p in m)
     if len(m) == 4:  # Check if it's [numeric,numeric,numeric,"label"]
         return all(isinstance(p, int) or isinstance(p, float) for p in m[:2]) and isinstance(m[3], str)
+    
 def sensorRotate(sensor,reading):
     """Rotate the reading based on the Sensor orientation
     
@@ -312,7 +355,9 @@ def sensorRotate(sensor,reading):
     reading : vec3
         The field reading to rotate
     """
-    rotated = reading
+    
+    from magpylib._lib.mathLibPublic import rotatePosition
+    rotated = rotatePosition(reading,sensor.angle,sensor.axis,sensor.position)
     return rotated
 
 

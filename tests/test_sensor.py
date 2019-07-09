@@ -6,9 +6,11 @@ def test_getB():
     b1 = source.magnet.Box([100,100,100],[1,2,3])
     b2 = source.magnet.Box([100,100,100],[1,2,3])
     sensorPosition = [1,2,3]
+    angle = 0
+    axis = [0,0,1]
     
     col = Collection(b1,b2)
-    sensor = Sensor(sensorPosition)
+    sensor = Sensor(sensorPosition,angle,axis)
 
     result = sensor.getB(b1,b2)
     expected = col.getB(sensorPosition)
