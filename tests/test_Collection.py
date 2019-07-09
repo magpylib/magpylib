@@ -489,3 +489,14 @@ def test_GetSweepArray_multiprocessing_error():
         result = c.getBsweep(pos,multiprocessing=True)
         assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
+
+def test_DisplaySystem():
+    from magpylib._lib.classes.magnets import Box
+    b = Box([1,1,1],[1,1,1],pos=(5,5,5))
+
+    a = Collection()
+    markers = [[0,0,0],    # int
+               [.1,.1,.1], # float
+               b.position] # float64
+
+    a.displaySystem(markers,suppress=False, direc=True, subplotAx=None)
