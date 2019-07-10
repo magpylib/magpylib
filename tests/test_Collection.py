@@ -490,7 +490,7 @@ def test_GetSweepArray_multiprocessing_error():
         assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
 
-def test_DisplaySystem():
+def test_displaySystem_direct_suppress():
     from magpylib._lib.classes.magnets import Box
     b = Box([1,1,1],[1,1,1],pos=(5,5,5))
 
@@ -500,3 +500,13 @@ def test_DisplaySystem():
                b.position] # float64
 
     a.displaySystem(markers,suppress=False, direc=True, subplotAx=None)
+
+def test_displaySystem_is_Sphere():
+    from magpylib._lib.classes.magnets import Sphere
+    s = Sphere ([1,1,1], 1, pos=(3,3,3), angle=45.0, axis=(0.0,0.0,1.0))
+    c = Collection()
+    markers = [[0,0,0],    # int
+               [3.1,3.1,3.1], # float
+               s.position] # float64
+
+    c.displaySystem(markers,suppress=False, direc=False, subplotAx=None)
