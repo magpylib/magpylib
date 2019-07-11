@@ -119,7 +119,7 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
                   color=c)
 
 def drawSensor(sensor, SYSSIZE, ax):
-    """Draw the sensor coordinates and x,y,z labels
+    """Draw the sensor coordinates
 
     Parameters
     ----------
@@ -137,25 +137,25 @@ def drawSensor(sensor, SYSSIZE, ax):
     ax.quiver(P[0], P[1], P[2],  # X position
               M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
-                  length=SYSSIZE-SYSSIZE/2,
+                  length=SYSSIZE/4,
                   color='r')
-    ax.text(M[0], M[1], M[2], "x", None)
+    ax.text(M[0]+P[0], M[1]+P[1], M[2]+P[2], "x", None)
     
     M = rotatePosition([0,1,0],sensor.angle,sensor.axis)
     ax.quiver(P[0], P[1], P[2],  # Y position
               M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
-                  length=SYSSIZE-SYSSIZE/2,
+                  length=SYSSIZE/4,
                   color='g')
-    ax.text(M[0], M[1], M[2], "y", None)
+    ax.text(M[0]+P[0], M[1]+P[1], M[2]+P[2], "y", None)
     
     M = rotatePosition([0,0,1],sensor.angle,sensor.axis)
     ax.quiver(P[0], P[1], P[2],  # Z position
               M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
-                  length=SYSSIZE-SYSSIZE/2,
+                  length=SYSSIZE/4,
                   color='b')
-    ax.text(M[0], M[1], M[2], "z", None)
+    ax.text(M[0]+P[0], M[1]+P[1], M[2]+P[2], "z", None)
 
 def drawMagAxis(magnetList, SYSSIZE, ax):
     """
@@ -344,20 +344,5 @@ def isDisplayMarker(object_ref):
         return all(isinstance(p, int) or isinstance(p, float) for p in m)
     if len(m) == 4:  # Check if it's [numeric,numeric,numeric,"label"]
         return all(isinstance(p, int) or isinstance(p, float) for p in m[:2]) and isinstance(m[3], str)
-    
-def sensorRotate(sensor,reading):
-    """Rotate the reading based on the Sensor orientation
-    
-    Parameters
-    ----------
-    sensor : Sensor
-        The Sensor Object
-    reading : vec3
-        The field reading to rotate
-    """
-    
-    from magpylib._lib.mathLibPublic import rotatePosition
-    rotated = rotatePosition(reading,sensor.angle,sensor.axis,sensor.position)
-    return rotated
 
 

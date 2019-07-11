@@ -1,50 +1,44 @@
-from magpylib._lib.classes.base import RCS 
-from magpylib._lib.utility import sensorRotate, isSource
-from itertools import repeat
-from numpy import float64, angle, array, isnan
+from magpylib._lib.classes.base import RCS
+from magpylib._lib.utility import addUniqueSource, addListToCollection, isSource
+from magpylib._lib.mathLibPublic import rotatePosition
+from numpy import float64, array, isnan
+
 import sys
+
+
 class Sensor(RCS):
     """
     Create a rotation-enabled sensor to extract B-fields from individual Sources and Source Collections.
+    It may be displayed with :class:`~magpylib.Collection`'s :meth:`~magpylib.Collection.displaySystem` using the sensors kwarg.
 
     Parameters
     ----------
     position : vec3
         Cartesian position of where the sensor is.
-    
+
     angle : scalar
         Angle of rotation
 
-    Attributes
-    ----------
-    sources : list of source objects
-        List of all sources that have been added to the collection.
+    axis : vec3
+        Rotation axis information (x,y,z)
 
     Example
     -------
-        >>> from magpylib import Collection, Sensor
-        >>> pm = source.magnet.Box(mag=[0,0,1000],dim=[1,1,1])
-        >>> B = pm.getB([1,0,1])
-        >>> print(B)
-        [ 0.53614741 1.87571635 2.8930498 ]
+        >>> from magpylib import source, Sensor
+        >>> sensor = Sensor([0,0,0],90,(0,0,1)) # This sensor is rotated in respect to space
+        >>> cyl = source.magnet.Cylinder([1,2,300],[1,2])
+        >>> absoluteReading = cyl.getB([0,0,0])
+        >>> print(absoluteReading)
+            [  0.552   1.105  268.328 ]
+        >>> relativeReading = sensor.getB(cyl)
+        >>> print(relativeReading)
+            [  1.105  -0.552  268.328 ]
     """
-    
-    def __init__(self, position = [0, 0, 0], angle = 0, axis = [0, 0, 1]):
-        # fundamental (unit)-orientation/rotation is [0,0,0,1]
 
-        self.position = array(position, dtype=float64, copy=False)
-        try:
-            self.angle = float(angle)
-        except ValueError:
-            sys.exit('Bad angle input')
-        assert any(ax!=0 for ax in axis), "Invalid Axis input for Sensor (0,0,0)"
-        self.axis = array(axis, dtype=float64, copy=False)
-
-        # check input format
-        if any(isnan(self.position)) or len(self.position) != 3:
-            sys.exit('Bad pos input')
-        if any(isnan(self.axis)) or len(self.axis) != 3:
-            sys.exit('Bad axis input')
+    def __init__(self, pos=[0, 0, 0], angle=0, axis=[0, 0, 1]):
+        assert any(
+            ax != 0 for ax in axis), "Invalid Axis input for Sensor (0,0,0)"
+        RCS.__init__(self, pos, angle, axis)
 
     def __repr__(self):
         return f"\n name: Sensor"\
@@ -52,8 +46,50 @@ class Sensor(RCS):
                f"\n angle: {self.angle} Degrees"\
                f"\n axis: x: {self.axis[0]}   n y: {self.axis[1]} z: {self.axis[2]}"
 
-    def getB(self,*sources, dupWarning=True):
-        assert all(isSource(source) for source in sources)
+    def getB(self, *sources, dupWarning=True):
+        """Extract the magnetic field based on the Sensor orientation
+
+        Parameters
+        ----------
+        dupWarning : Check if there are any duplicate sources, optional.
+            This will prevent duplicates and throw a warning, by default True.
+
+        Returns
+        -------
+        [vec3]
+            B-Field as perceived by the sensor
+
+        Example
+        -------
+        >>> from magpylib import source, Sensor
+        >>> sensor = Sensor([0,0,0],90,(0,0,1)) # This sensor is rotated in respect to space
+        >>> cyl = source.magnet.Cylinder([1,2,300],[1,2])
+        >>> absoluteReading = cyl.getB([0,0,0])
+        >>> print(absoluteReading)
+            [  0.552   1.105  268.328 ]
+        >>> relativeReading = sensor.getB(cyl)
+        >>> print(relativeReading)
+            [  1.105  -0.552  268.328 ]
+        """
+        # Check input, add Collection list
+        sourcesList = []
+        for s in sources:
+            try:
+                addListToCollection(sourcesList, s.sources, dupWarning)
+            except AttributeError:
+                if isinstance(s, list) or isinstance(s, tuple):
+                    addListToCollection(sourcesList, s, dupWarning)
+                else:
+                    assert isSource(s), "Argument " + str(s) + \
+                        " in addSource is not a valid source for Collection"
+                    if dupWarning is True:
+                        addUniqueSource(s, sourcesList)
+                    else:
+                        sourcesList += [s]
+
+        # Read the field from all nominated sources
         Btotal = sum([s.getB(self.position) for s in sources])
-        return sensorRotate(self,Btotal)
-        
+        return rotatePosition(Btotal,
+                              -self.angle,  # Rotate in the opposite direction
+                              self.axis,
+                              [0, 0, 0])
