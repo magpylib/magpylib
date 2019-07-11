@@ -1,10 +1,6 @@
 from magpylib._lib.classes.base import RCS
 from magpylib._lib.utility import addUniqueSource, addListToCollection, isSource
 from magpylib._lib.mathLibPublic import rotatePosition
-from numpy import float64, array, isnan
-
-import sys
-
 
 class Sensor(RCS):
     """
