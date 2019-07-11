@@ -216,15 +216,3 @@ def test_MagMoment_initialization_bad_Mag():
     with pytest.raises(AssertionError):
         MagMoment(moment=badMoment, pos=pos,
                   angle=angle, axis=axis)
-"""
-def test_all_axis_zero():
-    errMsg_init = "Unexpected RCS position at initialization"
-    startPos = [1, 2, 3.5]
-    angle = 90
-    axis = (0, 0, 0)
-    r = base.RCS(startPos, 90, axis)
-    rounding = 4
-    assert all(round(r.position[i], rounding) ==
-               startPos[i] for i in range(0, 3)), errMsg_init
-    r.rotate(angle, axis)
-"""

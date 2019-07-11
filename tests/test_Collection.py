@@ -490,7 +490,9 @@ def test_GetSweepArray_multiprocessing_error():
         assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
 
-def test_displaySystem_box():
+def test_displaySystem():
+     # Check if all shapes are recognized and can be handeled by the class
+     # Check if marker inputs are acceptable
     from magpylib import source
     s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(5,5,5))
     s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(5,5,5))
