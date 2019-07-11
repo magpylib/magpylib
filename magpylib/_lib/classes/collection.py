@@ -371,6 +371,22 @@ class Collection(FieldSampler):
         >>> x.displaySystem(markers=[ marker0,
         ...                           marker1])
 
+        Parameters
+        ----------
+        sensors : list[sensor]
+            List of :class:`~magpylib.Sensor` objects to add the display.
+            Default: None
+
+        Example
+        -------
+        >>> from magpylib import Collection, source
+        >>> c=source.current.Circular(3,7)
+        >>> x = Collection(c)
+        >>> sensor0 = Sensor()
+        >>> sensor1 = Sensor(pos=[1,2,3], angle=180)
+        >>> x.displaySystem(sensors=[ sensor0,
+        ...                           sensor1])
+
 
         Parameters
         ----------

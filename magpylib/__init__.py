@@ -25,8 +25,11 @@
 magpylib.Collection
 ===================
 
-This package serves the :class:`~magpylib.Collection` class, which
-is used to group up and manipulate sources created with :py:mod:`magpylib.source`
+This package serves the :class:`~magpylib.Collection` and the :class:`~magpylib.Sensor` class. 
+
+:class:`~magpylib.Collection` is used to group up and manipulate sources created with :py:mod:`magpylib.source`.
+
+:class:`~magpylib.Sensor` class objects are used to extract relative space measures, and may be displayed in Collections.
 
 Angle and Axis information may be retrieved 
 and generated with the methods in :py:mod:`magpylib.math` 
