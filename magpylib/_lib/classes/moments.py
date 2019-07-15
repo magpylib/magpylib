@@ -101,10 +101,10 @@ class Dipole(MagMoment):
         >>> from magpylib import source
         >>> d = source.moment.Dipole([1.0,2.0,3.0], [3.0,2.0,1.0])
         >>> d
-            name: Dipole 
+            type: moments.Dipole 
             moment: x: 1.0mT, y: 2.0mT, z: 3.0mT 
             position: x: 3.0mm, y: 2.0mm, z:1.0mm 
             angle: 0.0 Degrees 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "name: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Dipole", *self.moment, *self.position, self.angle, *self.axis)
+        return "type: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *self.moment, *self.position, self.angle, *self.axis)
