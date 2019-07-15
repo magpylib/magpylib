@@ -69,6 +69,10 @@ class RCS:
 
     def __init__(self, position, angle, axis):
         # fundamental (unit)-orientation/rotation is [0,0,0,1]
+        assert any(
+            ax != 0 for ax in axis), "Invalid Axis input for Sensor (0,0,0)"
+        assert all(
+            isinstance(ax, int) or isinstance(ax, float) for ax in axis), "Invalid Axis input for Sensor" + str(axis)
 
         self.position = array(position, dtype=float64, copy=False)
         try:
