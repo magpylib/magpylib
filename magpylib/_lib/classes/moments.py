@@ -107,4 +107,4 @@ class Dipole(MagMoment):
             angle: 0.0 Degrees 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "name: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Dipole", *self.moment, *self.position, self.angle, *self.axis)
+        return "type: {} \n moment: x: {}, y: {}, z: {} \n position: x: {}, y: {}, z:{} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *self.moment, *self.position, self.angle, *self.axis)

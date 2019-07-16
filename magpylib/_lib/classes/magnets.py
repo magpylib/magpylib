@@ -122,14 +122,14 @@ class Box(HomoMag):
         >>> from magpylib import source
         >>> b = source.magnet.Box([0.2,32.5,5.3], [1.0,2.4,5.0], [1.0,0.2,3.0])
         >>> b
-            name: Box 
-            magnetization: x: 0.2mT, y: 32.5mT, z: 5.3mT 
-            dimensions: x: 1.0mm, y: 2.4mm, z: 5.0mm 
-            position: x: 1.0mm, y:0.2mm, z: 3.0mm 
-            angle: 0.0 Degrees 
+            type: magnet.Box 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: x: 1.0, y: 2.4, z: 5.0
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0  
             axis: x: 0.0, y: 0.0, z:1.0
         """
-        return "name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: x: {}mm, y: {}mm, z: {}mm \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: x: {}, y: {}, z: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 
 # %% THE CYLINDER CLASS
@@ -232,14 +232,14 @@ class Cylinder(HomoMag):
         >>> from magpylib import source
         >>> c = source.magnet.Cylinder([0.2,32.5,5.3], [2.0,9.0], [1.0,0.2,3.0])
         >>> c
-            name: Cylinder 
-            magnetization: x: 0.2mT, y: 32.5mT, z: 5.3mT 
-            dimensions: d: 2.0mm, h: 9.0mm 
-            position: x: 1.0mm, y:0.2mm, z: 3.0mm 
-            angle: 0.0 Degrees 
+            type: magnet.Cylinder 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: d: 2.0, h: 9.0 
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0 
             axis: x: 0.0, y: 0.0, z:1.0
         """
-        return "name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: d: {}mm, h: {}mm \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: d: {}, h: {} \n position: x: {}, y:{}, z: {} \n angle: {} \n axis: x: {}, y: {}, z:{}".format("magnet.Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 # %% THE SPHERE CLASS
 
@@ -327,11 +327,11 @@ class Sphere(HomoMag):
         >>> from magpylib import source
         >>> s = source.magnet.Sphere([0.2,32.5,5.3], 1.0, [1.0,0.2,3.0])
         >>> s
-            name: Sphere 
-            magnetization: x: 0.2mT, y: 32.5mT, z: 5.3mT 
-            dimensions: 1.0mm 
-            position: x: 1.0mm, y:0.2mm, z: 3.0mm 
-            angle: 0.0 Degrees 
+            type: magnet.Sphere 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: 1.0 
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0  
             axis: x: 0.0, y: 0.0, z:1.0
         """
-        return "name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: {}mm \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)

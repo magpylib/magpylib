@@ -170,8 +170,8 @@ def test_ToString():
     position = (4.4, 5.24, 0.5)
     angle = 45.0
     axis = [0.2, 0.61, 1.0]
-    expected = "name: {} \n current: {} A \n dimension: {}mm \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format(
-        "Circular", curr, dimension, *position, angle, *axis)
+    expected = "type: {} \n current: {}  \n dimension: {} \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format(
+        "current.Circular", curr, dimension, *position, angle, *axis)
 
     myCircular = current.Circular(curr, dimension, position, angle, axis)
 
