@@ -32,8 +32,6 @@ class Sensor(RCS):
     """
 
     def __init__(self, pos=[0, 0, 0], angle=0, axis=[0, 0, 1]):
-        assert any(
-            ax != 0 for ax in axis), "Invalid Axis input for Sensor (0,0,0)"
         RCS.__init__(self, pos, angle, axis)
 
     def __repr__(self):
