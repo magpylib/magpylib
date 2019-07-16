@@ -244,7 +244,22 @@ def test_GetB_markerInput():
                [.1,.1,.1], # float
                b.position] # float64
 
-    a.displaySystem(markers,suppress=True)
+    a.displaySystem(markers=markers,suppress=True)
+
+def test_sensorDraw():
+    # Check if marker inputs are acceptable
+    # TODO: find out a good way to compare plot results.
+    # Have output plot data saved in text maybe
+    # Just test input validity for now.
+    from magpylib._lib.classes.magnets import Box
+    from magpylib._lib.classes.sensor import Sensor
+    b = Box([1,1,1],[1,1,1],pos=(5,5,5))
+
+    a = Collection()
+    sensor = Sensor()
+
+    a.displaySystem(sensors=[sensor],suppress=True)
+    from matplotlib import pyplot
 
 def test_GetBList():
     # Check if sole getB throws an error

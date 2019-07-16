@@ -25,12 +25,6 @@ print(s.getB([4,4,4]))
 # Output: [ 5.08641867  5.08641867 -0.60532983]
 ```
 
-```eval_rst
-
-.. note::
-    With [Spyder's](https://www.spyder-ide.org/) IPython *Inline* plotting, graphs made with :meth:`~magpylib.Collection.displaySystem()` can be blank if the suppress=True option is not used. Set IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
-```
-
 ### Basic Functionality: The Field of a Collection
 
 In this example the basic functionality is outlined by calculating the field of two magnets. The magnets are geometrically manipulated and the system geometry is displayed using the `displaySystem` method. The field is then calculated on a grid and displayed in the xz-plane.

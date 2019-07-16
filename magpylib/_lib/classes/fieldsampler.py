@@ -76,7 +76,7 @@ class FieldSampler:
     def getBsweep(self, INPUT, multiprocessing=False, processes=Auto):
         """
         This method can be used to determine the field for a given set
-        of sensor positions, or for different magnet positions and orientations.
+        of sample positions, or for different magnet positions and orientations.
         While this can manually be achieved by looping getB, this getBsweep
         implements the possibility of parallelization. 
 
@@ -90,7 +90,7 @@ class FieldSampler:
         Parameters
         ----------
         INPUT : TYPE [type 1 or type 2 input] 
-           INPUT TYPE 1 is a list of N sensor positions. In this case the magnetic field of the source is determined for all N sensor positions and returned in an Nx3 array. INPUT TYPE 2 is a list of the following format [(sensorPos1, sourcePos1, sourceOrient1),…]. Here for each case of sensor position and source state the field is evaluated and returned in an Nx3 array. This corresponds to a system where sensor and magnet move simultaneously. TYPE 2 DOES NOT WORK FOR COLLECTIONS !
+           INPUT TYPE 1 is a list of N sample positions. In this case the magnetic field of the source is determined for all N sample positions and returned in an Nx3 array. INPUT TYPE 2 is a list of the following format [(samplePos1, sourcePos1, sourceOrient1),…]. Here for each case of sample position and source state the field is evaluated and returned in an Nx3 array. This corresponds to a system where sample and magnet move simultaneously. TYPE 2 DOES NOT WORK FOR COLLECTIONS !
 
         multiprocessing : bool [bool] Default = False
            Enable/disable parallel multiprocessing; This requires some additional code on Windows, please refer to example below.
