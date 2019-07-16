@@ -155,3 +155,16 @@ def test_BoxMulticoreGetB():
     for i in range(len(mockRes)):
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
+
+def test_ToString():
+    magnetization=(0.2,32.5,5.3)
+    dimension=(1.0,2.4,5.0)
+    position=(1.0,0.2,3.0)
+    axis=[0.2,1.0,0.0]
+    angle=90.0
+    expected="type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *magnetization, *dimension, *position, angle, *axis)
+
+    myBox = magnet.Box(magnetization, dimension, position, angle, axis)
+
+    result = myBox.__repr__()
+    assert result == expected

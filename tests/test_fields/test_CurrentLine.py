@@ -11,7 +11,7 @@ def test_Bfield_Zero_Length_segment():
     pos = [0,0,0]
 
     vertices = array([[-1,0,0],[1,0,5],[1,0,5]])
-    with pytest.warns(Warning):
+    with pytest.warns(RuntimeWarning):
         results=Bfield_CurrentLine(pos,vertices,current)
         rounding = 4
 

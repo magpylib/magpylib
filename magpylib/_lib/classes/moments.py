@@ -22,16 +22,15 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 ######### Type hint definitions ########
-# These aren't type hints, but look good 
+# These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
-Mx=My=Mz=0.0 # Zero Dipole Moment
+Mx = My = Mz = 0.0  # Zero Dipole Moment
 #######################################
 
-
 # %% IMPORTS
-from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
-from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.utility import getBField, rotateToCS
+from magpylib._lib.classes.base import MagMoment
+from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 
 
 class Dipole(MagMoment):
@@ -91,3 +90,21 @@ class Dipole(MagMoment):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_Dipole(self.moment, rotatedPos),  # The B field
                          self)  # Object Angle/Axis properties
+
+    def __repr__(self):
+        """
+        This is for the IPython Console
+        When you call a defined dipole, this method shows you all its components.
+
+        Examples
+        --------
+        >>> from magpylib import source
+        >>> d = source.moment.Dipole([1.0,2.0,3.0], [3.0,2.0,1.0])
+        >>> d
+            name: Dipole 
+            moment: x: 1.0mT, y: 2.0mT, z: 3.0mT 
+            position: x: 3.0mm, y: 2.0mm, z:1.0mm 
+            angle: 0.0 Degrees 
+            axis: x: 0.0, y: 0.0, z: 1.0
+        """
+        return "type: {} \n moment: x: {}, y: {}, z: {} \n position: x: {}, y: {}, z:{} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *self.moment, *self.position, self.angle, *self.axis)

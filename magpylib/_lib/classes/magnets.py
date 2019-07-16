@@ -20,25 +20,23 @@
 # page at https://www.github.com/OrtnerMichael/magpylib/issues.
 # -------------------------------------------------------------------------------
 ######### Type hint definitions ########
-# These aren't type hints, but look good 
+# These aren't type hints, but look good
 # in Spyder IDE. Pycharm recognizes it.
-Mx=My=Mz=0.0 # Def.Magnetization Vector
-a=b=c=0.0 #Default Cuboid dimensions
-d=0.0 # Default Diameter 
-h=0.0 # Default Height 
-Max=0 # Multicore flag
+Mx = My = Mz = 0.0  # Def.Magnetization Vector
+a = b = c = 0.0  # Default Cuboid dimensions
+d = 0.0  # Default Diameter
+h = 0.0  # Default Height
+Max = 0  # Multicore flag
 #######################################
 
-
 # %% IMPORTS
-from magpylib._lib.fields.PM_Box import Bfield_Box
-from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
-from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
-from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
+from magpylib._lib.classes.base import HomoMag
+from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
+from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
+from magpylib._lib.fields.PM_Box import Bfield_Box
 
 # %% THE CUBE CLASS
-
 
 class Box(HomoMag):
     """ 
@@ -113,6 +111,25 @@ class Box(HomoMag):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_Box(self.magnetization, rotatedPos, self.dimension),  # The B field
                          self)  # Object Angle/Axis properties
+
+    def __repr__(self):
+        """
+        This is for the IPython Console
+        When you call a defined box, this method shows you all its components.
+
+        Examples
+        --------
+        >>> from magpylib import source
+        >>> b = source.magnet.Box([0.2,32.5,5.3], [1.0,2.4,5.0], [1.0,0.2,3.0])
+        >>> b
+            type: magnet.Box 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: a: 1.0, b: 2.4, c: 5.0
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0  
+            axis: x: 0.0, y: 0.0, z:1.0
+        """
+        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 
 # %% THE CYLINDER CLASS
@@ -205,8 +222,27 @@ class Cylinder(HomoMag):
         return getBField(Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
                          self)  # Object Angle/Axis properties
 
+    def __repr__(self):
+        """
+        This is for the IPython Console
+        When you call a defined cylinder, this method shows you all its components.
+
+        Examples
+        --------
+        >>> from magpylib import source
+        >>> c = source.magnet.Cylinder([0.2,32.5,5.3], [2.0,9.0], [1.0,0.2,3.0])
+        >>> c
+            type: magnet.Cylinder 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: d: 2.0, h: 9.0 
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0 
+            axis: x: 0.0, y: 0.0, z:1.0
+        """
+        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: d: {}, h: {} \n position: x: {}, y:{}, z: {} \n angle: {} \n axis: x: {}, y: {}, z:{}".format("magnet.Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 # %% THE SPHERE CLASS
+
 
 class Sphere(HomoMag):
     """ 
@@ -280,3 +316,22 @@ class Sphere(HomoMag):
         rotatedPos = rotateToCS(pos, self)
         return getBField(Bfield_Sphere(self.magnetization, rotatedPos, self.dimension),  # The B Field
                          self)  # Object Angle/Axis properties
+
+    def __repr__(self):
+        """
+        This is for the IPython Console
+        When you call a defined sphere, this method shows you all its components.
+
+        Examples
+        --------
+        >>> from magpylib import source
+        >>> s = source.magnet.Sphere([0.2,32.5,5.3], 1.0, [1.0,0.2,3.0])
+        >>> s
+            type: magnet.Sphere 
+            magnetization: x: 0.2, y: 32.5, z: 5.3
+            dimensions: d: 1.0 
+            position: x: 1.0, y:0.2, z: 3.0
+            angle: 0.0  
+            axis: x: 0.0, y: 0.0, z:1.0
+        """
+        return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: d: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
