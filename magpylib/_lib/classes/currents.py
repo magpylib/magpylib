@@ -127,12 +127,12 @@ class Circular(LineCurrent):
         >>> c
             type: current.Circular 
             current: 2.45  
-            dimension: 3.1469 
+            dimension: d: 3.1469 
             position: x: 4.4, y: 5.24, z: 0.5
             angle: 0.0 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "type: {} \n current: {}  \n dimension: {} \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Circular", self.current, self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n current: {}  \n dimension: d: {} \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Circular", self.current, self.dimension, *self.position, self.angle, *self.axis)
 
 # %% THE CIRCUAR CL CLASS
 
@@ -234,8 +234,9 @@ class Line(LineCurrent):
         >>> l
             type: current.Line 
             current: 2.45 
+            dimensions: vertices
             position: x: 4.4, y: 5.24, z: 0.5
             angle: 0.0 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "type: {} \n current: {}  \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Line", self.current, *self.position, self.angle, *self.axis)
+        return "type: {} \n current: {} \n dimensions: vertices \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Line", self.current, *self.position, self.angle, *self.axis)

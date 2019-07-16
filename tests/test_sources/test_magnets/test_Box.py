@@ -162,7 +162,7 @@ def test_ToString():
     position=(1.0,0.2,3.0)
     axis=[0.2,1.0,0.0]
     angle=90.0
-    expected="type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: x: {}, y: {}, z: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *magnetization, *dimension, *position, angle, *axis)
+    expected="type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *magnetization, *dimension, *position, angle, *axis)
 
     myBox = magnet.Box(magnetization, dimension, position, angle, axis)
 

@@ -124,12 +124,12 @@ class Box(HomoMag):
         >>> b
             type: magnet.Box 
             magnetization: x: 0.2, y: 32.5, z: 5.3
-            dimensions: x: 1.0, y: 2.4, z: 5.0
+            dimensions: a: 1.0, b: 2.4, c: 5.0
             position: x: 1.0, y:0.2, z: 3.0
             angle: 0.0  
             axis: x: 0.0, y: 0.0, z:1.0
         """
-        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: x: {}, y: {}, z: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 
 # %% THE CYLINDER CLASS
@@ -329,9 +329,9 @@ class Sphere(HomoMag):
         >>> s
             type: magnet.Sphere 
             magnetization: x: 0.2, y: 32.5, z: 5.3
-            dimensions: 1.0 
+            dimensions: d: 1.0 
             position: x: 1.0, y:0.2, z: 3.0
             angle: 0.0  
             axis: x: 0.0, y: 0.0, z:1.0
         """
-        return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
+        return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: d: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
