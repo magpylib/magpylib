@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 # -*- coding: utf-8 -*-
 
-import numpy as np
+import numpy
 from numpy import cos, sin, array, arccos, float64, pi
 from magpylib._lib.mathLibPrivate import getPhi, fastNorm3D, angleAxisRotation
 
@@ -47,10 +47,10 @@ def randomAxis():
 
     """
     while True:
-        r = np.random.rand(3)*2-1  # create random axis
+        r = numpy.random.rand(3)*2-1  # create random axis
         Lr2 = sum(r**2)  # get length
         if Lr2 <= 1:  # is axis within sphere?
-            Lr = np.sqrt(Lr2)  # normalize
+            Lr = numpy.sqrt(Lr2)  # normalize
             return r/Lr
 
 

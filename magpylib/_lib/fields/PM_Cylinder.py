@@ -29,7 +29,7 @@
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan, cos, sin, arange, NaN
 from magpylib._lib.mathLibPrivate import getPhi, elliptic
-
+from warnings import warn
 
 # %% Cylinder Field Calculation
 # Describes the magnetic field of a cylinder with circular top and bottom and
@@ -80,18 +80,18 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
 
     # edge cases ----------------------------------------------
     if CASE == 2:
-        print('Warning: getB Position directly on magnet surface')
+        warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
         return array([NaN, NaN, NaN])
 
     # on-magnet surface cases----------------------------------
     elif CASE == 1:
         if Rmr == 0:  # on cylinder surface
             if abs(z) < H/2:  # directly on magnet
-                print('Warning: getB Position directly on magnet surface')
+                warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
                 return array([NaN, NaN, NaN])
         else:  # on top or bottom surface
             if Rmr > 0:  # directly on magnet
-                print('Warning: getB Position directly on magnet surface')
+                warn('Warning: getB Position directly on magnet surface', RuntimeWarning)
                 return array([NaN, NaN, NaN])
 
     # Volume Cases and off-magnet surface cases----------------

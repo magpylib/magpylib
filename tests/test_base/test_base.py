@@ -5,6 +5,29 @@ from magpylib._lib.classes.base import MagMoment
 import pytest
 
 
+def test_initialization_bad_axis_error():
+    pos = [1, 23, 2]
+    angle = 90
+    badAxis = (1, 1, "str")
+    with pytest.raises(AssertionError):
+        base.RCS(pos, angle, badAxis)
+
+
+def test_initialization_bad_axis_error2():
+    pos = [1, 23, 2]
+    angle = 90
+    badAxis = (0, 0, 0)
+    with pytest.raises(AssertionError):
+        base.RCS(pos, angle, badAxis)
+
+
+def test_initialization_bad_axis_error3():
+    pos = [23, 2, 20]
+    angle = 90
+    badAxis = (1, 1)
+    with pytest.raises(SystemExit):
+        base.RCS(pos, angle, badAxis)
+
 def test_initialization_bad_pos_error():
     badPos = [23, 2]
     angle = 90
@@ -21,12 +44,6 @@ def test_initialization_bad_angle_error():
         base.RCS(pos, badAngle, axis)
 
 
-def test_initialization_bad_axis_error():
-    pos = [23, 2, 20]
-    angle = 90
-    badAxis = (1, 1)
-    with pytest.raises(SystemExit):
-        base.RCS(pos, angle, badAxis)
 
 
 def test_setOrientation_bad_axis_error():

@@ -3,7 +3,7 @@ from numpy import isnan, array
 import pytest 
 
 
-def test_Box_rotation_GetB():
+def test_Dipole_rotation_GetB():
     errMsg = "Results from getB are unexpected"
     from numpy import pi
     # Setup
@@ -33,7 +33,7 @@ def test_Box_rotation_GetB():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
     
-def test_BoxGetB_rotation():
+def test_DipoleGetB_rotation():
     erMsg = "Results from getB are unexpected"
     from numpy import pi
 
@@ -135,3 +135,15 @@ def test_DipoleMulticoreGetB():
     for i in range(len(mockResults)):
         for j in range(3):
             assert round(result[i][j],rounding)==round(mockResults[i][j],rounding), erMsg
+
+def test_ToString():
+    moment=(0.2,32.5,5.3)
+    position=(1.0,0.2,3.0)
+    axis=[0.2,1.0,0.0]
+    angle=90.0
+    expected="type: {} \n moment: x: {}, y: {}, z: {} \n position: x: {}, y: {}, z:{} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *moment, *position, angle, *axis)
+
+    myDipole = Dipole(moment, position, angle, axis)
+
+    result = myDipole.__repr__()
+    assert result == expected

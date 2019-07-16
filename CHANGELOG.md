@@ -6,7 +6,23 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ---
 
-## [Unreleased Changes]
+Click here for [Unreleased Changes]
+
+---
+
+# Releases
+
+## [1.2.0b0] - 2019-07-16
+### Added
+- Sensor Class
+  - This allows users to create a coordinate system-enabled Sensor object, which can be placed, rotated, moved and oriented. 
+  - This object can take the B-Field of a system (be it single source or a Collection) with the added functionality of having its own reference in the coordinate space, allowing users to easily acquire relative B-Field measurements of a system from an arbitrarily placed sensor object. 
+  - Sensors in a list may be displayed in the `Collection.displaySystem()` by using the `sensors` keyword argument.
+- Added content to the `__repr__` builtin to all source classes for quick console evaluations, simply call a defined object in your Python shell to print out its attributes.
+### Changed
+- Edge cases in field calculations now return a proper [RuntimeWarning](https://docs.python.org/3/library/exceptions.html#RuntimeWarning) instead of console prints
+### Fixed
+- Unused imports and variables
 
 ---
 
@@ -96,8 +112,8 @@ The first official release of the magpylib library.
 
 ---
 
-
 [Unreleased Changes]: https://github.com/magpylib/magpylib/compare/HEAD...development
+[1.2.0b0]: https://github.com/magpylib/magpylib/compare/1.1.1-beta...1.2.0-beta
 [1.1.1b0]: https://github.com/magpylib/magpylib/compare/1.1.0-beta...1.1.1-beta
 [1.1.0b0]: https://github.com/magpylib/magpylib/compare/1.0.1-beta...1.1.0-beta
 [1.0.2b0]: https://github.com/magpylib/magpylib/compare/1.0.1-beta...1.0.2-beta

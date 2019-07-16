@@ -68,7 +68,7 @@ author = 'Michael Ortner <magpylib@gmail.com>'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '1.0.0-alpha'
+release = '1.2.0-beta'
 
 
 # -- General configuration ---------------------------------------------------
