@@ -345,7 +345,7 @@ Finally, the collection class provides the method `displaySystem` to quickly che
 `displaySystem()` comes with three keyword arguments:
 
 - `markers=listOfPos` for displaying reference positions. By default a marker is set at the origin. By giving *[a,b,c,'text']* instead of just a simple 3vector *'text'* is displayed with the marker.
-- `suppress=True` for suppressing the figure output. To suppress the output it is necessary to deactivate the interactive mode by calling *pyplot.ioff()*.
+- `suppress=True` for suppressing the figure output. To suppress the output it is necessary to deactivate the interactive mode by calling *pyplot.ioff()*. With [Spyder's](https://www.spyder-ide.org/) IPython *Inline* plotting, graphs made with :meth:`~magpylib.Collection.displaySystem()` can be blank if the suppress=True option is not used. Set IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
 - `direc=True` for displaying current and magnetization directions in the figure.
 - `subplotAx=None` for displaying the plot on a designated figure subplot instance.
 
