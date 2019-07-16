@@ -182,7 +182,7 @@ def test_ToString():
     position = (4.4, 5.24, 0.5)
     angle = 45.0
     axis = [0.2,0.61, 1.0]
-    expected = "type: {} \n current: {} A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("currents.Line", curr, *position, angle, *axis)
+    expected = "name: {} \n current: {} A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Line", curr, *position, angle, *axis)
 
     myLine = current.Line(curr, vertices, position, angle, axis)
 

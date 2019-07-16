@@ -141,7 +141,7 @@ def test_ToString():
     position=(1.0,0.2,3.0)
     axis=[0.2,1.0,0.0]
     angle=90.0
-    expected="type: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *moment, *position, angle, *axis)
+    expected="name: {} \n moment: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y: {}mm, z:{}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Dipole", *moment, *position, angle, *axis)
 
     myDipole = Dipole(moment, position, angle, axis)
 

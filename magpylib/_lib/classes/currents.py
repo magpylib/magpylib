@@ -123,15 +123,16 @@ class Circular(LineCurrent):
         Examples
         --------
         >>> from magpylib import source
-        >>> c = source.current.Circular(2.45, [4.4, 5.24, 0.5])
+        >>> c = source.current.Circular(2.45, 3.1469, [4.4, 5.24, 0.5])
         >>> c
-            type: currents.Circular 
-            current: 2.45 A  
+            name: Circular 
+            current: 2.45 A 
+            dimension: 3.1469mm 
             position: x: 4.4mm, y: 5.24mm, z: 0.5mm 
             angle: 0.0 Degrees 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "type: {} \n current: {} A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("currents.Circular", self.current, *self.position, self.angle, *self.axis)
+        return "name: {} \n current: {} A \n dimension: {}mm \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Circular", self.current, self.dimension, *self.position, self.angle, *self.axis)
 
 # %% THE CIRCUAR CL CLASS
 
@@ -231,10 +232,10 @@ class Line(LineCurrent):
         >>> from magpylib import source
         >>> l = source.current.Line(2.45, [[2, .35, 2], [10, 2, -4], [4, 2, 1], [102, 2, 7]], [4.4, 5.24, 0.5])
         >>> l
-            type: currents.Line 
+            name: Line 
             current: 2.45 A 
             position: x: 4.4mm, y: 5.24mm, z: 0.5mm 
             angle: 0.0 Degrees 
             axis: x: 0.0, y: 0.0, z: 1.0
         """
-        return "type: {} \n current: {} A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("currents.Line", self.current, *self.position, self.angle, *self.axis)
+        return "name: {} \n current: {} A \n position: x: {}mm, y: {}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z: {}".format("Line", self.current, *self.position, self.angle, *self.axis)

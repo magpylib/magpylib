@@ -154,7 +154,7 @@ def test_ToString():
     position=(1.0,0.2,3.0)
     axis=[0.2,.61,1.0]
     angle=89.0
-    expected="type: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnets.Sphere", *magnetization, *position, angle, *axis)
+    expected="name: {} \n magnetization: x: {}mT, y: {}mT, z: {}mT \n dimensions: {}mm \n position: x: {}mm, y:{}mm, z: {}mm \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("Sphere", *magnetization, dimension, *position, angle, *axis)
 
     mySphere = Sphere(magnetization, dimension, position, angle, axis)
 
