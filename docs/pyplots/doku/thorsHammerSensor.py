@@ -16,12 +16,14 @@ col = Collection(cyl,box)
 # Read from absolute position in Collection system
 absoluteReading = [col.getB(sensor0Position), col.getB(sensor1Position)]
 print(absoluteReading)
-# [-0.34285586 -0.17269852  0.22153783]
+# [ array([-0.34285586, -0.17269852,  0.22153783]), 
+#   array([0.34439442, 0.1707909 , 0.22611859])]
 
 # Rotated sensor reading
 relativeReading = [sensor0.getB(col),sensor1.getB(col)]
 print(relativeReading)
-# [-0.17269852  0.34285586  0.22153783]
+# [ array([-0.17269852,  0.34285586,  0.22153783]), 
+#   array([0.34439442, 0.1707909 , 0.22611859])]
 
 sensorList = [sensor0, sensor1]
 markerText0 = "sensor0:{}".format(around(relativeReading[0],2))
