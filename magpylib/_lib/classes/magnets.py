@@ -30,7 +30,9 @@ Max = 0  # Multicore flag
 #######################################
 
 # %% IMPORTS
-from magpylib._lib.utility import checkDimensions, getBField, rotateToCS
+from numpy import array, float64, ndarray
+from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.utility import checkDimensions
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
@@ -99,19 +101,25 @@ class Box(HomoMag):
     """
 
     def __init__(self, mag=(Mx, My, Mz), dim=(a, b, c), pos=(0.0, 0.0, 0.0), angle=0.0, axis=(0.0, 0.0, 1.0)):
-
         # inherit class HomoMag
         HomoMag.__init__(self, pos, angle, axis, mag)
 
         # secure input type and check input format of dim
         self.dimension = checkDimensions(3, dim, "Bad dim for box")
 
-    # Private method. This is used by getB for multiprocess reference.
     def getB(self, pos):
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_Box(self.magnetization, rotatedPos, self.dimension),  # The B field
-                         self)  # Object Angle/Axis properties
-
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
+        
     def __repr__(self):
         """
         This is for the IPython Console
@@ -218,9 +226,17 @@ class Cylinder(HomoMag):
         self.iterDia = iterDia
 
     def getB(self, pos):  # Particular Cylinder B field calculation. Check RCS for getB() interface
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia),  # The B field
-                         self)  # Object Angle/Axis properties
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
     def __repr__(self):
         """
@@ -313,9 +329,17 @@ class Sphere(HomoMag):
         assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
     def getB(self, pos):
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_Sphere(self.magnetization, rotatedPos, self.dimension),  # The B Field
-                         self)  # Object Angle/Axis properties
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Sphere(self.magnetization, rotatedPos, self.dimension))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
     def __repr__(self):
         """
