@@ -494,6 +494,9 @@ def test_displaySystem():
      # Check if all shapes are recognized and can be handeled by the class
      # Check if marker inputs are acceptable
     from magpylib import source
+    from numpy import uint8
+    import matplotlib.pyplot as plt
+    import numpy as np
     s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(5,5,5))
     s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(5,5,5))
     s3 = source.magnet.Sphere([1,1,1], 3, pos=(5,5,5))
@@ -506,5 +509,63 @@ def test_displaySystem():
                [.1,.1,.1], # float
                s1.position, s2.position, s3.position, s4.position, s5.position, s6.position] # float64
 
-    a.displaySystem(markers,suppress=True, direc=True, subplotAx=None)
+    #configure the figure
+    fig = a.displaySystem(markers,suppress=True, direc=True, subplotAx=None)
+    #draw the figure
+    fig.canvas.draw()
+    #Save it to a numpy array
+    data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=uint8)
+    data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+    #Get expected Array
+    expected = array([[[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       ...,
+
+       [[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]],
+
+       [[255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255],
+        ...,
+        [255, 255, 255],
+        [255, 255, 255],
+        [255, 255, 255]]], dtype=uint8)
+
+    assert expected == data
 
