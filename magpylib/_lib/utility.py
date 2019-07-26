@@ -258,32 +258,6 @@ def drawDipole(position, moment, angle, axis, SYSSIZE, ax):
 
 # Source package helpers
 
-def rotateToCS(pos, source_ref):
-        # Used in all getB()
-    from magpylib._lib.mathLibPrivate import angleAxisRotation
-    # secure input type and check input format
-    p1 = array(pos, dtype=float64, copy=False)
-
-    # relative position between mag and obs
-    posRel = p1 - source_ref.position
-
-    # rotate this vector into the CS of the magnet (inverse rotation)
-    # Leave this alone for now pylint: disable=invalid-unary-operand-type
-    p21newCm = angleAxisRotation(source_ref.angle, -source_ref.axis, posRel)
-
-    return p21newCm
-
-
-def getBField(BCm, source_ref):
-    # Used in all getB()
-    # BCm is the obtained magnetic field in Cm
-    # the field is well known in the magnet coordinates
-    from magpylib._lib.mathLibPrivate import angleAxisRotation
-    # rotate field vector back
-    B = angleAxisRotation(source_ref.angle, source_ref.axis, BCm)
-
-    return B
-
 
 def recoordinateAndGetB(source_ref, args):
     ## Used in base.RCS.getBDisplacement(),
