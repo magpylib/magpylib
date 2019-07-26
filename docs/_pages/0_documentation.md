@@ -8,6 +8,7 @@ The idea behind magpylib is to provide simple and easy to use classes for calcul
 In this part of the documentation the fundamental structure of the magpylib library is detailed.
 
 - Content
+- [Library Documentation](#library-documentation)
   - [Package Structure](#package-structure)
   - [Units and IO Types](#units-and-io-types)
   - [The Source Class](#the-source-class)
@@ -22,6 +23,7 @@ In this part of the documentation the fundamental structure of the magpylib libr
       - [Complex Magnet Geometries](#complex-magnet-geometries)
       - [Display Collection Graphically](#display-collection-graphically)
   - [Math Package](#math-package)
+  - [The Sensor Class](#the-sensor-class)
 
 
 ## Package Structure
@@ -396,3 +398,26 @@ The math package provides some functions for easier use of the angle-axis (Quate
   positionNew = magpy.math.rotatePosition(pos0,angle,axis,anchor)
   print(positionNew)                  #Output = [2. 0. 0.]
   ```
+
+
+## The Sensor Class
+
+```eval_rst
+The field sampling method, getB, in the :class:`magpylib.source` classes will always extract the field components from an absolute orientation in the coordinate space, given a position. 3D sensors do not behave in this manner as their readings are affected the most by their positioning and tilt relative to the system they are sensing. 
+
+Since version 1.2-beta, magpylib now offers the :class:`magpylib.Sensor` class, which provides an object that may be placed and oriented in a coordinate space. This allows for quick analysis of relative measurements of system arrangements. Here is an example:
+
+.. plot:: pyplots/doku/sensorSource.py
+   :include-source:
+
+```
+
+
+```eval_rst
+
+The sensors may also read multiple sources in a :class:`magpylib.Collection`, and be displayed using the :meth:`magpylib.Collection.displaySystem()` method by using the sensors keyword argument. Multiple sensors may be displayed.
+
+.. plot:: pyplots/doku/thorsHammerSensor.py
+   :include-source:
+
+```
