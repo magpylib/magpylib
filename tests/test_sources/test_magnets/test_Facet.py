@@ -14,6 +14,21 @@ def test_init():
         for j in range(0,3):
             assert all(np.isclose(vertices[i][j],f.vertices[i][j]) for i in range(0,3))
 
+def test_getB():
+    # Check if getB is responding correctly.
+    magnetization = [1,2,3]
+    vertices = [ [0,0,0],
+                 [1,2,3],
+                 [4,5,6] ] 
+    position = [0,0,0]
+    # Update this after introducing field calculation.
+    expectedField = [0,0,0]
+    
+    # Run test
+    f = Facet(magnetization,vertices,position)
+    B = f.getB(position)
+    assert all(B==expectedField)
+
 def test_init_fail():
     # Check if input protection is working.
     magnetization = [1,2,3]
