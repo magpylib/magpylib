@@ -22,7 +22,7 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 from typing import Tuple
-from numpy import float64, isnan, array
+from numpy import float64, isnan, array, isreal
 # Helper function for validating input dimensions
 
 
@@ -40,10 +40,9 @@ def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: 
     # Returns an assertion error if any vector is malformed or if the list isn't complete.
     vectorList = []
     for vec in vertices:
-        assert all(isinstance(val,int) or isinstance(val,float) for val in vec)
+        assert all(isreal(val) for val in vec)
         vec = array(vec, dtype=float64, copy=False)
         assert (not any(isnan(val) for val in vec) and len(vec) == expectedD), exitMsg + str(vec) +", needs 3 valid vectors"
-        assert all(isinstance(val,int) or isinstance(val,float) for val in vec)
         vector = array(vec, dtype=float64, copy=False)
         vectorList.append(vector)
     return vectorList
