@@ -100,7 +100,7 @@ class Facet(HomoMag):
         # inherit class HomoMag
         HomoMag.__init__(self, pos, angle, axis, mag)
         # secure input type and check input format of vectors
-        self.vertices = checkVectorList(3,vertices, "Invalid vector for Facet", checkDupes=True)
+        self.vertices = checkVectorList(3,vertices, "Invalid vector for Facet")
 
     def getB(self, pos):
         # secure input type and check input format

@@ -35,7 +35,7 @@ def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: st
     assert (not any(isnan(dimension)) and len(dimension) == expectedD), exitMsg
     return dimension
 
-def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: str = "Bad vec input", checkDupes = False) -> array:
+def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: str = "Bad vec input") -> array:
     # Will check a 'expectedD' dimensional List after valid position vectors.
     # Returns an assertion error if any vector is malformed or if the list isn't complete.
     vectorList = []
@@ -45,9 +45,6 @@ def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: 
         assert (not any(isnan(val) for val in vec) and len(vec) == expectedD), exitMsg + str(vec) +", needs 3 valid vectors"
         assert all(isinstance(val,int) or isinstance(val,float) for val in vec)
         vector = array(vec, dtype=float64, copy=False)
-        if checkDupes:
-            if vectorList:
-                assert not any(all(vec==appendedVector) for appendedVector in vectorList), "Repeated vector detected:" + str(vec)
         vectorList.append(vector)
     return vectorList
 

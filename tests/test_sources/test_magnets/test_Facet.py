@@ -28,20 +28,6 @@ def test_init_fail():
             for j in range(0,3):
                 assert all(np.isclose(vertices[i][j],f.vertices[i][j]) for i in range(0,3))
 
-def test_init_repeating_vertix_fail():
-    # Check if input protection is working.
-    magnetization = [1,2,3]
-    vertices = [ [0,0,0],
-                 [1,2,3],
-                 [0,0,0] ] 
-    position = [0,0,0]
-
-    with pytest.raises(AssertionError):
-        f = Facet(magnetization,vertices,position)
-        for i in range(0,3):
-            for j in range(0,3):
-                assert all(np.isclose(vertices[i][j],f.vertices[i][j]) for i in range(0,3))
-
 def test_display():
     # Visually check if Facet is drawn and rotated. 
     # Uncomment plt.show() and rerun tests.
