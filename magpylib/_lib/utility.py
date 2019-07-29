@@ -27,13 +27,29 @@ from numpy import float64, isnan, array
 
 
 def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: str = "Bad dim input") -> array:
-    if type(dim) == int or type(dim) == float:
+    if isinstance(dim,int) or isinstance(dim,float):
         dim = [dim]
     assert all(coord == 0 for coord in dim) is False, exitMsg + \
         ", all values are zero"
     dimension = array(dim, dtype=float64, copy=False)
     assert (not any(isnan(dimension)) and len(dimension) == expectedD), exitMsg
     return dimension
+
+def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: str = "Bad vec input", checkDupes = False) -> array:
+    # Will check a 'expectedD' dimensional List after valid position vectors.
+    # Returns an assertion error if any vector is malformed or if the list isn't complete.
+    vectorList = []
+    for vec in vertices:
+        assert all(isinstance(val,int) or isinstance(val,float) for val in vec)
+        vec = array(vec, dtype=float64, copy=False)
+        assert (not any(isnan(val) for val in vec) and len(vec) == expectedD), exitMsg + str(vec) +", needs 3 valid vectors"
+        assert all(isinstance(val,int) or isinstance(val,float) for val in vec)
+        vector = array(vec, dtype=float64, copy=False)
+        if checkDupes:
+            if vectorList:
+                assert not any(all(vec==appendedVector) for appendedVector in vectorList), "Repeated vector detected:" + str(vec)
+        vectorList.append(vector)
+    return vectorList
 
 # Collection Helpers
 
@@ -47,7 +63,6 @@ def addListToCollection(sourceList, inputList, dupWarning):
             addUniqueSource(source, sourceList)
     else:
         sourceList.extend(inputList)
-
 
 def isSource(theObject: any) -> bool:
     """
@@ -66,9 +81,10 @@ def isSource(theObject: any) -> bool:
         source.magnet.Box,
         source.magnet.Sphere,
         source.magnet.Cylinder,
+        source.magnet.Facet,
         source.current.Line,
         source.current.Circular,
-        source.moment.Dipole)
+        source.moment.Dipole,)
     return any(isinstance(theObject, src) for src in sourcesList)
 
 def isSensor(theObject: any) -> bool:
