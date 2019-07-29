@@ -476,7 +476,7 @@ class Collection(FieldSampler):
         # count magnets
         Nm = 0
         for s in self.sources:
-            if type(s) is Box or type(s) is Cylinder or type(s) is Sphere:
+            if isinstance(s,Box) or isinstance(s,Cylinder) or isinstance(s,Sphere) or isinstance(s,Facet):
                 Nm += 1
         
         cm = plt.cm.hsv  # Linter complains about this but it is working pylint: disable=no-member
@@ -516,9 +516,9 @@ class Collection(FieldSampler):
                 # create faces
                 faces = [[v[0], v[1], v[2]]]
                 # plot
-                boxf = Poly3DCollection(
+                facetf = Poly3DCollection(
                     faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
-                ax.add_collection3d(boxf)
+                ax.add_collection3d(facetf)
                 # check system size
                 maxSize = amax(abs(v))
                 if maxSize > SYSSIZE:
