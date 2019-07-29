@@ -495,14 +495,13 @@ def test_displaySystem():
      # Check if marker inputs are acceptable
     from magpylib import source
     from numpy import uint8
-    import matplotlib.pyplot as plt
     import numpy as np
-    s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(5,5,5))
-    s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(5,5,5))
-    s3 = source.magnet.Sphere([1,1,1], 3, pos=(5,5,5))
-    s4 = source.current.Circular(2.45, 3 , pos=(5,5,5))
-    s5 = source.current.Line(2.45, [[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]],pos=(5,5,5))
-    s6 = source.moment.Dipole([1,1,1], pos=(5,5,5))
+    s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(100,100,100))
+    s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(50,50,50))
+    s3 = source.magnet.Sphere([1,1,1], 3, pos=(10,10,10))
+    s4 = source.current.Circular(2.45, 3 , pos=(-10,-10,-10))
+    s5 = source.current.Line(2.45, [[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]],pos=(-50,-50,-50))
+    s6 = source.moment.Dipole([1,1,1], pos=(100,100,100))
 
     a = Collection(s1, s2, s3, s4, s5, s6)
     markers = [[0,0,0],    # int
@@ -517,55 +516,7 @@ def test_displaySystem():
     data = np.frombuffer(fig.canvas.tostring_rgb(), dtype=uint8)
     data = data.reshape(fig.canvas.get_width_height()[::-1] + (3,))
     #Get expected Array
-    expected = array([[[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]],
-
-       [[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]],
-
-       [[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]],
-
-       ...,
-
-       [[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]],
-
-       [[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]],
-
-       [[255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255],
-        ...,
-        [255, 255, 255],
-        [255, 255, 255],
-        [255, 255, 255]]], dtype=uint8)
+    expected = 0
 
     assert expected == data
 
