@@ -39,7 +39,9 @@ def checkVectorList(expectedD: int, vertices: Tuple[list, list, list], exitMsg: 
     # Will check a 'expectedD' dimensional List after valid position vectors.
     # Returns an assertion error if any vector is malformed or if the list isn't complete.
     vectorList = []
+    
     for vec in vertices:
+        assert isinstance(vec,list) or isinstance(vec,tuple), "Non-iterable found in facet vertices list: " + str(vec)
         assert all(isreal(val) for val in vec)
         vec = array(vec, dtype=float64, copy=False)
         assert (not any(isnan(val) for val in vec) and len(vec) == expectedD), exitMsg + str(vec) +", needs 3 valid vectors"
