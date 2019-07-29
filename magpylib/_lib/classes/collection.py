@@ -38,7 +38,7 @@ from multiprocessing import cpu_count
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array, amax, linspace, pi, sin, cos, finfo
-from magpylib._lib.classes.magnets import Box, Cylinder, Sphere
+from magpylib._lib.classes.magnets import Box, Cylinder, Sphere, Facet
 from magpylib._lib.classes.currents import Line, Circular
 from magpylib._lib.classes.moments import Dipole
 from magpylib._lib.classes.sensor import Sensor
@@ -399,7 +399,7 @@ class Collection(FieldSampler):
         >>> ## and returning figure from showing up
         >>> from matplotlib import pyplot 
         >>> pyplot.ioff()
-        >>> figureData = Collection.displayFigure(suppress=True)
+        >>> figureData = Collection.displaySystem(suppress=True)
 
         Parameters
         ----------
@@ -506,6 +506,28 @@ class Collection(FieldSampler):
                 sensorsList.append(s)
 
         for s in self.sources:
+            if type(s) is Facet:
+                ii += 1  # increase color counter
+                P = s.position
+                # create vertices in canonical basis
+                v0 = s.vertices
+                # rotate vertices + displace
+                v = array([angleAxisRotation(s.angle, s.axis, d)+P for d in v0])
+                # create faces
+                faces = [[v[0], v[1], v[2]]]
+                # plot
+                boxf = Poly3DCollection(
+                    faces, facecolors=colors[ii], linewidths=0.5, edgecolors='k', alpha=1)
+                ax.add_collection3d(boxf)
+                # check system size
+                maxSize = amax(abs(v))
+                if maxSize > SYSSIZE:
+                    SYSSIZE = maxSize
+
+                if direc is True:
+                    s.color = colors[ii]
+                    magnetsList.append(s)
+
             if type(s) is Box:
                 ii += 1  # increase color counter
                 P = s.position
@@ -534,6 +556,7 @@ class Collection(FieldSampler):
                 if direc is True:
                     s.color = colors[ii]
                     magnetsList.append(s)
+
             elif type(s) is Cylinder:
                 ii += 1  # increase color counter
                 P = s.position

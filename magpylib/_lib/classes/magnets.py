@@ -25,6 +25,7 @@
 Mx = My = Mz = 0.0  # Def.Magnetization Vector
 a = b = c = 0.0  # Default Cuboid dimensions
 d = 0.0  # Default Diameter
+vec3 = [0,0,0] # default vector 3
 h = 0.0  # Default Height
 Max = 0  # Multicore flag
 #######################################
@@ -32,11 +33,87 @@ Max = 0  # Multicore flag
 # %% IMPORTS
 from numpy import array, float64, ndarray
 from magpylib._lib.mathLibPrivate import angleAxisRotation
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, checkVectorList
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
+from magpylib._lib.fields.PM_Facet import Bfield_Facet
 from magpylib._lib.fields.PM_Box import Bfield_Box
+
+
+# %% THE FACET CLASS
+
+class Facet(HomoMag):
+    """A magnetized, triangular facet.
+    
+    Parameters
+    ----------
+    mag : vec3 [mT]
+        Set magnetization vector of magnet in units of [mT].
+
+    vertices : Tuple[vec3,vec3,vec3] [mm]
+        Set the 3 defining vertices of this facet.
+
+    pos=[0,0,0] : vec3 [mm]
+        Set position of the center of the magnet in units of [mm].
+
+    angle=0.0 : scalar [deg]
+        Set angle of orientation of magnet in units of [deg].
+
+    axis=[0,0,1] : vec3 []
+        Set axis of orientation of the magnet.
+    
+    Attributes
+    ----------
+    magnetization : arr3 [mT]
+        Magnetization vector of box in units of [mT].
+
+    vertices : Tuple[vec3,vec3,vec3] [mm]
+        3 Coordinate space positions that define the facet.
+
+    position : arr3 [mm]
+        Position of the center of the magnet in units of [mm].
+
+    angle : float [deg]
+        Angle of orientation of the magnet in units of [deg].
+
+    axis : arr3 []
+        Axis of orientation of the magnet.
+
+    Example
+    -------
+    >>> from magpylib import source
+    >>> magnetization = [1,2,3]
+    >>> verticesList = [ [0,0,0],
+    ...                  [1,2,3],
+    ...                  [4,5,6] ] 
+    >>> f = Facet(mag=[1,2,3],vertices=verticesList,pos=position)
+    >>> B = f.getB([1,0,1])
+    >>> print(B)
+      [0,0,0]
+
+    Note
+    ----
+    The following Methods are available to all sources objects.
+    """
+    def __init__(self, mag=(Mx, My, Mz), vertices=(vec3, vec3, vec3), pos=(0.0, 0.0, 0.0), angle=0.0, axis=(0.0, 0.0, 1.0)):
+        # inherit class HomoMag
+        HomoMag.__init__(self, pos, angle, axis, mag)
+        # secure input type and check input format of vectors
+        self.vertices = checkVectorList(3,vertices, "Invalid vector for Facet", checkDupes=True)
+
+    def getB(self, pos):
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Facet(self.magnetization, rotatedPos, self.vertices))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
 # %% THE CUBE CLASS
 

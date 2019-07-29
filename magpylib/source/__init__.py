@@ -38,6 +38,7 @@ Quicklist for :mod:`~magpylib.source.magnet` sources:
    Box
    Sphere
    Cylinder
+   Facet
 
 .. currentmodule:: magpylib.source.current
 
