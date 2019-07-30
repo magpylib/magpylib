@@ -495,8 +495,6 @@ def test_displaySystem():
     from numpy import uint8
     import numpy as np
     import os
-    from zipfile import ZipFile
-
     # If any of this gets modified it will be necessary to save and compress the output "golden" data.
     s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(100,100,100))
     s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(50,50,50))
@@ -505,12 +503,10 @@ def test_displaySystem():
     s5 = source.current.Line(2.45, [[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]],pos=(-50,-50,-50))
     s6 = source.moment.Dipole([1,1,1], pos=(100,100,100))
     
-    # Extract the stored data file
-    path = os.path.dirname(os.path.realpath(__file__)) + '/data/'
+    # Extract the data from data file
     goldDataFile = 'test_displaySystem_Data30-6-2019'
-    with ZipFile(path + goldDataFile + ".zip") as thezip:
-        with thezip.open(goldDataFile) as data:
-            expectedOutput = np.load(data)
+    path = os.path.dirname(os.path.realpath(__file__)) + '/data/'
+    expected = np.load(path + goldDataFile + ".npz")
 
     ## Run the test
     a = Collection(s1, s2, s3, s4, s5, s6)
@@ -533,6 +529,6 @@ def test_displaySystem():
     #file.close() 
     ## Compress it afterwards.
     tolerance = 4 # Give it 4 pixels of tolerance
-    assert np.allclose(currentOutput,expectedOutput,atol=tolerance) 
+    assert np.allclose(currentOutput,expected['data'],atol=tolerance) 
 
 
