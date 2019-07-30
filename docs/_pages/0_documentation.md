@@ -404,13 +404,31 @@ The math package provides some functions for easier use of the angle-axis (Quate
 ```eval_rst
 The field sampling method, getB, in the :class:`magpylib.source` classes will always extract the field components from an absolute orientation in the coordinate space, given a position. 3D sensors do not behave in this manner as their readings are affected the most by their positioning and tilt relative to the system they are sensing. 
 
-Since version 1.2-beta, magpylib now offers the :class:`magpylib.Sensor` class, which provides an object that may be placed and oriented in a coordinate space. This allows for quick analysis of relative measurements of system arrangements. Here is an example:
+Since version 1.2-beta, magpylib now offers the :class:`magpylib.Sensor` class, which provides an object that may be placed and oriented in a coordinate space. This allows for quick analysis of relative measurements of system arrangements. 
+
+.. image:: ../_static/images/documentation/sensorShow.png
+   :align: center
+   :scale: 75 %
+
+```
+
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of the Sensor class methods. </p></i>
+
+Here is an example of the Sensor class in action:
+
+```eval_rst
 
 .. plot:: pyplots/doku/sensorSource.py
    :include-source:
 
+
+.. image:: ../_static/images/documentation/sensorStructure.png
+   :align: center
+   :scale: 75 %
+
 ```
 
+<i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Structure of the Sensor class. </p></i>
 
 ```eval_rst
 
