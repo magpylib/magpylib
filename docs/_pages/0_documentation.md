@@ -39,9 +39,9 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. currentmodule:: magpylib
 
-.. image:: ../_static/images/documentation/lib_structure.JPG
+.. image:: ../_static/images/documentation/lib_structure.png
    :align: center
-   :scale: 45 %
+   :scale: 75 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Outline of the magpylib package structure. </p></i>
 
@@ -68,7 +68,7 @@ The library output and all object attributes are either of `numpy.float64` or `n
 This is the core class of the library. The idea is that source objects represent physical magnetic sources in Cartesian three-dimensional space and their respective fields can be calculated. The following source types are currently implemented in magpylib.
 
 ```eval_rst
-.. image:: ../_static/images/documentation/SourceTypes.JPG
+.. image:: ../_static/images/documentation/SourceTypes.png
    :align: center
    :scale: 60 %
 ```
@@ -79,7 +79,6 @@ The different source types contain various attributes and methods. The attribute
 ```eval_rst
  - :mod:`~magpylib.source.magnet.Box`
  - :mod:`~magpylib.source.magnet.Cylinder`
- - :mod:`~magpylib.source.magnet.Box`
  - :mod:`~magpylib.source.current.Line`
  - :mod:`~magpylib.source.current.Circular`
  - :mod:`~magpylib.source.moment.Dipole`
@@ -88,9 +87,9 @@ The different source types contain various attributes and methods. The attribute
 and in the following sections. The figure below gives a graphical overview.
 
 ```eval_rst
-.. image:: ../_static/images/documentation/sourceVars_Methods.JPG
+.. image:: ../_static/images/documentation/sourceVars_Methods.png
    :align: center
-   :scale: 50 %
+   :scale: 75 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Illustration of attributes and methods of the source class. </p></i>
 
