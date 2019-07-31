@@ -504,3 +504,45 @@ def test_GetSweepArray_multiprocessing_error():
         result = c.getBsweep(pos,multiprocessing=True)
         assert isinstance(result,ndarray), type_erMsg
         assert allclose(result,mockResult), errMsg  #check if the field results are the same as the mock results in the array
+
+def test_displaySystem():
+    from magpylib import source
+    from numpy import uint8
+    import numpy as np
+    import os
+    # If any visually relevant arguments of this get modified 
+    # it will be necessary to save and recompress the output "golden" data.
+    s1 = source.magnet.Box([1,1,1],[1,1,1],pos=(100,100,100))
+    s2 = source.magnet.Cylinder([1,1,1], [2,9], pos=(50,50,50))
+    s3 = source.magnet.Sphere([1,1,1], 3, pos=(10,10,10))
+    s4 = source.current.Circular(2.45, 3 , pos=(-10,-10,-10))
+    s5 = source.current.Line(2.45, [[2,.35,2],[10,2,-4],[4,2,1],[102,2,7]],pos=(-50,-50,-50))
+    s6 = source.moment.Dipole([1,1,1], pos=(100,100,100))
+    
+    # Extract the compressed (numpy zipped) data from data file
+    goldDataFile = 'test_displaySystem_Data30-6-2019'
+    path = os.path.dirname(os.path.realpath(__file__)) + '/data/'
+    expected = np.load(path + goldDataFile + ".npz")
+
+    ## Run the test
+    a = Collection(s1, s2, s3, s4, s5, s6)
+    markers = [[0,0,0],    # int
+            [.1,.1,.1], # float
+            s1.position, s2.position, s3.position, s4.position, s5.position, s6.position] # float64
+
+    #configure the figure
+    fig = a.displaySystem(markers,suppress=True, direc=True, subplotAx=None)
+    #draw the figure
+    fig.canvas.draw()
+    #Save it to a numpy array
+    currentOutput = np.frombuffer(fig.canvas.tostring_rgb(), dtype=uint8)
+    #Get expected Array
+    currentOutput = currentOutput.reshape(fig.canvas.get_width_height()[::-1] + (3,))
+
+    ## For exporting data in the future:
+    # np.savez_compressed("filename", data=currentOutput)
+
+    tolerance = 4 # Give it 4 pixels of tolerance
+    assert np.allclose(currentOutput,expected['data'],atol=tolerance) 
+
+
