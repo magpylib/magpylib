@@ -1,5 +1,5 @@
 from typing import Tuple
-from magpylib._lib.utility import checkDimensions,rotateToCS,getBField, isPosVector,isDisplayMarker
+from magpylib._lib.utility import checkDimensions, isPosVector,isDisplayMarker
 from magpylib._lib.utility import isSensor
 from numpy import float64, isnan, array
 import pytest
@@ -57,23 +57,6 @@ def test_checkDimensionReturn():
     result = checkDimensions(1,dim=(3))
     assert len(result) == 1, errMsg
     
-def test_rotateToCS():
-    errMsg =  "Wrong rotation for Box in CS"
-    mockResults = array([-19. ,   1.2,   8. ]) # Expected result for Input
-
-    # Input
-    mag=[5,5,5]
-    dim=[1,1,1]
-    pos=[63,.8,2]
-    
-    # Run
-    from magpylib import source
-    b = source.magnet.Box(mag,dim,pos)
-    result = rotateToCS([44,2,10],b)
-    
-    rounding=4
-    for i in range(3):
-        assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg
 
 def test_isPosVector():
     errMsg = "isPosVector returned unexpected False value"
@@ -114,25 +97,3 @@ def test_isPosVectorArgs():
                      [1,0,0],
                      (255,(0,1,0)),],]
     assert any(isPosVector(a)==False for a in listOfArgs)                 
-
-def test_getBField():
-    errMsg =  "Wrong field for Box in CS"
-    mockResults = array([-4.72365793e-05,  1.35515955e-05, -7.13360174e-05])
-
-    # Input
-    mockField = array([ 1.40028858e-05, -4.89208175e-05, -7.01030695e-05])
-    axis = [1,1,1]
-    angle = 90
-    
-    class MockSource: ## Mock a Source object with two attributes.
-        def __init__(self, axis, angle):
-            self.axis = axis
-            self.angle = angle
-    mockSource = MockSource(axis,angle)
-    
-    # Run
-    result =  getBField(mockField, mockSource)
-
-    rounding = 4
-    for i in range(3):
-        assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg

@@ -12,6 +12,13 @@ Click here for [Unreleased Changes]
 
 # Releases
 
+## [1.2.1b0] - 2019-07-31
+### Changed
+- Optimized getB call (utility integrated)
+- Improved Documentation (added Sensor class v1)
+
+---
+
 ## [1.2.0b0] - 2019-07-16
 ### Added
 - Sensor Class
@@ -113,6 +120,7 @@ The first official release of the magpylib library.
 ---
 
 [Unreleased Changes]: https://github.com/magpylib/magpylib/compare/HEAD...development
+[1.2.1b0]: https://github.com/magpylib/magpylib/compare/1.2.0-beta...1.2.1-beta
 [1.2.0b0]: https://github.com/magpylib/magpylib/compare/1.1.1-beta...1.2.0-beta
 [1.1.1b0]: https://github.com/magpylib/magpylib/compare/1.1.0-beta...1.1.1-beta
 [1.1.0b0]: https://github.com/magpylib/magpylib/compare/1.0.1-beta...1.1.0-beta

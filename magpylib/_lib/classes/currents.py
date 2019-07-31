@@ -36,7 +36,7 @@ d = 0.0  # Default Diameter
 
 # %% IMPORTS
 from numpy import array, float64, ndarray
-from magpylib._lib.utility import getBField, rotateToCS
+from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.classes.base import LineCurrent
@@ -111,9 +111,17 @@ class Circular(LineCurrent):
         self.dimension = float(dim)
 
     def getB(self, pos):  # Particular Circular current B field calculation. Check RCS for getB() interface
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_CircularCurrentLoop(self.current, self.dimension, rotatedPos),  # The B field
-                         self)
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
     def __repr__(self):
         """
@@ -218,9 +226,17 @@ class Line(LineCurrent):
         self.vertices = array(vertices, dtype=float64, copy=False)
 
     def getB(self, pos):  # Particular Line current B field calculation. Check RCS for getB() interface
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_CurrentLine(rotatedPos, self.vertices, self.current),  # The B field
-                         self)
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
     def __repr__(self):
         """

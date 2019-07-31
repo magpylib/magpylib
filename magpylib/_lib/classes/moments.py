@@ -28,7 +28,8 @@ Mx = My = Mz = 0.0  # Zero Dipole Moment
 #######################################
 
 # %% IMPORTS
-from magpylib._lib.utility import getBField, rotateToCS
+from numpy import array, float64, ndarray
+from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 
@@ -87,9 +88,17 @@ class Dipole(MagMoment):
     """
 
     def getB(self, pos):  # Particular Line current B field calculation. Check RCS for getB() interface
-        rotatedPos = rotateToCS(pos, self)
-        return getBField(Bfield_Dipole(self.moment, rotatedPos),  # The B field
-                         self)  # Object Angle/Axis properties
+        # secure input type and check input format
+        p1 = array(pos, dtype=float64, copy=False)
+        # relative position between mag and obs
+        posRel = p1 - self.position
+        # rotate this vector into the CS of the magnet (inverse rotation)
+        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        # rotate field vector back
+        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Dipole(self.moment, rotatedPos))
+        # BCm is the obtained magnetic field in Cm
+        # the field is well known in the magnet coordinates.
+        return BCm
 
     def __repr__(self):
         """
