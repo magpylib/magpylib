@@ -25,7 +25,8 @@
 
 import numpy
 from numpy import cos, sin, array, arccos, float64, pi
-from magpylib._lib.mathLibPrivate import getPhi, fastNorm3D, angleAxisRotation
+#from magpylib._lib.mathLibPrivate import getPhi, fastNorm3D, angleAxisRotation
+from .mathLibPrivate import getPhi, fastNorm3D, angleAxisRotation
 
 
 def randomAxis():

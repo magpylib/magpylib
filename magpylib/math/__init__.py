@@ -22,12 +22,13 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-Math functions
-==============
-
-Available mathematical functions for rotating positions and extracting angle/axis information.
+This module includes several practical functions for working with axis-angle
+relations and genmeralized rotations.
 """
 __all__ = ["randomAxis", "axisFromAngles", "anglesFromAxis",
            "rotatePosition"]  # This is for Sphinx
 
-from magpylib._lib.mathLibPublic import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
+from magpylib._lib.mathLibPublic import randomAxis
+from magpylib._lib.mathLibPublic import axisFromAngles
+from magpylib._lib.mathLibPublic import anglesFromAxis
+from magpylib._lib.mathLibPublic import rotatePosition

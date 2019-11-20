@@ -22,24 +22,19 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-magpylib.Collection
-===================
-
-This package serves the :class:`~magpylib.Collection` and the :class:`~magpylib.Sensor` class. 
-
-:class:`~magpylib.Collection` is used to group up and manipulate sources created with :py:mod:`magpylib.source`.
-
-:class:`~magpylib.Sensor` class objects are used to extract relative space measures, and may be displayed in Collections.
-
-Angle and Axis information may be retrieved 
-and generated with the methods in :py:mod:`magpylib.math` 
-
+This is the top level of the package. It includes the :py:mod:`magpylib.source` 
+and :py:mod:`magpylib.math` subpackages, the :class:`~magpylib.Collection`
+and the :class:`~magpylib.Sensor` classes as well as the functions
+:py:meth:`magpylib.getBv` and :py:meth:`magpylib.displaySystem`.
 """
 
-
-__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
+#__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
 
 from ._lib.classes.collection import Collection
 from ._lib.classes.sensor import Sensor
 from . import source, math
-from . import _lib
+from ._lib.getBvector import getBv
+from ._lib.displaySystem import displaySystem
+
+
+#from . import _lib                                #why is this here ?
