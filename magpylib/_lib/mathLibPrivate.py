@@ -1,3 +1,4 @@
+# -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # magpylib -- A Python 3 toolbox for working with magnetic fields.
 # Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
@@ -21,6 +22,7 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
+
 from numpy import arctan, pi, array, sqrt, NaN, cos, sin, arccos
 
 # %% total rotation matix for rotation aboutthree euler angles - first X, then Y, then Z

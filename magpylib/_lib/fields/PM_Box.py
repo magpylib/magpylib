@@ -21,16 +21,11 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
+
 # -*- coding: utf-8 -*-
 
-# MAGNETIC FIELD CALCULATION OF CUBE IN CANONICAL BASIS
-
-
-# %% IMPORTS
 from numpy import pi, sign, sqrt, log, array, arctan, NaN
 from warnings import warn
-
-# %% CALCULATIONS
 
 # Describes the magnetic field of a cuboid magnet with sides parallel to its native
 #   cartesian coordinates. The dimension is 2a x 2b x 2c and the magnetization

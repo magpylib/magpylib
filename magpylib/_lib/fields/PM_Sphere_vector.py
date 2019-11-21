@@ -21,18 +21,27 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-"""
-This is the top level of the package. From here you can call subpackages 
-`source` and `math`, the classes `Collection` and `Sensor` as well as the
-functions `getBv` and `displaySystem`.
-"""
 
-#__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
+# -*- coding: utf-8 -*-
 
-from ._lib.classes.collection import Collection
-from ._lib.classes.sensor import Sensor
-from ._lib.getBvector import getBv
-from ._lib.displaySystem import displaySystem
-from . import source, math
+import numpy as np
 
-#from . import _lib                                #why is this here ?
+def Bfield_SphereV(MAG, pos, D):  # returns array, takes (arr3, arr3, float)
+
+    # this function is an extension of PM_Sphere
+
+    MAGT = np.transpose(MAG)
+    posT = np.transpose(pos)
+
+    radius = D/2
+    r = np.linalg.norm(pos,axis=1)
+
+    map1 = r>radius
+    map3 = r<radius
+
+    B1T = map1*radius**3/3*(-MAGT/r**3 + 3*np.sum(MAG*pos,axis=1)*posT/r**5)
+    B3T = map3*2/3*MAGT
+
+    B = np.transpose(B1T+B3T)
+
+    return B
