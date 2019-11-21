@@ -23,8 +23,6 @@
 # -------------------------------------------------------------------------------
 
 from copy import deepcopy
-from itertools import repeat
-from multiprocessing import cpu_count
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from numpy import array, amax, linspace, pi, sin, cos, finfo
@@ -34,8 +32,7 @@ from magpylib._lib.classes.moments import Dipole
 from magpylib._lib.classes.sensor import Sensor
 from magpylib._lib.classes.base import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
-from magpylib._lib.utility import addListToCollection, isSource,  addUniqueSource, isPosVector
-from magpylib._lib.utility import initializeMulticorePool, drawSensor, isSensor
+from magpylib._lib.utility import drawSensor, isSensor
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.mathLibPublic import rotatePosition
 from magpylib import Collection

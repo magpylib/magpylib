@@ -23,9 +23,9 @@
 # -------------------------------------------------------------------------------
 from typing import Tuple
 from numpy import float64, isnan, array
+
+
 # Helper function for validating input dimensions
-
-
 def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: str = "Bad dim input") -> array:
     if type(dim) == int or type(dim) == float:
         dim = [dim]
@@ -35,9 +35,8 @@ def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: st
     assert (not any(isnan(dimension)) and len(dimension) == expectedD), exitMsg
     return dimension
 
+
 # Collection Helpers
-
-
 def addListToCollection(sourceList, inputList, dupWarning):
     assert all(isSource(a)
                for a in inputList), "Non-source object in Collection initialization"
@@ -70,6 +69,7 @@ def isSource(theObject: any) -> bool:
         source.current.Circular,
         source.moment.Dipole)
     return any(isinstance(theObject, src) for src in sourcesList)
+
 
 def isSensor(theObject: any) -> bool:
     from magpylib._lib.classes.sensor import Sensor 
