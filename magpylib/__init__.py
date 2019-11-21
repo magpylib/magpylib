@@ -33,7 +33,7 @@ and the :class:`~magpylib.Sensor` classes as well as the functions
 from ._lib.classes.collection import Collection
 from ._lib.classes.sensor import Sensor
 from . import source, math
-from ._lib._getBvector import getBv
+from ._lib.getBvector import getBv
 from ._lib.displaySystem import displaySystem
 
 
