@@ -34,6 +34,6 @@ from ._lib.classes.collection import Collection
 from ._lib.classes.sensor import Sensor
 from ._lib.getBvector import getBv
 from ._lib.displaySystem import displaySystem
-#from . import source, math
+from . import source, math
 
 #from . import _lib                                #why is this here ?
