@@ -21,9 +21,3 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-#from magpylib._lib import getBvector
-#from magpylib._lib import displaySystem
-#from magpylib._lib import mathLibPublic
-#from magpylib._lib import mathLibPrivate
-#from magpylib._lib import classes
-#from magpylib._lib import fields

@@ -21,17 +21,14 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
+
 """
-Source Classes
-==============
-   
 Available source types for generating magnetic fields, 
-compatible with :class:`~magpylib.Collection`
+compatible with :class:`~magpylib.Collection`.
 
 .. currentmodule:: magpylib.source.magnet
 
-
-Quicklist for :mod:`~magpylib.source.magnet` sources:
+Permanent magnets: :mod:`~magpylib.source.magnet`:
 
 .. autosummary::
 
@@ -41,7 +38,7 @@ Quicklist for :mod:`~magpylib.source.magnet` sources:
 
 .. currentmodule:: magpylib.source.current
 
-Quicklist for :mod:`~magpylib.source.current` sources:
+Line currents :mod:`~magpylib.source.current`:
 
 .. autosummary::
 
@@ -51,20 +48,15 @@ Quicklist for :mod:`~magpylib.source.current` sources:
 
 .. currentmodule:: magpylib.source.moment
 
-Quicklist for :mod:`~magpylib.source.moment` sources:
+Magnetic moments :mod:`~magpylib.source.moment` sources:
 
 .. autosummary::
 
    Dipole
 
-All source objects possess the following attributes and methods:
-
-.. image:: ../_static/images/documentation/lib_structure.JPG
-   :scale: 50 %
-
 """
 __all__ = ["magnet", "current", "moment"]  # This is for Sphinx
 
-import magpylib._lib.classes.magnets as magnet
-import magpylib._lib.classes.currents as current
-import magpylib._lib.classes.moments as moment
+#import magpylib._lib.classes.magnets as magnet
+#import magpylib._lib.classes.currents as current
+#import magpylib._lib.classes.moments as moment
