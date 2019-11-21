@@ -22,7 +22,6 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-# -*- coding: utf-8 -*-
 
 from numpy import pi, sign, sqrt, log, array, arctan, NaN
 from warnings import warn

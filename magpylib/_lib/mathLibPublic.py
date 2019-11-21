@@ -21,7 +21,6 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-# -*- coding: utf-8 -*-
 
 import numpy
 from numpy import cos, sin, array, arccos, float64, pi

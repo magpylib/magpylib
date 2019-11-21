@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # magpylib -- A Python 3 toolbox for working with magnetic fields.
 # Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,

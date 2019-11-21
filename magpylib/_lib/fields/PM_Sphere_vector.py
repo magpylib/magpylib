@@ -22,7 +22,6 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-# -*- coding: utf-8 -*-
 
 import numpy as np
 

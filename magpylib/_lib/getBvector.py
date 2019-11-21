@@ -1,4 +1,3 @@
-# -*- coding: utf-8 -*-
 # -------------------------------------------------------------------------------
 # magpylib -- A Python 3 toolbox for working with magnetic fields.
 # Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
@@ -29,9 +28,9 @@ import numpy as np
 
 def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     """
-    This function applies the vectorized code paradigm native to numpy to provide
-    computation performance when multiple magnetic field calculations are 
-    performed. Use this function only when performing more than ~10 computations.
+    This function is used for performance computation when the magnetic field is
+    evaluated multiple times. Use this function only when performing more than ~10
+    computations. It applies the vectorized code paradigm native to numpy. 
 
     Parameters
     ----------

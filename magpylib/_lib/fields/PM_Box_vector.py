@@ -22,7 +22,6 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-# -*- coding: utf-8 -*-
 
 from numpy import arctan2, transpose, sqrt, log, pi, array
 from warnings import warn
