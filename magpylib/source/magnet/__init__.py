@@ -22,17 +22,15 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-Magnet Sources
-==============
-   
-3D Geometric sources for generating magnetic fields. 
-Compatible with :class:`~magpylib.Collection`
+This subpackage provides the permanent magnet classes that are used for field 
+computation. They include `Box` (cuboid shape), `Cylinder` (cylindrical shape)
+`Sphere` (spherical shape) and `Facet` (triangular surface of magnet body). 
 """
-__all__ = ["Box", "Cylinder", "Sphere"]  # This is for Sphinx
-
+#__all__ = ["Box", "Cylinder", "Sphere"]  # This is for Sphinx
 
 from magpylib._lib.classes.magnets import Box
 from magpylib._lib.classes.magnets import Cylinder
 from magpylib._lib.classes.magnets import Sphere
+from magpylib._lib.classes.magnets import Facet
 
 #ax1.pcolormesh(X,Y,amp, cmap=plt.cm.jet, vmin=np.amin(0), vmax=np.amax(100))

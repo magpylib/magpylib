@@ -359,3 +359,13 @@ class Sphere(HomoMag):
             axis: x: 0.0, y: 0.0, z:1.0
         """
         return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: d: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
+
+
+
+# %% THE FACET CLASS
+class Facet(HomoMag):
+    """
+    WIP
+    """
+    def __init__(self):
+        print('Facet class is work in progress')
