@@ -22,10 +22,9 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-This is the top level of the package. It includes the :py:mod:`magpylib.source` 
-and :py:mod:`magpylib.math` subpackages, the :class:`~magpylib.Collection`
-and the :class:`~magpylib.Sensor` classes as well as the functions
-:py:meth:`magpylib.getBv` and :py:meth:`magpylib.displaySystem`.
+This is the top level of the package. From here you can call the subpackages
+`source` and `math`, the classes `Collection` and `Sensor` as well as the
+functions `getBv` and `displaySystem`.
 """
 
 #__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
