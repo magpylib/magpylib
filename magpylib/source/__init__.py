@@ -57,6 +57,7 @@ Magnetic moments :mod:`~magpylib.source.moment` sources:
 """
 __all__ = ["magnet", "current", "moment"]  # This is for Sphinx
 
-#import magnet
-#import current
-#import moments
+#make these subpackages visible in ipython tooltips
+import magpylib.source.magnet as magnet
+import magpylib.source.current as current
+import magpylib.source.moment as moment
