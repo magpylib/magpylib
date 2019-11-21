@@ -19,17 +19,7 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/OrtnerMichael/magpylib/issues.
 # -------------------------------------------------------------------------------
-######### Type hint definitions ########
-# These aren't type hints, but look good
-# in Spyder IDE. Pycharm recognizes it.
-Mx = My = Mz = 0.0  # Def.Magnetization Vector
-a = b = c = 0.0  # Default Cuboid dimensions
-d = 0.0  # Default Diameter
-h = 0.0  # Default Height
-Max = 0  # Multicore flag
-#######################################
 
-# %% IMPORTS
 from numpy import array, float64, ndarray
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.utility import checkDimensions
@@ -38,8 +28,20 @@ from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Box import Bfield_Box
 
-# %% THE CUBE CLASS
+# tool-tip / intellisense helpers ---------------------------------------------
+# Class initialization is done purely by kwargs. While some # of these can be 
+# set to zero by default other MUST be given to make any sense 
+# (e.g. magnetization). To improve tool tips and intellisense we inizilize them
+# with names, e.g. mag=(Mx, My, Mz). This looks good, but it requires that
+# these names are pre-initialzed:
+Mx = My = Mz = .0
+a = b = c = .0
+d = .0 
+h = .0
 
+
+
+# -----------------------------------------------------------------------------
 class Box(HomoMag):
     """ 
     A homogeneously magnetized cuboid magnet. In 
@@ -140,8 +142,8 @@ class Box(HomoMag):
         return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 
-# %% THE CYLINDER CLASS
 
+# -----------------------------------------------------------------------------
 class Cylinder(HomoMag):
     """ 
     A homogeneously magnetized cylindrical magnet. 
@@ -257,9 +259,9 @@ class Cylinder(HomoMag):
         """
         return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: d: {}, h: {} \n position: x: {}, y:{}, z: {} \n angle: {} \n axis: x: {}, y: {}, z:{}".format("magnet.Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
-# %% THE SPHERE CLASS
 
 
+# -----------------------------------------------------------------------------
 class Sphere(HomoMag):
     """ 
     A homogeneously magnetized sphere. The magnet
@@ -362,7 +364,7 @@ class Sphere(HomoMag):
 
 
 
-# %% THE FACET CLASS
+# -----------------------------------------------------------------------------
 class Facet(HomoMag):
     """
     WIP

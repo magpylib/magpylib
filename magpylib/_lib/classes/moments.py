@@ -21,19 +21,24 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-######### Type hint definitions ########
-# These aren't type hints, but look good
-# in Spyder IDE. Pycharm recognizes it.
-Mx = My = Mz = 0.0  # Zero Dipole Moment
-#######################################
 
-# %% IMPORTS
 from numpy import array, float64, ndarray
 from magpylib._lib.mathLibPrivate import angleAxisRotation
 from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 
 
+# tool-tip / intellisense helpers ---------------------------------------------
+# Class initialization is done purely by kwargs. While some # of these can be 
+# set to zero by default other MUST be given to make any sense 
+# (e.g. magnetization). To improve tool tips and intellisense we inizilize them
+# with names, e.g. mag=(Mx, My, Mz). This looks good, but it requires that
+# these names are pre-initialzed:
+Mx = My = Mz = 0.0
+
+
+
+# -------------------------------------------------------------------------------
 class Dipole(MagMoment):
     """ 
     This class represents a magnetic dipole. The dipole is constructed such that 
