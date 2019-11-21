@@ -23,39 +23,10 @@
 # -------------------------------------------------------------------------------
 
 """
-Available source types for generating magnetic fields, 
-compatible with :class:`~magpylib.Collection`.
-
-.. currentmodule:: magpylib.source.magnet
-
-Permanent magnets: :mod:`~magpylib.source.magnet`:
-
-.. autosummary::
-
-   Box
-   Sphere
-   Cylinder
-
-.. currentmodule:: magpylib.source.current
-
-Line currents :mod:`~magpylib.source.current`:
-
-.. autosummary::
-
-   Line
-   Circular
-
-
-.. currentmodule:: magpylib.source.moment
-
-Magnetic moments :mod:`~magpylib.source.moment` sources:
-
-.. autosummary::
-
-   Dipole
-
+All available sources are collected here, accessible through the following
+subpackages: `magnet`, `current` and `moment`.
 """
-__all__ = ["magnet", "current", "moment"]  # This is for Sphinx
+#__all__ = ["magnet", "current", "moment"]  # This is for Sphinx
 
 #make these subpackages visible in ipython tooltips
 import magpylib.source.magnet as magnet
