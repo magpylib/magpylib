@@ -15,7 +15,7 @@ def test_algebraic():
     assert round(arccosSTABLE(2),4) == 0.0 , "bad arccosStable at (2)"
     assert round(arccosSTABLE(-2),4) == 3.1416, "bad arccosStable at (-2)"
 
-    assert fastCross3D([1,2,3],[3,2,1]) == array([-4,8,-4]), "bad fastCross3D"
+    assert all(fastCross3D([1,2,3],[3,2,1]) == array([-4,8,-4])), "bad fastCross3D"
 
     assert round(fastSum3D([2.3,5.6,2.0]),2)==9.90, "bad fastSum3D"
 
