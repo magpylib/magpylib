@@ -24,25 +24,10 @@
 
 from numpy import arctan, pi, array, sqrt, NaN, cos, sin, arccos
 
-# %% total rotation matix for rotation aboutthree euler angles - first X, then Y, then Z
-'''
-def Mrot(Phis):
-    Mx = array([[1,0,0], [0, cos(Phis[0]), -sin(Phis[0])], [0, sin(Phis[0]), cos(Phis[0])]])
-    My = array([[cos(Phis[1]), 0, sin(Phis[1])], [0, 1, 0], [-sin(Phis[1]), 0, cos(Phis[1])]])
-    Mz = array([[cos(Phis[2]), -sin(Phis[2]), 0], [sin(Phis[2]), cos(Phis[2]), 0], [0, 0, 1]])
-    return dot(Mz,dot(My,Mx))
 
-# inverse der totalen rotationsmatrix
-def MrotInv(Phis):
-    Mx = array([[1,0,0], [0, cos(Phis[0]), sin(Phis[0])], [0, -sin(Phis[0]), cos(Phis[0])]])
-    My = array([[cos(Phis[1]), 0, -sin(Phis[1])], [0, 1, 0], [sin(Phis[1]), 0, cos(Phis[1])]])
-    Mz = array([[cos(Phis[2]), sin(Phis[2]), 0], [-sin(Phis[2]), cos(Phis[2]), 0], [0, 0, 1]])
-    return dot(Mx,dot(My,Mz))
-'''
-
-# %%SMOOTH VERSION OF ARCTAN
+# SMOOTH VERSION OF ARCTAN ------------------------------------------------------
 # get a smooth version of the cylindrical coordinates
-
+# similar to atan2 from numpy - replace at some point
 
 def getPhi(x, y):
     if x > 0:
@@ -55,12 +40,13 @@ def getPhi(x, y):
     else:
         if y > 0:
             return pi/2
-        else:
+        elif y<0:
             return -pi/2
+        else:
+            return 0
 
 
-# %% NUMERICALY STABLE VERSION OF ARCCOS
-
+# NUMERICALY STABLE VERSION OF ARCCOS -------------------------------------------
 # avoid numerical problem to evaluate at 1.000000000001
 def arccosSTABLE(x):
     if 1 > x > -1:
@@ -71,7 +57,7 @@ def arccosSTABLE(x):
         return pi
 
 
-# %% FAST VERSIONS OF 3D VECTOR ALGEBRA
+# FAST VERSIONS OF 3D VECTOR ALGEBRA --------------------------------------------
 
 # more than 10-times faster than native np.cross (which is for arbitrary dimensions)
 def fastCross3D(u, v):
@@ -90,8 +76,7 @@ def fastNorm3D(u):
     return sqrt(u[0]**2+u[1]**2+u[2]**2)
 
 
-# %% QUATERNIONS for ANGLE-AXIS ROTATION
-
+# QUATERNIONS for ANGLE-AXIS ROTATION --------------------------------------------
 # Quaterntions are defined as 4D Lists
 
 # Quaternion multiplication
