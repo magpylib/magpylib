@@ -13,7 +13,7 @@ def test_algebraic():
     assert round(getPhi(0,0),4) ==0.0, "bad getPhi result at (0,0)"
 
     assert round(arccosSTABLE(2),4) == 0.0 , "bad arccosStable at (2)"
-    assert round(arccosSTABLE(-2)) == 3.1416, "bad arccosStable at (-2)"
+    assert round(arccosSTABLE(-2),4) == 3.1416, "bad arccosStable at (-2)"
 
     assert fastCross3D([1,2,3],[3,2,1]) == array([-4,8,-4]), "bad fastCross3D"
 
