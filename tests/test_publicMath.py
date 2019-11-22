@@ -1,4 +1,3 @@
-import unittest
 from magpylib._lib.mathLibPublic import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
 import numpy
 

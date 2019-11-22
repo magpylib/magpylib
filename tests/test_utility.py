@@ -1,7 +1,6 @@
-from typing import Tuple
 from magpylib._lib.utility import checkDimensions, isPosVector,isDisplayMarker
 from magpylib._lib.utility import isSensor
-from numpy import float64, isnan, array
+from numpy import array
 import pytest
 
 # -------------------------------------------------------------------------------

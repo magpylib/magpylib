@@ -1,4 +1,3 @@
-import unittest
 from magpylib._lib.mathLibPrivate import getPhi,fastSum3D, fastNorm3D, arccosSTABLE, fastCross3D
 from magpylib._lib.mathLibPrivate import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation
 from magpylib._lib.mathLibPrivate import elliptic, ellipticK, ellipticE, ellipticPi
