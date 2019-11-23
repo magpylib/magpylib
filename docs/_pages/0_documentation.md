@@ -388,14 +388,14 @@ The math package provides some functions for easier use of the angle-axis (Quate
   print(ax)                                 #Output = [-0.24834468  0.96858637  0.01285925]
   ```
 
-- `rotatePosition(pos, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the `angle` argument about an axis defined by the `axis` vector which passes through the `anchor` position.
+- `angleAxisRotation(pos, angle, axis, anchor=[0,0,0])`: This function uses angle-axis rotation to rotate the position vector `pos` by the `angle` argument about an axis defined by the `axis` vector which passes through the `anchor` position.
   ```python
   import magpylib as magpy
   pos0 = [1,1,0]
   angle = -90
   axis = [0,0,1]
   anchor = [1,0,0]
-  positionNew = magpy.math.rotatePosition(pos0,angle,axis,anchor)
+  positionNew = magpy.math.angleAxisRotation(pos0,angle,axis,anchor)
   print(positionNew)                  #Output = [2. 0. 0.]
   ```
 

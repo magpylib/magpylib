@@ -24,7 +24,7 @@ INPUT = []
 for th in np.linspace(1,thMAX,30):
         
     #rotation of the magnet position outwards
-    posis = [math.rotatePosition(p0,th,ax,anchor=[0,0,gap+H+d]) for ax in axes]
+    posis = [math.angleAxisRotation(p0,th,ax,anchor=[0,0,gap+H+d]) for ax in axes]
     
     #generate INPUT
     INPUT += [[[0,0,0],pos,[th,ax]] for pos,ax in zip(posis,axes)]

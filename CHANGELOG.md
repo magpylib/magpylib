@@ -19,7 +19,7 @@ Click here for [Unreleased Changes]
   - getBsweep and multiprocessing options have been completely removed, this functionality
     should be overtaken by the new getBv function
 - Docstrings are being adjusted to work with intellisense
-- public rotatePosition() is now called angleAxisRotation_priv()
+- public angleAxisRotation() is now called angleAxisRotation_priv()
 
 ### Added
 - Vector functionality in form of the top-level function getBv applying vectorized code

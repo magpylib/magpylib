@@ -4,7 +4,7 @@ import numpy as np
 from magpylib.source.magnet import Box
 from magpylib import getBv
 from magpylib.math import axisFromAngles
-from magpylib.math import rotatePositionV
+from magpylib.math import angleAxisRotationV_priv
 
 def test_magpyVector():
  
@@ -54,7 +54,7 @@ def test_magpyVector():
 
     ANG2 = np.array([a for a in TH for _ in range(Nphi*Npsi)])
     angles = np.array([a for a in PSI for _ in range(Nphi)]*Nth)
-    AX2 = rotatePositionV(angles,np.array([[0,0,1]]*NN),np.array([[1,0,0]]*NN))  
+    AX2 = angleAxisRotationV_priv(angles,np.array([[0,0,1]]*NN),np.array([[1,0,0]]*NN))  
     ANCH2 = np.array([anch]*NN)
 
     Bv = getBv('box',MAG,DIM,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])

@@ -2,7 +2,7 @@ from magpylib._lib.mathLib import getPhi,fastSum3D, fastNorm3D, arccosSTABLE, fa
 from magpylib._lib.mathLib import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation_priv
 from magpylib._lib.mathLib import elliptic, ellipticK, ellipticE, ellipticPi
 from numpy import pi,array
-from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
+from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, angleAxisRotation
 import numpy
 
 # -------------------------------------------------------------------------------
@@ -13,11 +13,11 @@ def test_randomAxis():
     assert all(abs(axis)<=1 for axis in result), "bad randomAxis"
 
 # -------------------------------------------------------------------------------
-def test_rotatePosition():
+def test_angleAxisRotation():
     sol = [-0.26138058, 0.59373138, 3.28125372]
-    result = rotatePosition([1,2,3],234.5,(0,0.2,1),anchor=[0,1,0])
+    result = angleAxisRotation([1,2,3],234.5,(0,0.2,1),anchor=[0,1,0])
     for r,s in zip(result,sol):
-        assert round(r,4) == round(s,4), "bad rotatePosition"
+        assert round(r,4) == round(s,4), "bad angleAxisRotation"
 
 # -------------------------------------------------------------------------------
 def test_anglesFromAxis():

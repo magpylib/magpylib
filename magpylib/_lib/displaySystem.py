@@ -34,7 +34,7 @@ from magpylib._lib.classes.base import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import drawSensor, isSensor
 from magpylib._lib.mathLib import angleAxisRotation_priv
-from magpylib._lib.mathLib import rotatePosition
+from magpylib._lib.mathLib import angleAxisRotation
 from magpylib import Collection
 
 
@@ -358,7 +358,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
                 currentsList.append(sCopyWithVertices)
 
         elif type(s) is Dipole:
-            P = rotatePosition(s.position, s.angle, s.axis)
+            P = angleAxisRotation(s.position, s.angle, s.axis)
             maxSize = amax(abs(P))
             if maxSize > SYSSIZE:
                 SYSSIZE = maxSize

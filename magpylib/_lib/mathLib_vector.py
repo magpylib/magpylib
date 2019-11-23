@@ -62,7 +62,7 @@ def getRotQuatV(angle, axis):
     return np.swapaxes(Q,0,1)
 
 '''
-def rotatePositionV(angle, axis, v):
+def angleAxisRotationV_priv(angle, axis, v):
     """
     rotates the vector v about axis by angle
     the anchor is the origin    
@@ -121,7 +121,7 @@ def anglesFromAxisV():
     print('WIP')
     return 0
 
-def rotatePositionV(ANGLE, AXIS, V):
+def angleAxisRotationV_priv(ANGLE, AXIS, V):
     """
     rotates the vector v about axis by angle
     the anchor is the origin    

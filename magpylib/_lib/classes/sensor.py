@@ -24,7 +24,7 @@
 
 from magpylib._lib.classes.base import RCS
 from magpylib._lib.utility import addUniqueSource, addListToCollection, isSource
-from magpylib._lib.mathLib import rotatePosition
+from magpylib._lib.mathLib import angleAxisRotation
 
 class Sensor(RCS):
     """
@@ -107,7 +107,7 @@ class Sensor(RCS):
 
         # Read the field from all nominated sources
         Btotal = sum([s.getB(self.position) for s in sources])
-        return rotatePosition(Btotal,
+        return angleAxisRotation(Btotal,
                               -self.angle,  # Rotate in the opposite direction
                               self.axis,
                               [0, 0, 0])

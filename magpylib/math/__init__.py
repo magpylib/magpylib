@@ -26,14 +26,14 @@ This module includes several practical functions for working with axis-angle
 relations and genmeralized rotations.
 """
 #__all__ = ["randomAxis", "axisFromAngles", "anglesFromAxis",
-#           "rotatePosition"]  # This is for Sphinx
+#           "angleAxisRotation"]  # This is for Sphinx
 
 from magpylib._lib.mathLib import randomAxis
 from magpylib._lib.mathLib import axisFromAngles
 from magpylib._lib.mathLib import anglesFromAxis
-from magpylib._lib.mathLib import rotatePosition
+from magpylib._lib.mathLib import angleAxisRotation
 
 from magpylib._lib.mathLib_vector import randomAxisV
 from magpylib._lib.mathLib_vector import axisFromAnglesV
 from magpylib._lib.mathLib_vector import anglesFromAxisV
-from magpylib._lib.mathLib_vector import rotatePositionV
+from magpylib._lib.mathLib_vector import angleAxisRotationV_priv

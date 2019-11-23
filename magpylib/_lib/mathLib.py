@@ -313,7 +313,7 @@ def anglesFromAxis(axis):
     return array([PHI, TH])
 
 
-def rotatePosition(position, angle, axis, anchor=[0, 0, 0]):
+def angleAxisRotation(position, angle, axis, anchor=[0, 0, 0]):
     """
     This function uses angle-axis rotation to rotate the `position` vector by
     the `angle` argument about an axis defined by the `axis` vector which passes
@@ -348,7 +348,7 @@ def rotatePosition(position, angle, axis, anchor=[0, 0, 0]):
     >>> angle = -90
     >>> axis = [0,0,1]
     >>> centerOfRotation = [1,0,0]
-    >>> positionNew = magPy.math.rotatePosition(position0,angle,axis,anchor=centerOfRotation)
+    >>> positionNew = magPy.math.angleAxisRotation(position0,angle,axis,anchor=centerOfRotation)
     >>> print(positionNew)
       [2. 0. 0.]
     """
