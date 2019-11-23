@@ -1,7 +1,8 @@
 #%% MAIN
+
+from magpylib._lib.mathLib_vector import angleAxisRotationV
 import numpy as np
 import magpylib as magpy
-
 #def test_magpyVector():
  
 # calculate the B-field for the 3axis joystick system with
@@ -52,20 +53,21 @@ ANCH1 = np.array([anch]*NN)
 
 ANG2 = np.array([a for a in TH for _ in range(Nphi*Npsi)])
 angles = np.array([a for a in PSI for _ in range(Nphi)]*Nth)
-AX2 = magpy._lib.mathLib_vector.angleAxisRotationV(angles,np.array([[0,0,1]]*NN),np.array([[1,0,0]]*NN))  
+AX2 = angleAxisRotationV(angles,np.array([[0,0,1]]*NN),np.array([[1,0,0]]*NN))  
 ANCH2 = np.array([anch]*NN)
 
-P2,Q2 = getPQ(P1,ANG2,AX2,ANCH2,Q1)
+Bv = magpy.getBv('box',MAG,DIM,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
+B = Bv.reshape([Nth,Npsi,Nphi,3])
 
-Bv = getBV(MAG,DIM,P2,Q2,POSo)
 
+
+import matplotlib.pyplot as plt
 
 fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
 ax = fig.gca(projection='3d')
 
-B = Bv.reshape([Nth,Npsi,Nphi,3])
 
-
+plt.show()
 
 '''
 NN = len(PHI)*len(PSI)*len(TH)
