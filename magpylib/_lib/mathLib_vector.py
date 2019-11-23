@@ -121,7 +121,7 @@ def anglesFromAxisV():
     print('WIP')
     return 0
 
-def rotatePositionV()
+def rotatePositionV():
     """
     WIP
     """
