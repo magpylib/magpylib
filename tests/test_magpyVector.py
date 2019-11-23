@@ -1,11 +1,10 @@
 #%% MAIN
 
-from magpylib._lib.mathLib_vector import rotatePositionV
 import numpy as np
 from magpylib.source.magnet import Box
 from magpylib import getBv
 from magpylib.math import axisFromAngles
-from magpylib.math import rot
+from magpylib.math import rotatePositionV
 
 def test_magpyVector():
  
