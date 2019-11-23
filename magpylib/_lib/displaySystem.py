@@ -33,7 +33,7 @@ from magpylib._lib.classes.sensor import Sensor
 from magpylib._lib.classes.base import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import drawSensor, isSensor
-from magpylib._lib.mathLib import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation_priv
 from magpylib._lib.mathLib import rotatePosition
 from magpylib import Collection
 
@@ -227,7 +227,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
             v0 = array([D, D*array([1, 1, -1]), D*array([1, -1, -1]), D*array([1, -1, 1]),
                         D*array([-1, 1, 1]), D*array([-1, 1, -1]), -D, D*array([-1, -1, 1])])
             # rotate vertices + displace
-            v = array([angleAxisRotation(s.angle, s.axis, d)+P for d in v0])
+            v = array([angleAxisRotation_priv(s.angle, s.axis, d)+P for d in v0])
             # create faces
             faces = [[v[0], v[1], v[2], v[3]],
                         [v[0], v[1], v[5], v[4]],
@@ -260,9 +260,9 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
             vertT0 = array([[R*cos(p), R*sin(p), H] for p in phis])
             # rotate vertices+displacement
             vB = array(
-                [angleAxisRotation(s.angle, s.axis, d)+P for d in vertB0])
+                [angleAxisRotation_priv(s.angle, s.axis, d)+P for d in vertB0])
             vT = array(
-                [angleAxisRotation(s.angle, s.axis, d)+P for d in vertT0])
+                [angleAxisRotation_priv(s.angle, s.axis, d)+P for d in vertT0])
             # faces
             faces = [[vT[i], vB[i], vB[i+1], vT[i+1]]
                         for i in range(resolution-1)]
@@ -294,7 +294,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
                     for phi in phis] for th in thetas]
             # rotate vertices + displacement
             vs = array(
-                [[angleAxisRotation(s.angle, s.axis, v)+P for v in vss] for vss in vs0])
+                [[angleAxisRotation_priv(s.angle, s.axis, v)+P for v in vss] for vss in vs0])
             # faces
             faces = []
             for j in range(resolution-1):
@@ -318,7 +318,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
             vs0 = s.vertices
             # rotate vertices + displacement
             vs = array(
-                [angleAxisRotation(s.angle, s.axis, v)+P for v in vs0])
+                [angleAxisRotation_priv(s.angle, s.axis, v)+P for v in vs0])
             # plot
             ax.plot(vs[:, 0], vs[:, 1], vs[:, 2], lw=1, color='k')
             # check system size
@@ -343,7 +343,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
             vs0 = array([[R*cos(p), R*sin(p), 0] for p in phis])
             # rotate vertices + displacement
             vs = array(
-                [angleAxisRotation(s.angle, s.axis, v)+P for v in vs0])
+                [angleAxisRotation_priv(s.angle, s.axis, v)+P for v in vs0])
             # plot
             ax.plot(vs[:, 0], vs[:, 1], vs[:, 2], lw=1, color='k')
             # check system size

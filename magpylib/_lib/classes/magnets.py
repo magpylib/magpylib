@@ -21,7 +21,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLib import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation_priv
 from magpylib._lib.utility import checkDimensions
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
@@ -115,9 +115,9 @@ class Box(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -233,9 +233,9 @@ class Cylinder(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -336,9 +336,9 @@ class Sphere(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Sphere(self.magnetization, rotatedPos, self.dimension))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Sphere(self.magnetization, rotatedPos, self.dimension))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm

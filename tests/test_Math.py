@@ -1,5 +1,5 @@
 from magpylib._lib.mathLib import getPhi,fastSum3D, fastNorm3D, arccosSTABLE, fastCross3D
-from magpylib._lib.mathLib import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation
+from magpylib._lib.mathLib import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation_priv
 from magpylib._lib.mathLib import elliptic, ellipticK, ellipticE, ellipticPi
 from numpy import pi,array
 from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
@@ -68,7 +68,7 @@ def test_Quaternion():
         assert round(q,4)==s, "bad getRotQuat"
 
 
-    V = angleAxisRotation(33,[1,2,3],[4,5,6])
+    V = angleAxisRotation_priv(33,[1,2,3],[4,5,6])
     sol = [3.2868,5.8042,5.7016]
     for v,s in zip(V,sol):
         assert round(v,4)==s, "bad getRotQuat"

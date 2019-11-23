@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLib import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation_priv
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.classes.base import LineCurrent
@@ -121,9 +121,9 @@ class Circular(LineCurrent):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -236,9 +236,9 @@ class Line(LineCurrent):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm

@@ -123,7 +123,7 @@ def getRotQuat(angle, axis):
 # Angle-Axis Rotation of Vector
 
 
-def angleAxisRotation(angle, axis, v):
+def angleAxisRotation_priv(angle, axis, v):
     P = getRotQuat(angle, axis)
 
     Qv = [0, v[0], v[1], v[2]]
@@ -359,7 +359,7 @@ def rotatePosition(position, angle, axis, anchor=[0, 0, 0]):
     anchor = array(anchor, dtype=float64, copy=False)
 
     pos12 = pos-anchor
-    pos12Rot = angleAxisRotation(ang, ax, pos12)
+    pos12Rot = angleAxisRotation_priv(ang, ax, pos12)
     posRot = pos12Rot+anchor
 
     return posRot
