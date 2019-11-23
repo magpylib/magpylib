@@ -27,7 +27,7 @@
 
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan, cos, sin, arange, NaN
-from magpylib._lib.mathLibPrivate import getPhi, elliptic
+from magpylib._lib.mathLib import getPhi, elliptic
 from warnings import warn
 
 # %% Cylinder Field Calculation

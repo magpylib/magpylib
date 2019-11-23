@@ -33,8 +33,8 @@ from magpylib._lib.classes.sensor import Sensor
 from magpylib._lib.classes.base import FieldSampler
 from magpylib._lib.utility import drawCurrentArrows, drawMagAxis, drawDipole, isDisplayMarker
 from magpylib._lib.utility import drawSensor, isSensor
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from magpylib._lib.mathLibPublic import rotatePosition
+from magpylib._lib.mathLib import angleAxisRotation
+from magpylib._lib.mathLib import rotatePosition
 from magpylib import Collection
 
 

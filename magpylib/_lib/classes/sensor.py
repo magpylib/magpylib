@@ -24,7 +24,7 @@
 
 from magpylib._lib.classes.base import RCS
 from magpylib._lib.utility import addUniqueSource, addListToCollection, isSource
-from magpylib._lib.mathLibPublic import rotatePosition
+from magpylib._lib.mathLib import rotatePosition
 
 class Sensor(RCS):
     """

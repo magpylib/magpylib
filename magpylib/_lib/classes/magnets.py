@@ -21,7 +21,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation
 from magpylib._lib.utility import checkDimensions
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere

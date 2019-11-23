@@ -28,7 +28,12 @@ relations and genmeralized rotations.
 #__all__ = ["randomAxis", "axisFromAngles", "anglesFromAxis",
 #           "rotatePosition"]  # This is for Sphinx
 
-from magpylib._lib.mathLibPublic import randomAxis
-from magpylib._lib.mathLibPublic import axisFromAngles
-from magpylib._lib.mathLibPublic import anglesFromAxis
-from magpylib._lib.mathLibPublic import rotatePosition
+from magpylib._lib.mathLib import randomAxis
+from magpylib._lib.mathLib import axisFromAngles
+from magpylib._lib.mathLib import anglesFromAxis
+from magpylib._lib.mathLib import rotatePosition
+
+from magpylib._lib.mathLib_vector import randomAxisV
+from magpylib._lib.mathLib_vector import axisFromAnglesV
+from magpylib._lib.mathLib_vector import anglesFromAxisV
+from magpylib._lib.mathLib_vector import rotatePositionV

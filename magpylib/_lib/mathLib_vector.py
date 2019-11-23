@@ -99,3 +99,31 @@ def getAngAxV(Q):
     Uax = np.array([[0,0,1.]]*len(axis))     # set all to [0,0,1]
     Uax[mask] = axis[mask]/Lax[mask,None]   # use mask to normalize non-zeros
     return angle,Uax
+
+def randomAxisV(N):
+    """
+    WIP
+    """
+    print('WIP')
+    return 0
+
+def axisFromAnglesV():
+    """
+    WIP
+    """
+    print('WIP')
+    return 0
+
+def anglesFromAxisV():
+    """
+    WIP
+    """
+    print('WIP')
+    return 0
+
+def rotatePositionV()
+    """
+    WIP
+    """
+    print('WIP')
+    return 0

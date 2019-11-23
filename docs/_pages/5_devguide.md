@@ -62,8 +62,8 @@ All actual code is placed in `magpylib/_lib` in their relevant submodules. Organ
 
 ### Adding functions
 
-- Math helpers should be placed in `_lib/mathLibPrivate.py`.
-- Math functions should be placed in `_lib/mathLibPublic.py`.
+- Math helpers should be placed in `_lib/mathLib.py`.
+- Math functions should be placed in `_lib/mathLib.py`.
 - Other Helper and Generic functions should be placed in `_lib/utility.py`.
 
 Add them to their respective importers' `__init__.py` file.

@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import sqrt, array, cos, sin, NaN
-from magpylib._lib.mathLibPrivate import getPhi, ellipticK, ellipticE
+from magpylib._lib.mathLib import getPhi, ellipticK, ellipticE
 from warnings import warn
 
 # %% CIRCULAR CURRENT LOOP

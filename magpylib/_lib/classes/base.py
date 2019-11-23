@@ -51,7 +51,7 @@ Mx=My=Mz=0.0 # Zero Moment
 
 # -------------------------------------------------------------------------------
 from numpy import array, float64, pi, isnan, array
-from magpylib._lib.mathLibPrivate import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
+from magpylib._lib.mathLib import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
 from magpylib._lib.utility import checkDimensions
 import sys
 

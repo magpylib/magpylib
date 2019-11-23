@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation
 from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.classes.base import LineCurrent

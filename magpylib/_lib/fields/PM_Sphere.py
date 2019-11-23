@@ -26,7 +26,7 @@
 
 
 # %% IMPORTS
-from magpylib._lib.mathLibPrivate import fastNorm3D, fastSum3D
+from magpylib._lib.mathLib import fastNorm3D, fastSum3D
 from numpy import array, NaN
 from warnings import warn
 

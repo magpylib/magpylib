@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
 from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
-from magpylib._lib.mathLibPrivate_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV
+from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV
 import numpy as np
 
 def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):

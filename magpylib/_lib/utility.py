@@ -107,7 +107,7 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
         pyplot canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
+    from magpylib._lib.mathLib import rotatePosition
     M = rotatePosition(magnetization, angle, axis)
     P = position
     # Get a lil different but unique tone
@@ -131,7 +131,7 @@ def drawSensor(sensor, SYSSIZE, ax):
         pyplot canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
+    from magpylib._lib.mathLib import rotatePosition
     M = rotatePosition([1,0,0],sensor.angle,sensor.axis)
     P = sensor.position
     ax.quiver(P[0], P[1], P[2],  # X position
@@ -245,7 +245,7 @@ def drawDipole(position, moment, angle, axis, SYSSIZE, ax):
         canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
+    from magpylib._lib.mathLib import rotatePosition
     P = rotatePosition(position, angle, axis)
     M = rotatePosition(moment, angle, axis)
     

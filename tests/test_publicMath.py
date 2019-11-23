@@ -1,4 +1,4 @@
-from magpylib._lib.mathLibPublic import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
+from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, rotatePosition
 import numpy
 
 # -------------------------------------------------------------------------------

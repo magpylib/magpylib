@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation
 from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 
