@@ -12,6 +12,18 @@ Click here for [Unreleased Changes]
 
 # Releases
 
+## [1.3.0b0] - 2019-XX-XX
+### Changed
+- Restructuring
+  - displaySystem is now a top-level function, not a Collection method anymore
+  - getBsweep and multiprocessing options have been completely removed, this functionality
+    should be overtaken by the new getBv function
+- Docstrings are being adjusted to work with intellisense
+
+### Added
+- Vector functionality in form of the top-level function getBv applying vectorized code
+---
+
 ## [1.2.1b0] - 2019-07-31
 ### Changed
 - Optimized getB call (utility integrated)
