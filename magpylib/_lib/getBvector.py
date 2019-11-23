@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
 from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
-from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV
+from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, rotatePositionV
 import numpy as np
 
 def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
@@ -81,7 +81,7 @@ def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     #apply rotation operations
     for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
         Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
-        Pm = angleAxisRotationV(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
+        Pm = rotatePositionV(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
 
     #calculate the B-field
     POSrel = POSo-Pm        #relative position

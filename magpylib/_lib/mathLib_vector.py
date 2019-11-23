@@ -61,8 +61,8 @@ def getRotQuatV(angle, axis):
 
     return np.swapaxes(Q,0,1)
 
-
-def angleAxisRotationV(angle, axis, v):
+'''
+def rotatePositionV(angle, axis, v):
     """
     rotates the vector v about axis by angle
     the anchor is the origin    
@@ -71,7 +71,7 @@ def angleAxisRotationV(angle, axis, v):
     Qv = np.pad(v,((0,0),(1,0)), mode='constant') 
     Qv_new = QmultV(P, QmultV(Qv, QconjV(P)))
     return Qv_new[:,1:]
-
+'''
 
 def QrotationV(Q,v):
     """
@@ -121,9 +121,12 @@ def anglesFromAxisV():
     print('WIP')
     return 0
 
-def rotatePositionV():
+def rotatePositionV(ANGLE, AXIS, V):
     """
-    WIP
+    rotates the vector v about axis by angle
+    the anchor is the origin    
     """
-    print('WIP')
-    return 0
+    P = getRotQuatV(ANGLE, AXIS)
+    Qv = np.pad(V,((0,0),(1,0)), mode='constant') 
+    Qv_new = QmultV(P, QmultV(Qv, QconjV(P)))
+    return Qv_new[:,1:]
