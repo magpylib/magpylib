@@ -61,18 +61,6 @@ def getRotQuatV(angle, axis):
 
     return np.swapaxes(Q,0,1)
 
-'''
-def angleAxisRotationV_priv(angle, axis, v):
-    """
-    rotates the vector v about axis by angle
-    the anchor is the origin    
-    """
-    P = getRotQuatV(angle, axis)
-    Qv = np.pad(v,((0,0),(1,0)), mode='constant') 
-    Qv_new = QmultV(P, QmultV(Qv, QconjV(P)))
-    return Qv_new[:,1:]
-'''
-
 def QrotationV(Q,v):
     """
     replaces angle axis rotation by direct Q-rotation
@@ -100,6 +88,15 @@ def getAngAxV(Q):
     Uax[mask] = axis[mask]/Lax[mask,None]   # use mask to normalize non-zeros
     return angle,Uax
 
+
+def angleAxisRotationV_priv(ANGLE, AXIS, V):
+    # vectorized version of angleAxisRotation_priv
+    P = getRotQuatV(ANGLE, AXIS)
+    Qv = np.pad(V,((0,0),(1,0)), mode='constant') 
+    Qv_new = QmultV(P, QmultV(Qv, QconjV(P)))
+    return Qv_new[:,1:]
+
+
 def randomAxisV(N):
     """
     WIP
@@ -121,12 +118,9 @@ def anglesFromAxisV():
     print('WIP')
     return 0
 
-def angleAxisRotationV_priv(ANGLE, AXIS, V):
+def angleAxisRotationV():
     """
-    rotates the vector v about axis by angle
-    the anchor is the origin    
+    WIP
     """
-    P = getRotQuatV(ANGLE, AXIS)
-    Qv = np.pad(V,((0,0),(1,0)), mode='constant') 
-    Qv_new = QmultV(P, QmultV(Qv, QconjV(P)))
-    return Qv_new[:,1:]
+    print('WIP')
+    return 0
