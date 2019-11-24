@@ -1,12 +1,6 @@
 # magpylib Changelog
-All notable changes to magpylib will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-Click here for [Unreleased Changes]
+All notable changes to magpylib are documented here.
 
 ---
 
@@ -136,7 +130,6 @@ The first official release of the magpylib library.
 
 ---
 
-[Unreleased Changes]: https://github.com/magpylib/magpylib/compare/HEAD...development
 [1.2.1b0]: https://github.com/magpylib/magpylib/compare/1.2.0-beta...1.2.1-beta
 [1.2.0b0]: https://github.com/magpylib/magpylib/compare/1.1.1-beta...1.2.0-beta
 [1.1.1b0]: https://github.com/magpylib/magpylib/compare/1.1.0-beta...1.1.1-beta
@@ -144,3 +137,8 @@ The first official release of the magpylib library.
 [1.0.2b0]: https://github.com/magpylib/magpylib/compare/1.0.1-beta...1.0.2-beta
 [1.0.1b0]: https://github.com/magpylib/magpylib/compare/1.0.0-beta...1.0.1-beta
 [1.0.0b0]: https://github.com/magpylib/magpylib/releases/tag/1.0.0-beta
+
+---
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
