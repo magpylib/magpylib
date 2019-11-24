@@ -15,9 +15,9 @@ All notable changes to magpylib are documented here.
     code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
     automatically use multiporcessing. Code parallelization at magpylib level should be done
     by hand.
-- Docstrings are adjusted to work better with intellisense.
-- public rotatePosition() -> angleAxisRotation(), former private angleAxisRotation is now called
-    angleAxisRotation_priv().
+- Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
+- public rotatePosition() is now called angleAxisRotation(), former private angleAxisRotation
+    is now called angleAxisRotation_priv().
 
 ### Added
 - Performance computation trough vector functionality included in new top-level subpackge "vector"

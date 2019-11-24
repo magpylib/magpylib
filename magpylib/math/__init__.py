@@ -36,4 +36,4 @@ from magpylib._lib.mathLib import angleAxisRotation
 from magpylib._lib.mathLib_vector import randomAxisV
 from magpylib._lib.mathLib_vector import axisFromAnglesV
 from magpylib._lib.mathLib_vector import anglesFromAxisV
-from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
+from magpylib._lib.mathLib_vector import angleAxisRotationV
