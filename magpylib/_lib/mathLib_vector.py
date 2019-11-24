@@ -64,7 +64,8 @@ def getRotQuatV(ANGLE, AXIS):
 
 def QrotationV(Q,v):
     """
-    replaces angle axis rotation by direct Q-rotation
+    replaces angle axis rotation by direct Q-rotation to skip this step speed
+    when multiple subsequent rotations are given
     """
     Qv = np.pad(v,((0,0),(1,0)), mode='constant') 
     Qv_new = QmultV(Q, QmultV(Qv, QconjV(Q)))
@@ -72,8 +73,8 @@ def QrotationV(Q,v):
 
 
 def getAngAxV(Q):
-    #UNUSED ?
-    #returns angle and axis for a quaternion orientation input
+    # UNUSED - KEEP FOR UNDERSTANDING AND TESTING
+    # returns angle and axis for a quaternion orientation input
     angle = np.arccos(Q[:,0])*180/np.pi*2
     axis = Q[:,1:]
     
