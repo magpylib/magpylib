@@ -154,7 +154,7 @@ def axisFromAnglesV(ANGLES):
     Returns    
     -------
     AXIS : arr Nx3
-        An N-sized vector of axis vectors (length 1) oriented as given by the input ANGLES.
+        An N-sized array of axis vectors (length 1) oriented as given by the input ANGLES.
     """
     PHI = ANGLES[:,0]/180*np.pi
     TH = ANGLES[:,1]/180*np.pi
@@ -163,12 +163,33 @@ def axisFromAnglesV(ANGLES):
 
 
 
-def anglesFromAxisV():
+def anglesFromAxisV(AXIS):
     """
-    WIP
+    This is the vectorized version of anglesFromAxis().
+
+    This function takes an array of arbitrary axes and returns 
+    the orientations given by the angles = [phi,th] that are defined as in 
+    spherical coordinates. phi = azimuth angle, th = polar angle.
+
+    Parameters
+    ----------
+    AXIS : arr Nx3
+        N sized array of axis-vectors (arr3 with length 1).
+
+    Returns
+    -------
+    ANGLES : arr Nx2 [deg]
+        An array of angles [phi,th], azimuth and polar, that anchorrespond to 
+        the orientations given by the input axes.
     """
-    print('WIP')
-    return 0
+
+    Lax = np.linalg.norm(AXIS,axis=1)
+    Uax = AXIS/Lax[:,np.newaxis]
+
+    TH = np.arccos(Uax[:,2])/np.pi*180
+    PHI = np.arctan2(Uax[:,1], Uax[:,0])/np.pi*180
+    return np.array([PHI, TH]).transpose()
+
 
 def angleAxisRotationV():
     """
