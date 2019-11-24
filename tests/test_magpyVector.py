@@ -43,7 +43,7 @@ def test_vectorMagnet():
 
     ANG2 = np.array([a for a in TH for _ in range(Nphi*Npsi)])
     angles = np.array([a for a in PSI for _ in range(Nphi)]*Nth)
-    AX2 = angleAxisRotationV(angles,np.array([[0,0,1]]*NN),np.array([[1,0,0]]*NN),np.array([[0,0,0]]*NN))  
+    AX2 = angleAxisRotationV(np.array([[1,0,0]]*NN),angles,np.array([[0,0,1]]*NN),np.array([[0,0,0]]*NN))  
     ANCH2 = np.array([anch]*NN)
 
 
