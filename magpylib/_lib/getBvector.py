@@ -26,7 +26,7 @@ from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
 from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV_priv
 import numpy as np
 
-def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
+def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     """
     This function is used for performance computation when the magnetic field is
     evaluated multiple times. Use this function only when performing more than ~10
@@ -73,6 +73,82 @@ def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     elif type == 'sphere':
         Bfield = Bfield_SphereV
     else:
+        print('Bad type or WIP')
+        return 0
+
+    Q = np.array([[1,0,0,0]]*N) #initial orientation
+    Pm = POSm   #initial position
+    #apply rotation operations
+    for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
+        Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
+        Pm = angleAxisRotationV_priv(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
+
+    #calculate the B-field
+    POSrel = POSo-Pm        #relative position
+    Qc = QconjV(Q)          #orientierung
+    POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
+    Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
+    B = QrotationV(Q,Brot)  #rückrotation des feldes
+    
+    return B
+
+
+def getBv_current():
+    return 0
+
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+def getBv_moment():#
+    return 0
+
+'''
+(type,MOM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
+    """
+    This function is used for performance computation when the magnetic field is
+    evaluated multiple times. Use this function only when performing more than ~10
+    computations. It applies the vectorized code paradigm native to numpy.
+
+    Parameters
+    ----------
+
+    type : string
+        source type only 'dipole' at the moment.
+
+    MOM : Nx3 numpy array float [mT]
+        vector of N dipole moments.
+
+    DIM : NxY numpy array float [mm]
+        vector of N dimensions for each evaluation. The form of this vector depends
+        on the source type.
+
+    POSo : Nx3 numpy array float [mm]
+        vector of N positions of the observer.
+    
+    POSm : Nx3 numpy array float [mm]
+        vector of N initial source positions. These positions will be adjusted by
+        the given rotation parameters.
+
+    ANG=[] : length M list of size N numpy arrays float [deg]
+       Angles of M subsequent rotation operations applied to the N-sized POSm and
+       the implicit source orientation.
+    
+    AX=[] : length M list of Nx3 numpy arrays float []
+        Axis vectors of M subsequent rotation operations applied to the N-sized
+        POSm and the implicit source orientation.
+    
+    ANCH=[] : length M list of Nx3 numpy arrays float [mm]
+        Anchor positions of M subsequent rotations applied ot the N-sized POSm and
+        the implicit source orientation.
+    """
+
+    N = len(MOM)
+
+    # set field type
+    if type == 'dipole':
+        Bfield = Bfield_BoxV
+    elif type == 'sphere':
+        Bfield = Bfield_SphereV
+    else:
         print('Bad type')
         return 0
 
@@ -91,3 +167,4 @@ def getBv(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     B = QrotationV(Q,Brot)  #rückrotation des feldes
     
     return B
+'''

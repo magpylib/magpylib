@@ -15,18 +15,19 @@ Click here for [Unreleased Changes]
 ## [1.3.0b0] - 2019-XX-XX
 ### Changed
 - Restructuring
-  - displaySystem is now a top-level function, not a Collection method anymore
+  - displaySystem is now a top-level function, not a Collection method anymore.
   - getBsweep and multiprocessing options have been completely removed, this functionality
-    should be overtaken by the new getBv function which uses vectorized code paradigm. If
-    mkl library is set (test by numpy.show_config()) numpy will automatically use multiporcessing
-    in addition to SIMD. Code parallelization at magpylib level should be done by hand.
+    should be overtaken by the new vector functionality which uses numpy native vectorized 
+    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
+    automatically use multiporcessing. Code parallelization at magpylib level should be done
+    by hand.
 - Docstrings are adjusted to work better with intellisense.
 - public rotatePosition() -> angleAxisRotation(), former private angleAxisRotation is now called
     angleAxisRotation_priv().
 
 ### Added
-- Vector functionality in form of the top-level function getBv applying vectorized code
-- Vectorized versions of math functions
+- Performance computation trough vector functionality included in new top-level subpackge "vector"
+- Vectorized versions of math functions added to "math" subpackage
 
 ## [1.2.1b0] - 2019-07-31
 ### Changed
