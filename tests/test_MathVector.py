@@ -1,7 +1,7 @@
 from magpylib._lib.mathLib_vector import QmultV, QconjV, getRotQuatV, QrotationV, getAngAxV, angleAxisRotationV_priv
-from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV
+from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV, angleAxisRotationV
 from numpy import array, amax
-from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis
+from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis, angleAxisRotation
 from magpylib.math import randomAxisV
 import numpy as np
 
@@ -49,6 +49,7 @@ def test_randomAxisV():
     assert np.sum(np.abs(lX-1)<1e-10)==1000, "bad randomAxis"
 
 
+
 def test_axisFromAnglesV():
 
     ANG = np.array([[33,44],[-123,98],[-233,0],[0,0]])
@@ -59,11 +60,13 @@ def test_axisFromAnglesV():
         assert amax(abs(ax-axV)) < 1e-10, "bad axisFromAnglesV"
 
 
+
 def test_anglesFromAxis():
     AX = np.array([[.1,.2,.3],[3,4,5],[-7,-8,-9],[1,0,0],[0,1,0],[0,0,1]])
     AXV = anglesFromAxisV(AX)
     for ax,axV in zip(AX,AXV):
         assert amax(abs(anglesFromAxis(ax)-axV))<1e-10, "bad anglesFromAxis"
+
 
 
 def test_rot_Q_conversion():
@@ -74,3 +77,15 @@ def test_rot_Q_conversion():
     for x,y in zip(X,Y):
         assert amax(abs(x[0]-y[0]))<1e-10, "bad rot-Q conversion"
         assert amax(abs(x[1:]/amax(abs(x[1:]))-y[1:]/amax(abs(y[1:]))))<1e-10,"bad rot-Q conversion"
+
+
+
+def test_angleAxisRotationV():
+    POS = np.array([[.1,.2,.3],[0,1,0],[0,0,1]])
+    ANG = np.array([22,233,-123])
+    AXIS = np.array([[3,4,5],[-7,-8,-9],[1,0,0]])
+    ANCHOR = np.array([[.1,3,.3],[5,5,5],[2,-3,1.23]])
+
+    SOL = angleAxisRotationV(POS,ANG,AXIS,ANCHOR)
+    for pos,ang,ax,anch,sol in zip(POS,ANG,AXIS,ANCHOR,SOL):
+        assert np.amax(np.abs(angleAxisRotation(pos,ang,ax,anch)-sol))<1e-10, "bad angleAxisRotationV"
