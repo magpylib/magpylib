@@ -42,18 +42,19 @@ def QconjV(Q):
     return Q*Sig
 
 
-def getRotQuatV(angle, axis):
+def getRotQuatV(ANGLE, AXIS):
     """
-    returns the rotation quaternion which describes the rotation given by angle
-        and axis (see paper)
+    ANGLE in [deg], AXIS dimensionless
+    vectorized version of getRotQuat, returns the rotation quaternion which 
+    describes the rotation given by angle and axis (see paper)
     NOTE: axis cannot be [0,0,0] !!! this would not describe a rotation. however
         sinPhi = 0 returns a 0-axis (but just in the Q this must still be 
         interpreted correctly as an axis)
     """
-    Lax = np.linalg.norm(axis,axis=1)
-    Uax = axis/Lax[:,None]   # normalize
+    Lax = np.linalg.norm(AXIS,axis=1)
+    Uax = AXIS/Lax[:,None]   # normalize
 
-    Phi = angle/180*np.pi/2
+    Phi = ANGLE/180*np.pi/2
     cosPhi = np.cos(Phi)
     sinPhi = np.sin(Phi)
     
@@ -99,10 +100,33 @@ def angleAxisRotationV_priv(ANGLE, AXIS, V):
 
 def randomAxisV(N):
     """
-    WIP
+    This is the vectorized (loop-free) version of randomAxis(). It generates an 
+    N-sized vector of random `axes` (3-vector of length 1) from equal 
+    angular distributions using a MonteCarlo scheme.
+
+    Parameters
+    -------
+    N : int
+        Size of random axis vector.
+
+    Returns
+    -------
+    axes : Nx3 arr
+        A  vector of random axes from an equal angular distribution of length 1.
     """
-    print('WIP')
-    return 0
+    
+    R = np.random.rand((N,3))*2-1
+    
+    while True:
+        lenR = np.linalg.norm(R,axis=1)
+        mask = lenR > 1  #bad = True
+        Nbad = np.sum(mask)
+        if Nbad==0:
+            return R/lenR
+        else:
+            R[mask] = np.random.rand((Nbad,3))*2-1
+
+
 
 def axisFromAnglesV():
     """
