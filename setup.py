@@ -16,11 +16,11 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-_magPyVersion = "1.2.1-beta"
+_magPyVersion = "1.3.0-beta"
 
 _SphinxVersion = "1.8.2"
 _name = "magpylib"
-_description = "A simple, user friendly Python 3 toolbox for calculating magnetic fields from permanent magnets and current distributions."
+_description = "A simple Python 3 toolbox for calculating magnetic fields from permanent magnets and current distributions."
 _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"
