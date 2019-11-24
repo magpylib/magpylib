@@ -23,12 +23,12 @@ def test_Q():
 
 
 def test_randomAxisV():
-    X=randomAxisV(1000)
+    X=randomAxisV(10)
     print(X)
-    print( all(X.shape == (1000,3))) # , "bad randomAxis"
+    #print( all(X.shape == (10,3))) # , "bad randomAxis"
     
     #lX = np.linalg.norm(X,axis=1)
     #assert np.sum(lX>=1) < 1, "bad randomAxis"
 
-
-test_randomAxisV()
+print(randomAxisV(10))
+#test_randomAxisV()
