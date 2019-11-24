@@ -115,14 +115,25 @@ def randomAxisV(N):
         A  vector of random axes from an equal angular distribution of length 1.
     """
     
-    R = np.random.rand(N,3)*2-1
+    # R = np.random.rand(N,3)*2-1
     
+    # while True:
+    #     lenR = np.linalg.norm(R,axis=1)
+    #     mask = lenR > 1  #bad = True
+    #     Nbad = np.sum(mask)
+    #     if Nbad==0:
+    #         return R/lenR
+    #     else:
+    #         R[mask] = np.random.rand(Nbad,3)*2-1
+
+    R = np.random.rand(N,3)*2-1
+        
     while True:
         lenR = np.linalg.norm(R,axis=1)
         mask = lenR > 1  #bad = True
         Nbad = np.sum(mask)
         if Nbad==0:
-            return R/lenR
+            return R/lenR[:,np.newaxis]
         else:
             R[mask] = np.random.rand(Nbad,3)*2-1
 
