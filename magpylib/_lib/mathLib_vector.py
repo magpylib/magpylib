@@ -159,7 +159,7 @@ def axisFromAnglesV(ANGLES):
     PHI = ANGLES[:,0]/180*np.pi
     TH = ANGLES[:,1]/180*np.pi
 
-    return np.array([np.cos(PHI)*np.sin(TH), np.sin(PHI)*np.sin(TH), np.cos(TH)])
+    return np.array([np.cos(PHI)*np.sin(TH), np.sin(PHI)*np.sin(TH), np.cos(TH)]).transpose()
 
 
 

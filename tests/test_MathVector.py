@@ -49,16 +49,14 @@ def test_randomAxisV():
     assert np.sum(np.abs(lX-1)<1e-10)==1000, "bad randomAxis"
 
 
-#def test_axisFromAnglesV():
+def test_axisFromAnglesV():
 
-ANG = np.array([[33,44],[-123,98],[-233,0],[0,0]])
-AXV = axisFromAnglesV(ANG)
+    ANG = np.array([[33,44],[-123,98],[-233,0],[0,0]])
+    AXV = axisFromAnglesV(ANG)
 
-print(AXV)
-
-#for axV,ang in zip(AXV,ANG):
-#    ax = axisFromAngles(ang)
-#    assert amax(abs(ax-axV)) < 1e-10, "bad axisFromAnglesV"
+    for axV,ang in zip(AXV,ANG):
+        ax = axisFromAngles(ang)
+        assert amax(abs(ax-axV)) < 1e-10, "bad axisFromAnglesV"
 
 
 
