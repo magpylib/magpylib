@@ -140,7 +140,7 @@ def randomAxisV(N):
 
 
 
-def axisFromAnglesV(ANGLES):
+def axisFromAnglesV(ANG):
     """
     This is the vectorized version of axisFromAngles(). 
     This function generates an `axis` (3-vector of length 1) from two `angles` = [phi,th]
@@ -148,16 +148,16 @@ def axisFromAnglesV(ANGLES):
 
     Parameters
     ----------
-    ANGLES : arr Nx2 [deg]
+    ANG : arr Nx2 [deg]
         Array of size N of the two angels [phi,th], azimuth and polar, in units of deg.
 
     Returns    
     -------
     AXIS : arr Nx3
-        An N-sized array of axis vectors (length 1) oriented as given by the input ANGLES.
+        An N-sized array of axis vectors (length 1) oriented as given by the input ANG.
     """
-    PHI = ANGLES[:,0]/180*np.pi
-    TH = ANGLES[:,1]/180*np.pi
+    PHI = ANG[:,0]/180*np.pi
+    TH = ANG[:,1]/180*np.pi
 
     return np.array([np.cos(PHI)*np.sin(TH), np.sin(PHI)*np.sin(TH), np.cos(TH)]).transpose()
 
@@ -191,9 +191,35 @@ def anglesFromAxisV(AXIS):
     return np.array([PHI, TH]).transpose()
 
 
-def angleAxisRotationV():
+def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
     """
-    WIP
+    This is the vectorized version of angleAxisRotation.
+    This function uses angle-axis rotation to rotate the `position` vector by
+    the `angle` argument about an axis defined by the `axis` vector which passes
+    through the center of rotation `anchor` vector.
+
+    Parameters
+    ----------
+    POS : arrNx3
+        The input vectors to be rotated.
+
+    ANG : arrN [deg]
+        Rotation angles in units of [deg]
+
+    AXIS : arrNx3
+        Vector of rotation axes.
+
+    anchor : arrNx3
+        Vector of rotation anchors.
+
+    Returns    
+    -------
+    newPositions : arrNx3
+        Vector of rotated positions.
     """
-    print('WIP')
-    return 0
+
+    POS12 = POS-ANCHOR
+    POS12rot = angleAxisRotationV_priv(ANG,AXIS,POS12)
+    POSnew = POS12rot+ANCHOR
+
+    return POSnew
