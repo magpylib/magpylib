@@ -101,7 +101,7 @@ def angleAxisRotationV_priv(ANGLE, AXIS, V):
 
 def randomAxisV(N):
     """
-    This is the vectorized (loop-free) version of randomAxis(). It generates an 
+    This is the vectorized version of randomAxis(). It generates an 
     N-sized vector of random `axes` (3-vector of length 1) from equal 
     angular distributions using a MonteCarlo scheme.
 
@@ -140,12 +140,28 @@ def randomAxisV(N):
 
 
 
-def axisFromAnglesV():
+def axisFromAnglesV(ANGLES):
     """
-    WIP
+    This is the vectorized version of axisFromAngles(). 
+    This function generates an `axis` (3-vector of length 1) from two `angles` = [phi,th]
+    that are defined as in spherical coordinates. phi = azimuth angle, th = polar angle.
+
+    Parameters
+    ----------
+    ANGLES : arr Nx2 [deg]
+        Array of size N of the two angels [phi,th], azimuth and polar, in units of deg.
+
+    Returns    
+    -------
+    AXIS : arr Nx3
+        An N-sized vector of axis vectors (length 1) oriented as given by the input ANGLES.
     """
-    print('WIP')
-    return 0
+    PHI = ANGLES[:,0]/180*np.pi
+    TH = ANGLES[:,1]/180*np.pi
+
+    return np.array([np.cos(PHI)*np.sin(TH), np.sin(PHI)*np.sin(TH), np.cos(TH)])
+
+
 
 def anglesFromAxisV():
     """

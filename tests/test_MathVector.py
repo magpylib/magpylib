@@ -1,6 +1,7 @@
 from magpylib._lib.mathLib_vector import QmultV, QconjV, getRotQuatV, QrotationV, getAngAxV, angleAxisRotationV_priv
+from magpylib._lib.mathLib_vector import axisFromAnglesV
 from numpy import array, amax
-from magpylib._lib.mathLib import getRotQuat
+from magpylib._lib.mathLib import getRotQuat, axisFromAngles
 from magpylib.math import randomAxisV
 import numpy as np
 
@@ -46,6 +47,18 @@ def test_randomAxisV():
     
     lX = np.linalg.norm(X,axis=1)
     assert np.sum(np.abs(lX-1)<1e-10)==1000, "bad randomAxis"
+
+
+#def test_axisFromAnglesV():
+
+ANG = np.array([[33,44],[-123,98],[-233,0],[0,0]])
+AXV = axisFromAnglesV(ANG)
+
+print(AXV)
+
+#for axV,ang in zip(AXV,ANG):
+#    ax = axisFromAngles(ang)
+#    assert amax(abs(ax-axV)) < 1e-10, "bad axisFromAnglesV"
 
 
 
