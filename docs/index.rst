@@ -21,17 +21,7 @@ Quickstart
 ~~~~~~~~~~
 Install magpylib with pip (``>> pip install magpylib``).
 
-Run this simple code to calculate the magnetic field of a cylindrical magnet:
-
-.. highlight:: python
-    :linenothreshold: 1
-
-    from magpylib.source.magnet import Cylinder
-    s = Cylinder( mag = [0,0,350], dim = [4,5])
-    print(s.getB([4,4,4]))       
-
-    # Output: [ 5.08641867  5.08641867 -0.60532983]
-
+Run this simple code to calculate the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
 
@@ -41,17 +31,16 @@ Run this simple code to calculate the magnetic field of a cylindrical magnet:
 
     # Output: [ 5.08641867  5.08641867 -0.60532983]
 
+In this example the magnet axis is parallel to the z-axis. The magnetization / 
+remanence field is homogeneous and points in z-direction with amplitude of 
+350 millitesla. The diameter and height of the magnet are 4 millimeter and 
+5 millimeter respectively and the magnet position (=geometric center) is in the
+origin. Finally, the magnetic field ``B`` is calculated in units of millitesla at
+the positition ``[4,4,4]`` given in units of millimeter.
 
+More examples can be found in the [Examples Section](docs/_pages/2_guideExamples.md).
 
-``
-In [1]: from magpylib.source.magnet import Cylinder
-
-In [2]: s = Cylinder( mag = [0,0,350], dim = [4,5])
-
-In [3]: s.getB([4,4,4])
-Out[3]: array([ 5.08641867  5.08641867 -0.60532983])
-``
-
+Find detailed information in the [Documentation](docs/_pages/0_documentation.md).
 
 
 
