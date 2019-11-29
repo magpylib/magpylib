@@ -35,12 +35,18 @@ In this example the magnet axis is parallel to the z-axis. The magnetization /
 remanence field is homogeneous and points in z-direction with amplitude of 
 350 millitesla. The diameter and height of the magnet are 4 millimeter and 
 5 millimeter respectively and the magnet position (=geometric center) is in the
-origin. Finally, the magnetic field ``B`` is calculated in units of millitesla at
-the positition ``[4,4,4]`` given in units of millimeter.
+origin. Finally, the magnetic field *B* is calculated in units of millitesla at
+the positition *[4,4,4]* given in units of millimeter.
 
-More examples can be found in the [Examples Section](docs/_pages/2_guideExamples.md).
+More examples where sources are moved, rotated, grouped and displayed graphically,
+can be found in the `Examples Section`__.
 
-Find detailed information in the [Documentation](docs/_pages/0_documentation.md).
+__ docs/_pages/2_guideExamples.md
+
+Find detailed technical information how to use the library in the
+Documentation__.
+
+__ docs/_pages/0_documentation.md
 
 
 
@@ -59,8 +65,6 @@ Find detailed information in the [Documentation](docs/_pages/0_documentation.md)
    _autogen/magpylib
    _autogen/magpylib.source
    _autogen/magpylib.math
-
-
 
 
 Index and tables
