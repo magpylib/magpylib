@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png><p>
+<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="200"><p>
 
 ---
 <div>
@@ -34,10 +34,9 @@
 <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a>
 </p>
 
-
-
 </div>
 
+---
 
 ### What is magpylib ?
 - Python package for calculating magnetic fields of magnets, currents and
