@@ -16,7 +16,15 @@ What is magpylib ?
 .. image:: _static/images/index/sourceFundamentals.png
    :align: center
 
-.. toctree::
+
+Quickstart
+~~~~~~~~~~
+Install magpylib with pip (``>> pip install magpylib``). 
+
+
+
+
+.. .. toctree::
    :glob:
    :maxdepth: 1
    :caption: Content:
