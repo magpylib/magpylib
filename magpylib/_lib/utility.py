@@ -23,9 +23,9 @@
 # -------------------------------------------------------------------------------
 from typing import Tuple
 from numpy import float64, isnan, array
+
+
 # Helper function for validating input dimensions
-
-
 def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: str = "Bad dim input") -> array:
     if type(dim) == int or type(dim) == float:
         dim = [dim]
@@ -35,9 +35,8 @@ def checkDimensions(expectedD: int, dim: Tuple[float, float, float], exitMsg: st
     assert (not any(isnan(dimension)) and len(dimension) == expectedD), exitMsg
     return dimension
 
+
 # Collection Helpers
-
-
 def addListToCollection(sourceList, inputList, dupWarning):
     assert all(isSource(a)
                for a in inputList), "Non-source object in Collection initialization"
@@ -70,6 +69,7 @@ def isSource(theObject: any) -> bool:
         source.current.Circular,
         source.moment.Dipole)
     return any(isinstance(theObject, src) for src in sourcesList)
+
 
 def isSensor(theObject: any) -> bool:
     from magpylib._lib.classes.sensor import Sensor 
@@ -107,8 +107,8 @@ def drawMagnetizationVector(position, magnetization, angle, axis, color, SYSSIZE
         pyplot canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
-    M = rotatePosition(magnetization, angle, axis)
+    from magpylib._lib.mathLib import angleAxisRotation
+    M = angleAxisRotation(magnetization, angle, axis)
     P = position
     # Get a lil different but unique tone
     c = [color[0]/2, color[1]/2, color[2]/2, color[3]]
@@ -131,8 +131,8 @@ def drawSensor(sensor, SYSSIZE, ax):
         pyplot canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
-    M = rotatePosition([1,0,0],sensor.angle,sensor.axis)
+    from magpylib._lib.mathLib import angleAxisRotation
+    M = angleAxisRotation([1,0,0],sensor.angle,sensor.axis)
     P = sensor.position
     ax.quiver(P[0], P[1], P[2],  # X position
               M[0], M[1], M[2],  # Components of the Vector
@@ -141,7 +141,7 @@ def drawSensor(sensor, SYSSIZE, ax):
                   color='r')
     ax.text(M[0]+P[0], M[1]+P[1], M[2]+P[2], "x", None)
     
-    M = rotatePosition([0,1,0],sensor.angle,sensor.axis)
+    M = angleAxisRotation([0,1,0],sensor.angle,sensor.axis)
     ax.quiver(P[0], P[1], P[2],  # Y position
               M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
@@ -149,7 +149,7 @@ def drawSensor(sensor, SYSSIZE, ax):
                   color='g')
     ax.text(M[0]+P[0], M[1]+P[1], M[2]+P[2], "y", None)
     
-    M = rotatePosition([0,0,1],sensor.angle,sensor.axis)
+    M = angleAxisRotation([0,0,1],sensor.angle,sensor.axis)
     ax.quiver(P[0], P[1], P[2],  # Z position
               M[0], M[1], M[2],  # Components of the Vector
                   normalize=True,
@@ -245,9 +245,9 @@ def drawDipole(position, moment, angle, axis, SYSSIZE, ax):
         canvas to draw on
 
     """
-    from magpylib._lib.mathLibPublic import rotatePosition
-    P = rotatePosition(position, angle, axis)
-    M = rotatePosition(moment, angle, axis)
+    from magpylib._lib.mathLib import angleAxisRotation
+    P = angleAxisRotation(position, angle, axis)
+    M = angleAxisRotation(moment, angle, axis)
     
     ax.quiver(P[0], P[1], P[2],  # X,Y,Z position
                   M[0], M[1], M[2],  # Components of the Vector

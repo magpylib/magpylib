@@ -1,4 +1,4 @@
-from magpylib import source, Sensor, Collection
+from magpylib import source, Sensor, Collection, displaySystem
 from numpy import around
 ##### Define Sensors
 sensor0Position = [2,1,-2]
@@ -9,8 +9,8 @@ sensor0 = Sensor(pos=sensor0Position,
 sensor1 = Sensor(sensor1Position,0,(0,0,1))
 
 ##### Define magnets, Collection system
-cyl = source.magnet.Cylinder([1,2,300],[0.2,1.5])
-box = source.magnet.Box([1,2,300],[1,1,0.5],[0,0,1])
+cyl = source.magnet.Cylinder([300,2,1],[0.2,1.5])
+box = source.magnet.Box([-300,2,1],[1,1,0.5],[0,0,1])
 col = Collection(cyl,box)
 
 # Read from absolute position in Collection system
@@ -32,4 +32,4 @@ markerList = [ sensor0Position + [markerText0],
                sensor1Position + [markerText1],
                [3,3,3]]
 
-col.displaySystem(sensors=sensorList , markers=markerList, direc=True)
+displaySystem(col,sensors=sensorList , markers=markerList, direc=True)

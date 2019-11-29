@@ -22,15 +22,12 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-Current Sources
-===============
-   
-Sources for generating magnetic fields originated from
-:class:`~magpylib.source.current.Line` or :class:`~magpylib.source.current.Circular` currents. 
-Compatible with :class:`~magpylib.Collection`
+This subpackage provides the current classes that are used for field computation.
+They include the classes `Circular` (a current loop) and `Line` (a line current
+running along given vertices).
 """
 
-__all__ = ["Circular", "Line"]  # This is for Sphinx
+#__all__ = ["Circular", "Line"]  # This is for Sphinx
 
 from magpylib._lib.classes.currents import Circular
 from magpylib._lib.classes.currents import Line

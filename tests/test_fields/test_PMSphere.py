@@ -1,13 +1,12 @@
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
-from numpy import array, isnan
+from numpy import array, isnan, pi
 import pytest
 
+# -------------------------------------------------------------------------------
 def test_Bfield_singularity():
     # Test the result for a field sample on the Sphere
     # 3 points in faces for each axis
     # Expected: [nan,nan,nan]
-    from magpylib import source,Collection
-    from numpy import array
     
     # Definitions
     mag = [1,2,3]
@@ -23,6 +22,7 @@ def test_Bfield_singularity():
         results = [Bfield_Sphere(mag,pos,diam) for pos in testPos]
         assert all(all(isnan(axis) for axis in result) for result in results)
 
+# -------------------------------------------------------------------------------
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"
@@ -52,9 +52,9 @@ def test_Bfield_outside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_Bfield_inside():
     # Fundamental Positions in every 8 Octants, but inside
-    from numpy import pi
     errMsg = "Field sample inside of Box is unexpected"
     mockResults = [ [-7407.333333, 14814.666667, -222222.0],
                     [-7407.333333, 14814.666667, -222222.0],

@@ -2,6 +2,8 @@ from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
 from numpy import array
 import pytest
 
+
+# -------------------------------------------------------------------------------
 def test_Bfield_Zero_Length_segment():
     # Check if Zero-length segments in vertices return valid 
     errMsg = "Field sample outside of Line is unexpected"
@@ -18,7 +20,7 @@ def test_Bfield_Zero_Length_segment():
         for i in range(0,3):
             assert round(mockResult[i],rounding)==round(results[i],rounding), errMsg
 
-
+# -------------------------------------------------------------------------------
 def test_Bfield_CurrentLine_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Line is unexpected"
@@ -48,6 +50,7 @@ def test_Bfield_CurrentLine_outside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_Bfield_singularity():
     # Test the result fo field sampleS on the line current
     # Each origin vertix, collinear center point
@@ -66,6 +69,7 @@ def test_Bfield_singularity():
         results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
         assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
+# -------------------------------------------------------------------------------
 def test_Bfield_onLine():
     # Check if points that are on the line but 
     # not on the segment still return valid results

@@ -23,7 +23,7 @@
 # -------------------------------------------------------------------------------
 
 from numpy import array, NaN
-from magpylib._lib.mathLibPrivate import fastSum3D, fastNorm3D, fastCross3D
+from magpylib._lib.mathLib import fastSum3D, fastNorm3D, fastCross3D
 from warnings import warn
 
 # %% CURRENT LINE

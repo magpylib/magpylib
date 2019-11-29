@@ -21,14 +21,13 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-# -*- coding: utf-8 -*-
 
 # MAGNETIC FIELD CALCULATION OF CYLINDER IN CANONICAL BASIS
 
 
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan, cos, sin, arange, NaN
-from magpylib._lib.mathLibPrivate import getPhi, elliptic
+from magpylib._lib.mathLib import getPhi, elliptic
 from warnings import warn
 
 # %% Cylinder Field Calculation

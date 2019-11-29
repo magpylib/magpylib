@@ -22,12 +22,10 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-Moment Sources
-==============
-   
-Moment sources for generating magnetic fields. 
-Compatible with :class:`~magpylib.Collection`
+This subpackge includes magnetic moment classes for field computation. Currently
+it includes only the `Dipole` (magnetisches dipol moment) class.
 """
-__all__ = ["Dipole"]  # This is for Sphinx
+
+#__all__ = ["Dipole"]  # This is for Sphinx
 
 from magpylib._lib.classes.moments import Dipole

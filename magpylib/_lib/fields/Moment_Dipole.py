@@ -21,10 +21,8 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
 
-from magpylib._lib.mathLibPrivate import fastSum3D
+from magpylib._lib.mathLib import fastSum3D
 from numpy import pi, array, NaN
 from warnings import warn
 

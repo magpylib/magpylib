@@ -1,13 +1,12 @@
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
-from numpy import array, isnan
+from numpy import array, isnan, pi
 import pytest
 
+# -------------------------------------------------------------------------------
 def test_Bfield_singularity():
     # Test the result for a field sample on the Cylinder
     # Circular top face, Circular lower face, Side face
     # Expected: [nan,nan,nan]
-    from magpylib import source,Collection
-    from numpy import array
     
     # Definitions
     iterDia = 50
@@ -24,6 +23,7 @@ def test_Bfield_singularity():
         results = [Bfield_Cylinder(mag,pos,dim,iterDia) for pos in testPos]
         assert all(all(isnan(axis) for axis in result) for result in results)
 
+# -------------------------------------------------------------------------------
 def test_Bfield_OuterPlanes():
     # Field samples that are coplanar with samples that lead to singularity 
     # These should be fine
@@ -63,7 +63,7 @@ def test_Bfield_OuterPlanes():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
-
+# -------------------------------------------------------------------------------
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Cylinder is unexpected"
@@ -93,9 +93,9 @@ def test_Bfield_outside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_Bfield_inside():
     # Fundamental Positions in every 8 Octants, but inside
-    from numpy import pi
     errMsg = "Field sample inside of Cylinder is unexpected"
     mockResults = [ [-6488.54459, 12977.08918, -277349.820763],
                     [-15392.748076, 350.405436, -269171.80507],
@@ -119,7 +119,3 @@ def test_Bfield_inside():
     for i in range(0,len(mockResults)):
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
-
-
-    
-

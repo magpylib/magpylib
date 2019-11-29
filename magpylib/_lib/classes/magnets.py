@@ -19,27 +19,29 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/OrtnerMichael/magpylib/issues.
 # -------------------------------------------------------------------------------
-######### Type hint definitions ########
-# These aren't type hints, but look good
-# in Spyder IDE. Pycharm recognizes it.
-Mx = My = Mz = 0.0  # Def.Magnetization Vector
-a = b = c = 0.0  # Default Cuboid dimensions
-d = 0.0  # Default Diameter
-h = 0.0  # Default Height
-Max = 0  # Multicore flag
-#######################################
 
-# %% IMPORTS
 from numpy import array, float64, ndarray
-from magpylib._lib.mathLibPrivate import angleAxisRotation
+from magpylib._lib.mathLib import angleAxisRotation_priv
 from magpylib._lib.utility import checkDimensions
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Box import Bfield_Box
 
-# %% THE CUBE CLASS
+# tool-tip / intellisense helpers ---------------------------------------------
+# Class initialization is done purely by kwargs. While some # of these can be 
+# set to zero by default other MUST be given to make any sense 
+# (e.g. magnetization). To improve tool tips and intellisense we inizilize them
+# with names, e.g. mag=(Mx, My, Mz). This looks good, but it requires that
+# these names are pre-initialzed:
+Mx = My = Mz = .0
+a = b = c = .0
+d = .0 
+h = .0
 
+
+
+# -----------------------------------------------------------------------------
 class Box(HomoMag):
     """ 
     A homogeneously magnetized cuboid magnet. In 
@@ -113,9 +115,9 @@ class Box(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -140,8 +142,8 @@ class Box(HomoMag):
         return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
 
-# %% THE CYLINDER CLASS
 
+# -----------------------------------------------------------------------------
 class Cylinder(HomoMag):
     """ 
     A homogeneously magnetized cylindrical magnet. 
@@ -231,9 +233,9 @@ class Cylinder(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Cylinder(self.magnetization, rotatedPos, self.dimension, self.iterDia))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -257,9 +259,9 @@ class Cylinder(HomoMag):
         """
         return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: d: {}, h: {} \n position: x: {}, y:{}, z: {} \n angle: {} \n axis: x: {}, y: {}, z:{}".format("magnet.Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
 
-# %% THE SPHERE CLASS
 
 
+# -----------------------------------------------------------------------------
 class Sphere(HomoMag):
     """ 
     A homogeneously magnetized sphere. The magnet
@@ -334,9 +336,9 @@ class Sphere(HomoMag):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_Sphere(self.magnetization, rotatedPos, self.dimension))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Sphere(self.magnetization, rotatedPos, self.dimension))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -359,3 +361,13 @@ class Sphere(HomoMag):
             axis: x: 0.0, y: 0.0, z:1.0
         """
         return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: d: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
+
+
+
+# -----------------------------------------------------------------------------
+class Facet(HomoMag):
+    """
+    WIP
+    """
+    def __init__(self):
+        print('Facet class is work in progress')

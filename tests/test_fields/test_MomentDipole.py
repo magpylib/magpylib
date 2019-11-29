@@ -2,11 +2,10 @@ from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 from numpy import array, isnan
 import pytest
 
-
+# -------------------------------------------------------------------------------
 def test_Bfield_singularity():
     # Test the result for a field sample on the dipole itself
     # Expected: NaN
-    from numpy import array
 
     # Definitions
     mag=array([-1,2,-3])
@@ -17,6 +16,7 @@ def test_Bfield_singularity():
         results = Bfield_Dipole(mag,calcPos)
         assert all(isnan(axis) for axis in results)
 
+# -------------------------------------------------------------------------------
 def test_Bfield_outside():
     # Fundamental Positions in every 8 Octants
     errMsg = "Field sample outside of Box is unexpected"

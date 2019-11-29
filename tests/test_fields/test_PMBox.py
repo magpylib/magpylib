@@ -2,6 +2,7 @@ from magpylib._lib.fields.PM_Box import Bfield_Box
 from numpy import array, isnan
 import pytest
 
+# -------------------------------------------------------------------------------
 def test_BfieldBox_OLD():
     errMsg = "Wrong field calculation for BfieldBox"
     
@@ -15,6 +16,7 @@ def test_BfieldBox_OLD():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_BfieldBox_Edges():
     from numpy import array,array_equal,append
     from magpylib import source, Collection
@@ -34,7 +36,7 @@ def test_BfieldBox_Edges():
         results = [Bfield_Box(mag,pos,dim) for pos in testPosEdge]
         assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
-
+# -------------------------------------------------------------------------------
 def test_BfieldBox_Faces():
     from numpy import array,array_equal,append
     from magpylib import source, Collection
@@ -52,6 +54,7 @@ def test_BfieldBox_Faces():
         results = [Bfield_Box(mag,pos,dim) for pos in testPosFaces]
         assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
+# -------------------------------------------------------------------------------
 def test_BfieldBox_OuterLines():
     errMsg = "Unexpected Results for getB in Outer Lines"
     from numpy import array,array_equal,append
@@ -85,6 +88,7 @@ def test_BfieldBox_OuterLines():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_BfieldBox_Corners():
     from numpy import array,array_equal,append
     from magpylib import source, Collection
@@ -99,7 +103,7 @@ def test_BfieldBox_Corners():
         results = [Bfield_Box(mag,pos,dim) for pos in testPosCorners]
         assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
     
-
+# -------------------------------------------------------------------------------
 def test_BfieldBox_outside():
     # Fundamental Positions in every 8 Octants, but inside
     errMsg = "Field sample outside of Box is unexpected"
@@ -129,6 +133,7 @@ def test_BfieldBox_outside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
 
+# -------------------------------------------------------------------------------
 def test_BfieldBox_inside():
     # Fundamental Positions in every 8 Octants, but inside
     errMsg = "Field sample inside of Box is unexpected"
@@ -154,8 +159,3 @@ def test_BfieldBox_inside():
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
             
-    #add special cases (surface, edges, corners)
-
-    #calc and test fields
-    
-

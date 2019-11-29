@@ -1,16 +1,28 @@
 # magpylib Changelog
-All notable changes to magpylib will be documented in this file.
 
-The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
-and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
-
----
-
-Click here for [Unreleased Changes]
+All notable changes to magpylib are documented here.
 
 ---
 
 # Releases
+
+## [2.0.0b] - 2019-11-29
+### Changed
+- Restructuring
+  - displaySystem is now a top-level function, not a Collection method anymore.
+  - getBsweep and multiprocessing options have been completely removed, this functionality
+    should be overtaken by the new vector functionality which uses numpy native vectorized 
+    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
+    automatically use multiporcessing. Code parallelization at magpylib level should be done
+    by hand.
+- Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
+- public rotatePosition() is now called angleAxisRotation(), former private angleAxisRotation
+    is now called angleAxisRotation_priv().
+- Major rework of the documentation and exmples.
+
+### Added
+- Performance computation trough vector functionality included in new top-level subpackge "vector"
+- Vectorized versions of math functions added to "math" subpackage
 
 ## [1.2.1b0] - 2019-07-31
 ### Changed
@@ -119,7 +131,6 @@ The first official release of the magpylib library.
 
 ---
 
-[Unreleased Changes]: https://github.com/magpylib/magpylib/compare/HEAD...development
 [1.2.1b0]: https://github.com/magpylib/magpylib/compare/1.2.0-beta...1.2.1-beta
 [1.2.0b0]: https://github.com/magpylib/magpylib/compare/1.1.1-beta...1.2.0-beta
 [1.1.1b0]: https://github.com/magpylib/magpylib/compare/1.1.0-beta...1.1.1-beta
@@ -127,3 +138,8 @@ The first official release of the magpylib library.
 [1.0.2b0]: https://github.com/magpylib/magpylib/compare/1.0.1-beta...1.0.2-beta
 [1.0.1b0]: https://github.com/magpylib/magpylib/compare/1.0.0-beta...1.0.1-beta
 [1.0.0b0]: https://github.com/magpylib/magpylib/releases/tag/1.0.0-beta
+
+---
+
+The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
+and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).

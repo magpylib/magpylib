@@ -1,10 +1,9 @@
-from typing import Tuple
 from magpylib._lib.utility import checkDimensions, isPosVector,isDisplayMarker
 from magpylib._lib.utility import isSensor
-from numpy import float64, isnan, array
+from numpy import array
 import pytest
 
-
+# -------------------------------------------------------------------------------
 def test_IsDisplayMarker_error():
     marker1=[0,0,0]
     marker2=[0,0,1]
@@ -16,6 +15,7 @@ def test_IsDisplayMarker_error():
         for marker in markerList:
             assert isDisplayMarker(marker)
 
+# -------------------------------------------------------------------------------
 def test_IsDisplayMarker():
     errMsg = "marker identifier has failed: "
     marker1=[0,0,0]
@@ -26,7 +26,7 @@ def test_IsDisplayMarker():
     for marker in markerList:
         assert isDisplayMarker(marker), errMsg + str(marker)
 
-
+# -------------------------------------------------------------------------------
 def test_checkDimensionZero():
     # errMsg = "Did not raise all zeros Error"
     with pytest.raises(AssertionError):
@@ -35,17 +35,20 @@ def test_checkDimensionZero():
     with pytest.raises(AssertionError):
         checkDimensions(0,dim=[])
 
+# -------------------------------------------------------------------------------
 def test_checkDimensionMembers():
     # errMsg = "Did not raise expected Value Error"
     with pytest.raises(ValueError):
         checkDimensions(3,dim=(3,'r',6))
 
+# -------------------------------------------------------------------------------
 def test_checkDimensionSize():
     errMsg = "Did not raise wrong dimension size Error"
     with pytest.raises(AssertionError) as error:
         checkDimensions(3,dim=(3,5,9,6))
     assert error.type == AssertionError, errMsg
 
+# -------------------------------------------------------------------------------
 def test_checkDimensionReturn():
     errMsg = "Wrong return dimension size"
     result = checkDimensions(4,dim=(3,5,9,10))
@@ -57,35 +60,36 @@ def test_checkDimensionReturn():
     result = checkDimensions(1,dim=(3))
     assert len(result) == 1, errMsg
     
-
+# -------------------------------------------------------------------------------
 def test_isPosVector():
     errMsg = "isPosVector returned unexpected False value"
     position = [1,2,3]
     assert isPosVector(position), errMsg
 
+# -------------------------------------------------------------------------------
 def test_isPosVectorArray():
     from numpy import array
     errMsg = "isPosVector returned unexpected False value"
     position = array([1,2,3])
     assert isPosVector(position), errMsg
 
+# -------------------------------------------------------------------------------
 def test_isPosVectorArray2():
     from numpy import array
     errMsg = "isPosVector returned unexpected False value"
     position = array([1,4,-24.242])
     assert isPosVector(position), errMsg
 
+# -------------------------------------------------------------------------------
 def test_isSensor():
     from magpylib._lib.classes.sensor import Sensor 
     s = Sensor()
 
     assert isSensor(s)
 
+# -------------------------------------------------------------------------------
 def test_isPosVectorArgs():
     from numpy import array
-    errMsg = "isPosVector returned unexpected False value"
-    position = array([1,4,-24.242])
-    
 
     listOfArgs = [  [   [1,2,3],        #pos
                     [0,0,1],        #MPos

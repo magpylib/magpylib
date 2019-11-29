@@ -135,26 +135,6 @@ def test_BoxGetBAngle():
     for i in range(3):
         assert round(result[i],rounding)==round(mockResults[i],rounding), erMsg
 
-def test_BoxMulticoreGetB():
-    erMsg = "Results from getB are unexpected"
-    pm = magnet.Box(mag=[6,7,8],dim=[10,10,10],pos=[2,2,2])
-    pos = array([(.5,.5,5),(30,20,10),(1,.2,60)])
-    ## Positions list
-    result = pm.getBsweep(pos) 
-
-
-    ## Expected Results
-    mockRes = ( ( 3.99074612, 4.67238469, 4.22419432), # .5,.5,.5
-                ( 0.03900578,  0.01880832, -0.00134112), # 30,20,10
-                ( -0.00260347, -0.00313962,  0.00610886), ) 
-
-    ## Rounding for floating point error 
-    rounding = 4 
-
-    # Loop through predicted cases and check if the positions from results are valid
-    for i in range(len(mockRes)):
-        for j in range(3):
-            assert round(result[i][j],rounding)==round(mockRes[i][j],rounding), erMsg
 
 def test_ToString():
     magnetization=(0.2,32.5,5.3)

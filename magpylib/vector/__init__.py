@@ -22,16 +22,9 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 """
-This is the top level of the package. From here you can call subpackages 
-`source` and `math`, the classes `Collection` and `Sensor` as well as the
-functions `getBv` and `displaySystem`.
+The vector subpackage includes functions for vectorized computation of the
+magnetic field. Use these functions only when performance is an issue, when 
+doing 10 or more evaluations of similar sources (with different parameters).
 """
 
-#__all__ = ["Collection", "Sensor", "source", "math"]  # This is for Sphinx
-
-from ._lib.classes.collection import Collection
-from ._lib.classes.sensor import Sensor
-from ._lib.displaySystem import displaySystem
-from . import source, math, vector
-
-#from . import _lib                                #why is this here ?
+from magpylib._lib.getBvector import getBv_magnet, getBv_current, getBv_moment

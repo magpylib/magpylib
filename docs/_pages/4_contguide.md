@@ -1,5 +1,7 @@
 # Credits & Contribution
 
+
+
 ### Maintainers
 
 **Michael Ortner** - Concept, Physics and Overseeing
@@ -9,9 +11,13 @@
 **Lucas Gabriel Coliado Bandeira** - software engineering
  - lucascoliado@hotmail.com
 
+
+
 ### Contributors
 
-We want to thank a lot of ppl who have helped to realize and advance this project: COMING SOON
+We want to thank a lot of ppl who have helped to realize and advance this project. Detaiuls coming soon.
+
+
 
 ### Your Contribution
 

@@ -22,26 +22,31 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-####### Type hint definitions ########
+from numpy import array, float64, ndarray
+from magpylib._lib.mathLib import angleAxisRotation_priv
+from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
+from magpylib._lib.classes.base import LineCurrent
+
+
+# tool-tip / intellisense helpers ---------------------------------------------
+# Class initialization is done purely by kwargs. While some # of these can be 
+# set to zero by default other MUST be given to make any sense 
+# (e.g. magnetization). To improve tool tips and intellisense we inizilize them
+# with names, e.g. mag=(Mx, My, Mz). This looks good, but it requires that
+# these names are pre-initialzed:
 from typing import List, Tuple, TypeVar
-# Magnetization Vector Typehints
 x_i = TypeVar('x_i', int, float)
 y_i = TypeVar('y_i', int, float)
 z_i = TypeVar('z_i', int, float)
 listOfPos = List[Tuple[x_i, y_i, z_i]]
 
-I = 0.0  # Default Current
-d = 0.0  # Default Diameter
-######################################
+I = .0 
+d = .0
 
-# %% IMPORTS
-from numpy import array, float64, ndarray
-from magpylib._lib.mathLibPrivate import angleAxisRotation
-from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
-from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
-from magpylib._lib.classes.base import LineCurrent
 
-# %% THE CIRCULAR CLASS
+
+# -------------------------------------------------------------------------------
 class Circular(LineCurrent):
     """ 
     A circular line current loop with diameter `dim` and a current `curr` flowing
@@ -116,9 +121,9 @@ class Circular(LineCurrent):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CircularCurrentLoop(self.current,self.dimension,rotatedPos))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
@@ -142,9 +147,9 @@ class Circular(LineCurrent):
         """
         return "type: {} \n current: {}  \n dimension: d: {} \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Circular", self.current, self.dimension, *self.position, self.angle, *self.axis)
 
-# %% THE CIRCUAR CL CLASS
 
 
+# -------------------------------------------------------------------------------
 class Line(LineCurrent):
     """ 
 
@@ -231,9 +236,9 @@ class Line(LineCurrent):
         # relative position between mag and obs
         posRel = p1 - self.position
         # rotate this vector into the CS of the magnet (inverse rotation)
-        rotatedPos = angleAxisRotation(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
+        rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm
