@@ -41,12 +41,12 @@ the positition *[4,4,4]* given in units of millimeter.
 More examples where sources are moved, rotated, grouped and displayed graphically,
 can be found in the `Examples Section`__.
 
-__ _pages/2_guideExamples.md
+__ _pages/2_guideExamples/
 
 Find detailed technical information how to use the library in the
 Documentation__.
 
-__ _pages/0_documentation.md
+__ _pages/0_documentation/
 
 
 
