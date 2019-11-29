@@ -6,7 +6,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [1.3.0b0] - 2019-XX-XX
+## [2.0.0b] - 2019-11-29
 ### Changed
 - Restructuring
   - displaySystem is now a top-level function, not a Collection method anymore.
@@ -18,6 +18,7 @@ All notable changes to magpylib are documented here.
 - Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
 - public rotatePosition() is now called angleAxisRotation(), former private angleAxisRotation
     is now called angleAxisRotation_priv().
+- Major rework of the documentation and exmples.
 
 ### Added
 - Performance computation trough vector functionality included in new top-level subpackge "vector"
