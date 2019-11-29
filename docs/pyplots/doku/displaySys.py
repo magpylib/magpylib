@@ -11,6 +11,4 @@ c = magpy.Collection(s1,s2,s3)
 
 #display system
 markerPos = [(0,0,0,'origin'),(10,10,10),(-10,-10,-10)]
-magpy.displaySystem(c,markers=markerPos,direc=True)
-
-plt.show()
+magpy.displaySystem(c,markers=markerPos)
