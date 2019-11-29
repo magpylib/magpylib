@@ -1,4 +1,4 @@
-from magpylib import source, Collection
+import magpylib as magpy
 from numpy import array, linspace, meshgrid
 from numpy.linalg import norm
 from matplotlib import pyplot as plt
@@ -20,18 +20,17 @@ posis = array([(x,0,z) for z in ts for x in ts])
 X,Y = meshgrid(ts,ts)
 
 # source definitions
-s1 = source.magnet.Box(mag=[500,0,500], dim=[4,4,4])                #Box
-s2 = source.magnet.Cylinder(mag=[0,0,500], dim=[3,5])               #Cylinder
-s3 = source.magnet.Sphere(mag=[-200,0,500], dim=5)                  #Sphere
-s4 = source.current.Line(curr=10, vertices=[(0,-5,0),(0,5,0)])      #Line
-s5 = source.current.Circular(curr=10, dim=5)                        #Circular
-s6 = source.moment.Dipole(moment=[0,0,100])                         #Dipole
+s1 = magpy.source.magnet.Box(mag=[500,0,500], dim=[4,4,4])                #Box
+s2 = magpy.source.magnet.Cylinder(mag=[0,0,500], dim=[3,5])               #Cylinder
+s3 = magpy.source.magnet.Sphere(mag=[-200,0,500], dim=5)                  #Sphere
+s4 = magpy.source.current.Line(curr=10, vertices=[(0,-5,0),(0,5,0)])      #Line
+s5 = magpy.source.current.Circular(curr=10, dim=5)                        #Circular
+s6 = magpy.source.moment.Dipole(moment=[0,0,100])                         #Dipole
 
 for i,s in enumerate([s1,s2,s3,s4,s5,s6]):
 
     #plot geometry in memory
-    c = Collection(s)
-    c.displaySystem(subplotAx=axsA[i],markers=[(6,0,6)],suppress=True)
+    magpy.displaySystem(s,subplotAx=axsA[i],markers=[(6,0,6)],suppress=True)
     axsA[i].plot([-6,6,6,-6,-6],[0,0,0,0,0],[-6,-6,6,6,-6])
 
     #plot field in memory

@@ -47,4 +47,4 @@ for x in [-7,0,7]:
 #display collection and markers
 Ms = [piv1+['piv1'], piv2+['piv2'], piv3+['piv3'], piv4+['piv4'],
       piv5+['piv5'], piv6+['piv6'], anch4+['anch4'],anch5+['anch5'],anch6+['anch6']]
-c.displaySystem(subplotAx=ax,markers=Ms)
+magpy.displaySystem(c,subplotAx=ax,markers=Ms)

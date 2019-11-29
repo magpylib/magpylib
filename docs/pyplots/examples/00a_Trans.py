@@ -1,6 +1,7 @@
 from magpylib.source.magnet import Box
 import magpylib as magpy
 from numpy import array
+import matplotlib.pyplot as plt
 
 #fixed magnet parameters
 M = [0,0,1] #magnetization
@@ -26,5 +27,7 @@ s5.position = array([4,0,0])
 c = magpy.Collection(s1,s2,s3,s4,s5)
 
 #display collection
-fig = c.displaySystem()
+fig = magpy.displaySystem(c,suppress=True)
 fig.set_size_inches(6, 6)
+
+plt.show(fig)

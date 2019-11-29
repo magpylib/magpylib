@@ -24,5 +24,4 @@ s6.rotate(90,rax)
 c = magpy.Collection(s1,s2,s3,s4,s5,s6)
 
 #display collection
-fig = c.displaySystem()
-fig.set_size_inches(6, 6)
+magpy.displaySystem(c)
