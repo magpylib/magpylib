@@ -3,19 +3,6 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-Welcome to magpylib's documentation!
-====================================
-
-.. rst-class:: center
-
-   *Powered by:*
-
-.. image:: _static/images/index/sal.svg
-   :align: center
-   :target: https://silicon-austria-labs.com/en/
-
-|
-
 What is magpylib ?
 ~~~~~~~~~~~~~~~~~~
 - Python package for calculating magnetic fields of magnets, currents and
@@ -31,7 +18,7 @@ What is magpylib ?
 
 .. toctree::
    :glob:
-   :maxdepth: 2
+   :maxdepth: 1
    :caption: Content:
 
    _pages/*
@@ -53,4 +40,4 @@ Index and tables
 
 * :ref:`genindex`
 * :ref:`modindex`
-* :ref:`search`
+.. * :ref:`search`
