@@ -400,9 +400,10 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
         ylim=(-SYSSIZE, SYSSIZE),
         zlim=(-SYSSIZE, SYSSIZE),
     )
+    
     plt.tight_layout()
 
-    if suppress is False:
-        plt.show(block=False)
-
-    return plt.gcf()
+    if suppress == True:
+        return plt.gcf()
+    else:
+        plt.show()
