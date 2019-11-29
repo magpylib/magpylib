@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="200"><p>
+<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="350"><p>
 
 ---
 <div>
@@ -48,7 +48,7 @@
   computation power.
 
 <p align="center">
-    <img align='center' src=docs/_static/images/index/sourceFundamentals.png>
+    <img align='center' src=docs/_static/images/index/sourceFundamentals.png height="250">
 </p>
 
 ---
