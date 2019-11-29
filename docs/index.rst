@@ -26,7 +26,7 @@ What is magpylib ?
   solutions which results in fast computation times (sub-millisecond) and
   requires little computation power.
 
-.. image:: _static/images/index/sourceBasics.svg
+.. image:: _static/images/index/sourceFundamentals.png
    :align: center
 
 .. toctree::

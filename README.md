@@ -47,7 +47,7 @@
   requires little computation power.
 
 <p align="center">
-    <img align='center' src="https://magpylib.readthedocs.io/en/latest/_images/sourceBasics.svg">
+    <img align='center' src="https://magpylib.readthedocs.io/en/latest/_images/sourceFundamentals.png">
 </p>
 
 
