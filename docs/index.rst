@@ -19,12 +19,43 @@ What is magpylib ?
 
 Quickstart
 ~~~~~~~~~~
-Install magpylib with pip (``>> pip install magpylib``). 
+Install magpylib with pip (``>> pip install magpylib``).
+
+Run this simple code to calculate the magnetic field of a cylindrical magnet:
+
+.. highlight:: python
+    :linenothreshold: 1
+
+    from magpylib.source.magnet import Cylinder
+    s = Cylinder( mag = [0,0,350], dim = [4,5])
+    print(s.getB([4,4,4]))       
+
+    # Output: [ 5.08641867  5.08641867 -0.60532983]
+
+
+.. code-block:: python
+
+    from magpylib.source.magnet import Cylinder
+    s = Cylinder( mag = [0,0,350], dim = [4,5])
+    print(s.getB([4,4,4]))       
+
+    # Output: [ 5.08641867  5.08641867 -0.60532983]
+
+
+
+``
+In [1]: from magpylib.source.magnet import Cylinder
+
+In [2]: s = Cylinder( mag = [0,0,350], dim = [4,5])
+
+In [3]: s.getB([4,4,4])
+Out[3]: array([ 5.08641867  5.08641867 -0.60532983])
+``
 
 
 
 
-.. .. toctree::
+.. toctree::
    :glob:
    :maxdepth: 1
    :caption: Content:
