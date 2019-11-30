@@ -39,7 +39,7 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. currentmodule:: magpylib
 
-.. image:: ../_static/images/documentation/lib_structure.JPG
+.. image:: ../_static/images/documentation/lib_structure.png
    :align: center
    :scale: 45 %
 ```
