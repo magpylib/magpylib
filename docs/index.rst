@@ -22,8 +22,8 @@ Quickstart
 
 Install magpylib with pip (``>> pip install magpylib``).
 
-Example:
---------
+**Example:**
+
 Run this simple code to calculate the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
@@ -41,8 +41,7 @@ remanence field is homogeneous and points in z-direction with amplitude of
 origin. Finally, the magnetic field *B* is calculated in units of millitesla at
 the positition *[4,4,4]* given in units of millimeter.
 
-Example:
---------
+**Example:**
 
 The following code calculates the combined field of two magnets.
 They are geometrically manipulated, the system geometry is displayed and the 
@@ -50,8 +49,6 @@ field is displayed in the xz-plane.
 
 .. plot:: pyplots/examples/01_SimpleCollection.py
    :include-source:
-
-:download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
 
 
 More examples can be found in the `Examples Section`__.
