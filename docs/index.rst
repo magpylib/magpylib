@@ -4,7 +4,8 @@
    contain the root `toctree` directive.
 
 What is magpylib ?
-~~~~~~~~~~~~~~~~~~
+##################
+
 - Python package for calculating magnetic fields of magnets, currents and
   moments (sources).
 - Provides convenient methods to generate, geometrically manipulate, group
@@ -16,12 +17,14 @@ What is magpylib ?
 .. image:: _static/images/index/sourceFundamentals.png
    :align: center
 
-
 Quickstart
-~~~~~~~~~~
+##########
+
 Install magpylib with pip (``>> pip install magpylib``).
 
-**Example:** Run this simple code to calculate the magnetic field of a cylindrical magnet.
+Example:
+--------
+Run this simple code to calculate the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
 
@@ -38,17 +41,18 @@ remanence field is homogeneous and points in z-direction with amplitude of
 origin. Finally, the magnetic field *B* is calculated in units of millitesla at
 the positition *[4,4,4]* given in units of millimeter.
 
-**Example:** The following code calculates the combined field of two magnets.
+Example:
+--------
+
+The following code calculates the combined field of two magnets.
 They are geometrically manipulated, the system geometry is displayed and the 
 field is displayed in the xz-plane.
-
-```eval_rst
 
 .. plot:: pyplots/examples/01_SimpleCollection.py
    :include-source:
 
 :download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
-```
+
 
 More examples can be found in the `Examples Section`__.
 
@@ -77,7 +81,7 @@ __ _pages/0_documentation/
 
 
 Index and tables
-~~~~~~~~~~~~~~~~~~
+################
 
 * :ref:`genindex`
 * :ref:`modindex`
