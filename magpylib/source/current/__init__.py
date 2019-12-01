@@ -27,7 +27,7 @@ They include the classes `Circular` (a current loop) and `Line` (a line current
 running along given vertices).
 """
 
-#__all__ = ["Circular", "Line"]  # This is for Sphinx
+__all__ = ["Circular", "Line"]  # This is for Sphinx
 
 from magpylib._lib.classes.currents import Circular
 from magpylib._lib.classes.currents import Line
