@@ -34,4 +34,4 @@ from ._lib.classes.sensor import Sensor
 from ._lib.displaySystem import displaySystem
 from . import source, math, vector
 
-#from . import _lib                                #why is this here ?
+from . import _lib                                #why is this here ?

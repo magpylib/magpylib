@@ -21,3 +21,7 @@
 # For contact information, reach out over at <magpylib@gmail.com> or our issues
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
+from magpylib._lib import mathLib
+from magpylib._lib import mathLib_vector
+from magpylib._lib import classes
+from magpylib._lib import fields

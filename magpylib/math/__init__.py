@@ -25,6 +25,7 @@
 This module includes several practical functions for working with axis-angle
 relations and genmeralized rotations.
 """
+
 __all__ = ["randomAxis", "randomAxisV", "axisFromAngles", "axisFromAnglesV",
            "anglesFromAxis", "anglesFromAxisV",
            "angleAxisRotation", "angleAxisRotationV"]  # This is for Sphinx
