@@ -29,6 +29,6 @@ subpackages: `magnet`, `current` and `moment`.
 __all__ = ["magnet", "current", "moment"]  # This is for Sphinx
 
 #make these subpackages visible in ipython tooltips
-import magpylib.source.magnet as magnet
-import magpylib.source.current as current
-import magpylib.source.moment as moment
+import magpylib._lib.classes.magnet as magnet
+import magpylib._lib.classes.current as current
+import magpylib._lib.classes.moment as moment
