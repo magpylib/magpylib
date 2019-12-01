@@ -26,5 +26,8 @@ The vector subpackage includes functions for vectorized computation of the
 magnetic field. Use these functions only when performance is an issue, when 
 doing 10 or more evaluations of similar sources (with different parameters).
 """
-__all__ = ["getBv_magnet", "getBv_current", "getBv_moment"] # This is for sphinx
+
+__all__ = ["getBv_magnet", "getBv_current", "getBv_moment"]  # This is for Sphinx
+
 from magpylib._lib.getBvector import getBv_magnet, getBv_current, getBv_moment
+

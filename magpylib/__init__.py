@@ -27,7 +27,7 @@ This is the top level of the package. From here you can call subpackages
 functions `getBv` and `displaySystem`.
 """
 
-__all__ = ["Collection", "Sensor", "source", "math", "vector"]  # This is for Sphinx
+__all__ = ["source", "Collection", "Sensor", "vector", "math", "displaySystem"]  # This is for Sphinx
 
 from ._lib.classes.collection import Collection
 from ._lib.classes.sensor import Sensor
