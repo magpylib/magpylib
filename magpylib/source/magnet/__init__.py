@@ -26,7 +26,7 @@ This subpackage provides the permanent magnet classes that are used for field
 computation. They include `Box` (cuboid shape), `Cylinder` (cylindrical shape)
 `Sphere` (spherical shape) and `Facet` (triangular surface of magnet body). 
 """
-#__all__ = ["Box", "Cylinder", "Sphere"]  # This is for Sphinx
+__all__ = ["Box", "Cylinder", "Sphere"]  # This is for Sphinx
 
 from magpylib._lib.classes.magnets import Box
 from magpylib._lib.classes.magnets import Cylinder
