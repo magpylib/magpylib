@@ -20,7 +20,9 @@ Contents
 
   * `Position and Orientation`_
   * `Geometry / Dimension & Excitation`_
+  * `Methods for Geometric Manipulation`_
 
+* `Calculating the Magnetic Field`_
 
 
 Package Structure
@@ -139,6 +141,68 @@ The following code shows how to initialize a source object, a D4H5 permanent mag
 .. figure:: ../_static/images/documentation/Source_Display.JPG
 
   :align: center
-  :scale: 50 %
+  :scale: 30 %
 
   **Figure:** Magnet geometry created by above code: A cylinder which stands upright with geometric center at the origin.
+
+
+Methods for Geometric Manipulation
+----------------------------------
+
+In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this:
+
+**At initialization:**
+
+When initializing the source we can set all attributes as desired. So instead of *moving one source around* one could create a new one for each set of parameters of interest.
+
+**Manipulation after initialization:**
+
+We initialize the source and manipulate it afterwards as desired by
+
+1. directly setting the source attributes.
+2. using provided methods of manipulation.
+
+The latter is often the most practical and intuitive way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition` and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
+
+* `s.setPosition(newPos)`: Moves the source to the position given by the argument vector (*newPos*. *s.position -> newPos*)
+* `s.move(displacement)`: Moves the source by the argument vector *displacement*. (*s.position -> s.position + displacement*) 
+* `s.setOrientation(angle,axis)`: This method sets a new source orientation given by *angle* and *axis*. (*s.angle -> angle, s.axis -> axis*)
+* `s.rotate(angle,axis,anchor=self.position)`: Rotates the source object by *angle* about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation attributes are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
+
+The following videos show the application of the four methods for geometric manipulation.
+
+|move| |setPosition|
+
+.. |setPosition| image:: ../_static/images/documentation/setPosition.gif
+  :width: 45%
+
+.. |move| image:: ../_static/images/documentation/move.gif
+  :width: 45%
+
+|rotate| |setOrientation|
+
+.. |setOrientation| image:: ../_static/images/documentation/setOrientation.gif
+   :width: 45%
+
+.. |rotate| image:: ../_static/images/documentation/rotate.gif
+   :width: 45%
+
+The following example code shows how geometric operations are applied to source objects.
+
+.. code-block:: python
+
+  from magpylib.source.magnet import Cylinder
+
+  s = Cylinder( mag = [500,0,500], dim = [4,5])
+
+  print(s.position)       # Output: [0. 0. 0.]
+
+  s.move([1,2,3])
+  print(s.position)       # Output: [1. 2. 3.]
+
+  s.move([1,2,3])
+  print(s.position)       # Output: [2. 4. 6.]
+
+
+Calculating the Magnetic Field
+##############################
