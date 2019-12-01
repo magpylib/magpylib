@@ -26,13 +26,19 @@ Contents
 Package Structure
 #################
 
-The top level of magpylib contains the sub-packages :mod:`~magpylib.math` and :mod:`~magpylib.source` as well as the class :class:`magpylib.Collection`.
+The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`, :mod:`~magpylib.vector` and :mod:`~magpylib.math`, the classes :class:`magpylib.Collection` and :class:`magpylib.Sensor` as well as the function :function:`magpylib.displaySystem`.
 
-Within the :mod:`~magpylib.math` module several practical functions are provided. They include e.g. elementary geometric operations like rotations and their transformations between Euler-Angles and Quaternion representation.
+1. The **source module** includes a set of classes that represent physical sources of the magnetic field (e.g. permanent magnets).
 
-The :mod:`~magpylib.source` module includes the core classes of the library, i.e. the magnetic sources. They are grouped in sub-packages :mod:`~magpylib.source.magnet`, :mod:`~magpylib.source.current` and :mod:`~magpylib.source.moment` which contain the respective source classes.
+2. The **vector module** includes functions for performance computation of the magnetic field.
 
-The :class:`magpylib.Collection` class offers an easy way of grouping multiple source objects for common manipulation.
+3. The **math module** contains practical functions for working with angle-axis rotations and transformation to Euler angles.
+
+4. The **Collection class** is used to group sources and for common manipulation.
+
+5. The **Sensor Class** represents a 3-axis magnetic field point-sensor.
+
+6. The **displaySystem function** is used to create a graphical output of the system geometry.
 
 .. figure:: ../_static/images/documentation/lib_structure.png
     :align: center
@@ -80,9 +86,9 @@ This is the core class of the library. The idea is that source objects represent
 
 All source objects share various attributes and methods. The attributes characterize the source (e.g. position, orientation, dimension) while the methods can be used for geometric manipulation and for calculating the magnetic field. The figure below gives a graphical overview.
 
-.. figure:: ../_static/images/documentation/sourceVars_Methods.JPG
+.. figure:: ../_static/images/documentation/sourceVars_Methods.png
   :align: center
-  :scale: 50 %
+  :scale: 60 %
 
   **Figure:** Illustration of attributes and methods of the source class.
 
