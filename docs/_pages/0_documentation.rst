@@ -28,7 +28,7 @@ Contents
 Package Structure
 #################
 
-The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`, :mod:`~magpylib.vector` and :mod:`~magpylib.math`, the classes :class:`magpylib.Collection` and :class:`magpylib.Sensor` as well as the function :function:`magpylib.displaySystem`.
+The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`, :mod:`~magpylib.vector` and :mod:`~magpylib.math`, the classes :class:`magpylib.Collection` and :class:`magpylib.Sensor` as well as the function :meth:`magpylib.displaySystem`.
 
 1. The **source module** includes a set of classes that represent physical sources of the magnetic field (e.g. permanent magnets).
 
@@ -119,7 +119,7 @@ While position and orientation have default values, a source is defined through 
 The excitation is either the magnetization, the current or the magnetic moment. Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). The magnetization vector is described by the `magnetization` attribute (arr3). The magnetization vector is always given with respect to the INIT ORIENTATION of the magnet. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (arr3) input.
 
 .. note::
-  For convenience `magnetization`, `current`, `dimension`, `position` are initialized through the keywords *mag*, *curr*, *dim* and *pos*.
+  For convenience **magnetization**, **current**, **dimension**, **position** are initialized through the keywords **mag**, **curr**, **dim** and **pos**.
 
 The following code shows how to initialize a source object, a D4H5 permanent magnet cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
 
@@ -139,7 +139,6 @@ The following code shows how to initialize a source object, a D4H5 permanent mag
   print(s.axis)           # Output: [0. 0. 1.]
 
 .. figure:: ../_static/images/documentation/Source_Display.JPG
-
   :align: center
   :scale: 30 %
 
@@ -206,3 +205,5 @@ The following example code shows how geometric operations are applied to source 
 
 Calculating the Magnetic Field
 ##############################
+
+
