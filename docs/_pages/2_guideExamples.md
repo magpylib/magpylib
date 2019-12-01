@@ -1,6 +1,6 @@
 # Guide - Examples and How to Use
 
-It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.md).
+It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the [documentation](0_documentation.rst).
 
 - [Guide - Examples and How to Use](#guide---examples-and-how-to-use)
     - [Simplest Example](#simplest-example)
