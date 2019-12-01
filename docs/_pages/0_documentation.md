@@ -42,7 +42,6 @@ The :class:`magpylib.Collection` class offers an easy way of grouping multiple s
 
 .. image:: ../_static/images/documentation/lib_structure.png
    :align: center
-   :scale: 100 %
 ```
 <i><p align="center" style="font-weight: 100; font-size: 10pt"> <b>Figure:</b> Outline of the magpylib package structure. </p></i>
 
