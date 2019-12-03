@@ -1,4 +1,4 @@
-# [WIP] Physics behind magpylib
+# [WIP] Physics & Computation
 
 ## The analytical solutions
 
@@ -13,7 +13,16 @@ Solution accuracy, analytical modeling of demagnetization and interaction
 
 ### Limits and Convergence
 
-### Multiprocessing Speed Gain
 
 ### Convergence of diametral Cylinder
 No. iterations
+
+### Computation
+
+SIMD
+
+vectorized code
+
+performance tests
+
+parallelization
