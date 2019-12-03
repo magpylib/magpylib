@@ -8,8 +8,8 @@ It is the aim of this section to give a few code examples that show how the libr
     - [The Source Objects and their Fields](#the-source-objects-and-their-fields)
     - [Translation, Orientation and Rotation Basics](#translation-orientation-and-rotation-basics)
     - [Magnet Motion: Simulating a Magnetic Joystick](#magnet-motion-simulating-a-magnetic-joystick)
-    - [Using getBv](#using-getbv)
     - [Complex Magnet Shapes: Hollow Cylinder](#complex-magnet-shapes-hollow-cylinder)
+    - [Using vectorized code with rotations](#using-vectorized-code-with-rotations)
 
 
 ### Simplest Example
@@ -124,11 +124,6 @@ In the following program the magnetic field is calculated for all degrees of fre
 ```
 
 
-### Using getBv
-
-Vectorized code examples coming soon!
-
-
 ### Complex Magnet Shapes: Hollow Cylinder
 
 The superposition principle allows us to calculate complex magnet shapes by 'addition' and 'subtraction' operations. A common application for this is the field of an axially magnetized hollow cylinder. The hollow part is cut out of the first cylinder by placing a second, smaller cylinder inside with opposite magnetization. Unfortunately the `displaySystem` method cannot properly display such objects intersecting with each other.
@@ -139,4 +134,17 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
    :include-source:
 
 :download:`04_ComplexShape.py <../pyplots/examples/04_ComplexShape.py>`
+```
+
+
+### Using vectorized code with rotations
+
+Description coming up tomorrow :)
+
+```eval_rst
+
+.. plot:: pyplots/examples/05_VectorJoystick1d.py
+   :include-source:
+
+:download:`05_VectorJoystick1d.py <../pyplots/examples/05_VectorJoystick1d.py>`
 ```
