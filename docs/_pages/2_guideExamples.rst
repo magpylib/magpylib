@@ -1,7 +1,7 @@
 .. _examples::
 
 *******************************
-Guide - Examples and How to Use
+Example Codes
 *******************************
 
 It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the :ref:`docu`.
@@ -113,7 +113,7 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 Vectorized vs Classical Code
 ######################################
 
-Description coming up tomorrow :)
+In this example a magnet is tilted above a sensor just like in a 1D-joystick system. The magnetic field is computed using vectorized code, taking care to create the ``getBv`` input using numpy native methods only. 
 
 .. plot:: pyplots/examples/05_VectorJoystick1d.py
    :include-source:
