@@ -391,7 +391,7 @@ Then top level function `displaySystem(c)` can be used to quickly check the geom
 The following example code shows how to use `displaySystem()`:
 
 .. plot:: pyplots/doku/displaySys.py
-   :include-source:
+  :include-source:
 
   **Figure:** Several magnet and sensor object are created and manipulated. Using `displaySystem()` they are displayed in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
 
