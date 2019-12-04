@@ -396,8 +396,6 @@ The following example code shows how to use `displaySystem()`:
 
   **Figure:** Several magnet and sensor object are created and manipulated. Using `displaySystem()` they are displayed in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
 
-:download:`displaySys.py <../pyplots/doku/displaySys.py>`
-
 
 Math Package
 ###############

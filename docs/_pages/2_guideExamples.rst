@@ -110,7 +110,7 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 :download:`04_ComplexShape.py <../pyplots/examples/04_ComplexShape.py>`
 
 
-Using vectorized code with rotations
+Vectorized vs Classical Code
 ######################################
 
 Description coming up tomorrow :)
