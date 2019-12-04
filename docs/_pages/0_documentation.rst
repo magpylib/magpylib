@@ -1,3 +1,5 @@
+.. _docu:
+
 ******************************
 Documentation v2.0.0b
 ******************************
@@ -5,7 +7,7 @@ Documentation v2.0.0b
 The idea behind magpylib is to provide a simple and easy-to-use interface
 for computing the magnetic field of magnets, currents and moments. The
 computation is based on (semi-)analytical solutions found in the literature
-discussed in the :ref:`physics&computation` section.
+discussed in the :ref:`physComp` section.
 
 Contents
 ########
@@ -70,7 +72,7 @@ IO types
 
 The library **input** is constructed so that any
 
-- **scalar input** can be `int`, `float` or of `numpy.float` type
+- **scalar input** can be ``int``, ``float`` or of ``numpy.float`` type
 - **vector/matrix input** can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`
 
 unless specifically state otherwise in the docstrings. For example, the `magpylib.vector` functions require `numpy.array` input.

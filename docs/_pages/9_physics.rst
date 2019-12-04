@@ -1,4 +1,4 @@
-.. _physics&computation:
+.. _physComp:
 
 ***************************
 [WIP] Physics & Computation

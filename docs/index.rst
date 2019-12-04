@@ -55,9 +55,7 @@ More examples can be found in the `Examples Section`__.
 
 __ _pages/2_guideExamples/
 
-Technical details can be found in the Documentation__.
-
-__ _pages/0_documentation/
+Technical details can be found in the :ref:`docu` .
 
 
 .. toctree::
