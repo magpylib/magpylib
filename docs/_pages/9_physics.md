@@ -11,6 +11,8 @@ We cannot do soft, theres a lot of reasons we we dont need to
 ### Demagnetization
 Solution accuracy, analytical modeling of demagnetization and interaction
 
+multiple sources, no interaction
+
 ### Limits and Convergence
 
 
@@ -26,3 +28,4 @@ vectorized code
 performance tests
 
 parallelization
+
