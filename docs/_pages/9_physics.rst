@@ -1,27 +1,34 @@
 .. _physics&computation:
 
-# [WIP] Physics & Computation
+***************************
+[WIP] Physics & Computation
+***************************
 
-## The analytical solutions
+The analytical solutions
+########################
 
 Details about how they are set up
 Formulas and expressions used in magpylib, references to literature
 
-### Hard and soft magnetic materials
+Hard and soft magnetic materials
+--------------------------------
 We cannot do soft, theres a lot of reasons we we dont need to
 
-### Demagnetization
+Demagnetization
+---------------
+
 Solution accuracy, analytical modeling of demagnetization and interaction
 
 multiple sources, no interaction
 
-### Limits and Convergence
+Limits and Convergence
+######################
 
-
-### Convergence of diametral Cylinder
+Convergence of diametral Cylinder
 No. iterations
 
-### Computation
+Computation
+###########
 
 SIMD
 
