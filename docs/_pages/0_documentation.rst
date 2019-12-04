@@ -1,16 +1,11 @@
 ******************************
-Library Documentation v2.0.0b
+Documentation v2.0.0b
 ******************************
 
 The idea behind magpylib is to provide a simple and easy-to-use interface
 for computing the magnetic field of magnets, currents and moments. The
 computation is based on (semi-)analytical solutions found in the literature
-discussed in the `Physics Section`__.
-
-__ :ref:`physics&computation`
-
-
-test :ref:`physics&computation` xxx
+discussed in the :ref:`physics&computation` section.
 
 Contents
 ########

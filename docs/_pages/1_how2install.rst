@@ -1,5 +1,5 @@
 *************************
-Installation Instructions
+Installation
 *************************
 
 Content 
@@ -7,8 +7,6 @@ Content
 
 * `Install with pip`_
 * `Windows`_
-* `Linux`_
-* `Download Sites`_
 
 .. warning::
     Magpylib works only with Python 3.6 or later !
@@ -30,11 +28,7 @@ Windows
 Anaconda 3 Install
 ------------------
 
-If you have little experience with Python we recommand using `Anaconda`__.
-
-
-
-__ _https://www.anaconda.com
+If you have little experience with Python we recommand using `Anaconda <https://www.anaconda.com>`_.
 
 1. Download & install Anaconda3
 2. Start Anaconda Navigator 
