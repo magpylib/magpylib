@@ -1,3 +1,5 @@
+.. _physics&computation:
+
 # [WIP] Physics & Computation
 
 ## The analytical solutions
