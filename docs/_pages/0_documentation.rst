@@ -259,7 +259,7 @@ There are two possibilities to calculate the magnetic field of a source object `
 Using magpylib.vector
 ---------------------
 
-**The second method:** In most cases one will be interested to determine the field for a set of positions, or for different magnet positions and orientations. While this can manually be achieved by looping ``s.getB`` the computation will be inefficient. For performance computation the ``magpylib.vector`` subpackage contains the ``getBv`` functions that offer quick access to VECTORIZED CODE. A discussion of vectorization, SIMD and performance is presented in the :ref:`physComp` section.
+**The second method:** In most cases one will be interested to determine the field for a set of positions, or for different magnet positions and orientations. While this can manually be achieved by looping ``s.getB`` this is computationally inefficient. For performance computation the ``magpylib.vector`` subpackage contains the ``getBv`` functions that offer quick access to VECTORIZED CODE. A discussion of vectorization, SIMD and performance is presented in the :ref:`physComp` section.
 
 The ``magpylib.vector.getBv`` functions evaluate the field for *N* different sets of input parameters. These *N* parameter sets are provided to the ``getBv`` functions as arrays of size *N* for each input (e.g. an *Nx3* array for the *N* different positions):
 
@@ -270,9 +270,9 @@ The ``magpylib.vector.getBv`` functions evaluate the field for *N* different set
 * ``DIM`` is an *Nx3* array of magnet dimensions.
 * ``POSo`` is an *Nx3* array of observer positions.
 * ``POSm`` is an *Nx3* array of initial (before rotation) magnet positions.
-* The inputs ``[angs1, angs2, ...]``, ``[AXIS1, AXIS2, ...]``, ``[ANCH1, ANCH2, ...]`` are a lists of size *N*/*Nx3* arrays that correspond to angles, axes and anchors of rotation operations. By providing multiple list entries one can apply subsequent rotation operations. By ommitting these inputs it is assumed that no rotations are applied.
+* The inputs ``[angs1, angs2, ...]``, ``[AXIS1, AXIS2, ...]``, ``[ANCH1, ANCH2, ...]`` are a lists of *N*/*Nx3* arrays that correspond to angles, axes and anchors of rotation operations. By providing multiple list entries one can apply subsequent rotation operations. By ommitting these inputs it is assumed that no rotations are applied.
 
-As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less field evaluations while the vectorized code will be up to ~100 times faster for 10 or more field evaluations. To achieve this performance it is critical that one follows the vectorized code paradigm when creating the ``getBv`` inputs. This is demonstrated in the following example where the magnetic field at a fixed observer position is calculated for a magnet that moves linearly in x-direction above the observer.
+As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less field evaluations while the vectorized code will be up to ~100 times faster for 10 or more field evaluations. To achieve this performance it is critical that one follows the vectorized code paradigm (use only numpy native) when creating the ``getBv`` inputs. This is demonstrated in the following example where the magnetic field at a fixed observer position is calculated for a magnet that moves linearly in x-direction above the observer.
 
 .. code-block:: python
 
@@ -310,8 +310,9 @@ As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less fi
 
   # result ----------------------------------- 
   # Bc == Bv    ... up to some 1e-16
+  # Copare classic and vector computation times using e.g. time.perf_counter() 
 
-Compare the computation speed by timing the classical versus the vectorized code using .e.g the ``time.perf_counter()`` function. More examples of vectorized code can be found in the :ref:`examples-vector` section.
+More examples of vectorized code can be found in the :ref:`examples-vector` section.
 
 
 
@@ -421,7 +422,7 @@ The following example code shows how to use ``displaySystem()``:
 .. plot:: pyplots/doku/displaySys.py
   :include-source:
 
-  **Figure:** Several magnet and sensor object are created and manipulated. Using ``displaySystem()`` they are displayed in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
+  **Figure:** Several magnet and sensor objects are created and manipulated. Using ``displaySystem()`` they are displayed in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
 
 
 
@@ -447,7 +448,7 @@ Geometric addition and subtration operations can be the result when the magnetiz
 Math Package
 ###############
 
-The math package provides several practical functions that relate angle-axis (quaternion) rotations with the Euler angle rotations.  All of functions are also available in their vectorized versions for performance computation.
+The math package provides several practical functions that relate angle-axis (quaternion) rotations with the Euler angle rotations.  All functions are also available in their vectorized versions for performance computation.
 
 * ``anglesFromAxis(axis)``: This function takes an arbitrary ``axis`` argument (*vec3*) and returns its orientation given by the angles ``(phi, theta)`` that are defined as in spherical coordinates. ``phi`` is the azimuth angle and ``theta`` is the polar angle.
   
@@ -460,7 +461,7 @@ The math package provides several practical functions that relate angle-axis (qu
     
     # Output = [45. 90.]
 
-* ``anglesFromAxisV(AXIS)``: This is the vectorized version of ``anglesFromAxis``. It takes an Nx3 array of axis-vectors and returns an Nx2 array of angle pairs. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle of a spherical coordinate system respectively.
+* ``anglesFromAxisV(AXIS)``: This is the vectorized version of ``anglesFromAxis``. It takes an *Nx3* array of axis-vectors and returns an *Nx2* array of angle pairs. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle in a spherical coordinate system respectively.
 
   .. code-block:: python
   
@@ -473,7 +474,7 @@ The math package provides several practical functions that relate angle-axis (qu
     
     # Output: [[0. 0.]  [90. 90.]  [0. 90.]])
 
-* ``axisFromAngles(angles)``: This function generates an axis (3-vector) from the angle pair ``(phi,theta)`` given by ``angles``.  Here ``phi`` is the azimuth angle and ``theta`` is the polar angle of a spherical coordinate system.
+* ``axisFromAngles(angles)``: This function generates an axis (*vec3*) from the angle pair ``angles=(phi,theta)``.  Here ``phi`` is the azimuth angle and ``theta`` is the polar angle of a spherical coordinate system.
   
   .. code-block:: python
     
@@ -484,7 +485,7 @@ The math package provides several practical functions that relate angle-axis (qu
     
     # Output: [0.0  1.0  0.0]
 
-* ``axisFromAnglesV(ANGLES)``: This is the vectorized version of ``axisFromAngles``. It generates an Nx3 array of axis vectors from the Nx2 array of input angle pairs ``angles``. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle of a spherical coordinate system respectively.
+* ``axisFromAnglesV(ANGLES)``: This is the vectorized version of ``axisFromAngles``. It generates an *Nx3* array of axis vectors from the *Nx2* array of input angle pairs ``angles``. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle in a spherical coordinate system respectively.
 
   .. code-block:: python
     
@@ -510,7 +511,7 @@ The math package provides several practical functions that relate angle-axis (qu
     # Output: [-0.24834468  0.96858637  0.01285925]
 
 
-* ``randomAxisV(N)``: This is the vectorized version of ``randomAxis``. It simply returns an Nx3 array of random vectors.
+* ``randomAxisV(N)``: This is the vectorized version of ``randomAxis``. It simply returns an *Nx3* array of random vectors.
   
   .. code-block:: python
 
@@ -548,9 +549,9 @@ The math package provides several practical functions that relate angle-axis (qu
     import magpylib as magpy
     import numpy as np
 
-    POS = np.array([[1,0,0]]*5) # avoid this slow Python loop
+    POS = np.array([[1,0,0]]*5) # avoid this slow Python loop for performance conputation
     ANG = np.linspace(0,180,5)
-    AXS = np.array([[0,0,1]]*5) # avoid this slow Python loop
+    AXS = np.array([[0,0,1]]*5) # avoid this slow Python loop for performance conputation
     ANCH = np.zeros((5,3))
 
     POSnew = magpy.math.angleAxisRotationV(POS,ANG,AXS,ANCH)
