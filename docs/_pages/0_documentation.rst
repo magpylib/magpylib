@@ -1,20 +1,16 @@
 .. _docu:
 
 ******************************
-Documentation v2.0.0b
+Documentation v2.0.1b
 ******************************
 
-The idea behind magpylib is to provide a simple and easy-to-use interface
-for computing the magnetic field of magnets, currents and moments. The
-computation is based on (semi-)analytical solutions found in the literature
-discussed in the :ref:`physComp` section.
+The idea behind magpylib is to provide a simple and easy-to-use interface for computing the magnetic field of magnets, currents and moments. The computations are based on (semi-)analytical solutions found in the literature, discussed in the :ref:`physComp` section.
 
 Contents
 ########
 
 * `Package Structure`_
-* `Units`_
-* `IO types`_
+* `Units and IO types`_
 * `The Source Class`_
 
   * `Position and Orientation`_
@@ -38,13 +34,13 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 1. The **source module** includes a set of classes that represent physical sources of the magnetic field (e.g. permanent magnets).
 
-2. The **vector module** includes functions for performance computation of the magnetic field.
+2. The **vector module** includes functions for performance computation.
 
-3. The **math module** contains practical functions for working with angle-axis rotations and transformation to Euler angles.
+3. The **math module** contains practical functions for working with angle-axis rotations and transformation to and from Euler angle representation.
 
 4. The **Collection class** is used to group sources and for common manipulation.
 
-5. The **Sensor Class** represents a 3-axis magnetic field point-sensor.
+5. The **Sensor Class** represents a 3D magnetic sensor.
 
 6. The **displaySystem function** is used to create a graphical output of the system geometry.
 
@@ -57,28 +53,22 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
     **Figure:** Outline of library structure.
 
 
-Units
-######
+Units and IO types
+##################
 
 In magpylib all inputs and outputs are made in the physical units of
 
 - **Millimeter** for lengths
 - **Degree** for angles
-- **Millitesla** for magnetization, magnetic moment and magnetic field,
+- **Millitesla** for magnetization/remanence, magnetic moment and magnetic field,
 - **Ampere** for currents.
 
+For any scalar or vector input, unless specifically state otherwise in the docstring,
 
-IO types
-##########
+- **scalar input** can be of ``int`` or ``float`` type
+- **vector/matrix input** can be given either in the form of a ``list``, as a ``tuple`` or as a ``numpy.array``
 
-The library **input** is constructed so that any
-
-- **scalar input** can be ``int``, ``float`` or of ``numpy.float`` type
-- **vector/matrix input** can be given either in the form of a `list`, as a `tuple` or as a `numpy.array`
-
-unless specifically state otherwise in the docstrings. For example, the `magpylib.vector` functions require `numpy.array` input.
-
-The library **output** and all object attributes are either of `numpy.float64` or `numpy.array64` type.
+The library output and all object attributes are either of ``numpy.float64`` or ``numpy.array64`` type.
 
 
 The Source Class

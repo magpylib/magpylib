@@ -1,12 +1,14 @@
-.. _examples::
+.. _examples:
 
 *******************************
 Example Codes
 *******************************
 
-It is the aim of this section to give a few code examples that show how the library can be used. Detailed information about the library structure can be found in the :ref:`docu`.
+This section includes a few code examples that show how the library can be used. Detailed information about the library structure can be found in the :ref:`docu`.
 
 
+
+.. _example_simplest:
 Simplest Example
 #################
 
@@ -21,6 +23,8 @@ The simplest possible example - calculate the B-field of a cylinder with 3 lines
     # Output: [ 5.08641867  5.08641867 -0.60532983]
 
 
+
+.. _example_basic:
 Basic Functionality: The Field of a Collection
 ###############################################
 
@@ -32,6 +36,8 @@ In this example the basic functionality is outlined by calculating the field of 
 :download:`01_SimpleCollection.py <../pyplots/examples/01_SimpleCollection.py>`
 
 
+
+.. _example_source:
 The Source Objects and their Fields
 ###################################
 
@@ -43,6 +49,8 @@ In this example we define all existing source objects and display their fields. 
 :download:`01b_AllSources.py <../pyplots/examples/01b_AllSources.py>`
 
 
+
+.. _example_motionBasics:
 Translation, Orientation and Rotation Basics
 #############################################
 
