@@ -454,6 +454,7 @@ The math package provides several practical functions that relate angle-axis (qu
   .. code-block:: python
 
     import magpylib as magpy
+
     angles = magpy.math.anglesFromAxis([1,1,0])
     print(angles)
     
@@ -477,6 +478,7 @@ The math package provides several practical functions that relate angle-axis (qu
   .. code-block:: python
     
     import magpylib as magpy
+
     ax = magpy.math.axisFromAngles([90,90])
     print(ax)
     
@@ -496,3 +498,27 @@ The math package provides several practical functions that relate angle-axis (qu
     # Output: [[1.  0. 0.]  [0. 0. -1.]  [0. 0. 1.]]
 
 
+* ``randomAxis()``: Designed for Monte Carlo simulations, this function returns a random axis (*arr3*) of length 1 with equal angular distribution.
+  
+  .. code-block:: python
+
+    import magpylib as magpy
+
+    ax = magpy.math.randomAxis()
+    print(ax)
+    
+    # Output: [-0.24834468  0.96858637  0.01285925]
+
+
+* ``randomAxisV(N)``: This is the vectorized version of ``randomAxis``. It simply returns an Nx3 array of random vectors.
+  
+  .. code-block:: python
+
+    import magpylib as magpy
+
+    AXS = magpy.math.randomAxisV(3)
+    print(AXS)
+
+    #Output: [[ 0.39480364 -0.53600779 -0.74620757]
+    #         [ 0.02974442  0.10916333  0.9935787 ]
+    #         [-0.54639126  0.76659756 -0.33731997]]
