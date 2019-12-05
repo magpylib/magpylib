@@ -52,7 +52,9 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
     **Figure:** Outline of library structure.
 
-Check out the :ref:`index` for more details.
+Check out the :ref:`genindex` and :ref:`modindex` for more details.
+
+test :ref:`_example_source`
 
 Units and IO types
 ##################
