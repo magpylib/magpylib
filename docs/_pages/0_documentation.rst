@@ -522,3 +522,42 @@ The math package provides several practical functions that relate angle-axis (qu
     #Output: [[ 0.39480364 -0.53600779 -0.74620757]
     #         [ 0.02974442  0.10916333  0.9935787 ]
     #         [-0.54639126  0.76659756 -0.33731997]]
+
+
+* ``angleAxisRotation(pos, angle, axis, anchor=[0,0,0])``: This function applies an angle-axis rotation.  The position vector ``pos`` (*vec3*) is rotated by the angle ``angle`` (*float*) about an axis defined by the ``axis`` vector (*vec3*) which passes through the ``anchor`` position (*vec3*). The anchor argument is optional and is set to ``anchor=[0,0,0]`` if ommitted.
+
+  .. code-block:: python
+
+    import magpylib as magpy
+    
+    pos = [1,1,0]
+    angle = -90
+    axis = [0,0,1]
+    anchor = [1,0,0]
+    
+    posNew = magpy.math.angleAxisRotation(pos,angle,axis,anchor)
+    print(posNew)
+    
+    # Output = [2. 0. 0.]
+
+
+* ``angleAxisRotationV(POS, ANG, AXS, ANCH)``: This is the vectorized version of ``angleAxisRotation``. Each entry of ``POS`` (*arrNx3*) is rotated according to the angles ``ANG`` (*arrN*), about the axis vectors ``AXS`` (*arrNx3*) which pass throught the anchors ``ANCH`` (*arrNx3*) where *N* refers to the length of the input vectors.
+
+  .. code-block:: python
+
+    import magpylib as magpy
+    import numpy as np
+
+    POS = np.array([[1,0,0]]*5) # avoid this slow Python loop
+    ANG = np.linspace(0,180,5)
+    AXS = np.array([[0,0,1]]*5) # avoid this slow Python loop
+    ANCH = np.zeros((5,3))
+
+    POSnew = magpy.math.angleAxisRotationV(POS,ANG,AXS,ANCH)
+    print(np.around(POSnew,4))
+
+    # Output: [[ 1.      0.      0.    ]
+    #          [ 0.7071  0.7071  0.    ]
+    #          [ 0.      1.      0.    ]
+    #          [-0.7071  0.7071  0.    ]
+    #          [-1.      0.      0.    ]]
