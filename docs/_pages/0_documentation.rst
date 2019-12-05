@@ -451,8 +451,8 @@ The math package provides several practical functions that relate angle-axis (qu
 
 * ``anglesFromAxis(axis)``: This function takes an arbitrary ``axis`` argument (*vec3*) and returns its orientation given by the angles ``(phi, theta)`` that are defined as in spherical coordinates. ``phi`` is the azimuth angle and ``theta`` is the polar angle.
   
-  .. code-block: python
-  
+  .. code-block:: python
+
     import magpylib as magpy
     angles = magpy.math.anglesFromAxis([1,1,0])
     print(angles)
@@ -461,7 +461,7 @@ The math package provides several practical functions that relate angle-axis (qu
 
 * ``anglesFromAxisV(AXIS)``: This is the vectorized version of ``anglesFromAxis``. It takes an Nx3 array of axis-vectors and returns an Nx2 array of angle pairs. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle of a spherical coordinate system respectively.
 
-  .. code-block: python
+  .. code-block:: python
   
     import numpy as np
     import magpylib as magpy
@@ -474,7 +474,7 @@ The math package provides several practical functions that relate angle-axis (qu
 
 * ``axisFromAngles(angles)``: This function generates an axis (3-vector) from the angle pair ``(phi,theta)`` given by ``angles``.  Here ``phi`` is the azimuth angle and ``theta`` is the polar angle of a spherical coordinate system.
   
-  .. code-block: python
+  .. code-block:: python
     
     import magpylib as magpy
     ax = magpy.math.axisFromAngles([90,90])
@@ -484,7 +484,7 @@ The math package provides several practical functions that relate angle-axis (qu
 
 * ``axisFromAnglesV(ANGLES)``: This is the vectorized version of ``axisFromAngles``. It generates an Nx3 array of axis vectors from the Nx2 array of input angle pairs ``angles``. Each angle pair is ``(phi,theta)`` which are azimuth and polar angle of a spherical coordinate system respectively.
 
-  .. code-block: python
+  .. code-block:: python
     
     import magpylib as magpy
     import numpy as np
