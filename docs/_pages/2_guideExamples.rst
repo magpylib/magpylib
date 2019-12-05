@@ -131,7 +131,7 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 
 .. _examples-vector:
 
-Vectorized vs Classical Code
+Vectorized Code Example
 ######################################
 
 In this example a magnet is tilted above a sensor just like in a 1D-joystick system. The magnetic field is computed using vectorized code, taking care to create the ``getBv`` input using numpy native methods only. 
