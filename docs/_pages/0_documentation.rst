@@ -9,9 +9,9 @@ The idea behind magpylib is to provide a simple and easy-to-use interface for co
 Contents
 ########
 
-* `Package Structure`_
-* `Units and IO types`_
-* `The Source Class`_
+* :ref:`docu-PackageStructure`
+* :ref:`docu-unitsAndIO`
+* :ref:`docu-sourceClass`
 
   * `Position and Orientation`_
   * `Geometry / Dimension & Excitation`_
@@ -26,6 +26,8 @@ Contents
 * `Display System Graphically`_
 * `Math Package`_
 
+
+.. _docu-PackageStructure:
 
 Package Structure
 #################
@@ -54,7 +56,8 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 Check out the :ref:`genindex` and :ref:`modindex` for more details.
 
-test :ref:`XXX`
+
+.. _docu-unitsAndIO:
 
 Units and IO types
 ##################
@@ -70,6 +73,8 @@ Unless specifically state otherwise in the docstring, **scalar input** can be of
 
 The library output and all object attributes are either of ``numpy.float64`` or ``numpy.array64`` type.
 
+
+.. _docu-sourceClass:
 
 The Source Class
 #################
