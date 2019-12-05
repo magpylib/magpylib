@@ -37,7 +37,8 @@ In this example the basic functionality is outlined by calculating the field of 
 
 
 
-.. _example_source:
+.. _XXX:
+
 The Source Objects and their Fields
 ###################################
 

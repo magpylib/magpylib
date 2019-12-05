@@ -54,7 +54,7 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 Check out the :ref:`genindex` and :ref:`modindex` for more details.
 
-test :ref:`example_source`
+test :ref:`XXX`
 
 Units and IO types
 ##################
@@ -84,11 +84,11 @@ This is the core class of the library. The idea is that source objects represent
 
 All source objects share various attributes and methods. The attributes characterize the source (e.g. position, orientation, dimension) while the methods can be used for geometric manipulation and for calculating the magnetic field. The figure below gives a graphical overview.
 
-.. figure:: ../_static/images/documentation/sourceVars_Methods.png
+.. figure:: ../_static/images/documentation/sourceVarsMethods.png
   :align: center
   :scale: 60 %
 
-  **Figure:** Illustration of attributes and methods of the source class.
+  **Figure:** Illustration of attributes and methods of the source class objects.
 
 
 Position and Orientation
