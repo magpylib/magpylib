@@ -236,7 +236,7 @@ The following example code shows how geometric operations are applied to source 
 Calculating the Magnetic Field
 ##############################
 
-To calculate the field, magpylib uses mostly analytical expressions that can be found in the literature. References, validity and discussion of these solutions can be found in the :ref:`physComp` section. In a nutshell, the fields of the dipole and the currents are exact. For the magnet classes the analytical solutions deal with homogeneous, fixed magnetizations. For hard ferromagnets with large coercive fields like Ferrite, Neodyme and SmCo the error is typically below 2%.
+To calculate the field, magpylib uses mostly analytical expressions that can be found in the literature. References, validity and discussion of these solutions can be found in the :ref:`physComp` section. In a nutshell, the fields of the dipole and the currents are exact. The analytical magnet solutions deal with homogeneous, fixed magnetizations. For hard ferromagnets with large coercive fields like Ferrite, Neodyme and SmCo the error is typically below 2%.
 
 There are two possibilities to calculate the magnetic field of a source object ``s``:
 
@@ -270,11 +270,9 @@ The core idea of the ``magpylib.vector.getBv`` functions is that the field is ev
 * ``DIM`` is an *Nx3* array of magnet dimensions.
 * ``POSo`` is an *Nx3* array of observer positions.
 * ``POSm`` is an *Nx3* array of initial (before rotation) magnet positions.
-* The inputs ``[angs]``, ``[AXIS]``, ``[ANCH]`` are a lists of size *N*/*Nx3* arrays that correspond to angles, axes and anchors of rotation operations. By providing multiple list entries one can apply subsequent rotation operations. By ommitting these inputs assumed that no rotation is applied.
+* The inputs ``[angs1, angs2, ...]``, ``[AXIS1, AXIS2, ...]``, ``[ANCH1, ANCH2, ...]`` are a lists of size *N*/*Nx3* arrays that correspond to angles, axes and anchors of rotation operations. By providing multiple list entries one can apply subsequent rotation operations. By ommitting these inputs it is assumed that no rotations are applied.
 
-As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less field evaluations while the vectorized code will be up to ~100 times faster for 10 or more field evaluations. To achieve this performance it is critical that one follows the vectorized code paradigm when creating the ``getBv`` inputs.
-
-In the following example the magnetic field at a fixed sensor is calculated for a magnet that moves in x-direction above the sensor.
+As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less field evaluations while the vectorized code will be up to ~100 times faster for 10 or more field evaluations. To achieve this performance it is critical that one follows the vectorized code paradigm when creating the ``getBv`` inputs. This is demonstrated in the following example where the magnetic field at a fixed observer position is calculated for a magnet that moves linearly in x-direction above the observer.
 
 .. code-block:: python
 
@@ -284,10 +282,10 @@ In the following example the magnetic field at a fixed sensor is calculated for 
   # vector size: we calculate the field N times with different inputs
   N = 1000
 
-  # Constant vectors
-  mag  = np.array([0,0,1000],dtype='float64')    # magnet magnetization
-  dim  = np.array([2,2,2],dtype='float64')       # magnet dimension
-  poso = np.array([0,0,-4],dtype='float64')      # position of observer
+  # Constant vectors, specify dtype
+  mag  = np.array([0,0,1000.])    # magnet magnetization
+  dim  = np.array([2,2,2.])       # magnet dimension
+  poso = np.array([0,0,-4.])      # position of observer
 
   # magnet x-positions
   xMag = np.linspace(-10,10,N)
@@ -311,9 +309,10 @@ In the following example the magnetic field at a fixed sensor is calculated for 
   Bv = magpy.vector.getBv_magnet('box',MAG,DIM,POSo,POSm)
 
   # result ----------------------------------- 
-  # Bc == Bv
+  # Bc == Bv    ... up to some 1e-16
 
-Compare the computation speed by timing the calssical versus the vectorized code using .e.g the ``time.perf_counter()`` function. More examples of vectorized code can be found in the :ref:`XXX` section.
+Compare the computation speed by timing the calssical versus the vectorized code using .e.g the ``time.perf_counter()`` function. More examples of vectorized code can be found in the :ref:`examples-vector` section.
+
 
 
 .. _docu-collection:

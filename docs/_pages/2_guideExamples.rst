@@ -8,7 +8,8 @@ This section includes a few code examples that show how the library can be used.
 
 
 
-.. _example_simplest:
+.. _examples-simplest:
+
 Simplest Example
 #################
 
@@ -24,7 +25,8 @@ The simplest possible example - calculate the B-field of a cylinder with 3 lines
 
 
 
-.. _example_basic:
+.. _examples-basic:
+
 Basic Functionality: The Field of a Collection
 ###############################################
 
@@ -37,7 +39,7 @@ In this example the basic functionality is outlined by calculating the field of 
 
 
 
-.. _XXX:
+.. _examples-sourceObjects:
 
 The Source Objects and their Fields
 ###################################
@@ -51,7 +53,8 @@ In this example we define all existing source objects and display their fields. 
 
 
 
-.. _example_motionBasics:
+.. _examples-motionBasics:
+
 Translation, Orientation and Rotation Basics
 #############################################
 
@@ -91,6 +94,9 @@ Collections can be manipulated using the previous logic as well. Notice how obje
 :download:`00e_ColTransRot.py <../pyplots/examples/00e_ColTransRot.py>`
 
 
+
+.. _examples-joystick:
+
 Magnet Motion: Simulating a Magnetic Joystick
 ##############################################
 
@@ -108,6 +114,9 @@ In the following program the magnetic field is calculated for all degrees of fre
 :download:`02_MagnetMotion.py <../pyplots/examples/02_MagnetMotion.py>`
 
 
+
+.. _examples-complexShapes:
+
 Complex Magnet Shapes: Hollow Cylinder
 ###########################################
 
@@ -118,6 +127,9 @@ The superposition principle allows us to calculate complex magnet shapes by 'add
 
 :download:`04_ComplexShape.py <../pyplots/examples/04_ComplexShape.py>`
 
+
+
+.. _examples-vector:
 
 Vectorized vs Classical Code
 ######################################
