@@ -100,13 +100,13 @@ All source objects share various attributes and methods. The attributes characte
 
 Position and Orientation
 ------------------------
-The most fundamental properties of a source object ``s`` are position and orientation which are represented through the attributes ``s.position`` (arr3), ``s.angle`` (float) and ``s.axis`` (arr3). At source initialization, if no values are specified, the source object is initialized by default with ``position=(0,0,0)``, and **init orientation** defined to be ``angle=0`` and ``axis=(0,0,1)``.
+The most fundamental properties of a source object ``s`` are position and orientation which are represented through the attributes ``s.position`` (*arr3*), ``s.angle`` (*float*) and ``s.axis`` (*arr3*). At source initialization, if no values are specified, the source object is initialized by default with ``position=(0,0,0)``, and **init orientation** defined to be ``angle=0`` and ``axis=(0,0,1)``.
 
 Due to their different nature each source type is characterized by different attributes. However, in general the ``position`` attribute refers to the position of the geometric center of the source. The **init orientation** generally defines sources standing upright oriented along the Cartesian coordinates axes, see e.g. the following image below.
 
-An orientation of a source `s` given by (``angle``,``axis``) refers to a rotation of `s` RELATIVE TO the **init orientation** about an axis specified by the ``s.axis`` vector anchored at ``s.position``. The angle of this rotation is given by the ``s.angle`` attribute. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the :ref:`docu-math` provides some useful methods.
+An orientation of a source ``s`` given by (``angle``, ``axis`` ) refers to a rotation of ``s`` RELATIVE TO the **init orientation** about an axis specified by the ``s.axis`` vector which is anchored at ``s.position``. The angle of this rotation is given by the ``s.angle`` attribute. Mathematically, every possible orientation can be expressed by such a single angle-axis rotation. For easier use of the angle-axis rotation and transformation to Euler angles the :ref:`docu-math` provides some useful methods.
 
-.. figure:: ../_static/images/documentation/source_Orientation.JPG
+.. figure:: ../_static/images/documentation/sourceOrientation.png
   :align: center
   :scale: 50 %
 
@@ -118,13 +118,21 @@ An orientation of a source `s` given by (``angle``,``axis``) refers to a rotatio
 Geometry / Dimension & Excitation
 --------------------
 
-While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized to provide meaning. The source geometry is generally described by the `dimension` attribute. However, as each source requires different input parameters, the format is always different. Detailed information about the attributes of each specific source type and how to initialize them can be found in the respective class docstrings:
-:mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`,:mod:`~magpylib.source.magnet.Sphere`, :mod:`~magpylib.source.magnet.Facet`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
+While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized to provide meaning.
 
-The excitation is either the magnetization, the current or the magnetic moment. Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). The magnetization vector is described by the `magnetization` attribute (arr3). The magnetization vector is always given with respect to the INIT ORIENTATION of the magnet. The current sources represent line currents. They require a scalar `current` input. The moment class represents a magnetic dipole moment which requires a `moment` (arr3) input.
+The ``dimension`` input specified the size of the source. However, as each source type requires different input parameters the format is always different.
+
+The excitation of a source is either the magnetization, the current or the magnetic moment:
+
+* Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). Such excitations are given by the ``magnetization`` (*vec3*) input which is always given with respect to the INIT ORIENTATION of the magnet.
+* Current sources represent electrical line currents. Their excitation is simply the electrical current in units of Ampere defined by the ``current`` (*float*) input.
+* The moment class represents a magnetic dipole moment described by the ``moment`` (*vec3*) input.
+
+Detailed information about the attributes of each specific source type and how to initialize them can be found in the respective class docstrings:
+:mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Sphere`, :mod:`~magpylib.source.magnet.Facet`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
 
 .. note::
-  For convenience **magnetization**, **current**, **dimension**, **position** are initialized through the keywords **mag**, **curr**, **dim** and **pos**.
+  For convenience ``magnetization``, ``current``, ``dimension`` and ``position`` are initialized through the keywords ``mag``, ``curr``, ``dim`` and ``pos``.
 
 The following code shows how to initialize a source object, a D4H5 permanent magnet cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
 
