@@ -110,25 +110,38 @@ An orientation of a source ``s`` given by (``angle``, ``axis`` ) refers to a rot
   :align: center
   :scale: 50 %
 
-  **Figure:** Illustration of the angle-axis system for source orientations.
+  **Figure:** Illustration of the angle-axis system used to describe source orientations.
 
 
 .. _docu-DimExc:
 
-Geometry / Dimension & Excitation
+Dimension & Excitation
 --------------------
 
-While position and orientation have default values, a source is defined through its geometry (e.g. Cylinder) and excitation (e.g. Magnetization Vector) which must be initialized to provide meaning.
+While position and orientation have default values, a source is defined through its geometry (e.g. cylinder) and excitation (e.g. magnetization vector) which must be initialized to provide meaning.
 
-The ``dimension`` input specified the size of the source. However, as each source type requires different input parameters the format is always different.
+The ``dimension`` input specifies the size of the source. However, as each source type requires different input parameters the format is always different:
 
-The excitation of a source is either the magnetization, the current or the magnetic moment:
+* ``Box.dimension`` is a 3D array of the cuboid sides, *[a,b,c]*
+* ``Cylinder.dimension`` is a 2D array of diameter and height, *[d,h]*
+* ``Sphere.dimension`` is a float describing the diameter *d*
+* ``Facet.dimension`` is a 3x3 array of the three corner vertices, *[A,B,C]*
+* ``Line.dimension`` is a Nx3 array of N subsequent vertices, *[V1,V2,V3,...]*
+* ``Circular.dimension`` is a float describing the diameter *d*
 
-* Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). Such excitations are given by the ``magnetization`` (*vec3*) input which is always given with respect to the INIT ORIENTATION of the magnet.
+.. figure:: ../_static/images/documentation/sourceGeometry.png
+  :align: center
+  :scale: 50 %
+
+  **Figure:** Illustration of information given by the dimension-attribute.
+
+The excitation of a source is either the ``magnetization``, the ``current`` or the magnetic ``moment``:
+
+* Magnet sources represent homogeneously magnetized permanent magnets (other types with radial or multipole magnetization are not implemented at this point). Such excitations are given by the ``magnetization`` (*vec3*) input which is always given with respect to the **init orientation** of the magnet.
 * Current sources represent electrical line currents. Their excitation is simply the electrical current in units of Ampere defined by the ``current`` (*float*) input.
 * The moment class represents a magnetic dipole moment described by the ``moment`` (*vec3*) input.
 
-Detailed information about the attributes of each specific source type and how to initialize them can be found in the respective class docstrings:
+Detailed information about the attributes of each specific source type and how to initialize them can also be found in the respective class docstrings:
 :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Sphere`, :mod:`~magpylib.source.magnet.Facet`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
 
 .. note::
@@ -157,16 +170,17 @@ The following code shows how to initialize a source object, a D4H5 permanent mag
 
   **Figure:** Magnet geometry created by above code: A cylinder which stands upright with geometric center at the origin.
 
+
 .. _docu-GeoManip:
 
 Methods for Geometric Manipulation
 ----------------------------------
 
-In most cases we want to move the magnet to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this:
+In most cases we want to move the source to a designated position, orient it in a desired way or change its dimension dynamically. There are several ways to achieve this:
 
 **At initialization:**
 
-When initializing the source we can set all attributes as desired. So instead of *moving one source around* one could create a new one for each set of parameters of interest.
+When initializing the source we can set all attributes as desired. So instead of *moving one source around* one could create a new source for each parameter set of interest.
 
 **Manipulation after initialization:**
 
