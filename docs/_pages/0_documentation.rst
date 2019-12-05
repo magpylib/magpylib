@@ -133,7 +133,7 @@ The ``dimension`` input specifies the size of the source. However, as each sourc
   :align: center
   :scale: 50 %
 
-  **Figure:** Illustration of information given by the dimension-attribute.
+  **Figure:** Illustration of information given by the dimension-attribute. The source positions (typically the geometric center) is indicated by the red dot.
 
 The excitation of a source is either the ``magnetization``, the ``current`` or the magnetic ``moment``:
 
@@ -145,7 +145,7 @@ Detailed information about the attributes of each specific source type and how t
 :mod:`~magpylib.source.magnet.Box`, :mod:`~magpylib.source.magnet.Cylinder`, :mod:`~magpylib.source.magnet.Sphere`, :mod:`~magpylib.source.magnet.Facet`, :mod:`~magpylib.source.current.Line`, :mod:`~magpylib.source.current.Circular`, :mod:`~magpylib.source.moment.Dipole` 
 
 .. note::
-  For convenience ``magnetization``, ``current``, ``dimension`` and ``position`` are initialized through the keywords ``mag``, ``curr``, ``dim`` and ``pos``.
+  For convenience the attributes ``magnetization``, ``current``, ``dimension`` and ``position`` are initialized through the keywords ``mag``, ``curr``, ``dim`` and ``pos``.
 
 The following code shows how to initialize a source object, a D4H5 permanent magnet cylinder with diagonal magnetization, positioned with the center in the origin, standing upright with axis in z-direction.
 
@@ -186,15 +186,15 @@ When initializing the source we can set all attributes as desired. So instead of
 
 We initialize the source and manipulate it afterwards as desired by
 
-1. directly setting the source attributes.
-2. using provided methods of manipulation.
+1. directly setting the source attributes (e.g. ``s.position=newPosition``),
+2. or by using provided methods of manipulation.
 
-The latter is often the most practical and intuitive way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include `setPosition` and `move` for translation of the objects as well as `setOrientation` and `rotate` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
+The latter is often the most practical and intuitive way. To this end the source class provides a set of methods for convenient geometric manipulation. The methods include ``setPosition`` and ``move`` for translation of the objects as well as ``setOrientation`` and ``rotate`` for rotation operations. Upon application to source objects they will simply modify the object attributes accordingly.
 
-* `s.setPosition(newPos)`: Moves the source to the position given by the argument vector (*newPos*. *s.position -> newPos*)
-* `s.move(displacement)`: Moves the source by the argument vector *displacement*. (*s.position -> s.position + displacement*) 
-* `s.setOrientation(angle,axis)`: This method sets a new source orientation given by *angle* and *axis*. (*s.angle -> angle, s.axis -> axis*)
-* `s.rotate(angle,axis,anchor=self.position)`: Rotates the source object by *angle* about the axis *axis* which passes through a position given by *anchor*. As a result position and orientation attributes are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
+* ``s.setPosition(newPos)``: Moves the source to the position given by the argument vector (``s.position`` -> ``newPos``)
+* ``s.move(displacement)``: Moves the source by the argument vector. (``s.position`` -> ``s.position + displacement``) 
+* ``s.setOrientation(angle,axis)``: This method sets a new source orientation given by the arguments. (``s.angle``-> ``angle``, ``s.axis`` -> ``axis``)
+* ``s.rotate(angle,axis,anchor=self.position)``: Rotates the source object by ``angle`` about the axis ``axis`` which passes through a position given by ``anchor``. As a result position and orientation attributes are modified. If no value for anchor is specified, the anchor is set to the object position, which means that the object rotates about itself.
 
 The following videos show the application of the four methods for geometric manipulation.
 
@@ -236,12 +236,12 @@ The following example code shows how geometric operations are applied to source 
 Calculating the Magnetic Field
 ##############################
 
-To calculate the fields, magpylib uses mostly analytical expressions that can be found in the literature. A detailed analysis of the precision and applicability of these solutions can be found in the :ref:`physComp`. In a nutshell, the fields of dipole and current are exact for their geometry. For the magnet classes the analytical solutions deal with homogeneous, fixed magnetizations. For typical hard ferromagnets like Ferrite, Neodyme and SmCo the accuracy of the solution easily exceeds 98%.
+To calculate the field, magpylib uses mostly analytical expressions that can be found in the literature. References, validity and discussion of these solutions can be found in the :ref:`physComp` section. In a nutshell, the fields of the dipole and the currents are exact. For the magnet classes the analytical solutions deal with homogeneous, fixed magnetizations. For hard ferromagnets with large coercive fields like Ferrite, Neodyme and SmCo the error is typically below 2%.
 
-There are two possibilities to calculate the magnetic field:
+There are two possibilities to calculate the magnetic field of a source object ``s``:
 
-1. Using the `s.getB(pos)` method of source objects.
-2. Using the `magpylib.vector` subpackage.
+1. Using the ``s.getB(pos)`` method
+2. Using the `magpylib.vector` subpackage
 
 **The first method:** Each source object (or collection) `s` has a method `s.getB(pos)` which returns the magnetic field generated by `s` at the position `pos`.
 
