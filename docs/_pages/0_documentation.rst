@@ -261,11 +261,11 @@ Using magpylib.vector
 
 **The second method:** In most cases one will be interested to determine the field for a set of positions, or for different magnet positions and orientations. While this can manually be achieved by looping ``s.getB`` the computation will be inefficient. For performance computation the ``magpylib.vector`` subpackage contains the ``getBv`` functions that offer quick access to VECTORIZED CODE. A discussion of vectorization, SIMD and performance is presented in the :ref:`physComp` section.
 
-The core idea of the ``magpylib.vector.getBv`` functions is that the field is evaluated for *N* different sets of input parameters. These *N* parameter sets are provided to the ``getBv`` functions as arrays of size *N* for each input (e.g. an *Nx3* array for the *N* different positions):
+The ``magpylib.vector.getBv`` functions evaluate the field for *N* different sets of input parameters. These *N* parameter sets are provided to the ``getBv`` functions as arrays of size *N* for each input (e.g. an *Nx3* array for the *N* different positions):
 
 ``getBv_magnet(type, MAG, DIM, POSo, POSm, [angs1,angs2,...], [AXIS1,AXIS2,...], [ANCH1,ANCH2,...])``
 
-* ``type`` is a string that specifies the magnet geometry (e.g. 'box' or 'sphere').
+* ``type`` is a string that specifies the magnet geometry (e.g. *'box'* or *'sphere'*).
 * ``MAG`` is an *Nx3* array of magnetization vectors.
 * ``DIM`` is an *Nx3* array of magnet dimensions.
 * ``POSo`` is an *Nx3* array of observer positions.
@@ -305,13 +305,13 @@ As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less fi
   POSo = np.tile(poso,(N,1))
   POSm = np.c_[xMag,np.zeros((N,2))]
 
-  # Evaluation of the *N* fields using vectorized code
+  # Evaluation of the N fields using vectorized code
   Bv = magpy.vector.getBv_magnet('box',MAG,DIM,POSo,POSm)
 
   # result ----------------------------------- 
   # Bc == Bv    ... up to some 1e-16
 
-Compare the computation speed by timing the calssical versus the vectorized code using .e.g the ``time.perf_counter()`` function. More examples of vectorized code can be found in the :ref:`examples-vector` section.
+Compare the computation speed by timing the classical versus the vectorized code using .e.g the ``time.perf_counter()`` function. More examples of vectorized code can be found in the :ref:`examples-vector` section.
 
 
 
@@ -322,11 +322,11 @@ Collections
 
 The idea behind the top level :class:`magpylib.Collection` class is to group multiple source objects for common manipulation and evaluation of the fields. 
 
-In principle a collection `c` is simply a list of source objects that are collected in the attribute `c.sources`. Operations applied to the collection will be applied to all sources that are part of the collection.
+In principle a collection ``c`` is simply a list of source objects that are collected in the attribute ``c.sources`` (*list*). Operations applied individually to the collection will be applied to all sources that are part of the collection.
 
-Collections can be constructed at initialization by simply giving the sources objects as arguments. It is possible to add single sources, lists of multiple sources and even other collection objects. All sources are simply added to the `sources` attribute of the target collection.
+Collections can be constructed at initialization by simply giving the sources objects as arguments. It is possible to add single sources, lists of multiple sources and even other collection objects. All sources are simply added to the ``sources`` attribute of the target collection.
 
-With the collection kwarg `dupWarning=True`, adding multiples of the same source will be blocked, and a warning will be displayed informing the user that a source object is already in the collection's `source` attribute. This can be unblocked by providing the `dupWarning=False` kwarg.
+With the collection kwarg ``dupWarning=True``, adding multiples of the same source will be prevented, and a warning will be displayed informing the user that a source object is already in the collection's ``source`` attribute. Adding the same object multiple times can be done by setting ``dupWarning=False``.
 
 In addition, the collection class features methods to add and remove sources for command line like manipulation. The method `c.addSources(*sources)` will add all sources given to it to the collection `c`. The method `c.removeSource(ref)` will remove the referenced source from the collection. Here the `ref` argument can be either a source or an integer indicating the reference position in the collection, and it defaults to the latest added source in the Collection.
 
