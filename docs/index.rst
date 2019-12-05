@@ -66,7 +66,8 @@ Technical details can be found in the :ref:`docu` .
    _autogen/magpylib.math
 
 
-Index and tables
+.. _index:
+Index
 ################
 
 * :ref:`genindex`
