@@ -54,7 +54,7 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 Check out the :ref:`genindex` and :ref:`modindex` for more details.
 
-test :ref:`_example_source`
+test :ref:`example_source`
 
 Units and IO types
 ##################
@@ -66,10 +66,7 @@ In magpylib all inputs and outputs are made in the physical units of
 - **Millitesla** for magnetization/remanence, magnetic moment and magnetic field,
 - **Ampere** for currents.
 
-For any scalar or vector input, unless specifically state otherwise in the docstring,
-
-- **scalar input** can be of ``int`` or ``float`` type
-- **vector/matrix input** can be given either in the form of a ``list``, as a ``tuple`` or as a ``numpy.array``
+Unless specifically state otherwise in the docstring, **scalar input** can be of ``int`` or ``float`` type and **vector/matrix input** can be given either in the form of a ``list``, as a ``tuple`` or as a ``numpy.array``.
 
 The library output and all object attributes are either of ``numpy.float64`` or ``numpy.array64`` type.
 
@@ -77,9 +74,9 @@ The library output and all object attributes are either of ``numpy.float64`` or 
 The Source Class
 #################
 
-This is the core class of the library. The idea is that source objects represent physical magnetic sources in Cartesian three-dimensional space. The following source types are currently implemented in magpylib.
+This is the core class of the library. The idea is that source objects represent physical magnetic field sources in Cartesian three-dimensional space. The following source types are currently implemented,
 
-.. figure:: ../_static/images/documentation/SourceTypes.JPG
+.. figure:: ../_static/images/documentation/SourceTypes.png
   :align: center
   :scale: 60 %
 
