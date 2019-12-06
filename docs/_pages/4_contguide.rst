@@ -23,4 +23,4 @@ Contributions
 
 We want to thank a lot of ppl who have helped to realize and advance this project.
 
-We welcome any feedback (Bug reports, feature requests, comments, really anything 😃) via email [magpylib@gmail.com](emailto:magpylib@gmail.com) or through [gitHub](https://github.com/magpylib/magpylib/issues) channels.
+We welcome any feedback (Bug reports, feature requests, comments, really anything 😃) via email `magpylib@gmail.com <mailto:magpylib@gmail.com>`_ or through `gitHub <https://github.com/magpylib/magpylib/issues>`_ channels.
