@@ -416,6 +416,7 @@ Then top level function ``displaySystem(c)`` can be used to quickly check the ge
 * ``suppress=True`` for suppressing the immediate figure output when the function is called. To do so it is necessary to deactivate the interactive mode by calling ``pyplot.ioff()``. With `Spyder's <https://www.spyder-ide.org/>`_ IPython *Inline* plotting, graphs made with :meth:`~magpylib.displaySystem()` can be blank if the ``suppress=True`` option is not used. Set IPython Graphics backend to *Automatic* or *Qt5* instead of *Inline* in settings/IPython console/Graphics method to address this.
 * ``direc=True`` for displaying current and magnetization directions in the figure.
 * ``subplotAx=None`` for displaying the plot on a designated figure subplot instance.
+* ``figsize=(8,8)`` for setting the size of the output graphic.
 
 The following example code shows how to use ``displaySystem()``:
 

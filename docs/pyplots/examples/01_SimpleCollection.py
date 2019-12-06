@@ -5,8 +5,8 @@ import magpylib as magpy
 
 # create figure
 fig = plt.figure(figsize=(8,4))
-ax1 = fig.add_subplot(121, projection='3d')
-ax2 = fig.add_subplot(122)
+ax1 = fig.add_subplot(121, projection='3d')  # this is a 3D-plotting-axis
+ax2 = fig.add_subplot(122)                   # this is a 2D-plotting-axis
 
 # create magnets
 s1 = magpy.source.magnet.Box(mag=[0,0,600],dim=[3,3,3],pos=[-4,0,3])
@@ -19,7 +19,7 @@ s2.move([5,0,-4])
 # create collection
 c = magpy.Collection(s1,s2)
 
-# display system geometry
+# display system geometry on ax1
 magpy.displaySystem(c,subplotAx=ax1,suppress=True)
 
 # calculate B-field on a grid

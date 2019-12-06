@@ -1,9 +1,8 @@
-from magpylib.source.magnet import Box
+import numpy as np
 import magpylib as magpy
-from numpy import array
-import matplotlib.pyplot as plt
+from magpylib.source.magnet import Box
 
-#fixed magnet parameters
+# fixed magnet parameters
 M = [0,0,1] #magnetization
 D = [2,2,2] #dimension
 
@@ -21,13 +20,10 @@ s4 = Box(mag=M, dim=D, pos = [ 2,0, 4])
 s4.setPosition([2,0,-2])
 
 s5 = Box(mag=M, dim=D, pos = [ 4,0, 4])
-s5.position = array([4,0,0])
+s5.position = np.array([4,0,0])
 
 #collection
 c = magpy.Collection(s1,s2,s3,s4,s5)
 
 #display collection
-fig = magpy.displaySystem(c,suppress=True)
-fig.set_size_inches(6, 6)
-
-plt.show(fig)
+magpy.displaySystem(c,figsize=(6,6))
