@@ -6,6 +6,18 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [2.1.0b] - 2019-12-06
+
+### Added
+- Docstrings for vector functions.
+- displaySystem kwarg `figsize`
+- bringing documentation up to speed
+
+### Fixes
+- init file bug
+
+---
+
 ## [2.0.0b] - 2019-11-29
 ### Changed
 - Restructuring
