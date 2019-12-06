@@ -6,13 +6,9 @@
 What is magpylib ?
 ##################
 
-- Python package for calculating magnetic fields of magnets, currents and
-  moments (sources).
-- Provides convenient methods to generate, geometrically manipulate, group
-  and vizualize assemblies of sources.
-- The magnetic fields are determined from underlying (semi-analytical)
-  solutions which results in fast computation times and requires little
-  computation power.
+- Free Python package for calculating magnetic fields of magnets, currents and moments (sources).
+- Provides convenient methods to create, geometrically manipulate, group and visualize assemblies of sources.
+- The magnetic fields are determined from underlying (semi-analytical) solutions which results in fast computation times and requires little computation power.
 
 .. image:: _static/images/index/sourceFundamentals.png
    :align: center
@@ -20,7 +16,7 @@ What is magpylib ?
 Quickstart
 ##########
 
-Install magpylib with pip (``>> pip install magpylib``).
+Install magpylib with pip: ``>> pip install magpylib``.
 
 **Example:**
 
@@ -34,18 +30,13 @@ Run this simple code to calculate the magnetic field of a cylindrical magnet.
 
     # Output: [ 5.08641867  5.08641867 -0.60532983]
 
-In this example the magnet axis is parallel to the z-axis. The magnetization / 
-remanence field is homogeneous and points in z-direction with amplitude of 
-350 millitesla. The diameter and height of the magnet are 4 millimeter and 
-5 millimeter respectively and the magnet position (=geometric center) is in the
-origin. Finally, the magnetic field *B* is calculated in units of millitesla at
-the positition *[4,4,4]* given in units of millimeter.
+In this example the cylinder axis is parallel to the z-axis. The diameter and height of the magnet are 4 millimeter and 5 millimeter respectively and the magnet position (=geometric center) is in the
+origin. The magnetization / remanence field is homogeneous and points in z-direction with an amplitude of 350 millitesla.  Finally, the magnetic field **B** is calculated in units of millitesla at
+the positition *[4,4,4]* millimeter.
 
 **Example:**
 
-The following code calculates the combined field of two magnets.
-They are geometrically manipulated, the system geometry is displayed and the 
-field is displayed in the xz-plane.
+The following code calculates the combined field of two magnets. They are geometrically manipulated, the system geometry is displayed together with the field in the xz-plane.
 
 .. plot:: pyplots/examples/01_SimpleCollection.py
    :include-source:
@@ -55,9 +46,7 @@ More examples can be found in the `Examples Section`__.
 
 __ _pages/2_guideExamples/
 
-Technical details can be found in the Documentation__.
-
-__ _pages/0_documentation/
+Technical details can be found in the :ref:`docu` .
 
 
 .. toctree::
@@ -77,7 +66,7 @@ __ _pages/0_documentation/
    _autogen/magpylib.math
 
 
-Index and tables
+Index
 ################
 
 * :ref:`genindex`
