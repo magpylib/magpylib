@@ -114,18 +114,17 @@ def randomAxisV(N):
     -------
     axes : Nx3 arr
         A  vector of random axes from an equal angular distribution of length 1.
+
+    Example
+    -------
+    >>> import magpylib as magpy
+    >>> import magpylib as magpy
+    >>> AXS = magpy.math.randomAxisV(3)
+    >>> print(AXS)
+    >>> # Output: [[ 0.39480364 -0.53600779 -0.74620757]
+    ... [ 0.02974442  0.10916333  0.9935787 ]
+    ... [-0.54639126  0.76659756 -0.33731997]]
     """
-    
-    # R = np.random.rand(N,3)*2-1
-    
-    # while True:
-    #     lenR = np.linalg.norm(R,axis=1)
-    #     mask = lenR > 1  #bad = True
-    #     Nbad = np.sum(mask)
-    #     if Nbad==0:
-    #         return R/lenR
-    #     else:
-    #         R[mask] = np.random.rand(Nbad,3)*2-1
 
     R = np.random.rand(N,3)*2-1
         
@@ -142,19 +141,30 @@ def randomAxisV(N):
 
 def axisFromAnglesV(ANG):
     """
-    This is the vectorized version of axisFromAngles(). 
-    This function generates an `axis` (3-vector of length 1) from two `angles` = [phi,th]
-    that are defined as in spherical coordinates. phi = azimuth angle, th = polar angle.
+    This is the vectorized version of axisFromAngles(). It generates an Nx3 
+    array of axis vectors from the Nx2 array of input angle pairs angles. 
+    Each angle pair is (phi,theta) which are azimuth and polar angle of a 
+    spherical coordinate system respectively.
 
     Parameters
     ----------
     ANG : arr Nx2 [deg]
-        Array of size N of the two angels [phi,th], azimuth and polar, in units of deg.
+        An N-sized array of angle pairs [phi th], azimuth and polar, in 
+        units of deg.
 
     Returns    
     -------
     AXIS : arr Nx3
-        An N-sized array of axis vectors (length 1) oriented as given by the input ANG.
+        An N-sized array of unit axis vectors oriented as given by the input ANG.
+    
+    Example
+    -------
+    >>> import magpylib as magpy
+    >>> import numpy as np
+    >>> ANGS = np.array([[0,90],[90,180],[90,0]])
+    >>> AX = magpy.math.axisFromAnglesV(ANGS)
+    >>> print(np.around(AX,4))
+    >>> # Output: [[1.  0. 0.]  [0. 0. -1.]  [0. 0. 1.]]
     """
     PHI = ANG[:,0]/180*np.pi
     TH = ANG[:,1]/180*np.pi
@@ -165,22 +175,31 @@ def axisFromAnglesV(ANG):
 
 def anglesFromAxisV(AXIS):
     """
-    This is the vectorized version of anglesFromAxis().
-
-    This function takes an array of arbitrary axes and returns 
-    the orientations given by the angles = [phi,th] that are defined as in 
-    spherical coordinates. phi = azimuth angle, th = polar angle.
+    This is the vectorized version of anglesFromAxis(). It takes an Nx3 array 
+    of axis-vectors and returns an Nx2 array of angle pairs. Each angle pair is 
+    (phi,theta) which are azimuth and polar angle in a spherical coordinate 
+    system respectively.
 
     Parameters
     ----------
     AXIS : arr Nx3
-        N sized array of axis-vectors (arr3 with length 1).
+        N-sized array of axis-vectors (do not have to be not be normalized).
 
     Returns
     -------
     ANGLES : arr Nx2 [deg]
-        An array of angles [phi,th], azimuth and polar, that anchorrespond to 
-        the orientations given by the input axes.
+        N-sized array of angle pairs [phi,th], azimuth and polar, that 
+        chorrespond to the orientations given by the input axis vectors 
+        in a spherical coordinate system.
+     
+    Example
+    -------
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> AX = np.array([[0,0,1],[0,0,1],[1,0,0]])
+    >>> ANGS = magpy.math.anglesFromAxisV(AX)
+    >>> print(ANGS)
+    >>> # Output: [[0. 0.]  [90. 90.]  [0. 90.]])
     """
 
     Lax = np.linalg.norm(AXIS,axis=1)
@@ -193,10 +212,10 @@ def anglesFromAxisV(AXIS):
 
 def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
     """
-    This is the vectorized version of angleAxisRotation.
-    This function uses angle-axis rotation to rotate the `position` vector by
-    the `angle` argument about an axis defined by the `axis` vector which passes
-    through the center of rotation `anchor` vector.
+    This is the vectorized version of angleAxisRotation(). Each entry 
+    of POS (arrNx3) is rotated according to the angles ANG (arrN), 
+    about the axis vectors AXS (arrNx3) which pass throught the anchors 
+    ANCH (arrNx3) where N refers to the length of the input vectors.
 
     Parameters
     ----------
@@ -204,7 +223,7 @@ def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
         The input vectors to be rotated.
 
     ANG : arrN [deg]
-        Rotation angles in units of [deg]
+        Rotation angles in units of [deg].
 
     AXIS : arrNx3
         Vector of rotation axes.
@@ -214,8 +233,22 @@ def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
 
     Returns    
     -------
-    newPositions : arrNx3
+    newPOS : arrNx3
         Vector of rotated positions.
+
+    >>> import magpylib as magpy
+    >>> import numpy as np
+    >>> POS = np.array([[1,0,0]]*5) # avoid this slow Python loop
+    >>> ANG = np.linspace(0,180,5)
+    >>> AXS = np.array([[0,0,1]]*5) # avoid this slow Python loop
+    >>> ANCH = np.zeros((5,3))
+    >>> POSnew = magpy.math.angleAxisRotationV(POS,ANG,AXS,ANCH)
+    >>> print(np.around(POSnew,4))
+    >>> # Output: [[ 1.      0.      0.    ]
+    ...            [ 0.7071  0.7071  0.    ]
+    ...            [ 0.      1.      0.    ]
+    ...            [-0.7071  0.7071  0.    ]
+    ...            [-1.      0.      0.    ]]
     """
 
     POS12 = POS-ANCHOR

@@ -26,6 +26,6 @@ This subpackge includes magnetic moment classes for field computation. Currently
 it includes only the `Dipole` (magnetisches dipol moment) class.
 """
 
-#__all__ = ["Dipole"]  # This is for Sphinx
+__all__ = ["Dipole"]  # This is for Sphinx
 
 from magpylib._lib.classes.moments import Dipole

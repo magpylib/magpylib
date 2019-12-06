@@ -54,7 +54,8 @@ listOfSensors=[sensor1,sensor2] # List of Sensors
 
 # -------------------------------------------------------------------------------
 def displaySystem(sources, markers=listOfPos, subplotAx=None,
-                        sensors=listOfSensors, suppress=False, direc=False):
+                        sensors=listOfSensors, suppress=False, 
+                        direc=False, figsize=(8, 8)):
     """
     Shows the collection system in an interactive pyplot and returns a matplotlib figure identifier.
 
@@ -181,7 +182,7 @@ def displaySystem(sources, markers=listOfPos, subplotAx=None,
     collection = Collection(sources)
 
     if subplotAx is None:
-        fig = plt.figure(dpi=80, figsize=(8, 8))
+        fig = plt.figure(dpi=80, figsize=figsize)
         ax = fig.gca(projection='3d')
     else:
         ax = subplotAx
