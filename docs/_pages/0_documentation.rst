@@ -422,7 +422,7 @@ The following example code shows how to use ``displaySystem()``:
 .. plot:: pyplots/doku/displaySys.py
   :include-source:
 
-  **Figure:** Several magnet and sensor objects are created and manipulated. Using ``displaySystem()`` they are displayed in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
+  **Figure:** Several magnet and sensor objects are created and manipulated. Using ``displaySystem()`` they are shown in a 3D plot together with some markers which allows one to quickly check if the system geometry is ok.
 
 
 
@@ -437,9 +437,9 @@ As a result of the superposition principle complex magnet shapes and inhomogeneo
   :align: center
   :scale: 50 %
 
-  **Figure:** Schematic of the *vector union* principle.
+  **Figure:** Schematic of the *vector union* principle for magnetizations.
 
-Geometric addition and subtration operations can be the result when the magnetization vectors are opposed to each other which allows to "cut out" a small volume from a larger one. An example of a hollow cylinder is given in the examples section: :ref:`examples-complexShapes`.
+Geometric addition is simply achieved by placing magnets with similar magnetization next to each other. Subtraction is realized by placing a small magnet with opposite magnetization inside a large magnet. The magnetization vectors cancel in the overlap, meaning that a small volume is cut out from a larger one. An example of a hollow cylinder is given in the examples section: :ref:`examples-complexShapes`.
 
 
 

@@ -7,14 +7,18 @@ Installation
 .. warning::
     Magpylib works only with Python 3.6 or later !
 
+
 Content 
 #######
 
-* `Install with pip`_
-* `Windows`_
-* `Linux`_
-* `Download Sites`_
+* :ref:`install-pip`
+* :ref:`install-win`
+* :ref:`install-linux`
+* :ref:`install-dl`
 
+
+
+.. _install-pip:
 
 Install with pip
 ################
@@ -28,6 +32,8 @@ The quickest installation on any platform is through pip.
 If you are unfamiliar with pip, please follow the detailed guides below:
 
 
+
+.. _install-win:
 
 Windows
 #######
@@ -65,6 +71,8 @@ If you want to have a custom environment without using conda, you may simply ins
 
 
 
+.. _install-linux:
+
 Linux
 #######
 
@@ -81,6 +89,7 @@ Terminal Python 3 Install
         pip install magpylib
 
 
+.. _install-dl:
 
 Download Sites
 #################
