@@ -314,6 +314,8 @@ As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less fi
 
 More examples of vectorized code can be found in the :ref:`examples-vector` section.
 
+.. warning::
+    The functions included in the ``magpylib.vector`` package do not check the input format. All input must be in the form of numpy arrays.
 
 
 .. _docu-collection:
