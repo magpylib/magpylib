@@ -6,6 +6,15 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [2.2.0b] - 2019-12-27
+
+### Changed
+- Improved performance of getB for diametral magnetized Cylinders by 20%
+
+### Added
+- getBv_Cylinder
+- added private vectorized implementation ellipticV to mathLib_vector
+
 ## [2.1.0b] - 2019-12-06
 
 ### Added
@@ -23,14 +32,14 @@ All notable changes to magpylib are documented here.
 - Restructuring
   - displaySystem is now a top-level function, not a Collection method anymore.
   - getBsweep and multiprocessing options have been completely removed, this functionality
-    should be overtaken by the new vector functionality which uses numpy native vectorized 
+    should be overtaken by the new vector functionality which uses the numpy native vectorized 
     code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
     automatically use multiporcessing. Code parallelization at magpylib level should be done
     by hand.
 - Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
 - public rotatePosition() is now called angleAxisRotation(), former private angleAxisRotation
     is now called angleAxisRotation_priv().
-- Major rework of the documentation and exmples.
+- Major rework of the documentation and examples.
 
 ### Added
 - Performance computation trough vector functionality included in new top-level subpackge "vector"

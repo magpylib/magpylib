@@ -1,7 +1,7 @@
 #%% MAIN
 
 import numpy as np
-from magpylib.source.magnet import Box, Sphere
+from magpylib.source.magnet import Box, Cylinder, Sphere
 from magpylib.source.moment import Dipole
 from magpylib.vector import getBv_magnet, getBv_current, getBv_moment
 from magpylib.math import axisFromAngles
@@ -84,3 +84,37 @@ def test_vectorMagnet():
     #assert
     assert np.amax(Bv-Bc) < 1e-10, "bad magpylib vector Sphere"
 
+
+def test_vectorMagnetCylinder():
+
+    MAG = np.array([[0,0,-44],[0,0,55],[11,22,33],[-14,25,36],[17,-28,39],[-10,-21,32],[0,12,23],[0,-14,25],[16,0,27],[-18,0,29]])
+    POSM = np.ones([10,3])
+    POSO = MAG*0.1*np.array([.8,-1,-1.3])+POSM
+    DIM = np.ones([10,2])
+
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSO,POSM)
+
+    Bc = []
+    for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
+        pm = Cylinder(mag,dim,posM)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15
+
+    # inside cylinder testing and iterDia
+
+    MAG = np.array([[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,0,1],[1,1,0],[1,1,1]])
+    POSO = np.zeros([7,3])-.1
+    DIM = np.ones([7,2])
+    POSM = np.zeros([7,3])
+
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSO,POSM,Nphi0=11)
+
+    Bc = []
+    for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
+        pm = Cylinder(mag,dim,posM,iterDia=11)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15

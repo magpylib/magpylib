@@ -259,12 +259,7 @@ def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
 
 
 # vectorized version of elliptic integral
-def ellipticV(INPUT):
-
-    kc = INPUT[:,0]
-    p = INPUT[:,1]
-    c = INPUT[:,2]
-    s = INPUT[:,3]
+def ellipticV(kc,p,c,s):
 
     #if kc == 0:
     #    return NaN

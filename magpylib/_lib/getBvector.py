@@ -22,11 +22,12 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
+from magpylib._lib.fields.PM_Cylinder_vector import Bfield_CylinderV
 from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
 from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV_priv
 import numpy as np
 
-def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
+def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[],Nphi0=50):
     """
     This function is used for performance computation when the magnetic field is
     evaluated multiple times. Use this function only when performing more than ~10
@@ -63,6 +64,9 @@ def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     ANCH=[] : length M list of Nx3 numpy arrays float [mm]
         Anchor positions of M subsequent rotations applied ot the N-sized POSm and
         the implicit source orientation.
+    
+    Nphi0=50 : integer gives number of iterations used when calculating diametral
+        magnetized cylindrical magnets.
     """
 
     N = len(MAG)
@@ -70,6 +74,8 @@ def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     # set field type
     if type == 'box':
         Bfield = Bfield_BoxV
+    elif type == 'cylinder':
+        Bfield = Bfield_CylinderV
     elif type == 'sphere':
         Bfield = Bfield_SphereV
     else:
@@ -87,7 +93,10 @@ def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     POSrel = POSo-Pm        #relative position
     Qc = QconjV(Q)          #orientierung
     POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
-    Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
+    if type=='cylinder':
+        Brot = Bfield(MAG, POSrot, DIM, Nphi0) #feldberechnung, extra cyl input
+    else:
+        Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
     B = QrotationV(Q,Brot)  #rückrotation des feldes
     
     return B

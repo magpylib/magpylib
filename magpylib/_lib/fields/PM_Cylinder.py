@@ -26,7 +26,7 @@
 
 
 # %% IMPORTS
-from numpy import pi, sqrt, array, arctan, cos, sin, arange, NaN
+from numpy import pi, sqrt, array, arctan2, cos, sin, arange, NaN
 from magpylib._lib.mathLib import getPhi, elliptic
 from warnings import warn
 
@@ -121,23 +121,8 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
     B0xy = sqrt(MAG[0]**2+MAG[1]**2)  # xy-magnetization amplitude
     if B0xy > 0:
 
-        if MAG[0] > 0.:
-            tetta = arctan(MAG[1]/MAG[0])
-        elif MAG[0] < 0.:
-            tetta = arctan(MAG[1]/MAG[0])+pi
-        elif MAG[1] > 0:
-            tetta = pi/2
-        else:
-            tetta = 3*pi/2
-
-        if x > 0.:
-            gamma = arctan(y/x)
-        elif x < 0.:
-            gamma = arctan(y/x)+pi
-        elif y > 0:
-            gamma = pi/2
-        else:
-            gamma = 3*pi/2
+        tetta = arctan2(MAG[1],MAG[0])
+        gamma = arctan2(y,x)
         phi = gamma-tetta
 
         phi0s = 2*pi/Nphi0  # discretization
@@ -152,20 +137,18 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
                 G = 1/sqrt(r2pR2-rR2*cos(phi-phi0)+(z-z0)**2)
                 return (z-z0)*G/(r2pR2-rR2*cos(phi-phi0))
 
+        #USE VECTORIZED CODE FOR THE SUMMATION !!!!
+
         # radial component
         Br_XY = B0xy*R/2/Nphi0*sum([
-            sum([
-                (-1)**(k+1)*Sphi(n, Nphi0)*cos(phi0s*n) *
-                (r-R*cos(phi-phi0s*n))*I1x(phi0s*n, z0)
-                for z0, k in zip([-H/2, H/2], [1, 2])])
+                Sphi(n, Nphi0)*cos(phi0s*n) * (r-R*cos(phi-phi0s*n)) * (I1x(phi0s*n,-H/2)-I1x(phi0s*n,H/2))
             for n in arange(Nphi0+1)])
+
         # angular component
         Bphi_XY = B0xy*R**2/2/Nphi0*sum([
-            sum([
-                (-1)**(k+1)*Sphi(n, Nphi0)*cos(phi0s*n) *
-                sin(phi-phi0s*n)*I1x(phi0s*n, z0)
-                for z0, k in zip([-H/2, H/2], [1, 2])])
+                Sphi(n, Nphi0)*cos(phi0s*n) * sin(phi-phi0s*n) * (I1x(phi0s*n,-H/2)-I1x(phi0s*n,H/2))
             for n in arange(Nphi0+1)])
+        
         # axial component
         Bz_XY = B0xy*R/2/Nphi0*sum([
             sum([

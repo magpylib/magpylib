@@ -103,6 +103,6 @@ def test_ellipticV():
     solC = np.array(solC)
 
     #vector solution
-    solV = ellipticV(INP)
+    solV = ellipticV(INP[:,0],INP[:,1],INP[:,2],INP[:,3])
 
     assert np.amax(abs(solC-solV)) < 1e-10
