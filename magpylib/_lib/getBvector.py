@@ -71,32 +71,31 @@ def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[],Nphi0=50):
 
     N = len(MAG)
 
-    # set field type
-    if type == 'box':
-        Bfield = Bfield_BoxV
-    elif type == 'cylinder':
-        Bfield = Bfield_CylinderV
-    elif type == 'sphere':
-        Bfield = Bfield_SphereV
-    else:
-        print('Bad type or WIP')
-        return 0
-
     Q = np.array([[1,0,0,0]]*N) #initial orientation
     Pm = POSm   #initial position
+
     #apply rotation operations
     for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
         Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
         Pm = angleAxisRotationV_priv(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
 
-    #calculate the B-field
+    # transform into CS of source
     POSrel = POSo-Pm        #relative position
     Qc = QconjV(Q)          #orientierung
     POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
-    if type=='cylinder':
-        Brot = Bfield(MAG, POSrot, DIM, Nphi0) #feldberechnung, extra cyl input
+    
+    # calculate field
+    if type == 'box':
+        Brot = Bfield_BoxV(MAG, POSrot, DIM)
+    elif type == 'cylinder':
+        Brot = Bfield_CylinderV(MAG, POSrot, DIM,Nphi0)
+    elif type == 'sphere':
+        Brot = Bfield_SphereV(MAG, POSrot, DIM)
     else:
-        Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
+        print('Bad type or WIP')
+        return 0
+    
+    # transform back
     B = QrotationV(Q,Brot)  #rückrotation des feldes
     
     return B
