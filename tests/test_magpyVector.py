@@ -118,3 +118,21 @@ def test_vectorMagnetCylinder():
     Bc = np.array(Bc)
     
     assert np.amax(abs(Bv-Bc)) < 1e-15
+
+
+
+def test_vectorMomentDipole():
+
+    MOM = np.array([[0,0,2],[0,0,55],[11,22,33],[-14,25,36],[17,-28,39],[-10,-21,32],[0,12,23],[0,-14,25],[16,0,27],[-18,0,29]])
+    POSM = np.ones([10,3])
+    POSO = MOM*0.1*np.array([.8,-1,-1.3])+POSM
+    
+    Bv = getBv_moment('dipole',MOM,POSO,POSM)
+
+    Bc = []
+    for mom,posM,posO in zip(MOM,POSM,POSO):
+        pm = Dipole(mom,posM)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15
