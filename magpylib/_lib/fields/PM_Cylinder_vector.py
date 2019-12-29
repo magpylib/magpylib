@@ -169,23 +169,8 @@ def Bfield_CylinderV(MAG, POS, DIM, Nphi0):  # returns arr3
         mask0Inside = mask0 * (RR<R) * (abs(Z)<H/2)
         Bfield[mask0Inside,:2] += MAG[mask0Inside,:2]
     
-        print(mask0Inside)
     ### END TRANS MAG CONTRIBUTION ###########################
 
     return(Bfield)
-
-
-MAG = np.array([[0,0,-44],[0,0,55],[11,22,33],[-14,25,36],[17,-28,39],[-10,-21,32],[0,12,23],[0,-14,25],[16,0,27],[-18,0,29]])
-POS=MAG*0.1*np.array([.8,-1,-1.3])
-DIM = np.array([[1,1]]*10)
-
-Bv = Bfield_CylinderV(MAG,POS,DIM,50)
-print(Bv)
-
-MAG = np.array([[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,0,1],[1,1,0],[1,1,1]])
-POS = np.zeros([7,3])-.1
-DIM = np.ones([7,2])
-
-Bv = Bfield_CylinderV(MAG,POS,DIM,50)
 
 

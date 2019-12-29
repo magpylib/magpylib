@@ -210,6 +210,7 @@ def anglesFromAxisV(AXIS):
     return np.array([PHI, TH]).transpose()
 
 
+
 def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
     """
     This is the vectorized version of angleAxisRotation(). Each entry 
@@ -258,8 +259,12 @@ def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
     return POSnew
 
 
-# vectorized version of elliptic integral
+
 def ellipticV(kc,p,c,s):
+    '''
+    vectorized version of the elliptic integral
+    original implementation from paper Kirby
+    '''
 
     #if kc == 0:
     #    return NaN
@@ -320,3 +325,38 @@ def ellipticV(kc,p,c,s):
         mask = (np.abs(g-k) > g*errtol)
 
     return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
+
+
+
+def ellipticKV(x):
+    '''
+    special case complete elliptic integral of first kind ellipticK
+    0 <= x <1
+    '''
+    N = len(x)
+    onez = np.ones([N])
+    return ellipticV((1-x)**(1/2.), onez, onez, onez)
+
+
+
+def ellipticEV(x):
+    '''
+    special case complete elliptic integral of second kind ellipticE
+    E(x) = int_0^pi/2 (1-x sin(phi)^2)^(1/2) dphi
+    requires x < 1 ! 
+    '''
+    N = len(x)
+    onez = np.ones([N])
+    return ellipticV((1-x)**(1/2.), onez, onez, 1-x)
+
+
+
+def ellipticPiV(x, y):
+    '''
+    special case complete elliptic integral of third kind ellipticPi
+    E(x) = int_0^pi/2 (1-x sin(phi)^2)^(1/2) dphi
+    requires x < 1 ! 
+    '''
+    N = len(x)
+    onez = np.ones([N])
+    return ellipticV((1-y)**(1/2.), 1-x, onez, onez)

@@ -3,6 +3,7 @@
 import numpy as np
 from magpylib.source.magnet import Box, Cylinder, Sphere
 from magpylib.source.moment import Dipole
+from magpylib.source.current import Circular
 from magpylib.vector import getBv_magnet, getBv_current, getBv_moment
 from magpylib.math import axisFromAngles
 from magpylib.math import angleAxisRotationV
@@ -59,7 +60,7 @@ def test_vectorMagnet():
 
     # vector
     DIM = np.array([dim]*NN)
-    Bv = getBv_magnet('box',MAG,DIM,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
+    Bv = getBv_magnet('box',MAG,DIM,POSm,POSo,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
     Bv = Bv.reshape([Nth,Npsi,Nphi,3])
 
     # assert
@@ -78,7 +79,7 @@ def test_vectorMagnet():
 
     # vector
     DIM2 = np.array([dim2]*NN)
-    Bv = getBv_magnet('sphere',MAG,DIM2,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
+    Bv = getBv_magnet('sphere',MAG,DIM2,POSm,POSo,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
     Bv = Bv.reshape([Nth,Npsi,Nphi,3])
 
     #assert
@@ -92,7 +93,7 @@ def test_vectorMagnetCylinder():
     POSO = MAG*0.1*np.array([.8,-1,-1.3])+POSM
     DIM = np.ones([10,2])
 
-    Bv = getBv_magnet('cylinder',MAG,DIM,POSO,POSM)
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSM,POSO)
 
     Bc = []
     for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
@@ -109,7 +110,7 @@ def test_vectorMagnetCylinder():
     DIM = np.ones([7,2])
     POSM = np.zeros([7,3])
 
-    Bv = getBv_magnet('cylinder',MAG,DIM,POSO,POSM,Nphi0=11)
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSM,POSO,Nphi0=11)
 
     Bc = []
     for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
@@ -127,7 +128,7 @@ def test_vectorMomentDipole():
     POSM = np.ones([10,3])
     POSO = MOM*0.1*np.array([.8,-1,-1.3])+POSM
     
-    Bv = getBv_moment('dipole',MOM,POSO,POSM)
+    Bv = getBv_moment('dipole',MOM,POSM,POSO)
 
     Bc = []
     for mom,posM,posO in zip(MOM,POSM,POSO):
@@ -136,3 +137,22 @@ def test_vectorMomentDipole():
     Bc = np.array(Bc)
     
     assert np.amax(abs(Bv-Bc)) < 1e-15
+
+
+
+def test_vectorCurrentCircular():
+    
+    I = np.ones([10])
+    D = np.ones([10])*4
+    Pm = np.zeros([10,3])
+    Po = np.array([[0,0,1],[0,0,-1],[1,1,0],[1,-1,0],[-1,-1,0],[-1,1,0],[5,5,0],[5,-5,0],[-5,-5,0],[-5,5,0]])
+
+    Bc = []
+    for i,d,pm,po in zip(I,D,Pm,Po):
+        s = Circular(curr=i,dim=d,pos=pm)
+        Bc += [s.getB(po)]
+    Bc = np.array(Bc)
+
+    Bv = getBv_current('circular',I,D,Pm,Po)
+
+    assert np.amax(abs(Bc-Bv))<1e-10
