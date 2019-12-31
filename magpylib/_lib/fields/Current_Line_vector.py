@@ -25,6 +25,8 @@
 from numpy import array, NaN
 from magpylib._lib.mathLib import fastSum3D, fastNorm3D, fastCross3D
 from warnings import warn
+import numpy as np
+from numpy.linalg import norm
 
 # %% CURRENT LINE
 # Describes the magnetic field of a line current. The line is given by a set of
@@ -37,6 +39,96 @@ from warnings import warn
 
 # source: http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 # FieldOfLineCurrent
+
+# VECTORIZED VERSION
+# here we only use vectorized code as this function will primarily be
+#   used to call on multiple line segments. The vectorized code was
+#   developed based on the depreciated version below.
+
+def Bfield_LineSegmentV(p0, p1, p2, I0):
+    ''' private
+    base function determines the fields of given line segments
+    p0 = observer position
+    p1->p2 = current flows from vertex p1 to vertex p2
+    I0 = current in [A]
+    '''
+
+    N = len(p0)
+    fields = np.zeros((N,3)) # default values for mask0 and mask1
+
+    # Check for zero-length segment
+    mask0 = np.all(p1==p2,axis=1)
+
+    # projection of p0 onto line p1-p2
+    nm0 = np.invert(mask0)
+    p1p2 = (p1[nm0]-p2[nm0])
+    p4 = p1[nm0]+(p1p2.T*np.sum((p0[nm0]-p1[nm0])*p1p2,axis=1)/np.sum(p1p2**2,axis=1)).T
+
+    # determine anchorrect normal vector to surface spanned by triangle
+    cross0 = np.cross(-p1p2, p0[nm0]-p4)
+    norm_cross0 = norm(cross0,axis=1)
+
+    # on-line cases (include when position is on current path)
+    mask1 = (norm_cross0 == 0)
+
+    # normal cases
+    nm1 = np.invert(mask1)
+    eB = (cross0[nm1].T/norm_cross0[nm1]) #field direction
+
+    # not mask0 and not mask1
+    NM = np.copy(nm0)
+    NM[NM==True] = nm1
+
+    norm_04 = norm(p0[NM] -p4[nm1],axis=1)
+    norm_01 = norm(p0[NM] -p1[NM],axis=1)
+    norm_02 = norm(p0[NM] -p2[NM],axis=1)
+    norm_12 = norm(p1[NM] -p2[NM],axis=1)
+    norm_41 = norm(p4[nm1]-p1[NM],axis=1)
+    norm_42 = norm(p4[nm1]-p2[NM],axis=1)
+
+    sinTh1 = norm_41/norm_01
+    sinTh2 = norm_42/norm_02
+
+    deltaSin = np.empty((N))[NM]
+
+    # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
+    # both points below
+    mask2 = ((norm_41>norm_12) * (norm_41>norm_42))
+    deltaSin[mask2] = abs(sinTh1[mask2]-sinTh2[mask2])
+    # both points above
+    mask3 = ((norm_42>norm_12) * (norm_42>norm_41))
+    deltaSin[mask3] = abs(sinTh2[mask3]-sinTh1[mask3])
+    # one above one below or one equals p4
+    mask4 = np.invert(mask2)*np.invert(mask3)
+    deltaSin[mask4] = abs(sinTh1[mask4]+sinTh2[mask4])
+
+    # missing 10**-6 from m->mm conversion #T->mT conversion
+    fields[NM] = (I0[NM]*deltaSin/norm_04*eB).T/10
+
+    return fields
+
+
+
+def Bfield_CurrentLineV(VERT,i0,poso):
+    ''' private
+    determine total field from a multi-segment line current
+    '''
+
+    N = len(VERT)-1
+    P0 = np.outer(np.ones((N)),poso)
+    P1 = VERT[:-1]
+    P2 = VERT[1:]
+    I0 = np.ones((N))*i0
+
+    Bv = Bfield_LineSegmentV(P0,P1,P2,I0)
+
+    return np.sum(Bv,axis=0)
+
+
+
+
+
+''' DEPRECHIATED VERSION (non-vectorized)
 
 # observer at p0
 # current I0 flows in straight line from p1 to p2
@@ -90,15 +182,4 @@ def Bfield_LineSegment(p0, p1, p2, I0):
     B = I0*deltaSin/norm_04*eB/10
 
     return B
-
-# determine total field from multiple segments
-
-
-def Bfield_CurrentLine(p0, possis, I0):
-
-    B = array([0., 0., 0.])
-    for i in range(len(possis)-1):
-        p1 = possis[i]
-        p2 = possis[i+1]
-        B += Bfield_LineSegment(p0, p1, p2, I0)
-    return B
+'''

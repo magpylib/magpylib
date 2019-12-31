@@ -3,7 +3,7 @@
 import numpy as np
 from magpylib.source.magnet import Box, Cylinder, Sphere
 from magpylib.source.moment import Dipole
-from magpylib.source.current import Circular
+from magpylib.source.current import Circular, Line
 from magpylib.vector import getBv_magnet, getBv_current, getBv_moment
 from magpylib.math import axisFromAngles
 from magpylib.math import angleAxisRotationV
@@ -156,3 +156,37 @@ def test_vectorCurrentCircular():
     Bv = getBv_current('circular',I,D,Pm,Po)
 
     assert np.amax(abs(Bc-Bv))<1e-10
+
+
+def test_vectorLine():
+
+    #general cases
+    NN=100
+    V = np.random.rand(NN,3)-.5
+    V1 = V[:-1]
+    V2 = V[1:]
+    DIM = np.array([[v1,v2] for v1,v2 in zip(V1,V2)])
+    I0 = np.ones([NN-1])
+    Po = np.ones((NN-1,3))
+    Pm = np.zeros((NN-1,3))
+    
+    Bc = []
+    for dim,i0,po in zip(DIM,I0,Po):
+        s = Line(curr=i0,vertices=dim)
+        Bc += [s.getB(po)]
+    Bc = np.array(Bc)
+
+    Bv = getBv_current('line',I0,DIM,Pm,Po)
+    assert np.amax(abs(Bc-Bv))<1e-12
+
+    #special cases
+    V = np.array([[0,0,0],[1,2,3],[1,2,3],[3,3,3],[1,1,1],[1,1,2],[1,1,0]])
+    V1 = V[:-1]
+    V2 = V[1:]
+    DIM = np.array([[v1,v2] for v1,v2 in zip(V1,V2)])
+    I0 = np.ones([6])
+    Po = np.ones((6,3))
+    Pm = np.zeros((6,3))
+
+    Bv = getBv_current('line',I0,DIM,Pm,Po)
+    assert [all(b == 0) for b in Bv] == [False, True, False, True, True, True]

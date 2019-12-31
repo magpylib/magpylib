@@ -24,7 +24,7 @@
 
 from numpy import array, float64, ndarray
 from magpylib._lib.mathLib import angleAxisRotation_priv
-from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.fields.Current_Line_vector import Bfield_CurrentLineV
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.classes.base import LineCurrent
 
@@ -238,7 +238,7 @@ class Line(LineCurrent):
         # rotate this vector into the CS of the magnet (inverse rotation)
         rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLineV(self.vertices, self.current,rotatedPos))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm

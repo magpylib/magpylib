@@ -26,6 +26,7 @@ from magpylib._lib.fields.PM_Cylinder_vector import Bfield_CylinderV
 from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
 from magpylib._lib.fields.Moment_Dipole_vector import Bfield_DipoleV
 from magpylib._lib.fields.Current_CircularLoop_vector import Bfield_CircularCurrentLoopV
+from magpylib._lib.fields.Current_Line_vector import Bfield_LineSegmentV
 from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV_priv
 import numpy as np
 
@@ -121,7 +122,7 @@ def getBv_current(type,CURR,DIM,POSm,POSo,ANG=[],AX=[],ANCH=[]):
 
     DIM : NxY numpy array float [mm]
         vector of N dimensions for each evaluation. The form of this vector depends
-        on the source type. Y=3/2/1 for box/cylinder/sphere
+        on the source type. Y=1/3x3 for circular/line.
 
     POSo : Nx3 numpy array float [mm]
         vector of N positions of the observer.
@@ -162,6 +163,8 @@ def getBv_current(type,CURR,DIM,POSm,POSo,ANG=[],AX=[],ANCH=[]):
     # calculate field
     if type == 'circular':
         Brot = Bfield_CircularCurrentLoopV(CURR, DIM, POSrot)
+    elif type == 'line':
+        Brot = Bfield_LineSegmentV(POSrot,DIM[:,0],DIM[:,1],CURR)
     else:
         print('Bad type')
         return 0
