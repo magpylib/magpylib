@@ -1,7 +1,7 @@
-from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.fields.Current_Line_vector import Bfield_CurrentLineV
 from numpy import array
 import pytest
-
+import numpy as np
 
 # -------------------------------------------------------------------------------
 def test_Bfield_Zero_Length_segment():
@@ -13,12 +13,13 @@ def test_Bfield_Zero_Length_segment():
     pos = [0,0,0]
 
     vertices = array([[-1,0,0],[1,0,5],[1,0,5]])
-    with pytest.warns(RuntimeWarning):
-        results=Bfield_CurrentLine(pos,vertices,current)
-        rounding = 4
+    
+    results=Bfield_CurrentLineV(vertices,current,pos)
+    rounding = 4
 
-        for i in range(0,3):
-            assert round(mockResult[i],rounding)==round(results[i],rounding), errMsg
+    for i in range(0,3):
+        assert round(mockResult[i],rounding)==round(results[i],rounding), errMsg
+    
 
 # -------------------------------------------------------------------------------
 def test_Bfield_CurrentLine_outside():
@@ -44,48 +45,24 @@ def test_Bfield_CurrentLine_outside():
     vertices = array([ [-4,-4,-3],[3.5,-3.5,-2],[3,3,-1],
                  [-2.5,2.5,0],[-2,-2,1],[1.5,-1.5,2],[1,1,3]])
 
-    results=[Bfield_CurrentLine(pos,vertices,current) for pos in testPosOut]
+    results=[Bfield_CurrentLineV(vertices,current,pos) for pos in testPosOut]
     rounding = 4
     for i in range(0,len(mockResults)):
         for j in range(0,3):
             assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
-
-# -------------------------------------------------------------------------------
-def test_Bfield_singularity():
-    # Test the result fo field sampleS on the line current
-    # Each origin vertix, collinear center point
-    # Expected: [nan,nan,nan]
-    from magpylib import source,Collection
-    from numpy import array, isnan
-    vertices = [array([1,2,2]),array([1,2,30])]
-    current = 5
-
-    origin1 = vertices[0]
-    origin2 = vertices[1]
-    middle = ((vertices[0]) + (vertices[1])) / 2
-
-    testPos = [origin1,origin2,middle]
-    with pytest.warns(RuntimeWarning):
-        results = [Bfield_CurrentLine(pos,vertices,current) for pos in testPos]
-        assert all(all(isnan(val) for val in result) for result in results), "Results from getB is not NaN"
 
 # -------------------------------------------------------------------------------
 def test_Bfield_onLine():
     # Check if points that are on the line but 
     # not on the segment still return valid results
     # Expected for collinear points: [0,0,0]
-    errMsg = "Points on Line (not on segment) are not being calculated"
-    from magpylib import source,Collection
-    from numpy import array
-    vertices = [array([1,2,2]),array([1,2,30])]
+
+    vertices = np.array([[1,2,2],[1,2,30]])
     current = 5
-    mockResults = [[0.0, 0.0, 0.0], [0.0, 0.0, 0.0]]
+    mockResults = np.zeros((2,3))
 
-    points = [vertices[0] + [0,0,-3], vertices[1] + [0,0,3]]
-
+    points = [vertices[0] + array([0,0,-3]), vertices[1] + array([0,0,3])] #on line
     
-    results = [Bfield_CurrentLine(point,vertices,current) for point in points]
-    rounding = 4
-    for i in range(0,len(mockResults)):
-        for j in range(0,3):
-            assert round(mockResults[i][j],rounding)==round(results[i][j],rounding), errMsg
+    results = array([Bfield_CurrentLineV(vertices,current,point) for point in points])
+    
+    assert np.all((results==mockResults).ravel())

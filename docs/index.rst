@@ -9,6 +9,7 @@ What is magpylib ?
 - Free Python package for calculating magnetic fields of magnets, currents and moments (sources).
 - Provides convenient methods to create, geometrically manipulate, group and visualize assemblies of sources.
 - The magnetic fields are determined from underlying (semi-analytical) solutions which results in fast computation times and requires little computation power.
+- For high performance computation (e.g. for multivariate parameter space analysis) all functions are also available in vectorized form.
 
 .. image:: _static/images/index/sourceFundamentals.png
    :align: center
