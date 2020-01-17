@@ -1,8 +1,9 @@
 #%% MAIN
 
 import numpy as np
-from magpylib.source.magnet import Box, Sphere
+from magpylib.source.magnet import Box, Cylinder, Sphere
 from magpylib.source.moment import Dipole
+from magpylib.source.current import Circular, Line
 from magpylib.vector import getBv_magnet, getBv_current, getBv_moment
 from magpylib.math import axisFromAngles
 from magpylib.math import angleAxisRotationV
@@ -59,7 +60,7 @@ def test_vectorMagnet():
 
     # vector
     DIM = np.array([dim]*NN)
-    Bv = getBv_magnet('box',MAG,DIM,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
+    Bv = getBv_magnet('box',MAG,DIM,POSm,POSo,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
     Bv = Bv.reshape([Nth,Npsi,Nphi,3])
 
     # assert
@@ -78,9 +79,114 @@ def test_vectorMagnet():
 
     # vector
     DIM2 = np.array([dim2]*NN)
-    Bv = getBv_magnet('sphere',MAG,DIM2,POSo,POSm,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
+    Bv = getBv_magnet('sphere',MAG,DIM2,POSm,POSo,[ANG1,ANG2],[AX1,AX2],[ANCH1,ANCH2])
     Bv = Bv.reshape([Nth,Npsi,Nphi,3])
 
     #assert
     assert np.amax(Bv-Bc) < 1e-10, "bad magpylib vector Sphere"
 
+
+def test_vectorMagnetCylinder():
+
+    MAG = np.array([[0,0,-44],[0,0,55],[11,22,33],[-14,25,36],[17,-28,39],[-10,-21,32],[0,12,23],[0,-14,25],[16,0,27],[-18,0,29]])
+    POSM = np.ones([10,3])
+    POSO = MAG*0.1*np.array([.8,-1,-1.3])+POSM
+    DIM = np.ones([10,2])
+
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSM,POSO)
+
+    Bc = []
+    for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
+        pm = Cylinder(mag,dim,posM)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15
+
+    # inside cylinder testing and iterDia
+
+    MAG = np.array([[0,0,1],[0,1,0],[1,0,0],[0,1,1],[1,0,1],[1,1,0],[1,1,1]])
+    POSO = np.zeros([7,3])-.1
+    DIM = np.ones([7,2])
+    POSM = np.zeros([7,3])
+
+    Bv = getBv_magnet('cylinder',MAG,DIM,POSM,POSO,Nphi0=11)
+
+    Bc = []
+    for mag,posM,posO,dim in zip(MAG,POSM,POSO,DIM):
+        pm = Cylinder(mag,dim,posM,iterDia=11)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15
+
+
+
+def test_vectorMomentDipole():
+
+    MOM = np.array([[0,0,2],[0,0,55],[11,22,33],[-14,25,36],[17,-28,39],[-10,-21,32],[0,12,23],[0,-14,25],[16,0,27],[-18,0,29]])
+    POSM = np.ones([10,3])
+    POSO = MOM*0.1*np.array([.8,-1,-1.3])+POSM
+    
+    Bv = getBv_moment('dipole',MOM,POSM,POSO)
+
+    Bc = []
+    for mom,posM,posO in zip(MOM,POSM,POSO):
+        pm = Dipole(mom,posM)
+        Bc += [pm.getB(posO)]
+    Bc = np.array(Bc)
+    
+    assert np.amax(abs(Bv-Bc)) < 1e-15
+
+
+
+def test_vectorCurrentCircular():
+    
+    I = np.ones([10])
+    D = np.ones([10])*4
+    Pm = np.zeros([10,3])
+    Po = np.array([[0,0,1],[0,0,-1],[1,1,0],[1,-1,0],[-1,-1,0],[-1,1,0],[5,5,0],[5,-5,0],[-5,-5,0],[-5,5,0]])
+
+    Bc = []
+    for i,d,pm,po in zip(I,D,Pm,Po):
+        s = Circular(curr=i,dim=d,pos=pm)
+        Bc += [s.getB(po)]
+    Bc = np.array(Bc)
+
+    Bv = getBv_current('circular',I,D,Pm,Po)
+
+    assert np.amax(abs(Bc-Bv))<1e-10
+
+
+def test_vectorLine():
+
+    #general cases
+    NN=100
+    V = np.random.rand(NN,3)-.5
+    V1 = V[:-1]
+    V2 = V[1:]
+    DIM = np.array([[v1,v2] for v1,v2 in zip(V1,V2)])
+    I0 = np.ones([NN-1])
+    Po = np.ones((NN-1,3))
+    Pm = np.zeros((NN-1,3))
+    
+    Bc = []
+    for dim,i0,po in zip(DIM,I0,Po):
+        s = Line(curr=i0,vertices=dim)
+        Bc += [s.getB(po)]
+    Bc = np.array(Bc)
+
+    Bv = getBv_current('line',I0,DIM,Pm,Po)
+    assert np.amax(abs(Bc-Bv))<1e-12
+
+    #special cases
+    V = np.array([[0,0,0],[1,2,3],[1,2,3],[3,3,3],[1,1,1],[1,1,2],[1,1,0]])
+    V1 = V[:-1]
+    V2 = V[1:]
+    DIM = np.array([[v1,v2] for v1,v2 in zip(V1,V2)])
+    I0 = np.ones([6])
+    Po = np.ones((6,3))
+    Pm = np.zeros((6,3))
+
+    Bv = getBv_current('line',I0,DIM,Pm,Po)
+    assert [all(b == 0) for b in Bv] == [False, True, False, True, True, True]

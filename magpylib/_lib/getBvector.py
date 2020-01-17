@@ -22,28 +22,30 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
+from magpylib._lib.fields.PM_Cylinder_vector import Bfield_CylinderV
 from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
+from magpylib._lib.fields.Moment_Dipole_vector import Bfield_DipoleV
+from magpylib._lib.fields.Current_CircularLoop_vector import Bfield_CircularCurrentLoopV
+from magpylib._lib.fields.Current_Line_vector import Bfield_LineSegmentV
 from magpylib._lib.mathLib_vector import QconjV, QrotationV, QmultV, getRotQuatV, angleAxisRotationV_priv
 import numpy as np
 
-def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
+def getBv_magnet(type,MAG,DIM,POSm,POSo,ANG=[],AX=[],ANCH=[],Nphi0=50):
     """
-    This function is used for performance computation when the magnetic field is
-    evaluated multiple times. Use this function only when performing more than ~10
-    computations. It applies the vectorized code paradigm native to numpy. 
+    Calculate the field of magnets using vectorized performance code.
 
     Parameters
     ----------
 
     type : string
-        source type either 'box', 'cylinder', 'sphere', 'line', 'circular', 'dipole'.
+        source type either 'box', 'cylinder', 'sphere'.
 
     MAG : Nx3 numpy array float [mT]
         vector of N magnetizations.
 
     DIM : NxY numpy array float [mm]
         vector of N dimensions for each evaluation. The form of this vector depends
-        on the source type.
+        on the source type. Y=3/2/1 for box/cylinder/sphere
 
     POSo : Nx3 numpy array float [mm]
         vector of N positions of the observer.
@@ -63,63 +65,130 @@ def getBv_magnet(type,MAG,DIM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
     ANCH=[] : length M list of Nx3 numpy arrays float [mm]
         Anchor positions of M subsequent rotations applied ot the N-sized POSm and
         the implicit source orientation.
+    
+    Nphi0=50 : integer gives number of iterations used when calculating diametral
+        magnetized cylindrical magnets.
     """
 
-    N = len(MAG)
+    N = len(POSo)
 
-    # set field type
-    if type == 'box':
-        Bfield = Bfield_BoxV
-    elif type == 'sphere':
-        Bfield = Bfield_SphereV
-    else:
-        print('Bad type or WIP')
-        return 0
+    Q = np.zeros([N,4])
+    Q[:,0] = 1              # init orientation
+    
+    Pm = POSm               #initial position
 
-    Q = np.array([[1,0,0,0]]*N) #initial orientation
-    Pm = POSm   #initial position
     #apply rotation operations
     for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
         Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
         Pm = angleAxisRotationV_priv(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
 
-    #calculate the B-field
+    # transform into CS of source
     POSrel = POSo-Pm        #relative position
     Qc = QconjV(Q)          #orientierung
     POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
-    Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
+    
+    # calculate field
+    if type == 'box':
+        Brot = Bfield_BoxV(MAG, POSrot, DIM)
+    elif type == 'cylinder':
+        Brot = Bfield_CylinderV(MAG, POSrot, DIM,Nphi0)
+    elif type == 'sphere':
+        Brot = Bfield_SphereV(MAG, POSrot, DIM)
+    else:
+        print('Bad type or WIP')
+        return 0
+    
+    # transform back
     B = QrotationV(Q,Brot)  #rückrotation des feldes
     
     return B
 
-
-def getBv_current():
-    return 0
-
 # -------------------------------------------------------------------------------
 # -------------------------------------------------------------------------------
-def getBv_moment():#
-    return 0
 
-'''
-(type,MOM,POSo,POSm,ANG=[],AX=[],ANCH=[]):
+
+def getBv_current(type,CURR,DIM,POSm,POSo,ANG=[],AX=[],ANCH=[]):
     """
-    This function is used for performance computation when the magnetic field is
-    evaluated multiple times. Use this function only when performing more than ~10
-    computations. It applies the vectorized code paradigm native to numpy.
+    Calculate the field of currents using vectorized performance code.
 
     Parameters
     ----------
 
     type : string
-        source type only 'dipole' at the moment.
+        source type either 'circular' or 'line'
 
-    MOM : Nx3 numpy array float [mT]
-        vector of N dipole moments.
+    MAG : Nx3 numpy array float [mT]
+        vector of N magnetizations.
 
     DIM : NxY numpy array float [mm]
         vector of N dimensions for each evaluation. The form of this vector depends
-        on the source type.
+        on the source type. Y=1/3x3 for circular/line.
+
+    POSo : Nx3 numpy array float [mm]
+        vector of N positions of the observer.
+    
+    POSm : Nx3 numpy array float [mm]
+        vector of N initial source positions. These positions will be adjusted by
+        the given rotation parameters.
+
+    ANG=[] : length M list of size N numpy arrays float [deg]
+       Angles of M subsequent rotation operations applied to the N-sized POSm and
+       the implicit source orientation.
+    
+    AX=[] : length M list of Nx3 numpy arrays float []
+        Axis vectors of M subsequent rotation operations applied to the N-sized
+        POSm and the implicit source orientation.
+    
+    ANCH=[] : length M list of Nx3 numpy arrays float [mm]
+        Anchor positions of M subsequent rotations applied ot the N-sized POSm and
+        the implicit source orientation.
+    """
+    N = len(POSo)
+
+    Q = np.zeros([N,4])
+    Q[:,0] = 1              # init orientation
+    
+    Pm = POSm               #initial position
+
+    #apply rotation operations
+    for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
+        Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
+        Pm = angleAxisRotationV_priv(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
+
+    # transform into CS of source
+    POSrel = POSo-Pm        #relative position
+    Qc = QconjV(Q)          #orientierung
+    POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
+
+    # calculate field
+    if type == 'circular':
+        Brot = Bfield_CircularCurrentLoopV(CURR, DIM, POSrot)
+    elif type == 'line':
+        Brot = Bfield_LineSegmentV(POSrot,DIM[:,0],DIM[:,1],CURR)
+    else:
+        print('Bad type')
+        return 0
+    
+    # transform back
+    B = QrotationV(Q,Brot)  #rückrotation des feldes
+    
+    return B
+
+# -------------------------------------------------------------------------------
+# -------------------------------------------------------------------------------
+
+def getBv_moment(type,MOM,POSm,POSo,ANG=[],AX=[],ANCH=[]):
+    """
+    Calculate the field of magnetic moments using vectorized performance code.
+
+    Parameters
+    ----------
+
+    type : string
+        source type: 'dipole'
+
+    MOM : Nx3 numpy array float [mT]
+        vector of N dipole moments.
 
     POSo : Nx3 numpy array float [mm]
         vector of N positions of the observer.
@@ -141,30 +210,31 @@ def getBv_moment():#
         the implicit source orientation.
     """
 
-    N = len(MOM)
+    N = len(POSo)
 
-    # set field type
-    if type == 'dipole':
-        Bfield = Bfield_BoxV
-    elif type == 'sphere':
-        Bfield = Bfield_SphereV
-    else:
-        print('Bad type')
-        return 0
+    Q = np.zeros([N,4])
+    Q[:,0] = 1              # init orientation
+    
+    Pm = POSm               #initial position
 
-    Q = np.array([[1,0,0,0]]*N) #initial orientation
-    Pm = POSm   #initial position
     #apply rotation operations
     for ANGLE,AXIS,ANCHOR in zip(ANG,AX,ANCH):
         Q = QmultV(getRotQuatV(ANGLE,AXIS),Q)
         Pm = angleAxisRotationV_priv(ANGLE,AXIS,Pm-ANCHOR)+ANCHOR
 
-    #calculate the B-field
+    # transform into CS of source
     POSrel = POSo-Pm        #relative position
     Qc = QconjV(Q)          #orientierung
     POSrot = QrotationV(Qc,POSrel)  #rotation der pos in das CS der Quelle
-    Brot = Bfield(MAG, POSrot, DIM) #feldberechnung
+
+    # calculate field
+    if type == 'dipole':
+        Brot = Bfield_DipoleV(MOM, POSrot)
+    else:
+        print('Bad type')
+        return 0
+    
+    # transform back
     B = QrotationV(Q,Brot)  #rückrotation des feldes
     
     return B
-'''

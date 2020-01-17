@@ -22,9 +22,10 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import sqrt, array, NaN, cos, sin
-from magpylib._lib.mathLib import getPhi, ellipticK, ellipticE
-from warnings import warn
+from numpy import sqrt, arctan2, empty, pi
+from magpylib._lib.mathLib_vector import ellipticKV, ellipticEV, angleAxisRotationV_priv
+import numpy as np
+
 
 # %% CIRCULAR CURRENT LOOP
 # Describes the magnetic field of a circular current loop that lies parallel to
@@ -35,46 +36,44 @@ from warnings import warn
 # d0   : float  [mm]    diameter of the current loop
 # posCL: arr3  [mm]     Position of the center of the current loop
 
-# source: calculation from Filipitsch Diplo
+# VECTORIZATION
+
+def Bfield_CircularCurrentLoopV(I0, D, POS):
+
+    R = D/2  #radius
+
+    N = len(D)  # vector size
+
+    X,Y,Z = POS[:,0],POS[:,1],POS[:,2]
+
+    RR, PHI = sqrt(X**2+Y**2), arctan2(Y, X)      # cylindrical coordinates
 
 
-def Bfield_CircularCurrentLoop(i0, d0, pos):
-
-    px, py, pz = pos
-
-    r = sqrt(px**2+py**2)
-    phi = getPhi(px, py)
-    z = pz
-
-    r0 = d0/2  # radius of current loop
-
-    # avoid singularity at CL
-    #    print('WARNING: close to singularity - setting field to zero')
-    #    return array([0,0,0])
-    rr0 = r-r0
-    if (-1e-12 < rr0 and rr0 < 1e-12):  # rounding to eliminate the .5-.55 problem when sweeping
-        if (-1e-12 < z and z < 1e-12):
-            warn('Warning: getB Position directly on current line', RuntimeWarning)
-            return array([NaN, NaN, NaN])
-
-    deltaP = sqrt((r+r0)**2+z**2)
-    deltaM = sqrt((r-r0)**2+z**2)
+    deltaP = sqrt((RR+R)**2+Z**2)
+    deltaM = sqrt((RR-R)**2+Z**2)
     kappa = deltaP**2/deltaM**2
     kappaBar = 1-kappa
 
-    # avoid discontinuity at r=0
-    if (-1e-12 < r and r < 1e-12):
-        Br = 0.
-    else:
-        Br = -2*1e-4*i0*(z/r/deltaM)*(ellipticK(kappaBar) -
-                                      (2-kappaBar)/(2-2*kappaBar)*ellipticE(kappaBar))
-    Bz = -2*1e-4*i0*(1/deltaM)*(-ellipticK(kappaBar)+(2-kappaBar -
-                                                      4*(r0/deltaM)**2)/(2-2*kappaBar)*ellipticE(kappaBar))
+    # allocate solution vector
+    field_R = empty([N])
 
-    # transfer to cartesian coordinates
-    Bcy = array([Br, 0., Bz])*1000.  # mT output
-    T_Cy_to_Kart = array(
-        [[cos(phi), -sin(phi), 0], [sin(phi), cos(phi), 0], [0, 0, 1]])
-    Bkart = T_Cy_to_Kart.dot(Bcy)
+    # avoid discontinuity of Br on z-axis
+    maskRR0 = RR == np.zeros([N])
+    field_R[maskRR0] = 0
+    # R-component computation
+    notM = np.invert(maskRR0)
+    field_R[notM] = -2*1e-4*(Z[notM]/RR[notM]/deltaM[notM])*(ellipticKV(kappaBar[notM]) -
+                        (2-kappaBar[notM])/(2-2*kappaBar[notM])*ellipticEV(kappaBar[notM]))
+    
+    # Z-component computation
+    field_Z = -2*1e-4*(1/deltaM)*(-ellipticKV(kappaBar)+(2-kappaBar -
+                                                      4*(R/deltaM)**2)/(2-2*kappaBar)*ellipticEV(kappaBar))
 
-    return Bkart
+    # transformation to cartesian coordinates
+    Bcy = np.array([field_R,np.zeros(N),field_Z]).T
+    AX = np.zeros([N,3])
+    AX[:,2] = 1
+    Bkart = angleAxisRotationV_priv(PHI/pi*180,AX,Bcy)
+
+    return (Bkart.T * I0).T * 1000 # to mT
+

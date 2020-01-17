@@ -42,7 +42,7 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 4. The **Collection class** is used to group sources and for common manipulation.
 
-5. The **Sensor Class** represents a 3D magnetic sensor.
+5. The **Sensor class** represents a 3D magnetic sensor.
 
 6. The **displaySystem function** is used to create a graphical output of the system geometry.
 
@@ -69,7 +69,7 @@ In magpylib all inputs and outputs are made in the physical units of
 - **Millitesla** for magnetization/remanence, magnetic moment and magnetic field,
 - **Ampere** for currents.
 
-Unless specifically state otherwise in the docstring, **scalar input** can be of ``int`` or ``float`` type and **vector/matrix input** can be given either in the form of a ``list``, as a ``tuple`` or as a ``numpy.array``.
+Unless specifically state otherwise in the docstring (see vector package), **scalar input** can be of ``int`` or ``float`` type and **vector/matrix input** can be given either in the form of a ``list``, as a ``tuple`` or as a ``numpy.array``.
 
 The library output and all object attributes are either of ``numpy.float64`` or ``numpy.array64`` type.
 
@@ -133,7 +133,7 @@ The ``dimension`` input specifies the size of the source. However, as each sourc
   :align: center
   :scale: 50 %
 
-  **Figure:** Illustration of information given by the dimension-attribute. The source positions (typically the geometric center) is indicated by the red dot.
+  **Figure:** Illustration of information given by the dimension-attribute. The source positions (typically the geometric center) are indicated by the red dot.
 
 The excitation of a source is either the ``magnetization``, the ``current`` or the magnetic ``moment``:
 
@@ -314,6 +314,8 @@ As a rule of thumb, ``s.getB()`` will be faster than ``getBv`` for ~5 or less fi
 
 More examples of vectorized code can be found in the :ref:`examples-vector` section.
 
+.. warning::
+    The functions included in the ``magpylib.vector`` package do not check the input format. All input must be in the form of numpy arrays.
 
 
 .. _docu-collection:

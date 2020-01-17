@@ -27,6 +27,11 @@ from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
 from magpylib._lib.fields.PM_Box import Bfield_Box
+from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
+import numpy as np
+from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
+from magpylib._lib.fields.PM_Cylinder_vector import Bfield_CylinderV
+from magpylib._lib.fields.PM_Sphere_vector import Bfield_SphereV
 
 # tool-tip / intellisense helpers ---------------------------------------------
 # Class initialization is done purely by kwargs. While some # of these can be 
@@ -110,6 +115,25 @@ class Box(HomoMag):
         self.dimension = checkDimensions(3, dim, "Bad dim for box")
 
     def getB(self, pos):
+        
+        # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(np.shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = np.shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = np.ones(NN)*self.angle
+                AX = np.tile(self.axis,(NN,1))
+                MAG = np.tile(self.magnetization,(NN,1))
+                DIM = np.tile(self.dimension,(NN,1))
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_BoxV(MAG,ROTATEDPOS,DIM)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs
@@ -120,6 +144,8 @@ class Box(HomoMag):
         BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_Box(self.magnetization, rotatedPos, self.dimension))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
+        
+        
         return BCm
         
     def __repr__(self):
@@ -228,6 +254,25 @@ class Cylinder(HomoMag):
         self.iterDia = iterDia
 
     def getB(self, pos):  # Particular Cylinder B field calculation. Check RCS for getB() interface
+        
+        # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(np.shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = np.shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = np.ones(NN)*self.angle
+                AX = np.tile(self.axis,(NN,1))
+                MAG = np.tile(self.magnetization,(NN,1))
+                DIM = np.tile(self.dimension,(NN,1))
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_CylinderV(MAG,ROTATEDPOS,DIM,self.iterDia)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+        
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs
@@ -331,6 +376,25 @@ class Sphere(HomoMag):
         assert self.dimension > 0, 'Bad dim<=0 for sphere'
 
     def getB(self, pos):
+
+        # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(np.shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = np.shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = np.ones(NN)*self.angle
+                AX = np.tile(self.axis,(NN,1))
+                MAG = np.tile(self.magnetization,(NN,1))
+                DIM = np.ones(NN)*self.dimension
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_SphereV(MAG,ROTATEDPOS,DIM)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs
