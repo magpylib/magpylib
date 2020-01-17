@@ -22,11 +22,12 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import array, float64, ndarray
+from numpy import array, float64, ndarray, ones, tile, shape
 from magpylib._lib.mathLib import angleAxisRotation_priv
 from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
-
+from magpylib._lib.fields.Moment_Dipole_vector import Bfield_DipoleV
+from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
 
 # tool-tip / intellisense helpers ---------------------------------------------
 # Class initialization is done purely by kwargs. While some # of these can be 
@@ -35,8 +36,6 @@ from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 # with names, e.g. mag=(Mx, My, Mz). This looks good, but it requires that
 # these names are pre-initialzed:
 Mx = My = Mz = 0.0
-
-
 
 # -------------------------------------------------------------------------------
 class Dipole(MagMoment):
@@ -93,6 +92,24 @@ class Dipole(MagMoment):
     """
 
     def getB(self, pos):  # Particular Line current B field calculation. Check RCS for getB() interface
+        
+         # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = ones(NN)*self.angle
+                AX = tile(self.axis,(NN,1))
+                MOM = tile(self.moment,(NN,1))
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_DipoleV(MOM,ROTATEDPOS)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+        
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs

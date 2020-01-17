@@ -243,35 +243,6 @@ def test_GetB():
         assert round(result[j],rounding) == round(mockResult[j],rounding)
 
 
-def test_GetBList():
-    # Check if sole getB throws an error
-    # for Lists.
-    from magpylib._lib.classes.magnets import Box
-    #Input
-    mockList = (    array([0.12488298, 0.10927261, 0.07805186]),
-                    array([0.12488298, 0.10927261, 0.07805186]),)
-    mockResult = [  sum(mockList),
-                    sum(mockList)]
-
-    mag=(2,3,5)
-    dim=(2,2,2)
-    pos=array([   [2,2,2],
-                [2,2,2]])
-
-
-    with pytest.raises(IndexError):
-    #Run   
-        b = Box(mag,dim)
-        b2 = Box(mag,dim)
-        c = Collection(b,b2)
-        result = c.getB(pos) 
-
-        rounding = 4
-        for i in range(len(mockResult)):
-            for j in range(3):
-                assert round(result[i][j],rounding) == round(mockResult[i][j],rounding)
-
-
 def test_AddList():
     # Check if adding a list of generics to collection 
     # does not throw an error

@@ -22,9 +22,8 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from magpylib._lib.mathLib import fastSum3D
-from numpy import pi, array, NaN
-from warnings import warn
+from numpy import pi
+import numpy as np
 
 # %% DIPOLE field
 
@@ -37,13 +36,14 @@ from warnings import warn
 # |M| corresponds to the magnetic moment of a cube with remanence Br and Volume V such that
 #       |M| [mT*mm^3]  =  Br[mT] * V[mm^3]
 
-def Bfield_Dipole(M, pos):
-    R = pos
-    rr = fastSum3D(R*R)
-    mr = fastSum3D(M*R)
+# VECTORIZED VERSION
 
-    if rr == 0:
-        warn('Warning: getB Position directly at moment position', RuntimeWarning)
-        return array([NaN, NaN, NaN])
+def Bfield_DipoleV(MOM, POS):
+    R = POS
+    rr = np.sum(POS**2,axis=1)
+    mr = np.sum(MOM*R,axis=1)
 
-    return (3*R*mr-M*rr)/rr**(5/2)/(4*pi)
+    field = (3*R.T*mr-MOM.T*rr)/rr**(5/2)/(4*pi)
+
+    return field.T
+    

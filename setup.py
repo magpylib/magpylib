@@ -2,7 +2,7 @@
 # This is a basic setup.py structure so we can generate 
 # distributable package information with setuptools.
 # More information: https://packaging.python.org/tutorials/packaging-projects/
-####
+###
 
 ###
 # Local install:
@@ -16,11 +16,11 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-_magPyVersion = "2.1.0-beta"
+_magPyVersion = "2.3.0-beta"
 
 _SphinxVersion = "1.8.2"
 _name = "magpylib"
-_description = "A simple Python 3 toolbox for calculating magnetic fields from permanent magnets and current distributions."
+_description = "Free Python3 package to compute magnetic fields."
 _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"

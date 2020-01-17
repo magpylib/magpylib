@@ -22,11 +22,13 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import array, float64, ndarray
+from numpy import array, float64, ndarray, shape, ones, tile
 from magpylib._lib.mathLib import angleAxisRotation_priv
-from magpylib._lib.fields.Current_Line import Bfield_CurrentLine
+from magpylib._lib.fields.Current_Line_vector import Bfield_CurrentLineV, Bfield_CurrentLineVV
 from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
+from magpylib._lib.fields.Current_CircularLoop_vector import Bfield_CircularCurrentLoopV
 from magpylib._lib.classes.base import LineCurrent
+from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
 
 
 # tool-tip / intellisense helpers ---------------------------------------------
@@ -116,6 +118,26 @@ class Circular(LineCurrent):
         self.dimension = float(dim)
 
     def getB(self, pos):  # Particular Circular current B field calculation. Check RCS for getB() interface
+        
+        # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = ones(NN)*self.angle
+                AX = tile(self.axis,(NN,1))
+                DIM = ones(NN)*self.dimension
+                CURR = ones(NN)*self.current                
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_CircularCurrentLoopV(CURR,DIM,ROTATEDPOS)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+        
+        
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs
@@ -231,6 +253,23 @@ class Line(LineCurrent):
         self.vertices = array(vertices, dtype=float64, copy=False)
 
     def getB(self, pos):  # Particular Line current B field calculation. Check RCS for getB() interface
+        
+        # vectorized code if input is an Nx3 array
+        if type(pos) == ndarray:
+            if len(shape(pos))==2: # list of positions - use vectorized code
+                # vector size
+                NN = shape(pos)[0] 
+                # prepare vector inputs
+                POSREL = pos - self.position
+                ANG = ones(NN)*self.angle
+                AX = tile(self.axis,(NN,1))
+                # compute rotations and field
+                ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
+                BB = Bfield_CurrentLineVV(self.vertices,self.current,ROTATEDPOS)
+                BCM = angleAxisRotationV_priv(ANG, AX, BB)
+
+                return BCM
+        
         # secure input type and check input format
         p1 = array(pos, dtype=float64, copy=False)
         # relative position between mag and obs
@@ -238,7 +277,7 @@ class Line(LineCurrent):
         # rotate this vector into the CS of the magnet (inverse rotation)
         rotatedPos = angleAxisRotation_priv(self.angle, -self.axis, posRel) # pylint: disable=invalid-unary-operand-type
         # rotate field vector back
-        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLine(rotatedPos, self.vertices, self.current))
+        BCm = angleAxisRotation_priv(self.angle, self.axis, Bfield_CurrentLineV(self.vertices, self.current,rotatedPos))
         # BCm is the obtained magnetic field in Cm
         # the field is well known in the magnet coordinates.
         return BCm

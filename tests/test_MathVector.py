@@ -1,9 +1,11 @@
 from magpylib._lib.mathLib_vector import QmultV, QconjV, getRotQuatV, QrotationV, getAngAxV, angleAxisRotationV_priv
-from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV, angleAxisRotationV
+from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV, angleAxisRotationV, ellipticV
 from numpy import array, amax
-from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis, angleAxisRotation
+from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis, angleAxisRotation, elliptic
 from magpylib.math import randomAxisV
 import numpy as np
+from magpylib._lib.mathLib import ellipticK, ellipticE, ellipticPi
+from magpylib._lib.mathLib_vector import ellipticKV, ellipticEV, ellipticPiV
 
 
 def test_QV():
@@ -89,3 +91,38 @@ def test_angleAxisRotationV():
     SOL = angleAxisRotationV(POS,ANG,AXIS,ANCHOR)
     for pos,ang,ax,anch,sol in zip(POS,ANG,AXIS,ANCHOR,SOL):
         assert np.amax(np.abs(angleAxisRotation(pos,ang,ax,anch)-sol))<1e-10, "bad angleAxisRotationV"
+
+
+
+def test_ellipticV():
+    #random input
+    INP = np.random.rand(1000,4)
+
+    # classical solution looped
+    solC = []
+    for inp in INP:
+        solC += [elliptic(inp[0],inp[1],inp[2],inp[3])]
+    solC = np.array(solC)
+
+    #vector solution
+    solV = ellipticV(INP[:,0],INP[:,1],INP[:,2],INP[:,3])
+
+    assert np.amax(abs(solC-solV)) < 1e-10
+
+
+
+def test_ellipticSpecialCases():
+    X = np.linspace(0,.9999,33)
+    Y = np.linspace(0,.9999,33)[::-1]
+
+    solV = ellipticKV(X)
+    solC = np.array([ellipticK(x) for x in X])
+    assert np.amax(abs(solV-solC)) < 1e-15
+
+    solV = ellipticEV(X)
+    solC = np.array([ellipticE(x) for x in X])
+    assert np.amax(abs(solV-solC)) < 1e-15
+
+    solV = ellipticPiV(X,Y)
+    solC = np.array([ellipticPi(x,y) for x,y in zip(X,Y)])
+    assert np.amax(abs(solV-solC)) < 1e-15

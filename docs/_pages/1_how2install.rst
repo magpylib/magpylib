@@ -5,7 +5,12 @@ Installation
 *************************
 
 .. warning::
-    Magpylib works only with Python 3.6 or later !
+    magpylib works only with Python 3.6 or later !
+    
+    **Dependencies:**
+        - numpy
+        - matplotlib
+    The latest versions will be installed automatically with magpylib.
 
 
 Content 
