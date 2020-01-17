@@ -266,10 +266,9 @@ class Cylinder(HomoMag):
                 AX = np.tile(self.axis,(NN,1))
                 MAG = np.tile(self.magnetization,(NN,1))
                 DIM = np.tile(self.dimension,(NN,1))
-                ITER_DIA = np.ones(NN)*self.iterDia
                 # compute rotations and field
                 ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
-                BB = Bfield_CylinderV(MAG,ROTATEDPOS,DIM,ITER_DIA)
+                BB = Bfield_CylinderV(MAG,ROTATEDPOS,DIM,self.iterDia)
                 BCM = angleAxisRotationV_priv(ANG, AX, BB)
 
                 return BCM
