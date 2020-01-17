@@ -6,15 +6,23 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [2.2.0b] - 2019-12-27
+## [2.3.0b] - 2020-01-17
 
 ### Changed
 - Improved performance of getB for diametral magnetized Cylinders by 20%.
 - GetB of Line current now uses vectorized code which leads to massive performance enhancement.
 - **IMPORTANT:** position arguments of `getBv` functions have been flipped! First comes the source position POSm THEN the observer position POSo!
+- - getB(pos) now takes single AND vector position arguments. If a vector is handed to getB it will automatically execute vectorized code from the vector module.
 
 ### Added
 - completed the library vector functionality adding magnet Cylinder, moment Dipole, current Circular and Line. This includes adding several private vectorized functions (e.g. ellipticV) to mathLib_vector, adding respective tests and docu examples.
+
+---
+
+## [2.2.0b] - 2019-12-27
+- unreleased version
+
+---
 
 ## [2.1.0b] - 2019-12-06
 
@@ -45,6 +53,8 @@ All notable changes to magpylib are documented here.
 ### Added
 - Performance computation trough vector functionality included in new top-level subpackge "vector"
 - Vectorized versions of math functions added to "math" subpackage
+
+---
 
 ## [1.2.1b0] - 2019-07-31
 ### Changed

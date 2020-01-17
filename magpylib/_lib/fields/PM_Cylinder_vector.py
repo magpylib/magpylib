@@ -29,8 +29,6 @@
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan2, cos, sin
 import numpy as np
-from magpylib._lib.mathLib import elliptic,getPhi
-from warnings import warn
 from magpylib._lib.mathLib_vector import ellipticV
 
 # Describes the magnetic field of a cylinder with circular top and bottom and

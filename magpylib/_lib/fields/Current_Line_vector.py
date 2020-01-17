@@ -22,9 +22,6 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import array, NaN
-from magpylib._lib.mathLib import fastSum3D, fastNorm3D, fastCross3D
-from warnings import warn
 import numpy as np
 from numpy.linalg import norm
 

@@ -22,9 +22,7 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from magpylib._lib.mathLib import fastSum3D
-from numpy import pi, array, NaN
-from warnings import warn
+from numpy import pi
 import numpy as np
 
 # %% DIPOLE field

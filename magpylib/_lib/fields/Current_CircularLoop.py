@@ -22,7 +22,7 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import sqrt, array, cos, sin, NaN
+from numpy import sqrt, array, NaN, cos, sin
 from magpylib._lib.mathLib import getPhi, ellipticK, ellipticE
 from warnings import warn
 

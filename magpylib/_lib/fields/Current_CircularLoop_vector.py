@@ -22,9 +22,8 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import sqrt, array, cos, sin, NaN, arctan2, empty, pi
+from numpy import sqrt, arctan2, empty, pi
 from magpylib._lib.mathLib_vector import ellipticKV, ellipticEV, angleAxisRotationV_priv
-from warnings import warn
 import numpy as np
 
 
