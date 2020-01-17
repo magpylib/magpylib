@@ -105,7 +105,7 @@ class Dipole(MagMoment):
                 MOM = tile(self.moment,(NN,1))
                 # compute rotations and field
                 ROTATEDPOS = angleAxisRotationV_priv(ANG, -AX, POSREL)
-                BB = Bfield_Dipole(MOM,ROTATEDPOS)
+                BB = Bfield_DipoleV(MOM,ROTATEDPOS)
                 BCM = angleAxisRotationV_priv(ANG, AX, BB)
 
                 return BCM
