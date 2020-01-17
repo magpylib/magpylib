@@ -115,7 +115,7 @@ def Bfield_CurrentLineV(VERT,i0,poso):
     '''
 
     N = len(VERT)-1
-    P0 = np.outer(np.ones((N)),poso)
+    P0 = np.tile(poso,(N,1))
     P1 = VERT[:-1]
     P2 = VERT[1:]
     I0 = np.ones((N))*i0
@@ -124,6 +124,27 @@ def Bfield_CurrentLineV(VERT,i0,poso):
 
     return np.sum(Bv,axis=0)
 
+
+def Bfield_CurrentLineVV(VERT,i0,POS):
+    ''' private
+    determine total field from a multi-segment line current for multiple positions
+    '''
+    N = len(VERT)-1
+    M = len(POS)
+
+    P1 = VERT[:-1]
+    P2 = VERT[1:]
+    P1 = np.tile(P1,(M,1))
+    P2 = np.tile(P2,(M,1))
+    
+    P0 = np.tile(POS,(1,N)).reshape((N*M,3))
+
+    I0 = np.ones(N*M)*i0
+
+    Bv = Bfield_LineSegmentV(P0,P1,P2,I0)
+    Bv = Bv.reshape((M,N,3))
+    Bv = np.sum(Bv,axis=1)
+    return Bv
 
 
 
