@@ -3,16 +3,22 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-What is magpylib ?
+What is Magpylib ?
 ##################
 
 - Free Python package for calculating magnetic fields of magnets, currents and moments (sources).
 - Provides convenient methods to create, geometrically manipulate, group and visualize assemblies of sources.
-- The magnetic fields are determined from underlying analytical solutions which results in fast computation times and requires little computation power.
+- The magnetic fields are determined from underlying analytical solutions which results in fast computation times and requires little computation power, memory and background knowledge.
 - For high performance computation (e.g. for multivariate parameter space analysis) all functions are also available in vectorized form.
 
 .. image:: _static/images/index/sourceFundamentals.png
    :align: center
+
+When can you use Magpylib ?
+###########################
+
+The analytical solutions are only valid if there is little or no material response. This means that whenever there is a lot of demagnetization in permanent magnets or soft magnetic materials like magnetic shields or transformer cores, these computations cannot be used. Magpylib is at its best dealing with air-coils and permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
+
 
 Quickstart
 ##########
