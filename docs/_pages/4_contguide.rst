@@ -1,6 +1,6 @@
-**********************
-Credits & Contribution
-**********************
+*********************************
+Credits, Contribution & Citation
+*********************************
 
 
 
@@ -18,9 +18,21 @@ Maintainers & Contact
 
 
 
+Credits
+########
+
+We want to thank a lot of ppl who have helped to realize and advance this project over the years. The project was supported by CTR-AG and is now supported by the `Silicon Austria Labs <https://silicon-austria-labs.com/>`_ public research center.
+
+
+
 Contributions
 #############
 
-We want to thank a lot of ppl who have helped to realize and advance this project.
-
 We welcome any feedback (Bug reports, feature requests, comments, really anything 😃) via email `magpylib@gmail.com <mailto:magpylib@gmail.com>`_ or through `gitHub <https://github.com/magpylib/magpylib/issues>`_ channels.
+
+
+
+Citation
+########
+
+A fundamental paper on Magpylib is being published in SoftwareX the moment. Details coming soon.
