@@ -35,4 +35,4 @@ We welcome any feedback (Bug reports, feature requests, comments, really anythin
 Citation
 ########
 
-A fundamental paper on Magpylib is being published in SoftwareX the moment. Details coming soon.
+We are thankful for any reference and citation through the `original publication <https://authors.elsevier.com/sd/article/S2352711020300170>`_.
