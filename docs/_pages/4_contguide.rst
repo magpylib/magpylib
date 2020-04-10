@@ -36,3 +36,16 @@ Citation
 ########
 
 We are thankful for any reference and citation through the `original publication <https://authors.elsevier.com/sd/article/S2352711020300170>`_.
+
+A valid bibtex entry would be
+
+.. code-block:: latex
+
+    @Article{magpylib2020,
+    title = {Magpylib: A free Python package for magnetic field computation},
+    author  ={Ortner, Michael and Coliado Bandeira, Lucas Gabriel}, 
+    year    = {2020},
+    journal = {SoftwareX},
+    publisher = {Elsevier},
+    doi = {10.1016/j.softx.2020.100466}
+    }
