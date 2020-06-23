@@ -61,7 +61,7 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
     x, y, z = pos       # relative position
     r, phi = sqrt(x**2+y**2), getPhi(x, y)      # cylindrical coordinates
 
-    # Mag part in z-direction
+    # Mag part in z-direction (Derby2009)
     B0z = MAG[2]  # z-part of magnetization
     zP, zM = z+H/2., z-H/2.   # some important quantitites
     Rpr, Rmr = R+r, R-r
@@ -117,7 +117,7 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
 
     Bfield = array([Bx_Z, By_Z, Bz_Z])  # contribution from axial magnetization
 
-    # Mag part in xy-direction requires a numeical algorithm
+    # Mag part in xy-direction requires a numerical algorithm (Furlani1995)
     B0xy = sqrt(MAG[0]**2+MAG[1]**2)  # xy-magnetization amplitude
     if B0xy > 0:
 
