@@ -14,29 +14,30 @@ Magnetic field computations in Magpylib are based on known analytical solutions 
 * Field of facet bodies: [2009Janssen, 2013Rubeck]
 * all others simply derived by hand
 
-Subsequently we show a short reflection on how these formulas are achieved. The magnet solutions are mostly derived via the magnetic scalar potential. In magnetostatics (no currents) the magnetic field becomes conservative (Maxwell: :math:`\nabla \times {\bf H} = 0`) and can thus be expressed through the magnetic scalar potential :math:`\Phi_m`:
+A short reflection on how these formulas are achieved: The magnet solutions are mostly derived via the magnetic scalar potential. In magnetostatics (no currents) the magnetic field becomes conservative (Maxwell: :math:`\nabla \times {\bf H} = 0`) and can thus be expressed through the magnetic scalar potential :math:`\Phi_m`:
 
 .. math::
 
     {\bf H} = -\nabla\cdot\Phi_m
 
-The solution to this equation can be expressed by an integral over the magnetization distribution :math:`{\bf M}` as
+The solution to this equation can be expressed by an integral over the magnetization distribution :math:`{\bf M}({\bf r})` as
 
 .. math::
 
-    \Phi_m({\bf r}) = \frac{1}{4\pi}\int_{V'}\frac{\nabla'\cdot {\bf M}}{|{\bf r}-{\bf r}'|}dV'+\frac{1}{4\pi}\oint_{S'}\frac{{\bf n}'\cdot {\bf M}}{|{\bf r}-{\bf r}'|}dS'
+    \Phi_m({\bf r}) = \frac{1}{4\pi}\int_{V'}\frac{\nabla'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dV'+\frac{1}{4\pi}\oint_{S'}\frac{{\bf n}'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dS'
 
 where :math:`{\bf r}` denotes the position, :math:`V` is the magnetized volume with surface :math:`S` and normal vector :math:`{\bf n}` onto the surface. This solution is derived in detail e.g. in [1999Jackson].
 
-The current solutions are directly derived using the law of Biot-Savart:
+The current solutions are directly derived using the law of Biot-Savart with the current distribution :math:`{\bf J}({\bf r})`:
 
 .. math::
 
     {\bf B}({\bf r}) = \frac{\mu_0}{4\pi}\int_{V'} {\bf J}({\bf r}')\times \frac{{\bf r}-{\bf r}'}{|{\bf r}-{\bf r}'|^3} dV'
 
-In some special cases (simple shapes and homogeneous magnetizations and current distributions) these integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references.
+In some special cases (simple shapes, homogeneous magnetizations and current distributions) these integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references.
 
 References:
+
 * [1999Johansen] T. H. Johansen et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-? superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1999
 * [2013 Camacho] J.M. Camacho and V. Sosa, "Alternative method to calculate the magnetic field of permanent magnets with azimuthal symmetry", Revista Mexicana de Fisica E 59 8–17, 2013
 * [1994Furlani] E. P. Furlani, S. Reanik and W. Janson, "A Three-Dimensional Field Solution for Bipolar Cylinders", IEEE Transaction on Magnetics, VOL. 30, NO. 5, 1994
