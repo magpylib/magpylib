@@ -1,15 +1,15 @@
-from magpylib._lib.mathLib import getPhi,fastSum3D, fastNorm3D, arccosSTABLE, fastCross3D
+from magpylib._lib.mathLib import fastSum3D, fastNorm3D, arccosSTABLE, fastCross3D
 from magpylib._lib.mathLib import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation_priv
 from magpylib._lib.mathLib import elliptic, ellipticK, ellipticE, ellipticPi
 from numpy import pi,array
 from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, angleAxisRotation
-import numpy
+import numpy as np
 
 # -------------------------------------------------------------------------------
 def test_randomAxis():
     result = randomAxis()
     assert len(result)==3, "bad randomAxis"
-    assert all(type(axis)==numpy.float64 for axis in result), "bad randomAxis"
+    assert all(type(axis)==np.float64 for axis in result), "bad randomAxis"
     assert all(abs(axis)<=1 for axis in result), "bad randomAxis"
 
 # -------------------------------------------------------------------------------
@@ -26,6 +26,7 @@ def test_anglesFromAxis():
     for r,s in zip(result,sol):
         assert round(r,4)==round(s,4), "bad anglesFromAxis"
 
+
 # -------------------------------------------------------------------------------
 def test_axisFromAngles():
     sol = [ 5.30287619e-17,  8.66025404e-01, -5.00000000e-01]
@@ -36,10 +37,6 @@ def test_axisFromAngles():
 
 # -------------------------------------------------------------------------------
 def test_algebraic():
-    assert round(getPhi(1,2),4) ==1.1071, "bad getPhi result at (1,2)"
-    assert round(getPhi(1,0),4) ==0.0, "bad getPhi result at (1,0)"
-    assert round(getPhi(-1,0),4)==3.1416, "bad getPhi result at (-1,0)"
-    assert round(getPhi(0,0),4) ==0.0, "bad getPhi result at (0,0)"
 
     assert round(arccosSTABLE(2),4) == 0.0 , "bad arccosStable at (2)"
     assert round(arccosSTABLE(-2),4) == 3.1416, "bad arccosStable at (-2)"
