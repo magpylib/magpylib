@@ -27,7 +27,7 @@
 
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan2, cos, sin, arange, NaN
-from magpylib._lib.mathLib import getPhi, elliptic
+from magpylib._lib.mathLib import elliptic
 from warnings import warn
 
 # %% Cylinder Field Calculation
@@ -59,7 +59,7 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
     R = D/2
 
     x, y, z = pos       # relative position
-    r, phi = sqrt(x**2+y**2), getPhi(x, y)      # cylindrical coordinates
+    r, phi = sqrt(x**2+y**2), arctan2(y, x)      # cylindrical coordinates
 
     # Mag part in z-direction (Derby2009)
     B0z = MAG[2]  # z-part of magnetization

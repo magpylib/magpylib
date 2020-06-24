@@ -22,8 +22,8 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 
-from numpy import sqrt, array, NaN, cos, sin
-from magpylib._lib.mathLib import getPhi, ellipticK, ellipticE
+from numpy import sqrt, array, NaN, cos, sin, arctan2
+from magpylib._lib.mathLib import ellipticK, ellipticE
 from warnings import warn
 
 # %% CIRCULAR CURRENT LOOP
@@ -43,7 +43,7 @@ def Bfield_CircularCurrentLoop(i0, d0, pos):
     px, py, pz = pos
 
     r = sqrt(px**2+py**2)
-    phi = getPhi(px, py)
+    phi = arctan2(py,px)
     z = pz
 
     r0 = d0/2  # radius of current loop

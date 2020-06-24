@@ -22,30 +22,10 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 import numpy
-from numpy import arctan, pi, array, sqrt, NaN, cos, sin, arccos, float64, sqrt
+from numpy import arctan, pi, array, sqrt, NaN, cos, sin, arccos, float64, sqrt, arctan2
 
 
 # IMPROVED ANGLE FUNCTIONS ################################################################
-
-def getPhi(x, y):
-    '''
-    basically atan2 - will be replaced soon
-    '''
-    if x > 0:
-        return arctan(y/x)
-    elif x < 0:
-        if y >= 0:
-            return arctan(y/x)+pi
-        else:
-            return arctan(y/x)-pi
-    else:
-        if y > 0:
-            return pi/2
-        elif y<0:
-            return -pi/2
-        else:
-            return 0
-
 
 # avoid numerical problem to evaluate at 1.000000000001
 def arccosSTABLE(x):
@@ -309,7 +289,7 @@ def anglesFromAxis(axis):
     Uax = ax/Lax
 
     TH = arccos(Uax[2])/pi*180
-    PHI = getPhi(Uax[0], Uax[1])/pi*180
+    PHI = arctan2(Uax[1], Uax[0])/pi*180
     return array([PHI, TH])
 
 
