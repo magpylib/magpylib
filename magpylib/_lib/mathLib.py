@@ -24,11 +24,13 @@
 import numpy
 from numpy import arctan, pi, array, sqrt, NaN, cos, sin, arccos, float64, sqrt
 
-# SMOOTH VERSION OF ARCTAN ------------------------------------------------------
-# get a smooth version of the cylindrical coordinates
-# similar to atan2 from numpy - replace at some point
+
+# IMPROVED ANGLE FUNCTIONS ################################################################
 
 def getPhi(x, y):
+    '''
+    basically atan2 - will be replaced soon
+    '''
     if x > 0:
         return arctan(y/x)
     elif x < 0:
@@ -45,9 +47,11 @@ def getPhi(x, y):
             return 0
 
 
-# NUMERICALY STABLE VERSION OF ARCCOS -------------------------------------------
 # avoid numerical problem to evaluate at 1.000000000001
 def arccosSTABLE(x):
+    '''
+    arccos with improved numerical stability
+    '''
     if 1 > x > -1:
         return arccos(x)
     elif x >= 1:
@@ -56,59 +60,70 @@ def arccosSTABLE(x):
         return pi
 
 
-# FAST VERSIONS OF 3D VECTOR ALGEBRA --------------------------------------------
+# FAST VERSIONS OF 3D VECTOR ALGEBRA ###########################################################
+# fast versions for 3-vector computation only
 
-# more than 10-times faster than native np.cross (which is for arbitrary dimensions)
 def fastCross3D(u, v):
+    '''
+    outer product of 2 3-vectors
+    '''
     return array([u[1]*v[2]-u[2]*v[1], -u[0]*v[2]+u[2]*v[0], u[0]*v[1]-u[1]*v[0]])
-
-# much faster than sum()
 
 
 def fastSum3D(u):
+    '''
+    sum of 3-vector
+    '''
     return u[0]+u[1]+u[2]
-
-# much faster than np.la.norm (which is for arbitrary dimensions)
 
 
 def fastNorm3D(u):
+    '''
+    norm of a 3-vector
+    '''
     return sqrt(u[0]**2+u[1]**2+u[2]**2)
 
 
-# QUATERNIONS for ANGLE-AXIS ROTATION --------------------------------------------
+# QUATERNIONS for ANGLE-AXIS ROTATION ####################################################
 # Quaterntions are defined as 4D Lists
 
-# Quaternion multiplication
 def Qmult(Q, P):
+    '''
+    Quaternion multiplication
+    '''
     r0 = Q[0]*P[0] - Q[1]*P[1] - Q[2]*P[2] - Q[3]*P[3]
     r1 = Q[0]*P[1] + Q[1]*P[0] + Q[2]*P[3] - Q[3]*P[2]
     r2 = Q[0]*P[2] - Q[1]*P[3] + Q[2]*P[0] + Q[3]*P[1]
     r3 = Q[0]*P[3] + Q[1]*P[2] - Q[2]*P[1] + Q[3]*P[0]
     return [r0, r1, r2, r3]
 
-# Quaternion Norm**2
-
 
 def Qnorm2(Q):
+    '''
+    Quaternion Norm**2
+    '''
     return Q[0]**2 + Q[1]**2 + Q[2]**2 + Q[3]**2
-
-# Unit Quaternion
 
 
 def Qunit(Q):
+    '''
+    unit quaternion
+    '''
     qnorm = sqrt(Qnorm2(Q))
     return [q/qnorm for q in Q]
 
-# Conjugate Quaternion
-
 
 def Qconj(Q):
+    '''
+    Conjugation of Quaternion
+    '''
     return array([Q[0], -Q[1], -Q[2], -Q[3]])
-
-# getRotationQuaternion from axis angle (see Kuipers p.131)
 
 
 def getRotQuat(angle, axis):
+    '''
+    getRotationQuaternion from axis angle (see Kuipers p.131)
+    '''
     Lax = fastNorm3D(axis)
     Uax = axis/Lax
 
@@ -120,10 +135,11 @@ def getRotQuat(angle, axis):
 
     return Q
 
-# Angle-Axis Rotation of Vector
-
 
 def angleAxisRotation_priv(angle, axis, v):
+    '''
+    Angle-Axis Rotation of Vector
+    '''
     P = getRotQuat(angle, axis)
 
     Qv = [0, v[0], v[1], v[2]]
@@ -132,14 +148,15 @@ def angleAxisRotation_priv(angle, axis, v):
     return array(Qv_new[1:])
 
 
-# %% ELLIPTICAL INTEGRALS
+# SPECIAL FUNCTIONS ################################################################
+# See https://dlmf.nist.gov/19.2
 
-#from scipy.integrate import quad
-# Algorithm to determine a special elliptic integral
-# Algorithm proposed in Derby, Olbert 'Cylindrical Magnets and Ideal Solenoids'
-# arXiev:00909.3880v1
 
 def elliptic(kc, p, c, s):
+    '''
+    Numerical scheme to evaluate the Bulirsch integral.
+    Algorithm proposed in Derby et al., arXiev:00909.3880v1
+    '''
     if kc == 0:
         return NaN
     errtol = .000001
@@ -180,46 +197,29 @@ def elliptic(kc, p, c, s):
         em = k+em
     return(pi/2)*(ss+cc*em)/(em*(em+pp))
 
-# complete elliptic integral of the first kind: ellipticK
-# E(x) = \int_0^pi/2 (1-x sin(phi)^2)^(-1/2) dphi
-# Achtung: fur x>1 wird der output imaginaer und die derzeitigen algorithmen brechen zusammen
-
 
 def ellipticK(x):
+    '''
+    Legendres complete elliptic integral of the first kind
+    '''
     return elliptic((1-x)**(1/2.), 1, 1, 1)
-
-# complete elliptic integral of the second kind: ellipticE
-# E(x) = \int_0^pi/2 (1-x sin(phi)^2)^(1/2) dphi
-# Achtung: fur x>1 wird der output imaginaer und die derzeitigen algorithmen brechen zusammen
 
 
 def ellipticE(x):
+    '''
+    Legendres complete elliptic integral of the second kind
+    '''
     return elliptic((1-x)**(1/2.), 1, 1, 1-x)
-
-# complete elliptic integral of the third kind: ellipticPi
 
 
 def ellipticPi(x, y):
+    '''
+    Legendres complete elliptic integral of the third kind
+    '''
     return elliptic((1-y)**(1/2.), 1-x, 1, 1)
 
-# TESTING ALGORITHM ---------------------------------------------------------
-# def integrand(phi,kc,p,c,s):
-#    return (c*cos(phi)**2+s*sin(phi)**2)/(cos(phi)**2+p*sin(phi)**2)/sqrt(cos(phi)**2+kc**2*sin(phi)**2)
 
-# def nelliptic(kc,p,c,s):
-#    I = quad(integrand,0,pi/2,args=(kc,p,c,s))
-#    return I
-
-#from scipy.integrate import quad
-# def integrand(phi,x):
-#    return (1-x*sin(phi)**2)**(-1/2.)
-# def nelliptic(x):
-#    I = quad(integrand,0,pi/2,args=x)
-#    return I
-# print(nelliptic(-.51))
-
-
-
+# AXES AND ROTATIONS #############################################################
 
 def randomAxis():
     """
