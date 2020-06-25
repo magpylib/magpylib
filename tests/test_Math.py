@@ -1,6 +1,6 @@
 from magpylib._lib.mathLib import fastSum3D, fastNorm3D, arccosSTABLE, fastCross3D
 from magpylib._lib.mathLib import Qmult, Qnorm2, Qunit, Qconj, getRotQuat, angleAxisRotation_priv
-from magpylib._lib.mathLib import elliptic, ellipticK, ellipticE, ellipticPi
+from magpylib._lib.mathLib import cel, ellipticK, ellipticE, ellipticPi
 from numpy import pi,array
 from magpylib._lib.mathLib import randomAxis, axisFromAngles, anglesFromAxis, angleAxisRotation
 import numpy as np
@@ -73,7 +73,7 @@ def test_Quaternion():
 
 # -------------------------------------------------------------------------------
 def test_elliptic():
-    assert round(elliptic(.1,.2,.3,.4),4) == 4.7173, "bad elliptic"
+    assert round(cel(.1,.2,.3,.4),4) == 4.7173, "bad elliptic"
     assert round(ellipticK(.1),4) == 1.6124, "bad ellipticK"
     assert round(ellipticE(.1),4) == 1.5308, "bad ellipticE"
     assert round(ellipticPi(.1,.2),4) == 1.752, "bad ellipticPi"

@@ -132,9 +132,9 @@ def angleAxisRotation_priv(angle, axis, v):
 # See https://dlmf.nist.gov/19.2
 
 
-def elliptic(kc, p, c, s):
+def cel(kc, p, c, s):
     '''
-    Numerical scheme to evaluate the Bulirsch integral.
+    Numerical scheme to evaluate the cel Bulirsch integral.
     Algorithm proposed in Derby et al., arXiev:00909.3880v1
     '''
     if kc == 0:
@@ -182,21 +182,21 @@ def ellipticK(x):
     '''
     Legendres complete elliptic integral of the first kind
     '''
-    return elliptic((1-x)**(1/2.), 1, 1, 1)
+    return cel((1-x)**(1/2.), 1, 1, 1)
 
 
 def ellipticE(x):
     '''
     Legendres complete elliptic integral of the second kind
     '''
-    return elliptic((1-x)**(1/2.), 1, 1, 1-x)
+    return cel((1-x)**(1/2.), 1, 1, 1-x)
 
 
 def ellipticPi(x, y):
     '''
     Legendres complete elliptic integral of the third kind
     '''
-    return elliptic((1-y)**(1/2.), 1-x, 1, 1)
+    return cel((1-y)**(1/2.), 1-x, 1, 1)
 
 
 # AXES AND ROTATIONS #############################################################

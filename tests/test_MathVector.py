@@ -1,7 +1,7 @@
 from magpylib._lib.mathLib_vector import QmultV, QconjV, getRotQuatV, QrotationV, getAngAxV, angleAxisRotationV_priv
-from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV, angleAxisRotationV, ellipticV
+from magpylib._lib.mathLib_vector import axisFromAnglesV, anglesFromAxisV, angleAxisRotationV, celV
 from numpy import array, amax
-from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis, angleAxisRotation, elliptic
+from magpylib._lib.mathLib import getRotQuat, axisFromAngles, anglesFromAxis, angleAxisRotation, cel
 from magpylib.math import randomAxisV
 import numpy as np
 from magpylib._lib.mathLib import ellipticK, ellipticE, ellipticPi
@@ -94,18 +94,18 @@ def test_angleAxisRotationV():
 
 
 
-def test_ellipticV():
+def test_celV():
     #random input
     INP = np.random.rand(1000,4)
 
     # classical solution looped
     solC = []
     for inp in INP:
-        solC += [elliptic(inp[0],inp[1],inp[2],inp[3])]
+        solC += [cel(inp[0],inp[1],inp[2],inp[3])]
     solC = np.array(solC)
 
     #vector solution
-    solV = ellipticV(INP[:,0],INP[:,1],INP[:,2],INP[:,3])
+    solV = celV(INP[:,0],INP[:,1],INP[:,2],INP[:,3])
 
     assert np.amax(abs(solC-solV)) < 1e-10
 

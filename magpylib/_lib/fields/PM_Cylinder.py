@@ -27,7 +27,7 @@
 
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan2, cos, sin, arange, NaN
-from magpylib._lib.mathLib import elliptic
+from magpylib._lib.mathLib import cel
 from warnings import warn
 
 # %% Cylinder Field Calculation
@@ -107,13 +107,13 @@ def Bfield_Cylinder(MAG, pos, dim, Nphi0):  # returns arr3
     gamma = Rmr/Rpr
 
     # radial field
-    Br_Z = B0z*(alphP*elliptic(kP, 1, 1, -1)-alphM*elliptic(kM, 1, 1, -1))/pi
+    Br_Z = B0z*(alphP*cel(kP, 1, 1, -1)-alphM*cel(kM, 1, 1, -1))/pi
     Bx_Z = Br_Z*cos(phi)
     By_Z = Br_Z*sin(phi)
 
     # axial field
-    Bz_Z = B0z*R/(Rpr)*(betP*elliptic(kP, gamma**2, 1, gamma) -
-                        betM*elliptic(kM, gamma**2, 1, gamma))/pi
+    Bz_Z = B0z*R/(Rpr)*(betP*cel(kP, gamma**2, 1, gamma) -
+                        betM*cel(kM, gamma**2, 1, gamma))/pi
 
     Bfield = array([Bx_Z, By_Z, Bz_Z])  # contribution from axial magnetization
 

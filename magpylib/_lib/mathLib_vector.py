@@ -260,9 +260,9 @@ def angleAxisRotationV(POS,ANG,AXIS,ANCHOR):
 
 
 
-def ellipticV(kc,p,c,s):
+def celV(kc,p,c,s):
     '''
-    vectorized version of the elliptic integral
+    vectorized version of the cel integral
     original implementation from paper Kirby
     '''
 
@@ -330,12 +330,12 @@ def ellipticV(kc,p,c,s):
 
 def ellipticKV(x):
     '''
-    special case complete elliptic integral of first kind ellipticK
+    special case complete cel integral of first kind ellipticK
     0 <= x <1
     '''
     N = len(x)
     onez = np.ones([N])
-    return ellipticV((1-x)**(1/2.), onez, onez, onez)
+    return celV((1-x)**(1/2.), onez, onez, onez)
 
 
 
@@ -347,7 +347,7 @@ def ellipticEV(x):
     '''
     N = len(x)
     onez = np.ones([N])
-    return ellipticV((1-x)**(1/2.), onez, onez, 1-x)
+    return celV((1-x)**(1/2.), onez, onez, 1-x)
 
 
 
@@ -359,4 +359,4 @@ def ellipticPiV(x, y):
     '''
     N = len(x)
     onez = np.ones([N])
-    return ellipticV((1-y)**(1/2.), 1-x, onez, onez)
+    return celV((1-y)**(1/2.), 1-x, onez, onez)

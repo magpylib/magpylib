@@ -29,7 +29,7 @@
 # %% IMPORTS
 from numpy import pi, sqrt, array, arctan2, cos, sin
 import numpy as np
-from magpylib._lib.mathLib_vector import ellipticV
+from magpylib._lib.mathLib_vector import celV
 
 # Describes the magnetic field of a cylinder with circular top and bottom and
 #   arbitrary magnetization given by MAG. The axis of the cylinder is parallel
@@ -77,13 +77,13 @@ def Bfield_CylinderV(MAG, POS, DIM, Nphi0):  # returns arr3
     one = np.ones(N)
 
     # radial field
-    Br_Z = B0z*(alphP*ellipticV(kP, one, one, -one)-alphM*ellipticV(kM, one, one, -one))/pi
+    Br_Z = B0z*(alphP*celV(kP, one, one, -one)-alphM*celV(kM, one, one, -one))/pi
     Bx_Z = Br_Z*cos(PHI)
     By_Z = Br_Z*sin(PHI)
 
     # axial field
-    Bz_Z = B0z*R/(Rpr)*(betP*ellipticV(kP, gamma**2, one, gamma) -
-                        betM*ellipticV(kM, gamma**2, one, gamma))/pi
+    Bz_Z = B0z*R/(Rpr)*(betP*celV(kP, gamma**2, one, gamma) -
+                        betM*celV(kM, gamma**2, one, gamma))/pi
 
     Bfield = np.c_[Bx_Z, By_Z, Bz_Z]  # contribution from axial magnetization
 
