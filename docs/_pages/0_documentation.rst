@@ -4,7 +4,10 @@
 Documentation v2.3.0b
 ******************************
 
-The idea behind magpylib is to provide a simple and easy-to-use interface for computing the magnetic field of magnets, currents and moments. The computations are based on (semi-)analytical solutions found in the literature, discussed in the :ref:`physComp` section.
+Magpylib provide a simple and easy-to-use interface for computing the magnetic field of magnets, currents and moments. The computations are based on (semi-)analytical solutions found in the literature, discussed in the :ref:`physComp` section.
+
+A published software description for version 2.3.0b can be found `here <https://authors.elsevier.com/sd/article/S2352711020300170>`_.
+
 
 Contents
 ########
@@ -36,7 +39,7 @@ The top level of magpylib contains the sub-packages  and :mod:`~magpylib.source`
 
 1. The **source module** includes a set of classes that represent physical sources of the magnetic field (e.g. permanent magnets).
 
-2. The **vector module** includes functions for performance computation.
+2. The **vector module** includes functions for vectorized performance computation.
 
 3. The **math module** contains practical functions for working with angle-axis rotations and transformation to and from Euler angle representation.
 

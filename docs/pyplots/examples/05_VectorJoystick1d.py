@@ -27,7 +27,7 @@ ANCH = np.tile(anch,(N,1))  # always same axis
 AXIS = np.tile(axis,(N,1))  # always same anchor
 
 # N-times evalulation of the field with different inputs
-Bv = magpy.vector.getBv_magnet('box',MAG,DIM,POSo,POSm,[angs],[AXIS],[ANCH])
+Bv = magpy.vector.getBv_magnet('box',MAG,DIM,POSm,POSo,[angs],[AXIS],[ANCH])
 
 # plot field
 plt.plot(angs,Bv[:,0])

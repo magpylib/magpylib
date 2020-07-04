@@ -21,7 +21,7 @@ c.move((-2,0,0))
 xs = np.linspace(-10,10,33)
 zs = np.linspace(-10,10,44)
 POS = np.array([(x,0,z) for z in zs for x in xs])
-Bs = c.getB(POS).reshape(44,33,3)     #<--VECTORIZED
+Bs = c.getB(POS).reshape(44,33,3)     #<--automatically vectorized
 
 # create figure
 fig = plt.figure(figsize=(9,5))
