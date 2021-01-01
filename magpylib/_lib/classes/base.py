@@ -118,6 +118,8 @@ class RCS:
         if any(isnan(self.position)) or len(self.position) != 3:
             sys.exit('Bad pos input')
 
+        return self
+
     def move(self, displacement):
         """
         This method moves the source by the argument vector `displacement`. 
@@ -147,6 +149,8 @@ class RCS:
         if any(isnan(mV)) or len(mV) != 3:
             sys.exit('Bad move vector input')
         self.position = self.position + mV
+
+        return self
 
     def setOrientation(self, angle, axis):
         """
@@ -183,6 +187,8 @@ class RCS:
         self.axis = array(axis, dtype=float64, copy=False)
         if any(isnan(self.axis)) or len(self.axis) != 3:
             sys.exit('Bad axis input')
+
+        return self
 
     def rotate(self, angle, axis, anchor='self.position'):
         """
@@ -263,7 +269,7 @@ class RCS:
         Vnew = Qmult(P, Qmult(Vold, Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
-
+        return self
 #------------------------------------------------------------------------------
 class FieldSampler:
     """
