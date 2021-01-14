@@ -22,7 +22,35 @@
 # page at https://www.github.com/magpylib/magpylib/issues.
 # -------------------------------------------------------------------------------
 from typing import Tuple
-from numpy import float64, isnan, array
+from numpy import float64, isnan, array, log10
+
+_UNIT_PREFIX = {
+    -24: 'y',  # yocto
+    -21: 'z',  # zepto
+    -18: 'a',  # atto
+    -15: 'f',  # femto
+    -12: 'p',  # pico
+     -9: 'n',  # nano
+     -6: 'µ',  # micro
+     -3: 'm',   # milli
+      0: '',
+      3: 'k',    # kilo
+      6: 'M',    # mega
+      9: 'G',    # giga
+     12: 'T',   # tera
+     15: 'P',   # peta
+     18: 'E',   # exa
+     21: 'Z',   # zetta
+     24: 'Y',    # yotta
+}
+def unit_prefix(number, unit='', precision=3, char_between=''):
+    digits = int(log10(abs(number)))//3*3 if number!=0 else 0
+    prefix = _UNIT_PREFIX.get(digits,'')
+    if prefix!='':
+        new_number_str = '{:.{}g}'.format(number/10**digits, precision)  
+    else:
+        new_number_str = '{:.{}g}'.format(number, precision)
+    return f'{new_number_str}{char_between}{prefix}{unit}'
 
 
 # Helper function for validating input dimensions

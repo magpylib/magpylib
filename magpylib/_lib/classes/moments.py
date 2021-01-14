@@ -28,6 +28,7 @@ from magpylib._lib.classes.base import MagMoment
 from magpylib._lib.fields.Moment_Dipole import Bfield_Dipole
 from magpylib._lib.fields.Moment_Dipole_vector import Bfield_DipoleV
 from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
+from magpylib._lib.utility import unit_prefix
 
 # tool-tip / intellisense helpers ---------------------------------------------
 # Class initialization is done purely by kwargs. While some # of these can be 
@@ -123,19 +124,7 @@ class Dipole(MagMoment):
         return BCm
 
     def __repr__(self):
-        """
-        This is for the IPython Console
-        When you call a defined dipole, this method shows you all its components.
-
-        Examples
-        --------
-        >>> from magpylib import source
-        >>> d = source.moment.Dipole([1.0,2.0,3.0], [3.0,2.0,1.0])
-        >>> d
-            name: Dipole 
-            moment: x: 1.0mT, y: 2.0mT, z: 3.0mT 
-            position: x: 3.0mm, y: 2.0mm, z:1.0mm 
-            angle: 0.0 Degrees 
-            axis: x: 0.0, y: 0.0, z: 1.0
-        """
-        return "type: {} \n moment: x: {}, y: {}, z: {} \n position: x: {}, y: {}, z:{} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("moments.Dipole", *self.moment, *self.position, self.angle, *self.axis)
+        return '\n '.join((
+            super().__repr__(),
+            "moment: x={}T, y={}T, z={}T".format(*(unit_prefix(mom/1000) for mom in self.moment))
+        ))

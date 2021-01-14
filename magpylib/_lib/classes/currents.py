@@ -29,6 +29,7 @@ from magpylib._lib.fields.Current_CircularLoop import Bfield_CircularCurrentLoop
 from magpylib._lib.fields.Current_CircularLoop_vector import Bfield_CircularCurrentLoopV
 from magpylib._lib.classes.base import LineCurrent
 from magpylib._lib.mathLib_vector import angleAxisRotationV_priv
+from magpylib._lib.utility import unit_prefix
 
 
 # tool-tip / intellisense helpers ---------------------------------------------
@@ -151,25 +152,11 @@ class Circular(LineCurrent):
         return BCm
 
     def __repr__(self):
-        """
-         This is for the IPython Console
-        When you call a defined circular, this method shows you all its components.
-
-        Examples
-        --------
-        >>> from magpylib import source
-        >>> c = source.current.Circular(2.45, 3.1469, [4.4, 5.24, 0.5])
-        >>> c
-            type: current.Circular 
-            current: 2.45  
-            dimension: d: 3.1469 
-            position: x: 4.4, y: 5.24, z: 0.5
-            angle: 0.0 
-            axis: x: 0.0, y: 0.0, z: 1.0
-        """
-        return "type: {} \n current: {}  \n dimension: d: {} \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Circular", self.current, self.dimension, *self.position, self.angle, *self.axis)
-
-
+            return '\n '.join((
+                super().__repr__(),
+                "dimensions: d={}m".format(unit_prefix(self.dimension/1000)),
+                "current: {}A".format(unit_prefix(self.current))
+            ))
 
 # -------------------------------------------------------------------------------
 class Line(LineCurrent):
@@ -300,3 +287,10 @@ class Line(LineCurrent):
             axis: x: 0.0, y: 0.0, z: 1.0
         """
         return "type: {} \n current: {} \n dimensions: vertices \n position: x: {}, y: {}, z: {} \n angle: {}  \n axis: x: {}, y: {}, z: {}".format("current.Line", self.current, *self.position, self.angle, *self.axis)
+    
+    def __repr__(self):
+            return '\n '.join((
+                super().__repr__(),
+                "number of vertices: {}".format(len(self.vertices)),
+                "current: {}A".format(unit_prefix(self.current))
+            ))

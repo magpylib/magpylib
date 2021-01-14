@@ -52,7 +52,7 @@ Mx=My=Mz=0.0 # Zero Moment
 # -------------------------------------------------------------------------------
 from numpy import array, float64, pi, isnan, array
 from magpylib._lib.mathLib import Qmult, Qconj, getRotQuat, arccosSTABLE, fastSum3D, fastNorm3D
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, unit_prefix
 import sys
 
 
@@ -263,6 +263,37 @@ class RCS:
         Vnew = Qmult(P, Qmult(Vold, Qconj(P)))
         self.position = array(Vnew[1:])+anchor
 
+    def __repr__(self):
+        name = getattr(self,'name',None)
+        str_repr = [f"type: {type(self).__name__}"]
+        if name is not None:
+            str_repr.append(f"name: {name}")
+        str_repr.extend([
+            "position: x={}m, y={}m, z={}m".format(*(unit_prefix(pos/1000) for pos in self.position)),
+            "angle: {}Degrees".format(unit_prefix(self.angle)),
+            "axis: x={:.2f}, y={:.2f}, z={:.2f}".format(*(ax for ax in self.axis))
+        ])
+        return '\n '.join(str_repr)
+
+    def _repr_html_(self):
+        table = [[s for s in rs.strip().split(':')] for rs in self.__repr__().split('\n')]
+        head = '\n'.join(f'''<th>{s}</th>\n''' for s in table[0])
+        body = '\n'.join(
+            '<tr>\n'+''.join(
+                f'''<td>{''.join(
+                    '<font color="{}">{}</font>'.format(color,ss) if i!=0 else ss for color,ss in zip(('red','green','blue'),s2.split(','))
+                )}</td>\n''' for i,s2 in enumerate(s)
+            )+'</tr>' for s in table[1:])
+        return f'''<table border="1" class="dataframe">
+        <thead>
+            <tr style="text-align: right;">
+            {head}
+            </tr>
+        </thead>
+        <tbody>
+            {body}
+        </tbody>
+        </table> '''
 
 #------------------------------------------------------------------------------
 class FieldSampler:

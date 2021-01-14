@@ -22,7 +22,7 @@
 
 from numpy import array, float64, ndarray
 from magpylib._lib.mathLib import angleAxisRotation_priv
-from magpylib._lib.utility import checkDimensions
+from magpylib._lib.utility import checkDimensions, unit_prefix
 from magpylib._lib.classes.base import HomoMag
 from magpylib._lib.fields.PM_Sphere import Bfield_Sphere
 from magpylib._lib.fields.PM_Cylinder import Bfield_Cylinder
@@ -149,24 +149,11 @@ class Box(HomoMag):
         return BCm
         
     def __repr__(self):
-        """
-        This is for the IPython Console
-        When you call a defined box, this method shows you all its components.
-
-        Examples
-        --------
-        >>> from magpylib import source
-        >>> b = source.magnet.Box([0.2,32.5,5.3], [1.0,2.4,5.0], [1.0,0.2,3.0])
-        >>> b
-            type: magnet.Box 
-            magnetization: x: 0.2, y: 32.5, z: 5.3
-            dimensions: a: 1.0, b: 2.4, c: 5.0
-            position: x: 1.0, y:0.2, z: 3.0
-            angle: 0.0  
-            axis: x: 0.0, y: 0.0, z:1.0
-        """
-        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: a: {}, b: {}, c: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Box", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
-
+        return '\n '.join((
+            super().__repr__(),
+            "magnetization: x={}T, y={}T, z={}T".format(*(unit_prefix(mag/1000) for mag in self.magnetization)),
+            "dimensions: a={}m, b={}m, c={}m".format(*(unit_prefix(dim/1000) for dim in self.dimension))
+        ))
 
 
 # -----------------------------------------------------------------------------
@@ -286,24 +273,11 @@ class Cylinder(HomoMag):
         return BCm
 
     def __repr__(self):
-        """
-        This is for the IPython Console
-        When you call a defined cylinder, this method shows you all its components.
-
-        Examples
-        --------
-        >>> from magpylib import source
-        >>> c = source.magnet.Cylinder([0.2,32.5,5.3], [2.0,9.0], [1.0,0.2,3.0])
-        >>> c
-            type: magnet.Cylinder 
-            magnetization: x: 0.2, y: 32.5, z: 5.3
-            dimensions: d: 2.0, h: 9.0 
-            position: x: 1.0, y:0.2, z: 3.0
-            angle: 0.0 
-            axis: x: 0.0, y: 0.0, z:1.0
-        """
-        return "type: {} \n magnetization: x: {}, y: {}, z: {} \n dimensions: d: {}, h: {} \n position: x: {}, y:{}, z: {} \n angle: {} \n axis: x: {}, y: {}, z:{}".format("magnet.Cylinder", *self.magnetization, *self.dimension, *self.position, self.angle, *self.axis)
-
+        return '\n '.join((
+            super().__repr__(),
+            "magnetization: x={}T, y={}T, z={}T".format(*(unit_prefix(mag/1000) for mag in self.magnetization)),
+            "dimensions: d={}m, h={}m".format(*(unit_prefix(dim/1000) for dim in self.dimension))
+        ))
 
 
 # -----------------------------------------------------------------------------
@@ -408,24 +382,11 @@ class Sphere(HomoMag):
         return BCm
 
     def __repr__(self):
-        """
-        This is for the IPython Console
-        When you call a defined sphere, this method shows you all its components.
-
-        Examples
-        --------
-        >>> from magpylib import source
-        >>> s = source.magnet.Sphere([0.2,32.5,5.3], 1.0, [1.0,0.2,3.0])
-        >>> s
-            type: magnet.Sphere 
-            magnetization: x: 0.2, y: 32.5, z: 5.3
-            dimensions: d: 1.0 
-            position: x: 1.0, y:0.2, z: 3.0
-            angle: 0.0  
-            axis: x: 0.0, y: 0.0, z:1.0
-        """
-        return "type: {} \n magnetization: x: {}, y: {}, z: {}mT \n dimensions: d: {} \n position: x: {}, y:{}, z: {} \n angle: {} Degrees \n axis: x: {}, y: {}, z:{}".format("magnet.Sphere", *self.magnetization, self.dimension, *self.position, self.angle, *self.axis)
-
+        return '\n '.join((
+            super().__repr__(),
+            "magnetization: x={}T, y={}T, z={}T".format(*(unit_prefix(mag/1000) for mag in self.magnetization)),
+            "dimensions: d={}m".format(unit_prefix(self.dimension/1000))
+        ))
 
 
 # -----------------------------------------------------------------------------

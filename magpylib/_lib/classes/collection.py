@@ -276,3 +276,13 @@ class Collection(FieldSampler):
         """
         for s in self.sources:
             s.rotate(angle, axis, anchor=anchor)
+
+    def __repr__(self):
+        name = getattr(self,'name',None)
+        str_repr = [f"type: {type(self).__name__}"]
+        if name is not None:
+            str_repr.append(f"name: {name}")
+        str_repr.extend([
+            "sources: {}".format([f'{type(s).__name__}' for s in self.sources])
+        ])
+        return '\n '.join(str_repr)
