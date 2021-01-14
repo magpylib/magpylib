@@ -281,7 +281,7 @@ class RCS:
         body = '\n'.join(
             '<tr>\n'+''.join(
                 f'''<td>{''.join(
-                    '<font color="{}">{}</font>'.format(color,ss) if i!=0 else ss for color,ss in zip(('red','green','blue'),s2.split(','))
+                    '<font color="{}">{}</font>'.format(color,ss) if i!=0 else ss for color,ss in zip(('#E74C3C','#2ECC71','#3498DB'),s2.split(','))
                 )}</td>\n''' for i,s2 in enumerate(s)
             )+'</tr>' for s in table[1:])
         return f'''<table border="1" class="dataframe">
