@@ -1,0 +1,1 @@
+"""magpylib._lib"""
