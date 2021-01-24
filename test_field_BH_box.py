@@ -1,6 +1,4 @@
 import numpy as np
-
-
 from magpylib._lib.fields.PM_Box_vector import Bfield_BoxV
 from magpylib._lib.fields.PM_Box import Bfield_Box
 from magpylib3._lib.fields.field_BH_box import field_B_box

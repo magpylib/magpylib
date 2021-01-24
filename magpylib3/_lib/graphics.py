@@ -5,7 +5,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import magpylib3._lib as _lib
-from magpylib3._lib.math.utility import format_src_input
+from magpylib3._lib.math_utility.utility import format_src_input
 
 
 def vert_face_box(s):

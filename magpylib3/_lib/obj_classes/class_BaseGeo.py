@@ -1,7 +1,7 @@
 """BaseGeo class code"""
 
 import numpy as np
-from magpylib3._lib.math.utility import rotobj_from_rot_input
+from magpylib3._lib.math_utility.utility import rotobj_from_rot_input
 from magpylib3._lib.graphics import display
 
 

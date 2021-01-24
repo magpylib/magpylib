@@ -38,7 +38,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib3 import _lib as _lib
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
-from magpylib3._lib.math.utility import format_src_input
+from magpylib3._lib.math_utility.utility import format_src_input
 
 
 def getBH_core(**kwargs:dict) -> np.ndarray:

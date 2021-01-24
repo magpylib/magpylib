@@ -4,7 +4,7 @@ Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib3._lib.math.special_functions import celv
+from magpylib3._lib.math_utility.special_functions import celv
 
 def field_BH_cylinder(bh, mag, dim, pos_obs, niter):
     """ Wrapper function to select cylinder B- or H-field, which are treated equally
