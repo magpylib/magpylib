@@ -1,7 +1,8 @@
 """BaseGeo class code"""
 
 import numpy as np
-from magpylib3._lib.math_utility.utility import rotobj_from_rot_input
+from scipy.spatial.transform import Rotation as R
+from magpylib3._lib.math_utility.utility import rotobj_from_angle_axis
 from magpylib3._lib.graphics import display
 
 
@@ -58,7 +59,10 @@ class BaseGeo:
     def rot(self, value):
         """ set relative rotation
         """
-        self._rot = rotobj_from_rot_input(value)
+        if value is None:
+            self._rot = R.from_rotvec((0,0,0))
+        else:
+            self._rot = value
 
 
     # methods -------------------------------------------------------
@@ -102,9 +106,6 @@ class BaseGeo:
         - self
         """
         
-        # rotation object from input
-        rot = rotobj_from_rot_input(rot)
-        
         # adjust relative object rotation
         self._rot = rot*self._rot
 
@@ -116,3 +117,35 @@ class BaseGeo:
             self._pos = pos_new + anch                # set new pos
 
         return self # for chaining
+
+
+    def rotate_angle_axis(self, angle, axis, anchor=None, degree=True):
+        """ 
+        Rotate object such that the axis of rotation passes through
+        the anchor.
+
+        ### Args:
+        - angle (float): Angle of rotation in [deg] by default.
+        - axis (vec3): The axis of rotation [dimensionless]
+        - anchor (vec3): The axis of rotation passes through the anchor point. 
+            By default (anchor=None) the object will rotate about its own center.
+        - degree (bool): If True, angle is given in [deg]. Else angle is given 
+            in [rad].
+        
+        ### Returns:
+        - self
+        """
+        
+        # degree to rad
+        if degree:
+            angle = angle/180*np.pi
+
+        # secure input type
+        axis = np.array(axis, dtype=np.float64)
+
+        # rotation object from angle_axis input
+        rot = rotobj_from_angle_axis(angle, axis)
+
+        self.rotate(rot)
+
+        return self
