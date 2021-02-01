@@ -146,6 +146,6 @@ class BaseGeo:
         # rotation object from angle_axis input
         rot = rotobj_from_angle_axis(angle, axis)
 
-        self.rotate(rot)
+        self.rotate(rot,anchor=anchor)
 
         return self
