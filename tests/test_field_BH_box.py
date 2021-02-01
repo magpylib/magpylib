@@ -1,10 +1,12 @@
 import numpy as np
 from magpylib3._lib.fields.field_BH_box import field_B_box
 
-def test_field_B_box():
-    
-    # special case test ---------------------------------------------
-    # all solutions at corners and edges should be zero
+
+def test_field_B_box_special():
+    """
+    special case test- all solutions at corners and 
+        edges should be zero
+    """
     # corner positions
     pos = [(1,1,1), (1,1,-1), (1,-1,1), (-1,1,1),
             (1,-1,-1), (-1,1,-1), (-1,-1,1), (-1,-1,-1)]
@@ -22,8 +24,11 @@ def test_field_B_box():
     assert np.all(B==0), 'field_B_Box not 0 at edges/corners'
 
 
-    # general case test ---------------------------------------------
-    # load random positions and solutions and compare
+def test_field_B_box_general():
+    """
+    general case test
+    load random positions and solutions and compare
+    """
     mag, dim, pos, B = np.load('tests/testdata/testdata_field_B_box.npy')
 
     Btest = field_B_box(mag, dim, pos)
