@@ -22,7 +22,7 @@ level2(getBv): wraps level1
     - tile 1D inputs
 
 level2(getB): wraps level1
-    input: *sources + **kwargs (obs_pos, src_paths, etc...)
+    input: *sources + **kwargs (pos_obs, src_paths, etc...)
     output: B-field for each source at each pos
     - auto-generates correct vector input format from source attributes
     - groups similar sources for combined computation
@@ -275,7 +275,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
 
     # determine shape of positions and flatten into Nx3 array
     poso_shape = poso.shape
-    n = np.prod(poso_shape[:-1],dtype=int)
+    n = np.prod(poso_shape[:-1],dtype=int) # pylint: disable=unsubscriptable-object
     poso_flat = np.reshape(poso,(n,3))
 
     m = len(src_list)      # number of sources
