@@ -6,7 +6,7 @@ Computation details in function docstrings.
 import numpy as np
 
 
-def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray,) -> np.ndarray:
+def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray,) -> np.ndarray:
     """ Wrapper function to select box B- or H-field, which are treated equally
     at higher levels
 
@@ -14,27 +14,27 @@ def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray
     - bh (boolean): True=B, False=H
     - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
     - dim (ndarray Nx3): dimension of Cuboid side lengths in units of mm
-    - obs_pos (ndarray Nx3): position of observer in units of mm
+    - pos_obs (ndarray Nx3): position of observer in units of mm
 
     ### Returns:
-    - B/H-field (ndarray Nx3): magnetic field vectors at obs_pos in units of mT / kA/m
+    - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
     if bh:
-        return field_B_box(mag, dim, obs_pos)
+        return field_B_box(mag, dim, pos_obs)
     else:
-        return field_H_box(mag, dim, obs_pos)
+        return field_H_box(mag, dim, pos_obs)
 
 
-def field_B_box(mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray) -> np.ndarray:
+def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.ndarray:
     """ Compute B-field of Cuboid magnet with homogenous magnetization.
 
     ### Args:
     - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
     - dim (ndarray Nx3): dimension of Cuboid side lengths in units of mm
-    - obs_pos (ndarray Nx3): position of observer in units of mm
+    - pos_obs (ndarray Nx3): position of observer in units of mm
 
     ### Returns:
-    - B-field (ndarray Nx3): B-field vectors at obs_pos in units of mT
+    - B-field (ndarray Nx3): B-field vectors at pos_obs in units of mT
 
     ### init_state:
     A Cuboid with side lengths a,b,c. The sides are parallel to the 
@@ -72,7 +72,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray) -> np.nda
     B = np.empty((len(mag),3))   # store fields here eventually
 
     # special cases for edge/corner fields --------------------------
-    x, y, z = np.copy(obs_pos.T)
+    x, y, z = np.copy(pos_obs.T)
     a, b, c = dim.T/2
 
     mx1 = ( x == a) | (x == -a) # on edgeline
@@ -93,7 +93,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray) -> np.nda
     # create inputs excluding edge/corner cases----------------------
     mask_not_edge = np.invert(mask_xedge | mask_yedge | mask_zedge)
     magx, magy, magz = mag[mask_not_edge].T
-    x, y, z = obs_pos[mask_not_edge].T
+    x, y, z = pos_obs[mask_not_edge].T
     a, b, c = dim[mask_not_edge].T/2
     n = len(magx)
 
@@ -190,25 +190,25 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, obs_pos: np.ndarray) -> np.nda
     return B / (4*np.pi)
 
 
-def field_H_box(mag:np.ndarray, dim:np.ndarray, obs_pos:np.ndarray) -> np.ndarray:
+def field_H_box(mag:np.ndarray, dim:np.ndarray, pos_obs:np.ndarray) -> np.ndarray:
     """ Compute H-field of Cuboid magnet with homogenous magnetization.
 
     ### Args:
     - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
     - dim (ndarray Nx3): dimension of Cuboid side lengths in units of mm
-    - obs_pos (ndarray Nx3): position of observer in units of mm
+    - pos_obs (ndarray Nx3): position of observer in units of mm
 
     ### Returns:
-    - H-field (ndarray Nx3): H-field vectors at obs_pos in units of kA/m
+    - H-field (ndarray Nx3): H-field vectors at pos_obs in units of kA/m
     
     ### Computation info:
     Computation based on B-field computation.
     """
 
-    B = field_B_box(mag, obs_pos, dim)
+    B = field_B_box(mag, pos_obs, dim)
     
     # if inside magnet subtract magnetization vector
-    pa = np.abs(obs_pos)
+    pa = np.abs(pos_obs)
     c1 = pa[:,0]<=dim[:,0]/2
     c2 = pa[:,1]<=dim[:,1]/2
     c3 = pa[:,2]<=dim[:,2]/2
