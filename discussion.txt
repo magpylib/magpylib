@@ -1,0 +1,22 @@
+
+2do----------------------------------
+move edgecase Box to field_BH_Box
+provide output for mag=000 #practical when sweeping through 0
+
+
+potential improvements------------------------------
+
+potential performance increase:
+    Can we speed up the computation by combining similar
+    pos/dim combinations but different mag, avoiding
+    full computation but just perform scalar mult.
+
+    For cuboids this is the same idea as construction
+    of the demag tensor.
+
+    its even possible to throw in the scaling property
+
+Cuboid field performance:
+    Distinguish if 1-2 or 3 non-zero magnetizations
+    and compute as different instances. This should give
+    a speedup of a factor 2 or 3 in most cases !
