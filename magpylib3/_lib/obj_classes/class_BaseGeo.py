@@ -119,7 +119,7 @@ class BaseGeo:
         return self # for chaining
 
 
-    def rotate_angle_axis(self, angle, axis, anchor=None, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, degree=True):
         """ 
         Rotate object such that the axis of rotation passes through
         the anchor.

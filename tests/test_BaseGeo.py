@@ -34,16 +34,16 @@ def test_BaseGeo():
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 
-    bg.rotate_angle_axis(45,(1,2,3))
+    bg.rotate_from_angax(45,(1,2,3))
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 
-    bg.rotate_angle_axis(-np.pi/4,(1,2,3),degree=False)
+    bg.rotate_from_angax(-np.pi/4,(1,2,3),degree=False)
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 
     rr = R.from_rotvec((.1,.2,.3))
-    bg.rotate(rr,anchor=(3,2,1)).rotate_angle_axis(33,(3,2,1),anchor=0)
+    bg.rotate(rr,anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 

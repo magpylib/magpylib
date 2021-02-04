@@ -13,7 +13,7 @@ def test_Box():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move(mv).rotate_angle_axis(a,aa,aaa)
+            pm.move(mv).rotate_from_angax(a,aa,aaa)
         
         Btest += [pm.getB(poso)]
     Btest = np.array(Btest)
@@ -43,7 +43,7 @@ if __name__ == "__main__":
 
             # 18 subsequent operations
             for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-                pm.move(mv).rotate_angle_axis(a,aa,aaa)
+                pm.move(mv).rotate_from_angax(a,aa,aaa)
             
             B += [pm.getB(poso)]
         B = np.array(B)
