@@ -28,11 +28,9 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
     Field computed from the current picture (perfect solenoid)
     - Derby: "Cylindrical Magnets and Ideal Solenoids" (2009)
 
-    On magnet edges (0,0,0) is returned
-
-    Avoiding numerical instabilities:
-        When approaching the edges the solution is set to zero when closer than 1e-14.
-        Numerical instabilities appear at 1e-15
+    ### Numerical instabilities:
+        When approaching the edges numerical instabilities appear
+        at 1e-15. Default wrapper returns 0 when approaching edges.
     """
 
     d,h = dim.T / 2       # d/h are now radius and h/2
@@ -83,9 +81,10 @@ def field_Hcy_transv(tetta: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray, ni
         to approximate the intergral
     - Furlani: "A three dimensional field solution for bipolar cylinders" (1994)
 
-    On magnet edges (0,0,0) is returned
-
-    Avoiding numerical instabilities: not tested yet
+    ### Numerical instabilities
+        When approaching the edges numerical instabilities appear
+        at 1e-15. Default wrapper returns 0 when approaching edges.
+        SOLUTION NEEDS TESTING
         
     """
     d,h = dim.T / 2       # d/h are now radius and (h/2)
@@ -140,7 +139,14 @@ def field_Hcy_transv(tetta: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray, ni
 
 
 def field_BH_cylinder(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray, niter: int) -> np.ndarray:
-    """ Transforms to Cylindrical CS, computes field of magz and magxy separately, sets edgecase
+    """ setting up the Cylinder field computation
+    - transform to Cylindrical CS
+    - separate mag=0 cases (returning 0)
+    - separate edge/corner cases (returning 0)
+    - separate magz and magxy
+    - call field computation for general cases
+    - select B or H
+    - transform B<-->H (inside check)
 
     ### Args:
     - bh (boolean): True=B, False=H
