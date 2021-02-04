@@ -1,21 +1,50 @@
 """
 Magpylib provides 3D magnetic field computation based on analytical formulas.
 
-Basic Functionality:
---------------------
+#### Sources:
+Create source objects that represent physical magnetic frield sources. Classes can be found in top-level sub-packages. 
+    
+- .magnet
+    - .Box()
+    - .Cylinder()
+    - .Sphere()
 
-Create source objects that represent physical magnetic frield sources. Classes
-    can be found in .magnet, .current and .moment top-level sub-packages.
+- .current
+    - .Line()
+    - .Circular()
 
-Group sources using the top-level Collection class
+- .moment
+    - .Dipole()
 
-Compute magnetic fields in 3 ways:
-    1. source.getB(positions)
-    2. getB(*sources, pos_obs = positions)
-    3. getBv(**kwargs)
+Manipulate sources through provided methods and parameters
 
-Graphially display sources using Matplotlib through the top-level display() 
-    function.
+- src.mag = new_magnetization
+- src.dim = new_dimension
+- src.pos = new_position
+- src.rot = new_orientation
+- src.move(displacement)
+- src.rotate(rotation input)
+
+#### Collections:
+Group sources for common manipulation.
+All methods that work for sources also work for collections.
+
+- col = src1 + src2 + src3 ...
+- .Collection(src1, src2, ...)
+
+#### Field computation 
+There are three ways to compute the field of sources. In addition to getB there is getH.
+
+1. src.getB(positions)
+2. .getB(*sources, pos_obs = positions)
+3. .getBv(**kwargs)
+
+#### Graphic output
+Display sources using Matplotlib through
+
+- .display(sources, collections, lists, ...)
+- src.display()
+
 """
 
 # module level dunders
