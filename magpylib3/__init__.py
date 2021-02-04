@@ -52,12 +52,13 @@ __version__ = '3.0.0'
 __author__ =  'Michael Ortner & friends'
 
 # interface
-__all__ = ['magnet', 'current', 'moment', 'getB', 'getH', 'getBv', 'getHv', 'Collection', 'display']
+__all__ = ['magnet', 'current', 'moment', 'getB', 'getH', 'getBv', 'getHv', 'Collection', 'display', 'config']
 
 # create interface
 from . import magnet
 from . import current
 from . import moment
+from ._lib.config import config
 from ._lib.fields.field_BHwrapper import getB, getH, getBv, getHv
 from ._lib.obj_classes import Collection
 from ._lib.graphics import display

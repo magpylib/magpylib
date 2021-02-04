@@ -5,27 +5,7 @@ Computation details in function docstrings.
 
 import numpy as np
 from magpylib3._lib.math_utility.special_functions import celv
-EDGESIZE = 1e-14
-
-# def field_BH_cylinder(bh, mag, dim, pos_obs, niter):
-#     """ Wrapper function to select cylinder B- or H-field, which are treated equally
-#     at higher levels
-
-#     ### Args:
-#     - bh (boolean): True=B, False=H
-#     - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
-#     - dim (ndarray Nx2): dimension of Cylinder side lengths in units of mm
-#     - pos_obs (ndarray Nx3): position of observer in units of mm
-#     - niter (int): number of iterations for diametral component
-
-#     ### Returns:
-#     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
-#     """
-#     if bh:
-#         return field_B_cylinder(mag, dim, pos_obs, niter)
-#     else:
-#         return field_H_cylinder(mag, dim, pos_obs, niter)
-
+from magpylib3._lib.config import config
 
 
 def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
@@ -103,9 +83,9 @@ def field_Hcy_transv(tetta: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray, ni
         to approximate the intergral
     - Furlani: "A three dimensional field solution for bipolar cylinders" (1994)
 
-    On magnet edges (0,0,0) is returned XXXX
+    On magnet edges (0,0,0) is returned
 
-    Avoiding numerical instabilities: XXXX
+    Avoiding numerical instabilities: not tested yet
         
     """
     d,h = dim.T / 2       # d/h are now radius and (h/2)
@@ -141,8 +121,8 @@ def field_Hcy_transv(tetta: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray, ni
 
     nma = np.logical_not(ma)
     rrc = r2d2e[nma] - dr2e[nma]*cos_phi[nma]
-    Gm = 1/np.sqrt(rrc+(ze[nma] + he[nma])**2)
-    Gp = 1/np.sqrt(rrc+(ze[nma] - he[nma])**2)
+    Gm = 1/np.sqrt(rrc + (ze[nma] + he[nma])**2)
+    Gp = 1/np.sqrt(rrc + (ze[nma] - he[nma])**2)
     I1xE[nma] = ((ze+he)[nma]*Gm - (ze-he)[nma]*Gp)/rrc
 
     Summand = sphie/3*cos_phi0e*I1xE
@@ -171,6 +151,8 @@ def field_BH_cylinder(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.nd
     ### Returns:
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
+    
+    EDGESIZE = config.EDGESIZE
     
     # transform to Cy CS --------------------------------------------
     x, y, z = pos_obs.T

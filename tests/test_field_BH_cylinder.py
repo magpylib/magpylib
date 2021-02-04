@@ -1,11 +1,11 @@
 import numpy as np
 import pickle
-from magpylib3._lib.fields.field_BH_cylinder import EDGESIZE, field_BH_cylinder
+from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 import magpylib3 as mag3
 
 # # GENERATE TEST DATA
 # n = 500
-# mag3.globals.EDGESIZE = 1e-14
+# mag3.config.EDGESIZE = 1e-14
 # # dim general
 # dim_gen = np.random.rand(n,2)
 # # dim edge
@@ -50,7 +50,7 @@ import magpylib3 as mag3
 # pickle.dump([mags, dims,poss,Bs], open('testdata_field_BH_cylinder.p','wb'))
 
 def test_field_BH_cylinder():
-    #mag3.config.EDGESIZE='1e-1'
+    mag3.config.EDGESIZE=1e-14
     mags, dims, poss, Bs = pickle.load(open('tests/testdata/testdata_field_BH_cylinder.p','rb'))
     Bs_test = []
     for mag in mags:
