@@ -1,14 +1,12 @@
 discussion -----------------------------------------
 
-naming: 
-.rotate_from_angax()
-
 
 2do-------------------------------------------------
-- test Cylinder numerical instabilities
 - move edgecase Box to field_BH_Box
+    - make a cuboid edgecase within 1e-14
 - provide output for mag=000 #practical when sweeping through 0
-- make a cuboid edgecase within 1e-14
+
+- test Cylinder numerical instabilities
 - profile getB()
 - complete tests
 - __init__ docstrings providing brief overviews
@@ -71,10 +69,6 @@ mid term improvements ------------------------------
 
     its even possible to throw in the scaling property
 
-- Cuboid field performance:
-    Distinguish if 1-2 or 3 non-zero magnetizations
-    and compute as different instances. This should give
-    a speedup of a factor 2 or 3 in most cases !
 
 - Speedup elliptic integrals by complementing cel with
     special cases K and E faster algorithms
@@ -84,9 +78,22 @@ mid term improvements ------------------------------
 - finite sized currents
 - optional input type checking
 
+Cuboid field performance:
+    Distinguish if 1-2 or 3 non-zero magnetizations
+    and compute as different instances. This should give
+    a speedup of a factor 2 or 3 in most cases !
+
+    maybe not worth it - too many cases, too many masks
+    speedup only when n>100 and only when just one mag
+    in all other cases there is a loss of speed
+
+    probably requires going deeper and modify equations
 
 
-DO NOT DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+DO NOT DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
 
 class BaseSource
 	- getB

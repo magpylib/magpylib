@@ -1,37 +1,50 @@
 import numpy as np
-from magpylib3._lib.fields.field_BH_box import field_B_box
+from magpylib3._lib.fields.field_BH_box import field_BH_box
+import pickle
+import magpylib3 as mag3
 
 
-def test_field_B_box_special():
-    """
-    special case test- all solutions at corners and 
-        edges should be zero
-    """
-    # corner positions
-    pos = [(1,1,1), (1,1,-1), (1,-1,1), (-1,1,1),
-            (1,-1,-1), (-1,1,-1), (-1,-1,1), (-1,-1,-1)]
-    # random edge positions
-    pos += [(1,1,.2), (1,-1,.3), (-1,1,.4), (-1,-1,-.3)]
-    pos += [(1,.5,1), (1,.6,-1), (-1,.7,1), (-1,.8,-1)]
-    pos += [(-.2,1,1), (-.3,1,-1), (-.4,-1,1), (-.5,-1,-1)]
-    pos = np.array(pos)
+# # GENERATE TEST DATA
+# n = 500
+# mag3.config.EDGESIZE = 1e-14
 
-    dim = np.array([[2,2,2]]*len(pos))
-    mag = np.array([[1,1,1]]*len(pos))
+# # dim general
+# dim_gen = np.random.rand(n,3)
+# # dim edge
+# dim_edge = np.array([(2,2,2)]*n)
 
-    B = field_B_box(mag,dim,pos)
-    
-    assert np.all(B==0), 'field_B_Box not 0 at edges/corners'
+# # pure edge positions
+# pos_edge = (np.random.rand(n,3)-0.5)*2
+# pos_edge[:,0]=1 + (np.random.rand(n)-0.5)*1e-14
+# pos_edge[:,1]=1  + (np.random.rand(n)-0.5)*1e-14
+# for i in range(n):
+#     np.random.shuffle(pos_edge[i])
+# # general positions
+# pos_gen = (np.random.rand(n,3)-0.5)*.5 # half inner half outer
+# # mixed positions
+# aa = np.r_[pos_edge, pos_gen]
+# np.random.shuffle(aa)
+# pos_mix = aa[:n]
 
+# # general mag (no special cases at this point)
+# mag = (np.random.rand(n,3)-0.5)*1000
 
-def test_field_B_box_general():
-    """
-    general case test
-    load random positions and solutions and compare
-    """
-    mag, dim, pos, B = np.load('tests/testdata/testdata_field_B_box.npy')
+# poss = [pos_edge, pos_gen, pos_mix]
+# dims = [dim_edge, dim_gen, dim_edge]
 
-    Btest = field_B_box(mag, dim, pos)
+# Bs = []
+# for dim,pos in zip(dims,poss):
+#     Bs += [field_BH_box(True, mag, dim, pos)]
+# Bs = np.array(Bs)
 
-    assert np.allclose(Btest, B), 'field_B_Box general case fails'
+# print(Bs)
+# pickle.dump([mag, dims, poss, Bs], open('testdata_field_BH_box.p','wb'))
 
+def test_field_BH_box():
+    mag3.config.EDGESIZE=1e-14
+    mag, dims, poss, Bs = pickle.load(open('tests/testdata/testdata_field_BH_box.p','rb'))
+    Bs_test = []
+    for dim,pos in zip(dims,poss):
+        Bs_test += [field_BH_box(True, mag, dim, pos)]
+    Bs_test = np.array(Bs_test)
+    assert np.allclose(Bs, Bs_test), 'Box field computation broken'
