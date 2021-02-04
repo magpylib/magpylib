@@ -1,12 +1,67 @@
+discussion -----------------------------------------
 
-2do----------------------------------
-move edgecase Box to field_BH_Box
-provide output for mag=000 #practical when sweeping through 0
+naming: 
+.rotate_from_angax()
 
 
-potential improvements------------------------------
+2do-------------------------------------------------
+- test Cylinder numerical instabilities
+- move edgecase Box to field_BH_Box
+- provide output for mag=000 #practical when sweeping through 0
+- make a cuboid edgecase within 1e-14
+- profile getB()
+- complete tests
+- __init__ docstrings providing brief overviews
+- find a mag=(mx,my,mz) tooltip solution
+- check_dupicates might destroy col.sources order
+- add remaining sources
+	sphere
+	currents
+	dipole moment
+	facet
+- bring edgesize in context with magnetsize
+.magnet
+- Box()
+- Cylinder()
+- Sphere()
 
-potential performance increase:
+.current
+- Line()
+- Circular()
+
+.moment
+- Dipole
+- FEM
+- Virtual
+
+
+mid term improvements ------------------------------
+
+- add new sources
+    - virtual field
+    - cone
+    - arc
+    - tile
+
+- complete type hints
+- adress field_BH_Box edge/corner stability problem
+- throw errors instead of warning+sys.exit()
+
+- bringing getBv functionality to getB
+	getB(*sources, **kwargs
+	# M sources
+    kwargs= {
+		pos_obs = []   		# N1 x N2 x ... x 3
+		src_pos = []   		# M x O1 x O2 x ... x 3
+		src_rot = []		# M x O1 x O2 x ... x 3
+		dim = []			# M x P x dim
+		mag = []			# M x P x mag
+		niter = 50
+		}
+
+- finally adding sensors and sensor paths to getBv
+
+- potential performance increase:
     Can we speed up the computation by combining similar
     pos/dim combinations but different mag, avoiding
     full computation but just perform scalar mult.
@@ -16,7 +71,36 @@ potential performance increase:
 
     its even possible to throw in the scaling property
 
-Cuboid field performance:
+- Cuboid field performance:
     Distinguish if 1-2 or 3 non-zero magnetizations
     and compute as different instances. This should give
     a speedup of a factor 2 or 3 in most cases !
+
+- Speedup elliptic integrals by complementing cel with
+    special cases K and E faster algorithms
+
+- getF
+- FEM source
+- finite sized currents
+- optional input type checking
+
+
+
+DO NOT DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+class BaseSource
+	- getB
+	- getH
+
+WHY? : This would improve the copy-paste docstring problem, 
+	but not allow direct hints what inputs are needed
+	in the src.getB() code inspection. For each source
+	they can be quite different.
+
+
+class BaseGeo
+	- __add__
+
+WHY? : We dont want __add__ because a sensor inherits BaseGeo
+    but it should not be addable to Collections
+
