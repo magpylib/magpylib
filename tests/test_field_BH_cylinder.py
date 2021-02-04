@@ -58,3 +58,12 @@ def test_field_BH_cylinder():
             Bs_test += [field_BH_cylinder(True, mag, dim, pos, 100)]
     Bs_test = np.array(Bs_test)
     assert np.allclose(Bs, Bs_test), 'Cylinder field computation broken'
+
+
+def test_field_BH_box_mag0():
+    n = 10
+    mag = np.zeros((n,3))
+    dim = np.random.rand(n,2)
+    pos = np.random.rand(n,3)
+    B = field_BH_cylinder(True, mag, dim, pos, 11)
+    assert np.allclose(mag,B), 'Cylinder mag=0 case broken'

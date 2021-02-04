@@ -48,3 +48,12 @@ def test_field_BH_box():
         Bs_test += [field_BH_box(True, mag, dim, pos)]
     Bs_test = np.array(Bs_test)
     assert np.allclose(Bs, Bs_test), 'Box field computation broken'
+
+
+def test_field_BH_box_mag0():
+    n = 10
+    mag = np.zeros((n,3))
+    dim = np.random.rand(n,3)
+    pos = np.random.rand(n,3)
+    B = field_BH_box(True, mag, dim, pos)
+    assert np.allclose(mag,B), 'Box mag=0 case broken'

@@ -163,18 +163,25 @@ def field_BH_cylinder(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.nd
     Br, Bphi, Bz = np.zeros((3,len(x)))
 
     # create masks to distinguish between cases ---------------------
+    # special case mag = 0
+    mask0 = (np.linalg.norm(mag,axis=1)==0)
+    # special case on/off edge
+    d,h = dim.T
+    mask_edge = (abs(r-d/2) < EDGESIZE) & (abs(abs(z)-h/2) < EDGESIZE)
+    # not special case
+    mask_gen = ~mask0 & ~mask_edge
+
     # ax/transv
     magx, magy, magz = mag.T
     mask_tv = (magx != 0) | (magy != 0)
     mask_ax = (magz != 0)
     # inside/outside
     mask_inside = (r<dim[:,0]/2) * (abs(z)<dim[:,1]/2)
-    # on/off edge
-    d,h = dim.T
-    mask_edge = (abs(r-d/2) < EDGESIZE) & (abs(abs(z)-h/2) < EDGESIZE)
-    mask_tv = mask_tv & ~mask_edge
-    mask_ax = mask_ax & ~mask_edge
-    mask_inside = mask_inside & ~mask_edge
+    
+    # general cases
+    mask_tv = mask_tv & mask_gen
+    mask_ax = mask_ax & mask_gen
+    mask_inside = mask_inside & mask_gen
 
     # transversal magnetization contributions -----------------------
     if any(mask_tv): 

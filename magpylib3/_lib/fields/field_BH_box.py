@@ -7,10 +7,12 @@ import numpy as np
 from magpylib3._lib.config import config
 
 def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray,) -> np.ndarray:
-    """ select B or H, 
-        separate edge cases, 
-        separate special/general cases for performance,
-        transform B->H
+    """ setting up the Box field computation
+    - separate mag=0 cases (returning 0)
+    - separate edge/corner cases (returning 0)
+    - call field computation for general cases
+    - select B or H
+    - transform B->H (inside check)
 
     ### Args:
     - bh (boolean): True=B, False=H
@@ -24,10 +26,13 @@ def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray
     
     EDGESIZE = config.EDGESIZE
 
-    # allocate field vectors ----------------------------------------
+    # allocate field vectors ----------------------
     B = np.zeros((len(mag),3))
 
-    # special cases for edge/corner fields --------------------------
+    # special case mag = 0 ------------------------
+    mask0 = (np.linalg.norm(mag,axis=1)==0)
+
+    # special cases for edge/corner fields --------
     x, y, z = np.copy(pos_obs.T)
     a, b, c = dim.T/2
 
@@ -44,9 +49,13 @@ def field_BH_box(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray
     mask_zedge = mx1 & my1 & mz2
     mask_edge = mask_xedge | mask_yedge | mask_zedge
 
-    # compute field
-    B[~mask_edge] = field_B_box(mag[~mask_edge], dim[~mask_edge], pos_obs[~mask_edge])
+    # not a special case --------------------------
+    mask_gen = ~mask_edge & ~mask0
 
+    # compute field -------------------------------
+    B[mask_gen] = field_B_box(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+
+    # return B or compute and retun H -------------
     if bh:
         return B
 

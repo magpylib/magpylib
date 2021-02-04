@@ -2,14 +2,12 @@ discussion -----------------------------------------
 
 
 2do-------------------------------------------------
-- move edgecase Box to field_BH_Box
-    - make a cuboid edgecase within 1e-14
-- provide output for mag=000 #practical when sweeping through 0
 
+- __init__ docstrings providing brief overviews
+- make better general test cases combing all possibilities
+    but also single tests of each possibility
 - test Cylinder numerical instabilities
 - profile getB()
-- complete tests
-- __init__ docstrings providing brief overviews
 - find a mag=(mx,my,mz) tooltip solution
 - check_dupicates might destroy col.sources order
 - add remaining sources
@@ -89,6 +87,11 @@ Cuboid field performance:
 
     probably requires going deeper and modify equations
 
+
+DONE - NEW FEATURES ------------------------------------
+- config
+- mag=0 returns 0 now
+- edgecases to avoid singularities
 
 
 
