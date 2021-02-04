@@ -5,7 +5,7 @@ Computation details in function docstrings.
 
 import numpy as np
 from magpylib3._lib.math_utility.special_functions import celv
-
+EDGESIZE = 1e-14
 
 # def field_BH_cylinder(bh, mag, dim, pos_obs, niter):
 #     """ Wrapper function to select cylinder B- or H-field, which are treated equally
@@ -189,7 +189,7 @@ def field_BH_cylinder(bh: bool, mag: np.ndarray, dim: np.ndarray, pos_obs: np.nd
     mask_inside = (r<dim[:,0]/2) * (abs(z)<dim[:,1]/2)
     # on/off edge
     d,h = dim.T
-    mask_edge = (abs(r-d/2) < 1e-14) & (abs(abs(z)-h/2) < 1e-14)
+    mask_edge = (abs(r-d/2) < EDGESIZE) & (abs(abs(z)-h/2) < EDGESIZE)
     mask_tv = mask_tv & ~mask_edge
     mask_ax = mask_ax & ~mask_edge
     mask_inside = mask_inside & ~mask_edge
