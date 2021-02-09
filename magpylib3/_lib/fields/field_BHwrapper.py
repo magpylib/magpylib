@@ -41,7 +41,7 @@ from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input
 
 
-def getBH_core(**kwargs:dict) -> np.ndarray:
+def getBH_lev1(**kwargs:dict) -> np.ndarray:
     """ Field computation (level1) from input dict
 
     ### Args:
@@ -57,46 +57,33 @@ def getBH_core(**kwargs:dict) -> np.ndarray:
     - no input checks !
     """
 
-    niter = 50 # bind to avoid Pylance PossiblyUnboundVariable Warning
-
     # inputs --------------------------------------------------------
     src_type = kwargs['src_type']
     bh =  kwargs['bh']  # True=B, False=H
 
     rot = kwargs['rot'] # only rotation object allowed as input
     pos = kwargs['pos']
+    poso = kwargs['pos_obs']
 
-    # class specific
-    if src_type == 'Box' or 'Cylinder':
+    # transform obs_pos into source CS
+    pos_rel = pos - poso                           # relative position
+    pos_rel_rot = rot.apply(pos_rel, inverse=True) # rotate rel_pos into source CS
+
+    # compute field
+    if src_type == 'Box':
         mag = kwargs['mag']
         dim = kwargs['dim']
-        poso = kwargs['pos_obs']
-
-        if src_type == 'Cylinder':
-            try:
-                niter = kwargs['niter']
-            except KeyError:
-                pass # niter = 50 by default
-    else:
-        print('ERROR getBH_core: bad src input type')
-        sys.exit()
-
-    # field computation and spatial transformation ------------------
-    # transform field sample position into CS of source
-    pos_rel = pos - poso                          # relative position
-    pos_rel_rot = rot.apply(pos_rel,inverse=True) # rotate rel_pos into source CS
-
-    # compute field in source CS
-    if src_type == 'Box':
         B = field_BH_box(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder':
+        mag = kwargs['mag']
+        dim = kwargs['dim']
+        niter = kwargs['niter']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot, niter)
     else:
-        print('ERROR getBH_core: bad src input type')
+        print('ERROR getBH_lev1: bad src input type')
         sys.exit()
 
     # transform field back into global CS
-    
     B = rot.apply(B)
 
     return B
@@ -126,17 +113,17 @@ def getBHv(**kwargs: dict) -> np.ndarray:
         src_type = kwargs['src_type']
         poso = np.array(kwargs['pos_obs'],dtype=np.float)
     except KeyError as ke:
-        print('ERROR getB_level1_user: missing input ', ke)
+        print('ERROR getBv: missing input ', ke)
         sys.exit()
     tile_params['pos_obs'] = poso   # add for auto-tilting
 
     # check mandatory class specific inputs
-    if src_type == 'Box' or 'Cylinder':
+    if src_type in {'Box', 'Cylinder'}:
         try: 
             mag = np.array(kwargs['mag'],dtype=np.float)
             dim = np.array(kwargs['dim'],dtype=np.float)
         except KeyError as ke:
-            print('ERROR getB_level1_user: missing input ', ke)
+            print('ERROR getBv: missing input ', ke)
             sys.exit()
         tile_params['mag']=mag      # add for auto-tilting
         tile_params['dim']=dim      # add for auto-tilting
@@ -167,23 +154,21 @@ def getBHv(**kwargs: dict) -> np.ndarray:
             kwargs[key] = new_val
 
     # compute and return B
-    B = getBH_core(**kwargs)
+    B = getBH_lev1(**kwargs)
     if n==1: # remove highest level when n=1
         return B[0]
     return B
 
 
-def getBH_box_group(bh: bool, group: list, poso_flat: np.ndarray) -> np.ndarray:
-    """ Helper function that generates the vector-input for the
-    Box magnet group of the getBH function and computes the field.
+def scr_dict_box(group: list, poso_flat: np.ndarray) -> np.ndarray:
+    """ Helper function that generates a dictionary for level 1 getBH input
 
     ### Args:
-    - bh (bool): True=getB, False=getH
     - group (list): list of sources in group
     - poso_flat (ndarray): pos_obs flattened
 
     ### Returns:
-    - BH-field (ndarray): m_group*n x 3 arr of BH-vectors
+    - dictionary for getBH_level1 input
     """
     m_group = len(group)
     n = len(poso_flat)
@@ -198,22 +183,18 @@ def getBH_box_group(bh: bool, group: list, poso_flat: np.ndarray) -> np.ndarray:
         rotv[i*n:(i+1)*n] = np.tile(s._rot.as_rotvec(), (n,1))
     posov = np.tile(poso_flat,(m_group,1))
     rotobj = R.from_rotvec(rotv)
-    B = getBH_core(bh=bh, src_type='Box', mag=magv, dim=dimv, pos=posv, pos_obs=posov, rot=rotobj)
-    return B
+    src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+    return src_dict
 
-
-def getBH_cylinder_group(bh: bool, group: list, poso_flat: np.ndarray, niter: int) -> np.ndarray:
-    """ Helper function that generates the vector-input for the
-    Cylinder magnet group of the getBH function and computes the field.
+def scr_dict_cylinder(group: list, poso_flat: np.ndarray) -> np.ndarray:
+    """ Helper function that generates a dictionary for level 1 getBH input
 
     ### Args:
-    - bh (bool): True=getB, False=getH
     - group (list): list of sources in group
     - poso_flat (ndarray): pos_obs flattened
-    - niter (int): diametral iteration
 
     ### Returns:
-    - BH-field (ndarray): m_group*n x 3 arr of BH-vectors
+    - dictionary for getBH_level1 input
     """
     m_group = len(group)
     n = len(poso_flat)
@@ -228,8 +209,8 @@ def getBH_cylinder_group(bh: bool, group: list, poso_flat: np.ndarray, niter: in
         rotv[i*n:(i+1)*n] = np.tile(s._rot.as_rotvec(), (n,1))
     posov = np.tile(poso_flat,(m_group,1))
     rotobj = R.from_rotvec(rotv)
-    B = getBH_core(bh=bh, src_type='Cylinder', mag=magv, dim=dimv, pos=posv, pos_obs=posov, rot=rotobj, niter=niter)
-    return B
+    src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+    return src_dict
 
 
 def getBH(**kwargs: dict) -> np.ndarray:
@@ -299,25 +280,22 @@ def getBH(**kwargs: dict) -> np.ndarray:
     # Box group <<<<<<<<<<<<<<<<<<<<<
     group = src_sorted[0]  
     if group: # is empty ?
-        m_group = len(group)
-        B_group = getBH_box_group(bh, group, poso_flat)
-        for i in range(m_group):
+        src_dict = scr_dict_box(group, poso_flat)
+        B_group = getBH_lev1(bh=bh, src_type='Box', **src_dict)
+        for i in range(len(group)):
             B[order[0][i]] = B_group[i*n:(i+1)*n]
 
     # Cylinder group <<<<<<<<<<<<<<<<
     group = src_sorted[1]  
     if group: # is empty ?
-        try:
-            niter = kwargs['niter']
-        except KeyError:
-            niter = 50
-        m_group = len(group)
-        B_group = getBH_cylinder_group(bh, group, poso_flat, niter)
-        for i in range(m_group):
+        niter = kwargs.get('niter', default=50)
+        src_dict = scr_dict_cylinder(group, poso_flat)
+        B_group = getBH_lev1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
+        for i in range(len(group)):
             B[order[1][i]] = B_group[i*n:(i+1)*n]
 
     # bring to correct shape (B.shape = pos_obs.shape)---------------
-    B = B.reshape(np.r_[m,poso_shape])
+    B = B.reshape(np.r_[m, poso_shape])
 
     # only one source: reduce highest level
     if m == 1:
