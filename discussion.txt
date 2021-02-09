@@ -4,6 +4,7 @@ discussion -----------------------------------------
     - src.mag=(xxx, localMag=True)
     - src = Box(mag,pos,dim,...localMAg=True)
 
+- make default=50 a settings value
 
 
 2do-------------------------------------------------

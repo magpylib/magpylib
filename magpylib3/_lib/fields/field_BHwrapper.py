@@ -39,7 +39,7 @@ from magpylib3 import _lib as _lib
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input
-
+from magpylib3._lib.config import config
 
 def getBH_lev1(**kwargs:dict) -> np.ndarray:
     """ Field computation (level1) from input dict
@@ -288,7 +288,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
     # Cylinder group <<<<<<<<<<<<<<<<
     group = src_sorted[1]  
     if group: # is empty ?
-        niter = kwargs.get('niter', default=50)
+        niter = kwargs.get('niter', default=config.ITER_CYLINDER)
         src_dict = scr_dict_cylinder(group, poso_flat)
         B_group = getBH_lev1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         for i in range(len(group)):
