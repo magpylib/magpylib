@@ -190,3 +190,22 @@ class Collection:
         for s in self:
             s.rotate(rot, anchor)
         return self
+
+    def rotate_from_angax(self, angle, axis, anchor=None, degree=True):
+        """ 
+        Rotate all sources in Collection.
+
+        ### Args:
+        - angle (float): Angle of rotation in [deg] by default.
+        - axis (vec3): The axis of rotation [dimensionless]
+        - anchor (vec3): The axis of rotation passes through the anchor point. 
+            By default (anchor=None) the objects will rotate about their own center.
+        - degree (bool): default=True angle is given in [deg]. False angle is given 
+            in [rad].
+        
+        ### Returns:
+        - self
+        """
+        for s in self:
+            s.rotate_from_angax(angle, axis, anchor, degree)
+        return self
