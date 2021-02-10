@@ -76,7 +76,7 @@ class Cylinder(BaseGeo):
 
     @dim.setter
     def dim(self, value):
-        """ set box dimension (a,b,c), vec3, mm
+        """ set cylinder dimension (d,h), vec2, mm
         """
         self._dim = np.array(value,dtype=np.float64)
 
