@@ -97,7 +97,7 @@ class Box(BaseGeo):
         - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
             in units of mT.
         """
-        B = getB(self, pos_obs)
+        B = getB([self], pos_obs)
         return B
 
 
@@ -112,6 +112,6 @@ class Box(BaseGeo):
         - (N1 x N2 x ... x 3 ndarray): H-field at observer positions
             in units of kA/m.
         """
-        H = getH(self, pos_obs)
+        H = getH([self], pos_obs)
         return H
 
