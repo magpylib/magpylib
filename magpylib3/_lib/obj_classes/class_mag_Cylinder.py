@@ -102,7 +102,7 @@ class Cylinder(BaseGeo):
         - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
             in units of mT.
         """
-        B = getB(self, pos_obs=pos_obs, niter=niter)
+        B = getB(self, pos_obs, niter=niter)
         return B
     
 

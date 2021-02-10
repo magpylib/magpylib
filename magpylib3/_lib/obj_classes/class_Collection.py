@@ -132,10 +132,10 @@ class Collection:
         - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
             in units of mT.
         """
-        return getB(self._sources, pos_obs=pos_obs, sumup=True, **kwargs)
+        return getB(self, pos_obs, sumup=True, **kwargs)
     
 
-    def getH(self, pos, **kwargs):
+    def getH(self, pos_obs, **kwargs):
         """ Compute H-field of Collection at observer positions.
 
         ### Args:
@@ -146,7 +146,7 @@ class Collection:
         - (N1 x N2 x ... x 3 ndarray): H-field at observer positions
             in units of kA/m.
         """
-        return getH(self._sources, pos, sumup=True, **kwargs)
+        return getH(self, pos_obs, sumup=True, **kwargs)
 
 
     def display(self, **kwargs):

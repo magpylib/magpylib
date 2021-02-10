@@ -235,20 +235,18 @@ def getBH(**kwargs: dict) -> np.ndarray:
     - input checks
     """
 
+    # make sure there is no unknown kwarg input --------------------
+    allowed_keys = ['bh', 'sources', 'pos_obs', 'sumup', 'niter']
+    keys = kwargs.keys()
+    complement = [i for i in keys if i not in allowed_keys]
+    if complement:
+        print('WARNING: Bad input kwarg, ', complement)
+
+    # collect input ------------------------------------------------
     bh = kwargs['bh']
     sources = kwargs['sources']
-
-    # input checks and type securing --------------------------------
-    try:
-        sumup = kwargs['sumup']
-    except KeyError:
-        sumup = False
-
-    try: 
-        poso = np.array(kwargs['pos_obs'], dtype=np.float)
-    except KeyError:
-        print('ERROR getBH: missing pos_obs input')
-        sys.exit()
+    sumup = kwargs['sumup']
+    poso = np.array(kwargs['pos_obs'], dtype=np.float)
     
     # formatting ----------------------------------------------------
     # flatten out Collections
@@ -315,17 +313,16 @@ def getBH(**kwargs: dict) -> np.ndarray:
     
     return B
 
-
 # INTERFACE FUNCTIONS -------------------------------------------
-def getB(*sources: Sequence, **kwargs: dict) -> np.ndarray:
-    """ Compute the B-field for a list of given sources.
+def getB(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
+    """ Compute the B-field for a sequence of given sources.
 
     ### Args:
     - sources (sequence of M sources): can be sources or Collections
     - pos_obs (N1 x N2 x ... x 3 vector): observer positions
     - sumup (bool): default=False returns [B1,B2,...Bm], True returns sum(Bi)
     
-    ### Args-specific:
+    ### specific kwargs:
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     ### Returns:
@@ -339,11 +336,11 @@ def getB(*sources: Sequence, **kwargs: dict) -> np.ndarray:
     This function will be extended in the future to cover source paths, sensors and
     sensor paths.
     """
-    return getBH(bh=True, sources=sources, **kwargs)
+    return getBH(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
-def getH(*sources: Sequence, **kwargs: dict) -> np.ndarray:
-    """ Compute the H-field for a list of given sources.
+def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
+    """ Compute the H-field for a sequence of given sources.
 
     ### Args:
     - sources (sequence of M sources): can be sources or Collections
@@ -364,7 +361,7 @@ def getH(*sources: Sequence, **kwargs: dict) -> np.ndarray:
     This function wil be extended in the future to cover source paths, sensors and
     sensor paths.
     """
-    return getBH(bh=False, sources=sources, **kwargs)
+    return getBH(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
 def getBv(**kwargs: dict) -> np.ndarray:
