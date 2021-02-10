@@ -14,9 +14,7 @@ discussion -----------------------------------------
 
 2do-------------------------------------------------
 - fix getBv with niter
-- Cylinder class testing
 - getBv testing
-- Collection class testing
 
 
 - H testing

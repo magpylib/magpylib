@@ -284,7 +284,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
             B[order[0][i]] = B_group[i*n:(i+1)*n]
 
     # Cylinder group <<<<<<<<<<<<<<<<
-    group = src_sorted[1]  
+    group = src_sorted[1]
     if group: # is empty ?
         niter = kwargs.get('niter', config.ITER_CYLINDER)
         src_dict = scr_dict_cylinder(group, poso_flat)
