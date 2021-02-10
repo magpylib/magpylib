@@ -288,7 +288,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
     # Cylinder group <<<<<<<<<<<<<<<<
     group = src_sorted[1]  
     if group: # is empty ?
-        niter = kwargs.get('niter', default=config.ITER_CYLINDER)
+        niter = kwargs.get('niter', config.ITER_CYLINDER)
         src_dict = scr_dict_cylinder(group, poso_flat)
         B_group = getBH_lev1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         for i in range(len(group)):
