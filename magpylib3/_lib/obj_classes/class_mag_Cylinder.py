@@ -4,7 +4,7 @@ import numpy as np
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib3._lib.obj_classes.class_Collection import Collection
 from magpylib3._lib.fields.field_BHwrapper import getB, getH
-    
+
 class Cylinder(BaseGeo):
     """ Homogeneous Cylinder magnet.
 
@@ -24,19 +24,33 @@ class Cylinder(BaseGeo):
         scipy..Rotation object. Defaults to (0,0,0) rotation vector.
 
     ### Methods
-    - move: move magnet by argument vector
-    - rotate: rotate magnet
-    - display: graphically display magnet
-    - getB: compute B-field of magnet
-    - getH: compute H-field of magnet
+    - move(displ): 
+        move magnet by argument vector
+    - rotate(rot, anchor=None): 
+        rotate object by rot input (scipy Rotation object). The rotation 
+        axis passes through the anchor. Default anchor=None rotates
+        object about its own center.
+    - rotate_from_angax(angle, axis, anchor=None, degree=True): 
+        rotate object around axis by angle. The axis passes through the 
+        anchor. Default anchor=None rotates object about its own center. 
+        Default degree=True angle is given in degrees, if False in radiant.
+    - display(markers=[(0,0,0)], subplotAx=None, direc=False): 
+        graphically display the source. Arguments are same as of top level 
+        display function.
+    - getB(pos_obs): 
+        compute B-field of source at observer positions. Shape
+        of B-field output will have the same structure as pos_obs input.
+    - getH(pos_obs): 
+        compute H-field of source at observer positions. Shape
+        of B-field output will have the same structure as pos_obs input.
 
     ### Returns:
-    - (Cylinder source object)
+    - Cylinder source object
 
     ### Info
-    Addition of sources returns a Collection.
+    - Sources can be added to each other and return a Collection.
 
-    Computation of the Cylinder field has a iter=50 kwarg to set the
+    - Computation of the Cylinder field has a iter=50 kwarg to set the
         iteration in the computation of the diametral component.
     """
     

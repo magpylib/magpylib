@@ -8,27 +8,38 @@ level0 (vectorized core Field functions):
     - all computations in source CS
     - in field_BH_xxx.py files
 
-level1(getB_core): wraps level0
+level1(getBH_level1): calls level0
     input: dict of arrays
     output B-field arr in global CS
-    - apply selected lev0 src_type computation
     - apply transformation to global CS
+    - select correct level0 src_type computation
 
-level2(getBv): wraps level1
+level2(getBHv): calls level1
     input: dict
     output B-field arr in global CS
     - check input for mandatory information
     - set missing input variables to default values
     - tile 1D inputs
 
-level2(getB): wraps level1
-    input: *sources + **kwargs (pos_obs, src_paths, etc...)
-    output: B-field for each source at each pos
-    - auto-generates correct vector input format from source attributes
+level2(getBH): calls level1
+    input: dict
+    - input checks 
+        - unknown dict arguments
+        - secure types (input could come directly from user)
+    - generates correct vector input format from source attributes
     - groups similar sources for combined computation
-    - adjust pos output shape to input shape
+    - adjust output shape to pos_obs input shape
+    
+level3(getB, getH, getBv, getHv): calls level2
+    input: sources + pos_obs + **kwargs (src_paths, etc...)
+    - user interface functions
+    - docstrings
+    - separated B and H
+    - transform input into dict
 
-level3(src.getB): wraps level2 getB
+level4(src.getB): calls level3 getB/getH
+    - calling directly out of the sources
+
 """
 
 import sys
@@ -41,7 +52,7 @@ from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input
 from magpylib3._lib.config import config
 
-def getBH_lev1(**kwargs:dict) -> np.ndarray:
+def getBH_level1(**kwargs:dict) -> np.ndarray:
     """ Field computation (level1) from input dict
 
     ### Args:
@@ -57,7 +68,7 @@ def getBH_lev1(**kwargs:dict) -> np.ndarray:
     - no input checks !
     """
 
-    # inputs --------------------------------------------------------
+    # inputs
     src_type = kwargs['src_type']
     bh =  kwargs['bh']  # True=B, False=H
 
@@ -80,7 +91,7 @@ def getBH_lev1(**kwargs:dict) -> np.ndarray:
         niter = kwargs['niter']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot, niter)
     else:
-        print('ERROR getBH_lev1: bad src input type')
+        print('ERROR getBH_level1: bad src input type')
         sys.exit()
 
     # transform field back into global CS
@@ -154,7 +165,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
             kwargs[key] = new_val
 
     # compute and return B
-    B = getBH_lev1(**kwargs)
+    B = getBH_level1(**kwargs)
     if n==1: # remove highest level when n=1
         return B[0]
     return B
@@ -213,7 +224,7 @@ def scr_dict_cylinder(group: list, poso_flat: np.ndarray) -> np.ndarray:
     return src_dict
 
 
-def getBH(**kwargs: dict) -> np.ndarray:
+def getBH_level2(**kwargs: dict) -> np.ndarray:
     """Field computation (level2) for given sources.
 
     ### Args:
@@ -279,7 +290,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
     group = src_sorted[0]  
     if group: # is empty ?
         src_dict = scr_dict_box(group, poso_flat)
-        B_group = getBH_lev1(bh=bh, src_type='Box', **src_dict)
+        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict)
         for i in range(len(group)):
             B[order[0][i]] = B_group[i*n:(i+1)*n]
 
@@ -288,7 +299,7 @@ def getBH(**kwargs: dict) -> np.ndarray:
     if group: # is empty ?
         niter = kwargs.get('niter', config.ITER_CYLINDER)
         src_dict = scr_dict_cylinder(group, poso_flat)
-        B_group = getBH_lev1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
+        B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         for i in range(len(group)):
             B[order[1][i]] = B_group[i*n:(i+1)*n]
 
@@ -322,7 +333,7 @@ def getB(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     - pos_obs (N1 x N2 x ... x 3 vector): observer positions
     - sumup (bool): default=False returns [B1,B2,...Bm], True returns sum(Bi)
     
-    ### specific kwargs:
+    ### Specific kwargs:
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     ### Returns:
@@ -336,7 +347,7 @@ def getB(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     This function will be extended in the future to cover source paths, sensors and
     sensor paths.
     """
-    return getBH(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
+    return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
 def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
@@ -347,7 +358,7 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     - pos_obs (N1 x N2 x ... x 3 vector): observer positions
     - sumup (bool): default=False returns [H1,H2,...Hm], True returns sum(Hi)
     
-    ### Args-specific:
+    ### Specific kwargs:
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     ### Returns:
@@ -361,7 +372,7 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     This function wil be extended in the future to cover source paths, sensors and
     sensor paths.
     """
-    return getBH(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
+    return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
 def getBv(**kwargs: dict) -> np.ndarray:

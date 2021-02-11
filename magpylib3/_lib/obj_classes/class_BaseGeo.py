@@ -46,7 +46,7 @@ class BaseGeo:
     def pos(self, value):
         """ set object position, input vec3
         """
-        self._pos = np.array(value, dtype=np.float64)
+        self._pos = np.array(value, dtype=np.float)
 
 
     @property
