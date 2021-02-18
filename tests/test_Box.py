@@ -13,14 +13,13 @@ def test_Box():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move(mv).rotate_from_angax(a,aa,aaa)
+            pm.move_by(mv).rotate_from_angax(a,aa,aaa)
         
         Btest += [pm.getB(poso)]
     Btest = np.array(Btest)
 
     assert np.allclose(B, Btest), "test_Box failed big time"
     
-
 
 if __name__ == "__main__":
     if False:
@@ -43,7 +42,7 @@ if __name__ == "__main__":
 
             # 18 subsequent operations
             for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-                pm.move(mv).rotate_from_angax(a,aa,aaa)
+                pm.move_by(mv).rotate_from_angax(a,aa,aaa)
             
             B += [pm.getB(poso)]
         B = np.array(B)

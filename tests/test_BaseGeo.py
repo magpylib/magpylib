@@ -25,7 +25,7 @@ def test_BaseGeo():
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 
-    bg.move((-1,-2,-3))
+    bg.move_by((-1,-2,-3))
     P += [bg.pos]
     O += [bg.rot.as_rotvec()]
 

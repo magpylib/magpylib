@@ -36,7 +36,7 @@ def test_Cylinder():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move(mv).rotate_from_angax(a,aa,aaa)
+            pm.move_by(mv).rotate_from_angax(a,aa,aaa)
         
         Btest += [pm.getB(poso, niter=100)]
     Btest = np.array(Btest)

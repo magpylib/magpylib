@@ -158,46 +158,21 @@ class Collection:
         display(self, **kwargs)
 
 
-    def move_to(self, pos_target, steps=0):
-        """
-        Move all sources in Collection to target position.
-
-        Parameters
-        ----------
-        pos_target: array_like, shape (3,)
-            target position vector in units of mm.
-        
-        steps: int, optional, default=0
-            If steps=0: path[-1] will be set to target position
-            If steps>0: add to path, linear steps to target position 
-                starting from path[-1].
-            If steps<0: superpose existing path with linear motion from 
-                path[steps-1] to target position.
-
-        Returns:
-        --------
-        self : Collection
-        """
-        for s in self:
-            s.move_to(pos_target, steps)
-        return self
-
-
-    def move_by(self, displacement, steps=0):
+    def move_by(self, displacement, steps=-1):
         """
         Linear displacement of Collection.
 
         Parameters
         ----------
-        pos_target: array_like, shape (3,)
-            target position vector in units of mm.
+        displacement: array_like, shape (3,)
+            displacement vector in units of mm.
         
-        steps: int, optional, default=0
-            If steps=0: path[-1] will be set to target position
-            If steps>0: add to path, linear steps to target position 
-                starting from path[-1].
-            If steps<0: superpose existing path with linear motion from 
-                path[steps-1] to target position.
+        steps: int, optional, default=-1
+            If steps < 0: apply a linear motion from 0 to displ on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                displace path[-1].
+            If steps > 0: add linear displacement to existing path starting
+                at path[-1].
 
         Returns:
         --------
@@ -208,7 +183,7 @@ class Collection:
         return self
 
 
-    def rotate(self, rot, anchor=None, steps=0):
+    def rotate(self, rot, anchor=None, steps=-1):
         """ 
         Rotate all sources in Collection.
 
@@ -217,15 +192,15 @@ class Collection:
         rot: scipy Rotation object
         
         anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. For anchor=None
+            The axis of rotation passes through the anchor point. When anchor=None
             the object will rotate about its own center.
 
-        steps: int, optional, default=0
-            If steps=0: rot is applied to path[-1]
-            If steps>0: linear rotation steps from 0 to rot starting with 0 at
-                path[-1] are added to the existing path.
-            If steps<0: apply linear rotation steps from 0 to rot to existing
-                path starting with 0 at path[steps-1].
+        steps: int, optional, default=-1
+            If steps < 0: apply linear rotation steps from 0 to rot on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                rotate path[-1].
+            If steps > 0: add linear rotation steps from 0 to rot to existing
+                path starting at path[-1].
 
         Returns:
         --------
@@ -236,7 +211,7 @@ class Collection:
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, steps=0, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, steps=-1, degree=True):
         """ Rotate all sources in Collection.
 
         Parameters
@@ -254,12 +229,12 @@ class Collection:
         degree: bool, default=True
             If True, Angle is given in [deg]. If False, angle is given in [rad].
                     
-        steps: int, optional, default=0
-            If steps=0: rot is applied to path[-1]
-            If steps>0: linear rotation steps from 0 to rot starting with 0 at
-                path[-1] are added to the existing path.
-            If steps<0: apply linear rotation steps from 0 to rot to existing
-                path starting with 0 at path[steps-1].
+        steps: int, optional, default=-1
+            If steps < 0: apply linear rotation steps from 0 to rot on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                rotate path[-1].
+            If steps > 0: add linear rotation steps from 0 to rot to existing
+                path starting at path[-1].
 
         Returns:
         --------

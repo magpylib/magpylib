@@ -71,9 +71,9 @@ def test_Collection():
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
             for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-                pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+                pm.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
             
-            col1.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+            col1.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 
         B1 += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
         B2 += [col1.getB(poso,niter=100)]

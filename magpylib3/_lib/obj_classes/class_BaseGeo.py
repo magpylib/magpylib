@@ -45,9 +45,9 @@ class BaseGeo:
         object position-path: np.array, shape (3,) or (N,3)
         """
         if len(self._pos) == 1:     # single path position - reduce dimension
-            return self._pos[0]
+            return np.array(self._pos[0])
         else:                       # return full path
-            return self._pos
+            return np.array(self._pos)
 
     @pos.setter
     def pos(self, input):
@@ -99,7 +99,11 @@ class BaseGeo:
 
 
     # methods -------------------------------------------------------
-    def display(self,**kwargs):
+    def display(self,
+        markers=[(0,0,0)], 
+        subplotAx=None,
+        direc=False,
+        show_path=False):
         """ display object graphically. kwargs of top level display() function.
         
         Parameters
@@ -121,11 +125,16 @@ class BaseGeo:
         Returns
         -------
         None
+
         """
-        display(self,**kwargs)
+        display(self, 
+            markers=markers,
+            subplotAx=subplotAx, 
+            direc=direc, 
+            show_path=show_path)
 
 
-    def move_by(self, displacement, steps=0):
+    def move_by(self, displacement, steps=-1):
         """ Linear displacement of object
 
         Parameters
@@ -133,73 +142,12 @@ class BaseGeo:
         displacement: array_like, shape (3,)
             displacement vector in units of mm.
         
-        steps: int, optional, default=0
-            If steps=0: path[-1] will be displaced
-            If steps>0: add to existing path, linear steps to displaced
-                position starting from path[-1]
-            If steps<0: superpose existing path with linear motion from 
-                path[steps-1] to displaced position.
-
-        Returns:
-        --------
-        self : object with position and orientation properties.
-
-        """
-        displ = np.array(displacement, dtype=float)     # secure input
-        path_pos = self._pos                            # load position path
-        pos_tgt = path_pos[-1] + displ                  # target position
-
-        # steps=0: last path pos becomes target position, no rot
-        if steps == 0:             
-            self._pos[-1] = pos_tgt
-            return self
-        # determine start position
-        if steps >= 1:             # steps >0: add new positions to path
-            pos_start = path_pos[-1]
-        else:                      # steps <0: apply operation to last steps 
-            if len(path_pos)<=abs(steps):
-                print('ERROR: .move_by() bad input, |-steps| must be smaller than path_length')
-                sys.exit()
-            pos_start = (0,0,0)
-            pos_tgt = displ
-
-        # generate additional pos path
-        x0, y0, z0 = pos_start
-        x1, y1, z1 = pos_tgt
-        xs = np.linspace(x0, x1, abs(steps)+1)
-        ys = np.linspace(y0, y1, abs(steps)+1)
-        zs = np.linspace(z0, z1, abs(steps)+1)
-        addpath_pos = np.c_[xs,ys,zs][1:]
-
-        # apply to existing path
-        if steps >=1 :
-            # load rotation path and tile last entry
-            path_rot = self._rot.as_quat()
-            addpath_rot = np.tile(path_rot[-1],(steps,1))
-            # set new path
-            self.pos = np.r_[path_pos, addpath_pos]
-            self.rot = R(np.r_[path_rot, addpath_rot], normalized=True)
-        else:
-            # apply operation on top of state
-            self._pos[steps:] = self._pos[steps:] + addpath_pos
-        
-        return self
-
-
-    def move_to(self, pos_target, steps=0):
-        """ Object translation to target position.
-
-        Parameters
-        ----------
-        pos_target: array_like, shape (3,)
-            target position vector in units of mm.
-        
-        steps: int, optional, default=0
-            If steps=0: path[-1] will be set to target position
-            If steps>0: add to path, linear steps to target position 
-                starting from path[-1].
-            If steps<0: superpose existing path with linear motion from 
-                path[steps-1] to target position.
+        steps: int, optional, default=-1
+            If steps < 0: apply a linear motion from 0 to displ on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                displace path[-1].
+            If steps > 0: add linear displacement to existing path starting
+                at path[-1].
 
         Returns:
         --------
@@ -207,21 +155,37 @@ class BaseGeo:
 
         """
         # secure input
-        pos_tgt = np.array(pos_target, dtype=float)
+        displ = np.array(displacement, dtype=float)
+        
+        # load current path
+        path_pos = self._pos
+        path_len = len(path_pos)
 
-        # determine input for .move_to() and hand over
-        if steps>=0:
-            self.move_by(pos_tgt - self._pos[-1], steps)
+        # bad steps input, set to max size
+        if steps < -path_len:
+            steps = -path_len + 1 # path[0] sees 0 displ
+            print('WARNING: .move_by(), steps<path_len, setting to max-1')
+
+        # generate additional pos path
+        ts = np.linspace(0, 1, abs(steps)+1)[1:]
+        addpath_pos = displ * np.tile(ts,(3,1)).T
+
+        # apply to existing path
+        if steps > 0:
+            # load rotation path and tile last entry
+            path_rot = self._rot.as_quat()
+            addpath_rot = np.tile(path_rot[-1],(steps,1))
+            # set new path
+            self.pos = np.r_[path_pos, addpath_pos + path_pos[-1]]
+            self.rot = R(np.r_[path_rot, addpath_rot], normalized=True)
         else:
-            if len(self._pos)<=abs(steps):
-                print('ERROR: .move_to() bad input, |-steps| must be smaller than path_length')
-                sys.exit()
-            self.move_by(pos_tgt - self._pos[steps-1], steps)
-
+            # apply operation on top of path[steps:]
+            self._pos[steps:] = path_pos[steps:] + addpath_pos
+        
         return self
 
 
-    def rotate(self, rot:R, anchor=None, steps=0):    
+    def rotate(self, rot:R, anchor=None, steps=-1):    
         """ Object rotation
 
         Parameters
@@ -229,55 +193,62 @@ class BaseGeo:
         rot: scipy Rotation object
         
         anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. For anchor=None
+            The axis of rotation passes through the anchor point. When anchor=None
             the object will rotate about its own center.
 
-        steps: int, optional, default=0
-            If steps=0: rot is applied to path[-1]
-            If steps>0: linear rotation steps from 0 to rot starting with 0 at
-                path[-1] are added to the existing path.
-            If steps<0: apply linear rotation steps from 0 to rot to existing
-                path starting with 0 at path[steps-1].
+        steps: int, optional, default=-1
+            If steps < 0: apply linear rotation steps from 0 to rot on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                rotate path[-1].
+            If steps > 0: add linear rotation steps from 0 to rot to existing
+                path starting at path[-1].
 
         Returns:
         --------
         self : object with position and orientation properties.
 
         """
+        # secure input type
+        if anchor is not None:
+            anchor = np.array(anchor, dtype=float)      # if None
+
         # load current path
         path_pos = self._pos
         path_rot = self._rot.as_quat()
+        path_len = len(path_rot)
+        
+        # bad steps input, set to max size
+        if steps < -path_len:
+            steps = -path_len + 1  # path[0] sees 0 rot
+            print('WARNING: .rotate(), steps<path_len, setting to max-1')
 
         # generate rotations
-        stepss = np.tile(np.linspace(0,1,abs(steps)+1),(3,1)).T
-        if steps==0:
-            stepss += 1
-        rots = R.from_rotvec(rot.as_rotvec()*stepss)
+        stepping = np.linspace(0,1,abs(steps)+1)[1:]
+        rots = R.from_rotvec([rot.as_rotvec()*s for s in stepping])
         
-        if steps >=0:
-            rot_new = rots*self._rot[-1]                  # apply rot to path[-1]
-            self.rot = R(np.r_[path_rot[:-1], rot_new.as_quat()], normalized=True)
+        if steps > 0:
+            # apply rot to path[-1] and add resulting vector to path
+            rot_new = rots*self._rot[-1]                  
+            self.rot = R(np.r_[path_rot, rot_new.as_quat()], normalized=True)
+            # compute positions and add to path
             if anchor is not None:
-                anch = np.array(anchor, dtype=float)      # secure type
-                pos_old = path_pos[-1] - anch             # relative pos to anchor
-                pos_new = rots.apply(pos_old) + anch      # rotate about anchor
+                pos_new = rots.apply(path_pos[-1]-anchor) + anchor
             else:
-                pos_new = np.tile(path_pos[-1],(steps,1)) # tile positions
-            self.pos = np.r_[self._pos[:-1], pos_new]
+                pos_new = np.tile(path_pos[-1],(steps,1))
+            self.pos = np.r_[self._pos, pos_new]
         
         else:
-            rot_new = rots*self.rot[steps-1:]              # apply to path[steps:]
-            self.rot = R(np.r_[path_rot[:steps-1], rot_new.as_quat()], normalized=True)
+            # apply rotation to path[steps:] and apply result to path[steps:]
+            rot_new = rots*self.rot[steps:]
+            self.rot = R(np.r_[path_rot[:steps], rot_new.as_quat()], normalized=True)
             if anchor is not None:
-                anch = np.array(anchor, dtype=float)      # secure type
-                pos_old = path_pos[steps-1:] - anch       # relative pos to anchor
-                pos_new = rots.apply(pos_old) + anch      # rotate about anchor
-                self._pos[steps-1:] = pos_new
+                pos_new = rots.apply(path_pos[steps:]-anchor) + anchor      # rotate about anchor
+                self._pos[steps:] = pos_new
 
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, steps=0, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, steps=-1, degree=True):
         """ Object rotation from angle-axis combination
 
         Parameters
@@ -295,18 +266,18 @@ class BaseGeo:
         degree: bool, default=True
             If True, Angle is given in [deg]. If False, angle is given in [rad].
                     
-        steps: int, optional, default=0
-            If steps=0: rot is applied to path[-1]
-            If steps>0: linear rotation steps from 0 to rot starting with 0 at
-                path[-1] are added to the existing path.
-            If steps<0: apply linear rotation steps from 0 to rot to existing
-                path starting with 0 at path[steps-1].
+        steps: int, optional, default=-1
+            If steps < 0: apply linear rotation steps from 0 to rot on top 
+                of existing path[steps:]. Specifically, steps=-1 will just
+                rotate path[-1].
+            If steps > 0: add linear rotation steps from 0 to rot to existing
+                path starting at path[-1].
 
         Returns:
         --------
         self : object with position and orientation properties.
-        """
         
+        """
         # degree to rad
         if degree:
             angle = angle/180*np.pi
@@ -314,17 +285,22 @@ class BaseGeo:
         # secure input type
         axis = np.array(axis, dtype=np.float64)
 
-        # rotations beyond pi
-        n_rot = int(abs(angle)/np.pi)    # number of pi-rotations
+        # Split up rotation into pi-rotation and rest-rotation as
+        #   the scipy.Rotation module is limited to express rotations
+        #   only within the interval [-pi,pi]
+        # pi-rotation includes all multiples of pi
+        # rest-rotation includes the rest
+
+        # apply rest-rotation (within [-pi,pi])
+        ang_sign = np.sign(angle)
+        ang_rest = abs(angle) % np.pi
+        rot_rest = rotobj_from_angax(ang_sign*ang_rest, axis)
+        self.rotate(rot_rest, anchor, steps)
         
+        # apply rotations beyond pi (on top of rest-rotation)
+        n_rot = int(abs(angle)/np.pi)    # number of pi-rotations
         if n_rot>0:
-            sign_angle = np.sign(angle)
-            rot_pi = rotobj_from_angax(sign_angle*np.pi, axis) # rotate n_rot times
-            rot_rest = rotobj_from_angax(angle%np.pi, axis)    # rest rotation
-            
-            # apply rest rotation
-            self.rotate(rot_rest, anchor, steps)
-            # on top of rest rotation apply pi-rotations
+            rot_pi = rotobj_from_angax(ang_sign*np.pi, axis) # rotate n_rot times
             for _ in range(n_rot):
                 self.rotate(rot_pi, anchor, -abs(steps))
         

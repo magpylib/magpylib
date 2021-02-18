@@ -186,7 +186,6 @@ def display(
     ymax, ymin = max(sys_size[2]), min(sys_size[3])
     zmax, zmin = max(sys_size[4]), min(sys_size[5])
 
-
     # center
     cx = (xmax + xmin)/2
     cy = (ymax + ymin)/2
@@ -196,8 +195,8 @@ def display(
     dy = ymax - ymin
     dz = zmax - zmin
     # cube plot
-    dd = max([dx,dy,dz])/2 * (3 + n)/n
-    
+    dd = max([dx,dy,dz])*.7
+
     # draw directions -----------------------------------------------
     if direc:
         dira = np.array(directs).T
