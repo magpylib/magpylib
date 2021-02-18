@@ -4,11 +4,11 @@ discussion -----------------------------------------
     - src.mag=(xxx, localMag=True)
     - src = Box(mag,pos,dim,...localMAg=True)
 
-- generate paths
-    - path.rotate().move()...
-    - getB(src, pos_obs, src_path)
+- rotation limited to +-pi
 
 - are typehints really helpful ?
+
+docu like scipy: 
 
 
 

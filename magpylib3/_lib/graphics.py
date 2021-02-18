@@ -1,6 +1,7 @@
 """ Display function codes"""
 
 import sys
+import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -8,7 +9,7 @@ import magpylib3._lib as _lib
 from magpylib3._lib.math_utility.utility import format_src_input
 
 
-def vert_face_box(s):
+def vert_face_box(s,p,r):
     """
     compute vertices and faces of Box input for plotting
     
@@ -18,7 +19,7 @@ def vert_face_box(s):
     vert = np.array(((0,0,0),(a,0,0),(0,b,0),(0,0,c),
                     (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
     vert = vert - s.dim/2
-    vert = s.rot.apply(vert) + s.pos
+    vert = r.apply(vert) + p
     faces = [
         [vert[0],vert[1],vert[4],vert[2]],
         [vert[0],vert[1],vert[5],vert[3]],
@@ -30,7 +31,7 @@ def vert_face_box(s):
     return vert, faces
 
 
-def vert_face_cylinder(s):
+def vert_face_cylinder(s,p,r):
     """
     compute vertices and faces of cylinder input for plotting
     
@@ -42,8 +43,8 @@ def vert_face_cylinder(s):
     vert_circ = np.array([np.cos(phis),np.sin(phis),np.zeros(res)]).T*d/2
     vt = vert_circ + np.array([0,0,h/2]) # top vertices
     vb = vert_circ - np.array([0,0,h/2]) # bott vertices
-    vt = s.rot.apply(vt) + s.pos
-    vb = s.rot.apply(vb) + s.pos
+    vt = r.apply(vt) + p
+    vb = r.apply(vb) + p
     vert = np.r_[vt,vb]
     faces = [[vt[i], vb[i], vb[i+1], vt[i+1]] for i in range(res-1)]
     faces += [vt, vb]
@@ -51,28 +52,43 @@ def vert_face_cylinder(s):
 
 
 def display(
-    *sources,  
+    *objects,  
     markers=[(0,0,0)], 
     subplotAx=None,
-    direc=False):
+    direc=False,
+    show_path=False):
     """ Display sources/sensors graphically
 
-    Args:
-        *sources (objects): can be sources, collections or sensors
-        markers (list of positions): Mark positions in graphic output.
-            Defaults to [(0,0,0)] which marks the origin.
-        subplotAx (pyplot.axis): display graphical output in 
-            a given pyplot axis (must be 3D). Defaults to None.
-        direc (bool): True to plot magnetization and current directions,
-            Defaults to False.
+    Parameters
+    ----------
+    objects: sources, collections or sensors
+        Display a 3D reprensation of given objects using matplotlib
+    
+    markers: array_like, shape (N,3), default=[(0,0,0)]
+        Mark positions in graphic output. Puts a marker in the origin.
+        by default.
+    
+    subplotAx: pyplot.axis, default=None
+        Display graphical output in a given pyplot axis (must be 3D). 
+    
+    direc: bool, default=False
+        Set True to plot magnetization and current directions
+    
+    show_path: bool/string, default=False
+        Set True to plot object paths. Set 'all' to plot an object 
+        represenation at each path position.
+    
+    Returns
+    -------
+    None
     """
 
     # if no subplot axis is given
-    suppress=False
+    generate_output=True
 
-    # flatten input, determine number of sources
-    src_list = format_src_input(sources)
-    n = len(src_list)
+    # flatten input, determine number of objects
+    obj_list = format_src_input(objects)
+    n = len(obj_list)
 
     # create or set plotting axis
     if subplotAx is None:
@@ -80,28 +96,39 @@ def display(
         ax = fig.gca(projection='3d')
     else:
         ax = subplotAx
-        suppress = True
+        generate_output = False
     
     # load color map
     cm = plt.cm.get_cmap('hsv')
 
-    # init sys_size
+    # init sys_size x/y/z max and min values
     sys_size = [[],[],[],[],[],[]]
 
     # init directs for directs plotting :)
     directs = []
 
     # draw sources --------------------------------------------------
-    for i,s in enumerate(src_list):
-        if isinstance(s, _lib.obj_classes.Box):
-            vert, faces = vert_face_box(s)
-            lw = 0.5
-        elif isinstance(s, _lib.obj_classes.Cylinder):
-            vert, faces = vert_face_cylinder(s)
-            lw = 0.25
+    for i,s in enumerate(obj_list):
+        if show_path=='all':
+            poss = s._pos
+            rott = s._rot
         else:
-            print('ERROR display: bad input source type')
-            sys.exit()
+            poss = [s._pos[-1]]
+            rott = [s._rot[-1]]
+
+        vert, faces = [],[]
+        for p,r in zip(poss,rott):
+            if isinstance(s, _lib.obj_classes.Box):
+                v, f = vert_face_box(s,p,r)
+                lw = 0.5
+            elif isinstance(s, _lib.obj_classes.Cylinder):
+                v, f = vert_face_cylinder(s,p,r)
+                lw = 0.25
+            else:
+                sys.exit()
+            vert += [v]
+            faces += f
+
         # add faces to plot
         boxf = Poly3DCollection(
             faces, 
@@ -113,14 +140,38 @@ def display(
         
         # determine outmost vertices to adjust sys_size
         for i in range(3):
-            sys_size[2*i] += [np.amax(vert[:,i])]
-            sys_size[2*i+1] += [np.amin(vert[:,i])]
-        
+            sys_size[2*i] += [np.amax(np.array(vert)[:,:,i])]
+            sys_size[2*i+1] += [np.amin(np.array(vert)[:,:,i])]
+
         # add to directions
-        pos = s.pos
-        mag = s.rot.apply(s.mag)
+        pos = s._pos[-1]
+        mag = s._rot[-1].apply(s.mag)
         directs += [np.r_[pos,mag]]
 
+
+    # path ------------------------------------------------------
+    if show_path is True:
+        for i,s in enumerate(obj_list):
+            path = s._pos
+            ax.plot(path[:,0],path[:,1],path[:,2],
+                ls = '-',
+                lw = 1,
+                color = cm(i/n),
+                marker = '.',
+                mfc = 'k', 
+                mec='k',
+                ms = 2.5)
+            ax.plot([path[0,0]],[path[0,1]],[path[0,2]],
+                marker='o',
+                ms=4,
+                mfc=cm(i/n),
+                mec='k')
+        
+            # determine outmost vertices to adjust sys_size
+            for i in range(3):
+                sys_size[2*i] += [np.amax(path[:,i])]
+                sys_size[2*i+1] += [np.amin(path[:,i])]
+    
     # markers -------------------------------------------------------
     markers = np.array(markers)
     ax.plot(markers[:,0],markers[:,1],markers[:,2],ls='',marker='x',ms=5)
@@ -130,11 +181,12 @@ def display(
         sys_size[2*i] += [np.amax(markers[:,i])]
         sys_size[2*i+1] += [np.amin(markers[:,i])]
 
-
     # final system size analysis ------------------------------------
     xmax, xmin = max(sys_size[0]), min(sys_size[1])
     ymax, ymin = max(sys_size[2]), min(sys_size[3])
     zmax, zmin = max(sys_size[4]), min(sys_size[5])
+
+
     # center
     cx = (xmax + xmin)/2
     cy = (ymax + ymin)/2
@@ -144,7 +196,7 @@ def display(
     dy = ymax - ymin
     dz = zmax - zmin
     # cube plot
-    dd = max([dx,dy,dz])/2 * (5 + n)/n
+    dd = max([dx,dy,dz])/2 * (3 + n)/n
     
     # draw directions -----------------------------------------------
     if direc:
@@ -166,7 +218,9 @@ def display(
         zlim = (cz-dd, cz+dd)
         )
 
-    if not suppress:
+    # generate output ------------------------------------------------
+    if generate_output:
         plt.show()
     
     return None
+    

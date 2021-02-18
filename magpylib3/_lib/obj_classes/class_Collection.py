@@ -158,59 +158,117 @@ class Collection:
         display(self, **kwargs)
 
 
-    def move(self, displacement):
+    def move_to(self, pos_target, steps=0):
         """
-        Translate all sources in Collection by the argument vector.
+        Move all sources in Collection to target position.
 
-        ### Args:
-        - displacement (vec3): displacement vector in units of mm.
-
-        ### Returns:
-        - self
-        """
-        for s in self:
-            s.move(displacement)
-        return self
-
-
-    def rotate(self, rot, anchor=None):
-        """ 
-        Rotate all sources in Collection.
-
-        ### Args:
-        - rot (rotation input): Can either be a pair (angle, axis) with 
-            angle a scalar given in [deg] and axis an arbitrary 3-vector, 
-            or a scipy..Rotation object.
-        - anchor (vec3): The axis of rotation passes through the anchor point. 
-            By default (anchor=None) the objects will rotate about their own 
-            center.
-
-        ### Returns:
-        - self
-        """
-        for s in self:
-            s.rotate(rot, anchor)
-        return self
-
-    def rotate_from_angax(self, angle, axis, anchor=None, degree=True):
-        """ 
-        Rotate all sources in Collection.
-
-        ### Args:
-        - angle (float): Angle of rotation in [deg] by default.
-        - axis (vec3): The axis of rotation [dimensionless]
-        - anchor (vec3): The axis of rotation passes through the anchor point. 
-            By default (anchor=None) the objects will rotate about their own center.
-        - degree (bool): default=True angle is given in [deg]. False angle is given 
-            in [rad].
+        Parameters
+        ----------
+        pos_target: array_like, shape (3,)
+            target position vector in units of mm.
         
-        ### Returns:
-        - self
+        steps: int, optional, default=0
+            If steps=0: path[-1] will be set to target position
+            If steps>0: add to path, linear steps to target position 
+                starting from path[-1].
+            If steps<0: superpose existing path with linear motion from 
+                path[steps-1] to target position.
+
+        Returns:
+        --------
+        self : Collection
         """
         for s in self:
-            s.rotate_from_angax(angle, axis, anchor, degree)
+            s.move_to(pos_target, steps)
         return self
-    
+
+
+    def move_by(self, displacement, steps=0):
+        """
+        Linear displacement of Collection.
+
+        Parameters
+        ----------
+        pos_target: array_like, shape (3,)
+            target position vector in units of mm.
+        
+        steps: int, optional, default=0
+            If steps=0: path[-1] will be set to target position
+            If steps>0: add to path, linear steps to target position 
+                starting from path[-1].
+            If steps<0: superpose existing path with linear motion from 
+                path[steps-1] to target position.
+
+        Returns:
+        --------
+        self : Collection
+        """
+        for s in self:
+            s.move_by(displacement, steps)
+        return self
+
+
+    def rotate(self, rot, anchor=None, steps=0):
+        """ 
+        Rotate all sources in Collection.
+
+        Parameters
+        ----------
+        rot: scipy Rotation object
+        
+        anchor: None or array_like, shape (3,), default=None
+            The axis of rotation passes through the anchor point. For anchor=None
+            the object will rotate about its own center.
+
+        steps: int, optional, default=0
+            If steps=0: rot is applied to path[-1]
+            If steps>0: linear rotation steps from 0 to rot starting with 0 at
+                path[-1] are added to the existing path.
+            If steps<0: apply linear rotation steps from 0 to rot to existing
+                path starting with 0 at path[steps-1].
+
+        Returns:
+        --------
+        self : Collection
+        """
+        for s in self:
+            s.rotate(rot, anchor, steps)
+        return self
+
+
+    def rotate_from_angax(self, angle, axis, anchor=None, steps=0, degree=True):
+        """ Rotate all sources in Collection.
+
+        Parameters
+        ----------
+        angle: float
+            Angle of rotation (in [deg] by default).
+        
+        axis: array_like, shape (3,)
+            The axis of rotation [dimensionless]
+
+        anchor: None or array_like, shape (3,), default=None
+            The axis of rotation passes through the anchor point. By default 
+            anchor=None the object will rotate about its own center.
+        
+        degree: bool, default=True
+            If True, Angle is given in [deg]. If False, angle is given in [rad].
+                    
+        steps: int, optional, default=0
+            If steps=0: rot is applied to path[-1]
+            If steps>0: linear rotation steps from 0 to rot starting with 0 at
+                path[-1] are added to the existing path.
+            If steps<0: apply linear rotation steps from 0 to rot to existing
+                path starting with 0 at path[steps-1].
+
+        Returns:
+        --------
+        self : Collection
+        """
+        for s in self:
+            s.rotate_from_angax(angle, axis, anchor, steps, degree)
+        return self
+
 
     def copy(self):
         """ returns a copy of the Collection"""
