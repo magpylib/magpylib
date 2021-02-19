@@ -49,7 +49,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib3 import _lib as _lib
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
-from magpylib3._lib.math_utility.utility import format_src_input
+from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
 from magpylib3._lib.config import config
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:
@@ -227,26 +227,27 @@ def scr_dict_cylinder(group: list, poso_flat: np.ndarray) -> np.ndarray:
 def getBH_level2(**kwargs: dict) -> np.ndarray:
     """Field computation (level2) for given sources.
 
-    ### Args:
+    Parameters
+    ----------
     - bh (bool): True=getB, False=getH
-    - sources (M sequence): a 1D tuple of M input sources/collections
-    - pos_obs (N1 x N2 x ... x 3 vector): observer positions
-    - sumup (bool): default=False returns [B1,B2,...Bm], True returns sum(Bi)
+    - sources (L list): a 1D list of L sources/collections with similar pathlength M
+    - pos_obs (N1 x N2 x ... x 3 array_like): observer positions
+    - sumup (bool): default=False returns [B1,B2,...], True returns sum(Bi)
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     ### Returns:
-    - B/H-field (M x N1 x N2 x ... x 3 ndarray): B(mT)H(kA/m) field of each source at pos_obs
+    - B/H-field (L x M x N1 x N2 x ... x 3 ndarray): B(mT)H(kA/m) field of each source at each path_pos at pos_obs
 
     ### Info (level2):
     This function wraps the level 1 field computations.
     - secures input types (list/tuple -> ndarray)
     - generates correct vector input format for getB_level1
     - groups similar sources for combined computation
-    - adjust Bfield output format to pos_obs and sources input format
+    - adjust Bfield output format to pos_obs, path, sources input format
     - input checks
     """
 
-    # make sure there is no unknown kwarg input --------------------
+    # make sure there is no unknown kwarg input ('user accident') ----
     allowed_keys = ['bh', 'sources', 'pos_obs', 'sumup', 'niter']
     keys = kwargs.keys()
     complement = [i for i in keys if i not in allowed_keys]
@@ -262,6 +263,11 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # formatting ----------------------------------------------------
     # flatten out Collections
     src_list = format_src_input(sources)
+
+    # test if all sources have a similar pathlength
+    if not same_path_length(src_list):
+        print('ERROR: getBH() - all paths must be of similar length !')
+        sys.exit()
 
     # determine shape of positions and flatten into Nx3 array
     poso_shape = poso.shape
@@ -325,27 +331,38 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     return B
 
 # INTERFACE FUNCTIONS -------------------------------------------
-def getB(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
+def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
     """ Compute the B-field for a sequence of given sources.
 
-    ### Args:
-    - sources (sequence of M sources): can be sources or Collections
-    - pos_obs (N1 x N2 x ... x 3 vector): observer positions
-    - sumup (bool): default=False returns [B1,B2,...Bm], True returns sum(Bi)
+    Parameters
+    ----------
+    sources: list 
+        1D list of L sources/collections with similar path length M
     
-    ### Specific kwargs:
-    - niter (int): default=50, for Cylinder sources diametral iteration
+    pos_obs: array_like, shape (N1,N2,...,3), unit [mm]
+        observer position(s) in units of [mm].
 
-    ### Returns:
-    - B-field (M x N1 x N2 x ... x 3 ndarray): B-field of each source at pos_obs in units of mT
+    sumup: bool, default=False
+        If False getB returns shape (L,M,N), else sums up the fields of all sources 
+        and returns shape (M,N).
+    
+    Specific kwargs
+    ---------------
+    niter: int, default=50
+        for Cylinder sources diametral iteration (Simpsons formula).
 
-    ### Info:
-    This function groups similar sources together for optimal vectorization 
-    of the computation in one go. For performance call this function as little
-    as possible, do not use it in a loop if not absolutely necessary.
+    Returns
+    -------
+    B-field: ndarray, shape (L, M, N1, N2, ... ,3), unit [mT]
+        B-field of each source at each path position and each observer position in units of mT
 
-    This function will be extended in the future to cover source paths, sensors and
-    sensor paths.
+    Info
+    ----
+    This function automatically groups similar sources together for optimal vectorization 
+    of the computation. For maximal performance call this function as little as possible, 
+    do not use it in a loop if not absolutely necessary.
+
+    This function will be extended in the future to cover sensors and sensor paths.
     """
     return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 

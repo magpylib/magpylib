@@ -76,7 +76,7 @@ def check_duplicates(src_list: Sequence) -> list:
     return src_list
 
 
-def check_path_length(obj_list: list) -> None:
+def same_path_length(obj_list: list) -> None:
     """ check if all objects in obj_list have same path length
 
     Parameters

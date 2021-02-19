@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import magpylib3._lib as _lib
-from magpylib3._lib.math_utility.utility import format_src_input, check_path_length
+from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
 
 
 def vert_face_box(s,p,r):
@@ -109,7 +109,7 @@ def display(
 
     # test object paths ----------------------------------------
     for obj in obj_list:
-        if not check_path_length([obj]):
+        if not same_path_length([obj]):
             print('ERROR: display() - Some given objects have bad paths. (different obj.pos / obj.rot length)')
             sys.exit()
 
