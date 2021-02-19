@@ -13,7 +13,7 @@ discussion -----------------------------------------
 - docu like scipy
 - when computing: test if pos and rot have the same length
 - complete testing
-
+- numpy reshape and other operations creating copies
 
 
 2do-------------------------------------------------

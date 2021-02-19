@@ -110,7 +110,7 @@ def display(
     # test object paths ----------------------------------------
     for obj in obj_list:
         if not same_path_length([obj]):
-            print('ERROR: display() - Some given objects have bad paths. (different obj.pos / obj.rot length)')
+            print('ERROR: display() - bad path format (different pos/rot length)')
             sys.exit()
 
     # draw objects --------------------------------------------------

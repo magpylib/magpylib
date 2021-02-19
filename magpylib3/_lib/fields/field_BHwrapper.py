@@ -171,55 +171,37 @@ def getBHv(**kwargs: dict) -> np.ndarray:
     return B
 
 
-def scr_dict_box(group: list, poso_flat: np.ndarray) -> np.ndarray:
-    """ Helper function that generates a dictionary for level 1 getBH input
+def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
+    """ Helper function that generates a dictionary 
+        for level1 getBH input for homogeneous magnets
 
-    ### Args:
-    - group (list): list of sources in group
-    - poso_flat (ndarray): pos_obs flattened
+    Parameters
+    ----------
+    group: list of sources
 
-    ### Returns:
-    - dictionary for getBH_level1 input
-    """
-    m_group = len(group)
-    n = len(poso_flat)
-    magv = np.empty((m_group*n,3))
-    dimv = np.empty((m_group*n,3))
-    posv = np.empty((m_group*n,3))
-    rotv = np.empty((m_group*n,3))
-    for i,s in enumerate(group):
-        magv[i*n:(i+1)*n] = np.tile(s._mag, (n,1))
-        dimv[i*n:(i+1)*n] = np.tile(s._dim, (n,1))
-        posv[i*n:(i+1)*n] = np.tile(s._pos, (n,1))
-        rotv[i*n:(i+1)*n] = np.tile(s._rot.as_rotvec(), (n,1))
-    posov = np.tile(poso_flat,(m_group,1))
-    rotobj = R.from_rotvec(rotv)
-    src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
-    return src_dict
-
-def scr_dict_cylinder(group: list, poso_flat: np.ndarray) -> np.ndarray:
-    """ Helper function that generates a dictionary for level 1 getBH input
-
-    ### Args:
-    - group (list): list of sources in group
-    - poso_flat (ndarray): pos_obs flattened
+    poso_flat (ndarray): pos_obs flattened
 
     ### Returns:
     - dictionary for getBH_level1 input
+    
     """
-    m_group = len(group)
-    n = len(poso_flat)
-    magv = np.empty((m_group*n,3))
-    dimv = np.empty((m_group*n,2))
-    posv = np.empty((m_group*n,3))
-    rotv = np.empty((m_group*n,3))
+    l_group = len(group)    # sources in group
+    m = len(group[0]._pos)  # path length
+    n = len(poso_flat)      # no. observer pos
+    len_dim = len(group[0]._dim)
+
+    # prepare and fill arrays, shape: (l_group, m, n)
+    magv = np.empty((l_group*m*n,3))
+    dimv = np.empty((l_group*m*n,len_dim))
+    posv = np.empty((l_group*m*n,3))
+    rotv = np.empty((l_group*m*n,4))
     for i,s in enumerate(group):
-        magv[i*n:(i+1)*n] = np.tile(s._mag, (n,1))
-        dimv[i*n:(i+1)*n] = np.tile(s._dim, (n,1))
-        posv[i*n:(i+1)*n] = np.tile(s._pos, (n,1))
-        rotv[i*n:(i+1)*n] = np.tile(s._rot.as_rotvec(), (n,1))
-    posov = np.tile(poso_flat,(m_group,1))
-    rotobj = R.from_rotvec(rotv)
+        magv[i*m*n:(i+1)*m*n] = np.tile(s.mag, (m*n,1))
+        dimv[i*m*n:(i+1)*m*n] = np.tile(s.dim, (m*n,1))
+        posv[i*m*n:(i+1)*m*n] = np.tile(s._pos,n).reshape(m*n,3)
+        rotv[i*m*n:(i+1)*m*n] = np.tile(s._rot.as_quat(),n).reshape(m*n,4)
+    posov = np.tile(poso_flat, (l_group*m,1))
+    rotobj = R.from_quat(rotv, normalized=True)
     src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
     return src_dict
 
@@ -264,7 +246,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # flatten out Collections
     src_list = format_src_input(sources)
 
-    # test if all sources have a similar pathlength
+    # test if all sources have a similar path length and good path format
     if not same_path_length(src_list):
         print('ERROR: getBH() - all paths must be of similar length !')
         sys.exit()
@@ -274,8 +256,9 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     n = np.prod(poso_shape[:-1],dtype=int) # pylint: disable=unsubscriptable-object
     poso_flat = np.reshape(poso,(n,3))
 
-    m = len(src_list)      # number of sources
-    B = np.empty((m,n,3))  # store fields here
+    l = len(src_list)           # number of sources
+    m = len(src_list[0]._pos)   # path length
+    B = np.empty((l,m,n,3))     # store fields here
 
     # group similar source types-------------------------------------
     src_sorted = [[],[]]   # store groups here
@@ -291,29 +274,36 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
             print('WARNING getB: bad source input !')
             sys.exit()
 
-    # each non-empty group is then evaluated in one go---------------
-    # Box group <<<<<<<<<<<<<<<<<<<<<
-    group = src_sorted[0]  
-    if group: # is empty ?
-        src_dict = scr_dict_box(group, poso_flat)
-        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict)
-        for i in range(len(group)):
-            B[order[0][i]] = B_group[i*n:(i+1)*n]
+    # evaluate each non-empty group in one go------------------------
 
-    # Cylinder group <<<<<<<<<<<<<<<<
+    # Box group
+    group = src_sorted[0]  
+    if group:
+        src_dict = scr_dict_homo_mag(group, poso_flat)                   # compute array dict for level1
+        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict)   # compute field
+        B_group = B_group.reshape((len(group),m,n,3))               # reshape
+        for i in range(len(group)):                                 # move to dedicated positions in B
+                B[order[0][i]] = B_group[i]
+
+    # Cylinder group
     group = src_sorted[1]
-    if group: # is empty ?
+    if group:
         niter = kwargs.get('niter', config.ITER_CYLINDER)
-        src_dict = scr_dict_cylinder(group, poso_flat)
+        src_dict = scr_dict_homo_mag(group, poso_flat)
         B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
+        B_group = B_group.reshape((len(group),m,n,3))
         for i in range(len(group)):
-            B[order[1][i]] = B_group[i*n:(i+1)*n]
+                B[order[1][i]] = B_group[i]
 
     # bring to correct shape (B.shape = pos_obs.shape)---------------
-    B = B.reshape(np.r_[m, poso_shape])
+    B = B.reshape(np.r_[l,m,poso_shape])
+
+    # pathlength = 1: reduce 2nd level
+    if m == 1:
+        B = np.squeeze(B, axis=1)
 
     # only one source: reduce highest level
-    if m == 1:
+    if l == 1:
         return B[0]
     
     if sumup:
