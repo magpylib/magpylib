@@ -108,23 +108,19 @@ def check_duplicates(src_list: Sequence) -> list:
     return src_list
 
 
-def check_path_length(src_list: list) -> None:
-    """ check if all objects in src_list have same path length
+def check_path_length(obj_list: list) -> None:
+    """ check if all objects in obj_list have same path length
 
     Parameters
     ----------
-    src_list: list of source objects
+    obj_list: list of source objects
 
     Returns
     -------
     True if 
     """
-    lp = len(src_list[0]._pos)
-    pos_check = all([len(s._pos)==lp for s in src_list])
-    rot_check = all([len(s._rot.as_quat())==lp for s in src_list])
+    lp = len(obj_list[0]._pos)
+    pos_check = all([len(obj._pos)==lp for obj in obj_list])
+    rot_check = all([len(obj._rot.as_quat())==lp for obj in obj_list])
 
-    if pos_check and rot_check:
-        return None
-    else:
-        print('ERROR: check_path_length() - Objects of different path length')
-        sys.exit()
+    return pos_check and rot_check

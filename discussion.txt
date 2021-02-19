@@ -6,9 +6,15 @@ discussion -----------------------------------------
 
 - are typehints really helpful ?
 
+
+- src.pos[15] = (1,2,3)
+    diretly setting parts of path
+
 - docu like scipy
 - when computing: test if pos and rot have the same length
 - complete testing
+
+
 
 2do-------------------------------------------------
 - fix getBv with niter

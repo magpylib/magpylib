@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 import magpylib3._lib as _lib
-from magpylib3._lib.math_utility.utility import format_src_input
+from magpylib3._lib.math_utility.utility import format_src_input, check_path_length
 
 
 def vert_face_box(s,p,r):
@@ -107,8 +107,24 @@ def display(
     # init directs for directs plotting :)
     directs = []
 
-    # draw sources --------------------------------------------------
+    # test object paths ----------------------------------------
+    for obj in obj_list:
+        if not check_path_length([obj]):
+            print('ERROR: display() - Some given objects have bad paths. (different obj.pos / obj.rot length)')
+            sys.exit()
+
+    # draw objects --------------------------------------------------
     for i,s in enumerate(obj_list):
+        if isinstance(s, _lib.obj_classes.Box):
+            vert_face = vert_face_box
+            lw = 0.5
+        elif isinstance(s, _lib.obj_classes.Cylinder):
+            vert_face = vert_face_cylinder
+            lw = 0.25
+        else:
+            print('ERROR: display(), bad src input')
+            sys.exit()
+        
         if show_path=='all':
             poss = s._pos
             rott = s._rot
@@ -118,14 +134,7 @@ def display(
 
         vert, faces = [],[]
         for p,r in zip(poss,rott):
-            if isinstance(s, _lib.obj_classes.Box):
-                v, f = vert_face_box(s,p,r)
-                lw = 0.5
-            elif isinstance(s, _lib.obj_classes.Cylinder):
-                v, f = vert_face_cylinder(s,p,r)
-                lw = 0.25
-            else:
-                sys.exit()
+            v, f = vert_face(s,p,r)
             vert += [v]
             faces += f
 
@@ -133,7 +142,7 @@ def display(
         boxf = Poly3DCollection(
             faces, 
             facecolors=cm(i/n),
-            linewidths=lw,
+            linewidths=lw, 
             edgecolors='k',
             alpha=1)
         ax.add_collection3d(boxf)
