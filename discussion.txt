@@ -14,7 +14,7 @@ discussion -----------------------------------------
 - when computing: test if pos and rot have the same length
 - complete testing
 - numpy reshape and other operations creating copies
-
+- axis = 'x', 'y', 'z'
 
 2do-------------------------------------------------
 - fix getBv with niter

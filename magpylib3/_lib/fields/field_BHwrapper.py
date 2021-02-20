@@ -181,8 +181,9 @@ def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
 
     poso_flat (ndarray): pos_obs flattened
 
-    ### Returns:
-    - dictionary for getBH_level1 input
+    Returns
+    -------
+    dict for getBH_level1 input
     
     """
     l_group = len(group)    # sources in group
@@ -251,7 +252,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
         print('ERROR: getBH() - all paths must be of similar length !')
         sys.exit()
 
-    # determine shape of positions and flatten into Nx3 array
+    # determine shape of positions and flatten into nx3 array
     poso_shape = poso.shape
     n = np.prod(poso_shape[:-1],dtype=int) # pylint: disable=unsubscriptable-object
     poso_flat = np.reshape(poso,(n,3))
@@ -279,7 +280,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # Box group
     group = src_sorted[0]  
     if group:
-        src_dict = scr_dict_homo_mag(group, poso_flat)                   # compute array dict for level1
+        src_dict = scr_dict_homo_mag(group, poso_flat)              # compute array dict for level1
         B_group = getBH_level1(bh=bh, src_type='Box', **src_dict)   # compute field
         B_group = B_group.reshape((len(group),m,n,3))               # reshape
         for i in range(len(group)):                                 # move to dedicated positions in B
