@@ -31,7 +31,6 @@ import magpylib3 as mag3
 
 n = 100
 s_pos = (0,0,0)
-ax = (1,0,0)
 anch=(0,0,10)
 
 # path style code translation
@@ -50,17 +49,17 @@ print(np.allclose(B1,B2))
 
 # path style code rotation
 pm1 = Cylinder((0,0,1000),(3,3),pos=(0,0,3))
-pm1.rotate_from_angax(-30,ax,anch)
-pm1.rotate_from_angax(60,ax,anch,steps=n)
+pm1.rotate_from_angax(-30,'x',anch)
+pm1.rotate_from_angax(60,'x',anch,steps=n)
 B1 = pm1.getB(s_pos)
 
 # old style code rotation
 pm2 = Cylinder((0,0,1000),(3,3),pos=(0,0,3))
-pm2.rotate_from_angax(-30,ax,anch)
+pm2.rotate_from_angax(-30,'x',anch)
 B2 = []
 for _ in range(n+1):
     B2 += [pm2.getB(s_pos)]
-    pm2.rotate_from_angax(60/n,ax,anch)
+    pm2.rotate_from_angax(60/n,'x',anch)
 B2 = np.array(B2)
 
 print(np.allclose(B1,B2))

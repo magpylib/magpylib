@@ -249,7 +249,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
 
     # test if all sources have a similar path length and good path format
     if not same_path_length(src_list):
-        print('ERROR: getBH() - all paths must be of similar length !')
+        print('ERROR: getBH() - all paths must be of good format and similar length !')
         sys.exit()
 
     # determine shape of positions and flatten into nx3 array
@@ -334,8 +334,8 @@ def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np
         observer position(s) in units of [mm].
 
     sumup: bool, default=False
-        If False getB returns shape (L,M,N), else sums up the fields of all sources 
-        and returns shape (M,N).
+        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources 
+        and returns shape (M,N1,...).
     
     Specific kwargs
     ---------------
@@ -352,8 +352,6 @@ def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np
     This function automatically groups similar sources together for optimal vectorization 
     of the computation. For maximal performance call this function as little as possible, 
     do not use it in a loop if not absolutely necessary.
-
-    This function will be extended in the future to cover sensors and sensor paths.
     """
     return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
@@ -361,24 +359,33 @@ def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np
 def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np.ndarray:
     """ Compute the H-field for a sequence of given sources.
 
-    ### Args:
-    - sources (sequence of M sources): can be sources or Collections
-    - pos_obs (N1 x N2 x ... x 3 vector): observer positions
-    - sumup (bool): default=False returns [H1,H2,...Hm], True returns sum(Hi)
+    Parameters
+    ----------
+    sources: list 
+        1D list of L sources/collections with similar path length M
     
-    ### Specific kwargs:
-    - niter (int): default=50, for Cylinder sources diametral iteration
+    pos_obs: array_like, shape (N1,N2,...,3), unit [mm]
+        observer position(s) in units of [mm].
 
-    ### Returns:
-    - H-field (M x N1 x N2 x ... x 3 ndarray): H-field of each source at pos_obs in units of kA/m
+    sumup: bool, default=False
+        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources 
+        and returns shape (M,N1,...).
+    
+    Specific kwargs
+    ---------------
+    niter: int, default=50
+        for Cylinder sources diametral iteration (Simpsons formula).
 
-    ### Info:
-    This function groups similar sources together for optimal vectorization 
-    of the computation in one go. For performance call this function as little
-    as possible, do not use it in a loop if not absolutely necessary.
+    Returns
+    -------
+    B-field: ndarray, shape (L, M, N1, N2, ... ,3), unit [mT]
+        B-field of each source at each path position and each observer position in units of mT
 
-    This function wil be extended in the future to cover source paths, sensors and
-    sensor paths.
+    Info
+    ----
+    This function automatically groups similar sources together for optimal vectorization 
+    of the computation. For maximal performance call this function as little as possible, 
+    do not use it in a loop if not absolutely necessary.
     """
     return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 

@@ -283,7 +283,18 @@ class BaseGeo:
             angle = angle/180*np.pi
 
         # secure input type
-        axis = np.array(axis, dtype=np.float64)
+        if isinstance(axis,str):
+            if axis=='x':
+                axis=np.array((1,0,0))
+            elif axis=='y':
+                axis=np.array((0,1,0))
+            elif axis=='z':
+                axis=np.array((0,0,1))
+            else:
+                print('ERROR: .rotate_from_angax(), bad axis input')
+                sys.exit()
+        else:
+            axis = np.array(axis, dtype=np.float64)
 
         # Split up rotation into pi-rotation and rest-rotation as
         #   the scipy.Rotation module is limited to express rotations
