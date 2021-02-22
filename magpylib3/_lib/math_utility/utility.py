@@ -54,8 +54,8 @@ def format_src_input(sources: Sequence) -> list:
                 _lib.obj_classes.Cylinder)):
             src_list += [s]
         else:
-            print('ERROR format_src_input: bad sources input')
-            sys.exit()
+            sys.exit('ERROR: format_src_input() - bad sources input')
+            
     
     return src_list
 

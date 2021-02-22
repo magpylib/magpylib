@@ -110,8 +110,7 @@ def display(
     # test object paths ----------------------------------------
     for obj in obj_list:
         if not same_path_length([obj]):
-            print('ERROR: display() - bad path format (different pos/rot length)')
-            sys.exit()
+            sys.exit('ERROR: display() - bad path format (different pos/rot length)')
 
     # draw objects --------------------------------------------------
     for i,s in enumerate(obj_list):
@@ -122,8 +121,7 @@ def display(
             vert_face = vert_face_cylinder
             lw = 0.25
         else:
-            print('ERROR: display(), bad src input')
-            sys.exit()
+            sys.exit('ERROR: display(), bad src input')
         
         if show_path=='all':
             poss = s._pos

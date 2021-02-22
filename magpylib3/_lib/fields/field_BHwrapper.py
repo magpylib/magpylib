@@ -93,8 +93,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         niter = kwargs['niter']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot, niter)
     else:
-        print('ERROR getBH_level1: bad src input type')
-        sys.exit()
+        sys.exit('ERROR: getBH() - bad src input type')
 
     # transform field back into global CS
     B = rot.apply(B)
@@ -129,7 +128,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
     keys = kwargs.keys()
     complement = [i for i in keys if i not in allowed_keys]
     if complement:
-        print('WARNING: getBHv() unknown input kwarg, ', complement)
+        print('WARNING: getBHv() - unknown input kwarg, ', complement)
 
     # generate dict of secured inputs for auto-tiling ---------------
     tile_params = {} 
@@ -139,8 +138,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
         src_type = kwargs['src_type']
         poso = np.array(kwargs['pos_obs'], dtype=float)
     except KeyError as ke:
-        print('ERROR getBv: missing input ', ke)
-        sys.exit()
+        sys.exit('ERROR: getBHv() - missing input ' + str(ke))
     tile_params['pos_obs'] = poso           # <-- tile
 
     # optional general inputs -------------------
@@ -156,8 +154,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
         except KeyError as ke:
-            print('ERROR getBv: missing input ', ke)
-            sys.exit()
+            sys.exit('ERROR getBHv: missing input ' + str(ke))
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
     elif src_type is 'Cylinder':
@@ -165,8 +162,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
         except KeyError as ke:
-            print('ERROR getBv: missing input ', ke)
-            sys.exit()
+            sys.exit('ERROR: getBHv() - missing input ' + str(ke))
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
         niter = kwargs.get('niter', 50)     # set niter
@@ -177,7 +173,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
     # evaluation vector length
     ns = [len(val) for val in tile_params.values() if val.ndim == 2]
     if len(set(ns)) > 1:
-        sys.exit('ERROR: getBHv(), bad array input lengths: ' + str(set(ns)))
+        sys.exit('ERROR: getBHv() - bad array input lengths: ' + str(set(ns)))
     n = max(ns, default=1)
     
     # tile 1D inputs and replace original values in kwargs
@@ -261,7 +257,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     keys = kwargs.keys()
     complement = [i for i in keys if i not in allowed_keys]
     if complement:
-        print('WARNING: getBH() unknown input kwarg, ', complement)
+        print('WARNING: getBH() - unknown input kwarg, ', complement)
 
     # collect input ------------------------------------------------
     bh = kwargs['bh']
@@ -275,8 +271,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
 
     # test if all sources have a similar path length and good path format
     if not same_path_length(src_list):
-        print('ERROR: getBH() - all paths must be of good format and similar length !')
-        sys.exit()
+        sys.exit('ERROR: getBH() - all paths must be of good format and similar length !')
 
     # determine shape of positions and flatten into nx3 array
     poso_shape = poso.shape
@@ -298,8 +293,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
            src_sorted[1] += [s]
            order[1] += [i]
         else:
-            print('WARNING getB: bad source input !')
-            sys.exit()
+            sys.exit('WARNING getBH() - bad source input !')
 
     # evaluate each non-empty group in one go------------------------
 

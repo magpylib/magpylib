@@ -62,8 +62,8 @@ class BaseGeo:
         elif input.ndim == 2:                       # multi position
             self._pos = input
         else:
-            print('ERROR setting src.pos: bad input shape')
-            sys.exit()
+            sys.exit('ERROR: src.pos() - bad input shape')
+            
 
     @property
     def rot(self):
@@ -164,7 +164,7 @@ class BaseGeo:
         # bad steps input, set to max size
         if steps < -path_len:
             steps = -path_len # path[0] sees 0 displ
-            print('WARNING: .move_by(), steps<path_len, setting to -len(path)')
+            print('WARNING: src.move_by() - steps<path_len, setting to -len(path)')
 
         # generate additional pos path
         ts = np.linspace(0, 1, abs(steps)+1)[1:]
@@ -220,7 +220,7 @@ class BaseGeo:
         # bad steps input, set to max size
         if steps < -path_len:
             steps = -path_len + 1  # path[0] sees 0 rot
-            print('WARNING: .rotate(), steps<path_len, setting to max-1')
+            print('WARNING: src.rotate() - steps<path_len, setting to max-1')
 
         # generate rotations
         stepping = np.linspace(0,1,abs(steps)+1)[1:]
@@ -291,8 +291,7 @@ class BaseGeo:
             elif axis=='z':
                 axis=np.array((0,0,1))
             else:
-                print('ERROR: .rotate_from_angax(), bad axis input')
-                sys.exit()
+                sys.exit('ERROR: src.rotate_from_angax() - bad axis input')
         else:
             axis = np.array(axis, dtype=np.float64)
 
