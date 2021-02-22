@@ -12,9 +12,11 @@ discussion -----------------------------------------
 - docu and docstring like scipy
 
 - numpy reshape and other operations creating copies
-
+- move_to()
 
 2do-------------------------------------------------
+
+- return error codes and write tests for that
 - H testing against FEM
 - __init__ docstrings providing brief overviews
 - profile getB()

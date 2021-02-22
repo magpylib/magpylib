@@ -1,9 +1,14 @@
 """Magnet Cylinder class code"""
 
+import sys
 import numpy as np
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib3._lib.obj_classes.class_Collection import Collection
 from magpylib3._lib.fields.field_BHwrapper import getB, getH
+
+# init for tool tips
+d=h=None
+mx=my=mz=None
 
 class Cylinder(BaseGeo):
     """ Homogeneous Cylinder magnet.
@@ -55,8 +60,8 @@ class Cylinder(BaseGeo):
     """
     
     def __init__(self,
-        mag = '(mx,my,mz)', 
-        dim = '(d,h)', 
+        mag = (mx,my,mz), 
+        dim = (d,h), 
         pos = (0,0,0),
         rot = None
         ):
@@ -79,6 +84,8 @@ class Cylinder(BaseGeo):
     def mag(self, value):
         """ set magnetization vector, vec3, mT
         """
+        if None in value:
+            sys.exit('ERROR: Cylinder() - magnetization input required')
         self._mag = np.array(value,dtype=np.float64)
     
 
@@ -92,6 +99,8 @@ class Cylinder(BaseGeo):
     def dim(self, value):
         """ set cylinder dimension (d,h), vec2, mm
         """
+        if None in value:
+            sys.exit('ERROR: Cylinder() - dimension input required')
         self._dim = np.array(value,dtype=np.float64)
 
 

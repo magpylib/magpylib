@@ -1,9 +1,14 @@
 """Magnet Box class code"""
 
+import sys
 import numpy as np
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib3._lib.obj_classes.class_Collection import Collection
 from magpylib3._lib.fields.field_BHwrapper import getB, getH
+
+# init for tool tips
+a=b=c=None
+mx=my=mz=None
 
 class Box(BaseGeo):
     """ Homogeneous Cuboid magnet.
@@ -52,8 +57,8 @@ class Box(BaseGeo):
     """
 
     def __init__(self, 
-        mag = '(mx,my,mz)', 
-        dim = '(a,b,c)',
+        mag = (mx,my,mz), 
+        dim = (a,b,c),
         pos = (0,0,0), 
         rot = None
         ):
@@ -76,6 +81,8 @@ class Box(BaseGeo):
     def mag(self, value):
         """ set magnetization vector, vec3, mT
         """
+        if None in value:
+            sys.exit('ERROR: Box() - magnetization input required')
         self._mag = np.array(value,dtype=np.float)
 
 
@@ -89,6 +96,8 @@ class Box(BaseGeo):
     def dim(self, value):
         """ set box dimension (a,b,c), vec3, mm
         """
+        if None in value:
+            sys.exit('ERROR: Box() - dimension input required')
         self._dim = np.array(value,dtype=np.float)
 
 
