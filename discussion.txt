@@ -10,18 +10,13 @@ discussion -----------------------------------------
     diretly setting parts of path
 
 - docu and docstring like scipy
+
 - numpy reshape and other operations creating copies
 
-- sys.exit(MSG) trottel
 
 2do-------------------------------------------------
-- fix getBv with niter
-- getBv testing
-
-- H testing
+- H testing against FEM
 - __init__ docstrings providing brief overviews
-- make better general test cases combing all possibilities
-    but also single tests of each possibility
 - profile getB()
 - find a mag=(mx,my,mz) tooltip solution
 - check_dupicates might destroy col.sources order

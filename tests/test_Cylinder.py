@@ -3,11 +3,11 @@ import numpy as np
 from magpylib3.magnet import Cylinder
 
 # # GENERATE DATA
-# N = 100
+# N = 22
 
 # mags = (np.random.rand(N,3)-0.5)*1000
 # dims = (np.random.rand(N,2)-0.5)*5
-# posos = (np.random.rand(N,333,3)-0.5)*10 #readout at 333 positions
+# posos = (np.random.rand(N,77,3)-0.5)*10 #readout at 333 positions
 
 # angs =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
 # axs =   (np.random.rand(N,18,3)-0.5)
@@ -19,7 +19,7 @@ from magpylib3.magnet import Cylinder
 #     pm = Cylinder(mag,dim)
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-#         pm.move(mv).rotate_from_angax(a,aa,aaa)
+#         pm.move_by(mv).rotate_from_angax(a,aa,aaa)
 #     B += [pm.getB(poso,niter=100)]
 # B = np.array(B)
 # inp = [mags,dims,posos,angs,axs,anchs,movs,B]

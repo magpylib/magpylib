@@ -4,11 +4,11 @@ import magpylib3 as mag3
 from scipy.spatial.transform import Rotation as R
 
 # # GENERATE TESTDATA
-# N = 10
+# N = 5
 # mags = (np.random.rand(N,6,3)-0.5)*1000  
 # dims3 = (np.random.rand(N,3,3)-0.5)*5     # 5x box
 # dims2 = (np.random.rand(N,3,2)-0.5)*5     # 5x cylinder
-# posos = (np.random.rand(N,333,3)-0.5)*10 #readout at 333 positions
+# posos = (np.random.rand(N,23,3)-0.5)*10 #readout at 333 positions
 
 # angs =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
 # axs =   (np.random.rand(N,18,3)-0.5)
@@ -29,7 +29,7 @@ from scipy.spatial.transform import Rotation as R
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
 #         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-#             pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+#             pm.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 #     B += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
 # B = np.array(B)
 # inp = [mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,B]
@@ -86,36 +86,3 @@ def test_Collection():
     assert np.allclose(B1,B2), 'Collection testfail1'
     assert np.allclose(B1,B3), 'Collection testfail2'
     assert np.allclose(B1,Btest), 'Collection testfail3'
-
-    
-
-
-
-#     pm1b = mag3.magnet.Box(mag[0],dim3[0])
-#     pm2b = mag3.magnet.Box(mag[1],dim3[1])
-#     pm3b = mag3.magnet.Box(mag[2],dim3[2])
-#     pm4b = mag3.magnet.Cylinder(mag[3],dim2[0])
-#     pm5b = mag3.magnet.Cylinder(mag[4],dim2[1])
-#     pm6b = mag3.magnet.Cylinder(mag[5],dim2[2])
-
-#     col1 = mag3.Collection(pm1,[pm2,pm3])
-#     col1 + pm4
-#     col2 = mag3.Collection(pm5,pm6)
-#     col1 + col2
-#     col1 - pm5 - pm4
-#     col1.remove(pm1)
-#     col3 = col1.copy() + pm5 + pm4 + pm1
-#     col1.add(pm5,pm4,pm1)
-    
-#     # 18 subsequent operations
-#     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-#         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-#             pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
-
-#         col1.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
-
-#     B1 = mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)
-#     B2 = col1.getB(poso,niter=100)
-#     B3 = col3.getB(poso,niter=100)
-#     print(np.allclose(B1,B2))
-#     print(np.allclose(B1,B3))
