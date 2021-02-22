@@ -4,17 +4,15 @@ discussion -----------------------------------------
     - src.mag=(xxx, localMag=True)
     - src = Box(mag,pos,dim,...localMAg=True)
 
-- are typehints really helpful ?
-
+- are typehints really helpful for user ?
 
 - src.pos[15] = (1,2,3)
     diretly setting parts of path
 
-- docu like scipy
-- when computing: test if pos and rot have the same length
-- complete testing
+- docu and docstring like scipy
 - numpy reshape and other operations creating copies
-- axis = 'x', 'y', 'z'
+
+- sys.exit(MSG) trottel
 
 2do-------------------------------------------------
 - fix getBv with niter

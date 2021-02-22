@@ -35,7 +35,7 @@ def test_path_old_new_rotate():
     # path style code rotation
     pm1 = Box((0,0,1000),(1,2,3),pos=(0,0,3))
     pm1.rotate_from_angax(-30,ax,anch)
-    pm1.rotate_from_angax(60,ax,anch,steps=n)
+    pm1.rotate_from_angax(60,'x',anch,steps=n)
     B1 = pm1.getB(s_pos)
 
     # old style code rotation

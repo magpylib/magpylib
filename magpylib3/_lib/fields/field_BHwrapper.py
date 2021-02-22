@@ -21,24 +21,23 @@ level2(getBHv): calls level1
     - set missing input variables to default values
     - tile 1D inputs
 
-level2(getBH): calls level1
-    input: dict
-    - input checks 
-        - unknown dict arguments
-        - secure types (input could come directly from user)
-    - generates correct vector input format from source attributes
-    - groups similar sources for combined computation
-    - adjust output shape to pos_obs input shape
+getBH_level2:
+    - input dict checks (unknowns)
+    - secure user inputs
+    - group similar sources for combined computation
+    - generate vector input format for getBH_level1
+    - adjust Bfield output format to pos_obs, path, sources input format
     
-level3(getB, getH, getBv, getHv): calls level2
-    input: sources + pos_obs + **kwargs (src_paths, etc...)
-    - user interface functions
+level3(getB, getH, getBv, getHv):
+    - user interface
     - docstrings
     - separated B and H
-    - transform input into dict
+    - transform input into dict for level2
 
-level4(src.getB): calls level3 getB/getH
-    - calling directly out of the sources
+level4(src.getB, src.getH):
+    - user interface
+    - docstrings 
+    - calling level3 directly from sources
 
 """
 
@@ -52,20 +51,23 @@ from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
 from magpylib3._lib.config import config
 
+
 def getBH_level1(**kwargs:dict) -> np.ndarray:
-    """ Field computation (level1) from input dict
+    """ Vectorized field computation
 
-    ### Args:
-    - kwargs (dict): Input that describes the computation. See level0
+    Args
+    ----
+    kwargs: dict of "1D"-input vectors that describes the computation.
 
-    ### Returns:
-    - B/H-field (ndarray Nx3): B(mT)H(kA/m) field at pos_obs
+    Returns
+    -------
+    field: ndarray, shape (l*m*n,3)
 
-    ### Info (level1):
-    This function wraps the level 0 core field computations.
-    - selects the correct Bfield_XXX function from input
-    - applys spatial transformations of fields to global CS
+    Info
+    ----
     - no input checks !
+    - applys spatial transformations global CS <-> source CS
+    - selects the correct Bfield_XXX function from input
     """
 
     # inputs
@@ -101,85 +103,107 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
 
 
 def getBHv(**kwargs: dict) -> np.ndarray:
-    """ Field computation (level 2v) from dictionary of vectors.
+    """ Direct access to vectorized computation
 
-    ### Args:
-    - kwargs (dict): Input that describes the computation. See getBv() and getHv().
+    Parameters
+    ----------
+    kwargs: dict that describes the computation.
 
-    ### Returns:
-    - B/H-field (ndarray Nx3): B(mT)H(kA/m) field at pos_obs
+    Returns
+    -------
+    field: ndarray, shape (N,3), field at obs_pos in [mT] or [kA/m]
 
-    ### Info:
+    Info
+    ----
+    - check inputs
+
     - secures input types (list/tuple -> ndarray)
     - test if mandatory inputs are there
     - sets default input variables (e.g. pos, rot) if missing
     - tiles 1D inputs vectors to correct dimension
+    
     """
     
-    tile_params = {} # collect all type secured inputs for auto-tiling
-    n = 1  # set input vector length (in case there are only 1D inputs)
+    # unknown kwarg input ('user accident') -------------------------
+    allowed_keys = ['bh', 'mag', 'dim', 'pos', 'rot', 'pos_obs', 'niter', 'src_type']
+    keys = kwargs.keys()
+    complement = [i for i in keys if i not in allowed_keys]
+    if complement:
+        print('WARNING: getBHv() unknown input kwarg, ', complement)
 
-    # check mandatory general inputs
+    # generate dict of secured inputs for auto-tiling ---------------
+    tile_params = {} 
+
+    # mandatory general inputs ------------------
     try: 
         src_type = kwargs['src_type']
-        poso = np.array(kwargs['pos_obs'],dtype=np.float)
+        poso = np.array(kwargs['pos_obs'], dtype=float)
     except KeyError as ke:
         print('ERROR getBv: missing input ', ke)
         sys.exit()
-    tile_params['pos_obs'] = poso   # add for auto-tilting
+    tile_params['pos_obs'] = poso           # <-- tile
 
-    # check mandatory class specific inputs
-    if src_type in {'Box', 'Cylinder'}:
-        try: 
-            mag = np.array(kwargs['mag'],dtype=np.float)
-            dim = np.array(kwargs['dim'],dtype=np.float)
+    # optional general inputs -------------------
+    pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
+    tile_params['pos'] = pos                # <-- tile
+    
+    rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
+    tile_params['rot'] = rot.as_quat()      # <-- tile
+
+    # mandatory class specific inputs -----------
+    if src_type is 'Box':
+        try:
+            mag = np.array(kwargs['mag'],dtype=float)
+            dim = np.array(kwargs['dim'],dtype=float)
         except KeyError as ke:
             print('ERROR getBv: missing input ', ke)
             sys.exit()
-        tile_params['mag']=mag      # add for auto-tilting
-        tile_params['dim']=dim      # add for auto-tilting
+        tile_params['mag'] = mag            # <-- tile
+        tile_params['dim'] = dim            # <-- tile
+    elif src_type is 'Cylinder':
+        try:
+            mag = np.array(kwargs['mag'],dtype=float)
+            dim = np.array(kwargs['dim'],dtype=float)
+        except KeyError as ke:
+            print('ERROR getBv: missing input ', ke)
+            sys.exit()
+        tile_params['mag'] = mag            # <-- tile
+        tile_params['dim'] = dim            # <-- tile
+        niter = kwargs.get('niter', 50)     # set niter
+        kwargs['niter'] = niter
 
-    # check optional general inputs
-    try:
-        pos = np.array(kwargs['pos'],dtype=np.float)
-    except KeyError:
-        pos = np.zeros(3)
-    tile_params['pos'] = pos        # add for auto-tilting
-    try:
-        rot = kwargs['rot']
-        n = len(rot.as_rotvec())    # input vector length from rot input
-    except KeyError:
-        # generate a unit rotation and add to dict
-        kwargs['rot'] = R.from_rotvec((0,0,0))
+    # auto tile 1D parameters ---------------------------------------
 
-    # determine input vector length
-    for val in tile_params.values():
-        if len(val.shape) == 2:
-            n = len(val)
-            break
-
-    # tile 1D inputs and replace original values
+    # evaluation vector length
+    ns = [len(val) for val in tile_params.values() if val.ndim == 2]
+    if len(set(ns)) > 1:
+        sys.exit('ERROR: getBHv(), bad array input lengths: ' + str(set(ns)))
+    n = max(ns, default=1)
+    
+    # tile 1D inputs and replace original values in kwargs
     for key,val in tile_params.items():
-        if len(val.shape) == 1:
-            new_val = np.tile(val,(n,1))
-            kwargs[key] = new_val
-
+        if val.ndim == 1:
+            kwargs[key] = np.tile(val,(n,1))
+        else:
+            kwargs[key] = val
+    # change rot to Rotation object
+    kwargs['rot'] = R.from_quat(kwargs['rot'])
+    
     # compute and return B
     B = getBH_level1(**kwargs)
+    
     if n==1: # remove highest level when n=1
         return B[0]
     return B
 
 
 def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
-    """ Helper function that generates a dictionary 
-        for level1 getBH input for homogeneous magnets
+    """ Generates getBH_level1 input dict for homogeneous magnets
 
     Parameters
     ----------
-    group: list of sources
-
-    poso_flat (ndarray): pos_obs flattened
+    - group: list of sources
+    - poso_flat: ndarray, shape (n,3), pos_obs flattened
 
     Returns
     -------
@@ -208,7 +232,7 @@ def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
 
 
 def getBH_level2(**kwargs: dict) -> np.ndarray:
-    """Field computation (level2) for given sources.
+    """Field computation (level2) for given sources
 
     Parameters
     ----------
@@ -218,16 +242,18 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     - sumup (bool): default=False returns [B1,B2,...], True returns sum(Bi)
     - niter (int): default=50, for Cylinder sources diametral iteration
 
-    ### Returns:
-    - B/H-field (L x M x N1 x N2 x ... x 3 ndarray): B(mT)H(kA/m) field of each source at each path_pos at pos_obs
+    Returns
+    -------
+    field: ndarray, shape (L,M,N1,N2,...,3), field of L sources, M path positions and N observer positions
 
-    ### Info (level2):
-    This function wraps the level 1 field computations.
-    - secures input types (list/tuple -> ndarray)
-    - generates correct vector input format for getB_level1
-    - groups similar sources for combined computation
+    Info:
+    -----
+    - input dict checks (unknowns)
+    - secure user inputs
+    - group similar sources for combined computation
+    - generate vector input format for getBH_level1
     - adjust Bfield output format to pos_obs, path, sources input format
-    - input checks
+
     """
 
     # make sure there is no unknown kwarg input ('user accident') ----
@@ -235,7 +261,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     keys = kwargs.keys()
     complement = [i for i in keys if i not in allowed_keys]
     if complement:
-        print('WARNING: Bad input kwarg, ', complement)
+        print('WARNING: getBH() unknown input kwarg, ', complement)
 
     # collect input ------------------------------------------------
     bh = kwargs['bh']
@@ -387,7 +413,7 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     of the computation. For maximal performance call this function as little as possible, 
     do not use it in a loop if not absolutely necessary.
     """
-    return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
+    return getBH_level2(bh=False, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
 def getBv(**kwargs: dict) -> np.ndarray:
@@ -416,7 +442,7 @@ def getBv(**kwargs: dict) -> np.ndarray:
 
     A check for mandatory input information is performed.
     """
-    return getBHv(bh=True,**kwargs)
+    return getBHv(bh=True, **kwargs)
 
 def getHv(**kwargs: dict) -> np.ndarray:
     """ H-Field computation from dictionary of vectors.

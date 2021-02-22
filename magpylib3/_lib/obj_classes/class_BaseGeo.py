@@ -163,8 +163,8 @@ class BaseGeo:
 
         # bad steps input, set to max size
         if steps < -path_len:
-            steps = -path_len + 1 # path[0] sees 0 displ
-            print('WARNING: .move_by(), steps<path_len, setting to max-1')
+            steps = -path_len # path[0] sees 0 displ
+            print('WARNING: .move_by(), steps<path_len, setting to -len(path)')
 
         # generate additional pos path
         ts = np.linspace(0, 1, abs(steps)+1)[1:]
