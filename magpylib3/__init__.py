@@ -1,48 +1,61 @@
 """
-Magpylib provides 3D magnetic field computation based on analytical formulas.
+Magpylib provides 3D magnetic field computation based on analytical
+formulas.
 
-#### Sources:
-Create source objects that represent physical magnetic frield sources. Classes can be found in top-level sub-packages. 
+Sources
+-------
+Create source objects that represent physical magnetic field sources.
+Classes can be found in top-level sub-packages. 
     
-- .magnet
-    - .Box()
-    - .Cylinder()
-    - .Sphere()
+magpylib.magnet
+- .Box()
+- .Cylinder()
+- .Sphere()
 
-- .current
-    - .Line()
-    - .Circular()
+magpylib.current
+- .Line()
+- .Circular()
 
-- .moment
-    - .Dipole()
+magpylib.moment
+- .Dipole()
 
 Manipulate sources through provided methods and parameters
 
-- src.mag = new_magnetization
-- src.dim = new_dimension
 - src.pos = new_position
 - src.rot = new_orientation
-- src.move(displacement)
+- src.move_by(displacement)
+- src.move_to(target_position)
 - src.rotate(rotation input)
+- src.rotate_from_angax(rotation input)
 
-#### Collections:
+pos and rot can also represent complete source paths. Use "steps"
+variable with move and rotate methods to conveniently generate such
+paths.
+
+Collections
+-----------
 Group sources for common manipulation.
-All methods that work for sources also work for collections.
 
 - col = src1 + src2 + src3 ...
-- .Collection(src1, src2, ...)
+- magpylib.Collection(src1, src2, ...)
 
-#### Field computation 
-There are three ways to compute the field of sources. In addition to getB there is getH.
+All methods that work for sources also work for collections.
 
-1. src.getB(positions)
-2. .getB(*sources, pos_obs = positions)
-3. .getBv(**kwargs)
+Field computation 
+-----------------
+There are three ways to compute the field. 
 
-#### Graphic output
-Display sources using Matplotlib through
+1. src.getB(positions) ----------------> field of one source
+2. magpylib.getB(sources, positions) --> fields of many sources
+3. magpylib.getBv(**kwargs) -----------> direct access to core formulas
 
-- .display(sources, collections, lists, ...)
+In addition to getB there is getH.
+
+Graphic output
+--------------
+Display sources, collections, paths and sensors using Matplotlib
+
+- magpylib.display(sources)
 - src.display()
 
 """
