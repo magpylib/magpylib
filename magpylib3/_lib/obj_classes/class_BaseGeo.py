@@ -8,26 +8,37 @@ from magpylib3._lib.graphics import display
 
 
 class BaseGeo:
-    """ initializes basic geometric properties 'position' and 'orientation'
-    
-    position is simple arr3 in Euclidean space
+    """ Initializes position and rotation (=orientation) properties 
+    of an object in a global CS.
 
-    orientation/rotation is a scipy.spatial.transformation.Rotation 
+    Position is a ndarray with shape (3,).
+
+    Rotation is a scipy.spatial.transformation.Rotation 
     object that gives the relative rotation to the init_state. The 
     init_state is defined by how the fields are implemented (e.g. 
     cyl upright in xy-plane)
 
-    ### Properties
-    - pos
-    - rot
+    Both attributes _pos and _rot.as_rotvec() are of shape (N,3),
+    and describe a path of length N. (N=1 if there is only one 
+    object position).
 
-    ### Methods
+    Properties
+    ----------
+    pos: array_like, shape (N,3)
+        Position path
+    
+    rot: scipy.Rotation, shape (N,)
+        Rotation path
+
+    Methods
+    -------
+    
     - display
-    - move
+    - move_by
+    - move_to
     - rotate
+    - rotate_from_angax
 
-    ### Returns:
-    - BaseGeo object
     """
 
     def __init__(self, pos, rot):
@@ -164,7 +175,7 @@ class BaseGeo:
         # bad steps input, set to max size
         if steps < -path_len:
             steps = -path_len # path[0] sees 0 displ
-            print('WARNING: src.move_by() - steps<path_len, setting to -len(path)')
+            print('WARNING: src.move_by() - |-steps|>path_len, setting to -path_len')
 
         # generate additional pos path
         ts = np.linspace(0, 1, abs(steps)+1)[1:]
@@ -182,6 +193,48 @@ class BaseGeo:
             # apply operation on top of path[steps:]
             self._pos[steps:] = path_pos[steps:] + addpath_pos
         
+        return self
+
+
+    def move_to(self, target_pos, steps=-1):
+        """ Linear motion of object to target position
+
+        Parameters
+        ----------
+        target_pos: array_like, shape (3,)
+            target position vector in units of mm.
+        
+        steps: int, optional, default=-1
+            If steps < 0: apply a linear motion from path[steps] to 
+            target_pos on top of existing path[steps:]. Specifically, 
+            steps=-1 will just displace path[-1].
+            If steps > 0: add linear motion to target_pos to existing 
+            path starting at path[-1].
+
+        Returns:
+        --------
+        self : object with position and orientation properties.
+
+        """
+        # secure input
+        tgt_pos = np.array(target_pos, dtype=float)
+
+        # load current path
+        path_pos = self._pos
+        path_len = len(path_pos)
+        
+        # bad steps input, set to max size
+        if steps < -path_len:
+            steps = -path_len # path[0] sees 0 displ
+            print('WARNING: src.move_to() - |-steps|>path_len, setting to -path_len')
+        
+        # call move_by
+        if steps>0:
+            displ = tgt_pos - path_pos[-1]
+        if steps<0:
+            displ = tgt_pos - path_pos[steps]
+        self.move_by(displ, steps=steps)
+
         return self
 
 

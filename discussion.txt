@@ -10,15 +10,13 @@ discussion -----------------------------------------
     diretly setting parts of path
 
 
-
 2do-------------------------------------------------
-
+- integrate with existing wheel and distribute
 - docu and docstring like scipy
-- move_to()
-- numpy reshape and other operations creating copies
 - H testing against FEM
 - __init__ docstrings providing brief overviews
-- profile getB()
+- profile getBH
+    - numpy reshape and other operations creating copies
 - check_dupicates might destroy col.sources order
 - add remaining sources
 	sphere
