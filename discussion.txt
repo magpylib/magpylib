@@ -9,18 +9,16 @@ discussion -----------------------------------------
 - src.pos[15] = (1,2,3)
     diretly setting parts of path
 
-- docu and docstring like scipy
 
-- numpy reshape and other operations creating copies
-- move_to()
 
 2do-------------------------------------------------
 
-- return error codes and write tests for that
+- docu and docstring like scipy
+- move_to()
+- numpy reshape and other operations creating copies
 - H testing against FEM
 - __init__ docstrings providing brief overviews
 - profile getB()
-- find a mag=(mx,my,mz) tooltip solution
 - check_dupicates might destroy col.sources order
 - add remaining sources
 	sphere
@@ -28,6 +26,12 @@ discussion -----------------------------------------
 	dipole moment
 	facet
 - bring edgesize in context with magnetsize
+
+- errors
+    - throw errors instead of warning+sys.exit()
+    - return error codes
+    - write tests for errors
+
 .magnet
 - Box()
 - Cylinder()
@@ -53,7 +57,6 @@ mid term improvements ------------------------------
 
 - complete type hints
 - adress field_BH_Box edge/corner stability problem
-- throw errors instead of warning+sys.exit()
 
 - bringing getBv functionality to getB
 	getB(*sources, **kwargs
