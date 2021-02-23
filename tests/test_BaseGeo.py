@@ -17,34 +17,34 @@ def test_BaseGeo():
     P, O = [],[]
 
     bg = BaseGeo((0,0,0),None)
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     bg.pos = (1,2,3)
     bg.rot = R.from_rotvec((.1,.2,.3))
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     bg.move_by((-1,-2,-3))
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     rr = R.from_rotvec((-.1,-.2,-.3))
     bg.rotate(rr)
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     bg.rotate_from_angax(45,(1,2,3))
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     bg.rotate_from_angax(-np.pi/4,(1,2,3),degree=False)
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     rr = R.from_rotvec((.1,.2,.3))
     bg.rotate(rr,anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
-    P += [bg.pos]
+    P += [bg.pos.copy()]
     O += [bg.rot.as_rotvec()]
 
     P = np.array(P)

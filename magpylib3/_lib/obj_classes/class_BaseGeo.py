@@ -56,9 +56,9 @@ class BaseGeo:
         object position-path: np.array, shape (3,) or (N,3)
         """
         if len(self._pos) == 1:     # single path position - reduce dimension
-            return np.array(self._pos[0])
+            return self._pos[0]
         else:                       # return full path
-            return np.array(self._pos)
+            return self._pos
 
     @pos.setter
     def pos(self, input):
@@ -69,12 +69,12 @@ class BaseGeo:
         """
         input = np.array(input, dtype=np.float)     # secure input 
         if input.ndim == 1:                         # single position - increase dimension to (1,3)
-            self._pos = np.tile(input,(1,1))
+            self._pos = np.array([input])
         elif input.ndim == 2:                       # multi position
             self._pos = input
         else:
             sys.exit('ERROR: src.pos() - bad input shape')
-            
+           
 
     @property
     def rot(self):

@@ -28,7 +28,7 @@ def test_fieldWrapper_getBv1():
         }
     B1 = getBv(**dict)
 
-    assert np.allclose(B1,B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_fieldWrapper_getBv2():
@@ -49,7 +49,7 @@ def test_fieldWrapper_getBv2():
     pm = Cylinder(mag, dim, pos=pos)
     B2 = getB([pm],pos_obs)
 
-    assert np.allclose(B1,B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_fieldWrapper_getHv1():
@@ -68,7 +68,7 @@ def test_fieldWrapper_getHv1():
     pm = Cylinder(mag, dim)
     B2 = pm.getH(pos_obs)
 
-    assert np.allclose(B1,B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_fieldWrapper_getHv2():
@@ -91,7 +91,7 @@ def test_fieldWrapper_getHv2():
         B2 += [getH([pm], pos_obs, niter=75)]
     B2 = np.array(B2)
 
-    assert np.allclose(B1,B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_fieldWrapper_getBv3():
@@ -117,5 +117,5 @@ def test_fieldWrapper_getBv3():
         pm = Box(mag[i],dim,pos,rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
-
-    assert np.allclose(B1,B2)
+    print(B1-B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
