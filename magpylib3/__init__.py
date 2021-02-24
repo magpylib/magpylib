@@ -5,8 +5,8 @@ formulas.
 Sources
 -------
 Create source objects that represent physical magnetic field sources.
-Classes can be found in top-level sub-packages. 
-    
+Classes can be found in top-level sub-packages.
+
 magpylib.magnet
 - .Box()
 - .Cylinder()
@@ -41,9 +41,9 @@ Group sources for common manipulation.
 
 All methods that work for sources also work for collections.
 
-Field computation 
+Field computation
 -----------------
-There are three ways to compute the field. 
+There are three ways to compute the field.
 
 1. src.getB(positions) ----------------> field of one source
 2. magpylib.getB(sources, positions) --> fields of many sources
@@ -66,7 +66,9 @@ __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 
 # interface
-__all__ = ['magnet', 'current', 'moment', 'getB', 'getH', 'getBv', 'getHv', 'Collection', 'display', 'config']
+__all__ = ['magnet', 'current', 'moment',
+    'getB', 'getH', 'getBv', 'getHv',
+    'Collection', 'display', 'config']
 
 # create interface
 from . import magnet
