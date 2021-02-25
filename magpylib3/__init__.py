@@ -2,6 +2,12 @@
 Magpylib provides 3D magnetic field computation based on analytical
 formulas.
 
+Ressources
+----------
+www.https://magpylib.readthedocs.io/en/latest/
+https://github.com/magpylib/magpylib
+https://www.sciencedirect.com/science/article/pii/S2352711020300170
+
 Sources
 -------
 Create source objects that represent physical magnetic field sources.
@@ -64,17 +70,15 @@ Display sources, collections, paths and sensors using Matplotlib
 __version__ = '3.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-
-# interface
 __all__ = ['magnet', 'current', 'moment',
-    'getB', 'getH', 'getBv', 'getHv',
-    'Collection', 'display', 'config']
+           'getB', 'getH', 'getBv', 'getHv',
+           'Collection', 'display', 'Config']
 
 # create interface
 from . import magnet
 from . import current
 from . import moment
-from ._lib.config import config
+from ._lib.config import Config
 from ._lib.fields.field_BH_wrapper import getB, getH, getBv, getHv
 from ._lib.obj_classes import Collection
 from ._lib.graphics import display

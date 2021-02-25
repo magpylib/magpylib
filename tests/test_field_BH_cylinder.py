@@ -1,11 +1,11 @@
-import numpy as np
 import pickle
+import numpy as np
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 import magpylib3 as mag3
 
 # # GENERATE TEST DATA
 # n = 500
-# mag3.config.EDGESIZE = 1e-14
+# mag3.Config.EDGESIZE = 1e-14
 # # dim general
 # dim_gen = np.random.rand(n,2)
 # # dim edge
@@ -50,17 +50,21 @@ import magpylib3 as mag3
 # pickle.dump([mags, dims,poss,Bs], open('testdata_field_BH_cylinder.p','wb'))
 
 def test_field_BH_cylinder():
-    mag3.config.EDGESIZE=1e-14
-    mags, dims, poss, Bs = pickle.load(open('tests/testdata/testdata_field_BH_cylinder.p','rb'))
-    Bs_test = []
+    """ test cylinder field
+    """
+    mag3.Config.EDGESIZE=1e-14
+    mags, dims, poss, B = pickle.load(open('tests/testdata/testdata_field_BH_cylinder.p','rb'))
+    Btest = []
     for mag in mags:
         for dim,pos in zip(dims,poss):
-            Bs_test += [field_BH_cylinder(True, mag, dim, pos, 100)]
-    Bs_test = np.array(Bs_test)
-    assert np.allclose(Bs, Bs_test), 'Cylinder field computation broken'
+            Btest += [field_BH_cylinder(True, mag, dim, pos, 100)]
+    Btest = np.array(Btest)
+    assert np.allclose(B, Btest), 'Cylinder field computation broken'
 
 
-def test_field_BH_box_mag0():
+def test_field_BH_cylinder_mag0():
+    """test cylinder field mag=0
+    """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,2)

@@ -1,12 +1,11 @@
+import pickle
 import numpy as np
 from magpylib3._lib.fields.field_BH_box import field_BH_box
-import pickle
 import magpylib3 as mag3
-
 
 # # GENERATE TEST DATA
 # n = 500
-# mag3.config.EDGESIZE = 1e-14
+# mag3.Config.EDGESIZE = 1e-14
 
 # # dim general
 # dim_gen = np.random.rand(n,3)
@@ -41,16 +40,20 @@ import magpylib3 as mag3
 # pickle.dump([mag, dims, poss, Bs], open('testdata_field_BH_box.p','wb'))
 
 def test_field_BH_box():
-    mag3.config.EDGESIZE=1e-14
-    mag, dims, poss, Bs = pickle.load(open('tests/testdata/testdata_field_BH_box.p','rb'))
-    Bs_test = []
+    """ test box field
+    """
+    mag3.Config.EDGESIZE=1e-14
+    mag, dims, poss, B = pickle.load(open('tests/testdata/testdata_field_BH_box.p','rb'))
+    Btest = []
     for dim,pos in zip(dims,poss):
-        Bs_test += [field_BH_box(True, mag, dim, pos)]
-    Bs_test = np.array(Bs_test)
-    assert np.allclose(Bs, Bs_test), 'Box field computation broken'
+        Btest += [field_BH_box(True, mag, dim, pos)]
+    Btest = np.array(Btest)
+    assert np.allclose(B, Btest), 'Box field computation broken'
 
 
 def test_field_BH_box_mag0():
+    """ test box field mag=0
+    """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,3)

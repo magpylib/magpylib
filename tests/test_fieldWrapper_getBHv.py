@@ -5,6 +5,8 @@ from magpylib3 import getBv, getHv, getB, getH
 
 
 def test_fieldWrapper_getBv1():
+    """test field wrapper functions
+    """
     pos_obs = (11,2,2)
     mag = [111,222,333]
     dim = [3,3]
@@ -18,7 +20,7 @@ def test_fieldWrapper_getBv1():
     pos = pm.pos
     rot = pm.rot
 
-    dict = {
+    dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
         'mag': mag,
@@ -26,25 +28,27 @@ def test_fieldWrapper_getBv1():
         'pos': pos,
         'rot':rot
         }
-    B1 = getBv(**dict)
+    B1 = getBv(**dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
 def test_fieldWrapper_getBv2():
+    """test field wrapper functions
+    """
     pos_obs = (11,2,2)
     mag = [111,222,333]
     dim = [3,3]
     pos = [(1,1,1),(2,2,2),(3,3,3),(5,5,5)]
 
-    dict = {
+    dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
         'mag': mag,
         'dim': dim,
         'pos': pos
         }
-    B1 = getBv(**dict)
+    B1 = getBv(**dic)
 
     pm = Cylinder(mag, dim, pos=pos)
     B2 = getB([pm],pos_obs)
@@ -53,17 +57,19 @@ def test_fieldWrapper_getBv2():
 
 
 def test_fieldWrapper_getHv1():
+    """test field wrapper functions
+    """
     pos_obs = (11,2,2)
     mag = [111,222,333]
     dim = [3,3]
 
-    dict = {
+    dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
         'mag': mag,
         'dim': dim,
         }
-    B1 = getHv(**dict)
+    B1 = getHv(**dic)
 
     pm = Cylinder(mag, dim)
     B2 = pm.getH(pos_obs)
@@ -72,18 +78,20 @@ def test_fieldWrapper_getHv1():
 
 
 def test_fieldWrapper_getHv2():
+    """test field wrapper functions
+    """
     pos_obs = (1,2,2)
     mag = [[111,222,333],[22,2,2],[22,-33,-44]]
     dim = [3,3]
 
-    dict = {
+    dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
         'mag': mag,
         'dim': dim,
         'niter': 75
         }
-    B1 = getHv(**dict)
+    B1 = getHv(**dic)
 
     B2 = []
     for i in range(3):
@@ -95,6 +103,8 @@ def test_fieldWrapper_getHv2():
 
 
 def test_fieldWrapper_getBv3():
+    """test field wrapper functions
+    """
     n = 25
     pos_obs = np.array([1,2,2])
     mag = [[111,222,333],]*n
@@ -102,7 +112,7 @@ def test_fieldWrapper_getBv3():
     pos = np.array([0,0,0])
     rot = R.from_quat([(t,.2,.3,.4) for t in np.linspace(0,.1,n)])
 
-    dict = {
+    dic = {
         'src_type': 'Box',
         'pos_obs': pos_obs,
         'mag': mag,
@@ -110,7 +120,7 @@ def test_fieldWrapper_getBv3():
         'pos': pos,
         'rot': rot
         }
-    B1 = getBv(**dict)
+    B1 = getBv(**dic)
 
     B2 = []
     for i in range(n):

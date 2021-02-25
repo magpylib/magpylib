@@ -1,11 +1,11 @@
 import pickle
 import numpy as np
-import magpylib3 as mag3
 from scipy.spatial.transform import Rotation as R
+import magpylib3 as mag3
 
 # # GENERATE TESTDATA
 # N = 5
-# mags = (np.random.rand(N,6,3)-0.5)*1000  
+# mags = (np.random.rand(N,6,3)-0.5)*1000
 # dims3 = (np.random.rand(N,3,3)-0.5)*5     # 5x box
 # dims2 = (np.random.rand(N,3,2)-0.5)*5     # 5x cylinder
 # posos = (np.random.rand(N,23,3)-0.5)*10 #readout at 333 positions
@@ -25,7 +25,7 @@ from scipy.spatial.transform import Rotation as R
 #     pm4b = mag3.magnet.Cylinder(mag[3],dim2[0])
 #     pm5b = mag3.magnet.Cylinder(mag[4],dim2[1])
 #     pm6b = mag3.magnet.Cylinder(mag[5],dim2[2])
-    
+
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
 #         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
@@ -37,21 +37,24 @@ from scipy.spatial.transform import Rotation as R
 
 
 def test_Collection():
+    """ test collection
+    """
     # data generated below
     data = pickle.load(open('tests/testdata/testdata_Collection.p', 'rb'))
     mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,Btest = data
 
     B1,B2,B3 = [],[],[]
-    for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,axs,anchs,movs,posos,rvs):
+    for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,
+                                                     axs,anchs,movs,posos,rvs):
         rot = R.from_rotvec(rv)
-        
+
         pm1b = mag3.magnet.Box(mag[0],dim3[0])
         pm2b = mag3.magnet.Box(mag[1],dim3[1])
         pm3b = mag3.magnet.Box(mag[2],dim3[2])
         pm4b = mag3.magnet.Cylinder(mag[3],dim2[0])
         pm5b = mag3.magnet.Cylinder(mag[4],dim2[1])
         pm6b = mag3.magnet.Cylinder(mag[5],dim2[2])
-        
+
         pm1 = mag3.magnet.Box(mag[0],dim3[0])
         pm2 = mag3.magnet.Box(mag[1],dim3[1])
         pm3 = mag3.magnet.Box(mag[2],dim3[2])
@@ -72,13 +75,13 @@ def test_Collection():
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
             for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
                 pm.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
-            
+
             col1.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 
         B1 += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
         B2 += [col1.getB(poso,niter=100)]
         B3 += [col3.getB(poso,niter=100)]
-        
+
     B1 = np.array(B1)
     B2 = np.array(B2)
     B3 = np.array(B3)

@@ -27,6 +27,8 @@ from magpylib3.magnet import Cylinder
 
 
 def test_Cylinder():
+    """ test cylinder
+    """
     data = pickle.load(open('tests/testdata/testdata_Cylinder.p', 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
@@ -37,7 +39,7 @@ def test_Cylinder():
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
             pm.move_by(mv).rotate_from_angax(a,aa,aaa)
-        
+
         Btest += [pm.getB(poso, niter=100)]
     Btest = np.array(Btest)
 

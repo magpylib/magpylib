@@ -6,6 +6,8 @@ discussion -----------------------------------------
 
 - are typehints really helpful for user ?
 
+- pylint missing module docsting magpylib3
+
 2do-------------------------------------------------
 
 - the cel function
@@ -50,7 +52,7 @@ discussion -----------------------------------------
 - Line()
 - Circular()
 
-.moment
+.misc
 - Dipole
 - FEM
 - Virtual

@@ -5,7 +5,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 
 import numpy as np
 from magpylib3._lib.math_utility.special_functions import celv
-from magpylib3._lib.config import config
+from magpylib3._lib.config import Config
 
 
 def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
@@ -54,17 +54,17 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
 
     # axial field (unit magnetization)
     Bz = d/dpr*(zph*celv(k1, gamma**2, one, gamma)/sq1 -
-                    zmh*celv(k0, gamma**2, one, gamma)/sq0)/np.pi
+                zmh*celv(k0, gamma**2, one, gamma)/sq0)/np.pi
 
     return [Br, Bz]  # contribution from axial magnetization
 
 
 def field_Hcy_transv(
-    tetta: np.ndarray,
-    dim: np.ndarray,
-    pos_obs: np.ndarray,
-    niter: int
-    ) -> list:
+        tetta: np.ndarray,
+        dim: np.ndarray,
+        pos_obs: np.ndarray,
+        niter: int
+        ) -> list:
     """ Compute H-field of Cylinder magnet with homogenous unit diametral
             magnetization in Cylindrical CS.
 
@@ -143,12 +143,12 @@ def field_Hcy_transv(
 
 
 def field_BH_cylinder(
-    bh: bool,
-    mag: np.ndarray,
-    dim: np.ndarray,
-    pos_obs: np.ndarray,
-    niter: int
-    ) -> np.ndarray:
+        bh: bool,
+        mag: np.ndarray,
+        dim: np.ndarray,
+        pos_obs: np.ndarray,
+        niter: int
+        ) -> np.ndarray:
     """ setting up the Cylinder field computation
     - transform to Cylindrical CS
     - separate mag=0 cases (returning 0)
@@ -168,7 +168,7 @@ def field_BH_cylinder(
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
 
-    edgesize = config.EDGESIZE
+    edgesize = Config.EDGESIZE
 
     # transform to Cy CS --------------------------------------------
     x, y, z = pos_obs.T

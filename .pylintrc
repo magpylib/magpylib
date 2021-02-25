@@ -143,7 +143,11 @@ disable=print-statement,
         bad-whitespace,
         dangerous-default-value,
         too-many-arguments,
-        too-many-locals
+        too-many-locals,
+        too-few-public-methods,
+        unsubscriptable-object,
+        missing-module-docstring,
+        pointless-statement
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -254,12 +258,16 @@ good-names=i,j,k,l,m,n,                  # indices
            k0,k1,ns,                     # others
            x,y,z,r,                      # positions
            a,b,c,d,h,                    # dimensions
-           t,ts,                         # parametrization
+           t,ts,v,                         # parametrization
            kc,p,c,s,em,cc,pp,ss,f,q,g,kk,                     # cel input
            B,H,Br,Bphi,Bx,By,Bz,         # fields & field components
            B_group,
            mx,my,mz,                     # magnetizations
            bh,ze,he,                     # various used variables
+           ax,lw,                           # noch fragen ?
+           np,
+           dx,dy,dz,dd,
+           pm,mv,aa,B1,B2,B3,rv,Btest,             # from testing
            field_BH_box,                 # B/H in module and function names
            field_B_box,                  
            field_Bcy_axial,              
@@ -278,6 +286,22 @@ good-names=i,j,k,l,m,n,                  # indices
            class_Collection,
            class_mag_Box,
            class_mag_Cylinder,
+           test_BaseGeo,
+           test_Box,
+           test_Collection,
+           test_Cylinder,
+           test_field_BH_box,
+           test_field_BH_cylinder,
+           test_fieldWrapper_getBHv,
+           test_path_BaseGeo,
+           test_path_getB,
+           test_field_BH_box_mag0,
+           test_field_BH_cylinder_mag0,
+           test_fieldWrapper_getBv1,
+           test_fieldWrapper_getBv2,
+           test_fieldWrapper_getHv1,
+           test_fieldWrapper_getHv2,
+           test_fieldWrapper_getBv3,
            ex,                           # some basics
            Run,
            _

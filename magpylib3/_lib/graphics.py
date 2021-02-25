@@ -1,7 +1,6 @@
 """ Display function codes"""
 
 import sys
-import copy
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -12,12 +11,12 @@ from magpylib3._lib.math_utility.utility import format_src_input, same_path_leng
 def vert_face_box(s,p,r):
     """
     compute vertices and faces of Box input for plotting
-    
+
     takes Box source, returns vert, faces
     """
     a,b,c = s.dim
     vert = np.array(((0,0,0),(a,0,0),(0,b,0),(0,0,c),
-                    (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
+                     (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
     vert = vert - s.dim/2
     vert = r.apply(vert) + p
     faces = [
@@ -34,50 +33,50 @@ def vert_face_box(s,p,r):
 def vert_face_cylinder(s,p,r):
     """
     compute vertices and faces of cylinder input for plotting
-    
+
     takes Cylinder source, returns vert, faces
     """
     res = 20
     d,h = s.dim
     phis = np.linspace(0,2*np.pi,res)
     vert_circ = np.array([np.cos(phis),np.sin(phis),np.zeros(res)]).T*d/2
-    vt = vert_circ + np.array([0,0,h/2]) # top vertices
-    vb = vert_circ - np.array([0,0,h/2]) # bott vertices
-    vt = r.apply(vt) + p
-    vb = r.apply(vb) + p
-    vert = np.r_[vt,vb]
-    faces = [[vt[i], vb[i], vb[i+1], vt[i+1]] for i in range(res-1)]
-    faces += [vt, vb]
+    v_t = vert_circ + np.array([0,0,h/2]) # top vertices
+    v_b = vert_circ - np.array([0,0,h/2]) # bott vertices
+    v_t = r.apply(v_t) + p
+    v_b = r.apply(v_b) + p
+    vert = np.r_[v_t, v_b]
+    faces = [[v_t[i], v_b[i], v_b[i+1], v_t[i+1]] for i in range(res-1)]
+    faces += [v_t, v_b]
     return vert, faces
 
 
 def display(
-    *objects,  
-    markers=[(0,0,0)], 
-    axis=None,
-    direc=False,
-    show_path=False):
+        *objects,
+        markers=[(0,0,0)],
+        axis=None,
+        direc=False,
+        show_path=False):
     """ Display sources/sensors graphically
 
     Parameters
     ----------
     objects: sources, collections or sensors
         Display a 3D reprensation of given objects using matplotlib
-    
+
     markers: array_like, shape (N,3), default=[(0,0,0)]
         Mark positions in graphic output. Puts a marker in the origin.
         by default.
-    
+
     axis: pyplot.axis, default=None
-        Display graphical output in a given pyplot axis (must be 3D). 
-    
+        Display graphical output in a given pyplot axis (must be 3D).
+
     direc: bool, default=False
         Set True to plot magnetization and current directions
-    
+
     show_path: bool/string, default=False
-        Set True to plot object paths. Set 'all' to plot an object 
+        Set True to plot object paths. Set 'all' to plot an object
         represenation at each path position.
-    
+
     Returns
     -------
     None
@@ -97,9 +96,9 @@ def display(
     else:
         ax = axis
         generate_output = False
-    
+
     # load color map
-    cm = plt.cm.get_cmap('hsv')
+    cmap = plt.cm.get_cmap('hsv')
 
     # init sys_size x/y/z max and min values
     sys_size = [[],[],[],[],[],[]]
@@ -122,7 +121,7 @@ def display(
             lw = 0.25
         else:
             sys.exit('ERROR: display(), bad src input')
-        
+
         if show_path=='all':
             poss = s._pos
             rott = s._rot
@@ -138,17 +137,17 @@ def display(
 
         # add faces to plot
         boxf = Poly3DCollection(
-            faces, 
-            facecolors=cm(i/n),
-            linewidths=lw, 
+            faces,
+            facecolors=cmap(i/n),
+            linewidths=lw,
             edgecolors='k',
             alpha=1)
         ax.add_collection3d(boxf)
-        
+
         # determine outmost vertices to adjust sys_size
-        for i in range(3):
-            sys_size[2*i] += [np.amax(np.array(vert)[:,:,i])]
-            sys_size[2*i+1] += [np.amin(np.array(vert)[:,:,i])]
+        for j in range(3):
+            sys_size[2*j] += [np.amax(np.array(vert)[:,:,j])]
+            sys_size[2*j+1] += [np.amin(np.array(vert)[:,:,j])]
 
         # add to directions
         pos = s._pos[-1]
@@ -161,28 +160,28 @@ def display(
         for i,s in enumerate(obj_list):
             path = s._pos
             ax.plot(path[:,0],path[:,1],path[:,2],
-                ls = '-',
-                lw = 1,
-                color = cm(i/n),
-                marker = '.',
-                mfc = 'k', 
-                mec='k',
-                ms = 2.5)
+                    ls = '-',
+                    lw = 1,
+                    color = cmap(i/n),
+                    marker = '.',
+                    mfc = 'k',
+                    mec='k',
+                    ms = 2.5)
             ax.plot([path[0,0]],[path[0,1]],[path[0,2]],
-                marker='o',
-                ms=4,
-                mfc=cm(i/n),
-                mec='k')
-        
+                    marker='o',
+                    ms=4,
+                    mfc=cmap(i/n),
+                    mec='k')
+
             # determine outmost vertices to adjust sys_size
-            for i in range(3):
-                sys_size[2*i] += [np.amax(path[:,i])]
-                sys_size[2*i+1] += [np.amin(path[:,i])]
-    
+            for j in range(3):
+                sys_size[2*j] += [np.amax(path[:,j])]
+                sys_size[2*j+1] += [np.amin(path[:,j])]
+
     # markers -------------------------------------------------------
     markers = np.array(markers)
     ax.plot(markers[:,0],markers[:,1],markers[:,2],ls='',marker='x',ms=5)
-    
+
     # determine outlost markers to adjust sys_size
     for i in range(3):
         sys_size[2*i] += [np.amax(markers[:,i])]
@@ -194,9 +193,9 @@ def display(
     zmax, zmin = max(sys_size[4]), min(sys_size[5])
 
     # center
-    cx = (xmax + xmin)/2
-    cy = (ymax + ymin)/2
-    cz = (zmax + zmin)/2
+    centx = (xmax + xmin)/2
+    centy = (ymax + ymin)/2
+    centz = (zmax + zmin)/2
     # size
     dx = xmax - xmin
     dy = ymax - ymin
@@ -207,26 +206,22 @@ def display(
     # draw directions -----------------------------------------------
     if direc:
         dira = np.array(directs).T
-        ax.quiver(dira[0], dira[1], dira[2],   # pylint: disable=unsubscriptable-object
-                    dira[3], dira[4], dira[5], # pylint: disable=unsubscriptable-object
-                    normalize=True,
-                    length=dd/np.sqrt(n),
-                    color='.3'
-                    )
+        ax.quiver(dira[0], dira[1], dira[2],
+                  dira[3], dira[4], dira[5],
+                  normalize=True,
+                  length=dd/np.sqrt(n),
+                  color='.3')
 
     # plot styling --------------------------------------------------
     ax.set(
         xlabel = 'x [mm]',
         ylabel = 'y [mm]',
         zlabel = 'z [mm]',
-        xlim = (cx-dd, cx+dd),
-        ylim = (cy-dd, cy+dd),
-        zlim = (cz-dd, cz+dd)
+        xlim = (centx-dd, centx+dd),
+        ylim = (centy-dd, centy+dd),
+        zlim = (centz-dd, centz+dd)
         )
 
     # generate output ------------------------------------------------
     if generate_output:
         plt.show()
-    
-    return None
-    

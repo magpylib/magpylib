@@ -1,0 +1,6 @@
+# pylint ------------------------------------------------------
+To generate pylintrc file:
+> pylint --generate-rcfile | out-file -encoding utf8 .pylintrc
+
+edit pylintrc file to disable specific linter warnings
+

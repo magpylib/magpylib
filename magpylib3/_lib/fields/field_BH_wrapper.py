@@ -43,7 +43,7 @@ from magpylib3 import _lib
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
-from magpylib3._lib.config import config
+from magpylib3._lib.config import Config
 
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:
@@ -302,7 +302,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # Cylinder group
     group = src_sorted[1]
     if group:
-        niter = kwargs.get('niter', config.ITER_CYLINDER)
+        niter = kwargs.get('niter', Config.ITER_CYLINDER)
         src_dict = scr_dict_homo_mag(group, poso_flat)
         B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         B_group = B_group.reshape((len(group),m,n,3))
