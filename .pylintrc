@@ -138,7 +138,12 @@ disable=print-statement,
         xreadlines-attribute,
         deprecated-sys-function,
         exception-escape,
-        comprehension-escape
+        comprehension-escape,
+        protected-access,
+        bad-whitespace,
+        dangerous-default-value,
+        too-many-arguments,
+        too-many-locals
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -245,21 +250,35 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,j,k,l,m,n,   # indices
-           x,y,z,r,       # positions
-           a,b,c,d,h,     # dimensions
-           k0,k1,         # others
-           B,H,           # fields
-           bh,ze,he,            # various used variables
-           Br,Bphi,Bx,By,Bz,    # various field components
-           field_BH_box,  # B/H in module and function names
-           field_B_box,
-           field_Bcy_axial,
-           field_Hcy_transv,
+good-names=i,j,k,l,m,n,                  # indices
+           k0,k1,ns,                     # others
+           x,y,z,r,                      # positions
+           a,b,c,d,h,                    # dimensions
+           t,ts,                         # parametrization
+           kc,p,c,s,em,cc,pp,ss,f,q,g,kk,                     # cel input
+           B,H,Br,Bphi,Bx,By,Bz,         # fields & field components
+           B_group,
+           mx,my,mz,                     # magnetizations
+           bh,ze,he,                     # various used variables
+           field_BH_box,                 # B/H in module and function names
+           field_B_box,                  
+           field_Bcy_axial,              
+           field_Hcy_transv,             
            field_BH_cylinder,
            field_BH_cylinder,
            field_BH_wrapper,
-           ex,
+           getBH_level1,
+           getBHv_level2,
+           getBH_level2,
+           getB,
+           getH,
+           getBv,
+           getHv,
+           class_BaseGeo,
+           class_Collection,
+           class_mag_Box,
+           class_mag_Cylinder,
+           ex,                           # some basics
            Run,
            _
 

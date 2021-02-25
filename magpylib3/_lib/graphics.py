@@ -54,7 +54,7 @@ def vert_face_cylinder(s,p,r):
 def display(
     *objects,  
     markers=[(0,0,0)], 
-    subplotAx=None,
+    axis=None,
     direc=False,
     show_path=False):
     """ Display sources/sensors graphically
@@ -68,7 +68,7 @@ def display(
         Mark positions in graphic output. Puts a marker in the origin.
         by default.
     
-    subplotAx: pyplot.axis, default=None
+    axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D). 
     
     direc: bool, default=False
@@ -91,11 +91,11 @@ def display(
     n = len(obj_list)
 
     # create or set plotting axis
-    if subplotAx is None:
+    if axis is None:
         fig = plt.figure(dpi=80, figsize=(8,8))
         ax = fig.gca(projection='3d')
     else:
-        ax = subplotAx
+        ax = axis
         generate_output = False
     
     # load color map

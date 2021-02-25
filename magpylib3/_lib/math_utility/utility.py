@@ -1,6 +1,5 @@
 """ some utility functions"""
 
-from operator import pos
 import sys
 from typing import Sequence
 import numpy as np
@@ -8,8 +7,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib3 import _lib
 
 
-
-def rotobj_from_angax(angle: float, axis: np.ndarray) -> R: 
+def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     """ Create rot object from angle axis input.
 
     Args:
@@ -19,15 +17,15 @@ def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     Returns:
     - R: scipy rotation object
     """
-    
+
     ang = np.float(angle)
-    Lax = np.linalg.norm(axis)
-    if Lax == 0:
+    len_ax = np.linalg.norm(axis)
+    if len_ax == 0:
         rotvec = np.zeros(3)
     else:
-        rotvec = axis/Lax*ang
+        rotvec = axis/len_ax*ang
     rotobj = R.from_rotvec(rotvec)
-    
+
     return rotobj
 
 
@@ -43,20 +41,20 @@ def format_src_input(sources: Sequence) -> list:
     ### Info:
     - exits if invalid sources are given
     """
+
     src_list = []
-    for s in sources:
-        if isinstance(s, (tuple,list)):
-            src_list += format_src_input(s) # recursive flattening
-        elif isinstance(s,_lib.obj_classes.Collection):
-            src_list += s._sources
-        elif isinstance(s,(
+    for src in sources:
+        if isinstance(src, (tuple, list)):
+            src_list += format_src_input(src) # recursive flattening
+        elif isinstance(src, _lib.obj_classes.Collection):
+            src_list += src._sources
+        elif isinstance(src, (
                 _lib.obj_classes.Box,  #avoid circ imports
                 _lib.obj_classes.Cylinder)):
-            src_list += [s]
+            src_list += [src]
         else:
             sys.exit('ERROR: format_src_input() - bad sources input')
-            
-    
+
     return src_list
 
 
@@ -85,10 +83,11 @@ def same_path_length(obj_list: list) -> None:
 
     Returns
     -------
-    True if 
+    True if pos and rot path length is the same
     """
-    lp = len(obj_list[0]._pos)
-    pos_check = all([len(obj._pos)==lp for obj in obj_list])
-    rot_check = all([len(obj._rot.as_quat())==lp for obj in obj_list])
+
+    lenpos = len(obj_list[0]._pos)
+    pos_check = all([len(obj._pos) == lenpos for obj in obj_list])
+    rot_check = all([len(obj._rot.as_quat()) == lenpos for obj in obj_list])
 
     return pos_check and rot_check

@@ -7,6 +7,12 @@ discussion -----------------------------------------
 - are typehints really helpful for user ?
 
 2do-------------------------------------------------
+
+- the cel function
+    - properly clean up celv
+    - provide faster E,K and Pi alternatives
+    - provide algorithms for incomplete el !!!
+
 - context manager
     - combined motion
     - collections apply operations

@@ -5,9 +5,10 @@ from magpylib3._lib.math_utility.utility import format_src_input, check_duplicat
 from magpylib3._lib.fields.field_BH_wrapper import getB, getH
 from magpylib3._lib.graphics import display
 
+
 class Collection:
     """ Group multiple sources in one Collection.
-    
+
     ### Properties
     - sources (list): Ordered list of sources in the Collection
 
@@ -63,20 +64,20 @@ class Collection:
         """
         self.add(source)
         return self
-    
+
 
     def __sub__(self, source):
         """ remove a source from the Collection
         """
         self.remove(source)
         return self
-    
+
 
     def __iter__(self):
         """ make Collection iterable
         """
         yield from self._sources
-    
+
 
     def __getitem__(self,i):
         """ provide getitem property
@@ -89,7 +90,7 @@ class Collection:
         """ Add arbitrary sources to Collection.
 
         ### Args:
-        - sources (sequence of sources and collections): add arbitrary 
+        - sources (sequence of sources and collections): add arbitrary
             sequences of sources and collections to the Collection.
             The new sources will be added at the end of self.sources.
             Duplicates will be eliminated.
@@ -97,7 +98,6 @@ class Collection:
         ### Returns:
         - self
         """
-
         # format input
         src_list = format_src_input(sources)
         # combine with original src_list
@@ -107,7 +107,7 @@ class Collection:
         # set attributes
         self._sources = src_list
         return self
-    
+
 
     def remove(self,source):
         """ Remove source from collection
@@ -120,13 +120,13 @@ class Collection:
         """
         self._sources.remove(source)
         return self
-    
+
 
     def getB(self, pos_obs, **kwargs):
         """ Compute B-field of Collection at observer positions.
 
         ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of 
+        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
             observer positions in units of mm.
 
         ### Returns:
@@ -134,13 +134,13 @@ class Collection:
             in units of mT.
         """
         return getB(self, pos_obs, sumup=True, **kwargs)
-    
+
 
     def getH(self, pos_obs, **kwargs):
         """ Compute H-field of Collection at observer positions.
 
         ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of 
+        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
             observer positions in units of mm.
 
         ### Returns:
@@ -151,7 +151,7 @@ class Collection:
 
 
     def display(self, **kwargs):
-        """ 
+        """
         Display Collection graphically. kwargs of top level display()
             function.
         """
@@ -166,9 +166,9 @@ class Collection:
         ----------
         displacement: array_like, shape (3,)
             displacement vector in units of mm.
-        
+
         steps: int, optional, default=-1
-            If steps < 0: apply a linear motion from 0 to displ on top 
+            If steps < 0: apply a linear motion from 0 to displ on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 displace path[-1].
             If steps > 0: add linear displacement to existing path starting
@@ -184,19 +184,19 @@ class Collection:
 
 
     def rotate(self, rot, anchor=None, steps=-1):
-        """ 
+        """
         Rotate all sources in Collection.
 
         Parameters
         ----------
         rot: scipy Rotation object
-        
+
         anchor: None or array_like, shape (3,), default=None
             The axis of rotation passes through the anchor point. When anchor=None
             the object will rotate about its own center.
 
         steps: int, optional, default=-1
-            If steps < 0: apply linear rotation steps from 0 to rot on top 
+            If steps < 0: apply linear rotation steps from 0 to rot on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 rotate path[-1].
             If steps > 0: add linear rotation steps from 0 to rot to existing
@@ -218,19 +218,19 @@ class Collection:
         ----------
         angle: float
             Angle of rotation (in [deg] by default).
-        
+
         axis: array_like, shape (3,)
             The axis of rotation [dimensionless]
 
         anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. By default 
+            The axis of rotation passes through the anchor point. By default
             anchor=None the object will rotate about its own center.
-        
+
         degree: bool, default=True
             If True, Angle is given in [deg]. If False, angle is given in [rad].
-                    
+
         steps: int, optional, default=-1
-            If steps < 0: apply linear rotation steps from 0 to rot on top 
+            If steps < 0: apply linear rotation steps from 0 to rot on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 rotate path[-1].
             If steps > 0: add linear rotation steps from 0 to rot to existing

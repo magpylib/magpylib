@@ -1,51 +1,45 @@
 """
 Field computation structure:
 
-level0 (vectorized core Field functions): 
-    input arrays
-    output B-field arr in local CS 
+level0:(field_BH_XXX.py files)
     - pure vectorized field computations from literature
     - all computations in source CS
-    - in field_BH_xxx.py files
+    - distinguish B/H
 
-level1(getBH_level1): calls level0
-    input: dict of arrays
-    output B-field arr in global CS
+level1(getBH_level1):
     - apply transformation to global CS
     - select correct level0 src_type computation
+    - input dict, no input checks !
 
-level2(getBHv): calls level1
-    input: dict
-    output B-field arr in global CS
+level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT = DICT OF ARRAYS
+    - input dict checks (unknowns)
+    - secure user inputs
     - check input for mandatory information
     - set missing input variables to default values
     - tile 1D inputs
 
-getBH_level2:
+level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
     - input dict checks (unknowns)
     - secure user inputs
     - group similar sources for combined computation
     - generate vector input format for getBH_level1
-    - adjust Bfield output format to pos_obs, path, sources input format
-    
-level3(getB, getH, getBv, getHv):
-    - user interface
+    - adjust Bfield output format to (pos_obs, path, sources) input format
+
+level3(getB, getH, getBv, getHv): <--- USER INTERFACE
     - docstrings
     - separated B and H
     - transform input into dict for level2
 
-level4(src.getB, src.getH):
-    - user interface
-    - docstrings 
-    - calling level3 directly from sources
-
+level4(src.getB, src.getH):       <--- USER INTERFACE
+    - docstrings
+    - calling level3 getB, getH directly from sources
 """
 
 import sys
 from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3 import _lib as _lib
+from magpylib3 import _lib
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
@@ -101,7 +95,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     return B
 
 
-def getBHv(**kwargs: dict) -> np.ndarray:
+def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
 
     Parameters
@@ -120,9 +114,8 @@ def getBHv(**kwargs: dict) -> np.ndarray:
     - test if mandatory inputs are there
     - sets default input variables (e.g. pos, rot) if missing
     - tiles 1D inputs vectors to correct dimension
-    
     """
-    
+
     # unknown kwarg input ('user accident') -------------------------
     allowed_keys = ['bh', 'mag', 'dim', 'pos', 'rot', 'pos_obs', 'niter', 'src_type']
     keys = kwargs.keys()
@@ -131,38 +124,38 @@ def getBHv(**kwargs: dict) -> np.ndarray:
         print('WARNING: getBHv() - unknown input kwarg, ', complement)
 
     # generate dict of secured inputs for auto-tiling ---------------
-    tile_params = {} 
+    tile_params = {}
 
     # mandatory general inputs ------------------
-    try: 
+    try:
         src_type = kwargs['src_type']
         poso = np.array(kwargs['pos_obs'], dtype=float)
-    except KeyError as ke:
-        sys.exit('ERROR: getBHv() - missing input ' + str(ke))
+    except KeyError as kerr:
+        sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
     tile_params['pos_obs'] = poso           # <-- tile
 
     # optional general inputs -------------------
     pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
     tile_params['pos'] = pos                # <-- tile
-    
+
     rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
     tile_params['rot'] = rot.as_quat()      # <-- tile
 
     # mandatory class specific inputs -----------
-    if src_type is 'Box':
+    if src_type == 'Box':
         try:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as ke:
-            sys.exit('ERROR getBHv: missing input ' + str(ke))
+        except KeyError as kerr:
+            sys.exit('ERROR getBHv: missing input ' + str(kerr))
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
-    elif src_type is 'Cylinder':
+    elif src_type == 'Cylinder':
         try:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as ke:
-            sys.exit('ERROR: getBHv() - missing input ' + str(ke))
+        except KeyError as kerr:
+            sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
         niter = kwargs.get('niter', 50)     # set niter
@@ -175,7 +168,7 @@ def getBHv(**kwargs: dict) -> np.ndarray:
     if len(set(ns)) > 1:
         sys.exit('ERROR: getBHv() - bad array input lengths: ' + str(set(ns)))
     n = max(ns, default=1)
-    
+
     # tile 1D inputs and replace original values in kwargs
     for key,val in tile_params.items():
         if val.ndim == 1:
@@ -184,10 +177,10 @@ def getBHv(**kwargs: dict) -> np.ndarray:
             kwargs[key] = val
     # change rot to Rotation object
     kwargs['rot'] = R.from_quat(kwargs['rot'])
-    
+
     # compute and return B
     B = getBH_level1(**kwargs)
-    
+
     if n==1: # remove highest level when n=1
         return B[0]
     return B
@@ -204,8 +197,8 @@ def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
     Returns
     -------
     dict for getBH_level1 input
-    
     """
+
     l_group = len(group)    # sources in group
     m = len(group[0]._pos)  # path length
     n = len(poso_flat)      # no. observer pos
@@ -216,11 +209,11 @@ def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
     dimv = np.empty((l_group*m*n,len_dim))
     posv = np.empty((l_group*m*n,3))
     rotv = np.empty((l_group*m*n,4))
-    for i,s in enumerate(group):
-        magv[i*m*n:(i+1)*m*n] = np.tile(s.mag, (m*n,1))
-        dimv[i*m*n:(i+1)*m*n] = np.tile(s.dim, (m*n,1))
-        posv[i*m*n:(i+1)*m*n] = np.tile(s._pos,n).reshape(m*n,3)
-        rotv[i*m*n:(i+1)*m*n] = np.tile(s._rot.as_quat(),n).reshape(m*n,4)
+    for i,src in enumerate(group):
+        magv[i*m*n:(i+1)*m*n] = np.tile(src.mag, (m*n,1))
+        dimv[i*m*n:(i+1)*m*n] = np.tile(src.dim, (m*n,1))
+        posv[i*m*n:(i+1)*m*n] = np.tile(src._pos,n).reshape(m*n,3)
+        rotv[i*m*n:(i+1)*m*n] = np.tile(src._rot.as_quat(),n).reshape(m*n,4)
     posov = np.tile(poso_flat, (l_group*m,1))
     rotobj = R.from_quat(rotv, normalized=True)
     src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
@@ -240,7 +233,8 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
 
     Returns
     -------
-    field: ndarray, shape (L,M,N1,N2,...,3), field of L sources, M path positions and N observer positions
+    field: ndarray, shape (L,M,N1,N2,...,3), field of L sources, M path
+    positions and N observer positions
 
     Info:
     -----
@@ -249,7 +243,6 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     - group similar sources for combined computation
     - generate vector input format for getBH_level1
     - adjust Bfield output format to pos_obs, path, sources input format
-
     """
 
     # make sure there is no unknown kwarg input ('user accident') ----
@@ -264,7 +257,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     sources = kwargs['sources']
     sumup = kwargs['sumup']
     poso = np.array(kwargs['pos_obs'], dtype=np.float)
-    
+
     # formatting ----------------------------------------------------
     # flatten out Collections
     src_list = format_src_input(sources)
@@ -285,26 +278,26 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # group similar source types-------------------------------------
     src_sorted = [[],[]]   # store groups here
     order = [[],[]]        # keep track of the source order
-    for i,s in enumerate(src_list):
-        if isinstance(s, _lib.obj_classes.Box):
-            src_sorted[0] += [s]
+    for i,src in enumerate(src_list):
+        if isinstance(src, _lib.obj_classes.Box):
+            src_sorted[0] += [src]
             order[0] += [i]
-        elif isinstance(s, _lib.obj_classes.Cylinder):
-           src_sorted[1] += [s]
-           order[1] += [i]
+        elif isinstance(src, _lib.obj_classes.Cylinder):
+            src_sorted[1] += [src]
+            order[1] += [i]
         else:
             sys.exit('WARNING getBH() - bad source input !')
 
     # evaluate each non-empty group in one go------------------------
 
     # Box group
-    group = src_sorted[0]  
+    group = src_sorted[0]
     if group:
-        src_dict = scr_dict_homo_mag(group, poso_flat)              # compute array dict for level1
-        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict)   # compute field
-        B_group = B_group.reshape((len(group),m,n,3))               # reshape
-        for i in range(len(group)):                                 # move to dedicated positions in B
-                B[order[0][i]] = B_group[i]
+        src_dict = scr_dict_homo_mag(group, poso_flat)            # compute array dict for level1
+        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict) # compute field
+        B_group = B_group.reshape((len(group),m,n,3))             # reshape
+        for i in range(len(group)):                               # put at dedicated positions in B
+            B[order[0][i]] = B_group[i]
 
     # Cylinder group
     group = src_sorted[1]
@@ -314,7 +307,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
         B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         B_group = B_group.reshape((len(group),m,n,3))
         for i in range(len(group)):
-                B[order[1][i]] = B_group[i]
+            B[order[1][i]] = B_group[i]
 
     # bring to correct shape (B.shape = pos_obs.shape)---------------
     B = B.reshape(np.r_[l,m,poso_shape])
@@ -326,19 +319,19 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # only one source: reduce highest level
     if l == 1:
         return B[0]
-    
+
     if sumup:
         B = np.sum(B, axis=0)
         return B
 
     # rearrange B when there is at least one Collection with more than one source
     if len(src_list) > len(sources):
-        for i,s in enumerate(sources):
-            if isinstance(s, _lib.obj_classes.Collection):
-                col_len = len(s._sources)
+        for i,src in enumerate(sources):
+            if isinstance(src, _lib.obj_classes.Collection):
+                col_len = len(src._sources)
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
-    
+
     return B
 
 # INTERFACE FUNCTIONS -------------------------------------------
@@ -347,16 +340,16 @@ def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np
 
     Parameters
     ----------
-    sources: list 
+    sources: list
         1D list of L sources/collections with similar path length M
-    
+
     pos_obs: array_like, shape (N1,N2,...,3), unit [mm]
         observer position(s) in units of [mm].
 
     sumup: bool, default=False
-        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources 
+        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources
         and returns shape (M,N1,...).
-    
+
     Specific kwargs
     ---------------
     niter: int, default=50
@@ -369,10 +362,11 @@ def getB(sources:list, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -> np
 
     Info
     ----
-    This function automatically groups similar sources together for optimal vectorization 
-    of the computation. For maximal performance call this function as little as possible, 
+    This function automatically groups similar sources together for optimal vectorization
+    of the computation. For maximal performance call this function as little as possible,
     do not use it in a loop if not absolutely necessary.
     """
+
     return getBH_level2(bh=True, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
@@ -381,16 +375,16 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
 
     Parameters
     ----------
-    sources: list 
+    sources: list
         1D list of L sources/collections with similar path length M
-    
+
     pos_obs: array_like, shape (N1,N2,...,3), unit [mm]
         observer position(s) in units of [mm].
 
     sumup: bool, default=False
-        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources 
+        If False getB returns shape (L,M,N1,...), else sums up the fields of all sources
         and returns shape (M,N1,...).
-    
+
     Specific kwargs
     ---------------
     niter: int, default=50
@@ -403,10 +397,11 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
 
     Info
     ----
-    This function automatically groups similar sources together for optimal vectorization 
-    of the computation. For maximal performance call this function as little as possible, 
+    This function automatically groups similar sources together for optimal vectorization
+    of the computation. For maximal performance call this function as little as possible,
     do not use it in a loop if not absolutely necessary.
     """
+
     return getBH_level2(bh=False, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
 
 
@@ -436,7 +431,9 @@ def getBv(**kwargs: dict) -> np.ndarray:
 
     A check for mandatory input information is performed.
     """
-    return getBHv(bh=True, **kwargs)
+
+    return getBHv_level2(bh=True, **kwargs)
+
 
 def getHv(**kwargs: dict) -> np.ndarray:
     """ H-Field computation from dictionary of vectors.
@@ -465,4 +462,5 @@ def getHv(**kwargs: dict) -> np.ndarray:
     A check for mandatory input information is performed.
     return getBHv(False,**kwargs)
     """
-    return getBHv(bh=False, **kwargs)
+
+    return getBHv_level2(bh=False, **kwargs)

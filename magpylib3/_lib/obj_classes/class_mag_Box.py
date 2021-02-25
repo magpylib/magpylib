@@ -15,37 +15,37 @@ class Box(BaseGeo):
 
     init_state: the geometric center is in the CS origin, the sides
         of the box are parallel to the x/y/z basis vectors
-    
+
     ### Properties
     - mag (vec3): Magnetization vector (remanence field) of magnet
         in units of mT.
-    - dim (vec3): Dimension/Size of the Cuboid with sides [a,b,c] 
+    - dim (vec3): Dimension/Size of the Cuboid with sides [a,b,c]
         in units of mm.
-    - pos (vec3): Position of the geometric center of the magnet 
+    - pos (vec3): Position of the geometric center of the magnet
         in units of mm. Defaults to (0,0,0).
     - rot (rotation input): Relative rotation of magnet to init_state.
-        Input can either be a pair (angle, axis) with angle a scalar 
-        given in deg and axis an arbitrary 3-vector, or a 
+        Input can either be a pair (angle, axis) with angle a scalar
+        given in deg and axis an arbitrary 3-vector, or a
         scipy..Rotation object. Defaults to (0,0,0) rotation vector.
 
     ### Methods
-    - move(displ): 
+    - move(displ):
         move magnet by argument vector
-    - rotate(rot, anchor=None): 
-        rotate object by rot input (scipy Rotation object). The rotation 
+    - rotate(rot, anchor=None):
+        rotate object by rot input (scipy Rotation object). The rotation
         axis passes through the anchor. Default anchor=None rotates
         object about its own center.
-    - rotate_from_angax(angle, axis, anchor=None, degree=True): 
-        rotate object around axis by angle. The axis passes through the 
-        anchor. Default anchor=None rotates object about its own center. 
+    - rotate_from_angax(angle, axis, anchor=None, degree=True):
+        rotate object around axis by angle. The axis passes through the
+        anchor. Default anchor=None rotates object about its own center.
         Default degree=True angle is given in degrees, if False in radiant.
-    - display(markers=[(0,0,0)], subplotAx=None, direc=False): 
-        graphically display the source. Arguments are same as of top level 
+    - display(markers=[(0,0,0)], axis=None, direc=False):
+        graphically display the source. Arguments are same as of top level
         display function.
-    - getB(pos_obs): 
+    - getB(pos_obs):
         compute B-field of source at observer positions. Shape
         of B-field output will have the same structure as pos_obs input.
-    - getH(pos_obs): 
+    - getH(pos_obs):
         compute H-field of source at observer positions. Shape
         of B-field output will have the same structure as pos_obs input.
 
@@ -56,12 +56,12 @@ class Box(BaseGeo):
     - Sources can be added to each other and return a Collection.
     """
 
-    def __init__(self, 
-        mag = (mx,my,mz), 
-        dim = (a,b,c),
-        pos = (0,0,0), 
-        rot = None
-        ):
+    def __init__(
+            self,
+            mag = (mx,my,mz),
+            dim = (a,b,c),
+            pos = (0,0,0),
+            rot = None):
 
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
@@ -113,7 +113,7 @@ class Box(BaseGeo):
         """ Compute B-field of magnet at observer positions.
 
         ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of 
+        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
             observer positions in units of mm.
 
         ### Returns:
@@ -128,7 +128,7 @@ class Box(BaseGeo):
         """ Compute H-field of source at observer positions.
 
         ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of 
+        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
             observer positions in units of mm.
 
         ### Returns:
@@ -137,4 +137,3 @@ class Box(BaseGeo):
         """
         H = getH([self], pos_obs)
         return H
-

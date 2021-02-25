@@ -7,11 +7,11 @@ import numpy as np
 from magpylib3._lib.config import config
 
 def field_BH_box(
-    bh: bool,
-    mag: np.ndarray,
-    dim: np.ndarray,
-    pos_obs: np.ndarray
-    ) -> np.ndarray:
+        bh: bool,
+        mag: np.ndarray,
+        dim: np.ndarray,
+        pos_obs: np.ndarray
+        ) -> np.ndarray:
     """ setting up the Box field computation
     - separate mag=0 cases (returning 0)
     - separate edge/corner cases (returning 0)
