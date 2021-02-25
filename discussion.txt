@@ -6,11 +6,16 @@ discussion -----------------------------------------
 
 - are typehints really helpful for user ?
 
-- src.pos[15] = (1,2,3)
-    diretly setting parts of path
-
-
 2do-------------------------------------------------
+- context manager
+    - combined motion
+    - collections apply operations
+- scipy update 1.6
+    - pylance problem
+    - normalized=True weg
+- Warnings aktivieren
+    - string == statt string is
+
 - integrate with existing wheel and distribute
 - docu and docstring like scipy
 - H testing against FEM
