@@ -235,7 +235,7 @@ def field_BH_cylinder(
             Bx[mask_tv*mask_inside] += magx[mask_tv*mask_inside]
             By[mask_tv*mask_inside] += magy[mask_tv*mask_inside]
         return np.c_[Bx,By,Bz]
-    else:
-        if any(mask_ax): # ax computes B-field
-            Bz[mask_tv*mask_inside] -= magz[mask_tv*mask_inside]
-        return np.c_[Bx,By,Bz]*10/4/np.pi
+
+    if any(mask_ax): # ax computes B-field
+        Bz[mask_tv*mask_inside] -= magz[mask_tv*mask_inside]
+    return np.c_[Bx,By,Bz]*10/4/np.pi
