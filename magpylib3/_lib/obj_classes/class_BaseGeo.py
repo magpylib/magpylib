@@ -143,6 +143,7 @@ class BaseGeo:
         -------
         None
         """
+        #pylint: disable=dangerous-default-value
 
         display(
             self,

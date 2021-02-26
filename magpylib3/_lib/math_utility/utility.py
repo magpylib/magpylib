@@ -47,7 +47,7 @@ def format_src_input(sources: Sequence) -> list:
         if isinstance(src, (tuple, list)):
             src_list += format_src_input(src) # recursive flattening
         elif isinstance(src, _lib.obj_classes.Collection):
-            src_list += src._sources
+            src_list += src.sources
         elif isinstance(src, (
                 _lib.obj_classes.Box,  #avoid circ imports
                 _lib.obj_classes.Cylinder)):
@@ -85,6 +85,7 @@ def same_path_length(obj_list: list) -> None:
     -------
     True if pos and rot path length is the same
     """
+    # pylint: disable=protected-access
 
     lenpos = len(obj_list[0]._pos)
     pos_check = all([len(obj._pos) == lenpos for obj in obj_list])

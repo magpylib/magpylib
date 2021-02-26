@@ -60,15 +60,12 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=protected-access,               # must access own _pos, _rot to give functionality
-        bad-whitespace,                 # (0,0,0) not allowed
-        dangerous-default-value,        # [(0,0,0)] not allowed as default argument
-        too-many-arguments,             # several complex functions that can/should not be dismembered
-        too-many-locals,                # several complex functions that can/should not be dismembered
-        too-few-public-methods,         # config
-        unsubscriptable-object,         # pylint doenst mange to resolve ndarray.T
+disable=R0801,                          # duplicate code
+        too-few-public-methods,         # complex functions
+        too-many-locals,                # complex functions
+        too-many-arguments,             # complex functions
         missing-module-docstring,       # no idea
-        pointless-statement             # col + src is not recognized by linter
+        invalid-name                    # scientific library with many 
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -175,38 +172,7 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=_,                              # misc
-           i,j,k,l,m,n,                    # indices
-           k0,k1,ns,                       # others
-           x,y,z,r,                        # positions
-           a,b,c,d,h,                      # dimensions
-           t,ts,v,                         # parametrization
-           kc,p,c,s,em,cc,pp,ss,f,q,g,kk,  # cel input
-           B,H,Br,Bphi,Bx,By,Bz,           # fields & field components
-           B_group,
-           mx,my,mz,                       # magnetizations
-           bh,ze,he,                       # various used variables
-           ax,lw,                          # noch fragen ?
-           dx,dy,dz,dd,
-           field_BH_box,                   # B/H in module and function names
-           field_B_box,                  
-           field_Bcy_axial,              
-           field_Hcy_transv,             
-           field_BH_cylinder,
-           field_BH_cylinder,
-           field_BH_wrapper,
-           getBH_level1,
-           getBHv_level2,
-           getBH_level2,
-           getB,
-           getH,
-           getBv,
-           getHv,
-           class_BaseGeo,                   
-           class_Collection,
-           class_mag_Box,
-           class_mag_Cylinder
-
+good-names=
 
 # Good variable names regexes, separated by a comma. If names match any regex,
 # they will always be accepted

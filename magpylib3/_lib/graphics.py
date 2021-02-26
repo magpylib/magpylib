@@ -81,6 +81,10 @@ def display(
     -------
     None
     """
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+    # pylint: disable=dangerous-default-value
 
     # if no subplot axis is given
     generate_output=True

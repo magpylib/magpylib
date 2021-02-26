@@ -17,7 +17,16 @@ discussion -----------------------------------------
     - normalized=True weg
 
 2do ----------------------------------------------------------
+- docstrings
+    - __init__ docstrings providing brief overviews
+    - docu and docstring like scipy
+- integrate with existing wheel and distribute
 
+- performance
+    - profile getBH
+    - numpy reshape and other operations creating copies
+
+- H testing against FEM
 
 2do high end dev ---------------------------------------------
 
@@ -26,13 +35,6 @@ discussion -----------------------------------------
     - provide faster E,K and Pi alternatives
     - provide algorithms for incomplete el for Cylinder tiles !!!
 
-
-- integrate with existing wheel and distribute
-- docu and docstring like scipy
-- H testing against FEM
-- __init__ docstrings providing brief overviews
-- profile getBH
-    - numpy reshape and other operations creating copies
 - check_dupicates might destroy col.sources order
 - add remaining sources
 	sphere

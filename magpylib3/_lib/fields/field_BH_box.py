@@ -119,6 +119,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.nda
     evaluation is instable in the vicinity. Avoid field computation near
     (1e-6*sidelength) Cuboid edges. FIX THIS PROBLEM !!!
     """
+    # pylint: disable=too-many-statements
 
     magx, magy, magz = mag.T
     x, y, z = pos_obs.T

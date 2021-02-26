@@ -36,7 +36,7 @@ level4(src.getB, src.getH):       <--- USER INTERFACE
 """
 
 import sys
-from typing import Sequence
+from typing import Sequence, Any
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib3 import _lib
@@ -45,6 +45,9 @@ from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
 from magpylib3._lib.config import Config
 
+# pylint: disable=protected-access
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:
     """ Vectorized field computation
@@ -435,7 +438,7 @@ def getBv(**kwargs: dict) -> np.ndarray:
     return getBHv_level2(bh=True, **kwargs)
 
 
-def getHv(**kwargs: dict) -> np.ndarray:
+def getHv(**kwargs: Any) -> np.ndarray:
     """ H-Field computation from dictionary of vectors.
 
     ### Args:

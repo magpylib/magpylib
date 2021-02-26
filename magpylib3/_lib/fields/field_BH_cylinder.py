@@ -106,37 +106,37 @@ def field_Hcy_transv(
     sphi[0] = 1.
     sphi[-1] = 1.
 
-    sphie = np.outer(sphi, np.ones(n))
-    phi0e = np.outer(np.arange(niter+1), np.ones(n))*phi0
-    ze    = np.outer(np.ones(niter+1), z)
-    he    = np.outer(np.ones(niter+1), h)
-    phie  = np.outer(np.ones(niter+1), phi)
-    dr2e  = np.outer(np.ones(niter+1), 2*d*r)
-    r2d2e = np.outer(np.ones(niter+1), r**2+d**2)
+    sphiex = np.outer(sphi, np.ones(n))
+    phi0ex = np.outer(np.arange(niter+1), np.ones(n))*phi0
+    zex    = np.outer(np.ones(niter+1), z)
+    hex   = np.outer(np.ones(niter+1), h)       # pylint: disable=redefined-builtin
+    phiex  = np.outer(np.ones(niter+1), phi)
+    dr2ex  = np.outer(np.ones(niter+1), 2*d*r)
+    r2d2ex = np.outer(np.ones(niter+1), r**2+d**2)
 
     # repetitives
-    cos_phi0e = np.cos(phi0e)
-    cos_phi = np.cos(phie-phi0e)
+    cos_phi0ex = np.cos(phi0ex)
+    cos_phi = np.cos(phiex-phi0ex)
 
     # compute r-phi components
-    mask = (r2d2e-dr2e*cos_phi == 0) # special case r = d/2 and cos_phi=1
+    mask = (r2d2ex-dr2ex*cos_phi == 0) # special case r = d/2 and cos_phi=1
     unite  = np.ones([niter+1,n])
-    unite[mask] = - (1/2)/(ze[mask]+he[mask])**2 + (1/2)/(ze[mask]-he[mask])**2
+    unite[mask] = - (1/2)/(zex[mask]+hex[mask])**2 + (1/2)/(zex[mask]-hex[mask])**2
 
-    rrc = r2d2e[~mask] - dr2e[~mask]*cos_phi[~mask]
-    g_m = 1/np.sqrt(rrc + (ze[~mask] + he[~mask])**2)
-    g_p = 1/np.sqrt(rrc + (ze[~mask] - he[~mask])**2)
-    unite[~mask] = ((ze+he)[~mask]*g_m - (ze-he)[~mask]*g_p)/rrc
+    rrc = r2d2ex[~mask] - dr2ex[~mask]*cos_phi[~mask]
+    g_m = 1/np.sqrt(rrc + (zex[~mask] + hex[~mask])**2)
+    g_p = 1/np.sqrt(rrc + (zex[~mask] - hex[~mask])**2)
+    unite[~mask] = ((zex+hex)[~mask]*g_m - (zex-hex)[~mask]*g_p)/rrc
 
-    summand = sphie/3*cos_phi0e*unite
+    summand = sphiex/3*cos_phi0ex*unite
 
     Br   = d/2/niter*np.sum(summand*(r-d*cos_phi), axis=0)
-    Bphi = d**2/2/niter*np.sum(summand*np.sin(phie-phi0e), axis=0)
+    Bphi = d**2/2/niter*np.sum(summand*np.sin(phiex-phi0ex), axis=0)
 
     # compute z-component
-    gz_m = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (ze+h)**2)
-    gz_p = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (ze-h)**2)
-    summandz = sphie/3*cos_phi0e*(gz_p - gz_m)
+    gz_m = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (zex+h)**2)
+    gz_p = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (zex-h)**2)
+    summandz = sphiex/3*cos_phi0ex*(gz_p - gz_m)
     Bz = d/2/niter*np.sum(summandz, axis=0)
 
     return [Br,Bphi,Bz]
