@@ -152,8 +152,27 @@ class Collection:
 
     def display(self, **kwargs):
         """
-        Display Collection graphically. kwargs of top level display()
-            function.
+        Display collection graphically. kwargs of top level display() function.
+
+        Parameters
+        ----------
+        markers: array_like, shape (N,3), default=[(0,0,0)]
+            Mark positions in graphic output. Puts a marker in the origin.
+            by default.
+
+        axis: pyplot.axis, default=None
+            Display graphical output in a given pyplot axis (must be 3D).
+
+        direc: bool, default=False
+            Set True to plot magnetization and current directions
+
+        show_path: bool/string, default=False
+            Set True to plot object paths. Set 'all' to plot an object
+            represenation at each path position.
+
+        Returns
+        -------
+        None
         """
         display(self, **kwargs)
 

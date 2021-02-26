@@ -8,15 +8,15 @@ discussion -----------------------------------------
 
 - pylint disable for specific functions
 
-- context manager
-    - combined motion
-    - collections apply operations
 
 - scipy update 1.6
     - pylance problem
     - normalized=True weg
 
 2do ----------------------------------------------------------
+assert steps>1, 'steps must be > 1'
+- context manager tool tip not displaying
+
 - docstrings
     - __init__ docstrings providing brief overviews
     - docu and docstring like scipy

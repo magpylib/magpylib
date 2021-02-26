@@ -1,9 +1,11 @@
 """BaseGeo class code"""
 
 import sys
+from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib3._lib.math_utility.utility import rotobj_from_angax
+from magpylib3._lib.obj_classes.class_Collection import Collection
 from magpylib3._lib.graphics import display
 
 
@@ -45,6 +47,9 @@ class BaseGeo:
         # set pos and orient attributes
         self.pos = pos
         self.rot = rot
+        self._mm = False        # multi_motion
+        self._mm_steps = None   # multi_motion steps
+        self._mm_first = True   # multi_motion first operation
 
     # properties ----------------------------------------------------
     @property
@@ -153,7 +158,7 @@ class BaseGeo:
             show_path=show_path)
 
 
-    def move_by(self, displacement, steps=-1):
+    def move_by(self, displacement, steps=None):
         """ Linear displacement of object
 
         Parameters
@@ -161,7 +166,10 @@ class BaseGeo:
         displacement: array_like, shape (3,)
             displacement vector in units of mm.
 
-        steps: int, optional, default=-1
+        steps: int or None, default=None
+            If steps=None: Object will simply be moved without generating a
+                path. Specifically, path[-1] of object is set anew. This is
+                similar to having steps=-1.
             If steps < 0: apply a linear motion from 0 to displ on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 displace path[-1].
@@ -173,17 +181,14 @@ class BaseGeo:
         self : object with position and orientation properties.
         """
 
+        # steps
+        steps = get_steps(steps, self)
+
         # secure input
         displ = np.array(displacement, dtype=float)
 
         # load current path
         path_pos = self._pos
-        path_len = len(path_pos)
-
-        # bad steps input, set to max size
-        if steps < -path_len:
-            steps = -path_len # path[0] sees 0 displ
-            print('WARNING: src.move_by() - |-steps|>path_len, setting to -path_len')
 
         # generate additional pos path
         ts = np.linspace(0, 1, abs(steps)+1)[1:]
@@ -204,7 +209,7 @@ class BaseGeo:
         return self
 
 
-    def move_to(self, target_pos, steps=-1):
+    def move_to(self, target_pos, steps=None):
         """ Linear motion of object to target position
 
         Parameters
@@ -213,40 +218,51 @@ class BaseGeo:
             target position vector in units of mm.
 
         steps: int, optional, default=-1
+            If steps=None: Object will simply be moved without generating a
+                path. Specifically, path[-1] of object is set anew. This is
+                similar to having steps=-1.
             If steps < 0: apply a linear motion from path[steps] to
-            target_pos on top of existing path[steps:]. Specifically,
-            steps=-1 will just displace path[-1].
+                target_pos on top of existing path[steps:]. Specifically,
+                steps=-1 will just displace path[-1].
             If steps > 0: add linear motion to target_pos to existing
-            path starting at path[-1].
+                path starting at path[-1].
 
         Returns:
         --------
         self : object with position and orientation properties.
         """
 
+        # steps
+        steps = get_steps(steps, self)
+
+        # avoid mm-motion calling get_steps again(mm_first problem)
+        mm_flag = self._mm
+        if mm_flag:
+            self._mm = False
+
         # secure input
         tgt_pos = np.array(target_pos, dtype=float)
 
         # load current path
         path_pos = self._pos
-        path_len = len(path_pos)
-
-        # bad steps input, set to max size
-        if steps < -path_len:
-            steps = -path_len # path[0] sees 0 displ
-            print('WARNING: src.move_to() - |-steps|>path_len, setting to -path_len')
 
         # call move_by
         if steps>0:
             displ = tgt_pos - path_pos[-1]
         if steps<0:
             displ = tgt_pos - path_pos[steps]
+        print(displ)
+
         self.move_by(displ, steps=steps)
+
+        # after motion application turn _mm on again
+        if mm_flag:
+            self._mm = True
 
         return self
 
 
-    def rotate(self, rot:R, anchor=None, steps=-1):
+    def rotate(self, rot:R, anchor=None, steps=None):
         """ Object rotation
 
         Parameters
@@ -258,6 +274,9 @@ class BaseGeo:
             the object will rotate about its own center.
 
         steps: int, optional, default=-1
+            If steps=None: Object will simply be rotated without generating a
+                path. Specifically, path[-1] of object is set anew. This is
+                similar to having steps=-1.
             If steps < 0: apply linear rotation steps from 0 to rot on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 rotate path[-1].
@@ -269,6 +288,9 @@ class BaseGeo:
         self : object with position and orientation properties.
         """
 
+        # steps
+        steps = get_steps(steps, self)
+
         # secure input type
         if anchor is not None:
             anchor = np.array(anchor, dtype=float)      # if None
@@ -276,12 +298,6 @@ class BaseGeo:
         # load current path
         path_pos = self._pos
         path_rot = self._rot.as_quat()
-        path_len = len(path_rot)
-
-        # bad steps input, set to max size
-        if steps < -path_len:
-            steps = -path_len + 1  # path[0] sees 0 rot
-            print('WARNING: src.rotate() - steps<path_len, setting to max-1')
 
         # generate rotations
         stepping = np.linspace(0,1,abs(steps)+1)[1:]
@@ -309,7 +325,7 @@ class BaseGeo:
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, steps=-1, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, steps=None, degree=True):
         """ Object rotation from angle-axis combination
 
         Parameters
@@ -328,6 +344,9 @@ class BaseGeo:
             If True, Angle is given in [deg]. If False, angle is given in [rad].
 
         steps: int, optional, default=-1
+            If steps=None: Object will simply be rotated without generating a
+                path. Specifically, path[-1] of object is set anew. This is
+                similar to having steps=-1.
             If steps < 0: apply linear rotation steps from 0 to rot on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 rotate path[-1].
@@ -338,6 +357,14 @@ class BaseGeo:
         --------
         self : object with position and orientation properties.
         """
+
+        # steps
+        steps = get_steps(steps, self)
+
+        # avoid mm-motion calling get_steps again (mm_first problem)
+        mm_flag = self._mm
+        if mm_flag:
+            self._mm = False
 
         # degree to rad
         if degree:
@@ -362,6 +389,7 @@ class BaseGeo:
         # pi-rotation includes all multiples of pi
         # rest-rotation includes the rest
 
+
         # apply rest-rotation (within [-pi,pi])
         ang_sign = np.sign(angle)
         ang_rest = abs(angle) % np.pi
@@ -370,9 +398,93 @@ class BaseGeo:
 
         # apply rotations beyond pi (on top of rest-rotation)
         n_rot = int(abs(angle)/np.pi)    # number of pi-rotations
+
         if n_rot>0:
             rot_pi = rotobj_from_angax(ang_sign*np.pi, axis) # rotate n_rot times
             for _ in range(n_rot):
                 self.rotate(rot_pi, anchor, -abs(steps))
 
+        # after motion application turn _mm on again
+        if mm_flag:
+            self._mm = True
+
         return self
+
+
+def get_steps(steps:int, bg:BaseGeo):
+    """ compute correct steps
+
+    Parameters
+    ----------
+    steps: int
+        number of steps
+
+    bg: object that inherits BaseGeo
+        object for which move operations are applied
+
+    Returns:
+    --------
+        steps: int
+    """
+    # pylint: disable=protected-access
+
+    # multi_motion
+    if bg._mm:
+        if bg._mm_first:
+            steps = bg._mm_steps
+            assert steps>0, 'ERROR: multi_motion - steps must be larger than 0'
+            bg._mm_first = False
+        else:
+            steps = -bg._mm_steps
+
+    # normal_motion
+    else:
+        # set default value
+        if steps is None:
+            steps = -1
+
+        # bad steps input, set to max size
+        path_len = len(bg._pos)
+        if steps < -path_len:
+            steps = -path_len + 1  # path[0] sees 0 rot
+            print('WARNING: src.motion() - steps<path_len, setting to max-1')
+
+    return steps
+
+
+@contextmanager
+def multi_motion(obj,steps):
+    """combine object motions
+
+    Parameters:
+    -----------
+    obj: moveable object
+        object or collection to which a combined motion
+        should be applied
+
+    steps: int
+        Number of steps of the combined motion
+    """
+    # pylint: disable=protected-access
+
+    # enter
+    if isinstance(obj, Collection):
+        for src in obj:
+            src._mm = True
+            src._mm_steps = steps
+    else:
+        obj._mm = True
+        obj._mm_steps = steps
+
+    yield obj
+
+    # exit
+    if isinstance(obj, Collection):
+        for src in obj:
+            src._mm = False
+            src._mm_steps = None
+            src._mm_first = True
+    else:
+        obj._mm = False
+        obj._mm_steps = None
+        obj._mm_first = True
