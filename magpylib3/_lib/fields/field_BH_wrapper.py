@@ -36,7 +36,7 @@ level4(src.getB, src.getH):       <--- USER INTERFACE
 """
 
 import sys
-from typing import Sequence, Any
+from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib3 import _lib
@@ -438,7 +438,7 @@ def getBv(**kwargs: dict) -> np.ndarray:
     return getBHv_level2(bh=True, **kwargs)
 
 
-def getHv(**kwargs: Any) -> np.ndarray:
+def getHv(**kwargs: dict) -> np.ndarray:
     """ H-Field computation from dictionary of vectors.
 
     ### Args:
