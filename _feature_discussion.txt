@@ -2,27 +2,30 @@ discussion -----------------------------------------
 
 - global magnetization ?
     - src.mag=(xxx, localMag=True)
-    - src = Box(mag,pos,dim,...localMAg=True)
+    - src = Box(mag,pos,dim,...,local_mag=True)
 
 - are typehints really helpful for user ?
 
-- pylint missing module docsting magpylib3
-
-2do-------------------------------------------------
-
-- the cel function
-    - properly clean up celv
-    - provide faster E,K and Pi alternatives
-    - provide algorithms for incomplete el !!!
+- pylint disable for specific functions
 
 - context manager
     - combined motion
     - collections apply operations
+
 - scipy update 1.6
     - pylance problem
     - normalized=True weg
-- Warnings aktivieren
-    - string == statt string is
+
+2do ----------------------------------------------------------
+
+
+2do high end dev ---------------------------------------------
+
+- the cel function
+    - properly clean up celv
+    - provide faster E,K and Pi alternatives
+    - provide algorithms for incomplete el for Cylinder tiles !!!
+
 
 - integrate with existing wheel and distribute
 - docu and docstring like scipy

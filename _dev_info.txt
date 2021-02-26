@@ -1,0 +1,10 @@
+# .pylintrc ------------------------------------------------------
+specify names and disable warnings in pylintrc file
+
+To generate pylintrc file:
+> pylint --generate-rcfile | out-file -encoding utf8 .pylintrc
+
+# .gitignore -----------------------------------------------------
+Make git ignore specific files
+Tell git to ignore __pycache__ etc.
+

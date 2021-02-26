@@ -60,94 +60,15 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=print-statement,
-        parameter-unpacking,
-        unpacking-in-except,
-        old-raise-syntax,
-        backtick,
-        long-suffix,
-        old-ne-operator,
-        old-octal-literal,
-        import-star-module-level,
-        non-ascii-bytes-literal,
-        raw-checker-failed,
-        bad-inline-option,
-        locally-disabled,
-        file-ignored,
-        suppressed-message,
-        useless-suppression,
-        deprecated-pragma,
-        use-symbolic-message-instead,
-        apply-builtin,
-        basestring-builtin,
-        buffer-builtin,
-        cmp-builtin,
-        coerce-builtin,
-        execfile-builtin,
-        file-builtin,
-        long-builtin,
-        raw_input-builtin,
-        reduce-builtin,
-        standarderror-builtin,
-        unicode-builtin,
-        xrange-builtin,
-        coerce-method,
-        delslice-method,
-        getslice-method,
-        setslice-method,
-        no-absolute-import,
-        old-division,
-        dict-iter-method,
-        dict-view-method,
-        next-method-called,
-        metaclass-assignment,
-        indexing-exception,
-        raising-string,
-        reload-builtin,
-        oct-method,
-        hex-method,
-        nonzero-method,
-        cmp-method,
-        input-builtin,
-        round-builtin,
-        intern-builtin,
-        unichr-builtin,
-        map-builtin-not-iterating,
-        zip-builtin-not-iterating,
-        range-builtin-not-iterating,
-        filter-builtin-not-iterating,
-        using-cmp-argument,
-        eq-without-hash,
-        div-method,
-        idiv-method,
-        rdiv-method,
-        exception-message-attribute,
-        invalid-str-codec,
-        sys-max-int,
-        bad-python3-import,
-        deprecated-string-function,
-        deprecated-str-translate-call,
-        deprecated-itertools-function,
-        deprecated-types-field,
-        next-method-defined,
-        dict-items-not-iterating,
-        dict-keys-not-iterating,
-        dict-values-not-iterating,
-        deprecated-operator-function,
-        deprecated-urllib-function,
-        xreadlines-attribute,
-        deprecated-sys-function,
-        exception-escape,
-        comprehension-escape,
-        protected-access,
-        bad-whitespace,
-        dangerous-default-value,
-        too-many-arguments,
-        too-many-locals,
-        too-few-public-methods,
-        unsubscriptable-object,
-        missing-module-docstring,
-        pointless-statement
+disable=protected-access,               # must access own _pos, _rot to give functionality
+        bad-whitespace,                 # (0,0,0) not allowed
+        dangerous-default-value,        # [(0,0,0)] not allowed as default argument
+        too-many-arguments,             # several complex functions that can/should not be dismembered
+        too-many-locals,                # several complex functions that can/should not be dismembered
+        too-few-public-methods,         # config
+        unsubscriptable-object,         # pylint doenst mange to resolve ndarray.T
+        missing-module-docstring,       # no idea
+        pointless-statement             # col + src is not recognized by linter
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
@@ -254,21 +175,20 @@ function-naming-style=snake_case
 #function-rgx=
 
 # Good variable names which should always be accepted, separated by a comma.
-good-names=i,j,k,l,m,n,                  # indices
-           k0,k1,ns,                     # others
-           x,y,z,r,                      # positions
-           a,b,c,d,h,                    # dimensions
+good-names=_,                              # misc
+           i,j,k,l,m,n,                    # indices
+           k0,k1,ns,                       # others
+           x,y,z,r,                        # positions
+           a,b,c,d,h,                      # dimensions
            t,ts,v,                         # parametrization
-           kc,p,c,s,em,cc,pp,ss,f,q,g,kk,                     # cel input
-           B,H,Br,Bphi,Bx,By,Bz,         # fields & field components
+           kc,p,c,s,em,cc,pp,ss,f,q,g,kk,  # cel input
+           B,H,Br,Bphi,Bx,By,Bz,           # fields & field components
            B_group,
-           mx,my,mz,                     # magnetizations
-           bh,ze,he,                     # various used variables
-           ax,lw,                           # noch fragen ?
-           np,
+           mx,my,mz,                       # magnetizations
+           bh,ze,he,                       # various used variables
+           ax,lw,                          # noch fragen ?
            dx,dy,dz,dd,
-           pm,mv,aa,B1,B2,B3,rv,Btest,             # from testing
-           field_BH_box,                 # B/H in module and function names
+           field_BH_box,                   # B/H in module and function names
            field_B_box,                  
            field_Bcy_axial,              
            field_Hcy_transv,             
@@ -282,29 +202,10 @@ good-names=i,j,k,l,m,n,                  # indices
            getH,
            getBv,
            getHv,
-           class_BaseGeo,
+           class_BaseGeo,                   
            class_Collection,
            class_mag_Box,
-           class_mag_Cylinder,
-           test_BaseGeo,
-           test_Box,
-           test_Collection,
-           test_Cylinder,
-           test_field_BH_box,
-           test_field_BH_cylinder,
-           test_fieldWrapper_getBHv,
-           test_path_BaseGeo,
-           test_path_getB,
-           test_field_BH_box_mag0,
-           test_field_BH_cylinder_mag0,
-           test_fieldWrapper_getBv1,
-           test_fieldWrapper_getBv2,
-           test_fieldWrapper_getHv1,
-           test_fieldWrapper_getHv2,
-           test_fieldWrapper_getBv3,
-           ex,                           # some basics
-           Run,
-           _
+           class_mag_Cylinder
 
 
 # Good variable names regexes, separated by a comma. If names match any regex,
