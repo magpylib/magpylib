@@ -80,7 +80,7 @@ class BaseGeo:
         elif inp.ndim == 2:                       # multi position
             self._pos = inp
         else:
-            sys.exit('ERROR: src.pos() - bad inp shape')
+            sys.exit('ERROR: .pos() - a path must be of shape (3,) or (N,3)')
 
 
     @property
@@ -235,7 +235,8 @@ class BaseGeo:
         # steps
         steps = get_steps(steps, self)
 
-        # avoid mm-motion calling get_steps again(mm_first problem)
+        # avoid mm-motion calling get_steps again in
+        #   .move_by() call, mm_first problem
         mm_flag = self._mm
         if mm_flag:
             self._mm = False
@@ -361,7 +362,8 @@ class BaseGeo:
         # steps
         steps = get_steps(steps, self)
 
-        # avoid mm-motion calling get_steps again (mm_first problem)
+        # avoid mm-motion calling get_steps again 
+        #   in .rotate() call, mm_first problem
         mm_flag = self._mm
         if mm_flag:
             self._mm = False
