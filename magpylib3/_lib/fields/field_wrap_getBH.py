@@ -91,11 +91,11 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
 
     # determine shape of positions and flatten into nx3 array
     poso_shape = poso.shape
-    n = np.prod(poso_shape[:-1],dtype=int) # pylint: disable=unsubscriptable-object
-    poso_flat = np.reshape(poso,(n,3))
+    poso_flat = np.reshape(poso,(-1,3))
 
     l = len(src_list)           # number of sources
     m = len(src_list[0]._pos)   # path length
+    n = len(poso_flat)          # pos_obs length
     B = np.empty((l,m,n,3))     # store fields here
 
     # group similar source types-------------------------------------
