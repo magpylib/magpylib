@@ -39,7 +39,7 @@ import sys
 from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3 import _lib
+import magpylib3 as mag3
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
@@ -69,7 +69,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
 
     # inputs
     src_type = kwargs['src_type']
-    bh =  kwargs['bh']  # True=B, False=H
+    bh = kwargs['bh']  # True=B, False=H
 
     rot = kwargs['rot'] # only rotation object allowed as input
     pos = kwargs['pos']
@@ -282,14 +282,14 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     src_sorted = [[],[]]   # store groups here
     order = [[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
-        if isinstance(src, _lib.obj_classes.Box):
+        if isinstance(src, mag3.magnet.Box):
             src_sorted[0] += [src]
             order[0] += [i]
-        elif isinstance(src, _lib.obj_classes.Cylinder):
+        elif isinstance(src, mag3.magnet.Cylinder):
             src_sorted[1] += [src]
             order[1] += [i]
         else:
-            sys.exit('WARNING getBH() - bad source input !')
+            sys.exit('ERROR: getBH() - bad source input !')
 
     # evaluate each non-empty group in one go------------------------
 
@@ -330,7 +330,7 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # rearrange B when there is at least one Collection with more than one source
     if len(src_list) > len(sources):
         for i,src in enumerate(sources):
-            if isinstance(src, _lib.obj_classes.Collection):
+            if isinstance(src, mag3.Collection):
                 col_len = len(src._sources)
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice

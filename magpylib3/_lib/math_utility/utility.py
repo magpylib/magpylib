@@ -4,7 +4,7 @@ import sys
 from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3 import _lib
+import magpylib3 as mag3
 
 
 def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
@@ -46,11 +46,12 @@ def format_src_input(sources: Sequence) -> list:
     for src in sources:
         if isinstance(src, (tuple, list)):
             src_list += format_src_input(src) # recursive flattening
-        elif isinstance(src, _lib.obj_classes.Collection):
+        elif isinstance(src, mag3.Collection):
             src_list += src.sources
         elif isinstance(src, (
-                _lib.obj_classes.Box,  #avoid circ imports
-                _lib.obj_classes.Cylinder)):
+                mag3.magnet.Box,  #avoid circ imports
+                mag3.magnet.Cylinder,
+                mag3.Sensor)):
             src_list += [src]
         else:
             sys.exit('ERROR: format_src_input() - bad sources input')
