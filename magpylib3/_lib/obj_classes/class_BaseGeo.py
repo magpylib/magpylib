@@ -6,7 +6,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib3._lib.math_utility.utility import rotobj_from_angax
 from magpylib3._lib.obj_classes.class_Collection import Collection
-from magpylib3._lib.graphics import display
+from magpylib3._lib.display import display
 
 
 class BaseGeo:

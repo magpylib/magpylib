@@ -71,7 +71,7 @@ __version__ = '3.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'moment',
-           'getB', 'getH', 'getBv', 'getHv',
+           'getB', 'getH', 'getBv', 'getHv','Sensor',
            'Collection', 'display', 'Config','multi_motion']
 
 # create interface
@@ -80,6 +80,6 @@ from . import current
 from . import moment
 from ._lib.config import Config
 from ._lib.fields.field_BH_wrapper import getB, getH, getBv, getHv
-from ._lib.obj_classes import Collection
-from ._lib.graphics import display
+from ._lib.obj_classes import Collection, Sensor
+from ._lib.display import display
 from ._lib.obj_classes.class_BaseGeo import multi_motion
