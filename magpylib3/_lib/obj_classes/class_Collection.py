@@ -1,8 +1,8 @@
 """Collection class code"""
 
 import copy
-from magpylib3._lib.math_utility.utility import format_src_input, check_duplicates
-from magpylib3._lib.fields.field_BH_wrapper import getB, getH
+from magpylib3._lib.math_utility import format_src_input, check_duplicates
+from magpylib3._lib.fields import getB, getH
 from magpylib3._lib.display import display
 
 

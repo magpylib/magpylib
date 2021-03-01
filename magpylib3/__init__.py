@@ -74,12 +74,11 @@ __all__ = ['magnet', 'current', 'moment',
            'getB', 'getH', 'getBv', 'getHv','Sensor',
            'Collection', 'display', 'Config','multi_motion']
 
-# create interface
-from . import magnet
-from . import current
-from . import moment
-from ._lib.config import Config
-from ._lib.fields.field_BH_wrapper import getB, getH, getBv, getHv
-from ._lib.obj_classes import Collection, Sensor
-from ._lib.display import display
-from ._lib.obj_classes.class_BaseGeo import multi_motion
+# create interface to outside of package
+from magpylib3 import magnet
+from magpylib3 import current
+from magpylib3 import moment
+from magpylib3._lib.config import Config
+from magpylib3._lib.fields import getB, getH, getBv, getHv
+from magpylib3._lib.obj_classes import Collection, Sensor, multi_motion
+from magpylib3._lib.display import display

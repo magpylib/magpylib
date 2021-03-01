@@ -40,10 +40,10 @@ from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib3 as mag3
+from magpylib3._lib.math_utility import format_src_input, same_path_length
+from magpylib3._lib.config import Config
 from magpylib3._lib.fields.field_BH_box import field_BH_box
 from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
-from magpylib3._lib.math_utility.utility import format_src_input, same_path_length
-from magpylib3._lib.config import Config
 
 # pylint: disable=protected-access
 # pylint: disable=too-many-branches

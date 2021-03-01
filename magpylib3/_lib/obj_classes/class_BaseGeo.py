@@ -4,9 +4,9 @@ import sys
 from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3._lib.math_utility.utility import rotobj_from_angax
-from magpylib3._lib.obj_classes.class_Collection import Collection
+from magpylib3._lib.math_utility import rotobj_from_angax
 from magpylib3._lib.display import display
+from magpylib3._lib.obj_classes.class_Collection import Collection
 
 
 class BaseGeo:
@@ -362,7 +362,7 @@ class BaseGeo:
         # steps
         steps = get_steps(steps, self)
 
-        # avoid mm-motion calling get_steps again 
+        # avoid mm-motion calling get_steps again
         #   in .rotate() call, mm_first problem
         mm_flag = self._mm
         if mm_flag:

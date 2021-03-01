@@ -2,9 +2,9 @@
 
 import sys
 import numpy as np
+from magpylib3._lib.fields import getB, getH
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib3._lib.obj_classes.class_Collection import Collection
-from magpylib3._lib.fields.field_BH_wrapper import getB, getH
 
 # init for tool tips
 a=b=c=None

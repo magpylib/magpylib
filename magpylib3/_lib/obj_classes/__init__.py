@@ -1,9 +1,10 @@
 """_lib.obj_classes"""
 
-__all__ = ['Box', 'Cylinder', 'Collection', 'Sensor']
+__all__ = ['Box', 'Cylinder', 'Collection', 'Sensor', 'multi_motion']
 
-# create interface
-from .class_mag_Box import Box
-from .class_mag_Cylinder import Cylinder
-from .class_Collection import Collection
-from .class_Sensor import Sensor
+# create interface to outside of package
+from magpylib3._lib.obj_classes.class_mag_Box import Box
+from magpylib3._lib.obj_classes.class_mag_Cylinder import Cylinder
+from magpylib3._lib.obj_classes.class_Collection import Collection
+from magpylib3._lib.obj_classes.class_Sensor import Sensor
+from magpylib3._lib.obj_classes.class_BaseGeo import multi_motion

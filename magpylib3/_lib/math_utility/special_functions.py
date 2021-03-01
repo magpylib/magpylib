@@ -3,6 +3,7 @@ special functions computations beyond scipy.special
 '''
 
 import numpy as np
+
 def celv(kc, p, c, s):
     """
     vectorized version of the cel integral
