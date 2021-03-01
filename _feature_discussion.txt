@@ -6,44 +6,73 @@ discussion -----------------------------------------
 
 - are typehints really helpful for user ?
 
-- pylint disable for specific functions
-
-
 - scipy update 1.6
     - pylance problem
     - normalized=True weg
 
+- naming: pos_obs or obs_pos
+- naming: pos_pix or pix_pos
+- naming: multi_motion -> motion_join, path_join, path_sync 
+    # join can mean one after other
+    # motion or path ?
+    # sync, join, combine, 
+
+
 2do ----------------------------------------------------------
-assert steps>1, 'steps must be > 1'
-- context manager tool tip not displaying
+- obj without path becomes static in evaluation with paths ?
 
-- docstrings
-    - __init__ docstrings providing brief overviews
-    - docu and docstring like scipy
-- integrate with existing wheel and distribute
+- code: graphic defaults to config
+- code: sys_size should incude sys_center for displaced display
+- code: .reshape((-1,3)) for paths
+    - get rid of protected accesses
+    - define _args
 
-- performance
-    - profile getBH
-    - numpy reshape and other operations creating copies
+- code: context manager tool tip not displaying
+- code: check_dupicates might destroy col.sources order
+- code: bring edgesize in context with magnetsize
+- code: numpy reshape and other operations creating copies
+- code: complete type hints
 
-- H testing against FEM
+- docu: __init__ docstrings providing brief overviews
+- docu: docstring like scipy
+- docu: REWORK DOKU
+    - link to references / citations
+    - 
 
-2do high end dev ---------------------------------------------
+- CI: integrate with existing wheel
+- CI: slim down wheel
+- CI: explain wheel in _dev_info.txt
+- CI: run pylint in wheel
+- CI: no more beta versioning
+- CI: publish 3.0.0 - eliminate magpylib3 naming
 
-- the cel function
-    - properly clean up celv
-    - provide faster E,K and Pi alternatives
-    - provide algorithms for incomplete el for Cylinder tiles !!!
+- dissem: integrate with NumFocus
+- dissem: FWF for magpy+MOM+FMM ?
 
-- check_dupicates might destroy col.sources order
-- add remaining sources
-	sphere
-	currents
-	dipole moment
-	facet
-- bring edgesize in context with magnetsize
+- performance: profile getBH
 
-- errors
+- math: cel function
+        - properly clean up celv
+        - provide faster E,K and Pi alternatives
+        - provide algorithms for incomplete el for Cylinder tiles !!!
+- math: box problem
+        - np.log options/alternatives function ?
+
+- tests: H testing against FEM
+
+- code: input checks enable mit config
+
+- code: add remaining sources
+	- sphere
+	- currents
+	- dipole moment
+- code add new sources
+    - cone
+    - arc
+    - tile
+    - raida source
+
+- errors:
     - throw errors instead of warning+sys.exit()
     - return error codes
     - write tests for errors
@@ -57,36 +86,15 @@ assert steps>1, 'steps must be > 1'
 - Line()
 - Circular()
 
-.misc
-- Dipole
-- FEM
-- Virtual
-
-
-mid term improvements ------------------------------
-
-- add new sources
-    - virtual field
-    - cone
-    - arc
-    - tile
-
-- complete type hints
-- adress field_BH_Box edge/corner stability problem
-
-- bringing getBv functionality to getB
-	getB(*sources, **kwargs
-	# M sources
-    kwargs= {
-		pos_obs = []   		# N1 x N2 x ... x 3
-		src_pos = []   		# M x O1 x O2 x ... x 3
-		src_rot = []		# M x O1 x O2 x ... x 3
-		dim = []			# M x P x dim
-		mag = []			# M x P x mag
-		niter = 50
-		}
+code: .misc package
+    - Dipole
+    - FEM interpolation
+    - Virtual field (just a function)
 
 - finally adding sensors and sensor paths to getBv
+- getF
+- finite sized currents
+- optional input type checking
 
 - potential performance increase:
     Can we speed up the computation by combining similar
@@ -97,15 +105,6 @@ mid term improvements ------------------------------
     of the demag tensor.
 
     its even possible to throw in the scaling property
-
-
-- Speedup elliptic integrals by complementing cel with
-    special cases K and E faster algorithms
-
-- getF
-- FEM source
-- finite sized currents
-- optional input type checking
 
 Cuboid field performance:
     Distinguish if 1-2 or 3 non-zero magnetizations
@@ -123,6 +122,17 @@ DONE - NEW FEATURES ------------------------------------
 - config
 - mag=0 returns 0 now
 - edgecases to avoid singularities
+- move_to(), move_by()
+- 'x', 'y', 'z' as axis arguments in rotate_from_anganx()
+- fixed Cylinder field
+- fixed Cube field
+- getB, getH
+- path functionality
+    - multi_motion
+- complete code vectorization
+
+- new tests
+- pylint
 
 
 
@@ -132,7 +142,6 @@ DO NOT DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
 class BaseSource
 	- getB
 	- getH
-
 WHY? : This would improve the copy-paste docstring problem, 
 	but not allow direct hints what inputs are needed
 	in the src.getB() code inspection. For each source
@@ -141,7 +150,11 @@ WHY? : This would improve the copy-paste docstring problem,
 
 class BaseGeo
 	- __add__
-
 WHY? : We dont want __add__ because a sensor inherits BaseGeo
     but it should not be addable to Collections
 
+
+multidimensional paths .pos() shape = (M1,M2,M3,...,3)
+WHY? : This makes no sense when dealing with motions
+    when someone want that functionality they can just
+    use getBv or scan their surface with a 1D path

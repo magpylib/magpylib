@@ -1,5 +1,6 @@
 # .pylintrc ------------------------------------------------------
 specify names and disable warnings in pylintrc file
+provided file overwriter pylintrc from home
 
 To generate pylintrc file:
 > pylint --generate-rcfile | out-file -encoding utf8 .pylintrc
