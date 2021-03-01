@@ -1,0 +1,34 @@
+Field computation structure:
+
+level0:(field_BH_XXX.py files)
+    - pure vectorized field computations from literature
+    - all computations in source CS
+    - distinguish B/H
+
+level1(getBH_level1):
+    - apply transformation to global CS
+    - select correct level0 src_type computation
+    - input dict, no input checks !
+
+level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT = DICT OF ARRAYS
+    - input dict checks (unknowns)
+    - secure user inputs
+    - check input for mandatory information
+    - set missing input variables to default values
+    - tile 1D inputs
+
+level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
+    - input dict checks (unknowns)
+    - secure user inputs
+    - group similar sources for combined computation
+    - generate vector input format for getBH_level1
+    - adjust Bfield output format to (pos_obs, path, sources) input format
+
+level3(getB, getH, getBv, getHv): <--- USER INTERFACE
+    - docstrings
+    - separated B and H
+    - transform input into dict for level2
+
+level4(src.getB, src.getH):       <--- USER INTERFACE
+    - docstrings
+    - calling level3 getB, getH directly from sources

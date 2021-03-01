@@ -1,40 +1,3 @@
-"""
-Field computation structure:
-
-level0:(field_BH_XXX.py files)
-    - pure vectorized field computations from literature
-    - all computations in source CS
-    - distinguish B/H
-
-level1(getBH_level1):
-    - apply transformation to global CS
-    - select correct level0 src_type computation
-    - input dict, no input checks !
-
-level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT = DICT OF ARRAYS
-    - input dict checks (unknowns)
-    - secure user inputs
-    - check input for mandatory information
-    - set missing input variables to default values
-    - tile 1D inputs
-
-level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
-    - input dict checks (unknowns)
-    - secure user inputs
-    - group similar sources for combined computation
-    - generate vector input format for getBH_level1
-    - adjust Bfield output format to (pos_obs, path, sources) input format
-
-level3(getB, getH, getBv, getHv): <--- USER INTERFACE
-    - docstrings
-    - separated B and H
-    - transform input into dict for level2
-
-level4(src.getB, src.getH):       <--- USER INTERFACE
-    - docstrings
-    - calling level3 getB, getH directly from sources
-"""
-
 import sys
 from typing import Sequence
 import numpy as np
@@ -42,151 +5,7 @@ from scipy.spatial.transform import Rotation as R
 import magpylib3 as mag3
 from magpylib3._lib.math_utility import format_src_input, same_path_length
 from magpylib3._lib.config import Config
-from magpylib3._lib.fields.field_BH_box import field_BH_box
-from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
-
-# pylint: disable=protected-access
-# pylint: disable=too-many-branches
-# pylint: disable=too-many-statements
-
-def getBH_level1(**kwargs:dict) -> np.ndarray:
-    """ Vectorized field computation
-
-    Args
-    ----
-    kwargs: dict of "1D"-input vectors that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (l*m*n,3)
-
-    Info
-    ----
-    - no input checks !
-    - applys spatial transformations global CS <-> source CS
-    - selects the correct Bfield_XXX function from input
-    """
-
-    # inputs
-    src_type = kwargs['src_type']
-    bh = kwargs['bh']  # True=B, False=H
-
-    rot = kwargs['rot'] # only rotation object allowed as input
-    pos = kwargs['pos']
-    poso = kwargs['pos_obs']
-
-    # transform obs_pos into source CS
-    pos_rel = pos - poso                           # relative position
-    pos_rel_rot = rot.apply(pos_rel, inverse=True) # rotate rel_pos into source CS
-
-    # compute field
-    if src_type == 'Box':
-        mag = kwargs['mag']
-        dim = kwargs['dim']
-        B = field_BH_box(bh, mag, dim, pos_rel_rot)
-    elif src_type == 'Cylinder':
-        mag = kwargs['mag']
-        dim = kwargs['dim']
-        niter = kwargs['niter']
-        B = field_BH_cylinder(bh, mag, dim, pos_rel_rot, niter)
-    else:
-        sys.exit('ERROR: getBH() - bad src input type')
-
-    # transform field back into global CS
-    B = rot.apply(B)
-
-    return B
-
-
-def getBHv_level2(**kwargs: dict) -> np.ndarray:
-    """ Direct access to vectorized computation
-
-    Parameters
-    ----------
-    kwargs: dict that describes the computation.
-
-    Returns
-    -------
-    field: ndarray, shape (N,3), field at obs_pos in [mT] or [kA/m]
-
-    Info
-    ----
-    - check inputs
-
-    - secures input types (list/tuple -> ndarray)
-    - test if mandatory inputs are there
-    - sets default input variables (e.g. pos, rot) if missing
-    - tiles 1D inputs vectors to correct dimension
-    """
-
-    # unknown kwarg input ('user accident') -------------------------
-    allowed_keys = ['bh', 'mag', 'dim', 'pos', 'rot', 'pos_obs', 'niter', 'src_type']
-    keys = kwargs.keys()
-    complement = [i for i in keys if i not in allowed_keys]
-    if complement:
-        print('WARNING: getBHv() - unknown input kwarg, ', complement)
-
-    # generate dict of secured inputs for auto-tiling ---------------
-    tile_params = {}
-
-    # mandatory general inputs ------------------
-    try:
-        src_type = kwargs['src_type']
-        poso = np.array(kwargs['pos_obs'], dtype=float)
-    except KeyError as kerr:
-        sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
-    tile_params['pos_obs'] = poso           # <-- tile
-
-    # optional general inputs -------------------
-    pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
-    tile_params['pos'] = pos                # <-- tile
-
-    rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
-    tile_params['rot'] = rot.as_quat()      # <-- tile
-
-    # mandatory class specific inputs -----------
-    if src_type == 'Box':
-        try:
-            mag = np.array(kwargs['mag'],dtype=float)
-            dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as kerr:
-            sys.exit('ERROR getBHv: missing input ' + str(kerr))
-        tile_params['mag'] = mag            # <-- tile
-        tile_params['dim'] = dim            # <-- tile
-    elif src_type == 'Cylinder':
-        try:
-            mag = np.array(kwargs['mag'],dtype=float)
-            dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as kerr:
-            sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
-        tile_params['mag'] = mag            # <-- tile
-        tile_params['dim'] = dim            # <-- tile
-        niter = kwargs.get('niter', 50)     # set niter
-        kwargs['niter'] = niter
-
-    # auto tile 1D parameters ---------------------------------------
-
-    # evaluation vector length
-    ns = [len(val) for val in tile_params.values() if val.ndim == 2]
-    if len(set(ns)) > 1:
-        sys.exit('ERROR: getBHv() - bad array input lengths: ' + str(set(ns)))
-    n = max(ns, default=1)
-
-    # tile 1D inputs and replace original values in kwargs
-    for key,val in tile_params.items():
-        if val.ndim == 1:
-            kwargs[key] = np.tile(val,(n,1))
-        else:
-            kwargs[key] = val
-    # change rot to Rotation object
-    kwargs['rot'] = R.from_quat(kwargs['rot'])
-
-    # compute and return B
-    B = getBH_level1(**kwargs)
-
-    if n==1: # remove highest level when n=1
-        return B[0]
-    return B
+from magpylib3._lib.fields.field_wrap_BH_level1 import getBH_level1
 
 
 def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
@@ -201,6 +20,7 @@ def scr_dict_homo_mag(group: list, poso_flat: np.ndarray) -> dict:
     -------
     dict for getBH_level1 input
     """
+    # pylint: disable=protected-access
 
     l_group = len(group)    # sources in group
     m = len(group[0]._pos)  # path length
@@ -247,6 +67,9 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     - generate vector input format for getBH_level1
     - adjust Bfield output format to pos_obs, path, sources input format
     """
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
+    #pylint: disable=too-many-statements
 
     # make sure there is no unknown kwarg input ('user accident') ----
     allowed_keys = ['bh', 'sources', 'pos_obs', 'sumup', 'niter']
@@ -406,64 +229,3 @@ def getH(sources:Sequence, pos_obs:np.ndarray, sumup:bool=False, **specs:dict) -
     """
 
     return getBH_level2(bh=False, sources=sources, pos_obs=pos_obs, sumup=sumup, **specs)
-
-
-def getBv(**kwargs: dict) -> np.ndarray:
-    """ B-Field computation from dictionary of vectors.
-
-    ### Args:
-    - src_type (string): source type must be either 'Box', 'Cylinder', ...
-    - pos (ndarray): default=(0,0,0), source positions
-    - rot (scipy..Rotation): default=unit_rotation: source rotations relative to init_state
-    - pos_obs (ndarray): observer positions
-
-    ### Args-magnets:
-    - mag (vector): homogeneous magnet magnetization in units of mT
-    - dim (vector): magnet dimension input
-
-    ### Args-specific:
-    - niter (int): default=50, for Cylinder sources diametral iteration
-
-    ### Returns:
-    - B-field (ndarray Nx3): B-field at pos_obs in units of mT
-
-    ### Info:
-    Inputs pos and rot will be set to default if not given. 3-vector inputs will
-    automatically be tiled to Nx3 format. At least one input must be of the form
-    Nx3 !
-
-    A check for mandatory input information is performed.
-    """
-
-    return getBHv_level2(bh=True, **kwargs)
-
-
-def getHv(**kwargs: dict) -> np.ndarray:
-    """ H-Field computation from dictionary of vectors.
-
-    ### Args:
-    - src_type (string): source type must be either 'Box', 'Cylinder', ...
-    - pos (ndarray): default=(0,0,0), source positions
-    - rot (scipy..Rotation): default=unit_rotation: source rotations relative to init_state
-    - pos_obs (ndarray): observer positions
-
-    ### Args-magnets:
-    - mag (vector): homogeneous magnet magnetization in units of mT
-    - dim (vector): magnet dimension input
-
-    ### Args-specific:
-    - niter (int): default=50, for Cylinder sources diametral iteration
-
-    ### Returns:
-    - H-field (ndarray Nx3): H-field at pos_obs in units of kA/m
-
-    ### Info:
-    Inputs pos and rot will be set to default if not given. 3-vector inputs will
-    automatically be tiled to Nx3 format. At least one input must be of the form
-    Nx3 !
-
-    A check for mandatory input information is performed.
-    return getBHv(False,**kwargs)
-    """
-
-    return getBHv_level2(bh=False, **kwargs)

@@ -12,11 +12,6 @@ discussion -----------------------------------------
 
 - naming: pos_obs or obs_pos
 - naming: pos_pix or pix_pos
-- naming: motion_merge -> motion_join, path_join, path_sync 
-    # join can mean one after other
-    # motion or path ?
-    # sync, join, combine, 
-
 
 2do ----------------------------------------------------------
 - obj without path becomes static in evaluation with paths ?
