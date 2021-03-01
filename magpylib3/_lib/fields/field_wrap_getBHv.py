@@ -2,7 +2,7 @@ import sys
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib3._lib.fields.field_wrap_BH_level1 import getBH_level1
-
+from  magpylib3._lib.math_utility import check_allowed_keys
 
 def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
@@ -27,10 +27,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
     # unknown kwarg input ('user accident') -------------------------
     allowed_keys = ['bh', 'mag', 'dim', 'pos', 'rot', 'pos_obs', 'niter', 'src_type']
-    keys = kwargs.keys()
-    complement = [i for i in keys if i not in allowed_keys]
-    if complement:
-        print('WARNING: getBHv() - unknown input kwarg, ', complement)
+    check_allowed_keys(allowed_keys, kwargs, 'getBHv()')
 
     # generate dict of secured inputs for auto-tiling ---------------
     tile_params = {}

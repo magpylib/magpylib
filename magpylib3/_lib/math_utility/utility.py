@@ -93,3 +93,21 @@ def same_path_length(obj_list: list) -> None:
     rot_check = all([len(obj._rot.as_quat()) == lenpos for obj in obj_list])
 
     return pos_check and rot_check
+
+
+def check_allowed_keys(allowed_keys, kwargs, func_name):
+    """ Thows a warning if kwargs contains a key that
+        is not in allowed_keys
+
+    Parameters:
+    -----------
+    allowed_keys (list): list of allowed keys
+
+    kwargs (dict): input dictionary
+
+    func_name (string): function name to throw proper warning
+    """
+    keys = kwargs.keys()
+    complement = [i for i in keys if i not in allowed_keys]
+    if complement:
+        print('WARNING: ' + func_name + ' - unknown input kwarg, ', complement)

@@ -3,7 +3,7 @@ from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib3 as mag3
-from magpylib3._lib.math_utility import format_src_input, same_path_length
+from magpylib3._lib.math_utility import format_src_input, same_path_length, check_allowed_keys
 from magpylib3._lib.config import Config
 from magpylib3._lib.fields.field_wrap_BH_level1 import getBH_level1
 
@@ -71,12 +71,9 @@ def getBH_level2(**kwargs: dict) -> np.ndarray:
     # pylint: disable=too-many-branches
     #pylint: disable=too-many-statements
 
-    # make sure there is no unknown kwarg input ('user accident') ----
+    # warning if key in kwargs that is not in allowed_keys ---------
     allowed_keys = ['bh', 'sources', 'pos_obs', 'sumup', 'niter']
-    keys = kwargs.keys()
-    complement = [i for i in keys if i not in allowed_keys]
-    if complement:
-        print('WARNING: getBH() - unknown input kwarg, ', complement)
+    check_allowed_keys(allowed_keys, kwargs, 'getBH()')
 
     # collect input ------------------------------------------------
     bh = kwargs['bh']
