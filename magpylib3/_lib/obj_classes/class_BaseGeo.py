@@ -47,9 +47,9 @@ class BaseGeo:
         # set pos and orient attributes
         self.pos = pos
         self.rot = rot
-        self._mm = False        # multi_motion
-        self._mm_steps = None   # multi_motion steps
-        self._mm_first = True   # multi_motion first operation
+        self._mm = False        # motion_merge
+        self._mm_steps = None   # motion_merge steps
+        self._mm_first = True   # motion_merge first operation
 
     # properties ----------------------------------------------------
     @property
@@ -430,11 +430,11 @@ def get_steps(steps:int, bg:BaseGeo):
     """
     # pylint: disable=protected-access
 
-    # multi_motion
+    # motion_merge
     if bg._mm:
         if bg._mm_first:
             steps = bg._mm_steps
-            assert steps>0, 'ERROR: multi_motion - steps must be larger than 0'
+            assert steps>0, 'ERROR: motion_merge - steps must be larger than 0'
             bg._mm_first = False
         else:
             steps = -bg._mm_steps
@@ -455,7 +455,7 @@ def get_steps(steps:int, bg:BaseGeo):
 
 
 @contextmanager
-def multi_motion(obj,steps):
+def motion_merge(obj,steps):
     """combine object motions
 
     Parameters:

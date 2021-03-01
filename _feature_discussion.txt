@@ -12,7 +12,7 @@ discussion -----------------------------------------
 
 - naming: pos_obs or obs_pos
 - naming: pos_pix or pix_pos
-- naming: multi_motion -> motion_join, path_join, path_sync 
+- naming: motion_merge -> motion_join, path_join, path_sync 
     # join can mean one after other
     # motion or path ?
     # sync, join, combine, 
@@ -128,7 +128,7 @@ DONE - NEW FEATURES ------------------------------------
 - fixed Cube field
 - getB, getH
 - path functionality
-    - multi_motion
+    - motion_merge
 - complete code vectorization
 
 - new tests

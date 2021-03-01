@@ -10,12 +10,11 @@ import magpylib3 as mag3
 # print(np.r_[[o],x,x,y])
 # sys.exit()
 
-
 pm1 = mag3.magnet.Box((11,22,33),(1,2,3),pos=(-10,0,0))
 pm2 = mag3.magnet.Cylinder((0,0,333),(1,2),pos=(10,0,0))
 col = mag3.Collection(pm1,pm2)
 
-# with mag3.multi_motion(col, steps=333):
+# with mag3.motion_merge(col, steps=333):
 #     col.rotate_from_angax(1111,'z',anchor=0)
 #     col.move_by((0,0,15))
 
@@ -32,12 +31,12 @@ sens2.pos_pix = np.array([(2,2,2),(3,3,3),(1,1,1),(-1,-1,-1)])*0.1
 sens3 = mag3.Sensor()
 ts = np.linspace(-.5,.5,5)
 sens3.pos_pix = [(x,y,0) for x in ts for y in ts]
-with mag3.multi_motion(sens3, steps=55):
+with mag3.motion_merge(sens3, steps=55):
     sens3.move_by((-5,0,-5))
     sens3.rotate_from_angax(455,'x',0)
 
 pm = mag3.magnet.Box((1,1,1),(1,1,1))
-with mag3.multi_motion(pm, steps=44):
+with mag3.motion_merge(pm, steps=44):
     pm.move_by((10,0,0))
     pm.rotate_from_angax(666,'z')
 
