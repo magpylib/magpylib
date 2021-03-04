@@ -3,11 +3,11 @@
 import sys
 import numpy as np
 import matplotlib.pyplot as plt
-import magpylib3 as mag3
-from magpylib3._lib.math_utility import format_src_input, good_path_format
-from magpylib3._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
+import magpylib as mag3
+from magpylib._lib.math_utility import format_src_input, good_path_format
+from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
-from magpylib3._lib.display.disp_utility import faces_box, faces_cylinder, system_size
+from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
 
 
 def display(

@@ -4,7 +4,7 @@ magnetized Cuboids. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib3._lib.config import Config
+from magpylib._lib.config import Config
 
 def field_BH_box(
         bh: bool,

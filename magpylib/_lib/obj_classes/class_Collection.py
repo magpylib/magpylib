@@ -1,9 +1,9 @@
 """Collection class code"""
 
 import copy
-from magpylib3._lib.math_utility import format_src_input, check_duplicates
-from magpylib3._lib.fields import getB, getH
-from magpylib3._lib.display import display
+from magpylib._lib.math_utility import format_src_input, check_duplicates
+from magpylib._lib.fields import getB, getH
+from magpylib._lib.display import display
 
 
 class Collection:

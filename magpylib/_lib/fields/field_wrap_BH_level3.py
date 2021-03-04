@@ -1,7 +1,7 @@
 from typing import Sequence
 import numpy as np
-import magpylib3 as mag3
-from magpylib3._lib.fields.field_wrap_BH_level2 import getBH_level2
+import magpylib as mag3
+from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
 
 def getB_from_sensor(sources, sensors, sumup=False, **specs):

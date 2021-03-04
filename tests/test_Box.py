@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from magpylib3.magnet import Box
+from magpylib.magnet import Box
 
 
 # """data generation for test_Box()"""

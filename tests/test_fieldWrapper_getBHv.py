@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3.magnet import Box, Cylinder
-from magpylib3 import getBv, getHv, getB, getH
+from magpylib.magnet import Box, Cylinder
+from magpylib import getBv, getHv, getB, getH
 
 
 def test_fieldWrapper_getBv1():

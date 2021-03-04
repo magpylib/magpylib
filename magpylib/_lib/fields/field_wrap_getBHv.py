@@ -1,8 +1,8 @@
 import sys
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3._lib.fields.field_wrap_BH_level1 import getBH_level1
-from  magpylib3._lib.math_utility import check_allowed_keys
+from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
+from  magpylib._lib.math_utility import check_allowed_keys
 
 def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation

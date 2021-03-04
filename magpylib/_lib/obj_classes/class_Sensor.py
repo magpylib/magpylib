@@ -1,8 +1,8 @@
 """Sensor class code"""
 
 import numpy as np
-from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib3._lib.fields import getB_from_sensor, getH_from_sensor
+from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._lib.fields import getB_from_sensor, getH_from_sensor
 
 class Sensor(BaseGeo):
     """ sensor class........

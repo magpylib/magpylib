@@ -76,11 +76,11 @@ __all__ = ['magnet', 'current', 'moment',
            'getB_from_sensor', 'getH_from_sensor']
 
 # create interface to outside of package
-from magpylib3 import magnet
-from magpylib3 import current
-from magpylib3 import moment
-from magpylib3._lib.config import Config
-from magpylib3._lib.fields import (getB, getH, getBv, getHv, 
+from magpylib import magnet
+from magpylib import current
+from magpylib import moment
+from magpylib._lib.config import Config
+from magpylib._lib.fields import (getB, getH, getBv, getHv, 
     getB_from_sensor, getH_from_sensor)
-from magpylib3._lib.obj_classes import Collection, Sensor, motion_merge
-from magpylib3._lib.display import display
+from magpylib._lib.obj_classes import Collection, Sensor, motion_merge
+from magpylib._lib.display import display

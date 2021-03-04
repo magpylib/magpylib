@@ -1,5 +1,5 @@
 from scipy.spatial.transform import Rotation as R
-import magpylib3 as mag3
+import magpylib as mag3
 import numpy as np
 n = 200
 minAmp = 5

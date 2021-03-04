@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 
 def test_BaseGeo():
     """

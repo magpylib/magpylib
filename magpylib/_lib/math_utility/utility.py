@@ -4,7 +4,7 @@ import sys
 from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import magpylib3 as mag3
+import magpylib as mag3
 
 
 def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:

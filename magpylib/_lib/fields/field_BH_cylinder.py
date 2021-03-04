@@ -4,8 +4,8 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib3._lib.math_utility import celv
-from magpylib3._lib.config import Config
+from magpylib._lib.math_utility import celv
+from magpylib._lib.config import Config
 
 
 def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:

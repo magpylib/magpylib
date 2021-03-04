@@ -1,5 +1,5 @@
 import numpy as np
-import magpylib3 as mag3
+import magpylib as mag3
 
 
 def test_motion_merge():

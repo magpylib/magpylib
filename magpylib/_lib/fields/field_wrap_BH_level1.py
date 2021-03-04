@@ -1,7 +1,7 @@
 import sys
 import numpy as np
-from magpylib3._lib.fields.field_BH_box import field_BH_box
-from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
+from magpylib._lib.fields.field_BH_box import field_BH_box
+from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:

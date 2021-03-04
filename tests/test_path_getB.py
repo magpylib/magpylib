@@ -1,5 +1,5 @@
 import numpy as np
-from magpylib3.magnet import Box, Cylinder
+from magpylib.magnet import Box, Cylinder
 
 def test_path_old_new_move():
     ''' test path move

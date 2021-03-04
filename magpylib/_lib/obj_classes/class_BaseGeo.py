@@ -4,9 +4,9 @@ import sys
 from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib3._lib.math_utility import rotobj_from_angax
-from magpylib3._lib.display import display
-from magpylib3._lib.obj_classes.class_Collection import Collection
+from magpylib._lib.math_utility import rotobj_from_angax
+from magpylib._lib.display import display
+from magpylib._lib.obj_classes.class_Collection import Collection
 
 
 class BaseGeo:

@@ -1,10 +1,10 @@
 import sys
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import magpylib3 as mag3
-from magpylib3._lib.math_utility import format_src_input, get_good_path_length, all_same
-from magpylib3._lib.config import Config
-from magpylib3._lib.fields.field_wrap_BH_level1 import getBH_level1
+import magpylib as mag3
+from magpylib._lib.math_utility import format_src_input, get_good_path_length, all_same
+from magpylib._lib.config import Config
+from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 
 
 def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:

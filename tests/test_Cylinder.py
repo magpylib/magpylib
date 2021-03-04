@@ -1,6 +1,6 @@
 import pickle
 import numpy as np
-from magpylib3.magnet import Cylinder
+from magpylib.magnet import Cylinder
 
 # # GENERATE DATA
 # N = 22

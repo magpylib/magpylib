@@ -1,7 +1,7 @@
 import pickle
 import numpy as np
-from magpylib3._lib.fields.field_BH_cylinder import field_BH_cylinder
-import magpylib3 as mag3
+from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
+import magpylib as mag3
 
 # # GENERATE TEST DATA
 # n = 500
