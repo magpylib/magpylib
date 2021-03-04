@@ -322,7 +322,7 @@ class BaseGeo:
 
         else:
             # apply rotation to path[steps:] and apply result to path[steps:]
-            rot_new = rots*self.rot[steps:]
+            rot_new = rots*self._rot[steps:]
             self.rot = R(np.r_[path_rot[:steps], rot_new.as_quat()])
             if anchor is not None:
                 pos_new = rots.apply(path_pos[steps:]-anchor) + anchor      # rotate about anchor
