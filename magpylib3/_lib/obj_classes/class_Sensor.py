@@ -2,7 +2,7 @@
 
 import numpy as np
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
-
+from magpylib3._lib.fields import getB_from_sensor, getH_from_sensor
 
 class Sensor(BaseGeo):
     """ sensor class........
@@ -47,3 +47,8 @@ class Sensor(BaseGeo):
     # dunders -------------------------------------------------------
 
     # methods -------------------------------------------------------
+    def getB(self, sources):
+        return getB_from_sensor(sources, self)
+
+    def getH(self, sources):
+        return getH_from_sensor(sources, self)

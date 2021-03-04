@@ -112,6 +112,9 @@ class Cylinder(BaseGeo):
         """
         return Collection(self,sources)
 
+    def __repr__(self) -> str:
+        return 'Cylinder'
+
 
     # methods -------------------------------------------------------
     def getB(self, pos_obs, niter=50):

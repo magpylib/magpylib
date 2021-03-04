@@ -13,6 +13,15 @@ discussion -----------------------------------------
 - naming: pos_obs or obs_pos
 - naming: pos_pix or pix_pos
 
+- remove all input checks ? e.g. check_allowed_keys
+    - either make safe or remove all of this code
+
+- unify error msg format
+    - ERROR (func): problem is whatever
+
+- sensors to collections !!!!
+- proper repr dunder
+- is it possible to get rid of (pm,steps=...) argument in motion_merge
 2do ----------------------------------------------------------
 - obj without path becomes static in evaluation with paths ?
 
@@ -33,13 +42,6 @@ discussion -----------------------------------------
 - docu: REWORK DOKU
     - link to references / citations
     - 
-
-- CI: integrate with existing wheel
-- CI: slim down wheel
-- CI: explain wheel in _dev_info.txt
-- CI: run pylint in wheel
-- CI: no more beta versioning
-- CI: publish 3.0.0 - eliminate magpylib3 naming
 
 - dissem: integrate with NumFocus
 - dissem: FWF for magpy+MOM+FMM ?

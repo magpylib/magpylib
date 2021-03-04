@@ -157,6 +157,11 @@ class BaseGeo:
             direc=direc,
             show_path=show_path)
 
+    def reset_path(self):
+        """ set object pos=(0,0,0) and unit rotation
+        """
+        self.pos = (0,0,0)
+        self.rot = R.from_quat((0,0,0,1))
 
     def move_by(self, displacement, steps=None):
         """ Linear displacement of object

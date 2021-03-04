@@ -65,7 +65,8 @@ disable=R0801,                          # duplicate code
         too-many-locals,                # complex functions
         too-many-arguments,             # complex functions
         missing-module-docstring,       # no idea
-        invalid-name                    # scientific library with many 
+        invalid-name,                   # scientific library with many 
+        bad-whitespace                  # (0,0,0) is more readable than (0, 0, 0)
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

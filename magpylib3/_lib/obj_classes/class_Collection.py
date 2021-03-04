@@ -83,6 +83,9 @@ class Collection:
         """ provide getitem property
         """
         return self._sources[i]
+    
+    def __repr__(self) -> str:
+        return 'Collection'
 
 
     # methods -------------------------------------------------------

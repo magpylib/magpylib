@@ -75,24 +75,48 @@ def check_duplicates(src_list: Sequence) -> list:
     return src_list
 
 
-def same_path_length(obj_list: list) -> None:
-    """ check if all objects in obj_list have same path length
+def good_path_format(inp: list) -> bool:
+    """ check if each object path has same length
+    of obj.pos and obj.rot
 
     Parameters
     ----------
-    obj_list: list of source objects
+    inp: single BaseGeo or list of BaseGeo objects
 
     Returns
     -------
-    True if pos and rot path length is the same
+    True if all object have good path format
     """
     # pylint: disable=protected-access
+    if not isinstance(inp,list):
+        inp = [inp]
+    return all([len(obj._pos) == len(obj._rot) for obj in inp])
 
-    lenpos = len(obj_list[0]._pos)
-    pos_check = all([len(obj._pos) == lenpos for obj in obj_list])
-    rot_check = all([len(obj._rot.as_quat()) == lenpos for obj in obj_list])
 
-    return pos_check and rot_check
+def get_good_path_length(obj_list: list) -> bool:
+    """ check if all paths have good format and
+    are either length 1 or same length m
+    exits if 
+
+    Parameters
+    ----------
+    obj_list: list of BaseGeo objects
+
+    Returns
+    -------
+    path length m
+    """
+    # pylint: disable=protected-access
+    if not good_path_format(obj_list):
+        sys.exit('ERROR (get_good_path_length): Bad path format')
+
+    path_lenghts = [len(obj._pos) for obj in obj_list]
+    m = max(path_lenghts)
+
+    if all([pl in (1,m) for pl in path_lenghts]):
+        return m
+
+    sys.exit('ERROR (get_good_path_length): Bad path lengths')
 
 
 def check_allowed_keys(allowed_keys, kwargs, func_name):
@@ -111,3 +135,9 @@ def check_allowed_keys(allowed_keys, kwargs, func_name):
     complement = [i for i in keys if i not in allowed_keys]
     if complement:
         print('WARNING: ' + func_name + ' - unknown input kwarg, ', complement)
+
+
+def all_same(lst:list)->bool:
+    """ test if all list entries are the same
+    """
+    return lst[1:]==lst[:-1]

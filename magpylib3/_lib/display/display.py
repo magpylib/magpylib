@@ -4,7 +4,7 @@ import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib3 as mag3
-from magpylib3._lib.math_utility import format_src_input, same_path_length
+from magpylib3._lib.math_utility import format_src_input, good_path_format
 from magpylib3._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
 from magpylib3._lib.display.disp_utility import faces_box, faces_cylinder, system_size
@@ -63,7 +63,7 @@ def display(
 
     # test if every individual obj_path is good
     for obj in obj_list:
-        if not same_path_length([obj]):
+        if not good_path_format([obj]):
             sys.exit('ERROR: display() - bad path format (different pos/rot length)')
 
 

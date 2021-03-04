@@ -2,7 +2,7 @@
 
 import sys
 import numpy as np
-from magpylib3._lib.fields import getB, getH
+from magpylib3._lib.fields import getB, getH, getB_from_sensor, getH_from_sensor
 from magpylib3._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib3._lib.obj_classes.class_Collection import Collection
 
@@ -107,6 +107,8 @@ class Box(BaseGeo):
         """
         return Collection(self,source)
 
+    def __repr__(self) -> str:
+        return 'Box'
 
     # methods -------------------------------------------------------
     def getB(self, pos_obs):
@@ -120,9 +122,22 @@ class Box(BaseGeo):
         - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
             in units of mT.
         """
-        B = getB([self], pos_obs)
+        B = getB(self, pos_obs)
         return B
 
+    def getB_from_sensor(self, sensors):
+        """ Compute B-field of magnet detected by given sensors.
+
+        ### Args:
+        - sensors: sensor object or list of sensor objects
+            A single sensor or a list of K sensors with pixel shape (N1, N2, ..., 3).
+
+        ### Returns:
+        - ndarray, shape (K, N1, N2, ..., 3)
+            MAgnetic field in units of mT.
+        """
+        B = getB_from_sensor(self, sensors)
+        return B
 
     def getH(self, pos_obs):
         """ Compute H-field of source at observer positions.
