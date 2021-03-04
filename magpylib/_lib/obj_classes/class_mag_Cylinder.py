@@ -87,7 +87,7 @@ class Cylinder(BaseGeo):
         """
         if None in value:
             sys.exit('ERROR: Cylinder() - magnetization input required')
-        self._mag = np.array(value,dtype=np.float64)
+        self._mag = np.array(value,dtype=float)
 
 
     @property
@@ -103,7 +103,7 @@ class Cylinder(BaseGeo):
         """
         if None in value:
             sys.exit('ERROR: Cylinder() - dimension input required')
-        self._dim = np.array(value,dtype=np.float64)
+        self._dim = np.array(value,dtype=float)
 
 
     # dunders -------------------------------------------------------

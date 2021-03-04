@@ -40,7 +40,7 @@ class Sensor(BaseGeo):
         inp: array_like, shape (3,) or (N1,N2,...,3)
             set pixel positions in sensor CS
         """
-        inp = np.array(inp, dtype=np.float)       # secure input
+        inp = np.array(inp, dtype=float)       # secure input
         self._pos_pix = inp
 
 

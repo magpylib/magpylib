@@ -83,7 +83,7 @@ class Box(BaseGeo):
         """
         if None in value:
             sys.exit('ERROR: Box() - magnetization input required')
-        self._mag = np.array(value,dtype=np.float)
+        self._mag = np.array(value,dtype=float)
 
 
     @property
@@ -98,7 +98,7 @@ class Box(BaseGeo):
         """
         if None in value:
             sys.exit('ERROR: Box() - dimension input required')
-        self._dim = np.array(value,dtype=np.float)
+        self._dim = np.array(value,dtype=float)
 
 
     # dunders -------------------------------------------------------

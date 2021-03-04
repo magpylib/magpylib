@@ -18,7 +18,7 @@ def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     - R: scipy rotation object
     """
 
-    ang = np.float(angle)
+    ang = float(angle)
     len_ax = np.linalg.norm(axis)
     if len_ax == 0:
         rotvec = np.zeros(3)

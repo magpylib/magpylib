@@ -74,7 +74,7 @@ class BaseGeo:
             set position-path of object
         """
 
-        inp = np.array(inp, dtype=np.float)       # secure input
+        inp = np.array(inp, dtype=float)       # secure input
         if inp.ndim == 1:                         # single position - increase dimension to (1,3)
             self._pos = np.array([inp])
         elif inp.ndim == 2:                       # multi position
@@ -388,7 +388,7 @@ class BaseGeo:
             else:
                 sys.exit('ERROR: src.rotate_from_angax() - bad axis input')
         else:
-            axis = np.array(axis, dtype=np.float64)
+            axis = np.array(axis, dtype=float)
 
         # Split up rotation into pi-rotation and rest-rotation as
         #   the scipy.Rotation module is limited to express rotations
