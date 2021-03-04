@@ -109,11 +109,11 @@ class BaseGeo:
 
         if inp is None:                            # None inp generates unit rotation
             path_length = len(self._pos)
-            self._rot = R.from_quat([(0,0,0,1)]*path_length, normalized=True)
+            self._rot = R.from_quat([(0,0,0,1)]*path_length)
         else:                                      # single rotation - increase dimension to (1,3)
             val = inp.as_quat()
             if val.ndim == 1:
-                self._rot = R.from_quat([val], normalized=True)
+                self._rot = R.from_quat([val])
             else:                                  # multi rotation
                 self._rot = inp
 
@@ -206,7 +206,7 @@ class BaseGeo:
             addpath_rot = np.tile(path_rot[-1],(steps,1))
             # set new path
             self.pos = np.r_[path_pos, addpath_pos + path_pos[-1]]
-            self.rot = R(np.r_[path_rot, addpath_rot], normalized=True)
+            self.rot = R(np.r_[path_rot, addpath_rot])
         else:
             # apply operation on top of path[steps:]
             self._pos[steps:] = path_pos[steps:] + addpath_pos
@@ -312,7 +312,7 @@ class BaseGeo:
         if steps > 0:
             # apply rot to path[-1] and add resulting vector to path
             rot_new = rots*self._rot[-1]
-            self.rot = R(np.r_[path_rot, rot_new.as_quat()], normalized=True)
+            self.rot = R(np.r_[path_rot, rot_new.as_quat()])
             # compute positions and add to path
             if anchor is not None:
                 pos_new = rots.apply(path_pos[-1]-anchor) + anchor
@@ -323,7 +323,7 @@ class BaseGeo:
         else:
             # apply rotation to path[steps:] and apply result to path[steps:]
             rot_new = rots*self.rot[steps:]
-            self.rot = R(np.r_[path_rot[:steps], rot_new.as_quat()], normalized=True)
+            self.rot = R(np.r_[path_rot[:steps], rot_new.as_quat()])
             if anchor is not None:
                 pos_new = rots.apply(path_pos[steps:]-anchor) + anchor      # rotate about anchor
                 self._pos[steps:] = pos_new

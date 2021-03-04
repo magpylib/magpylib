@@ -39,7 +39,7 @@ def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
         rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
     posov = np.tile(poso, (l_group,1))
 
-    rotobj = R.from_quat(rotv, normalized=True)
+    rotobj = R.from_quat(rotv)
     src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
     return src_dict
 
