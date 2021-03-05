@@ -113,37 +113,55 @@ class Cylinder(BaseGeo):
         return Collection(self,sources)
 
     def __repr__(self) -> str:
-        return 'Cylinder'
+        return 'Cylinder (' + str(id(self)) + ')'
 
 
     # methods -------------------------------------------------------
-    def getB(self, pos_obs, niter=50):
+    def getB(self, observers, niter=50):
         """ Compute B-field of magnet at observer positions.
 
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
-        - niter (int): Number of iterations in the computation of the
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
+
+        niter (int): Number of iterations in the computation of the
             diametral component of the field
 
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
-            in units of mT.
+        Returns
+        -------
+        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
+            B-field of magnet at each path position M for each sensor K and each sensor pixel
+            position N in units of mT.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        B = getB([self], pos_obs, niter=niter)
+        B = getB(self, observers, niter=niter)
         return B
 
 
-    def getH(self, pos_obs, niter=50):
+    def getH(self, observers, niter=50):
         """ Compute H-field of magnet at observer positions.
 
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
 
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): H-field at observer positions
-            in units of kA/m.
+        niter (int): Number of iterations in the computation of the
+            diametral component of the field
+
+        Returns
+        -------
+        H-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [kA/m]
+            B-field of magnet at each path position M for each sensor K and each sensor pixel
+            position N in units of kA/m.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        H = getH([self], pos_obs, niter=niter)
+        H = getH(self, observers, niter=niter)
         return H

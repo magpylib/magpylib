@@ -2,7 +2,7 @@
 
 import sys
 import numpy as np
-from magpylib._lib.fields import getB, getH, getB_from_sensor, getH_from_sensor
+from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_Collection import Collection
 
@@ -108,47 +108,49 @@ class Box(BaseGeo):
         return Collection(self,source)
 
     def __repr__(self) -> str:
-        return 'Box'
+        return 'Box (' + str(id(self)) + ')'
+
 
     # methods -------------------------------------------------------
-    def getB(self, pos_obs):
+    def getB(self, observers):
         """ Compute B-field of magnet at observer positions.
 
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
 
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
-            in units of mT.
+        Returns
+        -------
+        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
+            B-field of magnet at each path position M for each sensor K and each sensor pixel
+            position N in units of mT.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        B = getB(self, pos_obs)
+        B = getB(self, observers)
         return B
 
-    def getB_from_sensor(self, sensors):
-        """ Compute B-field of magnet detected by given sensors.
 
-        ### Args:
-        - sensors: sensor object or list of sensor objects
-            A single sensor or a list of K sensors with pixel shape (N1, N2, ..., 3).
+    def getH(self, observers):
+        """ Compute H-field of magnet at observer positions.
 
-        ### Returns:
-        - ndarray, shape (K, N1, N2, ..., 3)
-            MAgnetic field in units of mT.
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
+
+        Returns
+        -------
+        H-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [kA/m]
+            H-field of magnet at each path position M for each sensor K and each sensor pixel
+            position N in units of kA/m.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        B = getB_from_sensor(self, sensors)
-        return B
-
-    def getH(self, pos_obs):
-        """ Compute H-field of source at observer positions.
-
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
-
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): H-field at observer positions
-            in units of kA/m.
-        """
-        H = getH([self], pos_obs)
+        H = getH(self, observers)
         return H

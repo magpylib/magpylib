@@ -1,9 +1,7 @@
 """_lib.fields"""
 
-__all__ = ['getB', 'getBv', 'getH', 'getHv',
-           'getB_from_sensor', 'getH_from_sensor']
+__all__ = ['getB', 'getBv', 'getH', 'getHv']
 
 # create interface to outside of package
-from magpylib._lib.fields.field_wrap_BH_level3 import (getB,
-    getH, getB_from_sensor, getH_from_sensor)
+from magpylib._lib.fields.field_wrap_BH_level3 import getB, getH
 from magpylib._lib.fields.field_wrap_getBHv import getBv, getHv

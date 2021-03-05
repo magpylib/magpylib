@@ -90,13 +90,13 @@ def good_path_format(inp: list) -> bool:
     # pylint: disable=protected-access
     if not isinstance(inp,list):
         inp = [inp]
-    return all([len(obj._pos) == len(obj._rot) for obj in inp])
+    return all(len(obj._pos) == len(obj._rot) for obj in inp)
 
 
 def get_good_path_length(obj_list: list) -> bool:
     """ check if all paths have good format and
     are either length 1 or same length m
-    exits if 
+    exits if
 
     Parameters
     ----------
@@ -113,7 +113,7 @@ def get_good_path_length(obj_list: list) -> bool:
     path_lenghts = [len(obj._pos) for obj in obj_list]
     m = max(path_lenghts)
 
-    if all([pl in (1,m) for pl in path_lenghts]):
+    if all(pl in (1,m) for pl in path_lenghts):
         return m
 
     sys.exit('ERROR (get_good_path_length): Bad path lengths')

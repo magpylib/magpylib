@@ -1,6 +1,15 @@
-from scipy.spatial.transform import Rotation as R
+# pylint: disable=redefined-outer-name
+
 import magpylib as mag3
 import numpy as np
+
+import sys
+
+
+pm = mag3.magnet.Box((1,2,3),(1,2,3))
+print(pm)
+
+sys.exit()
 n = 200
 minAmp = 5
 gap = 3

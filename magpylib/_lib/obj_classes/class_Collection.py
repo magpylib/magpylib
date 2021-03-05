@@ -83,7 +83,7 @@ class Collection:
         """ provide getitem property
         """
         return self._sources[i]
-    
+
     def __repr__(self) -> str:
         return 'Collection'
 
@@ -125,32 +125,52 @@ class Collection:
         return self
 
 
-    def getB(self, pos_obs, **kwargs):
-        """ Compute B-field of Collection at observer positions.
+    def getB(self, observers, **kwargs):
+        """ Compute B-field of collection at observer positions.
 
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
 
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): B-field at observer positions
-            in units of mT.
+        kwargs: specific keword arguments of different scource types
+
+        Returns
+        -------
+        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
+            B-field of collection at each path position M for each sensor K and each sensor pixel
+            position N in units of mT.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        return getB(self, pos_obs, sumup=True, **kwargs)
+        B = getB(self, observers, **kwargs)
+        return B
 
 
-    def getH(self, pos_obs, **kwargs):
-        """ Compute H-field of Collection at observer positions.
+    def getH(self, observers, **kwargs):
+        """ Compute H-field of collection at observer positions.
 
-        ### Args:
-        - pos_obs (N1 x N2 x ... x 3 vec): single position or set of
-            observer positions in units of mm.
+        Parameters
+        ----------
+        observers: array_like or sens_obj or list of sens_obj
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
+            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
+            in units of millimeters.
 
-        ### Returns:
-        - (N1 x N2 x ... x 3 ndarray): H-field at observer positions
-            in units of kA/m.
+        kwargs: specific keword arguments of different scource types
+
+        Returns
+        -------
+        H-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [kA/m]
+            B-field of collection at each path position M for each sensor K and each sensor pixel
+            position N in units of kA/m.
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
+            is removed.
         """
-        return getH(self, pos_obs, sumup=True, **kwargs)
+        H = getH(self, observers, **kwargs)
+        return H
 
 
     def display(self, **kwargs):

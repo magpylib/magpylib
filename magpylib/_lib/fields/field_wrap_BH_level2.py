@@ -8,7 +8,7 @@ from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 
 
 def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
-    """ Generates getBH_level1 input dict for homogeneous magnets
+    """ Helper funtion that generates getBH_level1 input dict for homogeneous magnets.
 
     Parameters
     ----------
@@ -44,32 +44,33 @@ def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     return src_dict
 
 
-def getBH_level2(bh, sources, sensors, sumup, **kwargs) -> np.ndarray:
+def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     """...
 
     Parameters
     ----------
     - bh (bool): True=getB, False=getH
     - sources (src_obj or list): source object or 1D list of L sources/collections with similar
-        pathlength M and/or 1
-    - sensors (sens_obj or list): sensor onject or 1D list of K sensors with similar pathlength M
-        and/or 1 and sensor pos_pix of shape (N1,N2,...,3)
+        pathlength M and/or 1.
+    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K sensors with
+        similar pathlength M and/or 1 and sensor pos_pix of shape (N1,N2,...,3).
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
-        for all sources
+        for all sources.
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     Returns
     -------
-    field: ndarray, shape (L,M,K,N1,N2,...,3), field of L sources, M path
-    positions and N observer positions
+    field: ndarray, shape squeeze((L,M,K,N1,N2,...,3)), field of L sources, M path
+    positions, K sensors and N1xN2x.. observer positions and 3 field components.
 
     Info:
     -----
-    - input dict checks (unknowns)
-    - secure user inputs
-    - group similar sources for combined computation
-    - generate vector input format for getBH_level1
-    - adjust Bfield output format to pos_obs, path, sources input format
+    - generates a 1D list of sources (collections flattened) and a 1D list of sensors from input
+    - tile all paths of static (path_length=1) objects
+    - combine all sensor pixel positions for joint evaluation
+    - group similar source types for joint evaluation
+    - compute field and store in allocated array
+    - rearrange the array in the shape squeeze((L, M, K, N1, N2, ...,3))
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
@@ -80,8 +81,15 @@ def getBH_level2(bh, sources, sensors, sumup, **kwargs) -> np.ndarray:
         sources = [sources]
     src_list = format_src_input(sources) # flatten Collections
 
-    if not isinstance(sensors, list):
-        sensors = [sensors]
+    if isinstance(observers, mag3.Sensor):               # input = 1 sensor
+        sensors = [observers]
+    elif isinstance(observers, list):                    # input = list (sensors or positions)
+        if isinstance(observers[0],mag3.Sensor):
+            sensors = observers
+        else:
+            sensors = [mag3.Sensor(pos_pix=observers)]
+    else:                                                # input = pos_obs
+        sensors = [mag3.Sensor(pos_pix=observers)]
 
     obj_list = src_list + sensors
     l0 = len(sources)

@@ -2,7 +2,7 @@ import numpy as np
 import magpylib as mag3
 
 
-def test_motion_merge():
+def test_path_merge():
     """test motion_merge with context manager
     """
     pm = mag3.magnet.Box((1,2,3),(1,2,3))
@@ -43,6 +43,6 @@ def test_motion_merge_collection():
     pm2.rotate_from_angax(1111,'z',anchor=0,steps=333)
     pm1.move_by((0,0,15),steps=-333)
     pm2.move_by((0,0,15),steps=-333)
-    B2 = mag3.getB([pm1,pm2],pos_obs=(0,0,0),sumup=True)
+    B2 = mag3.getB([pm1,pm2],(0,0,0),sumup=True)
 
     assert np.allclose(B1,B2), 'simple motion_merge gone wrong'

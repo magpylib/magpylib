@@ -72,15 +72,13 @@ __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'moment',
            'getB', 'getH', 'getBv', 'getHv','Sensor',
-           'Collection', 'display', 'Config','motion_merge',
-           'getB_from_sensor', 'getH_from_sensor']
+           'Collection', 'display', 'Config','motion_merge']
 
 # create interface to outside of package
 from magpylib import magnet
 from magpylib import current
 from magpylib import moment
 from magpylib._lib.config import Config
-from magpylib._lib.fields import (getB, getH, getBv, getHv, 
-    getB_from_sensor, getH_from_sensor)
+from magpylib._lib.fields import getB, getH, getBv, getHv
 from magpylib._lib.obj_classes import Collection, Sensor, motion_merge
 from magpylib._lib.display import display
