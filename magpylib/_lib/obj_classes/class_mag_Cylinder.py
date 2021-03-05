@@ -113,7 +113,7 @@ class Cylinder(BaseGeo):
         return Collection(self,sources)
 
     def __repr__(self) -> str:
-        return 'Cylinder (' + str(id(self)) + ')'
+        return f'Cylinder ({str(id(self))})'
 
 
     # methods -------------------------------------------------------

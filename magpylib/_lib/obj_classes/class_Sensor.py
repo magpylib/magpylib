@@ -46,7 +46,7 @@ class Sensor(BaseGeo):
 
     # dunders -------------------------------------------------------
     def __repr__(self) -> str:
-        return 'Sensor (' + str(id(self)) + ')'
+        return f'Sensor ({str(id(self))})'
 
 
     # methods -------------------------------------------------------

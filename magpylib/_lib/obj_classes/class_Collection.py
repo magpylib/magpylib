@@ -85,7 +85,7 @@ class Collection:
         return self._sources[i]
 
     def __repr__(self) -> str:
-        return 'Collection'
+        return f'Collection ({str(id(self))})'
 
 
     # methods -------------------------------------------------------

@@ -108,7 +108,7 @@ class Box(BaseGeo):
         return Collection(self,source)
 
     def __repr__(self) -> str:
-        return 'Box (' + str(id(self)) + ')'
+        return f'Box ({str(id(self))})'
 
 
     # methods -------------------------------------------------------
