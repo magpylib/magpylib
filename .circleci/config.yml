@@ -18,7 +18,7 @@ workflows:
 jobs:
   build:
     docker:
-      - image: python:3
+      - image: python:3.8
     steps:
       - checkout
       - run: 
