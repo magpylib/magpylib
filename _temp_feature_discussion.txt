@@ -19,6 +19,8 @@ discussion -----------------------------------------
 - unify error msg format
     - ERROR (func): problem is whatever
 
+- sys.exit(ERROR), doesnt give you a traceback ! such errors are more difficult to track down
+
 - sensors to collections !!!!
 - proper repr dunder
 - is it possible to get rid of (pm,steps=...) argument in motion_merge
