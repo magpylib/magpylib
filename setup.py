@@ -63,6 +63,7 @@ setuptools.setup(
     zip_safe = False, ## Gives the environment files so we can access docs, enables tooltips but may decrease performance
     install_requires=[
           'numpy>=1.20',
+          'scipy>=1.6'
           'matplotlib>=3.3',
       ],
     classifiers=[
