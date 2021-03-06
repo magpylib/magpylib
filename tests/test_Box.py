@@ -1,4 +1,5 @@
 import pickle
+import os
 import numpy as np
 from magpylib.magnet import Box
 
@@ -29,14 +30,14 @@ from magpylib.magnet import Box
 
 # inp = [mags,dims,posos,angs,axs,anchs,movs,B]
 
-# pickle.dump(inp,open('testdata_Box.p', 'wb'))
+# pickle.dump(inp,open(os.path.abspath('./../'testdata_Box.p', 'wb'))
 
 
 def test_Box():
     """box test
     """
     # data generated below
-    data = pickle.load(open('tests/testdata/testdata_Box.p', 'rb'))
+    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Box.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     btest = []

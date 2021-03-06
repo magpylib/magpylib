@@ -1,4 +1,5 @@
 import pickle
+import os
 import numpy as np
 from magpylib._lib.fields.field_BH_box import field_BH_box
 import magpylib as mag3
@@ -43,7 +44,7 @@ def test_field_BH_box():
     """ test box field
     """
     mag3.Config.EDGESIZE=1e-14
-    mag, dims, poss, B = pickle.load(open('tests/testdata/testdata_field_BH_box.p','rb'))
+    mag, dims, poss, B = pickle.load(open(os.path.abspath('tests/testdata/testdata_field_BH_box.p') ,'rb'))
     Btest = []
     for dim,pos in zip(dims,poss):
         Btest += [field_BH_box(True, mag, dim, pos)]
