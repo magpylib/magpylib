@@ -1,3 +1,4 @@
+import os
 import pickle
 import numpy as np
 from magpylib.magnet import Cylinder
@@ -29,7 +30,7 @@ from magpylib.magnet import Cylinder
 def test_Cylinder():
     """ test cylinder
     """
-    data = pickle.load(open('tests/testdata/testdata_Cylinder.p', 'rb'))
+    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Cylinder.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     Btest = []
