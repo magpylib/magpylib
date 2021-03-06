@@ -1,5 +1,6 @@
 import pickle
 import numpy as np
+import os
 from scipy.spatial.transform import Rotation as R
 import magpylib as mag3
 
@@ -40,7 +41,7 @@ def test_Collection():
     """ test collection
     """
     # data generated below
-    data = pickle.load(open('tests/testdata/testdata_Collection.p', 'rb'))
+    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Collection.p'), 'rb'))
     mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,Btest = data
 
     B1,B2,B3 = [],[],[]

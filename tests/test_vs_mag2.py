@@ -1,4 +1,5 @@
 import pickle
+import os
 import numpy as np
 import magpylib as mag3
 
@@ -31,7 +32,7 @@ import magpylib as mag3
 def test_vs_mag2_linear():
     """ test against margpylib v2
     """
-    data = pickle.load(open('tests/testdata/testdata_vs_mag2.p','rb'))[0]
+    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[0]
     poso = [(t,-t,t) for t in np.linspace(0,3,100)]
     pm = mag3.magnet.Box(mag=(111,222,333), dim=(1,2,3))
 
@@ -42,7 +43,7 @@ def test_vs_mag2_linear():
 def test_vs_mag2_rotation():
     """ test against margpylib v2
     """
-    data = pickle.load(open('tests/testdata/testdata_vs_mag2.p','rb'))[1]
+    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[1]
     pm = mag3.magnet.Box(mag=(111,222,333), dim=(1,2,3))
     possis = [(3*np.sin(t/180*np.pi),3*np.cos(t/180*np.pi),0) for t in np.linspace(0,444,100)]
     B = pm.getB(possis)
@@ -52,7 +53,7 @@ def test_vs_mag2_rotation():
 def test_vs_mag2_spiral():
     """ test against margpylib v2
     """
-    data = pickle.load(open('tests/testdata/testdata_vs_mag2.p','rb'))[2]
+    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[2]
     pm = mag3.magnet.Box(mag=(111,222,333), dim=(1,2,3), pos=(3,0,0))
     with mag3.motion_merge(pm,steps=99):
         pm.rotate_from_angax(297,'z',anchor=0)

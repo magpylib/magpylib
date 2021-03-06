@@ -1,4 +1,5 @@
 import pickle
+import os
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
@@ -45,6 +46,6 @@ def test_path_BaseGeo():
 
     #pickle.dump(x,open('testdata_path_BaseGeo.p', 'wb'))
 
-    x_test = pickle.load(open('tests/testdata/testdata_path_BaseGeo.p', 'rb'))
+    x_test = pickle.load(open(os.path.abspath('tests/testdata/testdata_path_BaseGeo.p'), 'rb'))
 
     assert np.allclose(x,x_test), 'path problem'
