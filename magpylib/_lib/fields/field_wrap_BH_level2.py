@@ -1,4 +1,5 @@
 import sys
+from copy import copy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib as mag3
@@ -97,13 +98,16 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     k = len(sensors)
 
     # input path check + tile up static objects --------------------------------
+    # tile up length 1 paths
     #    sys.exit if any path format is bad
     #    sys.exit if any path length is not m or 1
     m = get_good_path_length(obj_list)
-    # tile up length 1 paths
+    # store pointers to objects that are tiled up
+    reset_objects = []
     if m>1:
         for obj in obj_list: # can have same obj several times in obj_list through a collection
             if len(obj._pos) == 1:
+                reset_objects += [obj]
                 obj.pos = np.tile(obj.pos, (m,1))
                 rotq = np.tile(obj._rot.as_quat(), (m,1))
                 obj.rot = R.from_quat(rotq)
@@ -177,5 +181,10 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
 
     # reduce all size-1 levels
     B = np.squeeze(B)
+
+    # reset tiled objects
+    for obj in reset_objects:
+        obj.pos = obj.pos[0]
+        obj.rot = obj.rot[0]
 
     return B
