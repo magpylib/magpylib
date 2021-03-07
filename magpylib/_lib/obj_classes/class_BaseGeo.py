@@ -257,7 +257,6 @@ class BaseGeo:
             displ = tgt_pos - path_pos[-1]
         if steps<0:
             displ = tgt_pos - path_pos[steps]
-        print(displ)
 
         self.move_by(displ, steps=steps)
 
