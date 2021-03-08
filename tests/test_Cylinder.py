@@ -1,6 +1,8 @@
 import os
 import pickle
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from magpylib.magnet import Cylinder
 
 # # GENERATE DATA
@@ -44,4 +46,14 @@ def test_Cylinder():
         Btest += [pm.getB(poso, niter=100)]
     Btest = np.array(Btest)
 
-    assert np.allclose(B, Btest), "test_Box failed big time"
+    assert np.allclose(B, Btest), "test_Cylinder failed big time"
+
+
+def test_Cylinder_display():
+    """ testing display
+    """
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax = fig.gca(projection='3d')
+    src = Cylinder((1,2,3),(1,2))
+    x = src.display(axis=ax)
+    assert x is None, 'display test fail'

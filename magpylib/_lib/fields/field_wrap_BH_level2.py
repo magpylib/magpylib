@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib as mag3
-from magpylib._lib.math_utility import format_src_input, get_good_path_length, all_same
+from magpylib._lib.math_utility import format_obj_input, get_good_path_length, all_same
 from magpylib._lib.config import Config
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
@@ -78,7 +78,7 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     # format input -------------------------------------------------------------
     if not isinstance(sources, list):
         sources = [sources]
-    src_list = format_src_input(sources) # flatten Collections
+    src_list = format_obj_input(sources) # flatten Collections
 
     if isinstance(observers, mag3.Sensor):               # input = 1 sensor
         sensors = [observers]

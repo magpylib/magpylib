@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 
+
 def test_BaseGeo():
     """
     fundamental simple test of setter, getter, .move and .rotate
@@ -87,10 +88,12 @@ def test_BaseGeo_anchor_None():
     """
     pos = np.array([1,2,3])
     bg = BaseGeo(pos,R.from_quat((0,0,0,1)))
-    bg.rotate(R.from_rotvec((.1,.2,.3)))
+    bg.rotate(R.from_rotvec((.2,.4,.6)), steps=2)
 
-    assert np.allclose(bg.pos,pos), 'None rotation changed position'
-    assert np.allclose(bg.rot.as_rotvec(),(.1,.2,.3)), 'None rotation did not adjust rot'
+    pos3 = np.array([pos]*3)
+    rot3 = np.array([(0,0,0),(.1,.2,.3),(.2,.4,.6)])
+    assert np.allclose(bg.pos,pos3), 'None rotation changed position'
+    assert np.allclose(bg.rot.as_rotvec(),rot3), 'None rotation did not adjust rot'
 
 
 def test_BaseGeo_neg_steps():

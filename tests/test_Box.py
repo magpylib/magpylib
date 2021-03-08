@@ -1,8 +1,9 @@
 import pickle
 import os
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 from magpylib.magnet import Box
-
 
 # """data generation for test_Box()"""
 
@@ -52,3 +53,13 @@ def test_Box():
     btest = np.array(btest)
 
     assert np.allclose(B, btest), "test_Box failed big time"
+
+
+def test_Box_display():
+    """ testing display
+    """
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax = fig.gca(projection='3d')
+    src = Box((1,2,3),(1,2,3))
+    x = src.display(axis=ax,show_path=False,direc=True)
+    assert x is None, 'display test fail'

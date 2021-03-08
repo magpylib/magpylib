@@ -27,7 +27,7 @@ def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     return rotobj
 
 
-def format_src_input(objects: Sequence) -> list:
+def format_obj_input(objects: Sequence) -> list:
     """ tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -42,7 +42,7 @@ def format_src_input(objects: Sequence) -> list:
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
-            obj_list += format_src_input(obj) # recursive flattening
+            obj_list += format_obj_input(obj) # recursive flattening
         elif isinstance(obj, mag3.Collection):
             obj_list += obj.sources
         elif isinstance(obj, (

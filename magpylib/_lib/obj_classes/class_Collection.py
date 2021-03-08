@@ -1,7 +1,7 @@
 """collection class code"""
 
 import copy
-from magpylib._lib.math_utility import format_src_input, check_duplicates
+from magpylib._lib.math_utility import format_obj_input, check_duplicates
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.display import display
 
@@ -91,7 +91,7 @@ class Collection:
         """ set sources in the Collection, arbitrary input
         """
         # format input
-        src_list = format_src_input(sources)
+        src_list = format_obj_input(sources)
         # check and eliminate duplicates
         src_list = check_duplicates(src_list)
         # set attributes
@@ -144,7 +144,7 @@ class Collection:
         self: Collection
         """
         # format input
-        src_list = format_src_input(sources)
+        src_list = format_obj_input(sources)
         # combine with original src_list
         src_list = self._sources + src_list
         # check and eliminate duplicates
@@ -220,7 +220,12 @@ class Collection:
         return H
 
 
-    def display(self, **kwargs):
+    def display(
+            self,
+            markers=[(0,0,0)],
+            axis=None,
+            direc=False,
+            show_path=True):
         """ Display Collection graphically using matplotlib.
 
         Parameters
@@ -243,7 +248,13 @@ class Collection:
         -------
         no return
         """
-        display(self, **kwargs)
+        #pylint: disable=dangerous-default-value
+        return display(
+            self,
+            markers=markers,
+            axis=axis,
+            direc=direc,
+            show_path=show_path)
 
 
     def move_by(self, displacement, steps=None):

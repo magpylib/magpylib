@@ -3,11 +3,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as mag3
-from magpylib._lib.math_utility import format_src_input, test_path_format
+from magpylib._lib.math_utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
 from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
-from magpylib._lib.exceptions import MagpylibBadUserInput
+
+# pylint: disable=useless-return
 
 def display(
         *objects,
@@ -58,7 +59,7 @@ def display(
     cmap = plt.cm.get_cmap('hsv')
 
     # flatten input
-    obj_list = format_src_input(objects)
+    obj_list = format_obj_input(objects)
 
     # test if every individual obj_path is good
     test_path_format(obj_list)
@@ -118,3 +119,5 @@ def display(
     # generate output ------------------------------------------------
     if generate_output:
         plt.show()
+
+    return None

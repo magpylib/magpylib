@@ -1,7 +1,10 @@
 import numpy as np
+import matplotlib.pyplot as plt
+from mpl_toolkits.mplot3d import Axes3D
 import magpylib as mag3
 
-def test_sensor():
+
+def test_sensor1():
     """ self-consistent test of the sensor class
     """
     pm = mag3.magnet.Box((11,22,33),(1,2,3))
@@ -17,6 +20,11 @@ def test_sensor():
     assert B1.shape==B2.shape, 'FAIL sensor shape'
     assert np.allclose(B1,B2), 'FAIL sensor values'
 
+
+def test_sensor2():
+    """ self-consistent test of the sensor class
+    """
+    pm = mag3.magnet.Box((11,22,33),(1,2,3))
     poss1 = [(t,0,2) for t in np.linspace(0,5,33)]
     poss2 = [(t,0,3) for t in np.linspace(0,5,33)]
     poss3 = [(t,0,4) for t in np.linspace(0,5,33)]
@@ -29,3 +37,14 @@ def test_sensor():
 
     assert B1.shape==B2.shape, 'FAIL sensor shape'
     assert np.allclose(B1,B2), 'FAIL sensor values'
+
+
+def test_Sensor_display():
+    """ testing display
+    """
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax = fig.gca(projection='3d')
+    sens = mag3.Sensor(pos_pix=[(1,2,3),(2,3,4)])
+    sens.move_by((10,1,10),steps=33)
+    x = sens.display(axis=ax,markers=[(100,100,100)])
+    assert x is None, 'display test fail'

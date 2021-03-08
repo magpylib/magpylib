@@ -123,7 +123,7 @@ class BaseGeo:
             markers=[(0,0,0)],
             axis=None,
             direc=False,
-            show_path=False):
+            show_path=True):
         """ Display object graphically using matplotlib.
 
         Parameters
@@ -147,8 +147,7 @@ class BaseGeo:
         no return
         """
         #pylint: disable=dangerous-default-value
-
-        display(
+        return display(
             self,
             markers=markers,
             axis=axis,
