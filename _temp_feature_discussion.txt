@@ -1,10 +1,3 @@
-code layout decisions -------------------------------
-
-no typehits on top-level functions
-    - typehins can look confusing when one is not used to them
-    - typical engineering users will have little experince
-    - numpy does not use typehints
-
 discussion -----------------------------------------
 
 - global magnetization ?
@@ -15,10 +8,6 @@ discussion -----------------------------------------
 
 
 2do ----------------------------------------------------------
-- input checks: keep only most critical
-
-
-- is it possible to get rid of (pm,steps=...) argument in motion_merge
 
 - display: adjust system size to shifted system
 - display: showpath='all'
@@ -29,10 +18,8 @@ discussion -----------------------------------------
 - code: apply .reshape((-1,3))
 - code: numpy reshape and other operations creating copies
 
-- path_merge: change name from motion_merge
 - path_merge: context manager tool tip not displaying
-
-- utility: check_dupicates might destroy col.sources order
+- path_merge: is it possible to get rid of (pm,steps=...) argument in path_merge
 
 - bring edgesize in context with magnetsize
 
@@ -66,13 +53,6 @@ discussion -----------------------------------------
     - tile
     - raida source
 
-- errors:
-    - throw errors instead of warning+sys.exit()
-    - sys.exit(ERROR), doesnt give you a traceback ! such errors are more difficult to track down
-    - return error codes
-    - write tests for errors
-    - unify error msg format
-
 code: .misc package
     - Dipole
     - FEM interpolation
@@ -103,6 +83,19 @@ code: .misc package
 
 
 DO NOT DO !!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
+
+
+Input checks beyond most critical
+WHY ?
+    - waste of time
+    - planned debug mode
+
+Typehints in top level functions
+WHY ?:
+    - typehins can look confusing when one is not used to them
+    - typical engineering users will have little experince
+    - numpy does not use typehints
+
 
 Sensors should not be part of Collections
 WHY?: 

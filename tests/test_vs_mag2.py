@@ -55,7 +55,7 @@ def test_vs_mag2_spiral():
     """
     data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[2]
     pm = mag3.magnet.Box(mag=(111,222,333), dim=(1,2,3), pos=(3,0,0))
-    with mag3.motion_merge(pm,steps=99):
+    with mag3.path_merge(pm,steps=99):
         pm.rotate_from_angax(297,'z',anchor=0)
         pm.move_by((0,0,9.9))
     B = pm.getB((0,0,0))
