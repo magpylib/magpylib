@@ -6,6 +6,8 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._lib.fields.field_wrap_getBHv import getBHv_level2
 from magpylib._lib.exceptions import MagpylibInternalError, MagpylibBadUserInput
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._lib.math_utility.utility import format_obj_input, get_good_path_length
+from magpylib._lib.math_utility import test_path_format as tpf
 
 def test_level1_internal_error():
     """ test internal error at getBH_level1
@@ -106,3 +108,47 @@ def test_baseGeo_errors():
     except MagpylibBadUserInput:
         flag = True
     assert flag, 'bad rotation axis str input not caught'
+
+
+def test_format_obj_input_error():
+    """ special case testing
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+
+    flag = False
+    try:
+        format_obj_input([pm1,pm2,333])
+    except MagpylibBadUserInput:
+        flag = True
+    assert flag, 'bad input not raised'
+
+
+def test_test_path_format():
+    """ test with single source input
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1.pos = [(1,2,3),(1,2,3)]
+    flag = False
+    try:
+        tpf(pm1)
+    except MagpylibBadUserInput:
+        flag = True
+    assert flag, 'test_path_format_fail'
+
+
+def test_get_good_path_length():
+    """ test error raise
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1.move_by((1,2,3),steps=11)
+    pm2.move_by((1,2,3),steps=12)
+    src_list = [pm1,pm2]
+
+    flag = False
+    try:
+        get_good_path_length(src_list)
+    except MagpylibBadUserInput:
+        flag = True
+    assert flag, 'get_good_path_length fail'
