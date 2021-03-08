@@ -66,11 +66,15 @@ def check_duplicates(src_list: Sequence) -> list:
     ### Returns:
     - list: src_list with duplicates removed
     """
-    src_set = set(src_list)
-    if len(src_set) != len(src_list):
+    src_list_new = []
+    for src in src_list:
+        if src not in src_list_new:
+            src_list_new += [src]
+
+    if len(src_list_new) != len(src_list):
         print('WARNING: Eliminating duplicate sources')
-        src_list = list(src_set)
-    return src_list
+
+    return src_list_new
 
 
 def test_path_format(inp):
