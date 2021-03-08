@@ -11,52 +11,59 @@ d=h=None
 mx=my=mz=None
 
 class Cylinder(BaseGeo):
-    """ Homogeneous Cylinder magnet.
+    """ Homogeneous cylinder magnet.
 
-    init_state: the geometric center is in the CS origin, the
-        cylinder axis coincides with the z-direction
+    init_state: the geometric center is in the CS origin, the axis of
+        the cylinder coincides with the z-axis.
 
-    ### Properties
-    - mag (vec3): Magnetization vector (remanence field) of magnet
-        in units of mT.
-    - dim (vec3): Dimension/Size of the Cylinder with diameter and
-        height (d,h) in units of mm.
-    - pos (vec3): Position of the geometric center of the magnet
-        in units of mm. Defaults to (0,0,0).
-    - rot (rotation input): Relative rotation of magnet to init_state.
-        Input can either be a pair (angle, axis) with angle a scalar
-        given in deg and axis an arbitrary 3-vector, or a
-        scipy..Rotation object. Defaults to (0,0,0) rotation vector.
+    Properties
+    ----------
+    mag: array_like, shape (3,)
+        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
 
-    ### Methods
-    - move(displ):
-        move magnet by argument vector
-    - rotate(rot, anchor=None):
-        rotate object by rot input (scipy Rotation object). The rotation
-        axis passes through the anchor. Default anchor=None rotates
-        object about its own center.
-    - rotate_from_angax(angle, axis, anchor=None, degree=True):
-        rotate object around axis by angle. The axis passes through the
-        anchor. Default anchor=None rotates object about its own center.
-        Default degree=True angle is given in degrees, if False in radiant.
-    - display(markers=[(0,0,0)], axis=None, direc=False):
-        graphically display the source. Arguments are same as of top level
-        display function.
-    - getB(pos_obs):
-        compute B-field of source at observer positions. Shape
-        of B-field output will have the same structure as pos_obs input.
-    - getH(pos_obs):
-        compute H-field of source at observer positions. Shape
-        of B-field output will have the same structure as pos_obs input.
+    dim: array_like, shape (2,)
+        Dimension/Size of the cylinder with diameter/height [d,h] in units of mm.
 
-    ### Returns:
-    - Cylinder source object
+    pos: array_like, shape (3,) or (N,3), default=(0,0,0)
+        Position of geometric center of magnet in units of [mm].
 
-    ### Info
-    - Sources can be added to each other and return a Collection.
+    rot: scipy Rotation object, default=unit rotation
+        Source rotations relative to the init_state.
 
-    - Computation of the Cylinder field has a iter=50 kwarg to set the
-        iteration in the computation of the diametral component.
+    Dunders
+    -------
+    __add__:
+        Adding sources creates a collection "col = src1 + src2"
+
+    __repr__:
+        returns string "Cylinder (id(self))"
+
+    Methods
+    -------
+    getB: observers, niter=50
+        Compute B-field of source at observer positions.
+
+    getH: observers, niter=50
+        Compute H-field of source at observer positions.
+
+    display:
+        Display source graphically.
+
+    move_by: 
+        Linear displacement of source by input vector.
+
+    move_to: array_like, shape (3,)
+        Linear displacement of source to target position.
+
+    rotate: scipy Rotation object
+        Rotate source.
+
+    rotate_from_angax: angle(float), axis(array_like, shape(3,))
+        Rotate source with angle-axis input.
+
+    Returns
+    -------
+    Cylinder object
     """
 
     def __init__(

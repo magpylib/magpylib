@@ -1,5 +1,4 @@
 import sys
-from copy import copy
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib as mag3

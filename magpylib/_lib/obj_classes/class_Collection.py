@@ -1,4 +1,4 @@
-"""Collection class code"""
+"""collection class code"""
 
 import copy
 from magpylib._lib.math_utility import format_src_input, check_duplicates
@@ -7,30 +7,70 @@ from magpylib._lib.display import display
 
 
 class Collection:
-    """ Group multiple sources in one Collection.
+    """ Group multiple sources in one collection for common manipulation.
 
-    ### Properties
-    - sources (list): Ordered list of sources in the Collection
+    Operations applied to a collection are sequentially applied to all
+        sources in the collection.
 
-    ### Methods
-    - move: move all sources simultaneously
-    - rotate: rotate all sources (about the same anchor)
-    - display: display the Collection graphically
-    - getB: compute B-field of Collection
-    - getH: compute H-field of Collection
-    - add_sources: add sources to the Collection (no copy)
-    - remove_source: remove a source from the Collection (no copy)
+    Collections do not allow duplicate sources.
 
-    ### Returns:
-    - (Collection object)
+    Parameters
+    ----------
+    sources: src objects, collections or arbitrary lists thereof
+        Ordered list of sources in the collection.
 
-    ### Info
-    Collections have +/- operations defined to add and remove sources.
-        (no copy is made)
+    Dunders
+    -------
+    __add__:
+        Add collections like "col1 + col2"
 
-    Collections are iterable, iterating through self.sources
+    __sub__:
+        Subtract sources like "col - src"
 
-    Collections have getitem defined, col[i] returns self.sources[i]
+    __iter__:
+        sources list is returned as collection iterable "[src for src in col]"
+
+    __getitem__:
+        sources list is returned for getitem "src = col[1]"
+
+    __repr__:
+        returns string "Collection (id(self))"
+
+    Methods
+    -------
+    add: src objects, collections or arbitrary lists thereof
+        Add arbitrary sources to collection.
+
+    remove: source object
+        Remove source from collection
+
+    getB: array_like or sens_obj or list of sens_obj
+        Compute B-field of collection at observer positions.
+
+    getH: array_like or sens_obj or list of sens_obj
+        Compute H-field of collection at observer positions.
+
+    display: **kwargs of top level function display()
+        Display Collection graphically using matplotlib.
+
+    move_by: displacement
+        Linear displacement of Collection by argument vector.
+
+    rotate: scipy Rotation object
+        Rotate all sources in collection.
+
+    rotate_from_angax: angle(float), axis(array_like, shape(3,))
+        Rotate all sources in collection with angle-axis input.
+
+    copy:
+        Returns a copy of the collection.
+    
+    reset_path:
+        Set all src.pos to (0,0,0) and src.rot to unit rotation.
+
+    Returns
+    -------
+    Collection object
     """
 
     def __init__(self, *sources):
@@ -90,16 +130,18 @@ class Collection:
 
     # methods -------------------------------------------------------
     def add(self,*sources):
-        """ Add arbitrary sources to Collection.
+        """ Add arbitrary sources to collection.
 
-        ### Args:
-        - sources (sequence of sources and collections): add arbitrary
-            sequences of sources and collections to the Collection.
-            The new sources will be added at the end of self.sources.
-            Duplicates will be eliminated.
+        Parameters
+        ----------
+        sources: src objects, collections or arbitrary lists thereof
+            Add arbitrary sequences of sources and collections to the collection.
+            The new sources will be added at the end of self.sources. Duplicates
+            will be eliminated.
 
-        ### Returns:
-        - self
+        Returns:
+        --------
+        self: Collection
         """
         # format input
         src_list = format_src_input(sources)
@@ -115,17 +157,20 @@ class Collection:
     def remove(self,source):
         """ Remove source from collection
 
-        ### Args:
-        - source (source): remove source from Collection
+        Parameters
+        ----------
+        source: source object
+            Remove source from collection
 
-        ### Returns:
-        - self
+        Returns
+        -------
+        self: collection
         """
         self._sources.remove(source)
         return self
 
 
-    def getB(self, observers, **kwargs):
+    def getB(self, observers, **specs):
         """ Compute B-field of collection at observer positions.
 
         Parameters
@@ -135,21 +180,22 @@ class Collection:
             a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
             in units of millimeters.
 
-        kwargs: specific keword arguments of different scource types
+        specs:
+            Specific keyword arguments of different source types
 
         Returns
         -------
         B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
             B-field of collection at each path position M for each sensor K and each sensor pixel
-            position N in units of mT.
+            position N in units of [mT].
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
             is removed.
         """
-        B = getB(self, observers, **kwargs)
+        B = getB(self, observers, **specs)
         return B
 
 
-    def getH(self, observers, **kwargs):
+    def getH(self, observers, **specs):
         """ Compute H-field of collection at observer positions.
 
         Parameters
@@ -159,29 +205,29 @@ class Collection:
             a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
             in units of millimeters.
 
-        kwargs: specific keword arguments of different scource types
+        specs:
+            Specific keyword arguments of different source types
 
         Returns
         -------
         H-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [kA/m]
-            B-field of collection at each path position M for each sensor K and each sensor pixel
-            position N in units of kA/m.
+            H-field of collection at each path position M for each sensor K and each sensor pixel
+            position N in units of [kA/m].
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
             is removed.
         """
-        H = getH(self, observers, **kwargs)
+        H = getH(self, observers, **specs)
         return H
 
 
     def display(self, **kwargs):
-        """
-        Display collection graphically. kwargs of top level display() function.
+        """ Display Collection graphically using matplotlib.
 
         Parameters
         ----------
         markers: array_like, shape (N,3), default=[(0,0,0)]
-            Mark positions in graphic output. Puts a marker in the origin.
-            by default.
+            Mark positions in graphic output. Default value puts a marker
+            in the origin.
 
         axis: pyplot.axis, default=None
             Display graphical output in a given pyplot axis (must be 3D).
@@ -189,27 +235,29 @@ class Collection:
         direc: bool, default=False
             Set True to plot magnetization and current directions
 
-        show_path: bool/string, default=False
-            Set True to plot object paths. Set 'all' to plot an object
+        show_path: bool/string, default=True
+            Set True to plot object paths. Set to 'all' to plot an object
             represenation at each path position.
 
         Returns
         -------
-        None
+        no return
         """
         display(self, **kwargs)
 
 
-    def move_by(self, displacement, steps=-1):
-        """
-        Linear displacement of Collection.
+    def move_by(self, displacement, steps=None):
+        """ Linear displacement of source objects in Collection.
 
         Parameters
         ----------
         displacement: array_like, shape (3,)
-            displacement vector in units of mm.
+            Displacement vector in units of mm.
 
-        steps: int, optional, default=-1
+        steps: int or None, default=None
+            If steps=None: Object will simply be moved without generating a
+                path. Specifically, path[-1] of object is set anew. This is
+                similar to having steps=-1.
             If steps < 0: apply a linear motion from 0 to displ on top
                 of existing path[steps:]. Specifically, steps=-1 will just
                 displace path[-1].
@@ -218,7 +266,7 @@ class Collection:
 
         Returns:
         --------
-        self : Collection
+        self: Collection.
         """
         for s in self:
             s.move_by(displacement, steps)
@@ -227,7 +275,7 @@ class Collection:
 
     def rotate(self, rot, anchor=None, steps=-1):
         """
-        Rotate all sources in Collection.
+        Rotate all sources in collection.
 
         Parameters
         ----------
@@ -254,7 +302,7 @@ class Collection:
 
 
     def rotate_from_angax(self, angle, axis, anchor=None, steps=-1, degree=True):
-        """ Rotate all sources in Collection.
+        """ Rotate all sources in collection.
 
         Parameters
         ----------
@@ -288,5 +336,12 @@ class Collection:
 
 
     def copy(self):
-        """ returns a copy of the Collection"""
+        """ Returns a copy of the collection"""
         return copy.copy(self)
+
+
+    def reset_path(self):
+        """Set all src.pos to (0,0,0) and src.rot to unit rotation.
+        """
+        for obj in self:
+            obj.reset_path()

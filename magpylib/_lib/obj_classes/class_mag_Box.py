@@ -11,49 +11,62 @@ a=b=c=None
 mx=my=mz=None
 
 class Box(BaseGeo):
-    """ Homogeneous Cuboid magnet.
+    """ Homogeneous cuboid magnet.
 
     init_state: the geometric center is in the CS origin, the sides
         of the box are parallel to the x/y/z basis vectors
 
-    ### Properties
-    - mag (vec3): Magnetization vector (remanence field) of magnet
-        in units of mT.
-    - dim (vec3): Dimension/Size of the Cuboid with sides [a,b,c]
-        in units of mm.
-    - pos (vec3): Position of the geometric center of the magnet
-        in units of mm. Defaults to (0,0,0).
-    - rot (rotation input): Relative rotation of magnet to init_state.
-        Input can either be a pair (angle, axis) with angle a scalar
-        given in deg and axis an arbitrary 3-vector, or a
-        scipy..Rotation object. Defaults to (0,0,0) rotation vector.
+    Properties
+    ----------
+    mag: array_like, shape (3,)
+        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
 
-    ### Methods
-    - move(displ):
-        move magnet by argument vector
-    - rotate(rot, anchor=None):
-        rotate object by rot input (scipy Rotation object). The rotation
-        axis passes through the anchor. Default anchor=None rotates
-        object about its own center.
-    - rotate_from_angax(angle, axis, anchor=None, degree=True):
-        rotate object around axis by angle. The axis passes through the
-        anchor. Default anchor=None rotates object about its own center.
-        Default degree=True angle is given in degrees, if False in radiant.
-    - display(markers=[(0,0,0)], axis=None, direc=False):
-        graphically display the source. Arguments are same as of top level
-        display function.
-    - getB(pos_obs):
-        compute B-field of source at observer positions. Shape
-        of B-field output will have the same structure as pos_obs input.
-    - getH(pos_obs):
-        compute H-field of source at observer positions. Shape
-        of B-field output will have the same structure as pos_obs input.
+    dim: array_like, shape (3,)
+        Dimension/Size of the Cuboid with sides [a,b,c] in units of mm.
 
-    ### Returns:
-    - Box source object
+    pos: array_like, shape (3,) or (N,3), default=(0,0,0)
+        Position of geometric center of magnet in units of [mm].
 
-    ### Info
-    - Sources can be added to each other and return a Collection.
+    rot: scipy Rotation object, default=unit rotation
+        Source rotations relative to the init_state.
+
+    Dunders
+    -------
+    __add__:
+        Adding sources creates a collection "col = src1 + src2"
+
+    __repr__:
+        returns string "Box (id(self))"
+
+    Methods
+    -------
+    getB: array_like or sens_obj or list of sens_obj
+        Compute B-field of source at observer positions.
+
+    getH: array_like or sens_obj or list of sens_obj
+        Compute H-field of source at observer positions.
+
+    display: **kwargs of top level function display()
+        Display object graphically using matplotlib.
+
+    move_by: displacement
+        Linear displacement of object by input vector.
+
+    move_to: array_like, shape (3,)
+        Linear displacement of source to target position.
+
+    rotate: scipy Rotation object
+        Rotate source.
+
+    rotate_from_angax: angle(float), axis(array_like, shape(3,))
+        Rotate source with angle-axis input.
+
+    reset_path:
+        Set object.pos to (0,0,0) and object.rot to unit rotation.
+
+    Returns
+    -------
+    Box object
     """
 
     def __init__(
@@ -88,13 +101,13 @@ class Box(BaseGeo):
 
     @property
     def dim(self):
-        """ box dimension (a,b,c) in mm
+        """ Box dimension (a,b,c) in mm
         """
         return self._dim
 
     @dim.setter
     def dim(self, value):
-        """ set box dimension (a,b,c), vec3, mm
+        """ set Box dimension (a,b,c), vec3, mm
         """
         if None in value:
             sys.exit('ERROR: Box() - dimension input required')

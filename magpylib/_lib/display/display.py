@@ -16,16 +16,16 @@ def display(
         axis=None,
         direc=False,
         show_path=True):
-    """ Display sources/sensors graphically
+    """ Display objects and paths graphically using matplotlib.
 
     Parameters
     ----------
     objects: sources, collections or sensors
-        Display a 3D reprensation of given objects using matplotlib
+        Show a 3D reprensation of given objects in matplotlib.
 
     markers: array_like, shape (N,3), default=[(0,0,0)]
-        Mark positions in graphic output. Puts a marker in the origin.
-        by default.
+        Mark positions in graphic output. Default value puts a marker
+        in the origin.
 
     axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D).
@@ -33,13 +33,13 @@ def display(
     direc: bool, default=False
         Set True to plot magnetization and current directions
 
-    show_path: bool/string, default=False
-        Set True to plot object paths. Set 'all' to plot an object
+    show_path: bool/string, default=True
+        Set True to plot object paths. Set to 'all' to plot an object
         represenation at each path position.
 
     Returns
     -------
-    None
+    no return
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches

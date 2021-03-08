@@ -5,7 +5,56 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.fields import getB, getH
 
 class Sensor(BaseGeo):
-    """ sensor class........
+    """ 3D Magnetic field sensor.
+
+    init_state: the axes of the sensor are parallel to the global CS axes.
+
+    Properties
+    ----------
+    pos_pix: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
+        Sensor pixel inside of 'package'. Positions are given in local sensor CS.
+        getBH computations return the field at the sensor pixels.
+
+    pos: array_like, shape (3,), default=(0,0,0)
+        Position of Sensor ('package origin') in units of [mm].
+
+    rot: scipy Rotation object, default=unit rotation
+        Sensor rotations relative to the init_state.
+
+    Dunders
+    -------
+    __repr__:
+        returns string "Sensor (id(self))"
+
+    Methods
+    -------
+    getB: source or Collection object or lists thereof
+        Compute B-field of sources at Sensor.
+
+    getH: source or Collection object or lists thereof
+        Compute H-field of sources at Sensor.
+
+    display: **kwargs of top level function display()
+        Display object graphically using matplotlib.
+
+    move_by: displacement
+        Linear displacement of object by input vector.
+
+    move_to: array_like, shape (3,)
+        Linear displacement of object to target position.
+
+    rotate: scipy Rotation object
+        Rotate object.
+
+    rotate_from_angax: angle(float), axis(array_like, shape(3,))
+        Rotate object with angle-axis input.
+
+    reset_path:
+        Set object.pos to (0,0,0) and object.rot to unit rotation.
+
+    Returns
+    -------
+    Sensor object
     """
 
     def __init__(
@@ -60,12 +109,14 @@ class Sensor(BaseGeo):
             all sources must be the same (or 1). Pathlength=1 sources will be considered
             as static.
 
+        Source Specific Parameters
+        --------------------------
         niter (int): Number of iterations in the computation of the
             diametral component of the field
 
         Returns
         -------
-        B-field: ndarray, shape (L, M, K, N1, N2, ..., 3), unit [mT]
+        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
             B-field of each source at each path position for each sensor and each sensor pixel
             position in units of mT.
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or

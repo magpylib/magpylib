@@ -125,14 +125,13 @@ class BaseGeo:
             axis=None,
             direc=False,
             show_path=False):
-        """
-        Display object graphically. kwargs of top level display() function.
+        """ Display object graphically using matplotlib.
 
         Parameters
         ----------
         markers: array_like, shape (N,3), default=[(0,0,0)]
-            Mark positions in graphic output. Puts a marker in the origin.
-            by default.
+            Mark positions in graphic output. Default value puts a marker
+            in the origin.
 
         axis: pyplot.axis, default=None
             Display graphical output in a given pyplot axis (must be 3D).
@@ -140,13 +139,13 @@ class BaseGeo:
         direc: bool, default=False
             Set True to plot magnetization and current directions
 
-        show_path: bool/string, default=False
-            Set True to plot object paths. Set 'all' to plot an object
+        show_path: bool/string, default=True
+            Set True to plot object paths. Set to 'all' to plot an object
             represenation at each path position.
 
         Returns
         -------
-        None
+        no return
         """
         #pylint: disable=dangerous-default-value
 
@@ -157,19 +156,21 @@ class BaseGeo:
             direc=direc,
             show_path=show_path)
 
+
     def reset_path(self):
-        """ set object pos=(0,0,0) and unit rotation
+        """ Set object.pos to (0,0,0) and object.rot to unit rotation.
         """
         self.pos = (0,0,0)
         self.rot = R.from_quat((0,0,0,1))
 
+
     def move_by(self, displacement, steps=None):
-        """ Linear displacement of object
+        """ Linear displacement of object.
 
         Parameters
         ----------
         displacement: array_like, shape (3,)
-            displacement vector in units of mm.
+            Displacement vector in units of mm.
 
         steps: int or None, default=None
             If steps=None: Object will simply be moved without generating a
@@ -183,7 +184,7 @@ class BaseGeo:
 
         Returns:
         --------
-        self : object with position and orientation properties.
+        self: Object with position and orientation properties.
         """
 
         # steps
