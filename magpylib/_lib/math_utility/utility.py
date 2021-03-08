@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as mag3
 from magpylib._lib.exceptions import MagpylibBadUserInput
 
+
 def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     """ Create rot object from angle axis input.
 
@@ -15,7 +16,6 @@ def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     Returns:
     - R: scipy rotation object
     """
-
     ang = float(angle)
     len_ax = np.linalg.norm(axis)
     if len_ax == 0:
@@ -89,7 +89,7 @@ def test_path_format(inp):
     if not isinstance(inp,list):
         inp = [inp]
     result = all(len(obj._pos) == len(obj._rot) for obj in inp)
-    
+
     if not result:
         msg = 'Bad path format (rot-pos with different lengths)'
         raise MagpylibBadUserInput(msg)
@@ -119,24 +119,6 @@ def get_good_path_length(obj_list: list) -> bool:
 
     msg = 'Bad path format (different path lengths !=1 detected)'
     raise MagpylibBadUserInput(msg)
-
-
-def check_allowed_keys(allowed_keys, kwargs, func_name):
-    """ Thows a warning if kwargs contains a key that
-        is not in allowed_keys
-
-    Parameters:
-    -----------
-    allowed_keys (list): list of allowed keys
-
-    kwargs (dict): input dictionary
-
-    func_name (string): function name to throw proper warning
-    """
-    keys = kwargs.keys()
-    complement = [i for i in keys if i not in allowed_keys]
-    if complement:
-        print('WARNING: ' + func_name + ' - unknown input kwarg, ', complement)
 
 
 def all_same(lst:list)->bool:

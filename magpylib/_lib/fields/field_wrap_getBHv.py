@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
-from  magpylib._lib.math_utility import check_allowed_keys
 from magpylib._lib.exceptions import MagpylibBadUserInput
 
 
@@ -25,10 +24,6 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     - sets default input variables (e.g. pos, rot) if missing
     - tiles 1D inputs vectors to correct dimension
     """
-
-    # unknown kwarg input ('user accident') -------------------------
-    allowed_keys = ['bh', 'mag', 'dim', 'pos', 'rot', 'pos_obs', 'niter', 'src_type']
-    check_allowed_keys(allowed_keys, kwargs, 'getBHv()')
 
     # generate dict of secured inputs for auto-tiling ---------------
     tile_params = {}
