@@ -8,7 +8,6 @@ from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_marke
     draw_sensors)
 from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
 
-# pylint: disable=useless-return
 
 def display(
         *objects,
@@ -119,5 +118,3 @@ def display(
     # generate output ------------------------------------------------
     if generate_output:
         plt.show()
-
-    return None

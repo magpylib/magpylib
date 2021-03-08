@@ -249,7 +249,7 @@ class Collection:
         no return
         """
         #pylint: disable=dangerous-default-value
-        return display(
+        display(
             self,
             markers=markers,
             axis=axis,
