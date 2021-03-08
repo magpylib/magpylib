@@ -7,7 +7,7 @@ trigger:
 - master
 - development 
 - magpylib3_development
-- feature/*
+- feature-*
 
 pool:
   vmImage: 'vs2017-win2016'
