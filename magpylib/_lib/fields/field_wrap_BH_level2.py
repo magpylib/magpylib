@@ -1,11 +1,10 @@
-import sys
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib as mag3
 from magpylib._lib.math_utility import format_src_input, get_good_path_length, all_same
 from magpylib._lib.config import Config
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
-
+from magpylib._lib.exceptions import MagpylibBadUserInput
 
 def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     """ Helper funtion that generates getBH_level1 input dict for homogeneous magnets.
@@ -98,8 +97,8 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
 
     # input path check + tile up static objects --------------------------------
     # tile up length 1 paths
-    #    sys.exit if any path format is bad
-    #    sys.exit if any path length is not m or 1
+    #    error if any path format is bad
+    #    error if any path length is not m or 1
     m = get_good_path_length(obj_list)
     # store pointers to objects that are tiled up
     reset_objects = []
@@ -132,7 +131,7 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
             src_sorted[1] += [src]
             order[1] += [i]
         else:
-            sys.exit('ERROR (getBH_level2): bad source input !')
+            raise MagpylibBadUserInput('Unrecognized object in sources input')
 
     # evaluate each non-empty group in one go -------------------------------
     B = np.empty((l,m,n,3)) # store B-values here

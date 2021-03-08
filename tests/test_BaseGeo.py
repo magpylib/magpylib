@@ -52,3 +52,52 @@ def test_BaseGeo():
 
     assert np.allclose(poss, ptest), 'test_BaseGeo bad position'
     assert np.allclose(rots, otest),  'test_BaseGeo bad orientation'
+
+
+def test_BaseGeo_reset_path():
+    """ testing reset path
+    """
+    #pylint: disable=protected-access
+    bg = BaseGeo((0,0,0),R.from_quat((0,0,0,1)))
+    bg.move_by((1,1,1),steps=10)
+
+    assert len(bg._pos)==11, 'bad path generation'
+
+    bg.reset_path()
+    assert len(bg._pos)==1, 'bad path reset'
+
+
+def test_BaseGeo_negative_steps():
+    """ testing reset path
+    """
+
+    data = np.linspace(0,2,6)
+    data = np.tile(data,(3,1)).T
+
+    bg = BaseGeo((0,0,0),R.from_quat((0,0,0,1)))
+    bg.move_by((1,1,1),steps=5)
+    bg.move_to((1.2,1.2,1.2),steps=-5)
+    assert np.allclose(data,bg.pos), 'bad move_to neg steps'
+
+    print(bg.pos)
+
+
+def test_BaseGeo_anchor_None():
+    """ testing rotation with None anchor
+    """
+    pos = np.array([1,2,3])
+    bg = BaseGeo(pos,R.from_quat((0,0,0,1)))
+    bg.rotate(R.from_rotvec((.1,.2,.3)))
+
+    assert np.allclose(bg.pos,pos), 'None rotation changed position'
+    assert np.allclose(bg.rot.as_rotvec(),(.1,.2,.3)), 'None rotation did not adjust rot'
+
+
+def test_BaseGeo_neg_steps():
+    """ testing rotation with None anchor
+    """
+    pos = np.array([1,2,3])
+    bg = BaseGeo(pos,R.from_quat((0,0,0,1)))
+    bg.move_by((1,2,3),steps=3)
+    bg.move_by((1,2,3),steps=-5)
+    assert len(bg.pos)==4, 'bad negative steps'

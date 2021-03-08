@@ -1,8 +1,9 @@
-import sys
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from  magpylib._lib.math_utility import check_allowed_keys
+from magpylib._lib.exceptions import MagpylibBadUserInput
+
 
 def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
@@ -37,7 +38,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         src_type = kwargs['src_type']
         poso = np.array(kwargs['pos_obs'], dtype=float)
     except KeyError as kerr:
-        sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
+        msg = f'Missing input keys: {str(kerr)}'
+        raise MagpylibBadUserInput(msg) from kerr
     tile_params['pos_obs'] = poso           # <-- tile
 
     # optional general inputs -------------------
@@ -53,7 +55,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
         except KeyError as kerr:
-            sys.exit('ERROR getBHv: missing input ' + str(kerr))
+            msg = f'Missing input keys: {str(kerr)}'
+            raise MagpylibBadUserInput(msg) from kerr
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
     elif src_type == 'Cylinder':
@@ -61,7 +64,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             mag = np.array(kwargs['mag'],dtype=float)
             dim = np.array(kwargs['dim'],dtype=float)
         except KeyError as kerr:
-            sys.exit('ERROR: getBHv() - missing input ' + str(kerr))
+            msg = f'Missing input keys: {str(kerr)}'
+            raise MagpylibBadUserInput(msg) from kerr
         tile_params['mag'] = mag            # <-- tile
         tile_params['dim'] = dim            # <-- tile
         niter = kwargs.get('niter', 50)     # set niter
@@ -72,7 +76,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     # evaluation vector length
     ns = [len(val) for val in tile_params.values() if val.ndim == 2]
     if len(set(ns)) > 1:
-        sys.exit('ERROR: getBHv() - bad array input lengths: ' + str(set(ns)))
+        msg = f'bad array input lengths: {str(set(ns))}'
+        raise MagpylibBadUserInput(msg)
     n = max(ns, default=1)
 
     # tile 1D inputs and replace original values in kwargs

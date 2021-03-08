@@ -1,13 +1,12 @@
 """BaseGeo class code"""
 
-import sys
 from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.math_utility import rotobj_from_angax
 from magpylib._lib.display import display
 from magpylib._lib.obj_classes.class_Collection import Collection
-
+from magpylib._lib.exceptions import MagpylibBadUserInput
 
 class BaseGeo:
     """ Initializes position and rotation (=orientation) properties
@@ -73,14 +72,14 @@ class BaseGeo:
         inp: array_like, shape (3,) or (N,3)
             set position-path of object
         """
-
-        inp = np.array(inp, dtype=float)       # secure input
-        if inp.ndim == 1:                         # single position - increase dimension to (1,3)
+        inp = np.array(inp, dtype=float)     # secure input
+        if inp.ndim == 1:                    # single position - increase arg dimension to (1,3)
             self._pos = np.array([inp])
-        elif inp.ndim == 2:                       # multi position
+        elif inp.ndim == 2:                  # multi position
             self._pos = inp
         else:
-            sys.exit('ERROR: .pos() - a path must be of shape (3,) or (N,3)')
+            msg = 'pos input must be of shape (3,) or (N,3)'
+            raise MagpylibBadUserInput(msg)
 
 
     @property
@@ -386,7 +385,8 @@ class BaseGeo:
             elif axis=='z':
                 axis=np.array((0,0,1))
             else:
-                sys.exit('ERROR: src.rotate_from_angax() - bad axis input')
+                msg = f'Bad axis string input \"{axis}\"'
+                raise MagpylibBadUserInput(msg)
         else:
             axis = np.array(axis, dtype=float)
 
@@ -453,8 +453,8 @@ def get_steps(steps:int, bg:BaseGeo):
         # bad steps input, set to max size
         path_len = len(bg._pos)
         if steps < -path_len:
-            steps = -path_len + 1  # path[0] sees 0 rot
-            print('WARNING: src.motion() - steps<path_len, setting to max-1')
+            steps = -path_len
+            print('WARNING: src.motion() - steps<path_len, setting to max')
 
     return steps
 

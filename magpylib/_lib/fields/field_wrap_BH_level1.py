@@ -1,8 +1,7 @@
-import sys
 import numpy as np
 from magpylib._lib.fields.field_BH_box import field_BH_box
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
-
+from magpylib._lib.exceptions import MagpylibInternalError
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:
     """ Vectorized field computation
@@ -45,7 +44,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         niter = kwargs['niter']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot, niter)
     else:
-        sys.exit('ERROR: getBH() - bad src input type')
+        raise MagpylibInternalError('Bad src input type in level1')
 
     # transform field back into global CS
     B = rot.apply(B)

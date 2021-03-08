@@ -1,14 +1,13 @@
 """ Display function codes"""
 
-import sys
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as mag3
-from magpylib._lib.math_utility import format_src_input, good_path_format
+from magpylib._lib.math_utility import format_src_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
 from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
-
+from magpylib._lib.exceptions import MagpylibBadUserInput
 
 def display(
         *objects,
@@ -62,10 +61,7 @@ def display(
     obj_list = format_src_input(objects)
 
     # test if every individual obj_path is good
-    for obj in obj_list:
-        if not good_path_format([obj]):
-            sys.exit('ERROR: display() - bad path format (different pos/rot length)')
-
+    test_path_format(obj_list)
 
     # draw objects --------------------------------------------------
     faced_objects = [obj for obj in obj_list if isinstance(obj, (

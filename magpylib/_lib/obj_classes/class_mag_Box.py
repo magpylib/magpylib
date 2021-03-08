@@ -1,10 +1,10 @@
 """Magnet Box class code"""
 
-import sys
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_Collection import Collection
+from magpylib._lib.exceptions import MagpylibBadUserInput
 
 # init for tool tips
 a=b=c=None
@@ -95,7 +95,7 @@ class Box(BaseGeo):
         """ set magnetization vector, vec3, mT
         """
         if None in value:
-            sys.exit('ERROR: Box() - magnetization input required')
+            MagpylibBadUserInput('Magnetization input required')
         self._mag = np.array(value,dtype=float)
 
 
@@ -110,7 +110,7 @@ class Box(BaseGeo):
         """ set Box dimension (a,b,c), vec3, mm
         """
         if None in value:
-            sys.exit('ERROR: Box() - dimension input required')
+            MagpylibBadUserInput('Dimension input required')
         self._dim = np.array(value,dtype=float)
 
 
