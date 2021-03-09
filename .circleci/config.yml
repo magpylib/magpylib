@@ -25,7 +25,7 @@ jobs:
           name: Install Testing Env
           command: mkdir test-results && pip install tox
       - run:
-          name: Run Test Suite
+          name: Run Coverage Test Suite
           command: tox
   deploy:
     docker:
