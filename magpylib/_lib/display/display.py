@@ -77,12 +77,12 @@ def display(
         col = cmap(i/len(faced_objects))
 
         if isinstance(obj, Box):
-            faces = faces_box(obj)
+            faces = faces_box(obj,show_path)
             lw = 0.5
             face_points += draw_faces(faces, col, lw, ax)
 
         elif isinstance(obj, Cylinder):
-            faces = faces_cylinder(obj)
+            faces = faces_cylinder(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
@@ -91,7 +91,7 @@ def display(
 
     # path ------------------------------------------------------
     path_points = []
-    if show_path is True:
+    if show_path or (show_path=='all'):
         for i, obj in enumerate(faced_objects):
             col = cmap(i/len(faced_objects))
             path_points += draw_path(obj, col, ax)
@@ -109,16 +109,17 @@ def display(
         draw_directs(faced_objects, cmap, ax)
 
     # determine system size
-    lim0, lim1 = system_size(face_points, pix_points, markers, path_points)
+    limx0, limx1, limy0, limy1, limz0, limz1 = system_size(
+        face_points, pix_points, markers, path_points)
 
     # plot styling --------------------------------------------------
     ax.set(
         xlabel = 'x [mm]',
         ylabel = 'y [mm]',
         zlabel = 'z [mm]',
-        xlim=(lim0, lim1),
-        ylim=(lim0, lim1),
-        zlim=(lim0, lim1)
+        xlim=(limx0, limx1),
+        ylim=(limy0, limy1),
+        zlim=(limz0, limz1)
         )
 
     # generate output ------------------------------------------------

@@ -55,7 +55,7 @@ def test_Cylinder_display():
     fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
     ax = fig.gca(projection='3d')
     src = Cylinder((1,2,3),(1,2))
-    x = src.display(axis=ax)
+    x = src.display(axis=ax,show_path='all')
     assert x is None, 'display test fail'
 
 

@@ -62,7 +62,7 @@ def test_Box_display():
     #ax = fig.gca(projection='3d')
     src = Box((1,2,3),(1,2,3))
     plt.ion()
-    x = src.display(show_path=False,direc=True)
+    x = src.display(show_path='all',direc=True)
     plt.close()
     assert x is None, 'display test fail'
 
