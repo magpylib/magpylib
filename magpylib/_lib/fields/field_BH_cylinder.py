@@ -4,7 +4,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib._lib.math_utility import celv
+from magpylib._lib.fields.special_functions import celv
 from magpylib._lib.config import Config
 
 

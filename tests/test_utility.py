@@ -1,7 +1,7 @@
 import numpy as np
 import magpylib as mag3
-from magpylib._lib.math_utility.utility import rotobj_from_angax
-from magpylib._lib.math_utility.utility import check_duplicates
+from magpylib._lib.utility import rotobj_from_angax
+from magpylib._lib.utility import check_duplicates
 
 
 def test_rotobj_from_angax():

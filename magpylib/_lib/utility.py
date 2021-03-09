@@ -2,9 +2,8 @@
 from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import magpylib as mag3
 from magpylib._lib.exceptions import MagpylibBadUserInput
-
+from magpylib import _lib
 
 def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     """ Create rot object from angle axis input.
@@ -39,16 +38,22 @@ def format_obj_input(objects: Sequence) -> list:
     ### Info:
     - exits if invalid sources are given
     """
+    # avoid circular imports
+    Box = _lib.obj_classes.Box
+    Cylinder = _lib.obj_classes.Cylinder
+    Collection = _lib.obj_classes.Collection
+    Sensor = _lib.obj_classes.Sensor
+
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
             obj_list += format_obj_input(obj) # recursive flattening
-        elif isinstance(obj, mag3.Collection):
+        elif isinstance(obj, Collection):
             obj_list += obj.sources
         elif isinstance(obj, (
-                mag3.magnet.Box,  #avoid circ imports
-                mag3.magnet.Cylinder,
-                mag3.Sensor)):
+                Box,
+                Cylinder,
+                Sensor)):
             obj_list += [obj]
         else:
             msg = 'Unknown input object type.'

@@ -1,7 +1,7 @@
 """collection class code"""
 
 import copy
-from magpylib._lib.math_utility import format_obj_input, check_duplicates
+from magpylib._lib.utility import format_obj_input, check_duplicates
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.display import display
 

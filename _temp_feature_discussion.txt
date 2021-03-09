@@ -13,8 +13,6 @@ discussion -----------------------------------------
 - display: showpath='all'
 - display: graphic defaults to config
 
-- testing code coverage -> 99.9% -> 100% how to test plt.plot()
-
 - code: apply .reshape((-1,3))
 - code: numpy reshape and other operations creating copies
 
@@ -26,10 +24,6 @@ discussion -----------------------------------------
 - docu: __init__ docstrings providing brief overviews
 - docu: docstring like scipy
 - docu: REWORK DOKU
-    - link to references / citations
-    - 
-
-- dissem: integrate with NumFocus
 
 - performance: profile getBH
 

@@ -2,7 +2,7 @@ import pickle
 import os
 import numpy as np
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
-import magpylib as mag3
+from magpylib import Config
 
 # # GENERATE TEST DATA
 # n = 500
@@ -53,7 +53,7 @@ import magpylib as mag3
 def test_field_BH_cylinder():
     """ test cylinder field
     """
-    mag3.Config.EDGESIZE=1e-14
+    Config.EDGESIZE=1e-14
     mags, dims, poss, B = pickle.load(open(
         os.path.abspath('tests/testdata/testdata_field_BH_cylinder.p'),'rb'))
     Btest = []

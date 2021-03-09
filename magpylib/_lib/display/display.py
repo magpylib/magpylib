@@ -2,12 +2,11 @@
 
 import numpy as np
 import matplotlib.pyplot as plt
-import magpylib as mag3
-from magpylib._lib.math_utility import format_obj_input, test_path_format
+from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
 from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
-
+from magpylib import _lib
 
 def display(
         *objects,
@@ -45,6 +44,10 @@ def display(
     # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
+    Box = _lib.obj_classes.Box
+    Cylinder = _lib.obj_classes.Cylinder
+    Sensor = _lib.obj_classes.Sensor
+
     # create or set plotting axis
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8,8))
@@ -65,24 +68,24 @@ def display(
 
     # draw objects --------------------------------------------------
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
-        mag3.magnet.Box,
-        mag3.magnet.Cylinder
+        Box,
+        Cylinder
         ))]
 
     for i, obj in enumerate(faced_objects):
         col = cmap(i/len(faced_objects))
 
-        if isinstance(obj, mag3.magnet.Box):
+        if isinstance(obj, _lib.obj_classes.Box):
             faces = faces_box(obj)
             lw = 0.5
             draw_faces(faces, col, lw, ax)
 
-        elif isinstance(obj, mag3.magnet.Cylinder):
+        elif isinstance(obj, Cylinder):
             faces = faces_cylinder(obj)
             lw = 0.25
             draw_faces(faces, col, lw, ax)
 
-    sensors = [obj for obj in obj_list if isinstance(obj, mag3.Sensor)]
+    sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
     draw_sensors(sensors, ax)
 
     # path ------------------------------------------------------

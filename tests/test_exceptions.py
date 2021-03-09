@@ -7,8 +7,8 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._lib.fields.field_wrap_getBHv import getBHv_level2
 from magpylib._lib.exceptions import MagpylibInternalError, MagpylibBadUserInput
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.math_utility.utility import format_obj_input, get_good_path_length
-from magpylib._lib.math_utility import test_path_format as tpf
+from magpylib._lib.utility import format_obj_input, get_good_path_length
+from magpylib._lib.utility import test_path_format as tpf
 
 
 def getBH_level1_internal_error():

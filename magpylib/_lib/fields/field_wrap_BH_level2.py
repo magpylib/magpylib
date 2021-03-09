@@ -1,10 +1,11 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import magpylib as mag3
-from magpylib._lib.math_utility import format_obj_input, get_good_path_length, all_same
+from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
 from magpylib._lib.config import Config
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib import _lib
+
 
 def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     """ Helper funtion that generates getBH_level1 input dict for homogeneous magnets.
@@ -75,20 +76,26 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
+    # avoid circular imports --------------------------------------------------
+    Box = _lib.obj_classes.Box
+    Cylinder = _lib.obj_classes.Cylinder
+    Collection = _lib.obj_classes.Collection
+    Sensor = _lib.obj_classes.Sensor
+
     # format input -------------------------------------------------------------
     if not isinstance(sources, list):
         sources = [sources]
     src_list = format_obj_input(sources) # flatten Collections
 
-    if isinstance(observers, mag3.Sensor):               # input = 1 sensor
+    if isinstance(observers, Sensor):               # input = 1 sensor
         sensors = [observers]
     elif isinstance(observers, list):                    # input = list (sensors or positions)
-        if isinstance(observers[0],mag3.Sensor):
+        if isinstance(observers[0], Sensor):
             sensors = observers
         else:
-            sensors = [mag3.Sensor(pos_pix=observers)]
+            sensors = [Sensor(pos_pix=observers)]
     else:                                                # input = pos_obs
-        sensors = [mag3.Sensor(pos_pix=observers)]
+        sensors = [Sensor(pos_pix=observers)]
 
     obj_list = src_list + sensors
     l0 = len(sources)
@@ -124,10 +131,10 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     src_sorted = [[],[]]   # store groups here
     order = [[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
-        if isinstance(src, mag3.magnet.Box):
+        if isinstance(src, Box):
             src_sorted[0] += [src]
             order[0] += [i]
-        elif isinstance(src, mag3.magnet.Cylinder):
+        elif isinstance(src, Cylinder):
             src_sorted[1] += [src]
             order[1] += [i]
         else:
@@ -161,7 +168,7 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     # rearrange B when there is at least one Collection with more than one source
     if l > l0:
         for i,src in enumerate(sources):
-            if isinstance(src, mag3.Collection):
+            if isinstance(src, Collection):
                 col_len = len(src.sources)
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
