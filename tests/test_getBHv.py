@@ -4,7 +4,7 @@ from magpylib.magnet import Box, Cylinder
 from magpylib import getBv, getHv, getB, getH
 
 
-def test_fieldWrapper_getBv1():
+def test_getBv1():
     """test field wrapper functions
     """
     pos_obs = (11,2,2)
@@ -33,7 +33,7 @@ def test_fieldWrapper_getBv1():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_fieldWrapper_getBv2():
+def test_getBv2():
     """test field wrapper functions
     """
     pos_obs = (11,2,2)
@@ -56,7 +56,7 @@ def test_fieldWrapper_getBv2():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_fieldWrapper_getHv1():
+def test_getHv1():
     """test field wrapper functions
     """
     pos_obs = (11,2,2)
@@ -77,7 +77,7 @@ def test_fieldWrapper_getHv1():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_fieldWrapper_getHv2():
+def test_getHv2():
     """test field wrapper functions
     """
     pos_obs = (1,2,2)
@@ -102,7 +102,7 @@ def test_fieldWrapper_getHv2():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_fieldWrapper_getBv3():
+def test_getBv3():
     """test field wrapper functions
     """
     n = 25

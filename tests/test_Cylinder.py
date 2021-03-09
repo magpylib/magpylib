@@ -29,8 +29,8 @@ from magpylib.magnet import Cylinder
 # pickle.dump(inp,open('testdata_Cylinder.p', 'wb'))
 
 
-def test_Cylinder():
-    """ test cylinder
+def test_Cylinder_basics():
+    """  test Cylinder fundamentals, test against magpylib2 fields
     """
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Cylinder.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data

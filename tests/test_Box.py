@@ -34,8 +34,8 @@ from magpylib.magnet import Box
 # pickle.dump(inp,open(os.path.abspath('./../'testdata_Box.p', 'wb'))
 
 
-def test_Box():
-    """box test
+def test_Box_basics():
+    """ test Box fundamentals, test against magpylib2 fields
     """
     # data generated below
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Box.p'), 'rb'))
@@ -58,10 +58,12 @@ def test_Box():
 def test_Box_display():
     """ testing display
     """
-    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
-    ax = fig.gca(projection='3d')
+    #fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    #ax = fig.gca(projection='3d')
     src = Box((1,2,3),(1,2,3))
-    x = src.display(axis=ax,show_path=False,direc=True)
+    plt.ion()
+    x = src.display(show_path=False,direc=True)
+    plt.close()
     assert x is None, 'display test fail'
 
 

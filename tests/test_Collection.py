@@ -39,8 +39,8 @@ import magpylib as mag3
 # pickle.dump(inp,open('testdata_Collection.p', 'wb'))
 
 
-def test_Collection():
-    """ test collection
+def test_Collection_basics():
+    """  test Collection fundamentals, test against magpylib2 fields
     """
     # pylint: disable=pointless-statement
     # data generated below

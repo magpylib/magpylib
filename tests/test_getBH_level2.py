@@ -1,6 +1,7 @@
 import numpy as np
 import magpylib as mag3
 
+
 def test_getB_level2_input_simple():
     """ test functionality of getB_level2 to combine various
     inputs - simple position inputs
@@ -148,6 +149,7 @@ def test_getB_level2_input_path():
     result = np.array([fb,fb])
     assert B.shape == result.shape, "FAILOR3 shape sens_merge"
     assert np.allclose(B, result), 'FAILOR3 values sens_merge'
+
 
 def test_path_tile():
     """ Test if auto-tiled paths of objects will properly be reset

@@ -54,7 +54,8 @@ def test_field_BH_cylinder():
     """ test cylinder field
     """
     mag3.Config.EDGESIZE=1e-14
-    mags, dims, poss, B = pickle.load(open(os.path.abspath('tests/testdata/testdata_field_BH_cylinder.p'),'rb'))
+    mags, dims, poss, B = pickle.load(open(
+        os.path.abspath('tests/testdata/testdata_field_BH_cylinder.p'),'rb'))
     Btest = []
     for mag in mags:
         for dim,pos in zip(dims,poss):
