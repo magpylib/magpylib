@@ -64,7 +64,7 @@ class Collection:
 
     copy:
         Returns a copy of the collection.
-    
+
     reset_path:
         Set all src.pos to (0,0,0) and src.rot to unit rotation.
 

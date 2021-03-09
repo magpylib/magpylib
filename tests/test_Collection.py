@@ -1,7 +1,9 @@
 import pickle
-import numpy as np
 import os
+import numpy as np
 from scipy.spatial.transform import Rotation as R
+#from mpl_toolkits.mplot3d import Axes3D
+import matplotlib.pyplot as plt
 import magpylib as mag3
 
 # # GENERATE TESTDATA
@@ -40,6 +42,7 @@ import magpylib as mag3
 def test_Collection():
     """ test collection
     """
+    # pylint: disable=pointless-statement
     # data generated below
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Collection.p'), 'rb'))
     mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,Btest = data
@@ -90,3 +93,50 @@ def test_Collection():
     assert np.allclose(B1,B2), 'Collection testfail1'
     assert np.allclose(B1,B3), 'Collection testfail2'
     assert np.allclose(B1,Btest), 'Collection testfail3'
+
+
+def test_col_get_item():
+    """ test get_item with collections
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm3 = mag3.magnet.Box((1,2,3),(1,2,3))
+
+    col = mag3.Collection(pm1,pm2,pm3)
+    assert col[1]==pm2, 'get_item failed'
+
+
+def test_col_getH():
+    """ test collection getH
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    col = mag3.Collection(pm1,pm2)
+    H = col.getH((0,0,0))
+    H1 = pm1.getH((0,0,0))
+    assert np.all(H==2*H1), 'col getH fail'
+
+
+def test_col_display():
+    """ testing display
+    """
+    # pylint: disable=assignment-from-no-return
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax = fig.gca(projection='3d')
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    col = mag3.Collection(pm1,pm2)
+    x = col.display(axis=ax)
+    assert x is None, 'colletion display test fail'
+
+
+def test_col_reset_path():
+    """ testing display
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    col = mag3.Collection(pm1,pm2)
+    col.move_by((1,2,3),steps=100)
+    col.reset_path()
+    assert col[0].pos.ndim==1, 'col reset path fail'
+    assert col[1].pos.ndim==1, 'col reset path fail'

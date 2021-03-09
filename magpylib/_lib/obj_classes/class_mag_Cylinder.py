@@ -93,7 +93,7 @@ class Cylinder(BaseGeo):
         """ set magnetization vector, vec3, mT
         """
         if None in value:
-            MagpylibBadUserInput('Magnetization input required')
+            raise MagpylibBadUserInput('Magnetization input required')
         self._mag = np.array(value,dtype=float)
 
 
@@ -109,7 +109,7 @@ class Cylinder(BaseGeo):
         """ set cylinder dimension (d,h), vec2, mm
         """
         if None in value:
-            MagpylibBadUserInput('Dimension input required')
+            raise MagpylibBadUserInput('Dimension input required')
         self._dim = np.array(value,dtype=float)
 
 

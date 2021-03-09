@@ -2,7 +2,7 @@ import os
 import pickle
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
+import magpylib
 from magpylib.magnet import Cylinder
 
 # # GENERATE DATA
@@ -57,3 +57,12 @@ def test_Cylinder_display():
     src = Cylinder((1,2,3),(1,2))
     x = src.display(axis=ax)
     assert x is None, 'display test fail'
+
+
+def test_Cylinder_add():
+    """ testing __add__
+    """
+    src1 = Cylinder((1,2,3),(1,2))
+    src2 = Cylinder((1,2,3),(1,2))
+    col = src1 + src2
+    assert isinstance(col,magpylib.Collection), 'adding cylinder fail'

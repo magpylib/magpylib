@@ -1,3 +1,4 @@
+import unittest
 import numpy as np
 from scipy.spatial.transform.rotation import Rotation as R
 import magpylib as mag3
@@ -9,146 +10,192 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.math_utility.utility import format_obj_input, get_good_path_length
 from magpylib._lib.math_utility import test_path_format as tpf
 
-def test_level1_internal_error():
-    """ test internal error at getBH_level1
+
+def getBH_level1_internal_error():
+    """ bad src_type input should not happen
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-
-    flag = True
-    try:
-        getBH_level1(bh=True,src_type='Box', mag=x, dim=x, pos_obs=x, pos=x,rot=rot)
-    except MagpylibInternalError:
-        flag = False
-    assert flag, 'exception badly raised'
-
-    try:
-        getBH_level1(bh=True,src_type='woot', mag=x, dim=x, pos_obs=x, pos=x,rot=rot)
-    except MagpylibInternalError:
-        flag = False
-    assert not flag, 'exception not raised'
+    getBH_level1(bh=True,src_type='woot', mag=x, dim=x, pos_obs=x, pos=x,rot=rot)
 
 
-def test_level2_user_input_error():
+def getBH_level2_bad_input():
     """ test BadUserInput error at getBH_level2
     """
     src = mag3.magnet.Box((1,1,2),(1,1,1))
     sens = mag3.Sensor()
-
-    flag = True
-    try:
-        getBH_level2(True, [src,src],(0,0,0),False)
-    except MagpylibBadUserInput:
-        flag = False
-    assert flag, 'exception badly raised'
-
-    try:
-        getBH_level2(True, [src,sens],(0,0,0),False)
-    except MagpylibBadUserInput:
-        flag = False
-    assert not flag, 'exception not raised'
+    getBH_level2(True, [src,sens],(0,0,0),False)
 
 
-def test_level2v_errors():
-    """ test internal error at getBHv_level2
+def getBHv_missing_input1():
+    """ missing bh
     """
     x=np.array([(1,2,3)])
-    x2=np.array([(1,2,3),(1,2,3)])
-
-    # test bh, src_type, pos_obs
-    flag = False
-    try:
-        getBHv_level2(bh=True)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'exception not raised1'
-
-    # test source specific
-    flag = False
-    try:
-        getBHv_level2(bh=True, src_type='Box', pos_obs=x)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'exception not raised2'
-
-    flag = False
-    try:
-        getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'exception not raised3'
-
-    # test vector length
-    flag = False
-    try:
-        getBHv_level2(bh=True, src_type='Box', pos_obs=x, mag=x2, dim=x)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'exception not raised4'
+    getBHv_level2(src_type='Box', pos_obs=x, mag=x, dim=x)
 
 
-def test_baseGeo_errors():
-    """ test base Geo BadUserInputErrors
+def getBHv_missing_input2():
+    """ missing src_type
     """
-    # test bad input shape
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, pos_obs=x, mag=x, dim=x)
+
+
+def getBHv_missing_input3():
+    """ missing pos_obs
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Box', mag=x, dim=x)
+
+
+def getBHv_missing_input4_box():
+    """ missing Box mag
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Box', pos_obs=x, dim=x)
+
+
+def getBHv_missing_input5_box():
+    """ missing Box dim
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Box', pos_obs=x, mag=x)
+
+
+def getBHv_missing_input4_cyl():
+    """ missing Cylinder mag
+    """
+    x=np.array([(1,2,3)])
+    y = np.array([(1,2)])
+    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, dim=y)
+
+
+def getBHv_missing_input5_cyl():
+    """ missing Cylinder dim
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, mag=x)
+
+
+def getBHv_bad_input():
+    """ different input lengths
+    """
+    x=np.array([(1,2,3)])
+    x2=np.array([(1,2,3)]*2)
+    getBHv_level2(bh=True, src_type='Box', pos_obs=x, mag=x2, dim=x)
+
+
+def base_geo_bad_pos():
+    """ bad position input shape
+    """
     bg = BaseGeo((0,0,0), R.from_quat((0,0,0,1)))
     poss = [[(1,2,3),(1,2,3)],[(1,2,3),(1,2,3)]]
-    flag = False
-    try:
-        bg.pos = poss
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'bad pos input shape not caught'
+    bg.pos = poss
 
-    # test bad rotation axis string input
+
+def base_geo_bad_rot_axis():
+    """ bad rotation axis input
+    """
     bg = BaseGeo((0,0,0), R.from_quat((0,0,0,1)))
-    flag = False
-    try:
-        bg.rotate_from_angax(15,'u')
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'bad rotation axis str input not caught'
+    bg.rotate_from_angax(15,'u')
 
 
-def test_format_obj_input_error():
-    """ special case testing
+def utility_format_obj_input():
+    """ bad input object
     """
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
-
-    flag = False
-    try:
-        format_obj_input([pm1,pm2,333])
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'bad input not raised'
+    format_obj_input([pm1,pm2,333])
 
 
-def test_test_path_format():
-    """ test with single source input
+def utility_test_path_format():
+    """ bad path format input
     """
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm1.pos = [(1,2,3),(1,2,3)]
-    flag = False
-    try:
-        tpf(pm1)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'test_path_format_fail'
+    tpf(pm1)
 
 
-def test_get_good_path_length():
-    """ test error raise
+def utility_get_good_path_length():
+    """ Bad path length input
     """
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm1.move_by((1,2,3),steps=11)
     pm2.move_by((1,2,3),steps=12)
-    src_list = [pm1,pm2]
+    get_good_path_length([pm1,pm2])
 
-    flag = False
-    try:
-        get_good_path_length(src_list)
-    except MagpylibBadUserInput:
-        flag = True
-    assert flag, 'get_good_path_length fail'
+
+def box_no_mag():
+    """ Box with no mag input
+    """
+    mag3.magnet.Box(dim=(1,2,3))
+
+
+def box_no_dim():
+    """ Box with no dim input
+    """
+    mag3.magnet.Box(mag=(1,2,3))
+
+
+def cyl_no_mag():
+    """ Cylinder with no mag input
+    """
+    mag3.magnet.Cylinder(dim=(1,2))
+
+
+def cyl_no_dim():
+    """ Cylinder with no dim input
+    """
+    mag3.magnet.Cylinder(mag=(1,2,3))
+
+
+class TestExceptions(unittest.TestCase):
+    """ test class for exception testing
+    """
+    def test_except_class_Box(self):
+        """ class_Box
+        """
+        self.assertRaises(MagpylibBadUserInput, box_no_mag)
+        self.assertRaises(MagpylibBadUserInput, box_no_dim)
+
+    def test_except_class_Cylinder(self):
+        """ class_Cylinder
+        """
+        self.assertRaises(MagpylibBadUserInput, cyl_no_mag)
+        self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
+
+    def test_except_utility(self):
+        """ utility
+        """
+        self.assertRaises(MagpylibBadUserInput, utility_get_good_path_length)
+        self.assertRaises(MagpylibBadUserInput, utility_test_path_format)
+        self.assertRaises(MagpylibBadUserInput, utility_format_obj_input)
+
+    def test_except_class_BaseGeo(self):
+        """ BaseGeo
+        """
+        self.assertRaises(MagpylibBadUserInput, base_geo_bad_pos)
+        self.assertRaises(MagpylibBadUserInput, base_geo_bad_rot_axis)
+
+    def test_except_getBHv(self):
+        """ getBHv
+        """
+        self.assertRaises(KeyError, getBHv_missing_input1)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input2)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input3)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_box)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_cyl)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_box)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cyl)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
+
+    def test_except_getBH_lev1(self):
+        """ getBH_level1
+        """
+        self.assertRaises(MagpylibInternalError, getBH_level1_internal_error)
+
+    def test_except_getBH_lev2(self):
+        """ getBH_level1
+        """
+        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input)

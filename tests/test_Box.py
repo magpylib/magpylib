@@ -1,8 +1,8 @@
+import magpylib
 import pickle
 import os
 import numpy as np
 import matplotlib.pyplot as plt
-from mpl_toolkits.mplot3d import Axes3D
 from magpylib.magnet import Box
 
 # """data generation for test_Box()"""
@@ -63,3 +63,12 @@ def test_Box_display():
     src = Box((1,2,3),(1,2,3))
     x = src.display(axis=ax,show_path=False,direc=True)
     assert x is None, 'display test fail'
+
+
+def test_Box_add():
+    """ testing __add__
+    """
+    src1 = Box((1,2,3),(1,2,3))
+    src2 = Box((1,2,3),(1,2,3))
+    col = src1 + src2
+    assert isinstance(col,magpylib.Collection), 'adding boxes fail'
