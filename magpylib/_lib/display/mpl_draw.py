@@ -30,7 +30,7 @@ def draw_markers(markers, ax):
 
 
 def draw_path(obj, col, ax):
-    """ se name is se program :)
+    """ draw path in given color and return list of path-points
     """
     # pylint: disable=protected-access
     path = obj._pos
@@ -48,10 +48,11 @@ def draw_path(obj, col, ax):
                 ms=4,
                 mfc=col,
                 mec='k')
+    return list(path)
 
 
 def draw_faces(faces, col, lw, ax):
-    """ the name is the progam :)
+    """ draw faces in respective color and return list of vertex-points
     """
     boxf = Poly3DCollection(
         faces,
@@ -60,10 +61,11 @@ def draw_faces(faces, col, lw, ax):
         edgecolors='k',
         alpha=1)
     ax.add_collection3d(boxf)
+    return faces
 
 
 def draw_sensors(sensors,ax):
-    """ the name is the program :)
+    """ draw sensors and return a list of pixel-points in gloabl CS
     """
     # pylint: disable=protected-access
     poss, exs, eys, ezs = np.empty((4,len(sensors),3))
@@ -89,3 +91,5 @@ def draw_sensors(sensors,ax):
             ms=2,
             color='k',
             ls='')
+
+    return list(pixel[1:])

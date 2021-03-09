@@ -71,51 +71,54 @@ def display(
         Box,
         Cylinder
         ))]
+    face_points = [] # collect vertices for system size evaluation
 
     for i, obj in enumerate(faced_objects):
         col = cmap(i/len(faced_objects))
 
-        if isinstance(obj, _lib.obj_classes.Box):
+        if isinstance(obj, Box):
             faces = faces_box(obj)
             lw = 0.5
-            draw_faces(faces, col, lw, ax)
+            face_points += draw_faces(faces, col, lw, ax)
 
         elif isinstance(obj, Cylinder):
             faces = faces_cylinder(obj)
             lw = 0.25
-            draw_faces(faces, col, lw, ax)
+            face_points += draw_faces(faces, col, lw, ax)
 
     sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
-    draw_sensors(sensors, ax)
+    pix_points = draw_sensors(sensors, ax)
 
     # path ------------------------------------------------------
+    path_points = []
     if show_path is True:
         for i, obj in enumerate(faced_objects):
             col = cmap(i/len(faced_objects))
-            draw_path(obj, col, ax)
+            path_points += draw_path(obj, col, ax)
 
         for sens in sensors:
-            draw_path(sens, '.6', ax)
+            path_points += draw_path(sens, '.6', ax)
 
     # markers -------------------------------------------------------
-    markers = np.array(markers)
-    draw_markers(markers, ax)
+    if markers:
+        markers = np.array(markers)
+        draw_markers(markers, ax)
 
     # directs -------------------------------------------------------
     if direc:
         draw_directs(faced_objects, cmap, ax)
 
     # determine system size
-    sys_size = system_size(faced_objects, sensors, markers)
+    lim0, lim1 = system_size(face_points, pix_points, markers, path_points)
 
     # plot styling --------------------------------------------------
     ax.set(
         xlabel = 'x [mm]',
         ylabel = 'y [mm]',
         zlabel = 'z [mm]',
-        xlim=(-sys_size, sys_size),
-        ylim=(-sys_size, sys_size),
-        zlim=(-sys_size, sys_size)
+        xlim=(lim0, lim1),
+        ylim=(lim0, lim1),
+        zlim=(lim0, lim1)
         )
 
     # generate output ------------------------------------------------

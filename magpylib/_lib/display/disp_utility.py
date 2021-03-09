@@ -46,22 +46,28 @@ def faces_cylinder(src):
     return faces
 
 
-def system_size(faced_objects, sensors, markers):
+def system_size(face_points, pix_points, markers, path_points):
     """compute system size for display
     """
-    sys_size = 0
-    for obj in faced_objects:
-        size = np.amax(abs(obj.pos))+np.amax(obj.dim)
-        if size>sys_size:
-            sys_size = size
+    # limits of current axis with drawn sensors and paths
 
-    for sens in sensors:
-        size = np.amax(abs(sens.pos)) + np.amax(abs(sens.pos_pix))
-        if size>sys_size:
-            sys_size = size
+    # collect all vertices (collection faces do not reset ax limits)
+    pts = []
+    for face in face_points:
+        pts += list(face)
 
-    size = np.amax(abs(markers))
-    if size>sys_size:
-        sys_size = size
+    if len(markers)>0:
+        pts += list(markers)
 
-    return sys_size
+    if len(pix_points)>0:
+        pts += pix_points
+
+    if len(path_points)>0:
+        pts += path_points
+
+    # determine min/max from all to generate aspect=1 plot
+    pts = np.array(pts)
+    lim0 = np.amin(pts)
+    lim1 = np.amax(pts)
+
+    return lim0, lim1
