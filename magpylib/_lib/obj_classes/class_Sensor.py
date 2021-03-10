@@ -4,10 +4,13 @@ import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.fields import getB, getH
 
-class Sensor(BaseGeo):
-    """ 3D Magnetic field sensor.
 
-    init_state: the axes of the sensor are parallel to the global CS axes.
+# ON INTERFACE
+class Sensor(BaseGeo):
+    """
+    3D Magnetic field sensor.
+
+    init_state: The axes of the sensor are parallel to the global CS axes.
 
     Properties
     ----------
@@ -15,42 +18,44 @@ class Sensor(BaseGeo):
         Sensor pixel inside of 'package'. Positions are given in local sensor CS.
         getBH computations return the field at the sensor pixels.
 
-    pos: array_like, shape (3,), default=(0,0,0)
-        Position of Sensor ('package origin') in units of [mm].
+    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
+        Position of geometric center of Sensor in units of [mm]. For N>1 pos respresents a path in
+        in the global CS.
 
-    rot: scipy Rotation object, default=unit rotation
-        Sensor rotations relative to the init_state.
+    rot: scipy Rotation object with length 1 or N, default=unit rotation
+        Sensor rotation relative to the init_state. For N>1 rot represents different rotations
+        along a position-path.
 
     Dunders
     -------
     __repr__:
-        returns string "Sensor (id(self))"
+        returns string "Sensor(id(self))"
 
     Methods
     -------
-    getB: source or Collection object or lists thereof
+    getB(sources):
         Compute B-field of sources at Sensor.
 
-    getH: source or Collection object or lists thereof
+    getH(sources):
         Compute H-field of sources at Sensor.
 
-    display: **kwargs of top level function display()
-        Display object graphically using matplotlib.
+    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+        Display Sensor graphically using Matplotlib.
 
-    move_by: displacement
-        Linear displacement of object by input vector.
+    move_by(displacement, steps=None):
+        Linear displacement of Sensor by argument vector.
 
-    move_to: array_like, shape (3,)
-        Linear displacement of object to target position.
+    move_to(target_pos, steps=None):
+        Linear motion of Sensor to target_pos.
 
-    rotate: scipy Rotation object
-        Rotate object.
+    rotate(rot, anchor=None, steps=None):
+        Rotate Sensor about anchor.
 
-    rotate_from_angax: angle(float), axis(array_like, shape(3,))
-        Rotate object with angle-axis input.
+    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
+        Sensor rotation from angle-axis-anchor input.
 
-    reset_path:
-        Set object.pos to (0,0,0) and object.rot to unit rotation.
+    reset_path():
+        Set Sensor.pos to (0,0,0) and Sensor.rot to unit rotation.
 
     Returns
     -------
@@ -73,21 +78,23 @@ class Sensor(BaseGeo):
 
     @property
     def pos_pix(self):
-        """ Pixel pos in sensor CS
+        """
+        Pixel pos in Sensor CS.
 
         Returns
         -------
-        sensor pixel positions: np.array, shape (3,) or (N1,N2,...,3)
+        Sensor pixel positions: np.array, shape (3,) or (N1,N2,...,3)
         """
         return self._pos_pix
 
 
     @pos_pix.setter
     def pos_pix(self, inp):
-        """ set sensor pixel positions
+        """
+        Set Sensor pixel positions.
 
         inp: array_like, shape (3,) or (N1,N2,...,3)
-            set pixel positions in sensor CS
+            Set pixel positions in Sensor CS.
         """
         inp = np.array(inp, dtype=float)       # secure input
         self._pos_pix = inp
@@ -95,57 +102,65 @@ class Sensor(BaseGeo):
 
     # dunders -------------------------------------------------------
     def __repr__(self) -> str:
-        return f'Sensor ({str(id(self))})'
+        return f'Sensor({str(id(self))})'
 
 
     # methods -------------------------------------------------------
-    def getB(self, sources):
-        """ Compute B-field of sources at sensor.
+    def getB(self, sources, sumup=False, **specs):
+        """
+        Compute B-field of sources at Sensor.
 
         Parameters
         ----------
-        sources: src_obj or list of src_obj
-            Source object or a 1D list of L source objects and collections. Pathlength of
-            all sources must be the same (or 1). Pathlength=1 sources will be considered
-            as static.
+        sources: src objects, Collections or arbitrary lists thereof
+            Source object or a 1D list of L source objects and/or collections. Pathlength of all
+            sources must be M or 1. Sources with Pathlength=1 will be considered as static.
 
-        Source Specific Parameters
-        --------------------------
-        niter (int): Number of iterations in the computation of the
-            diametral component of the field
+        sumup: bool, default=False
+            If True, the field of all sources is summed up.
+
+        Specific kwargs
+        ---------------
+        niter: int, default=50
+            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
         Returns
         -------
-        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
-            B-field of each source at each path position for each sensor and each sensor pixel
-            position in units of mT.
+        B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [mT]
+            B-field of each source (L) at each path position (M) and each sensor pixel position (N)
+            in units of [mT].
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-            single sensor or no sensor) is removed.
+            or single pixel) is removed.
         """
-        B = getB(sources, self)
+        B = getB(sources, self, sumup=sumup, **specs)
         return B
 
 
-    def getH(self, sources):
-        """ Compute H-field of sources at sensor.
+    def getH(self, sources, sumup=False, **specs):
+        """
+        Compute H-field of sources at Sensor.
 
         Parameters
         ----------
-        sources: src_obj or list of src_obj
-            Source object or a 1D list of L source objects and collections. Pathlength of
-            all sources must be the same (or 1). Pathlength=1 sources will be considered
-            as static.
+        sources: src objects, Collections or arbitrary lists thereof
+            Source object or a 1D list of L source objects and/or collections. Pathlength of all
+            sources must be M or 1. Sources with Pathlength=1 will be considered as static.
 
-        niter (int): Number of iterations in the computation of the
-            diametral component of the field
+        sumup: bool, default=False
+            If True, the field of all sources is summed up.
+
+        Specific kwargs
+        ---------------
+        niter: int, default=50
+            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
         Returns
         -------
-        H-field: ndarray, shape (L, M, K, N1, N2, ..., 3), unit [kA/m]
-            H-field of each source at each path position for each sensor and each sensor pixel
-            position in units of kA/m.
+        H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [kA/m]
+            H-field of each source (L) at each path position (M) and each sensor pixel position (N)
+            in units of [kA/m].
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-            single sensor or no sensor) is removed.
+            or single pixel) is removed.
         """
-        H = getH(sources, self)
+        H = getH(sources, self, sumup=sumup, **specs)
         return H

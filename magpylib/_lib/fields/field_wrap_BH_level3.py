@@ -1,34 +1,37 @@
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
+
+# ON INTERFACE
 def getB(sources, observers, sumup=False, **specs):
-    """ Compute the B-field for given sources and observers
+    """
+    Compute B-field for given sources and observers.
 
     Parameters
     ----------
-    sources: src_obj or list of src_obj
-        Source object or a 1D list of L source objects and collections. Pathlength of all sources
-        must be the same (or 1). Pathlength=1 sources will be considered as static.
+    sources: src objects, Collections or arbitrary lists thereof
+        Source object or a 1D list of L source objects and/or collections. Pathlength of all
+        sources must be M or 1. Sources with Pathlength=1 will be considered as static.
 
-    observers: array_like or sens_obj or list of sens_obj
-        Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
-        a 1D list of K sensors with pixel position shape of (N1, N2, ..., 3)
-        in units of millimeters.
+    observers: array_like or Sensor or list of Sensors
+        Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
+        a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
+        of [mm].
 
     sumup: bool, default=False
-        If true, the field of all sources is summed up.
+        If True, the field of all sources is summed up.
 
     Specific kwargs
     ---------------
     niter: int, default=50
-        for Cylinder sources diametral iteration (Simpsons formula).
+        Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
     Returns
     -------
-    B-field: ndarray, shape (L, M, K, N1, N2, ..., 3), unit [mT]
-        B-field of each source at each path position for each sensor and each sensor pixel
-        position in units of mT.
+    B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [mT]
+        B-field of each source (L) at each path position (M) for each sensor (K) and each sensor
+        pixel position (N) in units of [mT].
         Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-        single sensor or no sensor) is removed.
+        single sensor or no sensor or single pixel) is removed.
 
     Info
     ----
@@ -39,35 +42,36 @@ def getB(sources, observers, sumup=False, **specs):
     return getBH_level2(True, sources, observers, sumup, **specs)
 
 
+# ON INTERFACE
 def getH(sources, observers, sumup=False, **specs):
-    """ Compute the H-field for given sources and observers
+    """ Compute H-field for given sources and observers.
 
     Parameters
     ----------
-    sources: src_obj or list of src_obj
-        Source object or a 1D list of L source objects and collections. Pathlength of all sources
-        must be the same (or 1). Pathlength=1 sources will be considered as static.
+    sources: src_obj, col_obj or list thereof
+        Source object or a 1D list of L source objects and/or collections. Pathlength of all
+        sources must be M or 1. Sources with Pathlength=1 will be considered as static.
 
     observers: array_like or sens_obj or list of sens_obj
-        Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
-        a 1D list of K sensors with pixel position shape of (N1, N2, ..., 3) in units
-        of millimeters.
+        Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
+        a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
+        of [mm].
 
     sumup: bool, default=False
-        If true, the field of all sources is summed up.
+        If True, the field of all sources is summed up.
 
     Specific kwargs
     ---------------
     niter: int, default=50
-        for Cylinder sources diametral iteration (Simpsons formula).
+        Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
     Returns
     -------
-    H-field: ndarray, shape (L, M, K, N1, N2, ..., 3), unit [kA/m]
-        H-field of each source at each path position for each sensor and each sensor pixel
-        position in units of kA/m.
+    H-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [kA/m]
+        H-field of each source (L) at each path position (M) for each sensor (K) and each sensor
+        pixel position (N) in units of [kA/m].
         Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-        single sensor or no sensor) is removed.
+        single sensor or no sensor or single pixel) is removed.
 
     Info
     ----

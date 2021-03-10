@@ -3,7 +3,6 @@
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 
 # init for tool tips
@@ -13,55 +12,62 @@ mx=my=mz=None
 
 # ON INTERFACE
 class Cylinder(BaseGeo):
-    """ Homogeneous cylinder magnet.
+    """
+    Cylinder magnet with homogeneous magnetization.
 
-    init_state: the geometric center is in the CS origin, the axis of
-        the cylinder coincides with the z-axis.
+    init_state: the geometric center is in the global CS origin, the axis of the
+        cylinder coincides  with the z-axis.
 
     Properties
     ----------
-    mag: array_like, shape (3,)
-        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
+    mag: array_like, shape (3,), unit [mT]
+        Magnetization vector (remanence field) in units of [mT].
 
-    dim: array_like, shape (2,)
-        Dimension/Size of the cylinder with diameter/height [d,h] in units of mm.
+    dim: array_like, shape (2,), unit [mm]
+        Dimension/Size of the Cylinder with diameter/height (d,h) in units of [mm].
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0)
-        Position of geometric center of magnet in units of [mm].
+    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
+        Position of geometric center of magnet in units of [mm]. For N>1 pos respresents a path in
+        in the global CS.
 
-    rot: scipy Rotation object, default=unit rotation
-        Source rotations relative to the init_state.
+    rot: scipy Rotation object with length 1 or N, default=unit rotation
+        Source rotation relative to the init_state. For N>1 rot represents different rotations
+        along a position-path.
 
     Dunders
     -------
+
     __add__:
         Adding sources creates a collection "col = src1 + src2"
 
     __repr__:
-        returns string "Cylinder (id(self))"
+        returns string "Cylinder(id)"
 
     Methods
     -------
-    getB: observers, niter=50
-        Compute B-field of source at observer positions.
+    getB(observers):
+        Compute B-field of Cylinder at observers.
 
-    getH: observers, niter=50
-        Compute H-field of source at observer positions.
+    getH(observers):
+        Compute H-field of Cylinder at observers.
 
-    display:
-        Display source graphically.
+    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+        Display Cylinder graphically using Matplotlib.
 
-    move_by:
-        Linear displacement of source by input vector.
+    move_by(displacement, steps=None):
+        Linear displacement of Cylinder by argument vector.
 
-    move_to: array_like, shape (3,)
-        Linear displacement of source to target position.
+    move_to(target_pos, steps=None):
+        Linear motion of Cylinder to target_pos.
 
-    rotate: scipy Rotation object
-        Rotate source.
+    rotate(rot, anchor=None, steps=None):
+        Rotate Cylinder about anchor.
 
-    rotate_from_angax: angle(float), axis(array_like, shape(3,))
-        Rotate source with angle-axis input.
+    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
+        Cylinder rotation from angle-axis-anchor input.
+
+    reset_path():
+        Set Cylinder.pos to (0,0,0) and Cylinder.rot to unit rotation.
 
     Returns
     -------
@@ -85,14 +91,14 @@ class Cylinder(BaseGeo):
     # properties ----------------------------------------------------
     @property
     def mag(self):
-        """ magnet magnetization in mT
+        """ Magnet magnetization in units of [mT].
         """
         return self._mag
 
 
     @mag.setter
     def mag(self, value):
-        """ set magnetization vector, vec3, mT
+        """ Set magnetization vector, shape (3,), unit [mT].
         """
         if None in value:
             raise MagpylibBadUserInput('Magnetization input required')
@@ -101,14 +107,14 @@ class Cylinder(BaseGeo):
 
     @property
     def dim(self):
-        """ cylinder dimension (d,h) in mm
+        """ Cylinder dimension (d,h), unit [mm]
         """
         return self._dim
 
 
     @dim.setter
     def dim(self, value):
-        """ set cylinder dimension (d,h), vec2, mm
+        """ Set cylinder dimension (d,h), shape (2,), unit [mm]
         """
         if None in value:
             raise MagpylibBadUserInput('Dimension input required')
@@ -118,31 +124,33 @@ class Cylinder(BaseGeo):
     # dunders -------------------------------------------------------
 
     def __repr__(self) -> str:
-        return f'Cylinder ({str(id(self))})'
+        return f'Cylinder({str(id(self))})'
 
 
     # methods -------------------------------------------------------
     def getB(self, observers, niter=50):
-        """ Compute B-field of magnet at observer positions.
+        """
+        Compute B-field of source at observers.
 
         Parameters
         ----------
-        observers: array_like or sens_obj or list of sens_obj
-            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
-            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
-            in units of millimeters.
+        observers: array_like or Sensor or list of Sensors
+            Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
+            a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
+            of [mm].
 
-        niter (int): Number of iterations in the computation of the
-            diametral component of the field
+        niter: int, default=50
+            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
         Returns
         -------
-        B-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [mT]
-            B-field of magnet at each path position M for each sensor K and each sensor pixel
-            position N in units of mT.
-            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
-            is removed.
+        B-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [mT]
+            B-field at each path position (M) for each sensor (K) and each sensor pixel position
+            (N) in units of [mT].
+            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
+            single pixel) is removed.
         """
+
         B = getB(self, observers, niter=niter)
         return B
 

@@ -8,13 +8,16 @@ from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_marke
 from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
 from magpylib import _lib
 
+
+# ON INTERFACE
 def display(
         *objects,
         markers=[(0,0,0)],
         axis=None,
         direc=False,
         show_path=True):
-    """ Display objects and paths graphically using matplotlib.
+    """
+    Display objects and paths graphically using matplotlib 3D.
 
     Parameters
     ----------
@@ -22,22 +25,23 @@ def display(
         Show a 3D reprensation of given objects in matplotlib.
 
     markers: array_like, shape (N,3), default=[(0,0,0)]
-        Mark positions in graphic output. Default value puts a marker
-        in the origin.
+        Display position markers in the global CS. By default a
+        a marker is in the origin.
 
     axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D).
+        By default a new pyplot figure is created and displayed.
 
     direc: bool, default=False
-        Set True to plot magnetization and current directions
+        Set True to show magnetization and current directions.
 
     show_path: bool/string, default=True
-        Set True to plot object paths. Set to 'all' to plot an object
-        represenation at each path position.
+        Options True, False, 'all'. By default object paths are shown.
+        'all' will display an object represenation at each path position.
 
     Returns
     -------
-    no return
+    None
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches

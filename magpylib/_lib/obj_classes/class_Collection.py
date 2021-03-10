@@ -4,7 +4,7 @@ import copy
 from magpylib._lib.utility import format_obj_input, check_duplicates, only_allowed_src_types
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.display import display
-from magpylib import _lib
+
 
 # ON INTERFACE
 class Collection:
@@ -35,7 +35,7 @@ class Collection:
         Sources list is returned for getitem "src = col[1]".
 
     __repr__:
-        Returns "Collection (id)"
+        Returns "Collection(id)".
 
     Methods
     -------
@@ -51,10 +51,10 @@ class Collection:
     getH(observers):
         Compute H-field of collection at observers.
 
-    display(**kwargs):
+    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
         Display Collection graphically using Matplotlib.
 
-    move_by(vector):
+    move_by(displacement, steps=None):
         Linear displacement of Collection by argument vector.
 
     rotate(rot, anchor=None, steps=None):
@@ -121,7 +121,7 @@ class Collection:
 
 
     def __repr__(self) -> str:
-        return f'Collection ({str(id(self))})'
+        return f'Collection({str(id(self))})'
 
 
     # methods -------------------------------------------------------

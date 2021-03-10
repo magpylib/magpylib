@@ -137,6 +137,9 @@ def all_same(lst:list)->bool:
 
 
 def only_allowed_src_types(src_list):
+    """
+    return only allowed objects. Throw a warning when something is eliminated.
+    """
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
     new_list = []

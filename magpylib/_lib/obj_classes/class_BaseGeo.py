@@ -280,7 +280,7 @@ class BaseGeo:
         return self
 
 
-    def rotate(self, rot:R, anchor=None, steps=None):
+    def rotate(self, rot, anchor=None, steps=None):
         """
         Rotate object about anchor.
 
