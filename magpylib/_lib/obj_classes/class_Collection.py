@@ -95,6 +95,8 @@ class Collection:
         src_list = format_obj_input(sources)
         # check and eliminate duplicates
         src_list = check_duplicates(src_list)
+        # allow only designated source types in Collection
+        src_list = only_allowed_src_types(src_list)
         # set attributes
         self._sources = src_list
 
@@ -144,8 +146,6 @@ class Collection:
         src_list = self._sources + src_list
         # check and eliminate duplicates
         src_list = check_duplicates(src_list)
-        # allow only designated source types in Collection
-        src_list = only_allowed_src_types(src_list)
         # set attributes
         self._sources = src_list
         return self
