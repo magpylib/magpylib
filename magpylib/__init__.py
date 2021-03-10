@@ -1,5 +1,5 @@
 """
-Magpylib provides 3D magnetic field computation based on analytical
+Magpylib provides static 3D magnetic field computation based on analytical
 formulas.
 
 Ressources
@@ -22,7 +22,7 @@ magpylib.current
 - .Line()
 - .Circular()
 
-magpylib.moment
+magpylib.misc
 - .Dipole()
 
 Manipulate sources through provided methods and parameters
@@ -51,9 +51,13 @@ Field computation
 -----------------
 There are three ways to compute the field.
 
-1. src.getB(positions) ----------------> field of one source
-2. magpylib.getB(sources, positions) --> fields of many sources
-3. magpylib.getBv(**kwargs) -----------> direct access to core formulas
+sources are e.g. magnet.Box objects, current.Line objects
+observers are positions (array_like) or Sensor objects
+
+1. src.getB(observers) ----------------> field of one source at all observers
+2. sens.getB(sources) -----------------> field of all sources at one sensor
+2. magpylib.getB(sources, observers) --> fields of all sources at all observers
+3. magpylib.getBv(**kwargs) -----------> direct access to core formulas (fastest)
 
 In addition to getB there is getH.
 
@@ -61,23 +65,24 @@ Graphic output
 --------------
 Display sources, collections, paths and sensors using Matplotlib
 
-- magpylib.display(sources)
+- magpylib.display(src1, src2, sens, col, ...)
 - src.display()
-
+- sens.display()
+- col.display()
 """
 
 # module level dunders
 __version__ = '3.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-__all__ = ['magnet', 'current', 'moment',
+__all__ = ['magnet', 'current', 'misc',
            'getB', 'getH', 'getBv', 'getHv','Sensor',
            'Collection', 'display', 'Config','path_merge']
 
 # create interface to outside of package
 from magpylib import magnet
 from magpylib import current
-from magpylib import moment
+from magpylib import misc
 from magpylib._lib.config import Config
 from magpylib._lib.fields import getB, getH, getBv, getHv
 from magpylib._lib.obj_classes import Collection, Sensor, path_merge
