@@ -134,3 +134,15 @@ def all_same(lst:list)->bool:
     """ test if all list entries are the same
     """
     return lst[1:]==lst[:-1]
+
+
+def only_allowed_src_types(src_list):
+    Box = _lib.obj_classes.Box
+    Cylinder = _lib.obj_classes.Cylinder
+    new_list = []
+    for src in src_list:
+        if isinstance(src, (Box, Cylinder)):
+            new_list += [src]
+        else:
+            print(f'Warning, cannot add {src.__repr__()} to Collection.')
+    return new_list
