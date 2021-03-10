@@ -8,6 +8,8 @@ from magpylib._lib.display import display
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 
+
+# METHODS ON INTERFACE
 class BaseGeo:
     """ Initializes position and rotation (=orientation) properties
     of an object in a global CS.
@@ -53,7 +55,7 @@ class BaseGeo:
     # properties ----------------------------------------------------
     @property
     def pos(self):
-        """ object position-path
+        """ Object position-path.
 
         Returns
         -------
@@ -67,10 +69,10 @@ class BaseGeo:
 
     @pos.setter
     def pos(self, inp):
-        """ set object position-path
+        """ Set object position-path.
 
         inp: array_like, shape (3,) or (N,3)
-            set position-path of object
+            Position-path of object.
         """
         inp = np.array(inp, dtype=float)     # secure input
         if inp.ndim == 1:                    # single position - increase arg dimension to (1,3)
@@ -84,12 +86,12 @@ class BaseGeo:
 
     @property
     def rot(self):
-        """ object rotation-path relative to init_state
+        """ Object rotation-path relative to init_state.
 
         Returns
         -------
         object rotation-path: scipy Rotation object, shape (1,) or (N,)
-            set rotation-path of object
+            Set rotation-path of object.
         """
 
         if len(self._rot)==1:           # single path rotation - reduce dimension
@@ -99,10 +101,10 @@ class BaseGeo:
 
     @rot.setter
     def rot(self, inp: R):
-        """ set object rotation-path
+        """ Set object rotation-path.
 
         inp: scipy Rotation object, shape (1,) or (N,), default=None
-            set rotation-path of object. None generates a unit rotation
+            Set rotation-path of object. None generates a unit rotation
             for every path step.
         """
 
@@ -117,6 +119,13 @@ class BaseGeo:
                 self._rot = inp
 
 
+    # dunders -------------------------------------------------------
+    def __add__(self, source):
+        """ sources add up to a Collection object
+        """
+        return Collection(self,source)
+
+
     # methods -------------------------------------------------------
     def display(
             self,
@@ -124,27 +133,29 @@ class BaseGeo:
             axis=None,
             direc=False,
             show_path=True):
-        """ Display object graphically using matplotlib.
+        """
+        Display object graphically using Matplotlib.
 
         Parameters
         ----------
         markers: array_like, shape (N,3), default=[(0,0,0)]
-            Mark positions in graphic output. Default value puts a marker
-            in the origin.
+            Display position markers in the global CS. By default a
+            a marker is in the origin.
 
         axis: pyplot.axis, default=None
             Display graphical output in a given pyplot axis (must be 3D).
+            By default a new pyplot figure is created and displayed.
 
         direc: bool, default=False
-            Set True to plot magnetization and current directions
+            Set True to show magnetization and current directions.
 
         show_path: bool/string, default=True
-            Set True to plot object paths. Set to 'all' to plot an object
-            represenation at each path position.
+            Options True, False, 'all'. By default object paths are shown.
+            'all' will display an object represenation at each path position.
 
         Returns
         -------
-        no return
+        None
         """
         #pylint: disable=dangerous-default-value
         display(
@@ -156,33 +167,35 @@ class BaseGeo:
 
 
     def reset_path(self):
-        """ Set object.pos to (0,0,0) and object.rot to unit rotation.
+        """
+        Set object.pos to (0,0,0) and object.rot to unit rotation.
         """
         self.pos = (0,0,0)
         self.rot = R.from_quat((0,0,0,1))
 
 
     def move_by(self, displacement, steps=None):
-        """ Linear displacement of object.
+        """
+        Linear displacement of object by argument vector.
 
         Parameters
         ----------
-        displacement: array_like, shape (3,)
-            Displacement vector in units of mm.
+        displacement: array_like, shape (3,), units [mm]
+            Displacement vector in units of [mm].
 
         steps: int or None, default=None
-            If steps=None: Object will simply be moved without generating a
-                path. Specifically, path[-1] of object is set anew. This is
-                similar to having steps=-1.
-            If steps < 0: apply a linear motion from 0 to displ on top
-                of existing path[steps:]. Specifically, steps=-1 will just
-                displace path[-1].
-            If steps > 0: add linear displacement to existing path starting
-                at path[-1].
+            steps=None: Object is moved without generating a path. Specifically,
+                path[-1] of object is set to the new position. This is similar
+                to having steps=-1.
+            steps < 0: Merge last |steps| path positions with a linear motion
+                from 0 to displacement. Specifically, steps=-1 will just
+                add displacement to path[-1].
+            steps > 0: Append a linear motion from path[-1] to path[-1] + displacement
+                to the exising path.
 
         Returns:
         --------
-        self: Object with position and orientation properties.
+        self: Object with pos and rot properties
         """
 
         # steps
@@ -214,26 +227,27 @@ class BaseGeo:
 
 
     def move_to(self, target_pos, steps=None):
-        """ Linear motion of object to target position
+        """
+        Linear motion of object to target position.
 
         Parameters
         ----------
-        target_pos: array_like, shape (3,)
-            target position vector in units of mm.
+        target_pos: array_like, shape (3,), unit [mm]
+            Target position vector in units of [mm].
 
-        steps: int, optional, default=-1
-            If steps=None: Object will simply be moved without generating a
-                path. Specifically, path[-1] of object is set anew. This is
-                similar to having steps=-1.
-            If steps < 0: apply a linear motion from path[steps] to
-                target_pos on top of existing path[steps:]. Specifically,
-                steps=-1 will just displace path[-1].
-            If steps > 0: add linear motion to target_pos to existing
-                path starting at path[-1].
+        steps: int or None, default=None
+            steps=None: Object is moved without generating a path. Specifically,
+                path[-1] of object is set to the new position. This is similar
+                to having steps=-1.
+            steps < 0: Merge last |steps| path positions with a linear motion
+                from 0 to displacement. Specifically, steps=-1 will just
+                add displacement to path[-1].
+            steps > 0: Append a linear motion from path[-1] to path[-1] + displacement
+                to the exising path.
 
         Returns:
         --------
-        self : object with position and orientation properties.
+        self: Object with pos and rot properties
         """
 
         # steps
@@ -267,29 +281,30 @@ class BaseGeo:
 
 
     def rotate(self, rot:R, anchor=None, steps=None):
-        """ Object rotation
+        """
+        Rotate object about anchor.
 
         Parameters
         ----------
         rot: scipy Rotation object
+            Rotation input.
 
-        anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. When anchor=None
-            the object will rotate about its own center.
+        anchor: None or array_like, shape (3,), default=None, unit [mm]
+            The axis of rotation passes through the anchor point given in units of [mm].
+            By default the object will rotate about its own center.
 
-        steps: int, optional, default=-1
-            If steps=None: Object will simply be rotated without generating a
-                path. Specifically, path[-1] of object is set anew. This is
-                similar to having steps=-1.
-            If steps < 0: apply linear rotation steps from 0 to rot on top
-                of existing path[steps:]. Specifically, steps=-1 will just
-                rotate path[-1].
-            If steps > 0: add linear rotation steps from 0 to rot to existing
-                path starting at path[-1].
+        steps: int, optional, default=None
+            steps=None: Object is rotated without generating a path. Specifically, path[-1]
+                of object is set to new position and orientation. This is similar to having
+                steps=-1.
+            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
+                Specifically, steps=-1 will just add the rotation to path[-1].
+            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
+                at path[-1].
 
         Returns:
         --------
-        self : object with position and orientation properties.
+        self : object with position and orientation properties
         """
 
         # steps
@@ -330,36 +345,37 @@ class BaseGeo:
 
 
     def rotate_from_angax(self, angle, axis, anchor=None, steps=None, degree=True):
-        """ Object rotation from angle-axis combination
+        """
+        Object rotation from angle-axis-anchor input.
 
         Parameters
         ----------
-        angle: float
-            Angle of rotation (in [deg] by default).
+        angle: float, unit [deg] or [rad]
+            Angle of rotation in [deg] or [rad].
 
         axis: array_like, shape (3,)
-            The axis of rotation [dimensionless]
+            The axis of rotation.
 
-        anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. By default
-            anchor=None the object will rotate about its own center.
+        anchor: None or array_like, shape (3,), default=None, unit [mm]
+            The axis of rotation passes through the anchor point given in units of [mm].
+            By default the object will rotate about its own center.
 
         degree: bool, default=True
-            If True, Angle is given in [deg]. If False, angle is given in [rad].
+            By default angle is given in units of [deg]. If degree=False, angle is given
+            in units of [rad].
 
-        steps: int, optional, default=-1
-            If steps=None: Object will simply be rotated without generating a
-                path. Specifically, path[-1] of object is set anew. This is
-                similar to having steps=-1.
-            If steps < 0: apply linear rotation steps from 0 to rot on top
-                of existing path[steps:]. Specifically, steps=-1 will just
-                rotate path[-1].
-            If steps > 0: add linear rotation steps from 0 to rot to existing
-                path starting at path[-1].
+        steps: int, optional, default=None
+            steps=None: Object is rotated without generating a path. Specifically, path[-1]
+                of object is set to new position and orientation. This is similar to having
+                steps=-1.
+            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
+                Specifically, steps=-1 will just add the rotation to path[-1].
+            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
+                at path[-1].
 
         Returns:
         --------
-        self : object with position and orientation properties.
+        self : object with position and orientation properties
         """
 
         # steps
@@ -394,7 +410,6 @@ class BaseGeo:
         #   only within the interval [-pi,pi]
         # pi-rotation includes all multiples of pi
         # rest-rotation includes the rest
-
 
         # apply rest-rotation (within [-pi,pi])
         ang_sign = np.sign(angle)
@@ -458,18 +473,19 @@ def get_steps(steps:int, bg:BaseGeo):
     return steps
 
 
+# ON INTERFACE
 @contextmanager
 def path_merge(obj,steps):
-    """combine object motions
+    """
+    Merge different object paths.
 
     Parameters:
     -----------
-    obj: moveable object
-        object or collection to which a combined motion
-        should be applied
+    obj: object with pos and rot properties
+        Object or Collection to which a combined motion should be applied.
 
     steps: int
-        Number of steps of the combined motion
+        Number of steps of the combined motion.
     """
     # pylint: disable=protected-access
 

@@ -10,6 +10,8 @@ from magpylib._lib.exceptions import MagpylibBadUserInput
 d=h=None
 mx=my=mz=None
 
+
+# ON INTERFACE
 class Cylinder(BaseGeo):
     """ Homogeneous cylinder magnet.
 
@@ -114,10 +116,6 @@ class Cylinder(BaseGeo):
 
 
     # dunders -------------------------------------------------------
-    def __add__(self, sources):
-        """ sources add up to a Collection object
-        """
-        return Collection(self,sources)
 
     def __repr__(self) -> str:
         return f'Cylinder ({str(id(self))})'

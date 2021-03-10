@@ -10,6 +10,8 @@ from magpylib._lib.exceptions import MagpylibBadUserInput
 a=b=c=None
 mx=my=mz=None
 
+
+# ON INTERFACE
 class Box(BaseGeo):
     """ Homogeneous cuboid magnet.
 
@@ -115,10 +117,6 @@ class Box(BaseGeo):
 
 
     # dunders -------------------------------------------------------
-    def __add__(self, source):
-        """ sources add up to a Collection object
-        """
-        return Collection(self,source)
 
     def __repr__(self) -> str:
         return f'Box ({str(id(self))})'
