@@ -2,7 +2,6 @@ import pickle
 import os
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import matplotlib.pyplot as plt
 import magpylib as mag3
 
 # # GENERATE TESTDATA
@@ -114,19 +113,6 @@ def test_col_getH():
     H = col.getH((0,0,0))
     H1 = pm1.getH((0,0,0))
     assert np.all(H==2*H1), 'col getH fail'
-
-
-def test_col_display():
-    """ testing display
-    """
-    # pylint: disable=assignment-from-no-return
-    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
-    ax = fig.gca(projection='3d')
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
-    col = mag3.Collection(pm1,pm2)
-    x = col.display(axis=ax)
-    assert x is None, 'colletion display test fail'
 
 
 def test_col_reset_path():

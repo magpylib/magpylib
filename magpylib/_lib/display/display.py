@@ -25,19 +25,18 @@ def display(
         Show a 3D reprensation of given objects in matplotlib.
 
     markers: array_like, shape (N,3), default=[(0,0,0)]
-        Display position markers in the global CS. By default a
-        a marker is in the origin.
+        Display position markers in the global CS. By default a marker is in the origin.
 
     axis: pyplot.axis, default=None
-        Display graphical output in a given pyplot axis (must be 3D).
-        By default a new pyplot figure is created and displayed.
+        Display graphical output in a given pyplot axis (must be 3D). By default a new
+        pyplot figure is created and displayed.
 
     direc: bool, default=False
         Set True to show magnetization and current directions.
 
-    show_path: bool/string, default=True
-        Options True, False, 'all'. By default object paths are shown.
-        'all' will display an object represenation at each path position.
+    show_path: bool or int, default=True
+        Options True, False, positive int. By default object paths are shown. If show_path is
+        a positive integer, objects will be displayed at each path position in steps of show_path.
 
     Returns
     -------
@@ -91,11 +90,11 @@ def display(
             face_points += draw_faces(faces, col, lw, ax)
 
     sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
-    pix_points = draw_sensors(sensors, ax)
+    pix_points = draw_sensors(sensors, ax, show_path)
 
     # path ------------------------------------------------------
     path_points = []
-    if show_path or (show_path=='all'):
+    if show_path:  # True or int>0
         for i, obj in enumerate(faced_objects):
             col = cmap(i/len(faced_objects))
             path_points += draw_path(obj, col, ax)

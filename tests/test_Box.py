@@ -2,7 +2,6 @@ import magpylib
 import pickle
 import os
 import numpy as np
-import matplotlib.pyplot as plt
 from magpylib.magnet import Box
 
 # """data generation for test_Box()"""
@@ -53,18 +52,6 @@ def test_Box_basics():
     btest = np.array(btest)
 
     assert np.allclose(B, btest), "test_Box failed big time"
-
-
-def test_Box_display():
-    """ testing display
-    """
-    #fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
-    #ax = fig.gca(projection='3d')
-    src = Box((1,2,3),(1,2,3))
-    plt.ion()
-    x = src.display(show_path='all',direc=True)
-    plt.close()
-    assert x is None, 'display test fail'
 
 
 def test_Box_add():

@@ -139,19 +139,18 @@ class BaseGeo:
         Parameters
         ----------
         markers: array_like, shape (N,3), default=[(0,0,0)]
-            Display position markers in the global CS. By default a
-            a marker is in the origin.
+            Display position markers in the global CS. By default a marker is in the origin.
 
         axis: pyplot.axis, default=None
-            Display graphical output in a given pyplot axis (must be 3D).
-            By default a new pyplot figure is created and displayed.
+            Display graphical output in a given pyplot axis (must be 3D). By default a new
+            pyplot figure is created and displayed.
 
         direc: bool, default=False
             Set True to show magnetization and current directions.
 
-        show_path: bool/string, default=True
-            Options True, False, 'all'. By default object paths are shown.
-            'all' will display an object represenation at each path position.
+        show_path: bool or int, default=True
+        Options True, False, positive int. By default object paths are shown. If show_path is
+        a positive integer, objects will be displayed at each path position in steps of show_path.
 
         Returns
         -------

@@ -1,8 +1,7 @@
 import os
 import pickle
 import numpy as np
-import matplotlib.pyplot as plt
-import magpylib
+import magpylib as mag3
 from magpylib.magnet import Cylinder
 
 # # GENERATE DATA
@@ -49,20 +48,10 @@ def test_Cylinder_basics():
     assert np.allclose(B, Btest), "test_Cylinder failed big time"
 
 
-def test_Cylinder_display():
-    """ testing display
-    """
-    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
-    ax = fig.gca(projection='3d')
-    src = Cylinder((1,2,3),(1,2))
-    x = src.display(axis=ax,show_path='all')
-    assert x is None, 'display test fail'
-
-
 def test_Cylinder_add():
     """ testing __add__
     """
     src1 = Cylinder((1,2,3),(1,2))
     src2 = Cylinder((1,2,3),(1,2))
     col = src1 + src2
-    assert isinstance(col,magpylib.Collection), 'adding cylinder fail'
+    assert isinstance(col,mag3.Collection), 'adding cylinder fail'

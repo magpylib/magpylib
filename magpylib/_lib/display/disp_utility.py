@@ -16,11 +16,12 @@ def faces_box(src, show_path):
                      (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
     vert0 = vert0 - src.dim/2
 
-    rots = [src._rot[-1]]
-    poss = [src._pos[-1]]
-    if show_path == 'all':
-        rots = src._rot
-        poss = src._pos
+    if not isinstance(show_path, bool) and src._pos.ndim>1:
+        rots = src._rot[::-show_path]
+        poss = src._pos[::-show_path]
+    else:
+        rots = [src._rot[-1]]
+        poss = [src._pos[-1]]
 
     faces = []
     for rot,pos in zip(rots,poss):
@@ -51,11 +52,12 @@ def faces_cylinder(src, show_path):
     v_t0 = vert_circ + np.array([0,0,h/2]) # top vertices
     v_b0 = vert_circ - np.array([0,0,h/2]) # bott vertices
 
-    rots = [src._rot[-1]]
-    poss = [src._pos[-1]]
-    if show_path == 'all':
-        rots = src._rot
-        poss = src._pos
+    if not isinstance(show_path, bool) and src._pos.ndim>1:
+        rots = src._rot[::-show_path]
+        poss = src._pos[::-show_path]
+    else:
+        rots = [src._rot[-1]]
+        poss = [src._pos[-1]]
 
     faces = []
     for rot,pos in zip(rots,poss):

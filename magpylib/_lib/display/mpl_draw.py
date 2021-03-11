@@ -64,32 +64,52 @@ def draw_faces(faces, col, lw, ax):
     return faces
 
 
-def draw_sensors(sensors,ax):
+def draw_sensors(sensors, ax, show_path):
     """ draw sensors and return a list of pixel-points in gloabl CS
     """
+    if not sensors:
+        return []
+
     # pylint: disable=protected-access
-    poss, exs, eys, ezs = np.empty((4,len(sensors),3))
-    pixel = np.empty((1,3))
+    possis, exs, eys, ezs, pixel = [], [], [], [], []
     # collect data for plots
-    for i,sens in enumerate(sensors):
-        rot = sens._rot[-1]
-        pos = sens._pos[-1]
-        poss[i] = pos
-        exs[i] = rot.apply((1,0,0))
-        eys[i] = rot.apply((0,1,0))
-        ezs[i] = rot.apply((0,0,1))
-        pos_pix_flat = sens.pos_pix.reshape((-1,3))
-        pixel = np.r_[pixel, pos + rot.apply(pos_pix_flat)]
+    for sens in sensors:
+        if not isinstance(show_path, bool) and sens._pos.ndim>1:
+            rots = sens._rot[::-show_path]
+            poss = sens._pos[::-show_path]
+        else:
+            rots = [sens._rot[-1]]
+            poss = [sens._pos[-1]]
+        pos_pixel_flat = np.reshape(sens.pos_pix, (-1,3))
+
+        for rot,pos in zip(rots,poss):
+            possis += [pos]
+            exs += [rot.apply((1,0,0))]
+            eys += [rot.apply((0,1,0))]
+            ezs += [rot.apply((0,0,1))]
+
+            for pix in pos_pixel_flat:
+                pixel += [pos + rot.apply(pix)]
+
+    possis = np.array(possis)
+    pixel = np.array(pixel)
+    exs = np.array(exs)
+    eys = np.array(eys)
+    ezs = np.array(ezs)
+
     # quiver plot of basis vectors
     for col,es in zip(['r','g','b'],[exs,eys,ezs]):
-        ax.quiver(poss[:,0], poss[:,1], poss[:,2], es[:,0], es[:,1], es[:,2],
+        ax.quiver(possis[:,0], possis[:,1], possis[:,2], es[:,0], es[:,1], es[:,2],
                  color=col,
                  length=1)
+
     # plot of pixels
-    ax.plot(pixel[1:,0], pixel[1:,1], pixel[1:,2],
-            marker='.',
+    ax.plot(pixel[:,0], pixel[:,1], pixel[:,2],
+            marker='o',
+            mfc='w',
+            mew=1,
+            mec='k',
             ms=2,
-            color='k',
             ls='')
 
     return list(pixel[1:])
