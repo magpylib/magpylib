@@ -5,6 +5,16 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
 
+
+def format_getBH_class_inputs(inp):
+    """
+    allow *inputs "src", "src, src" but also "[src, src]"
+    """
+    if len(inp)==1:
+        return inp[0]
+    return list(inp)
+
+
 def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
     """ Create rot object from angle axis input.
 

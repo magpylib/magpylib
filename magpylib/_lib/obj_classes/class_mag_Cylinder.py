@@ -4,6 +4,7 @@ import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.utility import format_getBH_class_inputs
 
 # init for tool tips
 d=h=None
@@ -128,7 +129,7 @@ class Cylinder(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, observers, niter=50):
+    def getB(self, *observers, niter=50):
         """
         Compute B-field of source at observers.
 
@@ -150,12 +151,12 @@ class Cylinder(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
             single pixel) is removed.
         """
-
+        observers = format_getBH_class_inputs(observers)
         B = getB(self, observers, niter=niter)
         return B
 
 
-    def getH(self, observers, niter=50):
+    def getH(self, *observers, niter=50):
         """ Compute H-field of magnet at observer positions.
 
         Parameters
@@ -176,5 +177,6 @@ class Cylinder(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
             is removed.
         """
+        observers = format_getBH_class_inputs(observers)
         H = getH(self, observers, niter=niter)
         return H

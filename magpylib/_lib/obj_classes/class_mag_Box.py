@@ -4,6 +4,7 @@ import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.utility import format_getBH_class_inputs
 
 # init for tool tips
 a=b=c=None
@@ -126,7 +127,7 @@ class Box(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, observers):
+    def getB(self, *observers):
         """
         Compute B-field of source at observers.
 
@@ -145,11 +146,12 @@ class Box(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
             single pixel) is removed.
         """
+        observers = format_getBH_class_inputs(observers)
         B = getB(self, observers)
         return B
 
 
-    def getH(self, observers):
+    def getH(self, *observers):
         """
         Compute H-field of source at observers.
 
@@ -168,5 +170,6 @@ class Box(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
             single pixel) is removed.
         """
+        observers = format_getBH_class_inputs(observers)
         H = getH(self, observers)
         return H

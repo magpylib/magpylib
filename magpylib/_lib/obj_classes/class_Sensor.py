@@ -3,6 +3,7 @@
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.fields import getB, getH
+from magpylib._lib.utility import format_getBH_class_inputs
 
 
 # ON INTERFACE
@@ -106,7 +107,7 @@ class Sensor(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, sources, sumup=False, **specs):
+    def getB(self, *sources, sumup=False, **specs):
         """
         Compute B-field of sources at Sensor.
 
@@ -132,11 +133,12 @@ class Sensor(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
+        sources = format_getBH_class_inputs(sources)
         B = getB(sources, self, sumup=sumup, **specs)
         return B
 
 
-    def getH(self, sources, sumup=False, **specs):
+    def getH(self, *sources, sumup=False, **specs):
         """
         Compute H-field of sources at Sensor.
 
@@ -162,5 +164,6 @@ class Sensor(BaseGeo):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
+        sources = format_getBH_class_inputs(sources)
         H = getH(sources, self, sumup=sumup, **specs)
         return H

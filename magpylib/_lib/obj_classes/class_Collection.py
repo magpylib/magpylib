@@ -1,7 +1,8 @@
 """collection class code"""
 
 import copy
-from magpylib._lib.utility import format_obj_input, check_duplicates, only_allowed_src_types
+from magpylib._lib.utility import (format_obj_input, check_duplicates,
+    only_allowed_src_types, format_getBH_class_inputs)
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.display import display
 
@@ -168,7 +169,7 @@ class Collection:
         return self
 
 
-    def getB(self, observers, **specs):
+    def getB(self, *observers, **specs):
         """
         Compute B-field of Collection at observers.
 
@@ -190,11 +191,12 @@ class Collection:
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor
             or single pixel) is removed.
         """
+        observers = format_getBH_class_inputs(observers)
         B = getB(self, observers, **specs)
         return B
 
 
-    def getH(self, observers, **specs):
+    def getH(self, *observers, **specs):
         """
         Compute H-field of Collection at observers.
 
@@ -216,6 +218,7 @@ class Collection:
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor
             or single pixel) is removed.
         """
+        observers = format_getBH_class_inputs(observers)
         H = getH(self, observers, **specs)
         return H
 
