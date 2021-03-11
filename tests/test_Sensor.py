@@ -47,3 +47,18 @@ def test_Sensor_display():
     sens.move_by((10,1,10),steps=33)
     x = sens.display(axis=ax,markers=[(100,100,100)])
     assert x is None, 'display test fail'
+
+
+def test_Sensor_getB_specs():
+    """ test input of sens getB
+    """
+    sens1 = mag3.Sensor(pos_pix=(4,4,4))
+    pm1 = mag3.magnet.Cylinder((111,222,333),(1,2))
+
+    B1 = sens1.getB(pm1)
+    B2 = mag3.getB(pm1,sens1)
+    assert np.allclose(B1,B2), 'should be same'
+
+    B1 = sens1.getB(pm1,niter=17)
+    B2 = mag3.getB(pm1,sens1,niter=50)
+    assert not np.allclose(B1,B2), 'should not be same'
