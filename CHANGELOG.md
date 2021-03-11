@@ -1,4 +1,4 @@
-# magpylib Changelog
+# Magpylib Changelog
 
 All notable changes to magpylib are documented here.
 
@@ -6,7 +6,106 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [Unreleased] - 2021-??-??
+## [3.0.0] - 2021-soonish :)
+
+### Overview
+
+This is a major update that includes
+
+- API changes
+- New features
+- Improved internal workings
+
+### Interface changes
+
+- The `.magnet` and `.current` sub-packges were moved to the top level.
+- The `.moment` sub-package was renamed to `.misc` and was moved to the top level.
+- The `.vector` sub-package was completely removed. Functionalities are mostly replaced by new top-level function `getBv()`.
+- The `.math` sub-package was removed. Functionalities are mostly provided by the `scipy - Rotation` package.
+- The top level function `displaySystem()` was renamed to `display()`.
+
+### Source class attribute changes
+
+- `magnetization` is now called `mag`
+- `dimension` is now called `dim`
+- `position` is now called `pos`
+- `angle` and `axis` are replaced by `rot`
+
+### Class method changes
+
+- The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(R, anchor, steps)` method where `R` ist a scipy `Rotation` object and `steps` can be used to generate paths.
+- The original angle-axis-anchor rotationis now provided by the new method `.rotate_from_angax(angle, axis, anchor, steps)`.
+  - The argument `axis` can now easily be set to the gloabl CS axes with `"x"`, `"y"`, `"z"`.
+  - The anchor argument can simply be `0` representing the origin.
+- The class method `.move()` was replaced by `move_by()` and `move_to()`.
+- All operations can now be chained (e.g. `.move_by().rotate().move_to()`)
+
+### The new rot attribute (CORE FEATURE OF v3)
+
+- The `rot` attribute stores the relative rotation of an object with respect to the init_state (defined in each class docstring).
+- The default (`rot=None`) corresponds to a unit rotation.
+- `rot` is stored as a `scipy.spatial.transform.Rotation` object.
+- `src.rot` returns a scipy Rotation object `R`.
+- Make use of all advantages of the scipy package:
+  - define `R.from_rotvec()` or `R.from_quat()` or ...
+  - view with `R.as_rotvec()` or `R.as_quat()` or ...
+  - combine subsequent rotations `R1 * R2 * R3`
+
+### Paths (CORE FEATURE OF v3)
+
+- The `pos` and `rot` attributes can now store paths in the global CS. For a path of length N the attribute `pos` is of the shape (N,3) and `rot` is a Rotation object with lenghth N. Each path position is associated with a respective rotation.
+- Field computations `getB()` will evaluate the field for all source path positions.
+- Paths can be set by hand `pos = X`, `rot = Y`, but they can also conveniently be generated using the `steps` argument in the `rotate` and `move` methods.
+- Paths can be merged (e.g. spiral = linear motion on top of rotation) using the top level `path_merge` context manager, or by setting negative values for `steps` in subsequent operations.
+- Paths can be shown via the `show_path=True` kwarg in `display()`. By setting `show_path=x` the object will be displayed at every `x`'th path step. This helps to follow up on object rotation along the path.
+- All objects have a `reset_path()` method defined to set their paths to `pos=(0,0,0)` and `rot=None`.
+
+### New ways to work with Collections and Sources
+
+- The construction `col = Collection(src1, col1, [src2, ...],...)` now features
+  - arbitrary input levels,
+  - input oder is kept,
+  - duplicates are automatically removed.
+- The method `.addSources()` is now called `.add()`
+- The method `.removeSource()` is now called `.remove()`
+- Sources and Collections nove have `+/-` operations defined:
+  - construct as `col1 = src1 + src2 + col2`
+  - remove as `col1 - src1`
+- Collection objects are now iterable themselves. The iteration goes over their `col.sources` attribute. `[s for s in col.sources]` is similar to `[s for s in col]`
+- Collections have `getitem` defined. `col.sources[i]` is similar to `col[i]`.
+- Collections and sources now have a `.display()` method for quick self-inspection.
+- Sources and Collections have a `__repr__` attribute defined and will return their type and their `id`.
+
+### The Sensor class
+
+- The new `Sensor(pos_pix, pos, rot)` class can now also feature paths.
+- Sensors have the argument `pos_pix` which is `(0,0,0)` by default and refers to pixel positions inside the Sensor (in the Sensor local CS). `pos_pix` is an arbitrary array_like of the shape (N1, N2, ..., 3).
+
+### Compute magnetic fields (CORE FEATURE OF v3)
+
+- There are two fundamental arguments for field computation:
+  - The argument `sources` refers to a source/Collection or to a 1D list of L sources and/or Collections.
+  - The argument `observers` refers to a set of positions of shape (N1, N2, ..., 3) or a Sensor with `pos_pix` shape (N1, N2, ..., 3) or a 1D list of K Sensors.
+- With v3 there are now several ways to compute the field:
+  1. `source.getB(*observers)`
+  2. `sensor.getB(*sources)`
+  3. `magpylib.getB(sources, observers)`
+     - The output shape is always (L, M, K, N1, N2, ..., 3) with L sources, M path positions, K sensors and N (pixel) positions.
+     - Objects with path_length=1 are considered as static.
+     - The new `getB` automatically groups all inputs for combined vectorized evaluation. Specifically, `Collection.getB()` experiences a massive performance increase with respect to v2.
+  4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be arrays of length N or of length 1 (statics will be tiled).
+- While `getBv` is the fastest way to compute the fields it is much more convenient to use `getB()` which mostly provides the same performance.
+- In addition to `getB`, the new `getH` returns the field in [kA/m].
+
+### Numerical stability
+
+- In a finite region (size defined in `Config`) about magnet edges and corners the field evaluates to `(0,0,0)` instead of `(NaN, NaN, NaN)`. Special case catching reduces performance slightly.
+- The Box field is now more stable. Numerical instabilities in the outfield were completely removed.
+
+### Config
+
+- The top-level `Config` allows users to access and edit Magpylib default values.
+
 
 ## [2.3.0b] - 2020-01-17
 

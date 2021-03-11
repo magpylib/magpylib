@@ -1,7 +1,7 @@
 import numpy as np
 import magpylib as mag3
 from magpylib._lib.utility import (rotobj_from_angax, check_duplicates,
-    only_allowed_src_types, format_getBH_class_inputs)
+    only_allowed_src_types)
 
 def test_rotobj_from_angax():
     """ test special case axis=0
