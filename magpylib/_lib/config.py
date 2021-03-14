@@ -22,11 +22,11 @@ class Config:
         Reset Config to default values.
     """
 
-    EDGESIZE = 1e-14
+    EDGESIZE =1e-14
     ITER_CYLINDER = 50
 
     @classmethod
-    def reset(cls):
+    def reset( cls):
         """ Reset Config to default values.
         """
         cls.EDGESIZE = 1e-14
