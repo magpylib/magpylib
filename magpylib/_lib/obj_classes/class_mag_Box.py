@@ -74,7 +74,6 @@ class Box(BaseGeo):
     -------
     Box object
     """
-
     def __init__(
             self,
             mag = (mx,my,mz),
@@ -82,6 +81,7 @@ class Box(BaseGeo):
             pos = (0,0,0),
             rot = None):
 
+        self.HighlyILLegal="attributename"
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
 

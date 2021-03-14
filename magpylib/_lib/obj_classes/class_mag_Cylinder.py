@@ -76,9 +76,7 @@ class Cylinder(BaseGeo):
     """
 
     def __init__(
-            self,
-            mag = (mx,my,mz),
-            dim = (d,h),
+            self,mag = (mx,my,mz),dim=(d,h),
             pos = (0,0,0),
             rot = None):
 

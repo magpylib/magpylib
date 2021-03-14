@@ -46,6 +46,7 @@ class BaseGeo:
 
     def __init__(self, pos, rot):
         # set pos and orient attributes
+        self.foo = 2
         self.pos = pos
         self.rot = rot
         self._mm = False        # path_merge
