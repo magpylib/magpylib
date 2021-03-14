@@ -25,13 +25,13 @@ jobs:
           name: Install local magpylib
           command: pip install .
       - run: 
-          name: Install Testing Env
+          name: Set up testing tools and environment
           command: mkdir test-results && pip install tox && pip install pylint
       - run:
-          name: Run Pylint Test
+          name: Run pylint test
           command: pylint --rcfile='./.pylintrc' magpylib
       - run:
-          name: Run Test Coverage Suite
+          name: Run code test coverage suite
           command: tox
       
   deploy:
