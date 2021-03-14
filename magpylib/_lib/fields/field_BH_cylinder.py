@@ -53,8 +53,8 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
     Br = d*(celv(k1, one, one, -one)/sq1 - celv(k0, one, one, -one)/sq0)/np.pi
 
     # axial field (unit magnetization)
-    Bz = d/dpr*(zph*celv(k1, gamma**2, one, gamma)/sq1 -
-                zmh*celv(k0, gamma**2, one, gamma)/sq0)/np.pi
+    Bz = d/dpr*(zph*celv(k1, gamma**2, one, gamma)/sq1
+              - zmh*celv(k0, gamma**2, one, gamma)/sq0)/np.pi
 
     return [Br, Bz]  # contribution from axial magnetization
 
@@ -173,7 +173,7 @@ def field_BH_cylinder(
     # transform to Cy CS --------------------------------------------
     x, y, z = pos_obs.T
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
-    pos_obs_cy = np.c_[r,phi,z]
+    pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 
     # allocate field vectors ----------------------------------------
     Br, Bphi, Bz = np.zeros((3,len(x)))
@@ -234,8 +234,8 @@ def field_BH_cylinder(
         if any(mask_tv): # tv computes H-field
             Bx[mask_tv*mask_inside] += magx[mask_tv*mask_inside]
             By[mask_tv*mask_inside] += magy[mask_tv*mask_inside]
-        return np.c_[Bx,By,Bz]
+        return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T
 
     if any(mask_ax): # ax computes B-field
         Bz[mask_tv*mask_inside] -= magz[mask_tv*mask_inside]
-    return np.c_[Bx,By,Bz]*10/4/np.pi
+    return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T*10/4/np.pi
