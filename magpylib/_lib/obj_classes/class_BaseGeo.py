@@ -75,11 +75,10 @@ class BaseGeo:
             Position-path of object.
         """
         inp = np.array(inp, dtype=float)     # secure input
-        if inp.ndim == 1:
-                                # single position - increase arg dimension to (1,3)aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
-            self._pos = np.array([ inp] )
+        if inp.ndim == 1:                    # single position - increase arg dimension to (1,3)
+            self._pos = np.array([inp])
         elif inp.ndim == 2:                  # multi position
-            self._pos =inp
+            self._pos = inp
         else:
             msg = 'pos input must be of shape (3,) or (N,3)'
             raise MagpylibBadUserInput(msg)
