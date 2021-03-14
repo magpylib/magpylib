@@ -22,14 +22,17 @@ jobs:
     steps:
       - checkout
       - run: 
+          name: Install local magpylib
+          command: pip install .
+      - run: 
           name: Install Testing Env
           command: mkdir test-results && pip install tox && pip install pylint
       - run:
-          name: Run Test Coverage Suite
-          command: tox
-      - run:
           name: Run Pylint Test
           command: pylint --rcfile='./.pylintrc' magpylib
+      - run:
+          name: Run Test Coverage Suite
+          command: tox
       
   deploy:
     docker:
