@@ -60,13 +60,13 @@ confidence=
 # --enable=similarities". If you want to run only the classes checker, but have
 # no Warning level messages displayed, use "--disable=all --enable=classes
 # --disable=W".
-disable=R0801,                          # duplicate code
-        too-few-public-methods,         # complex functions
-        too-many-locals,                # complex functions
-        too-many-arguments,             # complex functions
-        missing-module-docstring,       # no idea
-        invalid-name,                   # scientific library with many 
-        bad-whitespace                  # (0,0,0) is more readable than (0, 0, 0)
+disable=R0801,                          # duplicate code from getB in different src classes
+        too-few-public-methods,         # complex field computation functions
+        too-many-locals,                # complex field computation functions
+        too-many-arguments,             # complex field computation functions
+        missing-module-docstring,       # pylint does not recognize module docstring
+        invalid-name,                   # scientific software gannot go without x,y,z,...
+        bad-whitespace                  # eg. (0,0,0) is more readable than (0, 0, 0)
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option
