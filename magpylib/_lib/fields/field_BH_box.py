@@ -6,6 +6,7 @@ magnetized Cuboids. Computation details in function docstrings.
 import numpy as np
 from magpylib._lib.config import Config
 
+
 def field_BH_box(
         bh: bool,
         mag: np.ndarray,
@@ -35,7 +36,7 @@ def field_BH_box(
     B = np.zeros((len(mag),3))
 
     # special case mag = 0 ------------------------
-    mask0 = (np.linalg.norm(mag,axis=1)==0)
+    mask0 = (mag[:,0]==0) * (mag[:,1]==0) * (mag[:,2]==0)
 
     # special cases for edge/corner fields --------
     x, y, z = np.copy(pos_obs.T)
@@ -214,6 +215,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.nda
     bz_tot = bz_magx + bz_magy + bz_magz
 
     # combine with special edge/corner cases
-    B = np.c_[bx_tot, by_tot, bz_tot]
+    # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
+    B = np.concatenate(((bx_tot,),(by_tot,),(bz_tot,)), axis=0).T
 
     return B / (4*np.pi)
