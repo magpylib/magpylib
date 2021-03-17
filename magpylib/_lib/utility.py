@@ -53,6 +53,7 @@ def format_obj_input(objects: Sequence) -> list:
     Cylinder = _lib.obj_classes.Cylinder
     Collection = _lib.obj_classes.Collection
     Sensor = _lib.obj_classes.Sensor
+    Sphere = _lib.obj_classes.Sphere
 
     obj_list = []
     for obj in objects:
@@ -63,6 +64,7 @@ def format_obj_input(objects: Sequence) -> list:
         elif isinstance(obj, (
                 Box,
                 Cylinder,
+                Sphere,
                 Sensor)):
             obj_list += [obj]
         else:
@@ -152,9 +154,10 @@ def only_allowed_src_types(src_list):
     """
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
+    Sphere = _lib.obj_classes.Sphere
     new_list = []
     for src in src_list:
-        if isinstance(src, (Box, Cylinder)):
+        if isinstance(src, (Box, Cylinder, Sphere)):
             new_list += [src]
         else:
             print(f'Warning, cannot add {src.__repr__()} to Collection.')

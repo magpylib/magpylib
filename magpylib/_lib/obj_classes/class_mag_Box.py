@@ -28,7 +28,7 @@ class Box(BaseGeo):
         Dimension/Size of the Box with sides [a,b,c] in units of [mm].
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of geometric center of magnet in units of [mm]. For N>1 pos respresents a path in
+        Position of Box center in units of [mm]. For N>1 pos respresents a path in
         in the global CS.
 
     rot: scipy Rotation object with length 1 or N, default=unit rotation
@@ -39,7 +39,7 @@ class Box(BaseGeo):
     -------
 
     __add__:
-        Adding sources creates a collection "col = src1 + src2"
+        Adding sources creates a Collection "col = src1 + src2"
 
     __repr__:
         returns string "Box(id)"

@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import magpylib as mag3
-from magpylib.magnet import Cylinder, Box
+from magpylib.magnet import Cylinder, Box, Sphere
 
 
 def test_Cylinder_display():
@@ -9,6 +9,20 @@ def test_Cylinder_display():
     fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
     ax = fig.gca(projection='3d')
     src = Cylinder((1,2,3),(1,2))
+    x = src.display(axis=ax,show_path=15)
+    assert x is None, 'show_path should revert to True'
+
+    src.move_by((4,4,4),steps=33)
+    x = src.display(axis=ax,show_path=False)
+    assert x is None, 'display test fail'
+
+
+def test_Sphere_display():
+    """ testing display
+    """
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax = fig.gca(projection='3d')
+    src = Sphere((1,2,3),2)
     x = src.display(axis=ax,show_path=15)
     assert x is None, 'show_path should revert to True'
 

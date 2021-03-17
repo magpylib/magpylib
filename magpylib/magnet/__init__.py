@@ -10,6 +10,6 @@ Cylinder(mag, dim, pos, rot)
     Homogenously magnetized permanent magnet with Cylinder shape.
 """
 
-__all__ = ['Box', 'Cylinder']
+__all__ = ['Box', 'Cylinder', 'Sphere']
 
-from magpylib._lib.obj_classes import Box, Cylinder
+from magpylib._lib.obj_classes import Box, Cylinder, Sphere

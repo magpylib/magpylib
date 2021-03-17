@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
-
+from magpylib._lib.config import Config
 
 def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
@@ -28,61 +28,71 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """
 
     # generate dict of secured inputs for auto-tiling ---------------
+    #  entries in this dict will be tested for input length, and then
+    #  be automatically tiled up and stored back into kwargs for calling
+    #  getBH_level1().
+    #  To allow different input dimensions, the tdim argument is also given
+    #  which tells the program which dimension it should tile up.
     tile_params = {}
 
     # mandatory general inputs ------------------
     try:
         src_type = kwargs['src_type']
         poso = np.array(kwargs['pos_obs'], dtype=float)
+        tile_params['pos_obs'] = (poso,2)    # <-- (input,tdim)
+
+        # optional general inputs -------------------
+        # if no input set pos=0
+        pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
+        tile_params['pos'] = (pos,2)
+        # if no input set rot=unit
+        rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
+        tile_params['rot'] = (rot.as_quat(),2)
+
+        # mandatory class specific inputs -----------
+        if src_type == 'Box':
+            mag = np.array(kwargs['mag'],dtype=float)
+            tile_params['mag'] = (mag,2)
+            dim = np.array(kwargs['dim'],dtype=float)
+            tile_params['dim'] = (dim,2)
+
+        elif src_type == 'Cylinder':
+            mag = np.array(kwargs['mag'],dtype=float)
+            tile_params['mag'] = (mag,2)
+            dim = np.array(kwargs['dim'],dtype=float)
+            tile_params['dim'] = (dim,2)
+            niter = kwargs.get('niter', Config.ITER_CYLINDER)
+            kwargs['niter'] = niter
+
+        elif src_type == 'Sphere':
+            mag = np.array(kwargs['mag'],dtype=float)
+            tile_params['mag'] = (mag,2)
+            dim = np.array(kwargs['dim'],dtype=float)
+            tile_params['dim'] = (dim,1)
+
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
         raise MagpylibBadUserInput(msg) from kerr
-    tile_params['pos_obs'] = poso           # <-- tile
-
-    # optional general inputs -------------------
-    pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
-    tile_params['pos'] = pos                # <-- tile
-
-    rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
-    tile_params['rot'] = rot.as_quat()      # <-- tile
-
-    # mandatory class specific inputs -----------
-    if src_type == 'Box':
-        try:
-            mag = np.array(kwargs['mag'],dtype=float)
-            dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as kerr:
-            msg = f'Missing input keys: {str(kerr)}'
-            raise MagpylibBadUserInput(msg) from kerr
-        tile_params['mag'] = mag            # <-- tile
-        tile_params['dim'] = dim            # <-- tile
-    elif src_type == 'Cylinder':
-        try:
-            mag = np.array(kwargs['mag'],dtype=float)
-            dim = np.array(kwargs['dim'],dtype=float)
-        except KeyError as kerr:
-            msg = f'Missing input keys: {str(kerr)}'
-            raise MagpylibBadUserInput(msg) from kerr
-        tile_params['mag'] = mag            # <-- tile
-        tile_params['dim'] = dim            # <-- tile
-        niter = kwargs.get('niter', 50)     # set niter
-        kwargs['niter'] = niter
 
     # auto tile 1D parameters ---------------------------------------
 
     # evaluation vector length
-    ns = [len(val) for val in tile_params.values() if val.ndim == 2]
+    ns = [len(val) for val,tdim in tile_params.values() if val.ndim == tdim]
     if len(set(ns)) > 1:
-        msg = f'bad array input lengths: {str(set(ns))}'
+        msg = f'getBHv() bad array input lengths: {str(set(ns))}'
         raise MagpylibBadUserInput(msg)
     n = max(ns, default=1)
 
     # tile 1D inputs and replace original values in kwargs
-    for key,val in tile_params.items():
-        if val.ndim == 1:
-            kwargs[key] = np.tile(val,(n,1))
+    for key,(val,tdim) in tile_params.items():
+        if val.ndim<tdim:
+            if tdim == 2:
+                kwargs[key] = np.tile(val,(n,1))
+            elif tdim == 1:
+                kwargs[key] = np.array([val]*n)
         else:
             kwargs[key] = val
+
     # change rot to Rotation object
     kwargs['rot'] = R.from_quat(kwargs['rot'])
 

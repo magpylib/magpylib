@@ -107,8 +107,8 @@ def test_col_get_item():
 def test_col_getH():
     """ test collection getH
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Sphere((1,2,3),3)
+    pm2 = mag3.magnet.Sphere((1,2,3),3)
     col = mag3.Collection(pm1,pm2)
     H = col.getH((0,0,0))
     H1 = pm1.getH((0,0,0))

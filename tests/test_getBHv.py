@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib.magnet import Box, Cylinder
+from magpylib.magnet import Box, Cylinder, Sphere
 from magpylib import getBv, getHv, getB, getH
 
 
@@ -125,6 +125,60 @@ def test_getBv3():
     B2 = []
     for i in range(n):
         pm = Box(mag[i],dim,pos,rot[i])
+        B2 += [pm.getB(pos_obs)]
+    B2 = np.array(B2)
+    print(B1-B2)
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
+
+def test_getHv3():
+    """test field wrapper functions
+    """
+    pos_obs = (1,2,2)
+    mag = [[111,222,333],[22,2,2],[22,-33,-44]]
+    dim = 3
+
+    dic = {
+        'src_type': 'Sphere',
+        'pos_obs': pos_obs,
+        'mag': mag,
+        'dim': dim,
+        'niter': 75
+        }
+    B1 = getHv(**dic)
+
+    B2 = []
+    for i in range(3):
+        pm = Sphere(mag[i],dim)
+        B2 += [getH([pm], pos_obs)]
+    B2 = np.array(B2)
+
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
+
+def test_getBv4():
+    """test field wrapper functions
+    """
+    n = 25
+    pos_obs = np.array([1,2,2])
+    mag = [[111,222,333],]*n
+    dim = 3
+    pos = np.array([0,0,0])
+    rot = R.from_quat([(t,.2,.3,.4) for t in np.linspace(0,.1,n)])
+
+    dic = {
+        'src_type': 'Sphere',
+        'pos_obs': pos_obs,
+        'mag': mag,
+        'dim': dim,
+        'pos': pos,
+        'rot': rot
+        }
+    B1 = getBv(**dic)
+
+    B2 = []
+    for i in range(n):
+        pm = Sphere(mag[i],dim,pos,rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1-B2)

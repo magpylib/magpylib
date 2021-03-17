@@ -77,6 +77,20 @@ def getBHv_missing_input5_cyl():
     getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, mag=x)
 
 
+def getBHv_missing_input4_sphere():
+    """ missing Sphere mag
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, dim=1)
+
+
+def getBHv_missing_input5_sphere():
+    """ missing Sphere dim
+    """
+    x=np.array([(1,2,3)])
+    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, mag=x)
+
+
 def getBHv_bad_input():
     """ different input lengths
     """
@@ -150,6 +164,18 @@ def cyl_no_dim():
     mag3.magnet.Cylinder(mag=(1,2,3))
 
 
+def sphere_no_mag():
+    """ Cylinder with no mag input
+    """
+    mag3.magnet.Sphere(dim=1)
+
+
+def sphere_no_dim():
+    """ Cylinder with no dim input
+    """
+    mag3.magnet.Sphere(mag=(1,2,3))
+
+
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
     """
@@ -164,6 +190,12 @@ class TestExceptions(unittest.TestCase):
         """
         self.assertRaises(MagpylibBadUserInput, cyl_no_mag)
         self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
+
+    def test_except_class_Sphere(self):
+        """ class_Cylinder
+        """
+        self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
+        self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
 
     def test_except_utility(self):
         """ utility
@@ -186,8 +218,10 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input3)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_box)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_cyl)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_sphere)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_box)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cyl)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_sphere)
         self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
 
     def test_except_getBH_lev1(self):

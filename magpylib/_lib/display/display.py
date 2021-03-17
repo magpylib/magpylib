@@ -5,7 +5,8 @@ import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
     draw_sensors)
-from magpylib._lib.display.disp_utility import faces_box, faces_cylinder, system_size
+from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
+    faces_sphere)
 from magpylib import _lib
 
 
@@ -50,6 +51,7 @@ def display(
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
     Sensor = _lib.obj_classes.Sensor
+    Sphere = _lib.obj_classes.Sphere
 
     # create or set plotting axis
     if axis is None:
@@ -72,7 +74,8 @@ def display(
     # draw objects --------------------------------------------------
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
         Box,
-        Cylinder
+        Cylinder,
+        Sphere
         ))]
     face_points = [] # collect vertices for system size evaluation
 
@@ -88,6 +91,12 @@ def display(
             faces = faces_cylinder(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
+
+        elif isinstance(obj, Sphere):
+            faces = faces_sphere(obj,show_path)
+            lw = 0.25
+            face_points += draw_faces(faces, col, lw, ax)
+
 
     sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
     pix_points = draw_sensors(sensors, ax, show_path)

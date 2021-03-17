@@ -21,25 +21,38 @@ def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     """
     # pylint: disable=protected-access
 
-    l_group = len(group)    # sources in group
-    m = len(group[0]._pos)  # path length
-    mn = len(poso)          # path length * no.pixel
-    n = int(mn/m)             # no.pixel
-    len_dim = len(group[0].dim) # source type dim shape
+    # Sphere input requires slightly different index arrangement
+    flag_sphere = isinstance(group[0],_lib.obj_classes.Sphere)
 
-    # prepare and fill arrays, shape: (l_group, m, n)
-    magv = np.empty((l_group*mn,3))         # source magnetization
-    dimv = np.empty((l_group*mn,len_dim))   # source dimension
-    posv = np.empty((l_group*mn,3))         # source position
-    rotv = np.empty((l_group*mn,4))         # source rotation
+    # generate indices
+    l_group = len(group)    # no. sources in group
+    m = len(group[0]._pos)  # path length
+    mn = len(poso)          # path length * no. pixel
+    n = int(mn/m)           # no. pixel
+    if flag_sphere:
+        len_dim = 1                         # Sphere dim=scalar
+    else:
+        len_dim = len(group[0].dim)         # source type dim shape
+
+    # allocate dict arrays, shape: (l_group, m, n)
+    magv = np.empty((l_group*mn,3))         # source mag
+    dimv = np.empty((l_group*mn,len_dim))   # source dim
+    posv = np.empty((l_group*mn,3))         # source pos
+    rotv = np.empty((l_group*mn,4))         # source rot
+    posov = np.tile(poso, (l_group,1))
+
+    # fill dict arrays
     for i,src in enumerate(group):
         magv[i*mn:(i+1)*mn] = np.tile(src.mag, (mn,1))
         dimv[i*mn:(i+1)*mn] = np.tile(src.dim, (mn,1))
         posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
         rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
-    posov = np.tile(poso, (l_group,1))
-
+    # genreate rot object from rot input
     rotobj = R.from_quat(rotv)
+    # make Sphere dim a 1D ndarray [x,x,x,x,x] or [x]
+    if flag_sphere:
+        dimv = dimv.T[0]
+    # generate dict and return
     src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
     return src_dict
 
@@ -79,6 +92,7 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     # avoid circular imports --------------------------------------------------
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
+    Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
     Sensor = _lib.obj_classes.Sensor
 
@@ -87,14 +101,14 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
         sources = [sources]
     src_list = format_obj_input(sources) # flatten Collections
 
-    if isinstance(observers, Sensor):               # input = 1 sensor
+    if isinstance(observers, Sensor):          # input = Sensor
         sensors = [observers]
-    elif isinstance(observers, list):                    # input = list (sensors or positions)
+    elif isinstance(observers, list):          # input = [sens1,sens2,...] or [pos1,pos2,...])
         if isinstance(observers[0], Sensor):
             sensors = observers
         else:
             sensors = [Sensor(pos_pix=observers)]
-    else:                                                # input = pos_obs
+    else:                                      # input = pos_obs
         sensors = [Sensor(pos_pix=observers)]
 
     obj_list = src_list + sensors
@@ -128,8 +142,8 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
     n = int(mn/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[]]   # store groups here
-    order = [[],[]]        # keep track of the source order
+    src_sorted = [[],[],[]]   # store groups here
+    order = [[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
         if isinstance(src, Box):
             src_sorted[0] += [src]
@@ -137,6 +151,9 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
         elif isinstance(src, Cylinder):
             src_sorted[1] += [src]
             order[1] += [i]
+        elif isinstance(src, Sphere):
+            src_sorted[2] += [src]
+            order[2] += [i]
         else:
             raise MagpylibBadUserInput('Unrecognized object in sources input')
 
@@ -163,6 +180,16 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
         B_group = B_group.reshape((lg,m,n,3))
         for i in range(lg):
             B[order[1][i]] = B_group[i]
+
+    # Box group
+    group = src_sorted[2]
+    if group:
+        lg = len(group)
+        src_dict = scr_dict_homo_mag(group, poso)             # compute array dict for level1
+        B_group = getBH_level1(bh=bh, src_type='Sphere', **src_dict) # compute field
+        B_group = B_group.reshape((lg,m,n,3))         # reshape
+        for i in range(lg):                           # put at dedicated positions in B
+            B[order[2][i]] = B_group[i]
 
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
