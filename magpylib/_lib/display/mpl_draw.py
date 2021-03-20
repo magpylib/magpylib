@@ -4,20 +4,48 @@ import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
-def draw_directs(faced_objects, cmap, ax):
-    """draw direction of magetization and currents
+def draw_directs_faced(faced_objects, cmap, ax, show_path):
+    """draw direction of magetization of faced magnets
+
+    Parameters
+    ----------
+    - faced_objects(list of src objects): with magnetization vector to be drawn
+    - cmap(Pylplot colormap): used in display() function
+    - ax(Pyplot 3D axis): to draw in
+    - show_path(bool or int): draw on every position where object is displayed
     """
-    # pylint: disable=protected-access
+    #pylint: disable=protected-access
+
     for i,obj in enumerate(faced_objects):
+
+        # add src attributes position and orientation depending on show_path
+        if not isinstance(show_path, bool) and obj._pos.ndim>1:
+            rots = obj._rot[::-show_path]
+            poss = obj._pos[::-show_path]
+        else:
+            rots = [obj._rot[-1]]
+            poss = [obj._pos[-1]]
+
+        # vector length, color and magnetization
+        length = 1.8*np.amax(obj.dim)
         col = cmap(i/len(faced_objects))
-        pos = obj._pos[-1]
         mag = obj.mag
-        length = 2*np.amax(obj.dim)
-        direc = mag / (np.linalg.norm(mag)+1e-6)
-        ax.quiver(pos[0], pos[1], pos[2],
-                  direc[0], direc[1], direc[2],
-                  length=length,
-                  color=col)
+
+        # collect all draw positions and directions
+        draw_pos, draw_direc = [], []
+        for rot,pos in zip(rots,poss):
+            draw_pos += [pos]
+            direc = mag / (np.linalg.norm(mag)+1e-6)
+            draw_direc += [rot.apply(direc)]
+        draw_pos = np.array(draw_pos)
+        draw_direc = np.array(draw_direc)
+
+        # use quiver() separately for each object to easier control
+        # color and vector length
+        ax.quiver(draw_pos[:,0], draw_pos[:,1], draw_pos[:,2],
+            draw_direc[:,0], draw_direc[:,1], draw_direc[:,2],
+            length=length,
+            color=col)
 
 
 def draw_markers(markers, ax):

@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
-from magpylib._lib.display.mpl_draw import (draw_directs, draw_faces, draw_markers, draw_path,
+from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
     draw_sensors)
 from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
     faces_sphere)
@@ -118,7 +118,7 @@ def display(
 
     # directs -------------------------------------------------------
     if direc:
-        draw_directs(faced_objects, cmap, ax)
+        draw_directs_faced(faced_objects, cmap, ax, show_path)
 
     # determine system size
     limx0, limx1, limy0, limy1, limz0, limz1 = system_size(
