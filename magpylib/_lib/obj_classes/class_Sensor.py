@@ -3,7 +3,9 @@
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.fields import getB, getH
+from magpylib._lib.exceptions import MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.config import Config
 
 
 # ON INTERFACE
@@ -90,15 +92,21 @@ class Sensor(BaseGeo):
 
 
     @pos_pix.setter
-    def pos_pix(self, inp):
+    def pos_pix(self, pix_position):
         """
         Set Sensor pixel positions.
 
-        inp: array_like, shape (3,) or (N1,N2,...,3)
+        pix_position: array_like, shape (3,) or (N1,N2,...,3)
             Set pixel positions in Sensor CS.
         """
-        inp = np.array(inp, dtype=float)       # secure input
-        self._pos_pix = inp
+        pix_position = np.array(pix_position, dtype=float)       # secure input
+
+        # input check
+        if Config.CHECK_INPUTS:
+            if pix_position.shape[-1] != 3:
+                raise MagpylibBadInputShape('Bad dimension input shape.')
+
+        self._pos_pix = pix_position
 
 
     # dunders -------------------------------------------------------

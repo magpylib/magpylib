@@ -5,7 +5,8 @@ import magpylib as mag3
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._lib.fields.field_wrap_getBHv import getBHv_level2
-from magpylib._lib.exceptions import MagpylibInternalError, MagpylibBadUserInput
+from magpylib._lib.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
+    MagpylibBadInputShape)
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.utility import format_obj_input, get_good_path_length
 from magpylib._lib.utility import test_path_format as tpf
@@ -176,6 +177,97 @@ def sphere_no_dim():
     mag3.magnet.Sphere(mag=(1,2,3))
 
 
+########################################################################
+# BAD INPUT SHAPE EXCEPTIONS
+def bad_input_shape_basegeo_pos():
+    """ bad position input shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    mag3.magnet.Box(vec3, vec3, vec4)
+
+
+def bad_input_shape_basegeo_move_by():
+    """ bad displacement input shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    src = mag3.magnet.Box(vec3, vec3)
+    src.move_by(vec4)
+
+
+def bad_input_shape_basegeo_move_to():
+    """ bad target_position input shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    src = mag3.magnet.Box(vec3, vec3)
+    src.move_to(vec4)
+
+def bad_input_shape_basegeo_rotate_from_aa_axis():
+    """ bad rotation axis input shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    src = mag3.magnet.Box(vec3, vec3)
+    src.rotate_from_angax(123,vec4)
+
+def bad_input_shape_basegeo_rotate_from_aa_anchor():
+    """ bad rotation anchor input shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    src = mag3.magnet.Box(vec3, vec3)
+    src.rotate_from_angax(123,vec3,vec4)
+
+
+def bad_input_shape_box_dim():
+    """ bad box dimension shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    mag3.magnet.Box(vec3, vec4)
+
+
+def bad_input_shape_box_mag():
+    """ bad box magnetization shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    mag3.magnet.Box(vec4, vec3)
+
+
+def bad_input_shape_cyl_dim():
+    """ bad cylinder dimension shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    mag3.magnet.Cylinder(vec3, vec4)
+
+
+def bad_input_shape_cyl_mag():
+    """ bad box magnetization shape
+    """
+    vec3 = (1,2,3)
+    vec4 = (1,2,3,4)
+    mag3.magnet.Cylinder(vec4, vec3)
+
+
+def bad_input_shape_sphere_mag():
+    """ bad sphere magnetization shape
+    """
+    vec4 = (1,2,3,4)
+    mag3.magnet.Sphere(vec4, 1)
+
+
+def bad_input_shape_sensor_pix_pos():
+    """ bad sensor pix_pos input shape
+    """
+    vec4 = (1,2,3,4)
+    mag3.Sensor(vec4)
+
+
+########################################################################
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
     """
@@ -233,3 +325,18 @@ class TestExceptions(unittest.TestCase):
         """ getBH_level1
         """
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input)
+
+    def test_except_bad_input_shape_basegeo(self):
+        """ BaseGeo bad input shapes
+        """
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_pos)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_move_by)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_move_to)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_rotate_from_aa_axis)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_rotate_from_aa_anchor)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_box_dim)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_box_mag)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_dim)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_mag)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_sphere_mag)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_sensor_pix_pos)

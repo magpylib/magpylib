@@ -3,8 +3,9 @@
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.config import Config
 
 # init for tool tips
 d=h=None
@@ -89,6 +90,7 @@ class Cylinder(BaseGeo):
         self.mag = mag
         self.dim = dim
 
+
     # properties ----------------------------------------------------
     @property
     def mag(self):
@@ -98,12 +100,23 @@ class Cylinder(BaseGeo):
 
 
     @mag.setter
-    def mag(self, value):
+    def mag(self, magnetization):
         """ Set magnetization vector, shape (3,), unit [mT].
         """
-        if None in value:
-            raise MagpylibBadUserInput('Magnetization input required')
-        self._mag = np.array(value,dtype=float)
+        # input check
+        if Config.CHECK_INPUTS:
+            if None in magnetization:
+                raise MagpylibBadUserInput('Magnetization input required')
+
+        # secure type
+        magnetization = np.array(magnetization,dtype=float)
+
+        # input check
+        if Config.CHECK_INPUTS:
+            if magnetization.shape != (3,):
+                raise MagpylibBadInputShape('Bad magnetization input shape.')
+
+        self._mag = magnetization
 
 
     @property
@@ -112,18 +125,26 @@ class Cylinder(BaseGeo):
         """
         return self._dim
 
-
     @dim.setter
-    def dim(self, value):
+    def dim(self, dimension):
         """ Set cylinder dimension (d,h), shape (2,), unit [mm]
         """
-        if None in value:
-            raise MagpylibBadUserInput('Dimension input required')
-        self._dim = np.array(value,dtype=float)
+        # input check
+        if Config.CHECK_INPUTS:
+            if None in dimension:
+                raise MagpylibBadUserInput('Dimension input required')
+
+        dimension = np.array(dimension,dtype=float)
+
+        # input check
+        if Config.CHECK_INPUTS:
+            if dimension.shape != (2,):
+                raise MagpylibBadInputShape('Bad dimension input shape.')
+
+        self._dim = dimension
 
 
     # dunders -------------------------------------------------------
-
     def __repr__(self) -> str:
         return f'Cylinder({str(id(self))})'
 

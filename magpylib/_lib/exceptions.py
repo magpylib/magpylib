@@ -5,5 +5,9 @@ class MagpylibBadUserInput(Exception):
     """
 
 class MagpylibInternalError(Exception):
-    """ should never have reached this posision
+    """ should never have reached this position in the code
+    """
+
+class MagpylibBadInputShape(Exception):
+    """ catching bad input shapes
     """

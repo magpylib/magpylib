@@ -102,9 +102,10 @@ This is a major update that includes
 - In a finite region (size defined in `Config`) about magnet edges and corners the field evaluates to `(0,0,0)` instead of `(NaN, NaN, NaN)`. Special case catching reduces performance slightly.
 - The Box field is now more stable. Numerical instabilities in the outfield were completely removed.
 
-### Config
+### Miscellaneous
 
 - The top-level `Config` allows users to access and edit Magpylib default values.
+- By default (turn off in Config) Magplyib now performs some checks of the input format to alert the user and avoid cryptic error messages.
 
 
 ## [2.3.0b] - 2020-01-17

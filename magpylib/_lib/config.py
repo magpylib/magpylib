@@ -22,6 +22,7 @@ class Config:
         Reset Config to default values.
     """
 
+    CHECK_INPUTS = True
     EDGESIZE = 1e-14
     ITER_CYLINDER = 50
 
@@ -29,5 +30,6 @@ class Config:
     def reset(cls):
         """ Reset Config to default values.
         """
+        cls.CHECK_INPUTS = True
         cls.EDGESIZE = 1e-14
         cls.ITER_CYLINDER = 50

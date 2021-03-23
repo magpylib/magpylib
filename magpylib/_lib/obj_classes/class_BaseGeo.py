@@ -6,7 +6,8 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import rotobj_from_angax
 from magpylib._lib.display import display
 from magpylib._lib.obj_classes.class_Collection import Collection
-from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
+from magpylib._lib.config import Config
 
 
 # METHODS ON INTERFACE
@@ -68,19 +69,28 @@ class BaseGeo:
 
 
     @pos.setter
-    def pos(self, inp):
+    def pos(self, position):
         """ Set object position-path.
 
-        inp: array_like, shape (3,) or (N,3)
+        position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
-        inp = np.array(inp, dtype=float)     # secure input
-        if inp.ndim == 1:                    # single position - increase arg dimension to (1,3)
-            self._pos = np.array([inp])
-        elif inp.ndim == 2:                  # multi position
-            self._pos = inp
+        # secure input
+        position = np.array(position, dtype=float)
+
+        # input check
+        if Config.CHECK_INPUTS:
+            if position.shape[-1] != 3:
+                msg = 'Bad position input shape.'
+                raise MagpylibBadInputShape(msg)
+
+        # create correct shape of _pos
+        if position.ndim == 1:               # single position - increase arg dimension to (1,3)
+            self._pos = np.array([position])
+        elif position.ndim == 2:             # multi position
+            self._pos = position
         else:
-            msg = 'pos input must be of shape (3,) or (N,3)'
+            msg = 'Position input must be of shape (3,) or (N,3)'
             raise MagpylibBadUserInput(msg)
 
 
@@ -107,15 +117,17 @@ class BaseGeo:
             Set rotation-path of object. None generates a unit rotation
             for every path step.
         """
-
-        if inp is None:                            # None inp generates unit rotation
+        # None inp generates unit rotation
+        if inp is None:
             path_length = len(self._pos)
             self._rot = R.from_quat([(0,0,0,1)]*path_length)
-        else:                                      # single rotation - increase dimension to (1,3)
+
+        # create correct shape of _rot
+        else:                        # single rotation - increase dimension to (1,3)
             val = inp.as_quat()
             if val.ndim == 1:
                 self._rot = R.from_quat([val])
-            else:                                  # multi rotation
+            else:                    # multi rotation
                 self._rot = inp
 
 
@@ -203,6 +215,12 @@ class BaseGeo:
         # secure input
         displ = np.array(displacement, dtype=float)
 
+        # input check
+        if Config.CHECK_INPUTS:
+            if displ.shape != (3,):
+                msg = 'Bad displacement input shape.'
+                raise MagpylibBadInputShape(msg)
+
         # load current path
         path_pos = self._pos
 
@@ -261,6 +279,12 @@ class BaseGeo:
         # secure input
         tgt_pos = np.array(target_pos, dtype=float)
 
+        # input check
+        if Config.CHECK_INPUTS:
+            if tgt_pos.shape != (3,):
+                msg = 'Bad target_pos input shape.'
+                raise MagpylibBadInputShape(msg)
+
         # load current path
         path_pos = self._pos
 
@@ -312,6 +336,13 @@ class BaseGeo:
         # secure input type
         if anchor is not None:
             anchor = np.array(anchor, dtype=float)      # if None
+
+            # input check
+            if Config.CHECK_INPUTS:
+                if anchor.shape != (3,):                             # is not a 3-vector
+                    if (anchor.shape!=()) and (np.sum(anchor)!=0):   # is also not the 0-array
+                        msg = 'Bad anchor input shape.'
+                        raise MagpylibBadInputShape(msg)
 
         # load current path
         path_pos = self._pos
@@ -376,6 +407,7 @@ class BaseGeo:
         --------
         self : object with position and orientation properties
         """
+        # pylint: disable=too-many-branches
 
         # steps
         steps = get_steps(steps, self)
@@ -390,8 +422,8 @@ class BaseGeo:
         if degree:
             angle = angle/180*np.pi
 
-        # secure input type
-        if isinstance(axis,str):
+        # secure input
+        if isinstance(axis,str):                    # generate axis from string
             if axis=='x':
                 axis=np.array((1,0,0))
             elif axis=='y':
@@ -401,8 +433,14 @@ class BaseGeo:
             else:
                 msg = f'Bad axis string input \"{axis}\"'
                 raise MagpylibBadUserInput(msg)
-        else:
+        else:                                       # generate axis from vector
             axis = np.array(axis, dtype=float)
+
+            # input check
+            if Config.CHECK_INPUTS:
+                if axis.shape != (3,):
+                    msg = 'Bad axis input shape.'
+                    raise MagpylibBadInputShape(msg)
 
         # Split up rotation into pi-rotation and rest-rotation as
         #   the scipy.Rotation module is limited to express rotations

@@ -3,8 +3,9 @@
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.config import Config
 
 # init for tool tips
 dia=None
@@ -96,12 +97,23 @@ class Sphere(BaseGeo):
         return self._mag
 
     @mag.setter
-    def mag(self, value):
+    def mag(self, magnetization):
         """ Set magnetization vector, shape (3,), unit [mT].
         """
-        if None in value:
-            raise MagpylibBadUserInput('Magnetization input required')
-        self._mag = np.array(value,dtype=float)
+        # input check
+        if Config.CHECK_INPUTS:
+            if None in magnetization:
+                raise MagpylibBadUserInput('Magnetization input required')
+
+        # secure type
+        magnetization = np.array(magnetization,dtype=float)
+
+        # input check
+        if Config.CHECK_INPUTS:
+            if magnetization.shape != (3,):
+                raise MagpylibBadInputShape('Bad magnetization input shape.')
+
+        self._mag = magnetization
 
 
     @property
@@ -111,12 +123,16 @@ class Sphere(BaseGeo):
         return self._dim
 
     @dim.setter
-    def dim(self, value):
+    def dim(self, dimension):
         """ Set Sphere dimension dia, float, [mm].
         """
-        if value is None:
-            raise MagpylibBadUserInput('Magnetization input required')
-        self._dim = float(value)
+        # input check
+        if Config.CHECK_INPUTS:
+            if dimension is None:
+                raise MagpylibBadUserInput('Dimension input required')
+
+        self._dim = float(dimension)
+
 
 
     # dunders -------------------------------------------------------
