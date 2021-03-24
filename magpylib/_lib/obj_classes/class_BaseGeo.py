@@ -383,8 +383,9 @@ class BaseGeo:
         angle: float, unit [deg] or [rad]
             Angle of rotation in [deg] or [rad].
 
-        axis: array_like, shape (3,)
-            The axis of rotation.
+        axis: array_like, shape (3,) or str
+            The (direction of) the axis of rotation. Input can be a vector of shape (3,)
+            or a string 'x', 'y' or 'z' to denote respective directions.
 
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
