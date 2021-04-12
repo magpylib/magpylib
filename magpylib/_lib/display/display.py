@@ -122,7 +122,7 @@ def display(
         draw_directs_faced(faced_objects, cmap, ax, show_path)
 
     # determine system size
-    limx0, limx1, limy0, limy1, limz0, limz1 = system_size(
+    limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
         face_points, pix_points, markers, path_points)
 
     # plot styling --------------------------------------------------
