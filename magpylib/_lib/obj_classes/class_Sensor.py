@@ -67,8 +67,8 @@ class Sensor(BaseGeo):
 
     def __init__(
             self,
-            pos_pix=(0,0,0),
             pos = (0,0,0),
+            pos_pix=(0,0,0),
             rot = None):
 
         # inherit base_geo class
@@ -143,6 +143,7 @@ class Sensor(BaseGeo):
         """
         sources = format_getBH_class_inputs(sources)
         B = getB(sources, self, sumup=sumup, **specs)
+
         return B
 
 
