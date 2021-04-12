@@ -142,7 +142,7 @@ class Sphere(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, *observers):
+    def getB(self, *observers, squeeze=True):
         """
         Compute B-field of source at observers.
 
@@ -153,6 +153,10 @@ class Sphere(BaseGeo):
             a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
             of [mm].
 
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
         Returns
         -------
         B-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [mT]
@@ -162,11 +166,11 @@ class Sphere(BaseGeo):
             single pixel) is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers)
+        B = getB(self, observers, squeeze=squeeze)
         return B
 
 
-    def getH(self, *observers):
+    def getH(self, *observers, squeeze=True):
         """
         Compute H-field of source at observers.
 
@@ -177,6 +181,10 @@ class Sphere(BaseGeo):
             a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
             of [mm].
 
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
         Returns
         -------
         H-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [kA/m]
@@ -186,5 +194,5 @@ class Sphere(BaseGeo):
             single pixel) is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers)
+        H = getH(self, observers, squeeze=squeeze)
         return H

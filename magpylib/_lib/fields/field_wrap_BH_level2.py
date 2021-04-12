@@ -57,7 +57,7 @@ def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     return src_dict
 
 
-def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
+def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     """...
 
     Parameters
@@ -69,6 +69,7 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
         similar pathlength M and/or 1 and sensor pos_pix of shape (N1,N2,...,3).
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
+    - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
     - niter (int): default=50, for Cylinder sources diametral iteration
 
     Returns
@@ -206,13 +207,14 @@ def getBH_level2(bh, sources, observers, sumup, **kwargs) -> np.ndarray:
         sens_px_shape = (k,) + pix_shapes[0]
         B = B.reshape((l0,m)+sens_px_shape)
     else:
-        print('WARNING(getBH_level2): sensors with different pixle shape - merging all sensors')
+        print('WARNING: sensors with different pixle shape - merging all sensors')
 
     if sumup:
         B = np.sum(B, axis=0)
 
     # reduce all size-1 levels
-    B = np.squeeze(B)
+    if squeeze:
+        B = np.squeeze(B)
 
     # reset tiled objects
     for obj in reset_objects:

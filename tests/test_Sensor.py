@@ -50,3 +50,18 @@ def test_Sensor_getB_specs():
     B1 = sens1.getB(pm1,niter=17)
     B2 = mag3.getB(pm1,sens1,niter=50)
     assert not np.allclose(B1,B2), 'should not be same'
+
+def test_Sensor_squeeze():
+    """ testing squeeze output
+    """
+    src = mag3.magnet.Sphere((1,1,1),1)
+    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    B = sensor.getB(src)
+    assert B.shape==(2,3)
+    H = sensor.getH(src)
+    assert H.shape==(2,3)
+
+    B = sensor.getB(src,squeeze=False)
+    assert B.shape==(1,1,1,2,3)
+    H = sensor.getH(src,squeeze=False)
+    assert H.shape==(1,1,1,2,3)

@@ -55,3 +55,19 @@ def test_Cylinder_add():
     src2 = Cylinder((1,2,3),(1,2))
     col = src1 + src2
     assert isinstance(col,mag3.Collection), 'adding cylinder fail'
+
+
+def test_Cylinder_squeeze():
+    """ testing squeeze output
+    """
+    src1 = Cylinder((1,1,1),(1,1))
+    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    B = src1.getB(sensor)
+    assert B.shape==(2,3)
+    H = src1.getH(sensor)
+    assert H.shape==(2,3)
+
+    B = src1.getB(sensor,squeeze=False)
+    assert B.shape==(1,1,1,2,3)
+    H = src1.getH(sensor,squeeze=False)
+    assert H.shape==(1,1,1,2,3)

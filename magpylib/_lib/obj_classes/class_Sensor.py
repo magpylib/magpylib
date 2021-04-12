@@ -115,7 +115,7 @@ class Sensor(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, *sources, sumup=False, **specs):
+    def getB(self, *sources, sumup=False, squeeze=True, **specs):
         """
         Compute B-field of sources at Sensor.
 
@@ -127,6 +127,10 @@ class Sensor(BaseGeo):
 
         sumup: bool, default=False
             If True, the field of all sources is summed up.
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         Specific kwargs
         ---------------
@@ -142,12 +146,12 @@ class Sensor(BaseGeo):
             or single pixel) is removed.
         """
         sources = format_getBH_class_inputs(sources)
-        B = getB(sources, self, sumup=sumup, **specs)
+        B = getB(sources, self, sumup=sumup, squeeze=squeeze, **specs)
 
         return B
 
 
-    def getH(self, *sources, sumup=False, **specs):
+    def getH(self, *sources, sumup=False, squeeze=True, **specs):
         """
         Compute H-field of sources at Sensor.
 
@@ -159,6 +163,10 @@ class Sensor(BaseGeo):
 
         sumup: bool, default=False
             If True, the field of all sources is summed up.
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         Specific kwargs
         ---------------
@@ -174,5 +182,5 @@ class Sensor(BaseGeo):
             or single pixel) is removed.
         """
         sources = format_getBH_class_inputs(sources)
-        H = getH(sources, self, sumup=sumup, **specs)
+        H = getH(sources, self, sumup=sumup, squeeze=squeeze, **specs)
         return H

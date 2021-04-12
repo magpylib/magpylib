@@ -1,3 +1,4 @@
+from magpylib._lib.obj_classes.class_Sensor import Sensor
 import magpylib
 import pickle
 import os
@@ -61,3 +62,18 @@ def test_Box_add():
     src2 = Box((1,2,3),(1,2,3))
     col = src1 + src2
     assert isinstance(col,magpylib.Collection), 'adding boxes fail'
+
+def test_Box_squeeze():
+    """ testing squeeze output
+    """
+    src1 = Box((1,1,1),(1,1,1))
+    sensor = Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    B = src1.getB(sensor)
+    assert B.shape==(2,3)
+    H = src1.getH(sensor)
+    assert H.shape==(2,3)
+
+    B = src1.getB(sensor,squeeze=False)
+    assert B.shape==(1,1,1,2,3)
+    H = src1.getH(sensor,squeeze=False)
+    assert H.shape==(1,1,1,2,3)

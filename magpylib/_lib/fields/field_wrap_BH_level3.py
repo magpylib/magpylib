@@ -2,7 +2,7 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
 
 # ON INTERFACE
-def getB(sources, observers, sumup=False, **specs):
+def getB(sources, observers, sumup=False, squeeze=True, **specs):
     """
     Compute B-field for given sources and observers.
 
@@ -19,6 +19,10 @@ def getB(sources, observers, sumup=False, **specs):
 
     sumup: bool, default=False
         If True, the field of all sources is summed up.
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+        a single sensor or only a single source) are eliminated.
 
     Specific kwargs
     ---------------
@@ -39,11 +43,11 @@ def getB(sources, observers, sumup=False, **specs):
     sources for optimal vectorization of the computation. For maximal performance call this
     function as little as possible, do not use it in a loop if not absolutely necessary.
     """
-    return getBH_level2(True, sources, observers, sumup, **specs)
+    return getBH_level2(True, sources, observers, sumup, squeeze, **specs)
 
 
 # ON INTERFACE
-def getH(sources, observers, sumup=False, **specs):
+def getH(sources, observers, sumup=False, squeeze=True, **specs):
     """ Compute H-field for given sources and observers.
 
     Parameters
@@ -59,6 +63,10 @@ def getH(sources, observers, sumup=False, **specs):
 
     sumup: bool, default=False
         If True, the field of all sources is summed up.
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+        a single sensor or only a single source) are eliminated.
 
     Specific kwargs
     ---------------
@@ -79,4 +87,4 @@ def getH(sources, observers, sumup=False, **specs):
     sources for optimal vectorization of the computation. For maximal performance call this
     function as little as possible, do not use it in a loop if not absolutely necessary.
     """
-    return getBH_level2(False, sources, observers, sumup, **specs)
+    return getBH_level2(False, sources, observers, sumup, squeeze, **specs)

@@ -169,7 +169,7 @@ class Collection:
         return self
 
 
-    def getB(self, *observers, **specs):
+    def getB(self, *observers, squeeze=True, **specs):
         """
         Compute B-field of Collection at observers.
 
@@ -179,6 +179,10 @@ class Collection:
             Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
             a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
             of [mm].
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         specs:
             Specific keyword arguments of different source types.
@@ -192,11 +196,11 @@ class Collection:
             or single pixel) is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers, **specs)
+        B = getB(self, observers, squeeze=squeeze, **specs)
         return B
 
 
-    def getH(self, *observers, **specs):
+    def getH(self, *observers, squeeze=True, **specs):
         """
         Compute H-field of Collection at observers.
 
@@ -206,6 +210,10 @@ class Collection:
             Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
             a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
             of [mm].
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         specs:
             Specific keyword arguments of different source types.
@@ -219,7 +227,7 @@ class Collection:
             or single pixel) is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers, **specs)
+        H = getH(self, observers, squeeze=squeeze, **specs)
         return H
 
 

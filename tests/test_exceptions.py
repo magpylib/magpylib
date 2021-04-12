@@ -25,7 +25,7 @@ def getBH_level2_bad_input():
     """
     src = mag3.magnet.Box((1,1,2),(1,1,1))
     sens = mag3.Sensor()
-    getBH_level2(True, [src,sens],(0,0,0),False)
+    getBH_level2(True, [src,sens],(0,0,0),False,True)
 
 
 def getBHv_missing_input1():

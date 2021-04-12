@@ -1,8 +1,9 @@
+import os
+import pickle
 import numpy as np
 from magpylib.magnet import Sphere
 from magpylib import Collection
-import pickle
-import os
+import magpylib as mag3
 
 # """data generation for test_Sphere()"""
 
@@ -62,3 +63,17 @@ def test_Sphere_add():
     assert isinstance(col, Collection), 'adding boxes fail'
 
 
+def test_Sphere_squeeze():
+    """ testing squeeze output
+    """
+    src1 = Sphere((1,1,1),1)
+    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    B = src1.getB(sensor)
+    assert B.shape==(2,3)
+    H = src1.getH(sensor)
+    assert H.shape==(2,3)
+
+    B = src1.getB(sensor,squeeze=False)
+    assert B.shape==(1,1,1,2,3)
+    H = src1.getH(sensor,squeeze=False)
+    assert H.shape==(1,1,1,2,3)

@@ -150,7 +150,7 @@ class Cylinder(BaseGeo):
 
 
     # methods -------------------------------------------------------
-    def getB(self, *observers, niter=50):
+    def getB(self, *observers, squeeze=True, niter=50):
         """
         Compute B-field of source at observers.
 
@@ -160,6 +160,10 @@ class Cylinder(BaseGeo):
             Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
             a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
             of [mm].
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         niter: int, default=50
             Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
@@ -173,11 +177,11 @@ class Cylinder(BaseGeo):
             single pixel) is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers, niter=niter)
+        B = getB(self, observers, squeeze=squeeze, niter=niter)
         return B
 
 
-    def getH(self, *observers, niter=50):
+    def getH(self, *observers, squeeze=True, niter=50):
         """ Compute H-field of magnet at observer positions.
 
         Parameters
@@ -186,6 +190,10 @@ class Cylinder(BaseGeo):
             Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
             a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
             in units of millimeters.
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
 
         niter (int): Number of iterations in the computation of the
             diametral component of the field
@@ -199,5 +207,5 @@ class Cylinder(BaseGeo):
             is removed.
         """
         observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers, niter=niter)
+        H = getH(self, observers, squeeze=squeeze, niter=niter)
         return H

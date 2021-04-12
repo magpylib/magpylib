@@ -125,3 +125,21 @@ def test_col_reset_path():
     col.reset_path()
     assert col[0].pos.ndim==1, 'col reset path fail'
     assert col[1].pos.ndim==1, 'col reset path fail'
+
+
+def test_Collection_squeeze():
+    """ testing squeeze output
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    col = mag3.Collection(pm1,pm2)
+    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    B = col.getB(sensor)
+    assert B.shape==(2,3)
+    H = col.getH(sensor)
+    assert H.shape==(2,3)
+
+    B = col.getB(sensor,squeeze=False)
+    assert B.shape==(1,1,1,2,3)
+    H = col.getH(sensor,squeeze=False)
+    assert H.shape==(1,1,1,2,3)
