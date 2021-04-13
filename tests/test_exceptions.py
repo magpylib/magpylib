@@ -264,7 +264,8 @@ def bad_input_shape_sensor_pix_pos():
     """ bad sensor pix_pos input shape
     """
     vec4 = (1,2,3,4)
-    mag3.Sensor(vec4)
+    vec3 = (1,2,3)
+    mag3.Sensor(vec3, vec4)
 
 
 ########################################################################

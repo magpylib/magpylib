@@ -4,7 +4,7 @@ import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
-def draw_directs_faced(faced_objects, cmap, ax, show_path):
+def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
     """draw direction of magetization of faced magnets
 
     Parameters
@@ -44,7 +44,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path):
         # color and vector length
         ax.quiver(draw_pos[:,0], draw_pos[:,1], draw_pos[:,2],
             draw_direc[:,0], draw_direc[:,1], draw_direc[:,2],
-            length=length,
+            length=length*size_direc,
             color=col)
 
 
@@ -92,7 +92,7 @@ def draw_faces(faces, col, lw, ax):
     return faces
 
 
-def draw_sensors(sensors, ax, show_path):
+def draw_sensors(sensors, ax, show_path, size_sensors):
     """ draw sensors and return a list of pixel-points in gloabl CS
     """
     if not sensors:
@@ -129,7 +129,7 @@ def draw_sensors(sensors, ax, show_path):
     for col,es in zip(['r','g','b'],[exs,eys,ezs]):
         ax.quiver(possis[:,0], possis[:,1], possis[:,2], es[:,0], es[:,1], es[:,2],
                  color=col,
-                 length=1)
+                 length=size_sensors)
 
     # plot of pixels
     ax.plot(pixel[:,0], pixel[:,1], pixel[:,2],

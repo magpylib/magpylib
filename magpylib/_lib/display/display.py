@@ -16,7 +16,9 @@ def display(
         markers=[(0,0,0)],
         axis=None,
         direc=False,
-        show_path=True):
+        show_path=True,
+        size_sensors=1,
+        size_direc=1):
     """
     Display objects and paths graphically using matplotlib 3D.
 
@@ -38,6 +40,12 @@ def display(
     show_path: bool or int, default=True
         Options True, False, positive int. By default object paths are shown. If show_path is
         a positive integer, objects will be displayed at each path position in steps of show_path.
+
+    size_sensor: float, default=1
+        Adjust automatic display size of sensors.
+
+    size_direc: float, default=1
+        Adjust automatic display size of direction arrows
 
     Returns
     -------
@@ -100,7 +108,7 @@ def display(
 
 
     sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
-    pix_points = draw_sensors(sensors, ax, show_path)
+    pix_points = draw_sensors(sensors, ax, show_path, size_sensors)
 
     # path ------------------------------------------------------
     path_points = []
@@ -119,7 +127,7 @@ def display(
 
     # directs -------------------------------------------------------
     if direc:
-        draw_directs_faced(faced_objects, cmap, ax, show_path)
+        draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc)
 
     # determine system size
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
