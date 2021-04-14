@@ -77,8 +77,8 @@ class Sensor(BaseGeo, BaseDisplay):
         # set mag and dim attributes
         self.pos_pix = pos_pix
 
-    # properties ----------------------------------------------------
 
+    # properties ----------------------------------------------------
     @property
     def pos_pix(self):
         """
