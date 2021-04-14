@@ -98,19 +98,25 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     Sensor = _lib.obj_classes.Sensor
 
     # format input -------------------------------------------------------------
-    if not isinstance(sources, list):
+    if not isinstance(sources, list):          # input = a single source (or collection)
         sources = [sources]
     src_list = format_obj_input(sources) # flatten Collections
 
     if isinstance(observers, Sensor):          # input = Sensor
         sensors = [observers]
-    elif isinstance(observers, list):          # input = [sens1,sens2,...] or [pos1,pos2,...])
-        if isinstance(observers[0], Sensor):
-            sensors = observers
-        else:
-            sensors = [Sensor(pos_pix=observers)]
-    else:                                      # input = pos_obs
+    elif isinstance(observers, tuple):         # input = tuple
         sensors = [Sensor(pos_pix=observers)]
+    elif isinstance(observers, list):          # input = list
+        if any(isinstance(obs,Sensor) for obs in observers):   # input = [sensor, tuple, senor, tuple,...]
+            sensors = []
+            for obs in observers:
+                if isinstance(obs, Sensor):
+                    sensors += [obs]
+                else:
+                    sensors += [Sensor(pos_pix=obs)]
+        else:                                  # input = [(1,2,3), (1,2,3), ...]
+            sensors = [Sensor(pos_pix=observers)]
+
 
     obj_list = src_list + sensors
     l0 = len(sources)
