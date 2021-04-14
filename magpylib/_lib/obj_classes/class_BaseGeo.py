@@ -4,7 +4,6 @@ from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import rotobj_from_angax
-from magpylib._lib.display import display
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.config import Config
@@ -139,44 +138,6 @@ class BaseGeo:
 
 
     # methods -------------------------------------------------------
-    def display(
-            self,
-            markers=[(0,0,0)],
-            axis=None,
-            direc=False,
-            show_path=True):
-        """
-        Display object graphically using Matplotlib.
-
-        Parameters
-        ----------
-        markers: array_like, shape (N,3), default=[(0,0,0)]
-            Display position markers in the global CS. By default a marker is in the origin.
-
-        axis: pyplot.axis, default=None
-            Display graphical output in a given pyplot axis (must be 3D). By default a new
-            pyplot figure is created and displayed.
-
-        direc: bool, default=False
-            Set True to show magnetization and current directions.
-
-        show_path: bool or int, default=True
-        Options True, False, positive int. By default object paths are shown. If show_path is
-        a positive integer, objects will be displayed at each path position in steps of show_path.
-
-        Returns
-        -------
-        None
-        """
-        #pylint: disable=dangerous-default-value
-        display(
-            self,
-            markers=markers,
-            axis=axis,
-            direc=direc,
-            show_path=show_path)
-
-
     def reset_path(self):
         """
         Set object.pos to (0,0,0) and object.rot to unit rotation.

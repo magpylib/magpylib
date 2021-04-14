@@ -4,11 +4,11 @@ import copy
 from magpylib._lib.utility import (format_obj_input, check_duplicates,
     only_allowed_src_types, format_getBH_class_inputs)
 from magpylib._lib.fields import getB, getH
-from magpylib._lib.display import display
+from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
 
 
 # ON INTERFACE
-class Collection:
+class Collection(BaseDisplay):
     """
     Group multiple sources in one Collection for common manipulation.
 
@@ -229,44 +229,6 @@ class Collection:
         observers = format_getBH_class_inputs(observers)
         H = getH(self, observers, squeeze=squeeze, **specs)
         return H
-
-
-    def display(
-            self,
-            markers=[(0,0,0)],
-            axis=None,
-            direc=False,
-            show_path=True):
-        """
-        Display Collection graphically using Matplotlib.
-
-        Parameters
-        ----------
-        markers: array_like, shape (N,3), default=[(0,0,0)]
-            Display position markers in the global CS. By default a marker is in the origin.
-
-        axis: pyplot.axis, default=None
-            Display graphical output in a given pyplot axis (must be 3D). By default a new
-            pyplot figure is created and displayed.
-
-        direc: bool, default=False
-            Set True to show magnetization and current directions.
-
-        show_path: bool or int, default=True
-        Options True, False, positive int. By default object paths are shown. If show_path is
-        a positive integer, objects will be displayed at each path position in steps of show_path.
-
-        Returns
-        -------
-        None
-        """
-        #pylint: disable=dangerous-default-value
-        display(
-            self,
-            markers=markers,
-            axis=axis,
-            direc=direc,
-            show_path=show_path)
 
 
     def move_by(self, displacement, steps=None):

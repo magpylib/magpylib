@@ -1,7 +1,7 @@
 """Sensor class code"""
-
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.exceptions import MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
@@ -9,7 +9,7 @@ from magpylib._lib.config import Config
 
 
 # ON INTERFACE
-class Sensor(BaseGeo):
+class Sensor(BaseGeo, BaseDisplay):
     """
     3D Magnetic field sensor.
 
