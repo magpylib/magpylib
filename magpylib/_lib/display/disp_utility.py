@@ -58,14 +58,14 @@ def faces_cylinder(src, show_path):
     hs = np.array([-h2,h2])
     phis = np.linspace(0,2*np.pi,res)
     phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
-    faces = [r*np.array([
-        (np.cos(p1), np.sin(p1),  h),
-        (np.cos(p1), np.sin(p1), -h),
-        (np.cos(p2), np.sin(p2), -h),
-        (np.cos(p2), np.sin(p2),  h)])
-        for p1,p2 in zip(phis,phis2) for h in hs]
-    faces += [r*np.array([
-        (np.cos(phi), np.sin(phi), h)
+    faces = [np.array([
+        (r*np.cos(p1), r*np.sin(p1),  h2),
+        (r*np.cos(p1), r*np.sin(p1), -h2),
+        (r*np.cos(p2), r*np.sin(p2), -h2),
+        (r*np.cos(p2), r*np.sin(p2),  h2)])
+        for p1,p2 in zip(phis,phis2)]
+    faces += [np.array([
+        (r*np.cos(phi), r*np.sin(phi), h)
          for phi in phis]) for h in hs]
 
     # add src attributes position and orientation depending on show_path
