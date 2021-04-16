@@ -20,12 +20,23 @@ def getBH_level1_internal_error():
     getBH_level1(bh=True,src_type='woot', mag=x, dim=x, pos_obs=x, pos=x,rot=rot)
 
 
-def getBH_level2_bad_input():
+def getBH_level2_bad_input1():
     """ test BadUserInput error at getBH_level2
     """
     src = mag3.magnet.Box((1,1,2),(1,1,1))
     sens = mag3.Sensor()
     getBH_level2(True, [src,sens],(0,0,0),False,True)
+
+
+def getBH_level2_bad_input2():
+    """ different pixel shapes
+    """
+    mag = (1,2,3)
+    dim_box = (1,2,3)
+    pm1 = mag3.magnet.Box(mag,dim_box)
+    sens1 = mag3.Sensor()
+    sens2 = mag3.Sensor(pos_pix=[(0,0,0),(0,0,1),(0,0,2)])
+    B=mag3.getB(pm1,[sens1,sens2])
 
 
 def getBHv_missing_input1():
@@ -325,7 +336,8 @@ class TestExceptions(unittest.TestCase):
     def test_except_getBH_lev2(self):
         """ getBH_level1
         """
-        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input)
+        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input1)
+        self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input2)
 
     def test_except_bad_input_shape_basegeo(self):
         """ BaseGeo bad input shapes

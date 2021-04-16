@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
@@ -102,12 +103,12 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         sources = [sources]
     src_list = format_obj_input(sources) # flatten Collections
 
-    if isinstance(observers, Sensor):          # input = Sensor
+    if isinstance(observers, Sensor):                 # input = Sensor
         sensors = [observers]
-    elif isinstance(observers, tuple):         # input = tuple
+    elif isinstance(observers, (tuple,np.ndarray)):   # input = tuple or ndarray
         sensors = [Sensor(pos_pix=observers)]
-    elif isinstance(observers, list):          # input = list
-        if any(isinstance(obs,Sensor) for obs in observers):   # input = [sensor, tuple, senor, tuple,...]
+    elif isinstance(observers, list):                 # input = list
+        if any(isinstance(obs,Sensor) for obs in observers):   # input = [sensor, tuple, senor, ...]
             sensors = []
             for obs in observers:
                 if isinstance(obs, Sensor):
@@ -117,7 +118,34 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         else:                                  # input = [(1,2,3), (1,2,3), ...]
             sensors = [Sensor(pos_pix=observers)]
 
+    # perform sensor checks ----------------------------------------------------
 
+    # check if all observer input shapes are similar. Cannot accept different input shapes as
+    #   it would lead to incomplete axes in the return arrays.
+    pix_shapes = [sens.pos_pix.shape for sens in sensors]
+    if not all_same(pix_shapes):
+        raise MagpylibBadUserInput('Different observer input shapes not allowed.'+
+            ' All pos_pix and pos_obs input shapes must be similar !')
+    pix_shape = pix_shapes[0]
+
+    # determine which sensors have unit roation so that they dont have to be rotated back later
+    #   this check is made now when sensor paths are not yet tiled.
+    unitQ = np.array([0,0,0,1.])
+    unrotated_sensors = [all(all(r==unitQ) for r in sens._rot.as_quat()) for sens in sensors]
+
+    # detemine which sensors have a static orientation (static sensor or translation path)
+    static_sensor_rot = []
+    for sens in sensors:
+        if len(sens._pos)==1:           # no sensor path (sensor is static)
+            static_sensor_rot += [True]
+        else:                           # there is a sensor path
+            rot = sens.rot.as_quat()
+            if np.all(rot == rot[0]):          # path with static orient
+                static_sensor_rot += [True]
+            else:                              # sensor rotation changes along path
+                static_sensor_rot += [False]
+
+    # some important quantities -------------------------------------------------
     obj_list = src_list + sensors
     l0 = len(sources)
     l = len(src_list)
@@ -207,13 +235,30 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
 
+    # apply sensor rotations (after summation over collections to reduce rot.apply operations)
+    k_pixel = math.prod(pix_shape[:-1]) # total number of pixel positions
+    for i,sens in enumerate(sensors):     # cylcle through all sensors
+        if not unrotated_sensors[i]:      # apply operations only to rotated sensors
+            if static_sensor_rot[i]:      # special case: same rotation along path
+                # select part where rot is applied
+                Bpart = B[:,:,i*k_pixel:(i+1)*k_pixel]
+                # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
+                Bpart_flat = np.reshape(Bpart, (k_pixel*l0*m,3))
+                # apply sensor rotation
+                Bpart_flat_rot = sens._rot[0].inv().apply(Bpart_flat)
+                # overwrite Bpart in B
+                B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,m,k_pixel,3))
+            else:                         # general case: different rotations along path
+                for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! WHY
+                    Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
+                    Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
+                    Bpart_flat_rot = sens._rot[j].inv().apply(Bpart_flat)  # apply rotation
+                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3)) # ov
+
     # rearrange sensor-pixel shape
-    pix_shapes = [sens.pos_pix.shape for sens in sensors]
-    if all_same(pix_shapes):
-        sens_px_shape = (k,) + pix_shapes[0]
-        B = B.reshape((l0,m)+sens_px_shape)
-    else:
-        print('WARNING: sensors with different pixle shape - merging all sensors')
+    sens_px_shape = (k,) + pix_shape
+    B = B.reshape((l0,m)+sens_px_shape)
+
 
     if sumup:
         B = np.sum(B, axis=0)
