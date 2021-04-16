@@ -1,4 +1,3 @@
-import math
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
@@ -236,10 +235,11 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
-    k_pixel = math.prod(pix_shape[:-1]) # total number of pixel positions
-    for i,sens in enumerate(sensors):     # cylcle through all sensors
-        if not unrotated_sensors[i]:      # apply operations only to rotated sensors
-            if static_sensor_rot[i]:      # special case: same rotation along path
+    #   NOTE: replace by math.prod with python 3.8 or later
+    k_pixel = int(np.product(pix_shape[:-1])) # total number of pixel positions
+    for i,sens in enumerate(sensors):         # cylcle through all sensors
+        if not unrotated_sensors[i]:          # apply operations only to rotated sensors
+            if static_sensor_rot[i]:          # special case: same rotation along path
                 # select part where rot is applied
                 Bpart = B[:,:,i*k_pixel:(i+1)*k_pixel]
                 # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
