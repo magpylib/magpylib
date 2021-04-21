@@ -32,3 +32,10 @@ def test_Dipole_zero_position():
     B = mag3.getB(src,sens)
     np.seterr(all='print')
     assert all(np.isnan(B))
+
+
+def test_repr():
+    """ test __repr__
+    """
+    dip = mag3.misc.Dipole(moment=(1,2,3))
+    assert dip.__repr__()[:6] == 'Dipole', 'Dipole repr failed'

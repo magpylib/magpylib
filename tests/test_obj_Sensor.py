@@ -65,3 +65,10 @@ def test_Sensor_squeeze():
     assert B.shape==(1,1,1,2,3)
     H = sensor.getH(src,squeeze=False)
     assert H.shape==(1,1,1,2,3)
+
+
+def test_repr():
+    """ test __repr__
+    """
+    sens = mag3.Sensor()
+    assert sens.__repr__()[:6]== 'Sensor', 'Sensor repr failed'

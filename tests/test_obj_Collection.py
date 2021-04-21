@@ -155,3 +155,12 @@ def test_Collection_with_Dipole():
     B = mag3.getB(col,sens)
     Btest = np.array([0.00303828,0.00607656,0.00911485])
     assert np.allclose(B, Btest)
+
+
+def test_repr_collection():
+    """ test __repr__
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cylinder((1,2,3),(2,3))
+    col = mag3.Collection(pm1,pm2)
+    assert col.__repr__()[:10]== 'Collection', 'Collection repr failed'

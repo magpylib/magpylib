@@ -1,16 +1,16 @@
-from magpylib._lib.obj_classes.class_Sensor import Sensor
-import magpylib
-import pickle
 import os
+import pickle
 import numpy as np
-from magpylib.magnet import Box
+from magpylib.magnet import Sphere
+from magpylib import Collection
+import magpylib as mag3
 
-# """data generation for test_Box()"""
+# """data generation for test_Sphere()"""
 
 # N = 100
 
 # mags = (np.random.rand(N,3)-0.5)*1000
-# dims = (np.random.rand(N,3)-0.5)*5
+# dims = (np.random.rand(N)-0.5)*5
 # posos = (np.random.rand(N,333,3)-0.5)*10 #readout at 333 positions
 
 # angs =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
@@ -20,7 +20,7 @@ from magpylib.magnet import Box
 
 # B = []
 # for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-#     pm = Box(mag,dim)
+#     pm = Sphere(mag,dim)
 
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -31,19 +31,18 @@ from magpylib.magnet import Box
 
 # inp = [mags,dims,posos,angs,axs,anchs,movs,B]
 
-# pickle.dump(inp,open(os.path.abspath('./../'testdata_Box.p', 'wb'))
+# pickle.dump(inp,open('testdata_Sphere.p', 'wb'))
 
-
-def test_Box_basics():
+def test_Sphere_basics():
     """ test Box fundamentals, test against magpylib2 fields
     """
     # data generated below
-    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Box.p'), 'rb'))
+    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Sphere.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     btest = []
     for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-        pm = Box(mag,dim)
+        pm = Sphere(mag,dim)
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -52,22 +51,23 @@ def test_Box_basics():
         btest += [pm.getB(poso)]
     btest = np.array(btest)
 
-    assert np.allclose(B, btest), "test_Box failed big time"
+    assert np.allclose(B, btest), "test_Sphere failed big time"
 
 
-def test_Box_add():
+def test_Sphere_add():
     """ testing __add__
     """
-    src1 = Box((1,2,3),(1,2,3))
-    src2 = Box((1,2,3),(1,2,3))
+    src1 = Sphere((1,2,3),11)
+    src2 = Sphere((1,2,3),11)
     col = src1 + src2
-    assert isinstance(col,magpylib.Collection), 'adding boxes fail'
+    assert isinstance(col, Collection), 'adding boxes fail'
 
-def test_Box_squeeze():
+
+def test_Sphere_squeeze():
     """ testing squeeze output
     """
-    src1 = Box((1,1,1),(1,1,1))
-    sensor = Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    src1 = Sphere((1,1,1),1)
+    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
     H = src1.getH(sensor)
@@ -77,3 +77,10 @@ def test_Box_squeeze():
     assert B.shape==(1,1,1,2,3)
     H = src1.getH(sensor,squeeze=False)
     assert H.shape==(1,1,1,2,3)
+
+
+def test_repr():
+    """ test __repr__
+    """
+    pm3 = mag3.magnet.Sphere((1,2,3),3)
+    assert pm3.__repr__()[:6] == 'Sphere', 'Sphere repr failed'
