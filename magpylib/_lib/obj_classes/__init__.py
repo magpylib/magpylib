@@ -8,4 +8,5 @@ from magpylib._lib.obj_classes.class_mag_Cylinder import Cylinder
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.obj_classes.class_Sensor import Sensor
 from magpylib._lib.obj_classes.class_mag_Sphere import Sphere
+from magpylib._lib.obj_classes.class_misc_Dipole import Dipole
 from magpylib._lib.obj_classes.class_BaseGeo import path_merge

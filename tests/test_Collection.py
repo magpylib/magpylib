@@ -143,3 +143,15 @@ def test_Collection_squeeze():
     assert B.shape==(1,1,1,2,3)
     H = col.getH(sensor,squeeze=False)
     assert H.shape==(1,1,1,2,3)
+
+
+def test_Collection_with_Dipole():
+    """ Simple test of Dipole in Collection
+    """
+    src = mag3.misc.Dipole(moment=(1,2,3),pos=(1,2,3))
+    col = mag3.Collection(src)
+    sens = mag3.Sensor()
+
+    B = mag3.getB(col,sens)
+    Btest = np.array([0.00303828,0.00607656,0.00911485])
+    assert np.allclose(B, Btest)

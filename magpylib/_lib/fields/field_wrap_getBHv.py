@@ -70,6 +70,10 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             dim = np.array(kwargs['dim'],dtype=float)
             tile_params['dim'] = (dim,1)
 
+        elif src_type == 'Dipole':
+            moment = np.array(kwargs['moment'],dtype=float)
+            tile_params['moment'] = (moment,2)
+
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
         raise MagpylibBadUserInput(msg) from kerr
@@ -118,7 +122,7 @@ def getBv(**kwargs):
     Parameters
     ----------
     src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder'.
+        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole'.
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -131,11 +135,17 @@ def getBv(**kwargs):
 
     Parameters - homogenous magnets
     -------------------------------
-    mag: array_like, shape (3,)
+    mag: array_like, shape (3,) or (N,3)
         Homogeneous magnet magnetization vector (remanence field) in units of [mT].
 
     dim: array_like, shape is src_type dependent
         Magnet dimension input
+
+    Parameters - Dipole
+    -------------------
+    moment:  array_like, shape (3,) or (N,3)
+        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
+        relation is moment = magnetization*volume.
 
     Specific Parameters:
     --------------------
@@ -165,7 +175,7 @@ def getHv(**kwargs):
     Parameters
     ----------
     src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder'.
+        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole'.
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -178,11 +188,17 @@ def getHv(**kwargs):
 
     Parameters - homogenous magnets
     -------------------------------
-    mag: array_like, shape (3,)
+    mag: array_like, shape (3,) or (N,3)
         Homogeneous magnet magnetization vector (remanence field) in units of [mT].
 
     dim: array_like, shape is src_type dependent
         Magnet dimension input
+
+    Parameters - Dipole
+    -------------------
+    moment:  array_like, shape (3,) or (N,3)
+        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
+        relation is moment = magnetization*volume.
 
     Specific Parameters:
     --------------------

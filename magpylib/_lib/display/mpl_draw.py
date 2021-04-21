@@ -92,15 +92,17 @@ def draw_faces(faces, col, lw, ax):
     return faces
 
 
-def draw_sensors(sensors, ax, show_path, size_sensors):
-    """ draw sensors and return a list of pixel-points in gloabl CS
+def draw_pixel(sensors, ax, show_path):
+    """ draw pixels and return a list of pixel-points in gloabl CS
     """
+    # pylint: disable=protected-access
+
+    # no sensors given
     if not sensors:
         return []
 
-    # pylint: disable=protected-access
-    possis, exs, eys, ezs, pixel = [], [], [], [], []
-    # collect data for plots
+    # collect sensor and pixel positions in global CS
+    pos_sens, pos_pixel = [], []
     for sens in sensors:
         if not isinstance(show_path, bool) and sens._pos.ndim>1:
             rots = sens._rot[::-show_path]
@@ -111,28 +113,16 @@ def draw_sensors(sensors, ax, show_path, size_sensors):
         pos_pixel_flat = np.reshape(sens.pos_pix, (-1,3))
 
         for rot,pos in zip(rots,poss):
-            possis += [pos]
-            exs += [rot.apply((1,0,0))]
-            eys += [rot.apply((0,1,0))]
-            ezs += [rot.apply((0,0,1))]
+            pos_sens += [pos]
 
             for pix in pos_pixel_flat:
-                pixel += [pos + rot.apply(pix)]
+                pos_pixel += [pos + rot.apply(pix)]
 
-    possis = np.array(possis)
-    pixel = np.array(pixel)
-    exs = np.array(exs)
-    eys = np.array(eys)
-    ezs = np.array(ezs)
+    pos_all = pos_sens + pos_pixel
+    pos_pixel = np.array(pos_pixel)
 
-    # quiver plot of basis vectors
-    for col,es in zip(['r','g','b'],[exs,eys,ezs]):
-        ax.quiver(possis[:,0], possis[:,1], possis[:,2], es[:,0], es[:,1], es[:,2],
-                 color=col,
-                 length=size_sensors)
-
-    # plot of pixels
-    ax.plot(pixel[:,0], pixel[:,1], pixel[:,2],
+    # display pixel positions
+    ax.plot(pos_pixel[:,0], pos_pixel[:,1], pos_pixel[:,2],
             marker='o',
             mfc='w',
             mew=1,
@@ -140,4 +130,81 @@ def draw_sensors(sensors, ax, show_path, size_sensors):
             ms=2,
             ls='')
 
-    return list(pixel[1:])
+    # return all positions for system size evaluation
+    return list(pos_all)
+
+
+def draw_sensors(sensors, ax, sys_size, show_path, size_sensors):
+    """ draw sensor cross
+    """
+    # pylint: disable=protected-access
+
+    # no sensors in display
+    if not sensors:
+        return
+
+    # collect plot data
+    possis, exs, eys, ezs = [], [], [], []
+    for sens in sensors:
+        if not isinstance(show_path, bool) and sens._pos.ndim>1:
+            rots = sens._rot[::-show_path]
+            poss = sens._pos[::-show_path]
+        else:
+            rots = [sens._rot[-1]]
+            poss = [sens._pos[-1]]
+
+        for rot,pos in zip(rots,poss):
+            possis += [pos]
+            exs += [rot.apply((1,0,0))]
+            eys += [rot.apply((0,1,0))]
+            ezs += [rot.apply((0,0,1))]
+
+    possis = np.array(possis)
+    exs = np.array(exs)
+    eys = np.array(eys)
+    ezs = np.array(ezs)
+
+    # quiver plot of basis vectors
+    arrowlength = sys_size*size_sensors/15
+    for col,es in zip(['r','g','b'],[exs,eys,ezs]):
+        ax.quiver(possis[:,0], possis[:,1], possis[:,2], es[:,0], es[:,1], es[:,2],
+                 color=col,
+                 length=arrowlength)
+
+    return
+
+
+def draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles):
+    """ draw dipoles
+    """
+    # pylint: disable=protected-access
+
+    # no sensors in display
+    if not dipoles:
+        return
+
+    # collect plot data
+    possis, moms = [], []
+    for dip in dipoles:
+        if not isinstance(show_path, bool) and dip._pos.ndim>1:
+            rots = dip._rot[::-show_path]
+            poss = dip._pos[::-show_path]
+        else:
+            rots = [dip._rot[-1]]
+            poss = [dip._pos[-1]]
+        mom = dip.moment/np.linalg.norm(dip.moment)
+
+        for rot,pos in zip(rots,poss):
+            possis += [pos]
+            moms += [rot.apply(mom)]
+
+    possis = np.array(possis)
+    moms = np.array(moms)
+
+    # quiver plot of basis vectors
+    arrowlength = sys_size*size_dipoles/15
+    ax.quiver(possis[:,0], possis[:,1], possis[:,2], moms[:,0], moms[:,1], moms[:,2],
+        color='k',
+        length=arrowlength)
+
+    return

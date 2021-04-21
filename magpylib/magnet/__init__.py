@@ -8,6 +8,9 @@ Box(mag, dim, pos, rot)
 
 Cylinder(mag, dim, pos, rot)
     Homogenously magnetized permanent magnet with Cylinder shape.
+
+Sphere(mag, dim, pos, rot)
+    Homogeneously magnetized permanent magnet with spherical shape.
 """
 
 __all__ = ['Box', 'Cylinder', 'Sphere']

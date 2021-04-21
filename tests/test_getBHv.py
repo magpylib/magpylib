@@ -183,3 +183,15 @@ def test_getBv4():
     B2 = np.array(B2)
     print(B1-B2)
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
+
+def test_geBHv_dipole():
+    """ test if Dipole implementation gives correct output
+    """
+    B = getBv(src_type='Dipole', moment=(1,2,3), pos_obs = (1,1,1))
+    Btest = np.array([0.07657346,0.06125877,0.04594407])
+    assert np.allclose(B,Btest)
+
+    H = getHv(src_type='Dipole', moment=(1,2,3), pos_obs = (1,1,1))
+    Htest = np.array([0.06093522,0.04874818,0.03656113])
+    assert np.allclose(H,Htest)

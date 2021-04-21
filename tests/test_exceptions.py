@@ -36,7 +36,7 @@ def getBH_level2_bad_input2():
     pm1 = mag3.magnet.Box(mag,dim_box)
     sens1 = mag3.Sensor()
     sens2 = mag3.Sensor(pos_pix=[(0,0,0),(0,0,1),(0,0,2)])
-    B=mag3.getB(pm1,[sens1,sens2])
+    mag3.getB(pm1,[sens1,sens2])
 
 
 def getBHv_missing_input1():
@@ -188,6 +188,11 @@ def sphere_no_dim():
     mag3.magnet.Sphere(mag=(1,2,3))
 
 
+def dipole_no_mom():
+    """ Cylinder with no mag input
+    """
+    mag3.misc.Dipole()
+
 ########################################################################
 # BAD INPUT SHAPE EXCEPTIONS
 def bad_input_shape_basegeo_pos():
@@ -279,6 +284,13 @@ def bad_input_shape_sensor_pix_pos():
     mag3.Sensor(vec3, vec4)
 
 
+def bad_input_shape_dipole_mom():
+    """ bad sphere magnetization shape
+    """
+    vec4 = (1,2,3,4)
+    mag3.misc.Dipole(moment=vec4)
+
+
 ########################################################################
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
@@ -300,6 +312,11 @@ class TestExceptions(unittest.TestCase):
         """
         self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
         self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
+
+    def test_except_class_Dipole(self):
+        """ class_Cylinder
+        """
+        self.assertRaises(MagpylibBadUserInput, dipole_no_mom)
 
     def test_except_utility(self):
         """ utility
@@ -353,3 +370,4 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_mag)
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_sphere_mag)
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_sensor_pix_pos)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_dipole_mom)

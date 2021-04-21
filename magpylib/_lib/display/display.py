@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
-    draw_sensors)
+    draw_pixel, draw_sensors, draw_dipoles)
 from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
     faces_sphere)
 from magpylib import _lib
@@ -18,7 +18,8 @@ def display(
         direc=False,
         show_path=True,
         size_sensors=1,
-        size_direc=1):
+        size_direc=1,
+        size_dipoles=1):
     """
     Display objects and paths graphically using matplotlib 3D.
 
@@ -56,10 +57,12 @@ def display(
     # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
+    # avoid circular imports
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
+    Dipole = _lib.obj_classes.Dipole
 
     # create or set plotting axis
     if axis is None:
@@ -80,14 +83,25 @@ def display(
     # test if every individual obj_path is good
     test_path_format(obj_list)
 
-    # draw objects --------------------------------------------------
+    # sort input objects --------------------------------------------------------
+
+    # objects with faces
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
         Box,
         Cylinder,
         Sphere
         ))]
-    face_points = [] # collect vertices for system size evaluation
 
+    # sensors
+    sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
+
+    # dipoles
+    dipoles = [obj for obj in obj_list if isinstance(obj, Dipole)]
+
+    # draw objects and evaluate system size --------------------------------------
+
+    # draw faced objects and store vertices
+    face_points = []
     for i, obj in enumerate(faced_objects):
         col = cmap(i/len(faced_objects))
 
@@ -106,11 +120,13 @@ def display(
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
+    # draw sensor pixel
+    sensor_points = draw_pixel(sensors, ax, show_path)
 
-    sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
-    pix_points = draw_sensors(sensors, ax, show_path, size_sensors)
+    # get dipole positions
+    dipole_points = [dip.pos for dip in dipoles]
 
-    # path ------------------------------------------------------
+    # draw paths and get path points
     path_points = []
     if show_path:  # True or int>0
         for i, obj in enumerate(faced_objects):
@@ -120,18 +136,27 @@ def display(
         for sens in sensors:
             path_points += draw_path(sens, '.6', ax)
 
+        for dip in dipoles:
+            path_points += draw_path(dip, '.6', ax)
+
     # markers -------------------------------------------------------
     if markers:
         markers = np.array(markers)
         draw_markers(markers, ax)
 
-    # directs -------------------------------------------------------
+    # draw direc arrows (based on src size) -------------------------
     if direc:
         draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc)
 
-    # determine system size
+    # determine system size -----------------------------------------
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
-        face_points, pix_points, markers, path_points)
+        face_points, sensor_points, dipole_points, markers, path_points)
+
+    sys_size = max([limx1-limx0, limy1-limy0, limz1-limz0])
+
+    # draw all system sized based quantities -------------------------
+    draw_sensors(sensors, ax, sys_size, show_path, size_sensors)
+    draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles)
 
     # plot styling --------------------------------------------------
     ax.set(

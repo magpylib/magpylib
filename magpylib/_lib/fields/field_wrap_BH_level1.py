@@ -2,6 +2,7 @@ import numpy as np
 from magpylib._lib.fields.field_BH_box import field_BH_box
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
+from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.exceptions import MagpylibInternalError
 
 
@@ -23,11 +24,11 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     - selects the correct Bfield_XXX function from input
     """
 
-    # inputs
+    # base inputs of all sources
     src_type = kwargs['src_type']
-    bh = kwargs['bh']  # True=B, False=H
+    bh = kwargs['bh']      # True=B, False=H
 
-    rot = kwargs['rot'] # only rotation object allowed as input
+    rot = kwargs['rot']    # only rotation object allowed as input
     pos = kwargs['pos']
     poso = kwargs['pos_obs']
 
@@ -49,6 +50,9 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         mag = kwargs['mag']
         dim = kwargs['dim']
         B = field_BH_sphere(bh, mag, dim, pos_rel_rot)
+    elif src_type == 'Dipole':
+        moment = kwargs['moment']
+        B = field_BH_dipole(bh, moment, pos_rel_rot)
     else:
         raise MagpylibInternalError('Bad src input type in level1')
 

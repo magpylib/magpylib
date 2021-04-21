@@ -133,15 +133,18 @@ def faces_sphere(src, show_path):
     return all_faces
 
 
-def system_size(face_points, pix_points, markers, path_points):
+def system_size(face_points, pix_points, dipole_points, markers, path_points):
     """compute system size for display
     """
     # limits of current axis with drawn sensors and paths
 
     # collect all vertices (collection faces do not reset ax limits)
     pts = []
+
     for face in face_points:
         pts += list(face)
+
+    pts += dipole_points
 
     if len(markers)>0:
         pts += list(markers)

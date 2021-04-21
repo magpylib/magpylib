@@ -2,6 +2,7 @@ import matplotlib.pyplot as plt
 import magpylib as mag3
 from magpylib.magnet import Cylinder, Box, Sphere
 
+# pylint: disable=assignment-from-no-return
 
 def test_Cylinder_display():
     """ testing display
@@ -74,3 +75,18 @@ def test_col_display():
     col = mag3.Collection(pm1,pm2)
     x = col.display(axis=ax)
     assert x is None, 'colletion display test fail'
+
+
+def test_dipole_display():
+    """ testing display
+    """
+    # pylint: disable=assignment-from-no-return
+    fig = plt.figure(figsize=(8, 8),facecolor='w', dpi=100)
+    ax2 = fig.gca(projection='3d')
+    dip = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
+    dip2 = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
+    dip2.move_by((1,2,3), steps=5)
+    x = dip.display(axis=ax2)
+    assert x is None, 'display test fail'
+    x = dip.display(axis=ax2, show_path=2)
+    assert x is None, 'display test fail'

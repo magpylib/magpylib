@@ -7,6 +7,44 @@ from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
 
 
+def scr_dict_dipole(group: list, poso: np.ndarray) -> dict:
+    """ Helper funtion that generates getBH_level1 input dict for Dipoles.
+
+    Parameters
+    ----------
+    - group: list of sources
+    - posov: ndarray, shape (m,sum(ni),3), pos_obs flattened
+
+    Returns
+    -------
+    dict for getBH_level1 input
+    """
+    # pylint: disable=protected-access
+
+    # generate indices
+    l_group = len(group)    # no. sources in group
+    m = len(group[0]._pos)  # path length
+    mn = len(poso)          # path length * no. pixel
+    n = int(mn/m)           # no. pixel
+
+    # allocate dict arrays, shape: (l_group, m, n)
+    momv = np.empty((l_group*mn,3))         # source mag
+    posv = np.empty((l_group*mn,3))         # source pos
+    rotv = np.empty((l_group*mn,4))         # source rot
+    posov = np.tile(poso, (l_group,1))
+
+    # fill dict arrays
+    for i,src in enumerate(group):
+        momv[i*mn:(i+1)*mn] = np.tile(src.moment, (mn,1))
+        posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
+        rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
+    # genreate rot object from rot input
+    rotobj = R.from_quat(rotv)
+    # generate dict and return
+    src_dict = {'moment':momv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+    return src_dict
+
+
 def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     """ Helper funtion that generates getBH_level1 input dict for homogeneous magnets.
 
@@ -96,6 +134,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
     Sensor = _lib.obj_classes.Sensor
+    Dipole = _lib.obj_classes.Dipole
 
     # format input -------------------------------------------------------------
     if not isinstance(sources, list):          # input = a single source (or collection)
@@ -176,8 +215,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     n = int(mn/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[],[]]   # store groups here
-    order = [[],[],[]]        # keep track of the source order
+    src_sorted = [[],[],[],[]]   # store groups here
+    order = [[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
         if isinstance(src, Box):
             src_sorted[0] += [src]
@@ -188,6 +227,9 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         elif isinstance(src, Sphere):
             src_sorted[2] += [src]
             order[2] += [i]
+        elif isinstance(src, Dipole):
+            src_sorted[3] += [src]
+            order[3] += [i]
         else:
             raise MagpylibBadUserInput('Unrecognized object in sources input')
 
@@ -195,17 +237,19 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     B = np.empty((l,m,n,3)) # store B-values here
 
     # Box group
-    group = src_sorted[0]
+    iii = 0
+    group = src_sorted[iii]
     if group:
         lg = len(group)
         src_dict = scr_dict_homo_mag(group, poso)             # compute array dict for level1
         B_group = getBH_level1(bh=bh, src_type='Box', **src_dict) # compute field
         B_group = B_group.reshape((lg,m,n,3))         # reshape
         for i in range(lg):                           # put at dedicated positions in B
-            B[order[0][i]] = B_group[i]
+            B[order[iii][i]] = B_group[i]
 
     # Cylinder group
-    group = src_sorted[1]
+    iii = 1
+    group = src_sorted[iii]
     if group:
         lg = len(group)
         niter = kwargs.get('niter', Config.ITER_CYLINDER)
@@ -213,17 +257,29 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
         B_group = B_group.reshape((lg,m,n,3))
         for i in range(lg):
-            B[order[1][i]] = B_group[i]
+            B[order[iii][i]] = B_group[i]
 
-    # Box group
-    group = src_sorted[2]
+    # Sphere group
+    iii = 2
+    group = src_sorted[iii]
     if group:
         lg = len(group)
         src_dict = scr_dict_homo_mag(group, poso)             # compute array dict for level1
         B_group = getBH_level1(bh=bh, src_type='Sphere', **src_dict) # compute field
         B_group = B_group.reshape((lg,m,n,3))         # reshape
         for i in range(lg):                           # put at dedicated positions in B
-            B[order[2][i]] = B_group[i]
+            B[order[iii][i]] = B_group[i]
+
+    # Dipole group
+    iii = 3
+    group = src_sorted[iii]
+    if group:
+        lg = len(group)
+        src_dict = scr_dict_dipole(group, poso)             # compute array dict for level1
+        B_group = getBH_level1(bh=bh, src_type='Dipole', **src_dict) # compute field
+        B_group = B_group.reshape((lg,m,n,3))         # reshape
+        for i in range(lg):                           # put at dedicated positions in B
+            B[order[iii][i]] = B_group[i]
 
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
@@ -235,7 +291,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
-    #   NOTE: replace by math.prod with python 3.8 or later
+    #   note: replace by math.prod with python 3.8 or later
     k_pixel = int(np.product(pix_shape[:-1])) # total number of pixel positions
     for i,sens in enumerate(sensors):         # cylcle through all sensors
         if not unrotated_sensors[i]:          # apply operations only to rotated sensors
@@ -249,7 +305,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
                 # overwrite Bpart in B
                 B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,m,k_pixel,3))
             else:                         # general case: different rotations along path
-                for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! WHY
+                for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
                     Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
                     Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
                     Bpart_flat_rot = sens._rot[j].inv().apply(Bpart_flat)  # apply rotation
