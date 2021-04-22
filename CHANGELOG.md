@@ -31,15 +31,6 @@ This is a major update that includes
 - `position` is now called `pos`
 - `angle` and `axis` are replaced by `rot`
 
-### Class method changes
-
-- The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(R, anchor, steps)` method where `R` ist a scipy `Rotation` object and `steps` can be used to generate paths.
-- The original angle-axis-anchor rotationis now provided by the new method `.rotate_from_angax(angle, axis, anchor, steps)`.
-  - The argument `axis` can now easily be set to the gloabl CS axes with `"x"`, `"y"`, `"z"`.
-  - The anchor argument can simply be `0` representing the origin.
-- The class method `.move()` was replaced by `move_by()` and `move_to()`.
-- All operations can now be chained (e.g. `.move_by().rotate().move_to()`)
-
 ### The new rot attribute (CORE FEATURE OF v3)
 
 - The `rot` attribute stores the relative rotation of an object with respect to the init_state (defined in each class docstring).
@@ -51,14 +42,6 @@ This is a major update that includes
   - view with `R.as_rotvec()` or `R.as_quat()` or ...
   - combine subsequent rotations `R1 * R2 * R3`
 
-### Paths (CORE FEATURE OF v3)
-
-- The `pos` and `rot` attributes can now store paths in the global CS. For a path of length N the attribute `pos` is of the shape (N,3) and `rot` is a Rotation object with lenghth N. Each path position is associated with a respective rotation.
-- Field computations `getB()` will evaluate the field for all source path positions.
-- Paths can be set by hand `pos = X`, `rot = Y`, but they can also conveniently be generated using the `steps` argument in the `rotate` and `move` methods.
-- Paths can be merged (e.g. spiral = linear motion on top of rotation) using the top level `path_merge` context manager, or by setting negative values for `steps` in subsequent operations.
-- Paths can be shown via the `show_path=True` kwarg in `display()`. By setting `show_path=x` the object will be displayed at every `x`'th path step. This helps to follow up on object rotation along the path.
-- All objects have a `reset_path()` method defined to set their paths to `pos=(0,0,0)` and `rot=None`.
 
 ### New ways to work with Collections and Sources
 
@@ -76,10 +59,31 @@ This is a major update that includes
 - Collections and sources now have a `.display()` method for quick self-inspection.
 - Sources and Collections have a `__repr__` attribute defined and will return their type and their `id`.
 
+
 ### The Sensor class
 
-- The new `Sensor(pos_pix, pos, rot)` class can now also feature paths.
-- Sensors have the argument `pos_pix` which is `(0,0,0)` by default and refers to pixel positions inside the Sensor (in the Sensor local CS). `pos_pix` is an arbitrary array_like of the shape (N1, N2, ..., 3).
+- The new `Sensor(pos, pos_pix, rot)` class has the argument `pos_pix` which is `(0,0,0)` by default and refers to pixel positions inside the Sensor (in the Sensor local CS). `pos_pix` is an arbitrary array_like of the shape (N1, N2, ..., 3).
+
+
+### Class method changes
+
+- The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(R, anchor, steps)` method where `R` ist a scipy `Rotation` object and `steps` can be used to generate paths.
+- The original angle-axis-anchor rotationis now provided by the new method `.rotate_from_angax(angle, axis, anchor, steps)`.
+  - The argument `axis` can now easily be set to the gloabl CS axes with `"x"`, `"y"`, `"z"`.
+  - The anchor argument `anchor=0` represents the origin `(0,0,0)`.
+- The class method `.move()` was replaced by `move_by()` and `move_to()`.
+- All operations can now be chained (e.g. `.move_by().rotate().move_to()`)
+
+
+### Paths (CORE FEATURE OF v3)
+
+- The `pos` and `rot` attributes can now store paths in the global CS. For a path of length N the attribute `pos` is of the shape (N,3) and `rot` is a Rotation object with lenghth N. Each path position is associated with a respective rotation.
+- Field computations `getB()` will evaluate the field for all source path positions.
+- Paths can be set by hand `pos = X`, `rot = Y`, but they can also conveniently be generated using the `steps` argument in the `rotate` and `move` methods.
+- Paths can be merged (e.g. spiral = linear motion on top of rotation) using the top level `path_merge` context manager, or by setting negative values for `steps` in subsequent operations.
+- Paths can be shown via the `show_path=True` kwarg in `display()`. By setting `show_path=x` the object will be displayed at every `x`'th path step. This helps to follow up on object rotation along the path.
+- All objects have a `reset_path()` method defined to set their paths to `pos=(0,0,0)` and `rot=None`.
+
 
 ### Compute magnetic fields (CORE FEATURE OF v3)
 
