@@ -38,33 +38,33 @@ class Dipole(BaseGeo, BaseDisplay):
         Adding sources creates a Collection "col = src1 + src2"
 
     __repr__:
-        returns string "Sphere(id)"
+        returns string "Dipole(id)"
 
     Methods
     -------
     getB(observers):
-        Compute B-field of Sphere at observers.
+        Compute B-field of Dipole at observers.
 
     getH(observers):
-        Compute H-field of Sphere at observers.
+        Compute H-field of Dipole at observers.
 
     display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
-        Display Sphere graphically using Matplotlib.
+        Display Dipole graphically using Matplotlib.
 
     move_by(displacement, steps=None):
-        Linear displacement of Sphere by argument vector.
+        Linear displacement of Dipole by argument vector.
 
     move_to(target_pos, steps=None):
-        Linear motion of Sphere to target_pos.
+        Linear motion of Dipole to target_pos.
 
     rotate(rot, anchor=None, steps=None):
-        Rotate Sphere about anchor.
+        Rotate Dipole about anchor.
 
     rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        Sphere rotation from angle-axis-anchor input.
+        Dipole rotation from angle-axis-anchor input.
 
     reset_path():
-        Set Sphere.pos to (0,0,0) and Sphere.rot to unit rotation.
+        Set Dipole.pos to (0,0,0) and Dipole.rot to unit rotation.
 
     Returns
     -------
