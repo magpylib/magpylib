@@ -100,6 +100,7 @@ This is a major update that includes
   4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be arrays of length N or of length 1 (statics will be tiled).
 - While `getBv` is the fastest way to compute the fields it is much more convenient to use `getB()` which mostly provides the same performance.
 - In addition to `getB`, the new `getH` returns the field in [kA/m].
+- the kwarg `niter=50` does not exist anymore for field computation. The functionality was completely replaced by the confg setting command `mag3.Config.ITER_CYLINDER=50`.
 
 ### Numerical stability
 
