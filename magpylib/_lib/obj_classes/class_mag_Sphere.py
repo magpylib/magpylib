@@ -3,7 +3,7 @@
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
+from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
 from magpylib._lib.config import Config
@@ -14,7 +14,7 @@ mx=my=mz=None
 
 
 # ON INTERFACE
-class Sphere(BaseGeo, BaseDisplay):
+class Sphere(BaseGeo, BaseDisplayRepr):
     """
     Spherical magnet with homogeneous magnetization.
 
@@ -85,10 +85,12 @@ class Sphere(BaseGeo, BaseDisplay):
 
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
+        BaseDisplayRepr.__init__(self)
 
         # set mag and dim attributes
         self.mag = mag
         self.dim = dim
+        self.obj_type = 'Sphere'
 
     # properties ----------------------------------------------------
     @property
@@ -133,13 +135,6 @@ class Sphere(BaseGeo, BaseDisplay):
                 raise MagpylibBadUserInput('Dimension input required')
 
         self._dim = float(dimension)
-
-
-
-    # dunders -------------------------------------------------------
-
-    def __repr__(self) -> str:
-        return f'Sphere({str(id(self))})'
 
 
     # methods -------------------------------------------------------

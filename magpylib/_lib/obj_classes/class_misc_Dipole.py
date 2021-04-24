@@ -3,7 +3,7 @@
 import numpy as np
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
+from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
 from magpylib._lib.config import Config
@@ -13,7 +13,7 @@ mx=my=mz=None
 
 
 # ON INTERFACE
-class Dipole(BaseGeo, BaseDisplay):
+class Dipole(BaseGeo, BaseDisplayRepr):
     """
     Magnetic dipole moment.
 
@@ -79,9 +79,11 @@ class Dipole(BaseGeo, BaseDisplay):
 
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
+        BaseDisplayRepr.__init__(self)
 
         # set moment attribute using setter
         self.moment = moment
+        self.obj_type = 'Dipole'
 
     # properties ----------------------------------------------------
     @property
@@ -108,12 +110,6 @@ class Dipole(BaseGeo, BaseDisplay):
                 raise MagpylibBadInputShape('Bad dipole moment input shape.')
 
         self._moment = mom
-
-
-    # dunders -------------------------------------------------------
-
-    def __repr__(self) -> str:
-        return f'Dipole({str(id(self))})'
 
 
     # methods -------------------------------------------------------

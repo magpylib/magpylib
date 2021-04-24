@@ -1,7 +1,7 @@
 """Sensor class code"""
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
+from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.fields import getB, getH
 from magpylib._lib.exceptions import MagpylibBadInputShape
 from magpylib._lib.utility import format_getBH_class_inputs
@@ -9,7 +9,7 @@ from magpylib._lib.config import Config
 
 
 # ON INTERFACE
-class Sensor(BaseGeo, BaseDisplay):
+class Sensor(BaseGeo, BaseDisplayRepr):
     """
     3D Magnetic field sensor.
 
@@ -73,9 +73,11 @@ class Sensor(BaseGeo, BaseDisplay):
 
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
+        BaseDisplayRepr.__init__(self)
 
         # set mag and dim attributes
         self.pos_pix = pos_pix
+        self.obj_type = 'Sensor'
 
 
     # properties ----------------------------------------------------
@@ -107,11 +109,6 @@ class Sensor(BaseGeo, BaseDisplay):
                 raise MagpylibBadInputShape('Bad dimension input shape.')
 
         self._pos_pix = pix_position
-
-
-    # dunders -------------------------------------------------------
-    def __repr__(self) -> str:
-        return f'Sensor({str(id(self))})'
 
 
     # methods -------------------------------------------------------

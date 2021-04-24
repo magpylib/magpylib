@@ -4,11 +4,11 @@ import copy
 from magpylib._lib.utility import (format_obj_input, check_duplicates,
     only_allowed_src_types, format_getBH_class_inputs)
 from magpylib._lib.fields import getB, getH
-from magpylib._lib.obj_classes.class_BaseDisplay import BaseDisplay
+from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 
 
 # ON INTERFACE
-class Collection(BaseDisplay):
+class Collection(BaseDisplayRepr):
     """
     Group multiple sources in one Collection for common manipulation.
 
@@ -77,7 +77,11 @@ class Collection(BaseDisplay):
 
     def __init__(self, *sources):
 
+        # inherit
+        BaseDisplayRepr.__init__(self)
+
         self.sources = sources
+        self.obj_type = 'Collection'
 
 
     # sources properties --------------------------------------------
@@ -119,10 +123,6 @@ class Collection(BaseDisplay):
 
     def __getitem__(self,i):
         return self._sources[i]
-
-
-    def __repr__(self) -> str:
-        return f'Collection({str(id(self))})'
 
 
     # methods -------------------------------------------------------
