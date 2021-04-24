@@ -45,6 +45,7 @@ def test_Collection_basics():
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Collection.p'), 'rb'))
     mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,Btest = data
 
+    mag3.Config.ITER_CYLINDER = 100
     B1,B2,B3 = [],[],[]
     for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,
                                                      axs,anchs,movs,posos,rvs):
@@ -80,9 +81,9 @@ def test_Collection_basics():
 
             col1.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 
-        B1 += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
-        B2 += [col1.getB(poso,niter=100)]
-        B3 += [col3.getB(poso,niter=100)]
+        B1 += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True)]
+        B2 += [col1.getB(poso)]
+        B3 += [col3.getB(poso)]
 
     B1 = np.array(B1)
     B2 = np.array(B2)

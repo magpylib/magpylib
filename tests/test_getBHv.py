@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+import magpylib
 from magpylib.magnet import Box, Cylinder, Sphere
 from magpylib import getBv, getHv, getB, getH
 
@@ -93,10 +94,11 @@ def test_getHv2():
         }
     B1 = getHv(**dic)
 
+    magpylib.Config.ITER_CYLINDER=75
     B2 = []
     for i in range(3):
         pm = Cylinder(mag[i],dim)
-        B2 += [getH([pm], pos_obs, niter=75)]
+        B2 += [getH([pm], pos_obs)]
     B2 = np.array(B2)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)

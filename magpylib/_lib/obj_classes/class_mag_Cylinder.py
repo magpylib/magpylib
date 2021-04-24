@@ -1,11 +1,10 @@
 """Magnet Cylinder class code"""
 
 import numpy as np
-from magpylib._lib.fields import getB, getH
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
-from magpylib._lib.utility import format_getBH_class_inputs
 from magpylib._lib.config import Config
 
 # init for tool tips
@@ -14,12 +13,15 @@ mx=my=mz=None
 
 
 # ON INTERFACE
-class Cylinder(BaseGeo, BaseDisplayRepr):
+class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
     Cylinder magnet with homogeneous magnetization.
 
     init_state: the geometric center is in the global CS origin, the axis of the
         cylinder coincides  with the z-axis.
+
+    By default ITER_CYLINDER=50 for iteration of diametral magnetization computation.
+        Use "magpylib.Config.ITER_CYLINDER=X" to change this setting.
 
     Properties
     ----------
@@ -145,65 +147,3 @@ class Cylinder(BaseGeo, BaseDisplayRepr):
                 raise MagpylibBadInputShape('Bad dimension input shape.')
 
         self._dim = dimension
-
-
-    # methods -------------------------------------------------------
-    def getB(self, *observers, squeeze=True, niter=50):
-        """
-        Compute B-field of source at observers.
-
-        Parameters
-        ----------
-        observers: array_like or Sensor or list of Sensors
-            Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
-            a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
-            of [mm].
-
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        niter: int, default=50
-            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
-
-        Returns
-        -------
-        B-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [mT]
-            B-field at each path position (M) for each sensor (K) and each sensor pixel position
-            (N) in units of [mT].
-            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
-            single pixel) is removed.
-        """
-        observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers, squeeze=squeeze, niter=niter)
-        return B
-
-
-    def getH(self, *observers, squeeze=True, niter=50):
-        """ Compute H-field of magnet at observer positions.
-
-        Parameters
-        ----------
-        observers: array_like or sens_obj or list of sens_obj
-            Observers can be array_like positions of shape (N1, N2, ..., 3) or a sensor or
-            a 1D list of K sensors with pos_pix shape of (N1, N2, ..., 3)
-            in units of millimeters.
-
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        niter (int): Number of iterations in the computation of the
-            diametral component of the field
-
-        Returns
-        -------
-        H-field: ndarray, shape (M, K, N1, N2, ..., 3), unit [kA/m]
-            B-field of magnet at each path position M for each sensor K and each sensor pixel
-            position N in units of kA/m.
-            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor)
-            is removed.
-        """
-        observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers, squeeze=squeeze, niter=niter)
-        return H

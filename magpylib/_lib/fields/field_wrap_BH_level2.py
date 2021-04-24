@@ -95,7 +95,7 @@ def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
     return src_dict
 
 
-def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
+def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     """...
 
     Parameters
@@ -252,9 +252,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     group = src_sorted[iii]
     if group:
         lg = len(group)
-        niter = kwargs.get('niter', Config.ITER_CYLINDER)
         src_dict = scr_dict_homo_mag(group, poso)
-        B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=niter, **src_dict)
+        B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=Config.ITER_CYLINDER, **src_dict)
         B_group = B_group.reshape((lg,m,n,3))
         for i in range(lg):
             B[order[iii][i]] = B_group[i]

@@ -47,8 +47,10 @@ def test_Sensor_getB_specs():
     B2 = mag3.getB(pm1,sens1)
     assert np.allclose(B1,B2), 'should be same'
 
-    B1 = sens1.getB(pm1,niter=17)
-    B2 = mag3.getB(pm1,sens1,niter=50)
+    mag3.Config.ITER_CYLINDER=17
+    B1 = sens1.getB(pm1)
+    mag3.Config.ITER_CYLINDER=50
+    B2 = mag3.getB(pm1,sens1)
     assert not np.allclose(B1,B2), 'should not be same'
 
 def test_Sensor_squeeze():

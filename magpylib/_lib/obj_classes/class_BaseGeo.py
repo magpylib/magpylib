@@ -9,7 +9,7 @@ from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.config import Config
 
 
-# METHODS ON INTERFACE
+# ALL METHODS ON INTERFACE
 class BaseGeo:
     """ Initializes position and rotation (=orientation) properties
     of an object in a global CS.

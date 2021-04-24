@@ -2,7 +2,7 @@
 
 from magpylib._lib.display import display
 
-# METHODS ON INTERFACE
+# ALL METHODS ON INTERFACE
 class BaseDisplayRepr:
     """ Provides the display(self) and self.repr methods for all objects
 

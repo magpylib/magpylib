@@ -1,3 +1,4 @@
+from magpylib._lib.config import Config
 import os
 import pickle
 import numpy as np
@@ -35,6 +36,7 @@ def test_Cylinder_basics():
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     Btest = []
+    mag3.Config.ITER_CYLINDER = 100
     for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
         pm = Cylinder(mag,dim)
 
@@ -42,7 +44,7 @@ def test_Cylinder_basics():
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
             pm.move_by(mv).rotate_from_angax(a,aa,aaa)
 
-        Btest += [pm.getB(poso, niter=100)]
+        Btest += [pm.getB(poso)]
     Btest = np.array(Btest)
 
     assert np.allclose(B, Btest), "test_Cylinder failed big time"

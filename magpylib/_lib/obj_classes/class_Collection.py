@@ -1,14 +1,14 @@
-"""collection class code"""
+"""Collection class code"""
 
 import copy
 from magpylib._lib.utility import (format_obj_input, check_duplicates,
-    only_allowed_src_types, format_getBH_class_inputs)
-from magpylib._lib.fields import getB, getH
+    only_allowed_src_types)
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 
 
 # ON INTERFACE
-class Collection(BaseDisplayRepr):
+class Collection(BaseDisplayRepr, BaseGetBH):
     """
     Group multiple sources in one Collection for common manipulation.
 
@@ -167,68 +167,6 @@ class Collection(BaseDisplayRepr):
         """
         self._sources.remove(source)
         return self
-
-
-    def getB(self, *observers, squeeze=True, **specs):
-        """
-        Compute B-field of Collection at observers.
-
-        Parameters
-        ----------
-        observers: array_like or Sensor or list of Sensors
-            Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
-            a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
-            of [mm].
-
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        specs:
-            Specific keyword arguments of different source types.
-
-        Returns
-        -------
-        B-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [mT]
-            B-field at each path position (M) for each sensor (K) and each sensor pixel position
-            (N) in units of [mT].
-            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor
-            or single pixel) is removed.
-        """
-        observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers, squeeze=squeeze, **specs)
-        return B
-
-
-    def getH(self, *observers, squeeze=True, **specs):
-        """
-        Compute H-field of Collection at observers.
-
-        Parameters
-        ----------
-        observers: array_like or Sensor or list of Sensors
-            Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
-            a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
-            of [mm].
-
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        specs:
-            Specific keyword arguments of different source types.
-
-        Returns
-        -------
-        H-field: ndarray, shape squeeze(M, K, N1, N2, ..., 3), unit [kA/m]
-            H-field at each path position (M) for each sensor (K) and each sensor pixel position
-            (N) in units of [kA/m].
-            Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor
-            or single pixel) is removed.
-        """
-        observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers, squeeze=squeeze, **specs)
-        return H
 
 
     def move_by(self, displacement, steps=None):
