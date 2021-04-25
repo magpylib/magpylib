@@ -1,16 +1,14 @@
 """Magnet Sphere class code"""
 
-import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
+from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
 
 # init for tool tips
 dia=None
 c0=None
-
 
 # ON INTERFACE
 class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
