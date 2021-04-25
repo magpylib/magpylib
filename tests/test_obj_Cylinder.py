@@ -1,4 +1,3 @@
-from magpylib._lib.config import Config
 import os
 import pickle
 import numpy as np

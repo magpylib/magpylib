@@ -1,4 +1,3 @@
-from magpylib._lib.config import Config
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib

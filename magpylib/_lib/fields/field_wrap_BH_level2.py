@@ -1,7 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
-from magpylib._lib.config import Config
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
