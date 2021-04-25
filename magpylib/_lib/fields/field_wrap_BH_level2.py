@@ -108,7 +108,6 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
-    - niter (int): default=50, for Cylinder sources diametral iteration
 
     Returns
     -------
@@ -253,7 +252,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     if group:
         lg = len(group)
         src_dict = scr_dict_homo_mag(group, poso)
-        B_group = getBH_level1(bh=bh, src_type='Cylinder', niter=Config.ITER_CYLINDER, **src_dict)
+        B_group = getBH_level1(bh=bh, src_type='Cylinder', **src_dict)
         B_group = B_group.reshape((lg,m,n,3))
         for i in range(lg):
             B[order[iii][i]] = B_group[i]

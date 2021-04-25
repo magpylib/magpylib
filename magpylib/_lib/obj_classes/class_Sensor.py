@@ -112,7 +112,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
 
     # methods -------------------------------------------------------
-    def getB(self, *sources, sumup=False, squeeze=True, **specs):
+    def getB(self, *sources, sumup=False, squeeze=True):
         """
         Compute B-field of sources at Sensor.
 
@@ -129,11 +129,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
             a single sensor or only a single source) are eliminated.
 
-        Specific kwargs
-        ---------------
-        niter: int, default=50
-            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
-
         Returns
         -------
         B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [mT]
@@ -143,12 +138,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             or single pixel) is removed.
         """
         sources = format_getBH_class_inputs(sources)
-        B = getB(sources, self, sumup=sumup, squeeze=squeeze, **specs)
+        B = getB(sources, self, sumup=sumup, squeeze=squeeze)
 
         return B
 
 
-    def getH(self, *sources, sumup=False, squeeze=True, **specs):
+    def getH(self, *sources, sumup=False, squeeze=True):
         """
         Compute H-field of sources at Sensor.
 
@@ -165,11 +160,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
             a single sensor or only a single source) are eliminated.
 
-        Specific kwargs
-        ---------------
-        niter: int, default=50
-            Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
-
         Returns
         -------
         H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [kA/m]
@@ -179,5 +169,5 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             or single pixel) is removed.
         """
         sources = format_getBH_class_inputs(sources)
-        H = getH(sources, self, sumup=sumup, squeeze=squeeze, **specs)
+        H = getH(sources, self, sumup=sumup, squeeze=squeeze)
         return H

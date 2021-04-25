@@ -1,3 +1,4 @@
+from magpylib._lib.config import Config
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib
@@ -143,8 +144,7 @@ def test_getHv3():
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
         'mag': mag,
-        'dim': dim,
-        'niter': 75
+        'dim': dim
         }
     B1 = getHv(**dic)
 

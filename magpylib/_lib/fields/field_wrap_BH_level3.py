@@ -24,11 +24,6 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
 
-    Specific kwargs
-    ---------------
-    niter: int, default=50
-        Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
-
     Returns
     -------
     B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [mT]
@@ -67,11 +62,6 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
-
-    Specific kwargs
-    ---------------
-    niter: int, default=50
-        Diametral iterations (Simpsons formula) for Cylinder Sources integral computation.
 
     Returns
     -------
