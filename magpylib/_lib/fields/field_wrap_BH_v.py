@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
-from magpylib._lib.config import Config
+
 
 def getBHv_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
@@ -26,6 +26,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     - sets default input variables (e.g. pos, rot) if missing
     - tiles 1D inputs vectors to correct dimension
     """
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
 
     # generate dict of secured inputs for auto-tiling ---------------
     #  entries in this dict will be tested for input length, and then
@@ -51,28 +53,32 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
         # mandatory class specific inputs -----------
         if src_type == 'Box':
-            mag = np.array(kwargs['mag'],dtype=float)
+            mag = np.array(kwargs['mag'], dtype=float)
             tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'],dtype=float)
+            dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,2)
 
         elif src_type == 'Cylinder':
-            mag = np.array(kwargs['mag'],dtype=float)
+            mag = np.array(kwargs['mag'], dtype=float)
             tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'],dtype=float)
+            dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,2)
-            niter = kwargs.get('niter', Config.ITER_CYLINDER)
-            kwargs['niter'] = niter
 
         elif src_type == 'Sphere':
-            mag = np.array(kwargs['mag'],dtype=float)
+            mag = np.array(kwargs['mag'], dtype=float)
             tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'],dtype=float)
+            dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,1)
 
         elif src_type == 'Dipole':
-            moment = np.array(kwargs['moment'],dtype=float)
+            moment = np.array(kwargs['moment'], dtype=float)
             tile_params['moment'] = (moment,2)
+
+        elif src_type == 'Circular':
+            current = np.array(kwargs['current'], dtype=float)
+            tile_params['current'] = (current,1)
+            dim = np.array(kwargs['dim'], dtype=float)
+            tile_params['dim'] = (dim,1)
 
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
@@ -139,7 +145,7 @@ def getBv(**kwargs):
         Homogeneous magnet magnetization vector (remanence field) in units of [mT].
 
     dim: array_like, shape is src_type dependent
-        Magnet dimension input
+        Magnet dimension input in units of [mm].
 
     Parameters - Dipole
     -------------------
@@ -147,11 +153,13 @@ def getBv(**kwargs):
         Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
         relation is moment = magnetization*volume.
 
-    Specific Parameters:
-    --------------------
-    niter: int, default=config.ITER_CYLINDER=50
-        Number of iterations for diametral magnetization computation using
-        Simpsons approximation.
+    Parameters - Circular current loop
+    ----------------------------------
+    current: array_like, shape (N,)
+        Current flowing in loop in units of [A].
+
+    dim: array_like, shape (N,)
+        Diameter of cicular loop in units of [mm].
 
     Returns
     -------
@@ -200,11 +208,13 @@ def getHv(**kwargs):
         Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
         relation is moment = magnetization*volume.
 
-    Specific Parameters:
-    --------------------
-    niter: int, default=config.ITER_CYLINDER=50
-        Number of iterations for diametral magnetization computation using
-        Simpsons approximation.
+    Parameters - Circular current loop
+    ----------------------------------
+    current: array_like, shape (N,)
+        Current flowing in loop in units of [A].
+
+    dim: array_like, shape (N,)
+        Diameter of cicular loop in units of [mm].
 
     Returns
     -------

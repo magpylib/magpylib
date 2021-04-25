@@ -4,7 +4,7 @@ from scipy.spatial.transform.rotation import Rotation as R
 import magpylib as mag3
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
-from magpylib._lib.fields.field_wrap_getBHv import getBHv_level2
+from magpylib._lib.fields.field_wrap_BH_v import getBHv_level2
 from magpylib._lib.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
     MagpylibBadInputShape)
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo

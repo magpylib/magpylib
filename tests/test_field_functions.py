@@ -118,13 +118,14 @@ def test_field_BH_box_mag0():
 def test_field_BH_cylinder():
     """ test cylinder field
     """
-    Config.EDGESIZE=1e-14
+    Config.EDGESIZE = 1e-14
+    Config.ITER_CYLINDER = 100
     mags, dims, poss, B = pickle.load(open(
         os.path.abspath('tests/testdata/testdata_field_BH_cylinder.p'),'rb'))
     Btest = []
     for mag in mags:
         for dim,pos in zip(dims,poss):
-            Btest += [field_BH_cylinder(True, mag, dim, pos, 100)]
+            Btest += [field_BH_cylinder(True, mag, dim, pos)]
     Btest = np.array(Btest)
     assert np.allclose(B, Btest), 'Cylinder field computation broken'
 
@@ -136,7 +137,7 @@ def test_field_BH_cylinder_mag0():
     mag = np.zeros((n,3))
     dim = np.random.rand(n,2)
     pos = np.random.rand(n,3)
-    B = field_BH_cylinder(True, mag, dim, pos, 11)
+    B = field_BH_cylinder(True, mag, dim, pos)
     assert np.allclose(mag,B), 'Cylinder mag=0 case broken'
 
 

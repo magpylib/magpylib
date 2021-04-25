@@ -85,16 +85,15 @@ def test_getHv2():
     mag = [[111,222,333],[22,2,2],[22,-33,-44]]
     dim = [3,3]
 
+    magpylib.Config.ITER_CYLINDER=75
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
         'mag': mag,
-        'dim': dim,
-        'niter': 75
+        'dim': dim
         }
     B1 = getHv(**dic)
 
-    magpylib.Config.ITER_CYLINDER=75
     B2 = []
     for i in range(3):
         pm = Cylinder(mag[i],dim)

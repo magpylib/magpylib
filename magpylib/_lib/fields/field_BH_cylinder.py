@@ -146,8 +146,7 @@ def field_BH_cylinder(
         bh: bool,
         mag: np.ndarray,
         dim: np.ndarray,
-        pos_obs: np.ndarray,
-        niter: int
+        pos_obs: np.ndarray
         ) -> np.ndarray:
     """ setting up the Cylinder field computation
     - transform to Cylindrical CS
@@ -169,6 +168,7 @@ def field_BH_cylinder(
     """
 
     edgesize = Config.EDGESIZE
+    niter = Config.ITER_CYLINDER
 
     # transform to Cy CS --------------------------------------------
     x, y, z = pos_obs.T
