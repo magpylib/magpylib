@@ -67,7 +67,7 @@ def display(
     # create or set plotting axis
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8,8))
-        ax = fig.gca(projection='3d')
+        ax = fig.add_subplot(111, projection='3d')
         ax.set_box_aspect((1, 1, 1))
         generate_output = True
     else:
