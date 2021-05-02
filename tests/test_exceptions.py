@@ -193,6 +193,18 @@ def dipole_no_mom():
     """
     mag3.misc.Dipole()
 
+
+def circular_no_current():
+    """ Circular with no current input
+    """
+    mag3.current.Circular(dim=1)
+
+
+def circular_no_dim():
+    """ Circular with no dim input
+    """
+    mag3.current.Circular(current=1)
+
 ########################################################################
 # BAD INPUT SHAPE EXCEPTIONS
 def bad_input_shape_basegeo_pos():
@@ -308,15 +320,21 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
 
     def test_except_class_Sphere(self):
-        """ class_Cylinder
+        """ class_Sphere
         """
         self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
         self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
 
     def test_except_class_Dipole(self):
-        """ class_Cylinder
+        """ class_Dipole
         """
         self.assertRaises(MagpylibBadUserInput, dipole_no_mom)
+
+    def test_except_class_Circular(self):
+        """ class_Circular
+        """
+        self.assertRaises(MagpylibBadUserInput, circular_no_current)
+        self.assertRaises(MagpylibBadUserInput, circular_no_dim)
 
     def test_except_utility(self):
         """ utility

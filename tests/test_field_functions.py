@@ -5,6 +5,7 @@ from magpylib._lib.fields.field_BH_box import field_BH_box
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
+from magpylib._lib.fields.field_BH_circular import field_BH_circular
 from magpylib import Config
 
 # # GENERATE TEST DATA
@@ -197,3 +198,58 @@ def test_field_dipole2():
     np.seterr(all='warn')
 
     assert all(np.isnan(B[0]))
+
+
+def test_field_circular():
+    """ test if field function gives correct outputs
+    """
+    # from hyperphysics
+    # current = 1A
+    # loop radius = 1mm
+    # B at center = 0.6283185307179586 mT
+    # B at 1mm on zaxis = 0.22214414690791835 mT
+    pos_test_hyper = [[0,0,0], [0,0,1]]
+    Btest_hyper = [[0,0,0.6283185307179586], [0,0,0.22214414690791835]]
+
+    # from magpylib 2
+    pos_test_mag2 = [[1,2,3], [-3,2,1], [1,-.2,.3], [1,.2,-1],
+        [-.1,-.2,3], [-1,.2,-.3], [3,-3,-3], [-2,-.2,-.3]]
+    Btest_mag2 = [[0.44179833, 0.88359665, 0.71546231],
+        [-0.53137126,  0.35424751, -0.59895825],
+        [ 72.87320789, -14.57464158,  22.07633404],
+        [-13.75612867,  -2.75122573,  11.36467552],
+        [-0.10884885, -0.21769769,  2.41206364],
+        [ 72.87320789, -14.57464158,  22.07633404],
+        [-0.27939151,  0.27939151,  0.01220605],
+        [ 3.25697271,  0.32569727, -5.49353046]]
+
+    pos_test = np.array(pos_test_hyper + pos_test_mag2 + [[1,0,0]])
+    Btest = np.array(Btest_hyper + Btest_mag2 + [[0,0,0]])
+
+    current = np.array([1,1] + [123]*8 + [123])
+    dim = np.array([2,2] + [2]*8 + [2])
+
+    B = field_BH_circular(True, current, dim, pos_test)
+
+    assert np.allclose(B, Btest)
+
+    Htest = Btest*10/4/np.pi
+    H = field_BH_circular(False, current, dim, pos_test)
+    assert np.allclose(H, Htest)
+
+
+def test_field_circular2():
+    """ test if field function accepts correct inputs
+    """
+    curr = np.array([1])
+    dim = np.array([2])
+    poso = np.array([[0,0,0]])
+    B = field_BH_circular(True, curr, dim, poso)
+
+    curr = np.array([1]*2)
+    dim = np.array([2]*2)
+    poso = np.array([[0,0,0]]*2)
+    B2 = field_BH_circular(True, curr, dim, poso)
+
+    assert np.allclose(B,B2[0])
+    assert np.allclose(B,B2[1])

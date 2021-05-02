@@ -195,3 +195,15 @@ def test_geBHv_dipole():
     H = getHv(src_type='Dipole', moment=(1,2,3), pos_obs = (1,1,1))
     Htest = np.array([0.06093522,0.04874818,0.03656113])
     assert np.allclose(H,Htest)
+
+
+def test_geBHv_circular():
+    """ test if Circular implementation gives correct output
+    """
+    B = getBv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    Btest = np.array([0,0,0.6283185307179586])
+    assert np.allclose(B,Btest)
+
+    H = getHv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
+    assert np.allclose(H,Htest)

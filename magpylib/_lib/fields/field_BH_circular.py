@@ -63,6 +63,7 @@ def field_BH_circular(
     r = r[~mask0]
     z = z[~mask0]
     n = np.sum(~mask0)
+    current = current[~mask0]
 
     # pre compute small quantities that might not get stored in the cache otherwise
     r2 = r**2
@@ -91,9 +92,9 @@ def field_BH_circular(
     Bz_all[~mask0] = Bz
 
     # transform field to cartesian CS -----------------------------------------
-    Bx = Br*np.cos(phi)
-    By = Br*np.sin(phi)
-    B_cart = np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T # ugly but fast
+    Bx = Br_all*np.cos(phi)
+    By = Br_all*np.sin(phi)
+    B_cart = np.concatenate(((Bx,),(By,),(Bz_all,)),axis=0).T # ugly but fast
 
     if bh:
         return B_cart

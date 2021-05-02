@@ -55,6 +55,7 @@ def format_obj_input(objects: Sequence) -> list:
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
+    Circular = _lib.obj_classes.Circular
 
     obj_list = []
     for obj in objects:
@@ -67,7 +68,8 @@ def format_obj_input(objects: Sequence) -> list:
                 Cylinder,
                 Sphere,
                 Sensor,
-                Dipole)):
+                Dipole,
+                Circular)):
             obj_list += [obj]
         else:
             msg = 'Unknown input object type.'
@@ -158,9 +160,10 @@ def only_allowed_src_types(src_list):
     Cylinder = _lib.obj_classes.Cylinder
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
+    Circular = _lib.obj_classes.Circular
     new_list = []
     for src in src_list:
-        if isinstance(src, (Box, Cylinder, Sphere, Dipole)):
+        if isinstance(src, (Box, Cylinder, Sphere, Dipole, Circular)):
             new_list += [src]
         else:
             print(f'Warning, cannot add {src.__repr__()} to Collection.')

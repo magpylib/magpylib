@@ -6,6 +6,50 @@ from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
 
 
+def scr_dict_circular(group: list, poso: np.ndarray) -> dict:
+    """ Helper funtion that generates getBH_level1 input dict for Circular sources.
+
+    Parameters
+    ----------
+    - group: list of sources
+    - posov: ndarray, shape (m,sum(ni),3), pos_obs flattened
+
+    Returns
+    -------
+    dict for getBH_level1 input
+    """
+    # pylint: disable=protected-access
+
+    # generate indices
+    l_group = len(group)    # no. sources in group
+    m = len(group[0]._pos)  # path length
+    mn = len(poso)          # path length * no. pixel
+    n = int(mn/m)           # no. pixel
+
+    # allocate dict arrays, shape: (l_group, m, n)
+    currv = np.empty((l_group*mn,1))          # current
+    dimv = np.empty((l_group*mn,1))           # dim
+    posv = np.empty((l_group*mn,3))         # pos
+    rotv = np.empty((l_group*mn,4))         # rot
+    posov = np.tile(poso, (l_group,1))
+
+    # fill dict arrays
+    for i,src in enumerate(group):
+        currv[i*mn:(i+1)*mn] = np.tile(src.current, (mn,1))
+        dimv[i*mn:(i+1)*mn] = np.tile(src.dim, (mn,1))
+        posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
+        rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
+
+    # make a 1D ndarray [x,x,x,x,x] or [x]
+    currv = currv.T[0]
+    dimv = dimv.T[0]
+    # genereate rot object from rot input
+    rotobj = R.from_quat(rotv)
+    # generate dict and return
+    src_dict = {'current':currv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+    return src_dict
+
+
 def scr_dict_dipole(group: list, poso: np.ndarray) -> dict:
     """ Helper funtion that generates getBH_level1 input dict for Dipoles.
 
@@ -133,6 +177,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     Collection = _lib.obj_classes.Collection
     Sensor = _lib.obj_classes.Sensor
     Dipole = _lib.obj_classes.Dipole
+    Circular = _lib.obj_classes.Circular
 
     # format input -------------------------------------------------------------
     if not isinstance(sources, list):          # input = a single source (or collection)
@@ -213,8 +258,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     n = int(mn/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[],[],[]]   # store groups here
-    order = [[],[],[],[]]        # keep track of the source order
+    src_sorted = [[],[],[],[],[]]   # store groups here
+    order = [[],[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
         if isinstance(src, Box):
             src_sorted[0] += [src]
@@ -228,6 +273,9 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif isinstance(src, Dipole):
             src_sorted[3] += [src]
             order[3] += [i]
+        elif isinstance(src, Circular):
+            src_sorted[4] += [src]
+            order[4] += [i]
         else:
             raise MagpylibBadUserInput('Unrecognized object in sources input')
 
@@ -278,6 +326,17 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         for i in range(lg):                           # put at dedicated positions in B
             B[order[iii][i]] = B_group[i]
 
+    # Circular group
+    iii = 4
+    group = src_sorted[iii]
+    if group:
+        lg = len(group)
+        src_dict = scr_dict_circular(group, poso)             # compute array dict for level1
+        B_group = getBH_level1(bh=bh, src_type='Circular', **src_dict) # compute field
+        B_group = B_group.reshape((lg,m,n,3))         # reshape
+        for i in range(lg):                           # put at dedicated positions in B
+            B[order[iii][i]] = B_group[i]
+
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
     if l > l0:
@@ -312,7 +371,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     sens_px_shape = (k,) + pix_shape
     B = B.reshape((l0,m)+sens_px_shape)
 
-
+    #
     if sumup:
         B = np.sum(B, axis=0)
 

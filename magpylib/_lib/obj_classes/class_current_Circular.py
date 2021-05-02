@@ -8,15 +8,16 @@ from magpylib._lib.config import Config
 
 # init for tool tips
 dia=None
-c0=None
+i0=None
+
 
 # ON INTERFACE
 class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
-    Circular current loop with.
+    Circular current loop.
 
-    init_state: The current loop lies in the xy-plane of the global CS and the
-        geometric center coincides with the origin.
+    init_state: The current loop lies in the xy-plane of the global CS with its
+        geometric center in the origin.
 
     Properties
     ----------
@@ -76,7 +77,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     def __init__(
             self,
-            current = c0,
+            current = i0,
             dim = dia,
             pos = (0,0,0),
             rot = None):
