@@ -39,6 +39,15 @@ def getBH_level2_bad_input2():
     mag3.getB(pm1,[sens1,sens2])
 
 
+def getBH_level2_internal_error1():
+    """ somhow an unrecognized objects end up in get_src_dict
+    """
+    # pylint: disable=protected-access
+    sens = mag3.Sensor()
+    x = np.zeros((10,3))
+    mag3._lib.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
+
+
 def getBHv_missing_input1():
     """ missing bh
     """
@@ -364,15 +373,16 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
 
     def test_except_getBH_lev1(self):
-        """ getBH_level1
+        """ getBH_level1 exception testing
         """
         self.assertRaises(MagpylibInternalError, getBH_level1_internal_error)
 
     def test_except_getBH_lev2(self):
-        """ getBH_level1
+        """ getBH_level2 exception testing
         """
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input1)
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input2)
+        self.assertRaises(MagpylibInternalError, getBH_level2_internal_error1)
 
     def test_except_bad_input_shape_basegeo(self):
         """ BaseGeo bad input shapes

@@ -2,140 +2,104 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
-from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibInternalError
 from magpylib import _lib
 
 
-def scr_dict_circular(group: list, poso: np.ndarray) -> dict:
-    """ Helper funtion that generates getBH_level1 input dict for Circular sources.
+def tile_mag(group: list, n_pp: int):
+    """ tile up magnetizations of shape (3,)
+    """
+    magv = np.array([np.tile(src.mag, (n_pp,1)) for src in group])
+    magv = magv.reshape((-1, 3))
+    return magv
 
-    Parameters
-    ----------
-    - group: list of sources
-    - posov: ndarray, shape (m,sum(ni),3), pos_obs flattened
 
-    Returns
-    -------
-    dict for getBH_level1 input
+def tile_dim2(group: list, n_pp: int):
+    """ tile up dimensions of shape (2,) and bigger
+    """
+    dimv = np.array([np.tile(src.dim, (n_pp,1)) for src in group])
+    dimv = dimv.reshape((-1,len(group[0].dim)))
+    return dimv
+
+
+def tile_dim1(group: list, n_pp: int):
+    """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
+    """
+    dimv = np.array([np.tile(src.dim, (n_pp,1)) for src in group])
+    dimv = dimv.flatten()
+    return dimv
+
+
+def tile_pos(group: list, n_pp: int, n_pix: int):
+    """ tile up object positions
     """
     # pylint: disable=protected-access
-
-    # generate indices
-    l_group = len(group)    # no. sources in group
-    m = len(group[0]._pos)  # path length
-    mn = len(poso)          # path length * no. pixel
-    n = int(mn/m)           # no. pixel
-
-    # allocate dict arrays, shape: (l_group, m, n)
-    currv = np.empty((l_group*mn,1))          # current
-    dimv = np.empty((l_group*mn,1))           # dim
-    posv = np.empty((l_group*mn,3))         # pos
-    rotv = np.empty((l_group*mn,4))         # rot
-    posov = np.tile(poso, (l_group,1))
-
-    # fill dict arrays
-    for i,src in enumerate(group):
-        currv[i*mn:(i+1)*mn] = np.tile(src.current, (mn,1))
-        dimv[i*mn:(i+1)*mn] = np.tile(src.dim, (mn,1))
-        posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
-        rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
-
-    # make a 1D ndarray [x,x,x,x,x] or [x]
-    currv = currv.T[0]
-    dimv = dimv.T[0]
-    # genereate rot object from rot input
-    rotobj = R.from_quat(rotv)
-    # generate dict and return
-    src_dict = {'current':currv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
-    return src_dict
+    posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
+    posv = posv.reshape((-1, 3))
+    return posv
 
 
-def scr_dict_dipole(group: list, poso: np.ndarray) -> dict:
-    """ Helper funtion that generates getBH_level1 input dict for Dipoles.
-
-    Parameters
-    ----------
-    - group: list of sources
-    - posov: ndarray, shape (m,sum(ni),3), pos_obs flattened
-
-    Returns
-    -------
-    dict for getBH_level1 input
+def tile_rot(group: list, n_pp:int, n_pix:int):
+    """ tile up observer positions
     """
     # pylint: disable=protected-access
-
-    # generate indices
-    l_group = len(group)    # no. sources in group
-    m = len(group[0]._pos)  # path length
-    mn = len(poso)          # path length * no. pixel
-    n = int(mn/m)           # no. pixel
-
-    # allocate dict arrays, shape: (l_group, m, n)
-    momv = np.empty((l_group*mn,3))         # source mag
-    posv = np.empty((l_group*mn,3))         # source pos
-    rotv = np.empty((l_group*mn,4))         # source rot
-    posov = np.tile(poso, (l_group,1))
-
-    # fill dict arrays
-    for i,src in enumerate(group):
-        momv[i*mn:(i+1)*mn] = np.tile(src.moment, (mn,1))
-        posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
-        rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
-    # genreate rot object from rot input
+    rotv = np.array([np.tile(src._rot.as_quat(),n_pix).reshape(n_pp,4) for src in group])
+    rotv = rotv.reshape((-1, 4))
     rotobj = R.from_quat(rotv)
-    # generate dict and return
-    src_dict = {'moment':momv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
-    return src_dict
+    return rotobj
 
 
-def scr_dict_homo_mag(group: list, poso: np.ndarray) -> dict:
-    """ Helper funtion that generates getBH_level1 input dict for homogeneous magnets.
-
-    Parameters
-    ----------
-    - group: list of sources
-    - posov: ndarray, shape (m,sum(ni),3), pos_obs flattened
-
-    Returns
-    -------
-    dict for getBH_level1 input
+def tile_moment(group: list, n_pp: int):
+    """ tile up moments of shape (3,)
     """
-    # pylint: disable=protected-access
+    momv = np.array([np.tile(src.moment, (n_pp,1)) for src in group])
+    momv = momv.reshape((-1, 3))
+    return momv
 
-    # Sphere input requires slightly different index arrangement
-    flag_sphere = isinstance(group[0],_lib.obj_classes.Sphere)
 
-    # generate indices
-    l_group = len(group)    # no. sources in group
-    m = len(group[0]._pos)  # path length
-    mn = len(poso)          # path length * no. pixel
-    n = int(mn/m)           # no. pixel
-    if flag_sphere:
-        len_dim = 1                         # Sphere dim=scalar
-    else:
-        len_dim = len(group[0].dim)         # source type dim shape
+def tile_current(group: list, n_pp: int):
+    """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
+    """
+    currv = np.array([np.tile(src.current, (n_pp,1)) for src in group])
+    currv = currv.flatten()
+    return currv
 
-    # allocate dict arrays, shape: (l_group, m, n)
-    magv = np.empty((l_group*mn,3))         # source mag
-    dimv = np.empty((l_group*mn,len_dim))   # source dim
-    posv = np.empty((l_group*mn,3))         # source pos
-    rotv = np.empty((l_group*mn,4))         # source rot
-    posov = np.tile(poso, (l_group,1))
 
-    # fill dict arrays
-    for i,src in enumerate(group):
-        magv[i*mn:(i+1)*mn] = np.tile(src.mag, (mn,1))
-        dimv[i*mn:(i+1)*mn] = np.tile(src.dim, (mn,1))
-        posv[i*mn:(i+1)*mn] = np.tile(src._pos,n).reshape(mn,3)
-        rotv[i*mn:(i+1)*mn] = np.tile(src._rot.as_quat(),n).reshape(mn,4)
-    # genreate rot object from rot input
-    rotobj = R.from_quat(rotv)
-    # make Sphere dim a 1D ndarray [x,x,x,x,x] or [x]
-    if flag_sphere:
-        dimv = dimv.T[0]
-    # generate dict and return
-    src_dict = {'mag':magv, 'dim':dimv, 'pos':posv, 'pos_obs': posov, 'rot':rotobj}
-    return src_dict
+def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
+    """ create dictionary for level1 input of Box, Cylinder, Sphere
+    """
+    # tile up basics
+    posv = tile_pos(group, n_pp, n_pix)
+    rotobj = tile_rot(group, n_pp, n_pix)
+    posov = np.tile(poso, (len(group),1))
+
+    # src type
+    src_type = group[0].obj_type
+
+    if src_type == 'Sphere':
+        magv = tile_mag(group, n_pp)
+        dimv = tile_dim1(group, n_pp)
+        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
+            'pos_obs': posov, 'rot':rotobj}
+
+    if src_type in {'Box', 'Cylinder'}:
+        magv = tile_mag(group, n_pp)
+        dimv = tile_dim2(group, n_pp)
+        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
+            'pos_obs': posov, 'rot':rotobj}
+
+    if src_type == 'Dipole':
+        momv = tile_moment(group, n_pp)
+        return {'src_type':src_type, 'moment':momv, 'pos':posv,
+            'pos_obs': posov, 'rot':rotobj}
+
+    if src_type == 'Circular':
+        currv = tile_current(group, n_pp)
+        dimv = tile_dim1(group, n_pp)
+        return {'src_type':src_type, 'current':currv, 'dim':dimv, 'pos':posv,
+            'pos_obs': posov, 'rot':rotobj}
+
+    raise MagpylibInternalError('Bad src_type in get_src_dict')
 
 
 def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
@@ -254,8 +218,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
             for r,p in zip(sens._rot, sens._pos)]
            for sens in sensors] # shape (k, nk, 3)
     poso = np.concatenate(poso,axis=1).reshape(-1,3)
-    mn = len(poso)
-    n = int(mn/m)
+    n_pp = len(poso)
+    n_pix = int(n_pp/m)
 
     # group similar source types----------------------------------------------
     src_sorted = [[],[],[],[],[]]   # store groups here
@@ -279,63 +243,16 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         else:
             raise MagpylibBadUserInput('Unrecognized object in sources input')
 
-    # evaluate each non-empty group in one go -------------------------------
-    B = np.empty((l,m,n,3)) # store B-values here
-
-    # Box group
-    iii = 0
-    group = src_sorted[iii]
-    if group:
-        lg = len(group)
-        src_dict = scr_dict_homo_mag(group, poso)             # compute array dict for level1
-        B_group = getBH_level1(bh=bh, src_type='Box', **src_dict) # compute field
-        B_group = B_group.reshape((lg,m,n,3))         # reshape
-        for i in range(lg):                           # put at dedicated positions in B
-            B[order[iii][i]] = B_group[i]
-
-    # Cylinder group
-    iii = 1
-    group = src_sorted[iii]
-    if group:
-        lg = len(group)
-        src_dict = scr_dict_homo_mag(group, poso)
-        B_group = getBH_level1(bh=bh, src_type='Cylinder', **src_dict)
-        B_group = B_group.reshape((lg,m,n,3))
-        for i in range(lg):
-            B[order[iii][i]] = B_group[i]
-
-    # Sphere group
-    iii = 2
-    group = src_sorted[iii]
-    if group:
-        lg = len(group)
-        src_dict = scr_dict_homo_mag(group, poso)             # compute array dict for level1
-        B_group = getBH_level1(bh=bh, src_type='Sphere', **src_dict) # compute field
-        B_group = B_group.reshape((lg,m,n,3))         # reshape
-        for i in range(lg):                           # put at dedicated positions in B
-            B[order[iii][i]] = B_group[i]
-
-    # Dipole group
-    iii = 3
-    group = src_sorted[iii]
-    if group:
-        lg = len(group)
-        src_dict = scr_dict_dipole(group, poso)             # compute array dict for level1
-        B_group = getBH_level1(bh=bh, src_type='Dipole', **src_dict) # compute field
-        B_group = B_group.reshape((lg,m,n,3))         # reshape
-        for i in range(lg):                           # put at dedicated positions in B
-            B[order[iii][i]] = B_group[i]
-
-    # Circular group
-    iii = 4
-    group = src_sorted[iii]
-    if group:
-        lg = len(group)
-        src_dict = scr_dict_circular(group, poso)             # compute array dict for level1
-        B_group = getBH_level1(bh=bh, src_type='Circular', **src_dict) # compute field
-        B_group = B_group.reshape((lg,m,n,3))         # reshape
-        for i in range(lg):                           # put at dedicated positions in B
-            B[order[iii][i]] = B_group[i]
+    # evaluate each group in one vectorized step -------------------------------
+    B = np.empty((l,m,n_pix,3))                               # allocate B
+    for iii, group in enumerate(src_sorted):
+        if group:                                             # is group empty ?
+            lg = len(group)
+            src_dict = get_src_dict(group, n_pix, n_pp, poso) # compute array dict for level1
+            B_group = getBH_level1(bh=bh, **src_dict)         # compute field
+            B_group = B_group.reshape((lg,m,n_pix,3))         # reshape (2% slower for large arrays)
+            for i in range(lg):                               # put into dedicated positions in B
+                B[order[iii][i]] = B_group[i]
 
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
