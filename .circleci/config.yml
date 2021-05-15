@@ -18,15 +18,22 @@ workflows:
 jobs:
   build:
     docker:
-      - image: python:3
+      - image: python:3.8
     steps:
       - checkout
       - run: 
-          name: Install Testing Env
-          command: mkdir test-results && pip install tox
+          name: Install local magpylib
+          command: pip install .
+      - run: 
+          name: Set up testing tools and environment
+          command: mkdir test-results && pip install tox && pip install pylint
       - run:
-          name: Run Test Suite
+          name: Run pylint test
+          command: pylint --rcfile='./.pylintrc' magpylib
+      - run:
+          name: Run code test coverage suite
           command: tox
+      
   deploy:
     docker:
       - image: python:3

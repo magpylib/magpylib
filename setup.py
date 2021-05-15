@@ -16,7 +16,7 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-_magPyVersion = "2.3.0-beta"
+_magPyVersion = "3.0.0"
 
 _SphinxVersion = "1.8.2"
 _name = "magpylib"
@@ -24,7 +24,7 @@ _description = "Free Python3 package to compute magnetic fields."
 _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"
-_release = "beta"
+_release = "release"
 _license='GNU Affero General Public License v3 or later (AGPLv3+) (AGPL-3.0-or-later)'
 
 import sys
@@ -62,13 +62,14 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     zip_safe = False, ## Gives the environment files so we can access docs, enables tooltips but may decrease performance
     install_requires=[
-          'numpy>=1.16',
-          'matplotlib>=3.1',
+          'numpy>=1.20',
+          'scipy>=1.6',
+          'matplotlib>=3.3',
       ],
     classifiers=[
-        'Development Status :: 4 - Beta',
-        'Programming Language :: Python :: 3.6',
+        'Development Status :: 5 - Production/Stable',
         'Programming Language :: Python :: 3.7',
+        'Programming Language :: Python :: 3.8',
         "Programming Language :: Python :: 3",
         'Intended Audience :: Developers',
         'Intended Audience :: Science/Research',
@@ -76,7 +77,7 @@ setuptools.setup(
         'License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)',
         "Operating System :: OS Independent",
     ],
-    python_requires='~=3.6',
+    python_requires='~=3.7',
     keywords='magnetism physics analytical parallel electromagnetic fields b-field',
     command_options={
         'build_sphinx': {

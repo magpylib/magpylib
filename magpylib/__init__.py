@@ -1,37 +1,89 @@
-# -------------------------------------------------------------------------------
-# magpylib -- A Python 3 toolbox for working with magnetic fields.
-# Copyright (C) Silicon Austria Labs, https://silicon-austria-labs.com/,
-#               Michael Ortner <magpylib@gmail.com>
-#
-# This program is free software: you can redistribute it and/or modify it under
-# the terms of the GNU Affero General Public License as published by the Free
-# Software Foundation, either version 3 of the License, or (at your option) any
-# later version.
-#
-# This program is distributed in the hope that it will be useful, but WITHOUT ANY
-# WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS FOR A
-# PARTICULAR PURPOSE.  See the GNU Affero General Public License for more
-# details.
-#
-# You should have received a copy of the GNU Affero General Public License along
-# with this program.  If not, see <https://www.gnu.org/licenses/>.
-# The acceptance of the conditions of the GNU Affero General Public License are
-# compulsory for the usage of the software.
-#
-# For contact information, reach out over at <magpylib@gmail.com> or our issues
-# page at https://www.github.com/magpylib/magpylib/issues.
-# -------------------------------------------------------------------------------
 """
-This is the top level of the package. From here you can call subpackages 
-`source` and `math`, the classes `Collection` and `Sensor` as well as the
-functions `getBv` and `displaySystem`.
+Magpylib provides static 3D magnetic field computation based on analytical
+formulas.
+
+Ressources
+----------
+www.https://magpylib.readthedocs.io/en/latest/
+https://github.com/magpylib/magpylib
+https://www.sciencedirect.com/science/article/pii/S2352711020300170
+
+Sources
+-------
+Create source objects that represent physical magnetic field sources.
+Classes can be found in top-level sub-packages.
+
+magpylib.magnet
+- .Box()
+- .Cylinder()
+- .Sphere()
+
+magpylib.current
+- .Line()
+- .Circular()
+
+magpylib.misc
+- .Dipole()
+
+Manipulate sources through provided methods and parameters
+
+- src.pos = new_position
+- src.rot = new_orientation
+- src.move_by(displacement)
+- src.move_to(target_position)
+- src.rotate(rotation input)
+- src.rotate_from_angax(rotation input)
+
+pos and rot can also represent complete source paths. Use "steps"
+variable with move and rotate methods to conveniently generate such
+paths.
+
+Collections
+-----------
+Group sources for common manipulation.
+
+- col = src1 + src2 + src3 ...
+- magpylib.Collection(src1, src2, ...)
+
+All methods that work for sources also work for collections.
+
+Field computation
+-----------------
+There are three ways to compute the field.
+
+sources are e.g. magnet.Box objects, current.Line objects
+observers are positions (array_like) or Sensor objects
+
+1. src.getB(observers) ----------------> field of one source at all observers
+2. sens.getB(sources) -----------------> field of all sources at one sensor
+2. magpylib.getB(sources, observers) --> fields of all sources at all observers
+3. magpylib.getBv(**kwargs) -----------> direct access to core formulas (fastest)
+
+In addition to getB there is getH.
+
+Graphic output
+--------------
+Display sources, collections, paths and sensors using Matplotlib
+
+- magpylib.display(src1, src2, sens, col, ...)
+- src.display()
+- sens.display()
+- col.display()
 """
 
-__all__ = ["source", "Collection", "Sensor", "vector", "math", "displaySystem"]  # This is for Sphinx
+# module level dunders
+__version__ = '3.0.0'
+__author__ =  'Michael Ortner & friends'
+__credits__ = 'Silicon Austria Labs - Sensor Systems'
+__all__ = ['magnet', 'current', 'misc',
+           'getB', 'getH', 'getBv', 'getHv','Sensor',
+           'Collection', 'display', 'Config','path_merge']
 
-from ._lib.classes.collection import Collection
-from ._lib.classes.sensor import Sensor
-from ._lib.displaySystem import displaySystem
-from . import source, math, vector
-
-from . import _lib                                #why is this here ?
+# create interface to outside of package
+from magpylib import magnet
+from magpylib import current
+from magpylib import misc
+from magpylib._lib.config import Config
+from magpylib._lib.fields import getB, getH, getBv, getHv
+from magpylib._lib.obj_classes import Collection, Sensor, path_merge
+from magpylib._lib.display import display

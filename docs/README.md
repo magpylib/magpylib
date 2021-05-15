@@ -23,15 +23,13 @@
 This repository is set up to be easily built on [ReadTheDocs](https://readthedocs.org/) as the codebase is updated. 
 
 ##### To build locally on Linux, 
-
-1. [Install Sphinx](http://www.sphinx-doc.org/en/master/usage/installation.html) 
-2. Install the dependencies on [requirements.txt](./requirements.txt):
+1. Install the dependencies on [requirements.txt](./requirements.txt):
     ```
     pip install requirements.txt
     ```
 
 
-3. Run [make](http://man7.org/linux/man-pages/man1/make.1.html) to build the documentation:
+2. Run [make](http://man7.org/linux/man-pages/man1/make.1.html) to build the documentation:
 
     ```bash
 

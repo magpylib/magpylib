@@ -1,13 +1,12 @@
 .. _docu:
 
-******************************
-Documentation v2.3.0b
-******************************
+***********************************
+Documentation v2.3.0b - OUT OF DATE
+***********************************
 
 Magpylib provide a simple and easy-to-use interface for computing the magnetic field of magnets, currents and moments. The computations are based on (semi-)analytical solutions found in the literature, discussed in the :ref:`physComp` section.
 
 A published software description for version 2.3.0b can be found `here <https://authors.elsevier.com/sd/article/S2352711020300170>`_.
-
 
 Contents
 ########

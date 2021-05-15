@@ -16,7 +16,6 @@
 <p align="center"> Documentation: 
 <a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
 <a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
-<a href="https://app.fossa.com/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib?ref=badge_shield" alt="FOSSA Status"><img align='center' src="https://app.fossa.com/api/projects/git%2Bgithub.com%2Fmagpylib%2Fmagpylib.svg?type=shield"/></a>
 </p>
 
 <p align="center"> Test Coverage: 
@@ -54,7 +53,7 @@
 ---
 
 ### Dependencies: 
-_Python3.6+_, _Numpy_, _Matplotlib_
+_Python3.7+_, _Numpy_, _Matplotlib_
 
 ---
 
