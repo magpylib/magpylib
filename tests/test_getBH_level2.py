@@ -233,3 +233,50 @@ def test_sensor_rotation3():
     Bpath = mag3.getB(src,sens)
 
     assert np.allclose(B0t,Bpath)
+
+
+def test_object_tiling():
+    """ test if object tiling works when input paths are of various lengths
+    """
+    src1 = mag3.current.Circular(current=1, dim=1)
+    src1.rotate_from_angax(10,'x',anchor=(0,1,0),steps=30)
+
+    src2 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+    src2.move_by((1,1,1),steps=20)
+
+    src3 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+    src4 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+
+    col = mag3.Collection(src3, src4)
+    src3.move_by((1,1,1), steps=11)
+    src4.move_by((1,1,1), steps=30)
+
+    possis = [[1,2,3]]*5
+    sens = mag3.Sensor(pos_pix=possis)
+
+    assert src1.pos.shape == (31, 3)
+    assert src2.pos.shape == (21, 3)
+    assert src3.pos.shape == (12, 3)
+    assert src4.pos.shape == (31, 3)
+    assert sens.pos.shape == (3,)
+
+    assert src1.rot.as_quat().shape == (31, 4)
+    assert src2.rot.as_quat().shape == (21, 4)
+    assert src3.rot.as_quat().shape == (12, 4)
+    assert src4.rot.as_quat().shape == (31, 4)
+    assert sens.rot.as_quat().shape == (4,)
+
+    B = mag3.getB([src1,src2,col], [sens,possis])
+    assert B.shape == (3, 31, 2, 5, 3)
+
+    assert src1.pos.shape == (31, 3)
+    assert src2.pos.shape == (21, 3)
+    assert src3.pos.shape == (12, 3)
+    assert src4.pos.shape == (31, 3)
+    assert sens.pos.shape == (3,)
+
+    assert src1.rot.as_quat().shape == (31, 4)
+    assert src2.rot.as_quat().shape == (21, 4)
+    assert src3.rot.as_quat().shape == (12, 4)
+    assert src4.rot.as_quat().shape == (31, 4)
+    assert sens.rot.as_quat().shape == (4,)

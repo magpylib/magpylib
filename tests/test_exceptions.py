@@ -8,7 +8,7 @@ from magpylib._lib.fields.field_wrap_BH_v import getBHv_level2
 from magpylib._lib.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
     MagpylibBadInputShape)
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.utility import format_obj_input, get_good_path_length
+from magpylib._lib.utility import format_obj_input, format_src_inputs, format_obs_inputs
 from magpylib._lib.utility import test_path_format as tpf
 
 
@@ -143,22 +143,29 @@ def utility_format_obj_input():
     format_obj_input([pm1,pm2,333])
 
 
+def utility_format_src_inputs():
+    """ bar src input
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    format_src_inputs([pm1,pm2,1])
+
+
+def utility_format_obs_inputs():
+    """ bar src input
+    """
+    sens1 = mag3.Sensor()
+    sens2 = mag3.Sensor()
+    possis = [1,2,3]
+    format_obs_inputs([sens1,sens2,possis,'whatever'])
+
+
 def utility_test_path_format():
     """ bad path format input
     """
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm1.pos = [(1,2,3),(1,2,3)]
     tpf(pm1)
-
-
-def utility_get_good_path_length():
-    """ Bad path length input
-    """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm1.move_by((1,2,3),steps=11)
-    pm2.move_by((1,2,3),steps=12)
-    get_good_path_length([pm1,pm2])
 
 
 def box_no_mag():
@@ -348,9 +355,10 @@ class TestExceptions(unittest.TestCase):
     def test_except_utility(self):
         """ utility
         """
-        self.assertRaises(MagpylibBadUserInput, utility_get_good_path_length)
         self.assertRaises(MagpylibBadUserInput, utility_test_path_format)
         self.assertRaises(MagpylibBadUserInput, utility_format_obj_input)
+        self.assertRaises(MagpylibBadUserInput, utility_format_src_inputs)
+        self.assertRaises(MagpylibBadUserInput, utility_format_obs_inputs)
 
     def test_except_class_BaseGeo(self):
         """ BaseGeo
