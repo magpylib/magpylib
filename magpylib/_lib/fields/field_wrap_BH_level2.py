@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._lib.utility import format_obj_input, get_good_path_length, all_same
+from magpylib._lib.utility import (all_same, check_static_sensor_orient,
+    format_src_inputs, format_obs_inputs)
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibInternalError
 from magpylib import _lib
@@ -30,25 +31,6 @@ def tile_dim1(group: list, n_pp: int):
     return dimv
 
 
-def tile_pos(group: list, n_pp: int, n_pix: int):
-    """ tile up object positions
-    """
-    # pylint: disable=protected-access
-    posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
-    posv = posv.reshape((-1, 3))
-    return posv
-
-
-def tile_rot(group: list, n_pp:int, n_pix:int):
-    """ tile up observer positions
-    """
-    # pylint: disable=protected-access
-    rotv = np.array([np.tile(src._rot.as_quat(),n_pix).reshape(n_pp,4) for src in group])
-    rotv = rotv.reshape((-1, 4))
-    rotobj = R.from_quat(rotv)
-    return rotobj
-
-
 def tile_moment(group: list, n_pp: int):
     """ tile up moments of shape (3,)
     """
@@ -68,9 +50,17 @@ def tile_current(group: list, n_pp: int):
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     """ create dictionary for level1 input of Box, Cylinder, Sphere
     """
+    # pylint: disable=protected-access
+
     # tile up basics
-    posv = tile_pos(group, n_pp, n_pix)
-    rotobj = tile_rot(group, n_pp, n_pix)
+    # pos
+    posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
+    posv = posv.reshape((-1, 3))
+    # rot
+    rotv = np.array([np.tile(src._rot.as_quat(),n_pix).reshape(n_pp,4) for src in group])
+    rotv = rotv.reshape((-1, 4))
+    rotobj = R.from_quat(rotv)
+    # pos_obs
     posov = np.tile(poso, (len(group),1))
 
     # src type
@@ -139,84 +129,79 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     Cylinder = _lib.obj_classes.Cylinder
     Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
-    Sensor = _lib.obj_classes.Sensor
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
 
-    # format input -------------------------------------------------------------
-    if not isinstance(sources, list):          # input = a single source (or collection)
+    # CHECK AND FORMAT INPUT ---------------------------------------------------
+
+    # format sources input:
+    #   allow only bare src objects or 1D lists of src and col
+    #   wrap bare src objects in list
+    #   create an ordered list src_list with all sources (flattened collections)
+    if not isinstance(sources, list):
         sources = [sources]
-    src_list = format_obj_input(sources) # flatten Collections
+    src_list = format_src_inputs(sources)
 
-    if isinstance(observers, Sensor):                 # input = Sensor
-        sensors = [observers]
-    elif isinstance(observers, (tuple,np.ndarray)):   # input = tuple or ndarray
-        sensors = [Sensor(pos_pix=observers)]
-    elif isinstance(observers, list):                 # input = list
-        if any(isinstance(obs,Sensor) for obs in observers):   # input = [sensor, tuple, senor, ...]
-            sensors = []
-            for obs in observers:
-                if isinstance(obs, Sensor):
-                    sensors += [obs]
-                else:
-                    sensors += [Sensor(pos_pix=obs)]
-        else:                                  # input = [(1,2,3), (1,2,3), ...]
-            sensors = [Sensor(pos_pix=observers)]
+    # format observer inputs:
+    #   allow only bare sensor, possis, or a list thereof
+    #   create a list of sensor instances where possi inputs are moved to pos_pix
+    sensors = format_obs_inputs(observers)
 
-    # perform sensor checks ----------------------------------------------------
-
-    # check if all observer input shapes are similar. Cannot accept different input shapes as
-    #   it would lead to incomplete axes in the return arrays.
+    # check if all sensor pixel shapes are similar.
+    #   Cannot accept different obs pos input shapes as this would lead to incomplete
+    #   axes in the return arrays.
     pix_shapes = [sens.pos_pix.shape for sens in sensors]
     if not all_same(pix_shapes):
         raise MagpylibBadUserInput('Different observer input shapes not allowed.'+
             ' All pos_pix and pos_obs input shapes must be similar !')
     pix_shape = pix_shapes[0]
 
-    # determine which sensors have unit roation so that they dont have to be rotated back later
+    # check which sensors have unit roation
+    #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0,0,0,1.])
     unrotated_sensors = [all(all(r==unitQ) for r in sens._rot.as_quat()) for sens in sensors]
 
-    # detemine which sensors have a static orientation (static sensor or translation path)
-    static_sensor_rot = []
-    for sens in sensors:
-        if len(sens._pos)==1:           # no sensor path (sensor is static)
-            static_sensor_rot += [True]
-        else:                           # there is a sensor path
-            rot = sens.rot.as_quat()
-            if np.all(rot == rot[0]):          # path with static orient
-                static_sensor_rot += [True]
-            else:                              # sensor rotation changes along path
-                static_sensor_rot += [False]
+    # check which sensors have a static orientation
+    #   either static sensor or translation path
+    #   later such sensors require less back-rotation effort (performance issue)
+    static_sensor_rot = check_static_sensor_orient(sensors)
 
     # some important quantities -------------------------------------------------
-    obj_list = src_list + sensors
+    obj_list = set(src_list + sensors) # unique obj entries only !!!
     l0 = len(sources)
     l = len(src_list)
     k = len(sensors)
 
-    # input path check + tile up static objects --------------------------------
-    # tile up length 1 paths
-    #    error if any path format is bad
-    #    error if any path length is not m or 1
-    m = get_good_path_length(obj_list)
-    # store pointers to objects that are tiled up
-    reset_objects = []
+    # tile up paths -------------------------------------------------------------
+    #   all obj paths that are shorter than max-length are filled up with the last
+    #   postion/orientation of the object (static paths)
+    path_lengths = [len(obj._pos) for obj in obj_list]
+    m = max(path_lengths)
+
+    # objects to tile up and reset below
+    mask_reset = [m!=pl for pl in path_lengths]
+    reset_obj = [obj for obj,mask in zip(obj_list,mask_reset) if mask]
+    reset_obj_m0 = [pl for pl,mask in zip(path_lengths,mask_reset) if mask]
+
     if m>1:
-        for obj in obj_list: # can have same obj several times in obj_list through a collection
-            if len(obj._pos) == 1:
-                reset_objects += [obj]
-                obj.pos = np.tile(obj.pos, (m,1))
-                rotq = np.tile(obj._rot.as_quat(), (m,1))
-                obj.rot = R.from_quat(rotq)
+        for obj,m0 in zip(reset_obj, reset_obj_m0):
+            # length to be tiled
+            m_tile = m-m0
+            # tile up position
+            tile_pos = np.tile(obj._pos[-1], (m_tile,1))
+            obj.pos = np.concatenate((obj._pos, tile_pos))
+            # tile up orientation
+            tile_orient = np.tile(obj._rot.as_quat()[-1], (m_tile,1))
+            tile_orient = np.concatenate((obj._rot.as_quat(), tile_orient))
+            obj.rot = R.from_quat(tile_orient)
 
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pos_pix, 3)
     #   allows sensors with different pos_pix shapes
     poso =[[r.apply(sens.pos_pix.reshape(-1,3)) + p
             for r,p in zip(sens._rot, sens._pos)]
-           for sens in sensors] # shape (k, nk, 3)
+           for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)
     n_pp = len(poso)
     n_pix = int(n_pp/m)
@@ -240,8 +225,6 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif isinstance(src, Circular):
             src_sorted[4] += [src]
             order[4] += [i]
-        else:
-            raise MagpylibBadUserInput('Unrecognized object in sources input')
 
     # evaluate each group in one vectorized step -------------------------------
     B = np.empty((l,m,n_pix,3))                               # allocate B
@@ -297,8 +280,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         B = np.squeeze(B)
 
     # reset tiled objects
-    for obj in reset_objects:
-        obj.pos = obj.pos[0]
-        obj.rot = obj.rot[0]
+    for obj,m0 in zip(reset_obj, reset_obj_m0):
+        obj.pos = obj.pos[:m0]
+        obj.rot = obj.rot[:m0]
 
     return B

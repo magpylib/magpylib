@@ -78,6 +78,106 @@ def format_obj_input(objects: Sequence) -> list:
     return obj_list
 
 
+def format_src_inputs(sources: list) -> list:
+    """
+    checks if sources format is 1D [src1, src2, src3, col1, ...]
+    returns a flattened list of sources
+
+    ### Args:
+    - sources
+
+    ### Returns:
+    - list: flattened, ordered list of sources
+
+    ### Info:
+    - raises an error if sources format is bad
+    """
+    # avoid circular imports
+    src_class_types = (
+        _lib.obj_classes.Box,
+        _lib.obj_classes.Cylinder,
+        _lib.obj_classes.Sphere,
+        _lib.obj_classes.Dipole,
+        _lib.obj_classes.Circular)
+    Collection = _lib.obj_classes.Collection
+
+    src_list = []
+    for src in sources:
+        if isinstance(src, Collection):
+            src_list += src.sources
+        elif isinstance(src, src_class_types):
+            src_list += [src]
+        else:
+            raise MagpylibBadUserInput('Unknown input object type.')
+
+    return src_list
+
+
+def format_obs_inputs(observers) -> list:
+    """
+    checks if observer input is one of the following:
+        - bare Sensor
+        - tupe or ndarray
+        - list
+            - list of sensor, tuple, sensor, ...
+            - list of positions
+
+    ### Args:
+    - observers
+
+    ### Returns:
+    - list of sensors
+
+    ### Info:
+    - raises an error if sources format is bad
+    """
+
+    # import type, avoid circular imports
+    Sensor = _lib.obj_classes.Sensor
+
+    # case 1: sensor
+    if isinstance(observers, Sensor):
+        return [observers]
+    # case 2: tuple or ndarray of possitions
+    if isinstance(observers, (tuple,np.ndarray)):
+        return [Sensor(pos_pix=observers)]
+    #case 3: list
+    if isinstance(observers, list):
+        # case 3a: [sens, possis, sens, sens, ...]
+        if any(isinstance(obs,Sensor) for obs in observers):
+            sensors = []
+            for obs in observers:
+                if isinstance(obs, Sensor):
+                    sensors += [obs]
+                elif isinstance(obs, (list, tuple, np.ndarray)):
+                    sensors += [Sensor(pos_pix=obs)]
+                else:
+                    raise MagpylibBadUserInput('Unknown input object type.')
+        # case 3b: list of positions
+        else:
+            sensors = [Sensor(pos_pix=observers)]
+
+    return sensors
+
+
+def check_static_sensor_orient(sensors):
+    """ test which sensors have a static orientation
+    """
+    #pylint: disable=protected-access
+    static_sensor_rot = []
+    for sens in sensors:
+        if len(sens._pos)==1:           # no sensor path (sensor is static)
+            static_sensor_rot += [True]
+        else:                           # there is a sensor path
+            rot = sens.rot.as_quat()
+            if np.all(rot == rot[0]):          # path with static orient (e.g. translation)
+                static_sensor_rot += [True]
+            else:                              # sensor rotation changes along path
+                static_sensor_rot += [False]
+    return static_sensor_rot
+
+
+
 def check_duplicates(src_list: Sequence) -> list:
     """ checks for and eliminates source duplicates in a list of sources
 
@@ -118,32 +218,6 @@ def test_path_format(inp):
     if not result:
         msg = 'Bad path format (rot-pos with different lengths)'
         raise MagpylibBadUserInput(msg)
-
-
-def get_good_path_length(obj_list: list) -> bool:
-    """ check if all paths have good format and
-    are either length 1 or same length m
-    exits if
-
-    Parameters
-    ----------
-    obj_list: list of BaseGeo objects
-
-    Returns
-    -------
-    path length m
-    """
-    # pylint: disable=protected-access
-    test_path_format(obj_list)
-
-    path_lenghts = [len(obj._pos) for obj in obj_list]
-    m = max(path_lenghts)
-
-    if all(pl in (1,m) for pl in path_lenghts):
-        return m
-
-    msg = 'Bad path format (different path lengths !=1 detected)'
-    raise MagpylibBadUserInput(msg)
 
 
 def all_same(lst:list)->bool:
