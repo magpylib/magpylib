@@ -133,7 +133,7 @@ def faces_sphere(src, show_path):
     return all_faces
 
 
-def system_size(face_points, pix_points, dipole_points, markers, path_points):
+def system_size(face_points, pix_points, dipole_points, markers, path_points, current_points):
     """compute system size for display
     """
     # limits of current axis with drawn sensors and paths
@@ -154,6 +154,8 @@ def system_size(face_points, pix_points, dipole_points, markers, path_points):
 
     if len(path_points)>0:
         pts += path_points
+
+    pts += current_points
 
     # determine min/max from all to generate aspect=1 plot
     pts = np.array(pts)

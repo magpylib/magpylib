@@ -58,6 +58,19 @@ def test_Sensor_display():
     assert x is None, 'display test fail'
 
 
+def test_Circular_display():
+    """ testing display for Circular source
+    """
+    ax = plt.subplot(projection='3d')
+    src = mag3.current.Circular(current=1, dim=1)
+    x = src.display(axis=ax)
+    assert x is None, 'display test fail'
+
+    src.rotate_from_angax(123, 'x', anchor=(1,2,3), steps=35)
+    x = src.display(axis=ax, show_path=3)
+    assert x is None, 'display test fail'
+
+
 def test_col_display():
     """ testing display
     """

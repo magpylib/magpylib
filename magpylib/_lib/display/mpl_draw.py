@@ -208,3 +208,38 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles):
         length=arrowlength)
 
     return
+
+
+def draw_circular(circulars, show_path, ax):
+    """ draw circulars and return a list of positions
+    """
+    # pylint: disable=protected-access
+
+    # graphical settings
+    discret = 72+1
+    col = 'k'
+    lw = 1
+
+    draw_pos = [] # line positions
+    for circ in circulars:
+
+        # add src attributes position and orientation depending on show_path
+        if not isinstance(show_path, bool) and circ._pos.ndim>1:
+            rots = circ._rot[::-show_path]
+            poss = circ._pos[::-show_path]
+        else:
+            rots = [circ._rot[-1]]
+            poss = [circ._pos[-1]]
+
+        # init orientation line positions
+        radius = circ.dim/2
+        angs = np.linspace(0, 2*np.pi, discret)
+        possis0 = np.array([radius*np.cos(angs), radius*np.sin(angs), np.zeros((discret))]).T
+
+        # apply pos and rot, draw, store line positions
+        for rot,pos in zip(rots,poss):
+            possis1 = rot.apply(possis0) + pos
+            ax.plot(possis1[:,0], possis1[:,1], possis1[:,2], color=col, lw=lw)
+            draw_pos += list(possis1)
+
+    return draw_pos
