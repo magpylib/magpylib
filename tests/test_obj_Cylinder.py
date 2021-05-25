@@ -21,7 +21,7 @@ from magpylib.magnet import Cylinder
 #     pm = Cylinder(mag,dim)
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-#         pm.move_by(mv).rotate_from_angax(a,aa,aaa)
+#         pm.move(mv).rotate_from_angax(a,aa,aaa)
 #     B += [pm.getB(poso,niter=100)]
 # B = np.array(B)
 # inp = [mags,dims,posos,angs,axs,anchs,movs,B]
@@ -41,7 +41,7 @@ def test_Cylinder_basics():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move_by(mv).rotate_from_angax(a,aa,aaa)
+            pm.move(mv).rotate_from_angax(a,aa,aaa)
 
         Btest += [pm.getB(poso)]
     Btest = np.array(Btest)

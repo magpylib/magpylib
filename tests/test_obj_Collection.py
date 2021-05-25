@@ -30,7 +30,7 @@ import magpylib as mag3
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
 #         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-#             pm.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+#             pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 #     B += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
 # B = np.array(B)
 # inp = [mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,B]
@@ -77,9 +77,9 @@ def test_Collection_basics():
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
             for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-                pm.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+                pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 
-            col1.move_by(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+            col1.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
 
         B1 += [mag3.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]
@@ -122,7 +122,7 @@ def test_col_reset_path():
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
     col = mag3.Collection(pm1,pm2)
-    col.move_by((1,2,3),steps=100)
+    col.move([(1,2,3)]*10)
     col.reset_path()
     assert col[0].pos.ndim==1, 'col reset path fail'
     assert col[1].pos.ndim==1, 'col reset path fail'

@@ -1,7 +1,7 @@
 """ some utility functions"""
 from typing import Sequence
 import numpy as np
-from scipy.spatial.transform import Rotation as R
+#from scipy.spatial.transform import Rotation as R
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
 
@@ -13,27 +13,6 @@ def format_getBH_class_inputs(inp):
     if len(inp)==1:
         return inp[0]
     return list(inp)
-
-
-def rotobj_from_angax(angle: float, axis: np.ndarray) -> R:
-    """ Create rot object from angle axis input.
-
-    Args:
-    - angle (float): angle in [rad]
-    - axis (arr3): dimensionless axis
-
-    Returns:
-    - R: scipy rotation object
-    """
-    ang = float(angle)
-    len_ax = np.linalg.norm(axis)
-    if len_ax == 0:
-        rotvec = np.zeros(3)
-    else:
-        rotvec = axis/len_ax*ang
-    rotobj = R.from_rotvec(rotvec)
-
-    return rotobj
 
 
 def format_obj_input(objects: Sequence) -> list:

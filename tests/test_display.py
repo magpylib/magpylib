@@ -12,7 +12,7 @@ def test_Cylinder_display():
     x = src.display(axis=ax,show_path=15)
     assert x is None, 'show_path should revert to True'
 
-    src.move_by((4,4,4),steps=33)
+    src.move([(.4,.4,.4)]*33, increment=True)
     x = src.display(axis=ax,show_path=False)
     assert x is None, 'display test fail'
 
@@ -25,7 +25,7 @@ def test_Sphere_display():
     x = src.display(axis=ax,show_path=15)
     assert x is None, 'show_path should revert to True'
 
-    src.move_by((4,4,4),steps=33)
+    src.move([(.4,.4,.4)]*20, increment=True)
     x = src.display(axis=ax,show_path=False)
     assert x is None, 'display test fail'
 
@@ -34,7 +34,7 @@ def test_Box_display():
     """ testing display
     """
     src = Box((1,2,3),(1,2,3))
-    src.move_by((3,3,3),steps=15)
+    src.move([(.1,.1,.1)]*20, increment=True)
     plt.ion()
     x = src.display(show_path=5, direc=True)
     plt.close()
@@ -50,7 +50,7 @@ def test_Sensor_display():
     """
     ax = plt.subplot(projection='3d')
     sens = mag3.Sensor(pos_pix=[(1,2,3),(2,3,4)])
-    sens.move_by((10,1,10),steps=33)
+    sens.move([(.4,.4,.4)]*33, increment=True)
     x = sens.display(axis=ax, markers=[(100,100,100)], show_path=15)
     assert x is None, 'display test fail'
 
@@ -66,7 +66,7 @@ def test_Circular_display():
     x = src.display(axis=ax)
     assert x is None, 'display test fail'
 
-    src.rotate_from_angax(123, 'x', anchor=(1,2,3), steps=35)
+    src.rotate_from_angax([5]*35, 'x', anchor=(1,2,3))
     x = src.display(axis=ax, show_path=3)
     assert x is None, 'display test fail'
 
@@ -90,7 +90,7 @@ def test_dipole_display():
     ax2 = plt.subplot(projection='3d')
     dip = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
     dip2 = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
-    dip2.move_by((1,2,3), steps=5)
+    dip2.move([(.4,.4,.4)]*5, increment=True)
     x = dip.display(axis=ax2)
     assert x is None, 'display test fail'
     x = dip.display(axis=ax2, show_path=2)

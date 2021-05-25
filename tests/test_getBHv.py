@@ -13,9 +13,9 @@ def test_getBv1():
     dim = [3,3]
 
     pm = Cylinder(mag, dim)
-    pm.move_to((5,0,0),steps=15)
-    pm.rotate_from_angax(666,'y',anchor=0,steps=25)
-    pm.move_by((0,10,0),steps=-20)
+    pm.move([(.5,0,0)]*15, increment=True)
+    pm.rotate_from_angax(np.linspace(0,666,25), 'y', anchor=0)
+    pm.move([(0,x,0) for x in np.linspace(0,5,5)])
     B2 = pm.getB(pos_obs)
 
     pos = pm.pos

@@ -1,15 +1,7 @@
 import numpy as np
 import magpylib as mag3
-from magpylib._lib.utility import (rotobj_from_angax, check_duplicates,
+from magpylib._lib.utility import (check_duplicates,
     only_allowed_src_types)
-
-def test_rotobj_from_angax():
-    """ test special case axis=0
-    """
-    a = 1
-    aa = (0,0,0)
-    x = rotobj_from_angax(a,aa)
-    assert np.all(x.as_quat()==(0,0,0,1)), 'axis = 0 fail'
 
 
 def test_duplicates():

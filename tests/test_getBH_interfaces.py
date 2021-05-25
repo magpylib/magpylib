@@ -6,7 +6,7 @@ def test_getB_interfaces1():
     """ self-consitent test of different possibilities for computing the field
     """
     src = mag3.magnet.Box((1,2,3), (1,2,3))
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
     B = mag3.getBv(
@@ -39,7 +39,7 @@ def test_getB_interfaces2():
     """ self-consitent test of different possibilities for computing the field
     """
     src = mag3.magnet.Box((1,2,3), (1,2,3))
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
     B = mag3.getBv(
@@ -65,7 +65,7 @@ def test_getB_interfaces3():
     """ self-consitent test of different possibilities for computing the field
     """
     src = mag3.magnet.Box((1,2,3), (1,2,3))
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
     B = mag3.getBv(
@@ -97,7 +97,7 @@ def test_getH_interfaces1():
     mag=(22,-33,44)
     dim=(3,2,3)
     src = mag3.magnet.Box(mag,dim)
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
@@ -134,7 +134,7 @@ def test_getH_interfaces2():
     mag=(22,-33,44)
     dim=(3,2,3)
     src = mag3.magnet.Box(mag,dim)
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
@@ -164,7 +164,7 @@ def test_getH_interfaces3():
     mag=(22,-33,44)
     dim=(3,2,3)
     src = mag3.magnet.Box(mag,dim)
-    src.move_by((1,2,3),steps=10)
+    src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pos_pix=poso)
