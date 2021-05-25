@@ -169,100 +169,124 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         return self
 
 
-    def move_by(self, displacement, steps=None):
+    def move(self, displacement, start=-1, increment=False):
         """
-        Linear displacement of Collection by argument vector.
+        Translates all objects in the collection by the input displacement (can be a path).
 
         Parameters
         ----------
-        displacement: array_like, shape (3,), units [mm]
-            Displacement vector in units of [mm].
+        displacement: array_like, shape (3,) or (N,3), units [mm]
+            Displacement vector (3,) or path (N,3) in units of [mm].
 
-        steps: int or None, default=None
-            steps=None: Object is moved without generating a path. Specifically,
-                path[-1] of object is set to the new position. This is similar
-                to having steps=-1.
-            steps < 0: Merge last |steps| path positions with a linear motion
-                from 0 to displacement. Specifically, steps=-1 will just
-                add displacement to path[-1].
-            steps > 0: Append a linear motion from path[-1] to path[-1] + displacement
-                to the exising path.
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input displacements are absolute.
+            If `increment=True`, input displacements are interpreted as increments of each other.
+            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
+            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
+
+        Note:
+        -----
+        This operation is sequentielly applied to every object in the collection.
 
         Returns:
         --------
         self: Collection
         """
         for s in self:
-            s.move_by(displacement, steps)
+            s.move(displacement, start, increment)
         return self
 
 
-    def rotate(self, rot, anchor=None, steps=None):
+    def rotate(self, rot, anchor=None, start=-1, increment=False):
         """
-        Rotate all sources in Collection.
+        Rotates all objects in the collection by a given rotation input (can be a path).
 
         Parameters
         ----------
         rot: scipy Rotation object
-            Rotation input.
-
-        anchor: None or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point. By default the objects will
-            rotate about their own center.
-
-        steps: int, optional, default=None
-            steps=None: Objects are rotated without generating a path. Specifically, path[-1]
-                of objects are set to new position and orientation. This is similar to having
-                steps=-1.
-            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
-                Specifically, steps=-1 will just add the rotation to path[-1].
-            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
-                at path[-1].
-
-        Returns:
-        --------
-        self : Collection
-        """
-        for s in self:
-            s.rotate(rot, anchor, steps)
-        return self
-
-
-    def rotate_from_angax(self, angle, axis, anchor=None, steps=None, degree=True):
-        """
-        Rotate all sources in Collection using angle-axis-anchor input.
-
-        Parameters
-        ----------
-        angle: float, unit [deg] or [rad]
-            Angle of rotation in [deg] or [rad].
-
-        axis: array_like, shape (3,)
-            The axis of rotation.
+            Rotation to be applied. The rotation object can feature a single rotation
+            of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
-            By default every object will rotate about its own center.
+            By default (`anchor=None`) the object will rotate about its own center.
+
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input rotations are absolute.
+            If `increment=True`, input rotations are interpreted as increments of each other.
+
+        Notes:
+        ------
+        This operation is sequentielly applied to every object in the collection.
+
+        Returns:
+        --------
+        self: Collection
+        """
+        for s in self:
+            s.rotate(rot, anchor, start, increment)
+        return self
+
+
+    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
+        """
+        Rotates all objects in the collection using angle-axis-anchor input.
+
+        Parameters
+        ----------
+        angle: int/float or array_like with shape (n,) unit [deg] (by default)
+            Angle of rotation, or a vector of n angles defining a rotation path in units
+            of [deg] (by default).
+
+        axis: str or array_like, shape (3,)
+            The direction of the axis of rotation. Input can be a vector of shape (3,)
+            or a string 'x', 'y' or 'z' to denote respective directions.
+
+        anchor: None or array_like, shape (3,), default=None, unit [mm]
+            The axis of rotation passes through the anchor point given in units of [mm].
+            By default (`anchor=None`) the object will rotate about its own center.
+
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input rotations are absolute.
+            If `increment=True`, input rotations are interpreted as increments of each other.
+            For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
+            [1,2,3,5,7].
 
         degree: bool, default=True
             By default angle is given in units of [deg]. If degree=False, angle is given
             in units of [rad].
 
-        steps: int, optional, default=None
-            steps=None: Objects are rotated without generating a path. Specifically, path[-1]
-                of objects are set to new position and orientation. This is similar to having
-                steps=-1.
-            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
-                Specifically, steps=-1 will just add the rotation to path[-1].
-            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
-                at path[-1].
+        Notes:
+        ------
+        This operation is sequentielly applied to every object in the collection.
 
         Returns:
         --------
-        self : object with position and orientation properties
+        self: Collection
         """
         for s in self:
-            s.rotate_from_angax(angle, axis, anchor, steps, degree)
+            s.rotate_from_angax(angle, axis, anchor, start, increment, degree)
         return self
 
 

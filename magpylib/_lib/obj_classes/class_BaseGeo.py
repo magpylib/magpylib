@@ -1,9 +1,7 @@
 """BaseGeo class code"""
 
-from contextlib import contextmanager
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._lib.utility import rotobj_from_angax
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.config import Config
@@ -48,9 +46,6 @@ class BaseGeo:
         # set pos and orient attributes
         self.pos = pos
         self.rot = rot
-        self._mm = False        # path_merge
-        self._mm_steps = None   # path_merge steps
-        self._mm_first = True   # path_merge first operation
 
     # properties ----------------------------------------------------
     @property
@@ -61,10 +56,7 @@ class BaseGeo:
         -------
         object position-path: np.array, shape (3,) or (N,3)
         """
-
-        if len(self._pos) == 1:     # single path position - reduce dimension
-            return self._pos[0]
-        return self._pos            # return full path
+        return np.squeeze(self._pos)
 
 
     @pos.setter
@@ -80,18 +72,15 @@ class BaseGeo:
         # input check
         if Config.CHECK_INPUTS:
             if position.shape[-1] != 3:
-                msg = 'Bad position input shape.'
-                raise MagpylibBadInputShape(msg)
+                raise MagpylibBadInputShape('Bad position input shape. Must be (3,) or (N,3)')
+            #if position.ndim > 2:
+            #    raise MagpylibBadInputShape('Bad position input shape. Must be (3,) or (N,3)')
 
         # create correct shape of _pos
-        if position.ndim == 1:               # single position - increase arg dimension to (1,3)
-            self._pos = np.array([position])
-        elif position.ndim == 2:             # multi position
+        if position.ndim == 1:           # single position (3,) -> increase shape to (1,3)
+            self._pos = np.expand_dims(position,0)
+        else:                            # multi position (N,3)
             self._pos = position
-        else:
-            msg = 'Position input must be of shape (3,) or (N,3)'
-            raise MagpylibBadUserInput(msg)
-
 
     @property
     def rot(self):
@@ -146,366 +135,268 @@ class BaseGeo:
         self.rot = R.from_quat((0,0,0,1))
 
 
-    def move_by(self, displacement, steps=None):
+    def move(self, displacement, start=-1, increment=False):
         """
-        Linear displacement of object by argument vector.
+        Translates the object by the input displacement (can be a path).
 
         Parameters
         ----------
-        displacement: array_like, shape (3,), units [mm]
-            Displacement vector in units of [mm].
+        displacement: array_like, shape (3,) or (N,3), units [mm]
+            Displacement vector (3,) or path (N,3) in units of [mm].
 
-        steps: int or None, default=None
-            steps=None: Object is moved without generating a path. Specifically,
-                path[-1] of object is set to the new position. This is similar
-                to having steps=-1.
-            steps < 0: Merge last |steps| path positions with a linear motion
-                from 0 to displacement. Specifically, steps=-1 will just
-                add displacement to path[-1].
-            steps > 0: Append a linear motion from path[-1] to path[-1] + displacement
-                to the exising path.
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input displacements are absolute.
+            If `increment=True`, input displacements are interpreted as increments of each other.
+            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
+            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
+
+        Note:
+        -----
+        'move' simply uses vector addition to merge inp_path and old_path. It keeps the old
+        orientation. If inp_path extends beyond the old_path, the old_path will be padded
+        by its last entry before paths are added up.
 
         Returns:
         --------
         self: Object with pos and rot properties
         """
 
-        # steps
-        steps = get_steps(steps, self)
+        # input type check
+        # if Config.CHECK_INPUTS:
+        #     if not isinstance(displacement, (list, tuple, np.ndarray)):
+        #         msg = 'Bad input type. Displacement must be list, tuple or ndarray.'
+        #         raise MagpylibBadUserInput(msg)
+        #     if not isinstance(start_pos, int):
+        #         msg = 'Bad input type. start_pos must be int.'
+        #         raise MagpylibBadUserInput(msg)
 
-        # secure input
-        displ = np.array(displacement, dtype=float)
+        # secure type and format
+        inpath = np.array(displacement, dtype=float)
+        if inpath.ndim == 1:
+            inpath = np.expand_dims(inpath, 0)
 
-        # input check
-        if Config.CHECK_INPUTS:
-            if displ.shape != (3,):
-                msg = 'Bad displacement input shape.'
-                raise MagpylibBadInputShape(msg)
+        # load old path
+        old_ppath = self._pos
+        old_opath = self._rot.as_quat()
 
-        # load current path
-        path_pos = self._pos
+        lenop = len(old_ppath)
+        lenin = len(inpath)
 
-        # generate additional pos path
-        ts = np.linspace(0, 1, abs(steps)+1)[1:]
-        addpath_pos = displ * np.tile(ts,(3,1)).T
+        # change start to positive values in [0, lenop]
+        if start == 'attach':
+            start = lenop
+        if start<0:
+            start += lenop
+        start = 0 if start<0 else lenop if start>lenop else start
 
-        # apply to existing path
-        if steps > 0:
-            # load rotation path and tile last entry
-            path_rot = self._rot.as_quat()
-            addpath_rot = np.tile(path_rot[-1],(steps,1))
-            # set new path
-            self.pos = np.r_[path_pos, addpath_pos + path_pos[-1]]
-            self.rot = R(np.r_[path_rot, addpath_rot])
-        else:
-            # apply operation on top of path[steps:]
-            self._pos[steps:] = path_pos[steps:] + addpath_pos
+        # # input format check
+        # if Config.CHECK_INPUTS:
+        #     if displ.shape != (3,):
+        #         raise MagpylibBadInputShape('Bad displacement input shape.')
+        #     if abs(start) > lenop:
+        #         print('Warning: Given |start| > len(old_path)! setting to len(old_path).')
 
-        return self
+        # incremental input -> absolute input
+        if increment:
+            for i,d in enumerate(inpath[:-1]):
+                inpath[i+1] = inpath[i+1] + d
 
+        end = start + lenin # end position of new_path
 
-    def move_to(self, target_pos, steps=None):
-        """
-        Linear motion of object to target position.
+        til = end - lenop
+        if til > 0: # case inpos extends beyond old_path -> tile up old_path
+            old_ppath = np.pad(old_ppath, ((0,til),(0,0)), 'edge')
+            old_opath = np.pad(old_opath, ((0,til),(0,0)), 'edge')
+            self.rot = R.from_quat(old_opath)
 
-        Parameters
-        ----------
-        target_pos: array_like, shape (3,), unit [mm]
-            Target position vector in units of [mm].
-
-        steps: int or None, default=None
-            steps=None: Object is moved without generating a path. Specifically,
-                path[-1] of object is set to the new position. This is similar
-                to having steps=-1.
-            steps < 0: Merge last |steps| path positions with a linear motion
-                from 0 to displacement. Specifically, steps=-1 will just
-                add displacement to path[-1].
-            steps > 0: Append a linear motion from path[-1] to path[-1] + displacement
-                to the exising path.
-
-        Returns:
-        --------
-        self: Object with pos and rot properties
-        """
-
-        # steps
-        steps = get_steps(steps, self)
-
-        # avoid mm-motion calling get_steps again in
-        #   .move_by() call, mm_first problem
-        mm_flag = self._mm
-        if mm_flag:
-            self._mm = False
-
-        # secure input
-        tgt_pos = np.array(target_pos, dtype=float)
-
-        # input check
-        if Config.CHECK_INPUTS:
-            if tgt_pos.shape != (3,):
-                msg = 'Bad target_pos input shape.'
-                raise MagpylibBadInputShape(msg)
-
-        # load current path
-        path_pos = self._pos
-
-        # call move_by
-        if steps>0:
-            displ = tgt_pos - path_pos[-1]
-        if steps<0:
-            displ = tgt_pos - path_pos[steps]
-
-        self.move_by(displ, steps=steps)
-
-        # after motion application turn _mm on again
-        if mm_flag:
-            self._mm = True
+        # add new_ppath to old_ppath
+        old_ppath[start:end] += inpath
+        self.pos = old_ppath
 
         return self
 
 
-    def rotate(self, rot, anchor=None, steps=None):
+    def rotate(self, rot, anchor=None, start=-1, increment=False):
         """
-        Rotate object about anchor.
+        Rotates the object by a given rotation input (can be a path).
 
         Parameters
         ----------
         rot: scipy Rotation object
-            Rotation input.
+            Rotation to be applied. The rotation object can feature a single rotation
+            of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
-            By default the object will rotate about its own center.
+            By default (`anchor=None`) the object will rotate about its own center.
 
-        steps: int, optional, default=None
-            steps=None: Object is rotated without generating a path. Specifically, path[-1]
-                of object is set to new position and orientation. This is similar to having
-                steps=-1.
-            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
-                Specifically, steps=-1 will just add the rotation to path[-1].
-            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
-                at path[-1].
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input rotations are absolute.
+            If `increment=True`, input rotations are interpreted as increments of each other.
 
         Returns:
         --------
-        self : object with position and orientation properties
+        self: Object with pos and rot properties
+
+        Notes:
+        ------
+        'rotate' applies given rotations to the original orientation. If inp_path extends beyond
+        the old_path, the old_path will be padded by its last entry before paths are added up.
+
+        Thanks to Benjamin for pointing this natural functionality out.
         """
 
-        # steps
-        steps = get_steps(steps, self)
+        # Config.CHECK_INPUTS type checks
 
-        # secure input type
+        # secure input and format
+        inrotQ = rot.as_quat()
+        if inrotQ.ndim==1:
+            inrotQ = np.expand_dims(inrotQ, 0)
+            rot = R.from_quat(inrotQ)
+
         if anchor is not None:
-            anchor = np.array(anchor, dtype=float)      # if None
+            anchor = np.array(anchor, dtype=float)
 
-            # input check
-            if Config.CHECK_INPUTS:
-                if anchor.shape != (3,):                             # is not a 3-vector
-                    if (anchor.shape!=()) and (np.sum(anchor)!=0):   # is also not the 0-array
-                        msg = 'Bad anchor input shape.'
-                        raise MagpylibBadInputShape(msg)
+        # Config.CHECK_INPUTS format checks (after securing array types)
 
-        # load current path
-        path_pos = self._pos
-        path_rot = self._rot.as_quat()
+        # load old path
+        old_ppath = self._pos
+        old_opath = self._rot.as_quat()
 
-        # generate rotations
-        stepping = np.linspace(0,1,abs(steps)+1)[1:]
-        rots = R.from_rotvec([rot.as_rotvec()*s for s in stepping])
+        lenop = len(old_ppath)
+        lenin = len(inrotQ)
 
-        if steps > 0:
-            # apply rot to path[-1] and add resulting vector to path
-            rot_new = rots*self._rot[-1]
-            self.rot = R(np.r_[path_rot, rot_new.as_quat()])
-            # compute positions and add to path
-            if anchor is not None:
-                pos_new = rots.apply(path_pos[-1]-anchor) + anchor
-            else:
-                pos_new = np.tile(path_pos[-1],(steps,1))
-            self.pos = np.r_[self._pos, pos_new]
+        # change start to positive values in [0, lenop]
+        if start == 'attach':
+            start = lenop
+        if start<0:
+            start += lenop
+        start = 0 if start<0 else lenop if start>lenop else start
 
-        else:
-            # apply rotation to path[steps:] and apply result to path[steps:]
-            rot_new = rots*self._rot[steps:]
-            self.rot = R(np.r_[path_rot[:steps], rot_new.as_quat()])
-            if anchor is not None:
-                pos_new = rots.apply(path_pos[steps:]-anchor) + anchor      # rotate about anchor
-                self._pos[steps:] = pos_new
+        # Config.CHECK_INPUTS - warning
+        #     if abs(start) > lenop:
+        #         print('Warning: Given |start| > len(old_path)! setting to len(old_path).')
+
+        # incremental input -> absolute input
+        #   missing Rotation object item assign to improve this code
+        if increment:
+            rot1 = rot[0]
+            for i,r in enumerate(rot[1:]):
+                rot1 = rot1*r
+                inrotQ[i+1] = rot1.as_quat()
+            rot = R.from_quat(inrotQ)
+
+        end = start + lenin  # end position of new_path
+
+        # allocate new paths
+        til = end - lenop
+        if til <= 0: # case inpos completely inside of existing path
+            new_ppath = old_ppath
+            new_opath = old_opath
+        else: # case inpos extends beyond old_path -> tile up old_path
+            new_ppath = np.pad(old_ppath, ((0,til),(0,0)), 'edge')
+            new_opath = np.pad(old_opath, ((0,til),(0,0)), 'edge')
+
+        # position change when there is an anchor
+        if anchor is not None:
+            new_ppath[start:end] -= anchor
+            new_ppath[start:end] = rot.apply(new_ppath[start:end])
+            new_ppath[start:end] += anchor
+
+        # set new rotation
+        oldrot = R.from_quat(new_opath[start:end])
+        new_opath[start:end] = (rot*oldrot).as_quat()
+
+        # store new position and orientation
+        self.rot = R.from_quat(new_opath)
+        self.pos = new_ppath
 
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, steps=None, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
         """
         Object rotation from angle-axis-anchor input.
 
         Parameters
         ----------
-        angle: float, unit [deg] or [rad]
-            Angle of rotation in [deg] or [rad].
+        angle: int/float or array_like with shape (n,) unit [deg] (by default)
+            Angle of rotation, or a vector of n angles defining a rotation path in units
+            of [deg] (by default).
 
-        axis: array_like, shape (3,) or str
-            The (direction of) the axis of rotation. Input can be a vector of shape (3,)
+        axis: str or array_like, shape (3,)
+            The direction of the axis of rotation. Input can be a vector of shape (3,)
             or a string 'x', 'y' or 'z' to denote respective directions.
 
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
-            By default the object will rotate about its own center.
+            By default (`anchor=None`) the object will rotate about its own center.
+
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input rotations are absolute.
+            If `increment=True`, input rotations are interpreted as increments of each other.
+            For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
+            [1,2,3,5,7].
 
         degree: bool, default=True
             By default angle is given in units of [deg]. If degree=False, angle is given
             in units of [rad].
 
-        steps: int, optional, default=None
-            steps=None: Object is rotated without generating a path. Specifically, path[-1]
-                of object is set to new position and orientation. This is similar to having
-                steps=-1.
-            steps < 0: Merge last |steps| path entries with stepwise rotation from 0 to rot.
-                Specifically, steps=-1 will just add the rotation to path[-1].
-            steps > 0: Append stepwise rotation from 0 to rot to existing path starting
-                at path[-1].
+        Notes:
+        ------
+        'rotate' applies given rotations to the original orientation. If inp_path extends beyond
+        the old_path, the old_path will be padded by its last entry before paths are added up.
 
         Returns:
         --------
         self : object with position and orientation properties
         """
-        # pylint: disable=too-many-branches
 
-        # steps
-        steps = get_steps(steps, self)
+        # Config.CHECK_INPUTS type checks
+        angle = np.array(angle)
 
-        # avoid mm-motion calling get_steps again
-        #   in .rotate() call, mm_first problem
-        mm_flag = self._mm
-        if mm_flag:
-            self._mm = False
+        # secure input
+        if isinstance(axis,str):                    # generate axis from string
+            ax = np.array((1,0,0)) if axis=='x'\
+                else np.array((0,1,0)) if axis=='y'\
+                else np.array((0,0,1)) if axis=='z'\
+                else MagpylibBadUserInput(f'Bad axis string input \"{axis}\"')
+        else:                                       # generate axis from vector
+            ax = np.array(axis, dtype=float)
+            ax = axis/np.linalg.norm(axis)
+
+        # Config.CHECK_INPUTS format checks (after type secure)
+            # axis.shape != (3,)
+            # axis must not be (0,0,0)
 
         # degree to rad
         if degree:
             angle = angle/180*np.pi
 
-        # secure input
-        if isinstance(axis,str):                    # generate axis from string
-            if axis=='x':
-                axis=np.array((1,0,0))
-            elif axis=='y':
-                axis=np.array((0,1,0))
-            elif axis=='z':
-                axis=np.array((0,0,1))
-            else:
-                msg = f'Bad axis string input \"{axis}\"'
-                raise MagpylibBadUserInput(msg)
-        else:                                       # generate axis from vector
-            axis = np.array(axis, dtype=float)
-
-            # input check
-            if Config.CHECK_INPUTS:
-                if axis.shape != (3,):
-                    msg = 'Bad axis input shape.'
-                    raise MagpylibBadInputShape(msg)
-
-        # Split up rotation into pi-rotation and rest-rotation as
-        #   the scipy.Rotation module is limited to express rotations
-        #   only within the interval [-pi,pi]
-        # pi-rotation includes all multiples of pi
-        # rest-rotation includes the rest
-
-        # apply rest-rotation (within [-pi,pi])
-        ang_sign = np.sign(angle)
-        ang_rest = abs(angle) % np.pi
-        rot_rest = rotobj_from_angax(ang_sign*ang_rest, axis)
-        self.rotate(rot_rest, anchor, steps)
-
-        # apply rotations beyond pi (on top of rest-rotation)
-        n_rot = int(abs(angle)/np.pi)    # number of pi-rotations
-
-        if n_rot>0:
-            rot_pi = rotobj_from_angax(ang_sign*np.pi, axis) # rotate n_rot times
-            for _ in range(n_rot):
-                self.rotate(rot_pi, anchor, -abs(steps))
-
-        # after motion application turn _mm on again
-        if mm_flag:
-            self._mm = True
+        # apply rotation
+        angle = np.tile(angle, (3,1)).T
+        rot = R.from_rotvec(ax*angle)
+        self.rotate(rot, anchor, start, increment)
 
         return self
-
-
-def get_steps(steps:int, bg:BaseGeo):
-    """ compute correct steps
-
-    Parameters
-    ----------
-    steps: int
-        number of steps
-
-    bg: object that inherits BaseGeo
-        object for which move operations are applied
-
-    Returns:
-    --------
-        steps: int
-    """
-    # pylint: disable=protected-access
-
-    # path_merge
-    if bg._mm:
-        if bg._mm_first:
-            steps = bg._mm_steps
-            assert steps>0, 'ERROR: path_merge - steps must be larger than 0'
-            bg._mm_first = False
-        else:
-            steps = -bg._mm_steps
-
-    # normal_motion
-    else:
-        # set default value
-        if steps is None:
-            steps = -1
-
-        # bad steps input, set to max size
-        path_len = len(bg._pos)
-        if steps < -path_len:
-            steps = -path_len
-            print('WARNING: src.motion() - steps<path_len, setting to max')
-
-    return steps
-
-
-# ON INTERFACE
-@contextmanager
-def path_merge(obj,steps):
-    """
-    Merge different object paths.
-
-    Parameters:
-    -----------
-    obj: object with pos and rot properties
-        Object or Collection to which a combined motion should be applied.
-
-    steps: int
-        Number of steps of the combined motion.
-    """
-    # pylint: disable=protected-access
-
-    # enter
-    if isinstance(obj, Collection):
-        for src in obj:
-            src._mm = True
-            src._mm_steps = steps
-    else:
-        obj._mm = True
-        obj._mm_steps = steps
-
-    yield obj
-
-    # exit
-    if isinstance(obj, Collection):
-        for src in obj:
-            src._mm = False
-            src._mm_steps = None
-            src._mm_first = True
-    else:
-        obj._mm = False
-        obj._mm_steps = None
-        obj._mm_first = True

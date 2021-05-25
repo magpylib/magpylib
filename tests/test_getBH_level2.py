@@ -116,33 +116,33 @@ def test_getB_level2_input_path():
 
     fb = pm1.getB([(x,0,0) for x in np.linspace(0,-1,11)])
 
-    pm1.move_by((1,0,0),steps=10)
-    B=mag3.getB(pm1,(0,0,0),)
+    pm1.move([(.1,0,0)]*10, start='attach', increment=True)
+    B=mag3.getB(pm1,(0,0,0))
     result = fb
-    assert B.shape == result.shape, "FAILOR3 shape"
-    assert np.allclose(B, result), 'FAILOR3 values'
+    assert B.shape == result.shape, "FAILOR3a shape"
+    assert np.allclose(B, result), 'FAILOR3a values'
 
     B=mag3.getB(pm1,sens1)
     result = fb
-    assert B.shape == result.shape, "FAILOR3 shape"
-    assert np.allclose(B, result), 'FAILOR3 values'
+    assert B.shape == result.shape, "FAILOR3b shape"
+    assert np.allclose(B, result), 'FAILOR3b values'
 
     B=mag3.getB([pm1,pm1],sens1)
     result = np.array([fb,fb])
-    assert B.shape == result.shape, "FAILOR3 shape"
-    assert np.allclose(B, result), 'FAILOR3 values'
+    assert B.shape == result.shape, "FAILOR3c shape"
+    assert np.allclose(B, result), 'FAILOR3c values'
 
     fb = pm2.getB([[(x,0,0),(x,0,0)] for x in np.linspace(0,-1,11)])
     B=mag3.getB([pm1,pm1],[sens1,sens1])
     result = np.array([fb,fb])
-    assert B.shape == result.shape, "FAILOR3 shape"
-    assert np.allclose(B, result), 'FAILOR3 values'
+    assert B.shape == result.shape, "FAILOR3d shape"
+    assert np.allclose(B, result), 'FAILOR3d values'
 
     fb = pm2.getB([[[(x,0,0),(x,0,1),(x,0,2)]]*2 for x in np.linspace(0,-1,11)])
     B=mag3.getB([pm1,pm1],[sens2,sens2])
     result = np.array([fb,fb])
-    assert B.shape == result.shape, "FAILOR3 shape"
-    assert np.allclose(B, result), 'FAILOR3 values'
+    assert B.shape == result.shape, "FAILOR3e shape"
+    assert np.allclose(B, result), 'FAILOR3e values'
 
 
 def test_path_tile():
@@ -151,7 +151,7 @@ def test_path_tile():
     """
     pm1 = mag3.magnet.Box((11,22,33),(1,2,3))
     pm2 = mag3.magnet.Box((11,22,33),(1,2,3))
-    pm2.move_by((10,10,10),steps=33)
+    pm2.move([[10/33]*3]*33, increment=True)
 
     path1p = pm1.pos
     path1r = pm1.rot
@@ -172,7 +172,7 @@ def test_sensor_rotation1():
     """
     src = mag3.magnet.Box((1000,0,0),(1,1,1))
     sens = mag3.Sensor(pos=(1,0,0))
-    sens.rotate_from_angax(360,'z',anchor=None,steps=55)
+    sens.rotate_from_angax([360/55]*55, 'z', start=1, anchor=None, increment=True)
     B = src.getB(sens)
 
     B0 = B[0,0]
@@ -190,7 +190,7 @@ def test_sensor_rotation2():
 
     poss = (0,0,0)
     sens = mag3.Sensor(pos_pix=poss)
-    sens.rotate_from_angax(90,'z',steps=2)
+    sens.rotate_from_angax([0,45,90], 'z')
 
     sens2 = mag3.Sensor(pos_pix=poss)
     sens2.rotate_from_angax(-45,'z')
@@ -204,19 +204,19 @@ def test_sensor_rotation2():
 
     B = mag3.getB(src,poss,squeeze=True)
     Btest = x1
-    assert np.allclose(np.around(B,decimals=2),Btest), 'FAIL: mag  +  pos'
+    assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  pos'
 
     B = mag3.getB([src],[sens],squeeze=True)
     Btest = np.array([x1,x2,x3])
-    assert np.allclose(np.around(B,decimals=2),Btest), 'FAIL: mag  +  sens_rot_path'
+    assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  sens_rot_path'
 
     B = mag3.getB([src],[sens,poss],squeeze=True)
     Btest = np.array([[x1,x1],[x2,x1],[x3,x1]])
-    assert np.allclose(np.around(B,decimals=2),Btest), 'FAIL: mag  +  sens_rot_path, pos'
+    assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  sens_rot_path, pos'
 
     B = mag3.getB([src,col],[sens,poss],squeeze=True)
     Btest = np.array([[[x1,x1],[x2,x1],[x3,x1]],[[x1b,x1b],[x2b,x1b],[x3b,x1b]]])
-    assert np.allclose(np.around(B,decimals=2),Btest), 'FAIL: mag,col  +  sens_rot_path, pos'
+    assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag,col  +  sens_rot_path, pos'
 
 
 def test_sensor_rotation3():
@@ -229,7 +229,7 @@ def test_sensor_rotation3():
     B0 = mag3.getB(src,sens)
     B0t = np.tile(B0,(12,1))
 
-    sens.move_by((0,0,0), steps=11)
+    sens.move([(0,0,0)]*12)
     Bpath = mag3.getB(src,sens)
 
     assert np.allclose(B0t,Bpath)
@@ -239,44 +239,44 @@ def test_object_tiling():
     """ test if object tiling works when input paths are of various lengths
     """
     src1 = mag3.current.Circular(current=1, dim=1)
-    src1.rotate_from_angax(10,'x',anchor=(0,1,0),steps=30)
+    src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
 
     src2 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
-    src2.move_by((1,1,1),steps=20)
+    src2.move([(1,1,1)]*21)
 
     src3 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
     src4 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
 
     col = mag3.Collection(src3, src4)
-    src3.move_by((1,1,1), steps=11)
-    src4.move_by((1,1,1), steps=30)
+    src3.move([(1,1,1)]*12)
+    src4.move([(1,1,1)]*31)
 
     possis = [[1,2,3]]*5
     sens = mag3.Sensor(pos_pix=possis)
 
-    assert src1.pos.shape == (31, 3)
-    assert src2.pos.shape == (21, 3)
-    assert src3.pos.shape == (12, 3)
-    assert src4.pos.shape == (31, 3)
-    assert sens.pos.shape == (3,)
+    assert src1.pos.shape == (31, 3), 'a1'
+    assert src2.pos.shape == (21, 3), 'a2'
+    assert src3.pos.shape == (12, 3), 'a3'
+    assert src4.pos.shape == (31, 3), 'a4'
+    assert sens.pos.shape == (3,), 'a5'
 
-    assert src1.rot.as_quat().shape == (31, 4)
-    assert src2.rot.as_quat().shape == (21, 4)
-    assert src3.rot.as_quat().shape == (12, 4)
-    assert src4.rot.as_quat().shape == (31, 4)
-    assert sens.rot.as_quat().shape == (4,)
+    assert src1.rot.as_quat().shape == (31, 4), 'b1'
+    assert src2.rot.as_quat().shape == (21, 4), 'b2'
+    assert src3.rot.as_quat().shape == (12, 4), 'b3'
+    assert src4.rot.as_quat().shape == (31, 4), 'b4'
+    assert sens.rot.as_quat().shape == (4,), 'b5'
 
     B = mag3.getB([src1,src2,col], [sens,possis])
     assert B.shape == (3, 31, 2, 5, 3)
 
-    assert src1.pos.shape == (31, 3)
-    assert src2.pos.shape == (21, 3)
-    assert src3.pos.shape == (12, 3)
-    assert src4.pos.shape == (31, 3)
-    assert sens.pos.shape == (3,)
+    assert src1.pos.shape == (31, 3), 'c1'
+    assert src2.pos.shape == (21, 3), 'c2'
+    assert src3.pos.shape == (12, 3), 'c3'
+    assert src4.pos.shape == (31, 3), 'c4'
+    assert sens.pos.shape == (3,), 'c5'
 
-    assert src1.rot.as_quat().shape == (31, 4)
-    assert src2.rot.as_quat().shape == (21, 4)
-    assert src3.rot.as_quat().shape == (12, 4)
-    assert src4.rot.as_quat().shape == (31, 4)
-    assert sens.rot.as_quat().shape == (4,)
+    assert src1.rot.as_quat().shape == (31, 4), 'd1'
+    assert src2.rot.as_quat().shape == (21, 4), 'd2'
+    assert src3.rot.as_quat().shape == (12, 4), 'd3'
+    assert src4.rot.as_quat().shape == (31, 4), 'd4'
+    assert sens.rot.as_quat().shape == (4,), 'd5'

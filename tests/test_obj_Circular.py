@@ -29,9 +29,8 @@ def test_Cicular_problem_positions():
     """
     src = mag3.current.Circular(current=1, dim=2)
     sens = mag3.Sensor()
-    sens.move_to([0,1,0], steps=1)
-    sens.move_to([1,0,0], steps=1)
-
+    sens.move([[0,1,0],[1,0,0]], start=1)
+    
     B = src.getB(sens)
     Btest = np.array([[0,0,0.6283185307179586], [0,0,0], [0,0,0]])
     assert np.allclose(B, Btest)
