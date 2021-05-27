@@ -4,6 +4,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.exceptions import (MagpylibBadUserInput,
     MagpylibBadInputShape)
+import magpylib as mag3
 
 a3 = np.array([1,2,3])
 a2 = np.array([1,2])
@@ -129,6 +130,21 @@ def badInput_rotate_from_angax9():
     bg.rotate_from_angax(123, [0,0,0])
 
 
+# MAGNETIZATION/MOMENT-----------------------------------------
+
+def badMag_input1():
+    """bad magnetization input type"""
+    mag3.magnet.Box(mag='woot', dim=a3)
+
+def badMag_input2():
+    """bad magnetization input format"""
+    mag3.magnet.Box(mag=(1,2,3,4), dim=a3)
+
+def badMag_input3():
+    """no magnetization input"""
+    mag3.magnet.Box(dim=a3)
+
+
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing """
 
@@ -166,3 +182,9 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax7)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax8)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax9)
+
+    def test_magnetization_input(self):
+        """ bad magnetization inputs"""
+        self.assertRaises(MagpylibBadUserInput, badMag_input1)
+        self.assertRaises(MagpylibBadInputShape, badMag_input2)
+        self.assertRaises(MagpylibBadUserInput, badMag_input3)

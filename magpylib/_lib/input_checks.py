@@ -109,3 +109,25 @@ def check_degree_type(deg):
     if not isinstance(deg, bool):
         msg = 'degree input must be bool (True or False).'
         raise MagpylibBadUserInput(msg)
+
+
+def check_mag_type(mag, origin):
+    """ magnetization/moment input must be vector (list, tuple, ndarray)
+    """
+    if not isinstance(mag, (list, tuple, np.ndarray)):
+        msg = origin + ' input must be vector (list, tuple, ndarray).'
+        raise MagpylibBadUserInput(msg)
+
+def check_mag_init(mag, origin):
+    """ check if mag was initialized
+    """
+    if None in mag:
+        msg = origin + ' input required.'
+        raise MagpylibBadUserInput(msg)
+
+def check_mag_format(mag, origin):
+    """ mag must be shape (3,)
+    """
+    if not mag.shape==(3,):
+        msg = f'Bad {origin} input shape. Must be shape (3,).'
+        raise MagpylibBadInputShape(msg)

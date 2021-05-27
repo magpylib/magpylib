@@ -1,19 +1,18 @@
 """Magnet Sphere class code"""
 
-import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
+from magpylib._lib.obj_classes.class_BaseHomMag import BaseHomMag
+from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
 
 # init for tool tips
 dia=None
 mx=my=mz=None
 
-
 # ON INTERFACE
-class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Spherical magnet with homogeneous magnetization.
 
@@ -85,38 +84,11 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
         BaseDisplayRepr.__init__(self)
+        BaseHomMag.__init__(self, mag)
 
-        # set mag and dim attributes
-        self.mag = mag
+        # set attributes
         self.dim = dim
         self.obj_type = 'Sphere'
-
-    # properties ----------------------------------------------------
-    @property
-    def mag(self):
-        """ Magnet magnetization in units of [mT].
-        """
-        return self._mag
-
-    @mag.setter
-    def mag(self, magnetization):
-        """ Set magnetization vector, shape (3,), unit [mT].
-        """
-        # input check
-        if Config.CHECK_INPUTS:
-            if None in magnetization:
-                raise MagpylibBadUserInput('Magnetization input required')
-
-        # secure type
-        magnetization = np.array(magnetization,dtype=float)
-
-        # input check
-        if Config.CHECK_INPUTS:
-            if magnetization.shape != (3,):
-                raise MagpylibBadInputShape('Bad magnetization input shape.')
-
-        self._mag = magnetization
-
 
     @property
     def dim(self):
