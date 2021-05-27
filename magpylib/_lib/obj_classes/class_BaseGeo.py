@@ -3,9 +3,12 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
-from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
+from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
-
+from magpylib._lib.input_checks import (check_position_type, check_position_format,
+    check_start_type, check_increment_type, check_rot_type, check_anchor_type,
+    check_anchor_format, check_angle_type, check_axis_type, check_degree_type,
+    check_angle_format, check_axis_format)
 
 # ALL METHODS ON INTERFACE
 class BaseGeo:
@@ -66,21 +69,22 @@ class BaseGeo:
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
-        # secure input
-        position = np.array(position, dtype=float)
 
-        # input check
+        # check input type
         if Config.CHECK_INPUTS:
-            if position.shape[-1] != 3:
-                raise MagpylibBadInputShape('Bad position input shape. Must be (3,) or (N,3)')
-            #if position.ndim > 2:
-            #    raise MagpylibBadInputShape('Bad position input shape. Must be (3,) or (N,3)')
+            check_position_type(position, 'position')
 
-        # create correct shape of _pos
-        if position.ndim == 1:           # single position (3,) -> increase shape to (1,3)
-            self._pos = np.expand_dims(position,0)
-        else:                            # multi position (N,3)
-            self._pos = position
+        # position vector -> ndarray
+        pos = np.array(position, dtype=float)
+
+        # check input format
+        if Config.CHECK_INPUTS:
+            check_position_format(pos, 'position')
+
+        # expand if input is shape (3,)
+        if pos.ndim == 1:
+            pos = np.expand_dims(pos, 0)
+        self._pos = pos
 
     @property
     def rot(self):
@@ -92,31 +96,34 @@ class BaseGeo:
             Set rotation-path of object.
         """
 
-        if len(self._rot)==1:           # single path rotation - reduce dimension
+        if len(self._rot)==1:      # single path rotation - reduce dimension
             return self._rot[0]
-        return self._rot                # return full path
+        return self._rot           # return full path
 
 
     @rot.setter
-    def rot(self, inp: R):
+    def rot(self, rot):
         """ Set object rotation-path.
 
-        inp: scipy Rotation object, shape (1,) or (N,), default=None
+        rot: None or scipy Rotation, shape (1,) or (N,), default=None
             Set rotation-path of object. None generates a unit rotation
             for every path step.
         """
-        # None inp generates unit rotation
-        if inp is None:
-            path_length = len(self._pos)
-            self._rot = R.from_quat([(0,0,0,1)]*path_length)
+        # check input type
+        if Config.CHECK_INPUTS:
+            check_rot_type(rot)
 
-        # create correct shape of _rot
-        else:                        # single rotation - increase dimension to (1,3)
-            val = inp.as_quat()
+        # None input generates unit rotation
+        if rot is None:
+            self._rot = R.from_quat([(0,0,0,1)]*len(self._pos))
+
+        # expand rot.as_quat() to shape (1,4)
+        else:
+            val = rot.as_quat()
             if val.ndim == 1:
                 self._rot = R.from_quat([val])
-            else:                    # multi rotation
-                self._rot = inp
+            else:
+                self._rot = rot
 
 
     # dunders -------------------------------------------------------
@@ -168,40 +175,31 @@ class BaseGeo:
         self: Object with pos and rot properties
         """
 
-        # input type check
-        # if Config.CHECK_INPUTS:
-        #     if not isinstance(displacement, (list, tuple, np.ndarray)):
-        #         msg = 'Bad input type. Displacement must be list, tuple or ndarray.'
-        #         raise MagpylibBadUserInput(msg)
-        #     if not isinstance(start_pos, int):
-        #         msg = 'Bad input type. start_pos must be int.'
-        #         raise MagpylibBadUserInput(msg)
+        # check input types
+        if Config.CHECK_INPUTS:
+            check_position_type(displacement, 'displacement')
+            check_start_type(start)
+            check_increment_type(increment)
 
-        # secure type and format
+        # displacement vector -> ndarray
         inpath = np.array(displacement, dtype=float)
+
+        # check input format
+        if Config.CHECK_INPUTS:
+            check_position_format(displacement, 'displacement')
+
+        # expand if input is shape (3,)
         if inpath.ndim == 1:
             inpath = np.expand_dims(inpath, 0)
 
         # load old path
         old_ppath = self._pos
         old_opath = self._rot.as_quat()
-
         lenop = len(old_ppath)
         lenin = len(inpath)
 
         # change start to positive values in [0, lenop]
-        if start == 'attach':
-            start = lenop
-        if start<0:
-            start += lenop
-        start = 0 if start<0 else lenop if start>lenop else start
-
-        # # input format check
-        # if Config.CHECK_INPUTS:
-        #     if displ.shape != (3,):
-        #         raise MagpylibBadInputShape('Bad displacement input shape.')
-        #     if abs(start) > lenop:
-        #         print('Warning: Given |start| > len(old_path)! setting to len(old_path).')
+        start = adjust_start(start, lenop)
 
         # incremental input -> absolute input
         if increment:
@@ -233,9 +231,10 @@ class BaseGeo:
             Rotation to be applied. The rotation object can feature a single rotation
             of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
-        anchor: None or array_like, shape (3,), default=None, unit [mm]
+        anchor: None, 0 or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
+            `anchor=0` rotates the object about the origin (0,0,0).
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
@@ -260,18 +259,27 @@ class BaseGeo:
         Thanks to Benjamin for pointing this natural functionality out.
         """
 
-        # Config.CHECK_INPUTS type checks
+        # check input types
+        if Config.CHECK_INPUTS:
+            check_rot_type(rot)
+            check_anchor_type(anchor)
+            check_start_type(start)
+            check_increment_type(increment)
 
-        # secure input and format
+        # input anchor -> ndarray type
+        if anchor is not None:
+            anchor = np.array(anchor, dtype=float)
+
+        # check format
+        if Config.CHECK_INPUTS:
+            check_anchor_format(anchor)
+            # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
+
+        # expand rot.as_quat() to shape (1,4)
         inrotQ = rot.as_quat()
         if inrotQ.ndim==1:
             inrotQ = np.expand_dims(inrotQ, 0)
             rot = R.from_quat(inrotQ)
-
-        if anchor is not None:
-            anchor = np.array(anchor, dtype=float)
-
-        # Config.CHECK_INPUTS format checks (after securing array types)
 
         # load old path
         old_ppath = self._pos
@@ -281,15 +289,7 @@ class BaseGeo:
         lenin = len(inrotQ)
 
         # change start to positive values in [0, lenop]
-        if start == 'attach':
-            start = lenop
-        if start<0:
-            start += lenop
-        start = 0 if start<0 else lenop if start>lenop else start
-
-        # Config.CHECK_INPUTS - warning
-        #     if abs(start) > lenop:
-        #         print('Warning: Given |start| > len(old_path)! setting to len(old_path).')
+        start = adjust_start(start, lenop)
 
         # incremental input -> absolute input
         #   missing Rotation object item assign to improve this code
@@ -345,6 +345,7 @@ class BaseGeo:
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
+            `anchor=0` rotates the object about the origin (0,0,0).
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
@@ -373,18 +374,33 @@ class BaseGeo:
         self : object with position and orientation properties
         """
 
-        # Config.CHECK_INPUTS type checks
-        angle = np.array(angle)
+        # check input types
+        if Config.CHECK_INPUTS:
+            check_angle_type(angle)
+            check_axis_type(axis)
+            check_anchor_type(anchor)
+            check_start_type(start)
+            check_increment_type(increment)
+            check_degree_type(degree)
 
-        # secure input
-        if isinstance(axis,str):                    # generate axis from string
-            ax = np.array((1,0,0)) if axis=='x'\
-                else np.array((0,1,0)) if axis=='y'\
-                else np.array((0,0,1)) if axis=='z'\
+        # generate axis from string
+        if isinstance(axis, str):
+            axis = (1,0,0) if axis=='x'\
+                else (0,1,0) if axis=='y'\
+                else (0,0,1) if axis=='z' \
                 else MagpylibBadUserInput(f'Bad axis string input \"{axis}\"')
-        else:                                       # generate axis from vector
-            ax = np.array(axis, dtype=float)
-            ax = axis/np.linalg.norm(axis)
+
+        # input expand and ->ndarray
+        if isinstance(angle, (int, float)):
+            angle = (angle,)
+        angle = np.array(angle, dtype=float)
+        axis = np.array(axis, dtype=float)
+
+        # format checks
+        if Config.CHECK_INPUTS:
+            check_angle_format(angle)
+            check_axis_format(axis)
+            # anchor check in .rotate()
 
         # Config.CHECK_INPUTS format checks (after type secure)
             # axis.shape != (3,)
@@ -396,7 +412,31 @@ class BaseGeo:
 
         # apply rotation
         angle = np.tile(angle, (3,1)).T
-        rot = R.from_rotvec(ax*angle)
+        axis = axis/np.linalg.norm(axis)
+        rot = R.from_rotvec(axis*angle)
         self.rotate(rot, anchor, start, increment)
 
         return self
+
+
+def adjust_start(start, lenop):
+    """
+    change start to a value inside of [0,lenop], i.e. inside of the
+    old path.
+    """
+    if start=='attach':
+        start = lenop
+    elif start<0:
+        start += lenop
+
+    # fix out-of-bounds start values
+    if start<0:
+        start = 0
+        if Config.CHECK_INPUTS:
+            print('Warning: start out of path bounds. Setting start=0.')
+    elif start>lenop:
+        start = lenop
+        if Config.CHECK_INPUTS:
+            print(f'Warning: start out of path bounds. Setting start={lenop}.')
+
+    return start

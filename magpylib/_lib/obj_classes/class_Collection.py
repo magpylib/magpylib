@@ -217,6 +217,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
+            `anchor=0` rotates the object about the origin (0,0,0).
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
@@ -259,6 +260,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         anchor: None or array_like, shape (3,), default=None, unit [mm]
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
+            `anchor=0` rotates the object about the origin (0,0,0).
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
