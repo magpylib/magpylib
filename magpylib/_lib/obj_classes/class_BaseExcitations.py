@@ -2,7 +2,8 @@
 
 import numpy as np
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_mag_type, check_mag_format, check_mag_init
+from magpylib._lib.input_checks import (check_mag_type, check_mag_format,
+    check_mag_init, check_scalar_init, check_scalar_type)
 
 # MAG PROPERTY ON INTERFACE
 class BaseHomMag:
@@ -42,3 +43,36 @@ class BaseHomMag:
             check_mag_format(mag, 'magnetization')
 
         self._mag = mag
+
+
+# CURRENT PROPERTY ON INTERFACE
+class BaseCurrent:
+    """
+    provide scalar current attribute
+
+    Properties
+    ----------
+    current
+
+    Methods
+    -------
+    """
+    def __init__(self, current):
+        self.current = current
+
+    @property
+    def current(self):
+        """ Current in units of [A].
+        """
+        return self._current
+
+    @current.setter
+    def current(self, current):
+        """ Set Current value, unit [A].
+        """
+        # input type check
+        if Config.CHECK_INPUTS:
+            check_scalar_init(current, 'current')
+            check_scalar_type(current, 'current')
+
+        self._current = float(current)

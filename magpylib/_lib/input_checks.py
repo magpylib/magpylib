@@ -131,3 +131,18 @@ def check_mag_format(mag, origin):
     if not mag.shape==(3,):
         msg = f'Bad {origin} input shape. Must be shape (3,).'
         raise MagpylibBadInputShape(msg)
+
+
+def check_scalar_type(inp, origin):
+    """ scalar input must be int or float
+    """
+    if not isinstance(inp, (int, float)):
+        msg = origin + ' input must be scalar (int or float).'
+        raise MagpylibBadUserInput(msg)
+
+def check_scalar_init(inp, origin):
+    """ check if scalar input was initialized
+    """
+    if inp is None:
+        msg = origin + ' input required.'
+        raise MagpylibBadUserInput(msg)

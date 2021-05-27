@@ -4,7 +4,7 @@ import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._lib.obj_classes.class_BaseHomMag import BaseHomMag
+from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.config import Config
 

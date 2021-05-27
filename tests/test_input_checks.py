@@ -130,7 +130,7 @@ def badInput_rotate_from_angax9():
     bg.rotate_from_angax(123, [0,0,0])
 
 
-# MAGNETIZATION/MOMENT-----------------------------------------
+# EXCITATIONS -----------------------------------------
 
 def badMag_input1():
     """bad magnetization input type"""
@@ -143,6 +143,14 @@ def badMag_input2():
 def badMag_input3():
     """no magnetization input"""
     mag3.magnet.Box(dim=a3)
+
+def badCurrent_input1():
+    """bad current input type"""
+    mag3.current.Circular(current='1', dim=1)
+
+def badCurrent_input2():
+    """missing current input"""
+    mag3.current.Circular(dim=1)
 
 
 class TestExceptions(unittest.TestCase):
@@ -188,3 +196,5 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, badMag_input1)
         self.assertRaises(MagpylibBadInputShape, badMag_input2)
         self.assertRaises(MagpylibBadUserInput, badMag_input3)
+        self.assertRaises(MagpylibBadUserInput, badCurrent_input1)
+        self.assertRaises(MagpylibBadUserInput, badCurrent_input2)
