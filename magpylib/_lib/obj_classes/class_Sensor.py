@@ -2,10 +2,10 @@
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._lib.fields import getB, getH
-from magpylib._lib.exceptions import MagpylibBadInputShape
-from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.utility import format_star_input
 from magpylib._lib.config import Config
+from magpylib._lib.input_checks import check_vector_type, check_position_format
+from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
 
 # ON INTERFACE
@@ -84,31 +84,28 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pos_pix(self):
         """
-        Pixel pos in Sensor CS.
-
-        Returns
-        -------
-        Sensor pixel positions: np.array, shape (3,) or (N1,N2,...,3)
+        Pixel pos in Sensor CS, ndarray, shape (...,3,)
         """
         return self._pos_pix
 
 
     @pos_pix.setter
-    def pos_pix(self, pix_position):
+    def pos_pix(self, pix_pos):
         """
-        Set Sensor pixel positions.
-
-        pix_position: array_like, shape (3,) or (N1,N2,...,3)
-            Set pixel positions in Sensor CS.
+        Set Sensor pixel positions in Sensor CS, array_like, shape (...,3,)
         """
-        pix_position = np.array(pix_position, dtype=float)       # secure input
-
-        # input check
+        # check input type
         if Config.CHECK_INPUTS:
-            if pix_position.shape[-1] != 3:
-                raise MagpylibBadInputShape('Bad dimension input shape.')
+            check_vector_type(pix_pos, 'pixel_position')
 
-        self._pos_pix = pix_position
+        # input type -> ndarray
+        pix_pos = np.array(pix_pos, dtype=float)
+
+        # check input format
+        if Config.CHECK_INPUTS:
+            check_position_format(pix_pos, 'pixel_position')
+
+        self._pos_pix = pix_pos
 
 
     # methods -------------------------------------------------------
@@ -137,10 +134,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
-        sources = format_getBH_class_inputs(sources)
-        B = getB(sources, self, sumup=sumup, squeeze=squeeze)
-
-        return B
+        sources = format_star_input(sources)
+        return getBH_level2(True, sources, self, sumup, squeeze)
 
 
     def getH(self, *sources, sumup=False, squeeze=True):
@@ -168,6 +163,5 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
-        sources = format_getBH_class_inputs(sources)
-        H = getH(sources, self, sumup=sumup, squeeze=squeeze)
-        return H
+        sources = format_star_input(sources)
+        return getBH_level2(False, sources, self, sumup, squeeze)

@@ -3,16 +3,16 @@
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._lib.exceptions import MagpylibBadUserInput
+from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._lib.config import Config
+from magpylib._lib.input_checks import check_scalar_type, check_scalar_init
 
 # init for tool tips
 dia=None
 i0=None
 
-
 # ON INTERFACE
-class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
 
@@ -85,33 +85,11 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
         BaseDisplayRepr.__init__(self)
+        BaseCurrent.__init__(self, current)
 
         # set mag and dim attributes
-        self.current = current
         self.dim = dim
         self.obj_type = 'Circular'
-
-    # properties ----------------------------------------------------
-    @property
-    def current(self):
-        """ Current in units of [A].
-        """
-        return self._current
-
-    @current.setter
-    def current(self, current_inp):
-        """ Set current, float, unit [A].
-        """
-        # input check
-        if Config.CHECK_INPUTS:
-            if current_inp is None:
-                raise MagpylibBadUserInput('Current input required')
-
-        # secure type
-        current = float(current_inp)
-
-        self._current = current
-
 
     @property
     def dim(self):
@@ -120,12 +98,12 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH):
         return self._dim
 
     @dim.setter
-    def dim(self, dimension):
+    def dim(self, dim):
         """ Set Circular loop diameter, float, [mm].
         """
-        # input check
+        # input type and init check
         if Config.CHECK_INPUTS:
-            if dimension is None:
-                raise MagpylibBadUserInput('Dimension input required')
+            check_scalar_init(dim, 'dimension')
+            check_scalar_type(dim, 'dimension')
 
-        self._dim = float(dimension)
+        self._dim = float(dim)

@@ -39,7 +39,9 @@ def test_format_getBH_class_inputs():
 
     B3 = pm1.getB(sens,sens)
     B4 = pm1.getB([sens,sens])
-    assert np.allclose(B3,B4), 'sens,sens should give smae as [sens,sens]'
+    B44 = pm1.getB((sens,sens))
+    assert np.allclose(B3, B4), 'sens,sens should give same as [sens,sens]'
+    assert np.allclose(B3, B44), 'sens,sens should give same as (sens,sens)'
 
     B1 = sens.getH(pm1)*4
     B2 = sens.getH(pm1,pm2,col, sumup=True)

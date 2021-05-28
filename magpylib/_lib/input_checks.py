@@ -5,25 +5,13 @@ from magpylib._lib.exceptions import (MagpylibBadUserInput,
     MagpylibBadInputShape)
 
 
-def check_position_type(inp, origin):
+def check_path_format(inp, origin):
+    """ test if input has the correct shape (3,) or (N,3)
     """
-    position input must be vector (list, tuple, ndarray)
-    refer to origin with error msg
-    """
-    if not isinstance(inp, (list,tuple,np.ndarray)):
-        msg = f'{origin} input must be a vector (list, tuple or ndarray).'
-        raise MagpylibBadUserInput(msg)
-
-def check_position_format(inp, origin):
-    """
-    - test if input has the correct shape (3,) or (N,3)
-    - throw an error referring to origin if not
-    """
-    inp_arr = np.array(inp, dtype=float)
     msg = f'Bad {origin} input shape. Must be (3,) or (N,3)'
-    if not inp_arr.shape[-1] == 3:
+    if not inp.shape[-1] == 3:
         raise MagpylibBadInputShape(msg)
-    if not inp_arr.ndim in (1,2) :
+    if not inp.ndim in (1,2) :
         raise MagpylibBadInputShape(msg)
 
 
@@ -109,3 +97,50 @@ def check_degree_type(deg):
     if not isinstance(deg, bool):
         msg = 'degree input must be bool (True or False).'
         raise MagpylibBadUserInput(msg)
+
+
+
+def check_scalar_type(inp, origin):
+    """ scalar input must be int or float
+    """
+    if not isinstance(inp, (int, float)):
+        msg = origin + ' input must be scalar (int or float).'
+        raise MagpylibBadUserInput(msg)
+
+def check_scalar_init(inp, origin):
+    """ check if scalar input was initialized (former None)
+    """
+    if inp is None:
+        msg = origin + ' input required.'
+        raise MagpylibBadUserInput(msg)
+
+
+
+def check_vector_type(inp, origin):
+    """ vector input must be list, tuple or ndarray
+    """
+    if not isinstance(inp, (list, tuple, np.ndarray)):
+        msg = origin + ' input must be vector type (list, tuple or ndarray).'
+        raise MagpylibBadUserInput(msg)
+
+def check_vector_init(inp, origin):
+    """ check if vector input was initialized (former None vetor)
+    """
+    if None in inp:
+        msg = origin + ' input required.'
+        raise MagpylibBadUserInput(msg)
+
+def check_vector_format(inp, shape, origin):
+    """ check if vector input has correct format
+    """
+    if not inp.shape == shape:
+        msg = f'Bad {origin} input shape. Must be shape f{shape}.'
+        raise MagpylibBadInputShape(msg)
+
+
+def check_position_format(inp, origin):
+    """ test if input has the correct shape (...,3)
+    """
+    msg = f'Bad {origin} input shape. Must be (...,3).'
+    if not inp.shape[-1] == 3:
+        raise MagpylibBadInputShape(msg)

@@ -135,15 +135,13 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # CHECK AND FORMAT INPUT ---------------------------------------------------
 
     # format sources input:
-    #   allow only bare src objects or 1D lists of src and col
-    #   wrap bare src objects in list
-    #   create an ordered list src_list with all sources (flattened collections)
-    if not isinstance(sources, list):
-        sources = [sources]
-    src_list = format_src_inputs(sources)
+    #   input: allow only bare src objects or 1D lists/tuple of src and col
+    #   out: sources = ordered list of sources
+    #   out: src_list = ordered list of sources with flattened collections
+    sources, src_list = format_src_inputs(sources)
 
     # format observer inputs:
-    #   allow only bare sensor, possis, or a list thereof
+    #   allow only bare sensor, possis, or a list/tuple thereof
     #   create a list of sensor instances where possi inputs are moved to pos_pix
     sensors = format_obs_inputs(observers)
 

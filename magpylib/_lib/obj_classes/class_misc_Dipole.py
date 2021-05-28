@@ -4,12 +4,12 @@ import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibBadInputShape
 from magpylib._lib.config import Config
+from magpylib._lib.input_checks import (check_vector_format, check_vector_type,
+    check_vector_init)
 
 # init for tool tips
 mx=my=mz=None
-
 
 # ON INTERFACE
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
@@ -95,17 +95,16 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     def moment(self, mom):
         """ Set dipole moment vector, shape (3,), unit [mT*mm^3].
         """
-        # input check
+        # input type check
         if Config.CHECK_INPUTS:
-            if None in mom:
-                raise MagpylibBadUserInput('Moment input required')
+            check_vector_type(mom, 'moment')
+            check_vector_init(mom, 'moment')
 
         # secure type
         mom = np.array(mom, dtype=float)
 
-        # input check
+        # input format check
         if Config.CHECK_INPUTS:
-            if mom.shape != (3,):
-                raise MagpylibBadInputShape('Bad dipole moment input shape.')
+            check_vector_format(mom, (3,), 'moment')
 
         self._moment = mom
