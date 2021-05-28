@@ -5,7 +5,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import (check_position_type, check_position_format,
+from magpylib._lib.input_checks import (check_vector_type, check_path_format,
     check_start_type, check_increment_type, check_rot_type, check_anchor_type,
     check_anchor_format, check_angle_type, check_axis_type, check_degree_type,
     check_angle_format, check_axis_format)
@@ -72,14 +72,14 @@ class BaseGeo:
 
         # check input type
         if Config.CHECK_INPUTS:
-            check_position_type(position, 'position')
+            check_vector_type(position, 'position')
 
-        # position vector -> ndarray
+        # path vector -> ndarray
         pos = np.array(position, dtype=float)
 
         # check input format
         if Config.CHECK_INPUTS:
-            check_position_format(pos, 'position')
+            check_path_format(pos, 'position')
 
         # expand if input is shape (3,)
         if pos.ndim == 1:
@@ -177,7 +177,7 @@ class BaseGeo:
 
         # check input types
         if Config.CHECK_INPUTS:
-            check_position_type(displacement, 'displacement')
+            check_vector_type(displacement, 'displacement')
             check_start_type(start)
             check_increment_type(increment)
 
@@ -186,7 +186,7 @@ class BaseGeo:
 
         # check input format
         if Config.CHECK_INPUTS:
-            check_position_format(displacement, 'displacement')
+            check_path_format(inpath, 'displacement')
 
         # expand if input is shape (3,)
         if inpath.ndim == 1:

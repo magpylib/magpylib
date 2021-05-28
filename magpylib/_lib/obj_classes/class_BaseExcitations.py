@@ -2,8 +2,9 @@
 
 import numpy as np
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import (check_mag_type, check_mag_format,
-    check_mag_init, check_scalar_init, check_scalar_type)
+from magpylib._lib.input_checks import (check_vector_init, check_vector_type, check_vector_format,
+    check_scalar_init, check_scalar_type)
+
 
 # MAG PROPERTY ON INTERFACE
 class BaseHomMag:
@@ -30,17 +31,17 @@ class BaseHomMag:
     def mag(self, mag):
         """ Set magnetization vector, shape (3,), unit [mT].
         """
-        # input type check
+        # input type and init check
         if Config.CHECK_INPUTS:
-            check_mag_type(mag, 'magnetization')
-            check_mag_init(mag, 'magnetization')
+            check_vector_type(mag, 'magnetization')
+            check_vector_init(mag, 'magnetization')
 
         # input type -> ndarray
         mag = np.array(mag, dtype=float)
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_mag_format(mag, 'magnetization')
+            check_vector_format(mag, (3,),'magnetization')
 
         self._mag = mag
 
@@ -70,7 +71,7 @@ class BaseCurrent:
     def current(self, current):
         """ Set Current value, unit [A].
         """
-        # input type check
+        # input type and init check
         if Config.CHECK_INPUTS:
             check_scalar_init(current, 'current')
             check_scalar_type(current, 'current')

@@ -4,8 +4,8 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
+from magpylib._lib.input_checks import check_scalar_type, check_scalar_init
 
 # init for tool tips
 dia=None
@@ -98,12 +98,12 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         return self._dim
 
     @dim.setter
-    def dim(self, dimension):
+    def dim(self, dim):
         """ Set Circular loop diameter, float, [mm].
         """
-        # input check
+        # input type and init check
         if Config.CHECK_INPUTS:
-            if dimension is None:
-                raise MagpylibBadUserInput('Dimension input required')
+            check_scalar_init(dim, 'dimension')
+            check_scalar_type(dim, 'dimension')
 
-        self._dim = float(dimension)
+        self._dim = float(dim)

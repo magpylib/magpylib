@@ -5,7 +5,8 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_mag_format, check_mag_type, check_mag_init
+from magpylib._lib.input_checks import (check_vector_format, check_vector_type,
+    check_vector_init)
 
 # init for tool tips
 mx=my=mz=None
@@ -96,14 +97,14 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
         """
         # input type check
         if Config.CHECK_INPUTS:
-            check_mag_type(mom, 'moment')
-            check_mag_init(mom, 'moment')
+            check_vector_type(mom, 'moment')
+            check_vector_init(mom, 'moment')
 
         # secure type
         mom = np.array(mom, dtype=float)
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_mag_format(mom, 'moment')
+            check_vector_format(mom, (3,), 'moment')
 
         self._moment = mom
