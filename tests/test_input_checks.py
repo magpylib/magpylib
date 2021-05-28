@@ -189,7 +189,7 @@ def bad_dim_input10():
     mag3.current.Circular(current=1)
 
 
-# MISC ------------------------------------------------------------
+# MISC SOURCE ------------------------------------------------------------
 
 def bad_misc_input1():
     """Sensor pos_pix type"""
@@ -199,6 +199,22 @@ def bad_misc_input2():
     mag3.Sensor(pos_pix=[[1,2]]*3)
 
 
+# OBSERVER ------------------------------------------------------------
+
+src = mag3.current.Circular(current=1, dim=1)
+sens = mag3.Sensor()
+def bad_observer_input1():
+    """getBH observer format"""
+    mag3.getB(src, a234)
+def bad_observer_input2():
+    """getBH observer format"""
+    mag3.getB(src, [sens, [(1,2),(1,2)]])
+def bad_observer_input3():
+    """getBH observer format"""
+    mag3.getB(src, [(1,2),(1,2)])
+def bad_observer_input4():
+    """bad observer type"""
+    mag3.getB(src, 123)
 
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing """
@@ -263,3 +279,10 @@ class TestExceptions(unittest.TestCase):
         """ bad misc source inputs"""
         self.assertRaises(MagpylibBadUserInput, bad_misc_input1)
         self.assertRaises(MagpylibBadInputShape, bad_misc_input2)
+
+    def test_observer_inputs(self):
+        """ bad observer inputs"""
+        self.assertRaises(MagpylibBadInputShape, bad_observer_input1)
+        self.assertRaises(MagpylibBadInputShape, bad_observer_input2)
+        self.assertRaises(MagpylibBadInputShape, bad_observer_input3)
+        self.assertRaises(MagpylibBadUserInput, bad_observer_input4)

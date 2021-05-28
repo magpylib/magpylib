@@ -1,7 +1,7 @@
 """BaseGetBHsimple class code"""
 
-from magpylib._lib.fields import getB, getH
-from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._lib.utility import format_star_input
 
 
 # ALL METHODS ON INTERFACE
@@ -42,9 +42,8 @@ class BaseGetBH:
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
             single pixel) is removed.
         """
-        observers = format_getBH_class_inputs(observers)
-        B = getB(self, observers, False, squeeze)
-        return B
+        observers = format_star_input(observers)
+        return getBH_level2(True, self, observers, False, squeeze)
 
     # ------------------------------------------------------------------
     # INTERFACE
@@ -71,6 +70,5 @@ class BaseGetBH:
             Output is squeezed, i.e. every dimension of length 1 (single sensor or no sensor or
             single pixel) is removed.
         """
-        observers = format_getBH_class_inputs(observers)
-        H = getH(self, observers, False, squeeze)
-        return H
+        observers = format_star_input(observers)
+        return getBH_level2(False, self, observers, False, squeeze)

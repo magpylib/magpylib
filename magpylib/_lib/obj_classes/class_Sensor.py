@@ -2,10 +2,11 @@
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._lib.fields import getB, getH
-from magpylib._lib.utility import format_getBH_class_inputs
+from magpylib._lib.utility import format_star_input
 from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_vector_type, check_position_format
+from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
+
 
 # ON INTERFACE
 class Sensor(BaseGeo, BaseDisplayRepr):
@@ -133,10 +134,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
-        sources = format_getBH_class_inputs(sources)
-        B = getB(sources, self, sumup=sumup, squeeze=squeeze)
-
-        return B
+        sources = format_star_input(sources)
+        return getBH_level2(True, sources, self, sumup, squeeze)
 
 
     def getH(self, *sources, sumup=False, squeeze=True):
@@ -164,6 +163,5 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
             or single pixel) is removed.
         """
-        sources = format_getBH_class_inputs(sources)
-        H = getH(sources, self, sumup=sumup, squeeze=squeeze)
-        return H
+        sources = format_star_input(sources)
+        return getBH_level2(False, sources, self, sumup, squeeze)
