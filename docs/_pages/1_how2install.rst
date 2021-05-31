@@ -8,15 +8,15 @@ Dependencies
 ############
 
 Magpylib works with Python 3.7 or later ! The following packeges will be automatically installed, or updated. See `Git Hub <https://github.com/magpylib/magpylib>`_ for respective versions. Packages will never be downgraded.
+
 - numpy
 - matplotlib
-- scipy (spatial.transform, special)
-
+- scipy (.spatial.transform, .special)
 
 Using a package manager
 ########################
 
-Magpylib works with the PyPI and conda-forge repositories.
+Magpylib works with PyPI and conda-forge repositories.
 
 Install with `pip <https://pypi.org/project/pip/>`_,
 

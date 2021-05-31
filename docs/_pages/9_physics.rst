@@ -7,7 +7,7 @@ Physics & Computation
 The analytical solutions
 ########################
 
-**Background**
+**Permanent Magnets**
 
 Magnetic field computations in Magpylib are based on known analytical solutions (formulas) to permanent magnet and current problems. For Magpylib we have used the following references:
 
@@ -30,6 +30,8 @@ The solution to this equation can be expressed by an integral over the magnetiza
     \Phi_m({\bf r}) = \frac{1}{4\pi}\int_{V'}\frac{\nabla'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dV'+\frac{1}{4\pi}\oint_{S'}\frac{{\bf n}'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dS'
 
 where :math:`{\bf r}` denotes the position, :math:`V` is the magnetized volume with surface :math:`S` and normal vector :math:`{\bf n}` onto the surface. This solution is derived in detail e.g. in [1999Jackson].
+
+**Currents**
 
 The fields of currents are directly derived using the law of Biot-Savart with the current distribution :math:`{\bf J}({\bf r})`:
 
@@ -69,28 +71,28 @@ In some special cases (simple shapes, homogeneous magnetizations and current dis
 Accuracy of the Solutions and Demagnetization
 #############################################
 
-**Linea currents:**
+**Line currents:**
 
-The magnetic field of a wire carrying a homogeneous current density is similar (ON THE OUTSIDE ONLY) as the field of a line current in the center of the wire which carries the total current of the wire. Current distributions become inhomogeneous at bends or when eddy currents (finite frequencies) are involved.
+The magnetic field of a wire carrying a homogeneous current density is similar (ON THE OUTSIDE ONLY) to the field of a line current in the center of the wire, which carries the total current of the wire. Current distributions become inhomogeneous at bends of the wire or when eddy currents (finite frequencies) are involved.
 
 
 **Magnets and Demagnetization**
 
-The anayltical solutions are exact when bodies have a homogeneous magnetization. However, real materials always have a material response which results in an inhomogeneous magnetization even when the initial magnetization is homogeneous (e.g. magnetizing of magnets inside a Helmholtz coil). Such effects are called demagnetization.
+The anayltical solutions are exact when bodies have a homogeneous magnetization. However, real materials always have a material response which results in an inhomogeneous magnetization even when the initial magnetization is perfectly homogeneous. There is a lot of literature on such `demagnetization effects <https://en.wikipedia.org/wiki/Demagnetizing_field>`_.
 
-Modern high grade permanent magnets (NdFeB, SmCo, Ferrite) have a very weak material responses (local slope of the magnetization curve, remanent permeability) of the order of :math:`\mu_r approx 1.05`. In this case the analyical solutions provide an excellent approximation with less than 1% error even at close distance from the magnet surface. A detailed error computation and discussion is presented in the appendix of [2020Malago].
+Modern high grade permanent magnets (NdFeB, SmCo, Ferrite) have a very weak material responses (local slope of the magnetization curve, remanent permeability) of the order of :math:`\mu_r \approx 1.05`. In this case the analyical solutions provide an excellent approximation with less than 1% error even at close distance from the magnet surface. A detailed error analysis and discussion is presented in the appendix of [2020Malago].
 
 
 **Soft-Magnetic Materials**
 
-Soft-magnetic materials like iron or steel with large permeabilities :math:`\mu_r = 1000++` can in principle not be modeled with Magpylib. However, when teh body is static, when there is no strong local interaction with an adjacent magnet and when the body is mostly conformal one can approximate the field using the Magpylib solutions and some empirical magnetization that depends on the shape of the body, the material response and the strength of the magnetizing field.
+Soft-magnetic materials like iron or steel with large permeabilities :math:`\mu_r ~ 1000` can in principle not be modeled with Magpylib. However, when the body is static, when there is no strong local interaction with an adjacent magnet and when the body is mostly conformal one can approximate the field using the Magpylib solutions and some empirical magnetization that depends on the shape of the body, the material response and the strength of the magnetizing field.
 
-However, even in such a case it is probably more efficient to use a simple dipole approximation.
+An example would be the magnetization of a soft-magnetic metal piece in the earth magnetic field. However, even in such a case it is probably more efficient to use a simple dipole approximation.
 
 
 **Convergence of the diametral Cylinder solution**
 
-The diametral Cylinder solution is based on a convering series. 50 iterations are probaby ok and also set as standard. If you want to be precise increase iterations and observer the convergence behavior. Change the setting with
+The diametral Cylinder solution is based on a convering series. 50 iterations are probaby ok and also set as standard. If you want to be precise increase iterations and observer the convergence behavior. Change the setting to :code:`x` with
 
 .. code-block:: python
 
@@ -98,17 +100,18 @@ The diametral Cylinder solution is based on a convering series. 50 iterations ar
     
 
 **References**
+
 [2020Malago] P. Malagò et al., Magnetic Position System Design Method Applied to Three-Axis Joystick Motion Tracking. Sensors, 2020, 20. Jg., Nr. 23, S. 6873.
 
 
 Computation
 ###########
 
-Magpylib code is fully `vectorized <https://en.wikipedia.org/wiki/Array_programming>`_, written almost completly in numpy native. Magpylib automatically vectorized the computation of complex inputs (many sources, many observers, long paths) and does fall back on loops.
+Magpylib code is fully `vectorized <https://en.wikipedia.org/wiki/Array_programming>`_, written almost completly in numpy native. Magpylib automatically vectorizes the computation of complex inputs (many sources, many observers, long paths) and never falls back on computation in loops.
 
 .. Note::
     
-    Maximal performance is achieved when `.getB(sources, observers)` is called only a single time.
+    Maximal performance is achieved when :code:`.getB(sources, observers)` is called only a single time.
 
-Of course the objective interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance without this overhead there is direct access to the vectorized field computations throught the `magpylib.getBv` functions.
+Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance without this overhead there is direct access to the vectorized field functions throught the :code:`magpylib.getBv` functions.
 
