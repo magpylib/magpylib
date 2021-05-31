@@ -2,10 +2,10 @@
 Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
+# pylint: disable=no-name-in-module
 
 import numpy as np
-from magpylib._lib.fields.special_functions import celv
-
+from scipy.special import ellipe, ellipk
 
 def field_BH_circular(
     bh: bool,
@@ -74,9 +74,8 @@ def field_BH_circular(
     k_over_sq_rr0 = 2/np.sqrt(brack)
 
     # evaluate complete elliptic integrals ------------------------------------
-    one = np.ones(n)
-    ellipk = celv(np.sqrt(1-k2), one, one, one)
-    ellipe = celv(np.sqrt(1-k2), one, one, 1-k2)
+    ellip_e = ellipe(k2)
+    ellip_k = ellipk(k2)
 
     # compute fields from formulas (paper Ortner) -----------------------------
     mask1 = r==0
@@ -84,8 +83,8 @@ def field_BH_circular(
     z_over_r[~mask1] = z[~mask1]/r[~mask1] # will be zero when r=0 -> Br=0
 
     prefactor = 1/10*current
-    Br = prefactor/2*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellipe - 2*ellipk)
-    Bz = prefactor*k_over_sq_rr0 * (ellipk - (r2-r02+z2)/((r0-r)**2+z2)*ellipe)
+    Br = prefactor/2*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellip_e - 2*ellip_k)
+    Bz = prefactor*k_over_sq_rr0 * (ellip_k - (r2-r02+z2)/((r0-r)**2+z2)*ellip_e)
 
     # insert non-singular computations into total vectors----------------------
     Br_all[~mask0] = Br
