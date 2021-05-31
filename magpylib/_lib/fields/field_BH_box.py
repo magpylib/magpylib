@@ -96,7 +96,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.nda
     ### Computation info:
     Field computations via magnetic surface charge density. See e.g.
     - Camacho: Revista Mexicana de F´ısica E 59 (2013) 8–17
-    - Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4
+    - Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
     - Yang: Superconductor Science and Technology 3(12):591 (1999)
 
     On magnet corners/edges (0,0,0) is returned

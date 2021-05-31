@@ -4,49 +4,37 @@
 Installation
 *************************
 
-.. warning::
-    magpylib works only with Python 3.6 or later !
-    
-    **Dependencies:**
-        - numpy
-        - matplotlib
-    The latest versions will be installed automatically with magpylib.
+Dependencies
+############
+
+Magpylib works with Python 3.7 or later ! The following packeges will be automatically installed, or updated. See `Git Hub <https://github.com/magpylib/magpylib>`_ for respective versions. Packages will never be downgraded.
+- numpy
+- matplotlib
+- scipy (spatial.transform, special)
 
 
-Content 
-#######
+Using a package manager
+########################
 
-* :ref:`install-pip`
-* :ref:`install-win`
-* :ref:`install-linux`
-* :ref:`install-dl`
+Magpylib works with the PyPI and conda-forge repositories.
 
-
-
-.. _install-pip:
-
-Install with pip
-################
-
-The quickest installation on any platform is through pip.
+Install with `pip <https://pypi.org/project/pip/>`_,
 
 .. code-block:: console
     
     pip install magpylib
 
-If you are unfamiliar with pip, please follow the detailed guides below:
+or with `conda <https://docs.conda.io/en/latest/>`_
+
+.. code-block:: console
+    
+    conda install magpylib
 
 
+Using Anaconda
+##############
 
-.. _install-win:
-
-Windows
-#######
-
-Anaconda 3 Install
-------------------
-
-If you have little experience with Python we recommand using `Anaconda <https://www.anaconda.com>`_.
+Or if you have little experience with Python we recommand using `Anaconda <https://www.anaconda.com>`_.
 
 1. Download & install Anaconda3
 2. Start Anaconda Navigator 
@@ -62,39 +50,12 @@ If you have little experience with Python we recommand using `Anaconda <https://
 
     .. code-block:: console
 
-        conda install -c conda-forge magpylib 
+        conda install -c conda-forge magpylib
 
 6. Dont forget to select the proper environment in your IDE.
 
     .. image:: ../_static/images/install_guide/anaconda2.png
 
-
-Clean Python 3 Install
-----------------------
-
-If you want to have a custom environment without using conda, you may simply install the library with pip. A simple guide for installation and functionality of pip is found `here <https://projects.raspberrypi.org/en/projects/using-pip-on-windows/5>`_
-
-
-
-.. _install-linux:
-
-Linux
-#######
-
-Recommended: use Anaconda environment. Simply download Anaconda3 and follow installation steps as under Windows.
-
-Terminal Python 3 Install
---------------------------
-
-1. Install Python3.
-2. Open your Terminal and install with
-
-    .. code-block:: console
-
-        pip install magpylib
-
-
-.. _install-dl:
 
 Download Sites
 #################
