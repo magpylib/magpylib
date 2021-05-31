@@ -7,8 +7,13 @@ What is Magpylib ?
 ##################
 
 - Python package for calculating static magnetic fields of magnets, currents and other sources.
-- The fields are computed using fully vectorized analytical solutions (very fast, limited geometries, no material response)
-- The field computation is coupled to a geometry interface (position, orientation) which makes it convenient to determine relative motion between sources and observers.
+- The fields are computed using analytical solutions 
+    
+    - very fast (fully vectorized)
+    - limited geometries (and superpositions thereof)
+    - no material response
+
+- The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 .. image:: _static/images/index/source_fundamentals.png
    :align: center
@@ -16,22 +21,22 @@ What is Magpylib ?
 When can you use Magpylib ?
 ###########################
 
-The analytical solutions are exact when there is no material response. In permanent magnets, when (remanent) permeabilities are below :math:`\mu_r < 1.1` the error is typically below 1% (long magnet shapes are better, large distance from magnet is better). For details see here.
+The analytical solutions are exact when there is no material response. In permanent magnets, when (remanent) permeabilities are below :math:`\mu_r < 1.1` the error is typically below 1% (long magnet shapes are better, large distance from magnet is better). For more details check out the `physics section`__.
 
-Magpylib is at its best when dealing with air-coils and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
+__ _pages/9_physics/
+
+Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
 
 Quickstart
 ##########
 
-Install magpylib with pip or conda:
+**Install Magpylib** with pip or conda:
 
-``>> pip install magpylib``.
+``> pip install magpylib``.
 
-``>> conda install magpylib``.
+``> conda install magpylib``.
 
-**Example:**
-
-Run this simple code to calculate the magnetic field of a cylindrical magnet.
+This **Example code** calculates the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
 
@@ -42,18 +47,14 @@ Run this simple code to calculate the magnetic field of a cylindrical magnet.
 
     # Output: [ 5.08641867  5.08641867 -0.60532983]
 
-In this example, a cylinder shaped permanent magnet with diameter and height of 4 and 5 millimeter respectively is created in a global coordinate system with cylinder axis parallel to the z-axis and geometric magnet center in the origin. The magnetization / remanence field is homogeneous and points in z-direction with an amplitude of 350 millitesla. The magnetic field is calculated in units of millitesla at the observer position (4,4,4) in units of millimeter.
+A cylinder shaped permanent magnet with diameter and height of 4 and 5 millimeter, respectively, is created in a global coordinate system with cylinder axis parallel to the z-axis and geometric magnet center in the origin. The magnetization is homogeneous and points in z-direction with an amplitude of 350 millitesla. The magnetic field is calculated in units of millitesla at the observer position (4,4,4) in units of millimeter.
 
 
 **Ressources**
 
-Examples can be found in the `Examples Section`__.
+Examples can be found in the `Examples Section <_pages/2_guideExamples/>`_.
 
-__ _pages/2_guideExamples/
-
-Technical details can be found in the :ref:`docu`__ .
-
-__ _pages/0_documentation/
+Technical details can be found in the `Documentation <_pages/0_documentation/>`_.
 
 .. toctree::
    :glob:
@@ -68,6 +69,9 @@ __ _pages/0_documentation/
    :caption: Library Docstrings:
 
     _autogen/magpylib
+
+
+**Index**
 
 * :ref:`modindex`
 * :ref:`genindex`
