@@ -85,7 +85,7 @@ Modern high grade permanent magnets (NdFeB, SmCo, Ferrite) have a very weak mate
 
 **Soft-Magnetic Materials**
 
-Soft-magnetic materials like iron or steel with large permeabilities :math:`\mu_r ~ 1000` can in principle not be modeled with Magpylib. However, when the body is static, when there is no strong local interaction with an adjacent magnet and when the body is mostly conformal one can approximate the field using the Magpylib solutions and some empirical magnetization that depends on the shape of the body, the material response and the strength of the magnetizing field.
+Soft-magnetic materials like iron or steel with large permeabilities :math:`\mu_r \sim 1000` can in principle not be modeled with Magpylib. However, when the body is static, when there is no strong local interaction with an adjacent magnet and when the body is mostly conformal one can approximate the field using the Magpylib solutions and some empirical magnetization that depends on the shape of the body, the material response and the strength of the magnetizing field.
 
 An example would be the magnetization of a soft-magnetic metal piece in the earth magnetic field. However, even in such a case it is probably more efficient to use a simple dipole approximation.
 
