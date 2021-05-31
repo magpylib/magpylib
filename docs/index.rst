@@ -6,17 +6,17 @@
 What is Magpylib ?
 ##################
 
-- Python package for calculating static magnetic fields of magnets, currents and moments (sources).
-- The fields are computed using fully vectorized analytical solutions (very fast but limited geometries, no material response)
-- The field computation is coupled to a geometry interface (position, orientation, motion) to determine relative motion between sources and observers.
+- Python package for calculating static magnetic fields of magnets, currents and other sources.
+- The fields are computed using fully vectorized analytical solutions (very fast, limited geometries, no material response)
+- The field computation is coupled to a geometry interface (position, orientation) which makes it convenient to determine relative motion between sources and observers.
 
-.. image:: _static/images/index/sourceFundamentals.png
+.. image:: _static/images/index/source_fundamentals.png
    :align: center
 
 When can you use Magpylib ?
 ###########################
 
-The analytical solutions are exact when there is no material response. In permanent magnets, when remanent permeabilities (susceptibilities) are below ~1.1 the error is typically below 1% (long magnet shapes are better, large distance from magnet is better).
+The analytical solutions are exact when there is no material response. In permanent magnets, when (remanent) permeabilities are below :math:`\mu_r < 1.1` the error is typically below 1% (long magnet shapes are better, large distance from magnet is better). For details see here.
 
 Magpylib is at its best when dealing with air-coils and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
 
@@ -26,6 +26,7 @@ Quickstart
 Install magpylib with pip or conda:
 
 ``>> pip install magpylib``.
+
 ``>> conda install magpylib``.
 
 **Example:**
@@ -50,8 +51,9 @@ Examples can be found in the `Examples Section`__.
 
 __ _pages/2_guideExamples/
 
-Technical details can be found in the :ref:`docu` .
+Technical details can be found in the :ref:`docu`__ .
 
+__ _pages/0_documentation/
 
 .. toctree::
    :glob:
@@ -65,14 +67,9 @@ Technical details can be found in the :ref:`docu` .
    :maxdepth: 1
    :caption: Library Docstrings:
 
-   _autogen/magpylib
-   _autogen/magpylib.source
-   _autogen/magpylib.math
-
-
-Index
-################
+    _autogen/magpylib
 
 * :ref:`modindex`
 * :ref:`genindex`
 .. * :ref:`search`
+
