@@ -50,7 +50,7 @@ This **Example code** calculates the magnetic field of a cylindrical magnet.
 A cylinder shaped permanent magnet with diameter and height of 4 and 5 millimeter, respectively, is created in a global coordinate system with cylinder axis parallel to the z-axis and geometric magnet center in the origin. The magnetization is homogeneous and points in z-direction with an amplitude of 350 millitesla. The magnetic field is calculated in units of millitesla at the observer position (4,4,4) in units of millimeter.
 
 
-**Ressources**
+**Resources**
 
 Examples can be found in the `Examples Section <_pages/2_guideExamples/>`_.
 
@@ -68,12 +68,11 @@ Technical details can be found in the `Documentation <_pages/0_documentation/>`_
    :maxdepth: 1
    :caption: Library Docstrings:
 
-    _autogen/magpylib
+   _autogen/magpylib
 
 
 **Index**
 
-* :ref:`modindex`
 * :ref:`genindex`
+* :ref:`modindex`
 .. * :ref:`search`
-
