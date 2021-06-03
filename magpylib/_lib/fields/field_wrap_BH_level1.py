@@ -4,25 +4,24 @@ from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
+from magpylib._lib.fields.field_BH_line import field_BH_line
 from magpylib._lib.exceptions import MagpylibInternalError
 
 
 def getBH_level1(**kwargs:dict) -> np.ndarray:
     """ Vectorized field computation
 
+    - applies spatial transformations global CS <-> source CS
+    - selects the correct Bfield_XXX function from input
+
     Args
     ----
-    kwargs: dict of "1D"-input vectors that describes the computation.
+    kwargs: dict of shape (N,x) input vectors that describes the computation.
 
     Returns
     -------
-    field: ndarray, shape (l*m*n,3)
+    field: ndarray, shape (N,3)
 
-    Info
-    ----
-    - no input checks !
-    - applys spatial transformations global CS <-> source CS
-    - selects the correct Bfield_XXX function from input
     """
 
     # base inputs of all sources
@@ -57,6 +56,11 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         current = kwargs['current']
         dim = kwargs['dim']
         B = field_BH_circular(bh, current, dim, pos_rel_rot)
+    elif src_type =='Line':
+        current = kwargs['current']
+        pos_start = kwargs['pos_start']
+        pos_end = kwargs['pos_end']
+        B = field_BH_line(bh, current, pos_start, pos_end, pos_rel_rot)
     else:
         raise MagpylibInternalError('Bad src input type in level1')
 

@@ -8,48 +8,36 @@ from magpylib._lib.config import Config
 
 def field_BH_line(
     bh: bool,
-    pos_obs: np.ndarray,
-    vertices: np.ndarray,
-    current: float):
+    current: float,
+    pos_start: np.ndarray,
+    pos_end: np.ndarray,
+    pos_obs: np.ndarray
+    ) -> np.ndarray:
     """
     ### Args:
     - bh (boolean): True=B, False=H
-    - pos_obs (ndarray nx3): n observer positions in units of [mm]
-    - vertices (ndarray (m+1)x3): vertices of m line segements [mm]
     - current (float): current on line in units of [A]
+    - pos_start (ndarray nx3) start position of line segments
+    - pos_end (ndarray nx3) end positions of line segments
+    - pos_obs (ndarray nx3): n observer positions in units of [mm]
 
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
 
     ### init_state:
-    Line current flowing in a straight line (segment) from vertext to vertext, starting
-    at the first vertex and ending at the last.
+    Line current flowing in a straight line from pos_start to pos_end.
 
     ### Computation info:
     Field computation via law of Biot Savart. See also countless online ressources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
-    # p1 are init positions, p2 end position of the line segments
-    p1 = vertices[:-1]
-    p2 = vertices[1:]
 
-    # Check for zero-length segment and redefine vertices
-    mask0 = np.invert(np.all(p1==p2, axis=1))
-    p1, p2 = p1[mask0], p2[mask0]
+    # Check for zero-length segments
+    mask0 = np.invert(np.all(pos_start==pos_end, axis=1))
 
-    n = len(pos_obs)         # number of observer positions
-    m = len(p1)              # number of segments
-
-    # tile up inputs to shape --> obs_pos(n), segments(m), xyz(3)
-    p1 = np.tile(p1, (n,1,1))
-    p2 = np.tile(p2, (n,1,1))
-    po = np.tile(pos_obs, (m, 1, 1))
-    po = np.swapaxes(po, 0, 1)
-
-    # ravel to shape (n*m, 3) - required for masking special cases
-    p1 = np.reshape(p1, (n*m,3))
-    p2 = np.reshape(p2, (n*m,3))
-    po = np.reshape(po, (n*m,3))
+    p1 = pos_start[mask0]
+    p2 = pos_end[mask0]
+    po = pos_obs[mask0]
 
     # p4 = projection of pos_obs onto line p1-p2
     p1p2 = p1-p2
@@ -93,17 +81,19 @@ def field_BH_line(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4]+sinTh2[mask4])
 
-    # mask1 fields should be (0,0,0)
-    fields = np.zeros((n*m,3))
-    fields[mask1] = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
+    # mask1 and mask0 fields should be (0,0,0)
+    n1 = len(po)
+    fields1 = np.zeros((n1,3))
+    fields1[mask1] = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
 
-    # reshape and sum over all sections
-    fields = np.reshape(fields, (n,m,3))
-    B = np.sum(fields, axis=1)
+    n0 = len(pos_obs)
+    fields0 = np.zeros((n0,3))
+    fields0[mask0] = fields1
 
+    # return B
     if bh:
-        return B
+        return fields0
 
-    # transform units mT -> kA/m
-    H = B*10/4/np.pi
+    # return H (mT -> kA/m)
+    H = fields0*10/4/np.pi
     return H
