@@ -2,9 +2,9 @@
 Magpylib provides static 3D magnetic field computation based on analytical
 formulas.
 
-Ressources
+Resources
 ----------
-www.https://magpylib.readthedocs.io/en/latest/
+https://magpylib.readthedocs.io/en/latest/
 https://github.com/magpylib/magpylib
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
@@ -56,8 +56,8 @@ observers are positions (array_like) or Sensor objects
 
 1. src.getB(observers) ----------------> field of one source at all observers
 2. sens.getB(sources) -----------------> field of all sources at one sensor
-2. magpylib.getB(sources, observers) --> fields of all sources at all observers
-3. magpylib.getBv(**kwargs) -----------> direct access to core formulas (fastest)
+3. magpylib.getB(sources, observers) --> fields of all sources at all observers
+4. magpylib.getBv(**kwargs) -----------> direct access to core formulas (fastest)
 
 In addition to getB there is getH.
 
