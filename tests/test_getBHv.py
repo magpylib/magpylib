@@ -207,3 +207,17 @@ def test_geBHv_circular():
     H = getHv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
+
+
+def test_getBHv_squeeze():
+    """ test if squeeze works
+    """
+    B1 = getBv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    B2 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)])
+    B3 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)], squeeze=False)
+    B4 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)]*2)
+
+    assert B1.ndim == 1
+    assert B2.ndim == 1
+    assert B3.ndim == 2
+    assert B4.ndim == 2

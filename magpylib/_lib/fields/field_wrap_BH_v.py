@@ -50,6 +50,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         # if no input set rot=unit
         rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
         tile_params['rot'] = (rot.as_quat(),2)
+        # if no input set squeeze=True
+        squeeze = kwargs.get('squeeze', True)
 
         # mandatory class specific inputs -----------
         if src_type == 'Box':
@@ -117,8 +119,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     # compute and return B
     B = getBH_level1(**kwargs)
 
-    if n==1: # remove highest level when n=1
-        return B[0]
+    if squeeze:
+        return np.squeeze(B)
     return B
 
 
@@ -147,6 +149,9 @@ def getBv(**kwargs):
 
     pos_obs: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     Parameters - homogenous magnets
     -------------------------------
@@ -214,6 +219,9 @@ def getHv(**kwargs):
 
     pos_obs: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     Parameters - homogenous magnets
     -------------------------------
