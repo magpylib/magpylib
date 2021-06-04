@@ -33,7 +33,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     poso = kwargs['pos_obs']
 
     # transform obs_pos into source CS
-    pos_rel = pos - poso                           # relative position
+    pos_rel = poso - pos                           # relative position
     pos_rel_rot = rot.apply(pos_rel, inverse=True) # rotate rel_pos into source CS
 
     # compute field
