@@ -221,3 +221,16 @@ def test_getBHv_squeeze():
     assert B2.ndim == 1
     assert B3.ndim == 2
     assert B4.ndim == 2
+
+
+def test_getBHv_line():
+    """ test getBHv with Line
+    """
+    H = getHv(
+        src_type='Line',
+        pos_obs=[(1,1,1),(1,2,3),(2,2,2)],
+        current=1,
+        pos_start=(0,0,0),
+        pos_end=[(0,0,0),(2,2,2),(2,2,2)])
+    x = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])*10/4/np.pi
+    assert np.allclose(x, H)

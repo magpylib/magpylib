@@ -8,7 +8,7 @@ from magpylib._lib.config import Config
 
 def field_BH_line(
     bh: bool,
-    current: float,
+    current: np.ndarray,
     pos_start: np.ndarray,
     pos_end: np.ndarray,
     pos_obs: np.ndarray
@@ -36,11 +36,24 @@ def field_BH_line(
     """
 
     # Check for zero-length segments
-    mask0 = np.invert(np.all(pos_start==pos_end, axis=1))
+    mask0 = np.all(pos_start==pos_end, axis=1)
+    if np.all(mask0):
+        n0 = len(pos_obs)
+        return np.zeros((n0,3))
 
-    p1 = pos_start[mask0]
-    p2 = pos_end[mask0]
-    po = pos_obs[mask0]
+    any_zero_segments = np.any(mask0)
+
+    # continue only with non-zero segments
+    if any_zero_segments:
+        not_mask0 = ~mask0     # avoid multiple computation of ~mask
+        p1 = pos_start[not_mask0]
+        p2 = pos_end[not_mask0]
+        po = pos_obs[not_mask0]
+        current = current[not_mask0]
+    else:
+        p1 = pos_start        # just renaming
+        p2 = pos_end
+        po = pos_obs
 
     # p4 = projection of pos_obs onto line p1-p2
     p1p2 = p1-p2
@@ -48,16 +61,27 @@ def field_BH_line(
     t = np.sum((po-p1)*p1p2, axis=1) / norm_12**2
     p4 = p1 + (t*p1p2.T).T
 
+    # distance of observer from line
+    norm_o4 = norm(po - p4, axis=1)
+
     # on-line cases (set B=0)
-    norm_o4 = norm(po - p4, axis=1) # distance of observer from line
-    mask1 = np.invert(norm_o4 < Config.EDGESIZE)
+    mask1 = norm_o4 < Config.EDGESIZE
+    if np.all(mask1):
+        n0 = len(pos_obs)
+        return np.zeros((n0,3))
+
+    any_on_line_cases = np.any(mask1)
 
     # redefine to avoid tons of slices
-    if np.any(~mask1):
-        po = po[mask1]
-        p1 = p1[mask1]
-        p2 = p2[mask1]
-        p4 = p4[mask1]
+    if any_on_line_cases:
+        not_mask1 = ~mask1     # avoid multiple computation of ~mask
+        po = po[not_mask1]
+        p1 = p1[not_mask1]
+        p2 = p2[not_mask1]
+        p4 = p4[not_mask1]
+        norm_12 = norm_12[not_mask1]
+        norm_o4 = norm_o4[not_mask1]
+        current = current[not_mask1]
 
     # determine field direction
     cros = np.cross(p2-p1, po-p4)
@@ -84,20 +108,24 @@ def field_BH_line(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4]+sinTh2[mask4])
 
-    # mask1 and mask0 fields should be (0,0,0)
-    n1 = len(po)
-    fields1 = np.zeros((n1,3))
+    field = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
 
-    fields1[mask1] = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
+    if any_on_line_cases: # brodcast into np.zeros
+        n1 = len(mask1)
+        fields1 = np.zeros((n1,3))
+        fields1[not_mask1] = field
+        field = fields1
 
-    n0 = len(pos_obs)
-    fields0 = np.zeros((n0,3))
-    fields0[mask0] = fields1
+    if any_zero_segments: # brodcast into np.zeros
+        n0 = len(mask0)
+        fields0 = np.zeros((n0,3))
+        fields0[not_mask0] = field
+        field = fields0
 
     # return B
     if bh:
-        return fields0
+        return field
 
     # return H (mT -> kA/m)
-    H = fields0*10/4/np.pi
+    H = field*10/4/np.pi
     return H
