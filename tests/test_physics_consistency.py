@@ -59,3 +59,58 @@ def test_Circular_vs_Cylinder_field():
     H2 = src2.getH(pos_obs)
 
     assert np.allclose(H1, H2)
+
+
+def test_Line_vs_Circular():
+    """ show that line prodices the same as circular
+    """
+
+   # finely approximated loop by lines
+    ts = np.linspace(0,2*np.pi,10000)
+    verts = np.array([(np.cos(t), np.sin(t), 0) for t in ts])
+    ps = verts[:-1]
+    pe = verts[1:]
+
+    # positions
+    ts = np.linspace(-3,3,2)
+    po = np.array([(x,y,z) for x in ts for y in ts for z in ts])
+
+    # field from line currents
+    Bls = []
+    for p in po:
+        Bl = mag3.getBv(src_type='Line', pos_obs=p, current=1, pos_start=ps, pos_end=pe)
+        Bls += [np.sum(Bl, axis=0)]
+    Bls = np.array(Bls)
+
+    # field from current loop
+    src = mag3.current.Circular(current=1, dim=2)
+    Bcs = src.getB(po)
+
+    assert np.allclose(Bls,Bcs)
+
+
+def test_Line_vs_Infinite():
+    """ compare line current result vs analytical solution to infinite Line
+    """
+
+    pos_obs = np.array([(1.,2,3), (-3,2,-1), (2,-1,-4)])
+
+    def Binf(i0, pos):
+        """ field of inf line current on z-axis """
+        x,y,_ = pos
+        r = np.sqrt(x**2+y**2)
+        e_phi = np.array([-y,x,0])
+        e_phi = e_phi/np.linalg.norm(e_phi)
+        mu0 = 4*np.pi*1e-7
+        return i0*mu0/2/np.pi/r*e_phi * 1000 * 1000 #mT mm
+
+    ps = (0,0,-1000000)
+    pe = (0,0,1000000)
+    Bls, Binfs = [], []
+    for p in pos_obs:
+        Bls += [mag3.getBv(src_type='Line', pos_obs=p, current=1, pos_start=ps, pos_end=pe)]
+        Binfs += [Binf(1,p)]
+    Bls = np.array(Bls)
+    Binfs = np.array(Binfs)
+
+    assert np.allclose(Bls, Binfs)

@@ -30,6 +30,9 @@ def field_BH_line(
     ### Computation info:
     Field computation via law of Biot Savart. See also countless online ressources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
+
+    ### Numerical instabilities:
+        - singularity at r=0, B set to 0 within Config.EDGESIZE
     """
 
     # Check for zero-length segments
@@ -84,6 +87,7 @@ def field_BH_line(
     # mask1 and mask0 fields should be (0,0,0)
     n1 = len(po)
     fields1 = np.zeros((n1,3))
+
     fields1[mask1] = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
 
     n0 = len(pos_obs)
