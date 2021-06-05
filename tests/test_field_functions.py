@@ -6,7 +6,7 @@ from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
-from magpylib._lib.fields.field_BH_line import field_BH_line
+from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
 from magpylib import Config
 
 # # GENERATE TEST DATA
@@ -310,3 +310,27 @@ def test_field_line():
     B7 = field_BH_line(True, c4, ps4, pe4, po4)
     x7 = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])
     assert np.allclose(x7, B7)
+
+
+def test_field_line_from_vert():
+    """ test the Line field from vertex input
+    """
+    p = np.array([(1,2,2), (1,2,3), (-1,0,-3)])
+    curr = np.array([1, 5, -3])
+
+    vert1 = np.array([(0,0,0),(1,1,1),(2,2,2),(3,3,3),(1,2,3),(-3,4,-5)])
+    vert2 = np.array([(0,0,0),(3,3,3),(-3,4,-5)])
+    vert3 = np.array([(1,2,3),(-2,-3,3),(3,2,1),(3,3,3)])
+
+    B_vert = field_BH_line_from_vert(True, curr, [vert1,vert2,vert3], p)
+
+    B = []
+    for i,vert in enumerate([vert1,vert2,vert3]):
+        p1 = vert[:-1]
+        p2 = vert[1:]
+        po = np.array([p[i]]*(len(vert)-1))
+        cu = np.array([curr[i]]*(len(vert)-1))
+        B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
+    B = np.array(B)
+
+    assert np.allclose(B_vert, B)

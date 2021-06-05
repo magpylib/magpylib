@@ -6,6 +6,52 @@ import numpy as np
 from numpy.linalg import norm
 from magpylib._lib.config import Config
 
+
+def field_BH_line_from_vert(
+    bh: bool,
+    current: np.ndarray,
+    vertex_sets: list,  # list of mix3 ndarrays
+    pos_obs: np.ndarray
+    ) -> np.ndarray:
+    """
+    This function accepts n (mi,3) shaped vertex-sets, creates a single long
+    input array for field_BH_line(), computes, sums and returns a single field for each
+    vertex-set at respective n observer positions.
+
+    ### Args:
+    - bh (boolean): True=B, False=H
+    - current (ndarray n): current on line in units of [A]
+    - vertex_sets (list of len n): n vertex sets (each of shape (mi,3))
+    - pos_obs (ndarray nx3): n observer positions in units of [mm]
+
+    ### Returns:
+    - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
+    """
+
+    # create input for complete vectorized computation
+    pos_start, pos_end, pos_obs_tile, current_tile, ns = [], [], [], [], []
+    for pos,vset,curr in zip(pos_obs, vertex_sets, current):
+        pos_start += list(vset[:-1])
+        pos_end += list(vset[1:])
+        n = len(vset)-1
+        ns += [n]
+        pos_obs_tile += [pos]*n
+        current_tile += [curr]*n
+    pos_start = np.array(pos_start)
+    pos_end = np.array(pos_end)
+    pos_obs_tile = np.array(pos_obs_tile)
+    current_tile = np.array(current_tile)
+
+    # compute field
+    field = field_BH_line(bh, current_tile, pos_start, pos_end, pos_obs_tile)
+
+    # sum for each vertex set
+    ns_cum = [sum(ns[:i]) for i in range(len(vertex_sets)+1)]
+    field_sum = [np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,len(vertex_sets)+1)]
+
+    return np.array(field_sum)
+
+
 def field_BH_line(
     bh: bool,
     current: np.ndarray,
