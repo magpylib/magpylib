@@ -73,4 +73,4 @@ class BaseDisplayRepr:
     # ------------------------------------------------------------------
     # INTERFACE
     def __repr__(self) -> str:
-        return f'{self.obj_type}-({str(id(self))})'
+        return f'{self.obj_type}(id={str(id(self))})'
