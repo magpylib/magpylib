@@ -50,6 +50,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         # if no input set rot=unit
         rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
         tile_params['rot'] = (rot.as_quat(),2)
+        # if no input set squeeze=True
+        squeeze = kwargs.get('squeeze', True)
 
         # mandatory class specific inputs -----------
         if src_type == 'Box':
@@ -80,6 +82,14 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,1)
 
+        elif src_type == 'Line':
+            current = np.array(kwargs['current'], dtype=float)
+            tile_params['current'] = (current,1)
+            pos_start = np.array(kwargs['pos_start'], dtype=float)
+            tile_params['pos_start'] = (pos_start,2)
+            pos_end = np.array(kwargs['pos_end'], dtype=float)
+            tile_params['pos_end'] = (pos_end,2)
+
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
         raise MagpylibBadUserInput(msg) from kerr
@@ -109,8 +119,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
     # compute and return B
     B = getBH_level1(**kwargs)
 
-    if n==1: # remove highest level when n=1
-        return B[0]
+    if squeeze:
+        return np.squeeze(B)
     return B
 
 
@@ -119,16 +129,17 @@ def getBv(**kwargs):
     """
     B-Field computation from dictionary of input vectors.
 
-    This function avoids the magpylib interface and gives direct access to the field
-        implementations. It is the fastet way to compute fields with magpylib.
+    This function avoids the object-oriented Magpylib interface and gives direct
+        access to the field implementations. It is the fastet way to compute fields
+        with Magpylib.
 
-    Shape (3,) inputs will automatically be tiled to shape (N,3) to fit with other
-        inputs.
+    Inputs will automatically be tiled to shape (N,x) to fit with other inputs.
 
     Parameters
     ----------
     src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole'.
+        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
+        'Circular' or 'Line'.
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -138,6 +149,9 @@ def getBv(**kwargs):
 
     pos_obs: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     Parameters - homogenous magnets
     -------------------------------
@@ -159,7 +173,18 @@ def getBv(**kwargs):
         Current flowing in loop in units of [A].
 
     dim: array_like, shape (N,)
-        Diameter of cicular loop in units of [mm].
+        Diameter of circular loop in units of [mm].
+
+    Parameters - Line current
+    -------------------------
+    current: array_like, shape (N,)
+        Current in units of [A]
+
+    pos_start: array_like, shape (N,3)
+        Start positions of line current segments.
+
+    pos_end: array_like, shape (N,3)
+        End positions of line current segments.
 
     Returns
     -------
@@ -174,16 +199,17 @@ def getHv(**kwargs):
     """
     H-Field computation from dictionary of input vectors.
 
-    This function avoids the magpylib interface and gives direct access to the field
-        implementations. It is the fastet way to compute fields with magpylib.
+    This function avoids the object-oriented Magpylib interface and gives direct
+        access to the field implementations. It is the fastet way to compute fields
+        with Magpylib.
 
-    Shape (3,) inputs will automatically be tiled to shape (N,3) to fit with other
-        inputs.
+    Inputs will automatically be tiled to shape (N,x) to fit with other inputs.
 
     Parameters
     ----------
     src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole'.
+        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
+        'Circular' or 'Line'.
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -193,6 +219,9 @@ def getHv(**kwargs):
 
     pos_obs: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
+
+    squeeze: bool, default=True
+        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     Parameters - homogenous magnets
     -------------------------------
@@ -214,7 +243,18 @@ def getHv(**kwargs):
         Current flowing in loop in units of [A].
 
     dim: array_like, shape (N,)
-        Diameter of cicular loop in units of [mm].
+        Diameter of circular loop in units of [mm].
+
+    Parameters - Line current
+    -------------------------
+    current: array_like, shape (N,)
+        Current in units of [A]
+
+    pos_start: array_like, shape (N,3)
+        Start positions of line current segments.
+
+    pos_end: array_like, shape (N,3)
+        End positions of line current segments.
 
     Returns
     -------

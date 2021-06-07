@@ -189,6 +189,7 @@ def bad_dim_input10():
     mag3.current.Circular(current=1)
 
 
+
 # MISC SOURCE ------------------------------------------------------------
 
 def bad_misc_input1():
@@ -197,6 +198,19 @@ def bad_misc_input1():
 def bad_misc_input2():
     """Sensor pos_pix format"""
     mag3.Sensor(pos_pix=[[1,2]]*3)
+
+def bad_misc_input3():
+    """Line vertex type"""
+    mag3.current.Line(1, '1')
+def bad_misc_input4():
+    """Line vertex format 1"""
+    mag3.current.Line(1, [(1,2,3)])
+def bad_misc_input5():
+    """Line vertex format 2"""
+    mag3.current.Line(1, [[(1,2,3)]*2]*2)
+def bad_misc_input6():
+    """Line vertex format 3"""
+    mag3.current.Line(1, [(1,2)]*2)
 
 
 # OBSERVER ------------------------------------------------------------
@@ -279,6 +293,10 @@ class TestExceptions(unittest.TestCase):
         """ bad misc source inputs"""
         self.assertRaises(MagpylibBadUserInput, bad_misc_input1)
         self.assertRaises(MagpylibBadInputShape, bad_misc_input2)
+        self.assertRaises(MagpylibBadUserInput, bad_misc_input3)
+        self.assertRaises(MagpylibBadInputShape, bad_misc_input4)
+        self.assertRaises(MagpylibBadInputShape, bad_misc_input5)
+        self.assertRaises(MagpylibBadInputShape, bad_misc_input6)
 
     def test_observer_inputs(self):
         """ bad observer inputs"""

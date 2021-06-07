@@ -95,3 +95,24 @@ def test_dipole_display():
     assert x is None, 'display test fail'
     x = dip.display(axis=ax2, show_path=2)
     assert x is None, 'display test fail'
+
+
+def test_circular_line_display():
+    """ testing display
+    """
+    # pylint: disable=assignment-from-no-return
+    ax2 = plt.subplot(projection='3d')
+    src1 = mag3.current.Circular(1,2)
+    src2 = mag3.current.Circular(1,2)
+    src1.move([(.4,.4,.4)]*5, increment=True)
+    src3 = mag3.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
+    src4 = mag3.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
+    src3.move([(.4,.4,.4)]*5, increment=False)
+    x = src1.display(axis=ax2, show_path=2)
+    assert x is None, 'display test fail'
+    x = src2.display(axis=ax2)
+    assert x is None, 'display test fail'
+    x = src3.display(axis=ax2)
+    assert x is None, 'display test fail'
+    x = src4.display(axis=ax2, show_path=2)
+    assert x is None, 'display test fail'

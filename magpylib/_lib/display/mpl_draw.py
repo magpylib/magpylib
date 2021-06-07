@@ -243,3 +243,35 @@ def draw_circular(circulars, show_path, ax):
             draw_pos += list(possis1)
 
     return draw_pos
+
+
+def draw_line(lines, show_path, ax) -> list:
+    """ draw lines and return a list of positions
+    """
+    # pylint: disable=protected-access
+
+    # graphical settings
+    col = 'k'
+    lw = 1
+
+    draw_pos = [] # line positions
+    for line in lines:
+
+        # add src attributes position and orientation depending on show_path
+        if not isinstance(show_path, bool) and line._pos.ndim>1:
+            rots = line._rot[::-show_path]
+            poss = line._pos[::-show_path]
+        else:
+            rots = [line._rot[-1]]
+            poss = [line._pos[-1]]
+
+        # init orientation line positions
+        possis0 = line.vertices
+
+        # apply pos and rot, draw, store line positions
+        for rot,pos in zip(rots,poss):
+            possis1 = rot.apply(possis0) + pos
+            ax.plot(possis1[:,0], possis1[:,1], possis1[:,2], color=col, lw=lw)
+            draw_pos += list(possis1)
+
+    return draw_pos

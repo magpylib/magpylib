@@ -207,3 +207,64 @@ def test_geBHv_circular():
     H = getHv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
+
+
+def test_getBHv_squeeze():
+    """ test if squeeze works
+    """
+    B1 = getBv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    B2 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)])
+    B3 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)], squeeze=False)
+    B4 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)]*2)
+
+    assert B1.ndim == 1
+    assert B2.ndim == 1
+    assert B3.ndim == 2
+    assert B4.ndim == 2
+
+
+def test_getBHv_line():
+    """ test getBHv with Line
+    """
+    H = getHv(
+        src_type='Line',
+        pos_obs=[(1,1,1),(1,2,3),(2,2,2)],
+        current=1,
+        pos_start=(0,0,0),
+        pos_end=[(0,0,0),(2,2,2),(2,2,2)])
+    x = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])*10/4/np.pi
+    assert np.allclose(x, H)
+
+
+def test_getBHv_line2():
+    """ test line with pos and rot arguments
+    """
+    x = 0.14142136
+
+    # z-line on x=1
+    B1 = getBv(src_type='Line', pos_obs=(0,0,0), current=1,
+        pos_start=(1,0,-1), pos_end=(1,0,1))
+    assert np.allclose(B1, np.array([0,-x,0]))
+
+    # move z-line to x=-1
+    B2 = getBv(src_type='Line', pos = (-2,0,0), pos_obs=(0,0,0), current=1,
+        pos_start=(1,0,-1), pos_end=(1,0,1))
+    assert np.allclose(B2, np.array([0,x,0]))
+
+    # rotate 1
+    rot = R.from_euler('z', 90, degrees=True)
+    B3 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+        pos_start=(1,0,-1), pos_end=(1,0,1))
+    assert np.allclose(B3, np.array([x,0,0]))
+
+    # rotate 2
+    rot = R.from_euler('x', 90, degrees=True)
+    B4 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+        pos_start=(1,0,-1), pos_end=(1,0,1))
+    assert np.allclose(B4, np.array([0,0,-x]))
+
+    # rotate 3
+    rot = R.from_euler('y', 90, degrees=True)
+    B5 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+        pos_start=(1,0,-1), pos_end=(1,0,1))
+    assert np.allclose(B5, np.array([0,-x,0]))

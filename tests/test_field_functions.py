@@ -6,6 +6,7 @@ from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
+from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
 from magpylib import Config
 
 # # GENERATE TEST DATA
@@ -253,3 +254,85 @@ def test_field_circular2():
 
     assert np.allclose(B,B2[0])
     assert np.allclose(B,B2[1])
+
+
+def test_field_line():
+    """ test line current for all cases
+    """
+
+    c1 = np.array([1])
+    po1 = np.array([(1,2,3)])
+    ps1 = np.array([(0,0,0)])
+    pe1 = np.array([(2,2,2)])
+
+    # only normal
+    B1 = field_BH_line(True, c1, ps1, pe1, po1)
+    x1 = np.array([[ 0.02672612, -0.05345225, 0.02672612]])
+    assert np.allclose(x1, B1)
+
+    # only on_line
+    po1b = np.array([(1,1,1)])
+    B2 = field_BH_line(True, c1, ps1, pe1, po1b)
+    x2 = np.zeros((1,3))
+    assert np.allclose(x2, B2)
+
+    # only zero-segment
+    B3 = field_BH_line(True, c1, ps1, ps1, po1)
+    x3 = np.zeros((1,3))
+    assert np.allclose(x3, B3)
+
+    # only on_line and zero_segment
+    c2 = np.array([1]*2)
+    ps2 = np.array([(0,0,0)]*2)
+    pe2 = np.array([(0,0,0),(2,2,2)])
+    po2 = np.array([(1,2,3),(1,1,1)])
+    B4 = field_BH_line(True, c2, ps2, pe2, po2)
+    x4 = np.zeros((2,3))
+    assert np.allclose(x4, B4)
+
+    # normal + zero_segment
+    po2b = np.array([(1,2,3),(1,2,3)])
+    B5 = field_BH_line(True, c2, ps2, pe2, po2b)
+    x5 = np.array([[0,0,0],[ 0.02672612, -0.05345225, 0.02672612]])
+    assert np.allclose(x5, B5)
+
+    # normal + on_line
+    pe2b = np.array([(2,2,2)]*2)
+    B6 = field_BH_line(True, c2, ps2, pe2b, po2)
+    x6 = np.array([[0.02672612, -0.05345225, 0.02672612],[0,0,0]])
+    assert np.allclose(x6, B6)
+
+    # normal + zero_segment + on_line
+    c4 = np.array([1]*3)
+    ps4 = np.array([(0,0,0)]*3)
+    pe4 = np.array([(0,0,0),(2,2,2),(2,2,2)])
+    po4 = np.array([(1,2,3),(1,2,3),(1,1,1)])
+    B7 = field_BH_line(True, c4, ps4, pe4, po4)
+    x7 = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])
+    assert np.allclose(x7, B7)
+
+
+def test_field_line_from_vert():
+    """ test the Line field from vertex input
+    """
+    p = np.array([(1,2,2), (1,2,3), (-1,0,-3)])
+    curr = np.array([1, 5, -3])
+
+    vert1 = np.array([(0,0,0),(1,1,1),(2,2,2),(3,3,3),(1,2,3),(-3,4,-5)])
+    vert2 = np.array([(0,0,0),(3,3,3),(-3,4,-5)])
+    vert3 = np.array([(1,2,3),(-2,-3,3),(3,2,1),(3,3,3)])
+
+    pos_tiled = np.tile(p, (3,1))
+    B_vert = field_BH_line_from_vert(True, curr, [vert1,vert2,vert3], pos_tiled)
+
+    B = []
+    for i,vert in enumerate([vert1,vert2,vert3]):
+        for pos in p:
+            p1 = vert[:-1]
+            p2 = vert[1:]
+            po = np.array([pos]*(len(vert)-1))
+            cu = np.array([curr[i]]*(len(vert)-1))
+            B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
+    B = np.array(B)
+
+    assert np.allclose(B_vert, B)

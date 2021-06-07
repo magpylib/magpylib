@@ -37,6 +37,7 @@ def format_obj_input(objects: Sequence) -> list:
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
 
     obj_list = []
     for obj in objects:
@@ -50,7 +51,8 @@ def format_obj_input(objects: Sequence) -> list:
                 Sphere,
                 Sensor,
                 Dipole,
-                Circular)):
+                Circular,
+                Line)):
             obj_list += [obj]
         else:
             msg = 'Unknown input object type.'
@@ -80,7 +82,8 @@ def format_src_inputs(sources) -> list:
         _lib.obj_classes.Cylinder,
         _lib.obj_classes.Sphere,
         _lib.obj_classes.Dipole,
-        _lib.obj_classes.Circular)
+        _lib.obj_classes.Circular,
+        _lib.obj_classes.Line)
     Collection = _lib.obj_classes.Collection
 
     # bare source -> list

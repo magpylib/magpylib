@@ -10,7 +10,7 @@ from magpylib import _lib
 def tile_mag(group: list, n_pp: int):
     """ tile up magnetizations of shape (3,)
     """
-    magv = np.array([np.tile(src.mag, (n_pp,1)) for src in group])
+    magv = np.array([np.tile(src.mag, n_pp) for src in group])
     magv = magv.reshape((-1, 3))
     return magv
 
@@ -18,7 +18,7 @@ def tile_mag(group: list, n_pp: int):
 def tile_dim2(group: list, n_pp: int):
     """ tile up dimensions of shape (2,) and bigger
     """
-    dimv = np.array([np.tile(src.dim, (n_pp,1)) for src in group])
+    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
     dimv = dimv.reshape((-1,len(group[0].dim)))
     return dimv
 
@@ -26,7 +26,7 @@ def tile_dim2(group: list, n_pp: int):
 def tile_dim1(group: list, n_pp: int):
     """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
     """
-    dimv = np.array([np.tile(src.dim, (n_pp,1)) for src in group])
+    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
     dimv = dimv.flatten()
     return dimv
 
@@ -34,7 +34,7 @@ def tile_dim1(group: list, n_pp: int):
 def tile_moment(group: list, n_pp: int):
     """ tile up moments of shape (3,)
     """
-    momv = np.array([np.tile(src.moment, (n_pp,1)) for src in group])
+    momv = np.array([np.tile(src.moment, n_pp) for src in group])
     momv = momv.reshape((-1, 3))
     return momv
 
@@ -42,17 +42,18 @@ def tile_moment(group: list, n_pp: int):
 def tile_current(group: list, n_pp: int):
     """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
     """
-    currv = np.array([np.tile(src.current, (n_pp,1)) for src in group])
+    currv = np.array([np.tile(src.current, n_pp) for src in group])
     currv = currv.flatten()
     return currv
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
-    """ create dictionary for level1 input of Box, Cylinder, Sphere
+    """
+    create dictionary for level1 input
     """
     # pylint: disable=protected-access
 
-    # tile up basics
+    # tile up basic attributes that all sources have
     # pos
     posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
     posv = posv.reshape((-1, 3))
@@ -63,7 +64,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pos_obs
     posov = np.tile(poso, (len(group),1))
 
-    # src type
+    # determine which group we are dealing with
     src_type = group[0].obj_type
 
     if src_type == 'Sphere':
@@ -88,6 +89,14 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         dimv = tile_dim1(group, n_pp)
         return {'src_type':src_type, 'current':currv, 'dim':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
+
+    if src_type == 'Line':
+        # get_BH_line_from_vert function tiles internally !
+        #currv = tile_current(group, n_pp)
+        currv = np.array([src.current for src in group])
+        vert_list = [src.vertices for src in group]
+        return {'src_type':src_type, 'current':currv, 'vertices':vert_list,
+            'pos':posv, 'pos_obs': posov, 'rot':rotobj}
 
     raise MagpylibInternalError('Bad src_type in get_src_dict')
 
@@ -131,6 +140,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     Collection = _lib.obj_classes.Collection
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
 
@@ -196,7 +206,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pos_pix, 3)
-    #   allows sensors with different pos_pix shapes
+    #   allows sensors with different pos_pix shapes <- relevant?
     poso =[[r.apply(sens.pos_pix.reshape(-1,3)) + p
             for r,p in zip(sens._rot, sens._pos)]
            for sens in sensors]
@@ -205,8 +215,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     n_pix = int(n_pp/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[],[],[],[]]   # store groups here
-    order = [[],[],[],[],[]]        # keep track of the source order
+    src_sorted = [[],[],[],[],[],[]]   # store groups here
+    order = [[],[],[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
         if isinstance(src, Box):
             src_sorted[0] += [src]
@@ -223,6 +233,9 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif isinstance(src, Circular):
             src_sorted[4] += [src]
             order[4] += [i]
+        elif isinstance(src, Line):
+            src_sorted[5] += [src]
+            order[5] += [i]
 
     # evaluate each group in one vectorized step -------------------------------
     B = np.empty((l,m,n_pix,3))                               # allocate B
