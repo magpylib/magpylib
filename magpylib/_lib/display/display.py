@@ -4,7 +4,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
-    draw_pixel, draw_sensors, draw_dipoles, draw_circular)
+    draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
     faces_sphere)
 from magpylib import _lib
@@ -64,6 +64,7 @@ def display(
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
 
     # create or set plotting axis
     if axis is None:
@@ -101,6 +102,7 @@ def display(
 
     # currents
     circulars = [obj for obj in obj_list if isinstance(obj, Circular)]
+    lines = [obj for obj in obj_list if isinstance(obj, Line)]
 
     # draw objects and evaluate system size --------------------------------------
 
@@ -132,6 +134,7 @@ def display(
 
     # draw circulars and get line positions
     current_points = draw_circular(circulars, show_path, ax)
+    current_points += draw_line(lines, show_path, ax)
 
     # draw paths and get path points
     path_points = []
@@ -145,6 +148,13 @@ def display(
 
         for dip in dipoles:
             path_points += draw_path(dip, '.6', ax)
+
+        for circ in circulars:
+            path_points += draw_path(circ, '.6', ax)
+
+        for line in lines:
+            path_points += draw_path(line, '.6', ax)
+
 
     # markers -------------------------------------------------------
     if markers:
