@@ -61,3 +61,15 @@ def test_vs_mag2_spiral():
     pm.move([(0,0,.1)]*99, start=1, increment=True)
     B = pm.getB((0,0,0))
     assert np.allclose(B, data), 'vs mag2 - rot'
+
+
+def test_vs_mag2_line():
+    """ test line current vs mag2 results
+    """
+    Btest = np.array([ 1.47881931, -1.99789688,  0.2093811])
+    
+    src = mag3.current.Line(current=10, vertices=[(0,-5,0),(0,5,0),(3,3,3),
+        (-1,-2,-3),(1,1,1),(2,3,4)])
+    B = src.getB([1,2,3])
+
+    assert np.allclose(Btest, B)

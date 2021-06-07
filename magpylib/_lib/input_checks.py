@@ -1,4 +1,5 @@
 """ input checks code"""
+
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._lib.exceptions import (MagpylibBadUserInput,
@@ -117,21 +118,27 @@ def check_scalar_init(inp, origin):
 
 
 def check_vector_type(inp, origin):
-    """ vector input must be list, tuple or ndarray
+    """
+    - vector input must be list, tuple or ndarray
+    - return error msg with reference to origin
     """
     if not isinstance(inp, (list, tuple, np.ndarray)):
         msg = origin + ' input must be vector type (list, tuple or ndarray).'
         raise MagpylibBadUserInput(msg)
 
 def check_vector_init(inp, origin):
-    """ check if vector input was initialized (former None vetor)
+    """
+    - check if vector input was initialized (former None vetor)
+    - return error msg with reference to origin
     """
     if None in inp:
         msg = origin + ' input required.'
         raise MagpylibBadUserInput(msg)
 
 def check_vector_format(inp, shape, origin):
-    """ check if vector input has correct format
+    """
+    - check if vector input has correct format
+    - return error msg with reference to origin
     """
     if not inp.shape == shape:
         msg = f'Bad {origin} input shape. Must be shape f{shape}.'
@@ -139,8 +146,24 @@ def check_vector_format(inp, shape, origin):
 
 
 def check_position_format(inp, origin):
-    """ test if input has the correct shape (...,3)
+    """
+    - test if input has the correct shape (...,3)
+    - return error msg with reference to origin
     """
     msg = f'Bad {origin} input shape. Must be (...,3).'
     if not inp.shape[-1] == 3:
+        raise MagpylibBadInputShape(msg)
+
+
+def check_vertex_format(inp):
+    """
+    - test if input has the correct shape (N,3) with N >= 2
+    - return err msg
+    """
+    msg = 'Bad vertex input shape. Must be (N,3) with N>1'
+    if not inp.shape[-1] == 3:
+        raise MagpylibBadInputShape(msg)
+    if not inp.ndim == 2:
+        raise MagpylibBadInputShape(msg)
+    if not inp.shape[0] > 1:
         raise MagpylibBadInputShape(msg)

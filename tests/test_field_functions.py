@@ -322,15 +322,17 @@ def test_field_line_from_vert():
     vert2 = np.array([(0,0,0),(3,3,3),(-3,4,-5)])
     vert3 = np.array([(1,2,3),(-2,-3,3),(3,2,1),(3,3,3)])
 
-    B_vert = field_BH_line_from_vert(True, curr, [vert1,vert2,vert3], p)
+    pos_tiled = np.tile(p, (3,1))
+    B_vert = field_BH_line_from_vert(True, curr, [vert1,vert2,vert3], pos_tiled)
 
     B = []
     for i,vert in enumerate([vert1,vert2,vert3]):
-        p1 = vert[:-1]
-        p2 = vert[1:]
-        po = np.array([p[i]]*(len(vert)-1))
-        cu = np.array([curr[i]]*(len(vert)-1))
-        B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
+        for pos in p:
+            p1 = vert[:-1]
+            p2 = vert[1:]
+            po = np.array([pos]*(len(vert)-1))
+            cu = np.array([curr[i]]*(len(vert)-1))
+            B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
     B = np.array(B)
 
     assert np.allclose(B_vert, B)

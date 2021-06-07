@@ -28,7 +28,7 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
     -------
     B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [mT]
         B-field of each source (L) at each path position (M) for each sensor (K) and each sensor
-        pixel position (N) in units of [mT].
+        pixel position (Ni) in units of [mT].
         Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
         single sensor or no sensor or single pixel) is removed.
 
@@ -67,7 +67,7 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     -------
     H-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [kA/m]
         H-field of each source (L) at each path position (M) for each sensor (K) and each sensor
-        pixel position (N) in units of [kA/m].
+        pixel position (Ni) in units of [kA/m].
         Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
         single sensor or no sensor or single pixel) is removed.
 

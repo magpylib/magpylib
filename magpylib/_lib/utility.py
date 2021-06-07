@@ -80,7 +80,8 @@ def format_src_inputs(sources) -> list:
         _lib.obj_classes.Cylinder,
         _lib.obj_classes.Sphere,
         _lib.obj_classes.Dipole,
-        _lib.obj_classes.Circular)
+        _lib.obj_classes.Circular,
+        _lib.obj_classes.Line)
     Collection = _lib.obj_classes.Collection
 
     # bare source -> list

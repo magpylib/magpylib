@@ -28,28 +28,31 @@ def field_BH_line_from_vert(
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
 
-    # create input for complete vectorized computation
-    pos_start, pos_end, pos_obs_tile, current_tile, ns = [], [], [], [], []
-    for pos,vset,curr in zip(pos_obs, vertex_sets, current):
-        pos_start += list(vset[:-1])
-        pos_end += list(vset[1:])
-        n = len(vset)-1
-        ns += [n]
-        pos_obs_tile += [pos]*n
-        current_tile += [curr]*n
-    pos_start = np.array(pos_start)
-    pos_end = np.array(pos_end)
-    pos_obs_tile = np.array(pos_obs_tile)
-    current_tile = np.array(current_tile)
+    nv = len(vertex_sets)           # number of input vertex_sets
+    npp = int(pos_obs.shape[0]/nv)  # number of position vectors
+    nvs = [len(vset)-1 for vset in vertex_sets] # length of vertex sets
+    nseg = sum(nvs)                             # number of segments
+
+    # vertex_sets -> segements
+    curr_tile = np.repeat(current, nvs)
+    pos_start = np.concatenate([vert[:-1] for vert in vertex_sets])
+    pos_end = np.concatenate([vert[1:] for vert in vertex_sets])
+
+    # create input for vectorized computation in one go
+    pos_obs = np.tile(pos_obs[:npp], (nseg,1))
+    curr_tile = np.repeat(curr_tile, npp)
+    pos_start = np.repeat(pos_start, npp, axis=0)
+    pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = field_BH_line(bh, current_tile, pos_start, pos_end, pos_obs_tile)
+    field = field_BH_line(bh, curr_tile, pos_start, pos_end, pos_obs)
+    field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set
-    ns_cum = [sum(ns[:i]) for i in range(len(vertex_sets)+1)]
-    field_sum = [np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,len(vertex_sets)+1)]
+    ns_cum = [sum(nvs[:i]) for i in range(nv+1)]   # cumulative index positions
+    field_sum = np.array([np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,nv+1)])
 
-    return np.array(field_sum)
+    return np.reshape(field_sum, (-1,3))
 
 
 def field_BH_line(
@@ -80,6 +83,7 @@ def field_BH_line(
     ### Numerical instabilities:
         - singularity at r=0, B set to 0 within Config.EDGESIZE
     """
+    # pylint: disable=too-many-statements
 
     # Check for zero-length segments
     mask0 = np.all(pos_start==pos_end, axis=1)

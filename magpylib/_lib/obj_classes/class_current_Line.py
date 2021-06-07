@@ -1,31 +1,32 @@
-"""Circular current class code"""
+"""Line current class code"""
 
+import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_scalar_type, check_scalar_init
+from magpylib._lib.input_checks import check_vector_init, check_vertex_format, check_vector_type
 
 # init for tool tips
-dia=None
 i0=None
+pos1=pos2=None
 
 # ON INTERFACE
-class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
+class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
-    Circular current loop.
+    Line current.
 
-    init_state: The current loop lies in the xy-plane of the global CS with its
-        geometric center in the origin.
+    init_state: The line current flows in straight lines from vertex to vertex. The total
+        assembly of line currents given by the vertices represents the Line object.
 
     Properties
     ----------
     current: float, unit [A]
-        Current that flows in the loop.
+        Current that flows along the lines.
 
-    dim: float, unit [mm]
-        Diameter of the loop in units of [mm].
+    vertices: array_like, shape (N,3), unit [mm]
+        The line current flows in straight lines from vertex to vertex.
 
     pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
         Position of Sphere center in units of [mm]. For N>1 pos respresents a path in
@@ -42,43 +43,44 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Adding sources creates a Collection "col = src1 + src2"
 
     __repr__:
-        returns string "Circular(id)"
+        returns string "Line(id)"
 
     Methods
     -------
     getB(observers):
-        Compute B-field of loop at observers.
+        Compute B-field of Line at observers.
 
     getH(observers):
-        Compute H-field of loop at observers.
+        Compute H-field of Line at observers.
 
     display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
-        Display loop graphically using Matplotlib.
+        Display Line graphically using Matplotlib.
 
     move_by(displacement, steps=None):
-        Linear displacement of loop by argument vector.
+        Linear displacement of Line by argument vector.
 
     move_to(target_pos, steps=None):
-        Linear motion of loop to target_pos.
+        Linear motion of Line to target_pos.
 
     rotate(rot, anchor=None, steps=None):
-        Rotate loop about anchor.
+        Rotate Line about anchor.
 
     rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        loop rotation from angle-axis-anchor input.
+        Line rotation from angle-axis-anchor input.
 
     reset_path():
-        Set Circular.pos to (0,0,0) and Circular.rot to unit rotation.
+        Set Line.pos to (0,0,0) and Line.rot to unit rotation.
 
     Returns
     -------
-    Circular object
+    Line object
     """
+    # pylint: disable=dangerous-default-value
 
     def __init__(
             self,
             current = i0,
-            dim = dia,
+            vertices = [pos1, pos2],
             pos = (0,0,0),
             rot = None):
 
@@ -88,22 +90,28 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         BaseCurrent.__init__(self, current)
 
         # set mag and dim attributes
-        self.dim = dim
-        self.obj_type = 'Circular'
+        self.vertices = vertices
+        self.obj_type = 'Line'
 
     @property
-    def dim(self):
-        """ Circular loop diameter in [mm].
+    def vertices(self):
+        """ Line vertices in units of [mm].
         """
-        return self._dim
+        return self._vertices
 
-    @dim.setter
-    def dim(self, dim):
-        """ Set Circular loop diameter, float, [mm].
+    @vertices.setter
+    def vertices(self, vert):
+        """ Set Line vertices, array_like, [mm].
         """
         # input type and init check
         if Config.CHECK_INPUTS:
-            check_scalar_init(dim, 'dimension')
-            check_scalar_type(dim, 'dimension')
+            check_vector_type(vert, 'vertices')
+            check_vector_init(vert, 'vertices')
 
-        self._dim = float(dim)
+        vert = np.array(vert)
+
+        # input format check
+        if Config.CHECK_INPUTS:
+            check_vertex_format(vert)
+
+        self._vertices = vert
