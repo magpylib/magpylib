@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="350"><p>
+<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="250"><p>
 
 ---
 <div>
@@ -48,7 +48,7 @@
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 <p align="center">
-    <img align='center' src=docs/_static/images/index/sourceFundamentals.png height="250">
+    <img align='center' src=docs/_static/images/index/sourceFundamentals.jpg  height="250">
 </p>
 
 ---
