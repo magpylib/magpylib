@@ -29,7 +29,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     bh = kwargs['bh']      # True=B, False=H
 
     rot = kwargs['rot']    # only rotation object allowed as input
-    pos = kwargs['pos']
+    pos = kwargs['position']
     poso = kwargs['pos_obs']
 
     # transform obs_pos into source CS

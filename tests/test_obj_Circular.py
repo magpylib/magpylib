@@ -6,7 +6,7 @@ def test_Circular_basic_B():
     """ Basic Circular class test
     """
     src = mag3.current.Circular(current=123, dimension=2)
-    sens = mag3.Sensor(pos=(1,2,3))
+    sens = mag3.Sensor(position=(1,2,3))
 
     B = src.getB(sens)
     Btest = np.array([0.44179833, 0.88359665, 0.71546231])
@@ -17,7 +17,7 @@ def test_Circular_basic_H():
     """ Basic Circular class test
     """
     src = mag3.current.Circular(current=123, dimension=2)
-    sens = mag3.Sensor(pos=(1,2,3))
+    sens = mag3.Sensor(position=(1,2,3))
 
     H = src.getH(sens)
     Htest = np.array([0.44179833, 0.88359665, 0.71546231])*10/4/np.pi

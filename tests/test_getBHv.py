@@ -18,7 +18,7 @@ def test_getBv1():
     pm.move([(0,x,0) for x in np.linspace(0,5,5)])
     B2 = pm.getB(pos_obs)
 
-    pos = pm.pos
+    pos = pm.position
     rot = pm.rot
 
     dic = {
@@ -26,7 +26,7 @@ def test_getBv1():
         'pos_obs': pos_obs,
         'magnetization': mag,
         'dimension': dim,
-        'pos': pos,
+        'position': pos,
         'rot':rot
         }
     B1 = getBv(**dic)
@@ -47,11 +47,11 @@ def test_getBv2():
         'pos_obs': pos_obs,
         'magnetization': mag,
         'dimension': dim,
-        'pos': pos
+        'position': pos
         }
     B1 = getBv(**dic)
 
-    pm = Cylinder(mag, dim, pos=pos)
+    pm = Cylinder(mag, dim, position=pos)
     B2 = getB([pm],pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -118,7 +118,7 @@ def test_getBv3():
         'pos_obs': pos_obs,
         'magnetization': mag,
         'dimension': dim,
-        'pos': pos,
+        'position': pos,
         'rot': rot
         }
     B1 = getBv(**dic)
@@ -171,7 +171,7 @@ def test_getBv4():
         'pos_obs': pos_obs,
         'magnetization': mag,
         'dimension': dim,
-        'pos': pos,
+        'position': pos,
         'rot': rot
         }
     B1 = getBv(**dic)
@@ -247,7 +247,7 @@ def test_getBHv_line2():
     assert np.allclose(B1, np.array([0,-x,0]))
 
     # move z-line to x=-1
-    B2 = getBv(src_type='Line', pos = (-2,0,0), pos_obs=(0,0,0), current=1,
+    B2 = getBv(src_type='Line', position=(-2,0,0), pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B2, np.array([0,x,0]))
 

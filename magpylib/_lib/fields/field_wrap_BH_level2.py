@@ -55,7 +55,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # pos
-    posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
+    posv = np.array([np.tile(src._position, n_pix).reshape(n_pp,3) for src in group])
     posv = posv.reshape((-1, 3))
     # rot
     rotv = np.array([np.tile(src._rot.as_quat(),n_pix).reshape(n_pp,4) for src in group])
@@ -70,24 +70,24 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
-        return {'src_type':src_type, 'moment':momv, 'pos':posv,
+        return {'src_type':src_type, 'moment':momv, 'position':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
         dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'current':currv, 'dimension':dimv, 'pos':posv,
+        return {'src_type':src_type, 'current':currv, 'dimension':dimv, 'position':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Line':
@@ -96,7 +96,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
         return {'src_type':src_type, 'current':currv, 'vertices':vert_list,
-            'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+            'position':posv, 'pos_obs': posov, 'rot':rotobj}
 
     raise MagpylibInternalError('Bad src_type in get_src_dict')
 
@@ -184,7 +184,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
     #   postion/orientation of the object (static paths)
-    path_lengths = [len(obj._pos) for obj in obj_list]
+    path_lengths = [len(obj._position) for obj in obj_list]
     m = max(path_lengths)
 
     # objects to tile up and reset below
@@ -197,8 +197,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
             # length to be tiled
             m_tile = m-m0
             # tile up position
-            tile_pos = np.tile(obj._pos[-1], (m_tile,1))
-            obj.pos = np.concatenate((obj._pos, tile_pos))
+            tile_pos = np.tile(obj._position[-1], (m_tile,1))
+            obj.position = np.concatenate((obj._position, tile_pos))
             # tile up orientation
             tile_orient = np.tile(obj._rot.as_quat()[-1], (m_tile,1))
             tile_orient = np.concatenate((obj._rot.as_quat(), tile_orient))
@@ -208,7 +208,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     #   shape (m * concat all sens flat pos_pix, 3)
     #   allows sensors with different pos_pix shapes <- relevant?
     poso =[[r.apply(sens.pos_pix.reshape(-1,3)) + p
-            for r,p in zip(sens._rot, sens._pos)]
+            for r,p in zip(sens._rot, sens._position)]
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)
     n_pp = len(poso)
@@ -292,7 +292,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # reset tiled objects
     for obj,m0 in zip(reset_obj, reset_obj_m0):
-        obj.pos = obj.pos[:m0]
+        obj.position = obj.position[:m0]
         obj.rot = obj.rot[:m0]
 
     return B

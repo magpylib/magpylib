@@ -45,8 +45,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
         # optional general inputs -------------------
         # if no input set pos=0
-        pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
-        tile_params['pos'] = (pos,2)
+        pos = np.array(kwargs.get('position', (0,0,0)), dtype=float)
+        tile_params['position'] = (pos,2)
         # if no input set rot=unit
         rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
         tile_params['rot'] = (rot.as_quat(),2)

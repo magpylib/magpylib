@@ -124,8 +124,8 @@ def test_col_reset_path():
     col = mag3.Collection(pm1,pm2)
     col.move([(1,2,3)]*10)
     col.reset_path()
-    assert col[0].pos.ndim==1, 'col reset path fail'
-    assert col[1].pos.ndim==1, 'col reset path fail'
+    assert col[0].position.ndim==1, 'col reset path fail'
+    assert col[1].position.ndim==1, 'col reset path fail'
 
 
 def test_Collection_squeeze():
@@ -149,7 +149,7 @@ def test_Collection_squeeze():
 def test_Collection_with_Dipole():
     """ Simple test of Dipole in Collection
     """
-    src = mag3.misc.Dipole(moment=(1,2,3),pos=(1,2,3))
+    src = mag3.misc.Dipole(moment=(1,2,3),position=(1,2,3))
     col = mag3.Collection(src)
     sens = mag3.Sensor()
 

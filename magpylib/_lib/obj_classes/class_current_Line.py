@@ -81,11 +81,11 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             self,
             current = i0,
             vertices = [pos1, pos2],
-            pos = (0,0,0),
+            position = (0,0,0),
             rot = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, rot)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 

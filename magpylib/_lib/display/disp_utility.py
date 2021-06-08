@@ -16,12 +16,12 @@ def faces_box(src, show_path):
                      (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
     vert0 = vert0 - src.dimension/2
 
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
+    if not isinstance(show_path, bool) and src._position.ndim>1:
         rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+        poss = src._position[::-show_path]
     else:
         rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        poss = [src._position[-1]]
 
     faces = []
     for rot,pos in zip(rots,poss):
@@ -69,12 +69,12 @@ def faces_cylinder(src, show_path):
          for phi in phis]) for h in hs]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
+    if not isinstance(show_path, bool) and src._position.ndim>1:
         rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+        poss = src._position[::-show_path]
     else:
         rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -117,12 +117,12 @@ def faces_sphere(src, show_path):
             for p in phis]) for th in [ths[1],ths[-2]]]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
+    if not isinstance(show_path, bool) and src._position.ndim>1:
         rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+        poss = src._position[::-show_path]
     else:
         rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []

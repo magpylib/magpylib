@@ -130,7 +130,7 @@ def display(
     sensor_points = draw_pixel(sensors, ax, show_path)
 
     # get dipole positions
-    dipole_points = [dip.pos for dip in dipoles]
+    dipole_points = [dip.position for dip in dipoles]
 
     # draw circulars and get line positions
     current_points = draw_circular(circulars, show_path, ax)

@@ -19,12 +19,12 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
     for i,obj in enumerate(faced_objects):
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and obj._pos.ndim>1:
+        if not isinstance(show_path, bool) and obj._position.ndim>1:
             rots = obj._rot[::-show_path]
-            poss = obj._pos[::-show_path]
+            poss = obj._position[::-show_path]
         else:
             rots = [obj._rot[-1]]
-            poss = [obj._pos[-1]]
+            poss = [obj._position[-1]]
 
         # vector length, color and magnetization
         length = 1.8*np.amax(obj.dimension)
@@ -61,7 +61,7 @@ def draw_path(obj, col, ax):
     """ draw path in given color and return list of path-points
     """
     # pylint: disable=protected-access
-    path = obj._pos
+    path = obj._position
     if len(path)>1:
         ax.plot(path[:,0], path[:,1], path[:,2],
                 ls='-',
@@ -104,12 +104,12 @@ def draw_pixel(sensors, ax, show_path):
     # collect sensor and pixel positions in global CS
     pos_sens, pos_pixel = [], []
     for sens in sensors:
-        if not isinstance(show_path, bool) and sens._pos.ndim>1:
+        if not isinstance(show_path, bool) and sens._position.ndim>1:
             rots = sens._rot[::-show_path]
-            poss = sens._pos[::-show_path]
+            poss = sens._position[::-show_path]
         else:
             rots = [sens._rot[-1]]
-            poss = [sens._pos[-1]]
+            poss = [sens._position[-1]]
         pos_pixel_flat = np.reshape(sens.pos_pix, (-1,3))
 
         for rot,pos in zip(rots,poss):
@@ -146,12 +146,12 @@ def draw_sensors(sensors, ax, sys_size, show_path, size_sensors):
     # collect plot data
     possis, exs, eys, ezs = [], [], [], []
     for sens in sensors:
-        if not isinstance(show_path, bool) and sens._pos.ndim>1:
+        if not isinstance(show_path, bool) and sens._position.ndim>1:
             rots = sens._rot[::-show_path]
-            poss = sens._pos[::-show_path]
+            poss = sens._position[::-show_path]
         else:
             rots = [sens._rot[-1]]
-            poss = [sens._pos[-1]]
+            poss = [sens._position[-1]]
 
         for rot,pos in zip(rots,poss):
             possis += [pos]
@@ -186,12 +186,12 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles):
     # collect plot data
     possis, moms = [], []
     for dip in dipoles:
-        if not isinstance(show_path, bool) and dip._pos.ndim>1:
+        if not isinstance(show_path, bool) and dip._position.ndim>1:
             rots = dip._rot[::-show_path]
-            poss = dip._pos[::-show_path]
+            poss = dip._position[::-show_path]
         else:
             rots = [dip._rot[-1]]
-            poss = [dip._pos[-1]]
+            poss = [dip._position[-1]]
         mom = dip.moment/np.linalg.norm(dip.moment)
 
         for rot,pos in zip(rots,poss):
@@ -224,12 +224,12 @@ def draw_circular(circulars, show_path, ax):
     for circ in circulars:
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and circ._pos.ndim>1:
+        if not isinstance(show_path, bool) and circ._position.ndim>1:
             rots = circ._rot[::-show_path]
-            poss = circ._pos[::-show_path]
+            poss = circ._position[::-show_path]
         else:
             rots = [circ._rot[-1]]
-            poss = [circ._pos[-1]]
+            poss = [circ._position[-1]]
 
         # init orientation line positions
         radius = circ.dimension/2
@@ -258,12 +258,12 @@ def draw_line(lines, show_path, ax) -> list:
     for line in lines:
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and line._pos.ndim>1:
+        if not isinstance(show_path, bool) and line._position.ndim>1:
             rots = line._rot[::-show_path]
-            poss = line._pos[::-show_path]
+            poss = line._position[::-show_path]
         else:
             rots = [line._rot[-1]]
-            poss = [line._pos[-1]]
+            poss = [line._position[-1]]
 
         # init orientation line positions
         possis0 = line.vertices

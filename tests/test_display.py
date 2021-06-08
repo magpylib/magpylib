@@ -88,8 +88,8 @@ def test_dipole_display():
     """
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection='3d')
-    dip = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
-    dip2 = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
+    dip = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
+    dip2 = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
     dip2.move([(.4,.4,.4)]*5, increment=True)
     x = dip.display(axis=ax2)
     assert x is None, 'display test fail'

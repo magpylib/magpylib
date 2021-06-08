@@ -17,7 +17,7 @@ def getBH_level1_internal_error():
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(bh=True,src_type='woot', magnetization=x, dimension=x, pos_obs=x, pos=x,rot=rot)
+    getBH_level1(bh=True,src_type='woot', magnetization=x, dimension=x, pos_obs=x, position=x,rot=rot)
 
 
 def getBH_level2_bad_input1():
@@ -164,7 +164,7 @@ def utility_test_path_format():
     """ bad path format input
     """
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm1.pos = [(1,2,3),(1,2,3)]
+    pm1.position = [(1,2,3),(1,2,3)]
     tpf(pm1)
 
 
