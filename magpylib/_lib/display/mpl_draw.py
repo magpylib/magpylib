@@ -27,7 +27,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
             poss = [obj._pos[-1]]
 
         # vector length, color and magnetization
-        length = 1.8*np.amax(obj.dim)
+        length = 1.8*np.amax(obj.dimension)
         col = cmap(i/len(faced_objects))
         mag = obj.magnetization
 
@@ -232,7 +232,7 @@ def draw_circular(circulars, show_path, ax):
             poss = [circ._pos[-1]]
 
         # init orientation line positions
-        radius = circ.dim/2
+        radius = circ.dimension/2
         angs = np.linspace(0, 2*np.pi, discret)
         possis0 = np.array([radius*np.cos(angs), radius*np.sin(angs), np.zeros((discret))]).T
 

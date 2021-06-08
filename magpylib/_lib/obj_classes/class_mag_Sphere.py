@@ -77,7 +77,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     def __init__(
             self,
             magnetization = (mx,my,mz),
-            dim = dia,
+            dimension = dia,
             pos = (0,0,0),
             rot = None):
 
@@ -87,17 +87,17 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         BaseHomMag.__init__(self, magnetization)
 
         # set attributes
-        self.dim = dim
+        self.dimension = dimension
         self.obj_type = 'Sphere'
 
     @property
-    def dim(self):
+    def dimension(self):
         """ Sphere dimension dia in [mm].
         """
-        return self._dim
+        return self._dimension
 
-    @dim.setter
-    def dim(self, dim):
+    @dimension.setter
+    def dimension(self, dim):
         """ Set Sphere dimension dia, float, [mm].
         """
         # input type and init check
@@ -105,4 +105,4 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             check_scalar_init(dim, 'dimension')
             check_scalar_type(dim, 'dimension')
 
-        self._dim = float(dim)
+        self._dimension = float(dim)

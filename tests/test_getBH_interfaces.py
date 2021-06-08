@@ -13,7 +13,7 @@ def test_getB_interfaces1():
         src_type='Box',
         pos=src.pos,
         magnetization=(1,2,3),
-        dim=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
     B1 = np.tile(B,(2,2,1,1))
     B1 = np.swapaxes(B1,0,2)
@@ -46,7 +46,7 @@ def test_getB_interfaces2():
         src_type='Box',
         pos=src.pos,
         magnetization=(1,2,3),
-        dim=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
 
     B2 = np.tile(B,(2,2,2,1,1))
@@ -72,7 +72,7 @@ def test_getB_interfaces3():
         src_type='Box',
         pos=src.pos,
         magnetization=(1,2,3),
-        dim=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
 
     B3 = np.tile(B,(2,2,2,1,1))
@@ -106,7 +106,7 @@ def test_getH_interfaces1():
         src_type='Box',
         pos=src.pos,
         magnetization=mag,
-        dim=dim,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
     H1 = np.tile(H,(2,2,1,1))
     H1 = np.swapaxes(H1,0,2)
@@ -143,7 +143,7 @@ def test_getH_interfaces2():
         src_type='Box',
         pos=src.pos,
         magnetization=mag,
-        dim=dim,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
 
     H2 = np.tile(H,(2,2,2,1,1))
@@ -173,7 +173,7 @@ def test_getH_interfaces3():
         src_type='Box',
         pos=src.pos,
         magnetization=mag,
-        dim=dim,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
 
     H3 = np.tile(H,(2,2,2,1,1))

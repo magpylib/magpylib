@@ -78,7 +78,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def __init__(
             self,
             current = i0,
-            dim = dia,
+            dimension = dia,
             pos = (0,0,0),
             rot = None):
 
@@ -88,17 +88,17 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         BaseCurrent.__init__(self, current)
 
         # set mag and dim attributes
-        self.dim = dim
+        self.dimension = dimension
         self.obj_type = 'Circular'
 
     @property
-    def dim(self):
+    def dimension(self):
         """ Circular loop diameter in [mm].
         """
-        return self._dim
+        return self._dimension
 
-    @dim.setter
-    def dim(self, dim):
+    @dimension.setter
+    def dimension(self, dim):
         """ Set Circular loop diameter, float, [mm].
         """
         # input type and init check
@@ -106,4 +106,4 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             check_scalar_init(dim, 'dimension')
             check_scalar_type(dim, 'dimension')
 
-        self._dim = float(dim)
+        self._dimension = float(dim)

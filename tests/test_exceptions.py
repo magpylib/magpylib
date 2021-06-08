@@ -17,7 +17,7 @@ def getBH_level1_internal_error():
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(bh=True,src_type='woot', magnetization=x, dim=x, pos_obs=x, pos=x,rot=rot)
+    getBH_level1(bh=True,src_type='woot', magnetization=x, dimension=x, pos_obs=x, pos=x,rot=rot)
 
 
 def getBH_level2_bad_input1():
@@ -52,28 +52,28 @@ def getBHv_missing_input1():
     """ missing bh
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(src_type='Box', pos_obs=x, magnetization=x, dim=x)
+    getBHv_level2(src_type='Box', pos_obs=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input2():
     """ missing src_type
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, pos_obs=x, magnetization=x, dim=x)
+    getBHv_level2(bh=True, pos_obs=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input3():
     """ missing pos_obs
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Box', magnetization=x, dim=x)
+    getBHv_level2(bh=True, src_type='Box', magnetization=x, dimension=x)
 
 
 def getBHv_missing_input4_box():
     """ missing Box mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Box', pos_obs=x, dim=x)
+    getBHv_level2(bh=True, src_type='Box', pos_obs=x, dimension=x)
 
 
 def getBHv_missing_input5_box():
@@ -88,7 +88,7 @@ def getBHv_missing_input4_cyl():
     """
     x=np.array([(1,2,3)])
     y = np.array([(1,2)])
-    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, dim=y)
+    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, dimension=y)
 
 
 def getBHv_missing_input5_cyl():
@@ -102,7 +102,7 @@ def getBHv_missing_input4_sphere():
     """ missing Sphere mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, dim=1)
+    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, dimension=1)
 
 
 def getBHv_missing_input5_sphere():
@@ -117,7 +117,7 @@ def getBHv_bad_input():
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
-    getBHv_level2(bh=True, src_type='Box', pos_obs=x, magnetization=x2, dim=x)
+    getBHv_level2(bh=True, src_type='Box', pos_obs=x, magnetization=x2, dimension=x)
 
 
 # def base_geo_bad_pos():
@@ -171,7 +171,7 @@ def utility_test_path_format():
 def box_no_mag():
     """ Box with no mag input
     """
-    mag3.magnet.Box(dim=(1,2,3))
+    mag3.magnet.Box(dimension=(1,2,3))
 
 
 def box_no_dim():
@@ -183,7 +183,7 @@ def box_no_dim():
 def cyl_no_mag():
     """ Cylinder with no mag input
     """
-    mag3.magnet.Cylinder(dim=(1,2))
+    mag3.magnet.Cylinder(dimension=(1,2))
 
 
 def cyl_no_dim():
@@ -195,7 +195,7 @@ def cyl_no_dim():
 def sphere_no_mag():
     """ Cylinder with no mag input
     """
-    mag3.magnet.Sphere(dim=1)
+    mag3.magnet.Sphere(dimension=1)
 
 
 def sphere_no_dim():
@@ -213,7 +213,7 @@ def dipole_no_mom():
 def circular_no_current():
     """ Circular with no current input
     """
-    mag3.current.Circular(dim=1)
+    mag3.current.Circular(dimension=1)
 
 
 def circular_no_dim():

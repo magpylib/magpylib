@@ -134,56 +134,56 @@ def badInput_rotate_from_angax9():
 
 def badMag_input1():
     """bad magnetization input type"""
-    mag3.magnet.Box(magnetization='woot', dim=a3)
+    mag3.magnet.Box(magnetization='woot', dimension=a3)
 
 def badMag_input2():
     """bad magnetization input format"""
-    mag3.magnet.Box(magnetization=(1,2,3,4), dim=a3)
+    mag3.magnet.Box(magnetization=(1,2,3,4), dimension=a3)
 
 def badMag_input3():
     """no magnetization input"""
-    mag3.magnet.Box(dim=a3)
+    mag3.magnet.Box(dimension=a3)
 
 def badCurrent_input1():
     """bad current input type"""
-    mag3.current.Circular(current='1', dim=1)
+    mag3.current.Circular(current='1', dimension=1)
 
 def badCurrent_input2():
     """missing current input"""
-    mag3.current.Circular(dim=1)
+    mag3.current.Circular(dimension=1)
 
 # DIMENSIONS --------------------------------------------
 
 def bad_dim_input1():
     """box dim type"""
-    mag3.magnet.Box(magnetization=a3, dim=1)
+    mag3.magnet.Box(magnetization=a3, dimension=1)
 def bad_dim_input2():
     """box dim init"""
     mag3.magnet.Box(magnetization=a3)
 def bad_dim_input3():
     """box dim format"""
-    mag3.magnet.Box(magnetization=a3, dim=(1,2))
+    mag3.magnet.Box(magnetization=a3, dimension=(1,2))
 
 def bad_dim_input4():
     """cylinder dim type"""
-    mag3.magnet.Cylinder(magnetization=a3, dim=1)
+    mag3.magnet.Cylinder(magnetization=a3, dimension=1)
 def bad_dim_input5():
     """cylinder dim init"""
     mag3.magnet.Cylinder(magnetization=a3)
 def bad_dim_input6():
     """cylinder dim format"""
-    mag3.magnet.Cylinder(magnetization=a3, dim=(1,2,3))
+    mag3.magnet.Cylinder(magnetization=a3, dimension=(1,2,3))
 
 def bad_dim_input7():
     """Sphere dim type"""
-    mag3.magnet.Sphere(magnetization=a3, dim=(1,1))
+    mag3.magnet.Sphere(magnetization=a3, dimension=(1,1))
 def bad_dim_input8():
     """Sphere dim init"""
     mag3.magnet.Sphere(magnetization=a3)
 
 def bad_dim_input9():
     """Circular dim type"""
-    mag3.current.Circular(current=1, dim=(1,1))
+    mag3.current.Circular(current=1, dimension=(1,1))
 def bad_dim_input10():
     """Circular dim init"""
     mag3.current.Circular(current=1)
@@ -215,7 +215,7 @@ def bad_misc_input6():
 
 # OBSERVER ------------------------------------------------------------
 
-src = mag3.current.Circular(current=1, dim=1)
+src = mag3.current.Circular(current=1, dimension=1)
 sens = mag3.Sensor()
 def bad_observer_input1():
     """getBH observer format"""

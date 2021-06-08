@@ -9,12 +9,12 @@ def test_dipole_approximation():
     pos = (1234,-234, 345)
 
     # box with volume = 1 mm^3 
-    src1 = mag3.magnet.Box(mag, dim=(1,1,1))
+    src1 = mag3.magnet.Box(mag, dimension=(1,1,1))
     B1 = src1.getB(pos)
 
     # Cylinder with volume = 1 mm^3
     dia = np.sqrt(4/np.pi)
-    src2 = mag3.magnet.Cylinder(mag, dim=(dia,1))
+    src2 = mag3.magnet.Cylinder(mag, dimension=(dia,1))
     B2 = src2.getB(pos)
     assert np.allclose(B1,B2)
 
@@ -33,7 +33,7 @@ def test_dipole_approximation():
     dia = 2
     i0 = 234
     m0 = dia**2 * np.pi**2 / 10 * i0
-    src1 = mag3.current.Circular(current=i0, dim=dia)
+    src1 = mag3.current.Circular(current=i0, dimension=dia)
     src2 = mag3.misc.Dipole(moment=(0,0,m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
@@ -52,8 +52,8 @@ def test_Circular_vs_Cylinder_field():
     r0 = 2
     h0 = 1e-6
     i0 = 1
-    src1 = mag3.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dim=(r0,h0))
-    src2 = mag3.current.Circular(current=i0, dim=r0)
+    src1 = mag3.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dimension=(r0,h0))
+    src2 = mag3.current.Circular(current=i0, dimension=r0)
 
     H1 = src1.getH(pos_obs)
     H2 = src2.getH(pos_obs)
@@ -83,7 +83,7 @@ def test_Line_vs_Circular():
     Bls = np.array(Bls)
 
     # field from current loop
-    src = mag3.current.Circular(current=1, dim=2)
+    src = mag3.current.Circular(current=1, dimension=2)
     Bcs = src.getB(po)
 
     assert np.allclose(Bls,Bcs)

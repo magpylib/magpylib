@@ -82,7 +82,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     def __init__(
             self,
             magnetization = (mx,my,mz),
-            dim = (d,h),
+            dimension = (d,h),
             pos = (0,0,0),
             rot = None):
 
@@ -92,17 +92,17 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         BaseHomMag.__init__(self, magnetization)
 
         # set attributes
-        self.dim = dim
+        self.dimension = dimension
         self.obj_type = 'Cylinder'
 
     @property
-    def dim(self):
+    def dimension(self):
         """ Cylinder dimension (d,h), unit [mm]
         """
-        return self._dim
+        return self._dimension
 
-    @dim.setter
-    def dim(self, dim):
+    @dimension.setter
+    def dimension(self, dim):
         """ Set Cylinder dimension (d,h), shape (2,), [mm].
         """
         # input type and init check
@@ -117,4 +117,4 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         if Config.CHECK_INPUTS:
             check_vector_format(dim, (2,), 'dimension')
 
-        self._dim = dim
+        self._dimension = dim

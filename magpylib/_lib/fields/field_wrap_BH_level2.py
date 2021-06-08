@@ -18,15 +18,15 @@ def tile_mag(group: list, n_pp: int):
 def tile_dim2(group: list, n_pp: int):
     """ tile up dimensions of shape (2,) and bigger
     """
-    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
-    dimv = dimv.reshape((-1,len(group[0].dim)))
+    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])
+    dimv = dimv.reshape((-1,len(group[0].dimension)))
     return dimv
 
 
 def tile_dim1(group: list, n_pp: int):
     """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
     """
-    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
+    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])
     dimv = dimv.flatten()
     return dimv
 
@@ -70,13 +70,13 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dim':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dim':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Dipole':
@@ -87,7 +87,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
         dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'current':currv, 'dim':dimv, 'pos':posv,
+        return {'src_type':src_type, 'current':currv, 'dimension':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Line':
