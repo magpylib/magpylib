@@ -22,7 +22,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Properties
     ----------
-    mag: array_like, shape (3,), unit [mT]
+    magnetization: array_like, shape (3,), unit [mT]
         Magnetization vector (remanence field) in units of [mT].
 
     dim: array_like, shape (3,), unit [mm]
