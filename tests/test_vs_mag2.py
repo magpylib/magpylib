@@ -54,7 +54,7 @@ def test_vs_mag2_spiral():
     """ test against margpylib v2
     """
     data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[2]
-    pm = mag3.magnet.Box(magnetization=(111,222,333), dimension=(1,2,3), pos=(3,0,0))
+    pm = mag3.magnet.Box(magnetization=(111,222,333), dimension=(1,2,3), position=(3,0,0))
 
     angs = np.linspace(0,297,100)
     pm.rotate_from_angax(angs, 'z', anchor=0, start=0)
@@ -67,7 +67,7 @@ def test_vs_mag2_line():
     """ test line current vs mag2 results
     """
     Btest = np.array([ 1.47881931, -1.99789688,  0.2093811])
-    
+
     src = mag3.current.Line(current=10, vertices=[(0,-5,0),(0,5,0),(3,3,3),
         (-1,-2,-3),(1,1,1),(2,3,4)])
     B = src.getB([1,2,3])

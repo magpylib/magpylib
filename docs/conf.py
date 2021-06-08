@@ -68,7 +68,7 @@ author = 'Michael Ortner <magpylib@gmail.com>'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '2.3.0-beta'
+release = '3.0.0'
 
 
 # -- General configuration ---------------------------------------------------
@@ -125,7 +125,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = './_static/images/magpylib_logo.png'
+html_logo = './_static/images/logo_rtd.jpg'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
