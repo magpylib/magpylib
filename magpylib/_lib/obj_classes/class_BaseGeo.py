@@ -221,13 +221,13 @@ class BaseGeo:
         return self
 
 
-    def rotate(self, rot, anchor=None, start=-1, increment=False):
+    def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
         Rotates the object by a given rotation input (can be a path).
 
         Parameters
         ----------
-        rot: scipy Rotation object
+        rotation: scipy Rotation object
             Rotation to be applied. The rotation object can feature a single rotation
             of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
@@ -261,7 +261,7 @@ class BaseGeo:
 
         # check input types
         if Config.CHECK_INPUTS:
-            check_rot_type(rot)
+            check_rot_type(rotation)
             check_anchor_type(anchor)
             check_start_type(start)
             check_increment_type(increment)
@@ -276,6 +276,7 @@ class BaseGeo:
             # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
 
         # expand rot.as_quat() to shape (1,4)
+        rot = rotation
         inrotQ = rot.as_quat()
         if inrotQ.ndim==1:
             inrotQ = np.expand_dims(inrotQ, 0)
@@ -296,7 +297,7 @@ class BaseGeo:
         if increment:
             rot1 = rot[0]
             for i,r in enumerate(rot[1:]):
-                rot1 = rot1*r
+                rot1 = r*rot1
                 inrotQ[i+1] = rot1.as_quat()
             rot = R.from_quat(inrotQ)
 

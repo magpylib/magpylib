@@ -32,11 +32,11 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((-.1,-.2,-.3))
-    bgeo.rotate(rot)
+    bgeo.rotate(rotation=rot)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
-    bgeo.rotate_from_angax(45,(1,2,3))
+    bgeo.rotate_from_angax(angle=45, axis=(1,2,3))
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -45,7 +45,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((.1,.2,.3))
-    bgeo.rotate(rot,anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
+    bgeo.rotate(rot, anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -54,6 +54,28 @@ def test_BaseGeo_basics():
 
     assert np.allclose(poss, ptest), 'test_BaseGeo bad position'
     assert np.allclose(rots, otest),  'test_BaseGeo bad orientation'
+
+
+def test_rotate_vs_rotate_from():
+    """ testing rotate vs rotate_from_angax
+    """
+    roz = [(.1,.2,.3), (-.1,-.1,-.1),(.2,0,0),(.3,0,0),(0,0,.4),(0,-.2,0)]
+    rroz = R.from_rotvec(roz)
+
+    bg1 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
+    bg1.rotate(rotation=rroz, anchor=(-3,-2,1), start=1, increment=True)
+    pos1 = bg1.position
+    ori1 = bg1.orientation.as_quat()
+
+    bg2 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
+    angs = np.linalg.norm(roz, axis=1)
+    for ang,ax in zip(angs,roz):
+        bg2.rotate_from_angax(angle=ang, degree=False, axis=ax, anchor=(-3,-2,1), start='attach')
+    pos2 = bg2.position
+    ori2 = bg2.orientation.as_quat()
+
+    assert np.allclose(pos1, pos2)
+    assert np.allclose(ori1, ori2)
 
 
 def test_BaseGeo_reset_path():
