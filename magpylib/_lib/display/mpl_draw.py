@@ -29,7 +29,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
         # vector length, color and magnetization
         length = 1.8*np.amax(obj.dim)
         col = cmap(i/len(faced_objects))
-        mag = obj.mag
+        mag = obj.magnetization
 
         # collect all draw positions and directions
         draw_pos, draw_direc = [], []

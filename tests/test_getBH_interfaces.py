@@ -12,7 +12,7 @@ def test_getB_interfaces1():
     B = mag3.getBv(
         src_type='Box',
         pos=src.pos,
-        mag=(1,2,3),
+        magnetization=(1,2,3),
         dim=(1,2,3),
         pos_obs=(-1,-1,-1))
     B1 = np.tile(B,(2,2,1,1))
@@ -45,7 +45,7 @@ def test_getB_interfaces2():
     B = mag3.getBv(
         src_type='Box',
         pos=src.pos,
-        mag=(1,2,3),
+        magnetization=(1,2,3),
         dim=(1,2,3),
         pos_obs=(-1,-1,-1))
 
@@ -71,7 +71,7 @@ def test_getB_interfaces3():
     B = mag3.getBv(
         src_type='Box',
         pos=src.pos,
-        mag=(1,2,3),
+        magnetization=(1,2,3),
         dim=(1,2,3),
         pos_obs=(-1,-1,-1))
 
@@ -96,7 +96,7 @@ def test_getH_interfaces1():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
@@ -105,7 +105,7 @@ def test_getH_interfaces1():
     H = mag3.getHv(
         src_type='Box',
         pos=src.pos,
-        mag=mag,
+        magnetization=mag,
         dim=dim,
         pos_obs=(-1,-2,-3))
     H1 = np.tile(H,(2,2,1,1))
@@ -133,7 +133,7 @@ def test_getH_interfaces2():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
@@ -142,7 +142,7 @@ def test_getH_interfaces2():
     H = mag3.getHv(
         src_type='Box',
         pos=src.pos,
-        mag=mag,
+        magnetization=mag,
         dim=dim,
         pos_obs=(-1,-2,-3))
 
@@ -163,7 +163,7 @@ def test_getH_interfaces3():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
@@ -172,7 +172,7 @@ def test_getH_interfaces3():
     H = mag3.getHv(
         src_type='Box',
         pos=src.pos,
-        mag=mag,
+        magnetization=mag,
         dim=dim,
         pos_obs=(-1,-2,-3))
 

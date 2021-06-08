@@ -60,14 +60,14 @@ def test_field_BH_box():
 
 
 def test_field_BH_box_mag0():
-    """ test box field mag=0
+    """ test box field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,3)
     pos = np.random.rand(n,3)
     B = field_BH_box(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Box mag=0 case broken'
+    assert np.allclose(mag,B), 'Box magnetization=0 case broken'
 
 
 # # GENERATE TEST DATA
@@ -133,14 +133,14 @@ def test_field_BH_cylinder():
 
 
 def test_field_BH_cylinder_mag0():
-    """test cylinder field mag=0
+    """test cylinder field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,2)
     pos = np.random.rand(n,3)
     B = field_BH_cylinder(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Cylinder mag=0 case broken'
+    assert np.allclose(mag,B), 'Cylinder magnetization=0 case broken'
 
 
 def test_field_sphere_vs_v2():
@@ -165,14 +165,14 @@ def test_field_sphere_vs_v2():
 
 
 def test_field_BH_sphere_mag0():
-    """ test box field mag=0
+    """ test box field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n)
     pos = np.random.rand(n,3)
     B = field_BH_sphere(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Box mag=0 case broken'
+    assert np.allclose(mag,B), 'Box magnetization=0 case broken'
 
 
 def test_field_dipole1():

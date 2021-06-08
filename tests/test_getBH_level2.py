@@ -241,11 +241,11 @@ def test_object_tiling():
     src1 = mag3.current.Circular(current=1, dim=1)
     src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
 
-    src2 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+    src2 = mag3.magnet.Box(magnetization=(1,1,1), dim=(1,1,1), pos=(1,1,1))
     src2.move([(1,1,1)]*21)
 
-    src3 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
-    src4 = mag3.magnet.Box(mag=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+    src3 = mag3.magnet.Box(magnetization=(1,1,1), dim=(1,1,1), pos=(1,1,1))
+    src4 = mag3.magnet.Box(magnetization=(1,1,1), dim=(1,1,1), pos=(1,1,1))
 
     col = mag3.Collection(src3, src4)
     src3.move([(1,1,1)]*12)

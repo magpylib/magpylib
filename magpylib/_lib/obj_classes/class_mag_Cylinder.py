@@ -81,7 +81,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     def __init__(
             self,
-            mag = (mx,my,mz),
+            magnetization = (mx,my,mz),
             dim = (d,h),
             pos = (0,0,0),
             rot = None):
@@ -89,7 +89,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
         BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, mag)
+        BaseHomMag.__init__(self, magnetization)
 
         # set attributes
         self.dim = dim

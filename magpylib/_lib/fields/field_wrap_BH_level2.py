@@ -10,7 +10,7 @@ from magpylib import _lib
 def tile_mag(group: list, n_pp: int):
     """ tile up magnetizations of shape (3,)
     """
-    magv = np.array([np.tile(src.mag, n_pp) for src in group])
+    magv = np.array([np.tile(src.magnetization, n_pp) for src in group])
     magv = magv.reshape((-1, 3))
     return magv
 
@@ -70,13 +70,13 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dim':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
-        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
+        return {'src_type':src_type, 'magnetization':magv, 'dim':dimv, 'pos':posv,
             'pos_obs': posov, 'rot':rotobj}
 
     if src_type == 'Dipole':

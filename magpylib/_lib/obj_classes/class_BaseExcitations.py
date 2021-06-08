@@ -13,22 +13,22 @@ class BaseHomMag:
 
     Properties
     ----------
-    mag
+    magnetization
 
     Methods
     -------
     """
-    def __init__(self, mag):
-        self.mag = mag
+    def __init__(self, magnetization):
+        self.magnetization = magnetization
 
     @property
-    def mag(self):
+    def magnetization(self):
         """ Magnet magnetization in units of [mT].
         """
-        return self._mag
+        return self._magnetization
 
-    @mag.setter
-    def mag(self, mag):
+    @magnetization.setter
+    def magnetization(self, mag):
         """ Set magnetization vector, shape (3,), unit [mT].
         """
         # input type and init check
@@ -43,7 +43,7 @@ class BaseHomMag:
         if Config.CHECK_INPUTS:
             check_vector_format(mag, (3,),'magnetization')
 
-        self._mag = mag
+        self._magnetization = mag
 
 
 # CURRENT PROPERTY ON INTERFACE

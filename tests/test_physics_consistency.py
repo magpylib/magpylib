@@ -52,7 +52,7 @@ def test_Circular_vs_Cylinder_field():
     r0 = 2
     h0 = 1e-6
     i0 = 1
-    src1 = mag3.magnet.Cylinder(mag=(0,0,i0/h0*4*np.pi/10), dim=(r0,h0))
+    src1 = mag3.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dim=(r0,h0))
     src2 = mag3.current.Circular(current=i0, dim=r0)
 
     H1 = src1.getH(pos_obs)

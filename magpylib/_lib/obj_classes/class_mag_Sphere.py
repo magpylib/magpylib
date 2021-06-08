@@ -76,7 +76,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     def __init__(
             self,
-            mag = (mx,my,mz),
+            magnetization = (mx,my,mz),
             dim = dia,
             pos = (0,0,0),
             rot = None):
@@ -84,7 +84,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # inherit base_geo class
         BaseGeo.__init__(self, pos, rot)
         BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, mag)
+        BaseHomMag.__init__(self, magnetization)
 
         # set attributes
         self.dim = dim

@@ -24,7 +24,7 @@ def test_getBv1():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim,
         'pos': pos,
         'rot':rot
@@ -45,7 +45,7 @@ def test_getBv2():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim,
         'pos': pos
         }
@@ -67,7 +67,7 @@ def test_getHv1():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim,
         }
     B1 = getHv(**dic)
@@ -89,7 +89,7 @@ def test_getHv2():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim
         }
     B1 = getHv(**dic)
@@ -116,7 +116,7 @@ def test_getBv3():
     dic = {
         'src_type': 'Box',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim,
         'pos': pos,
         'rot': rot
@@ -142,7 +142,7 @@ def test_getHv3():
     dic = {
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim
         }
     B1 = getHv(**dic)
@@ -169,7 +169,7 @@ def test_getBv4():
     dic = {
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
-        'mag': mag,
+        'magnetization': mag,
         'dim': dim,
         'pos': pos,
         'rot': rot

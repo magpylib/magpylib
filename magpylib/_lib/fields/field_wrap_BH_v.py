@@ -55,20 +55,20 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
         # mandatory class specific inputs -----------
         if src_type == 'Box':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
             dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,2)
 
         elif src_type == 'Cylinder':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
             dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,2)
 
         elif src_type == 'Sphere':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
             dim = np.array(kwargs['dim'], dtype=float)
             tile_params['dim'] = (dim,1)
 

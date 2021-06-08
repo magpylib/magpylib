@@ -38,15 +38,15 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
 
     # compute field
     if src_type == 'Box':
-        mag = kwargs['mag']
+        mag = kwargs['magnetization']
         dim = kwargs['dim']
         B = field_BH_box(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder':
-        mag = kwargs['mag']
+        mag = kwargs['magnetization']
         dim = kwargs['dim']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Sphere':
-        mag = kwargs['mag']
+        mag = kwargs['magnetization']
         dim = kwargs['dim']
         B = field_BH_sphere(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Dipole':

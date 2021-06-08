@@ -134,11 +134,11 @@ def badInput_rotate_from_angax9():
 
 def badMag_input1():
     """bad magnetization input type"""
-    mag3.magnet.Box(mag='woot', dim=a3)
+    mag3.magnet.Box(magnetization='woot', dim=a3)
 
 def badMag_input2():
     """bad magnetization input format"""
-    mag3.magnet.Box(mag=(1,2,3,4), dim=a3)
+    mag3.magnet.Box(magnetization=(1,2,3,4), dim=a3)
 
 def badMag_input3():
     """no magnetization input"""
@@ -156,30 +156,30 @@ def badCurrent_input2():
 
 def bad_dim_input1():
     """box dim type"""
-    mag3.magnet.Box(mag=a3, dim=1)
+    mag3.magnet.Box(magnetization=a3, dim=1)
 def bad_dim_input2():
     """box dim init"""
-    mag3.magnet.Box(mag=a3)
+    mag3.magnet.Box(magnetization=a3)
 def bad_dim_input3():
     """box dim format"""
-    mag3.magnet.Box(mag=a3, dim=(1,2))
+    mag3.magnet.Box(magnetization=a3, dim=(1,2))
 
 def bad_dim_input4():
     """cylinder dim type"""
-    mag3.magnet.Cylinder(mag=a3, dim=1)
+    mag3.magnet.Cylinder(magnetization=a3, dim=1)
 def bad_dim_input5():
     """cylinder dim init"""
-    mag3.magnet.Cylinder(mag=a3)
+    mag3.magnet.Cylinder(magnetization=a3)
 def bad_dim_input6():
     """cylinder dim format"""
-    mag3.magnet.Cylinder(mag=a3, dim=(1,2,3))
+    mag3.magnet.Cylinder(magnetization=a3, dim=(1,2,3))
 
 def bad_dim_input7():
     """Sphere dim type"""
-    mag3.magnet.Sphere(mag=a3, dim=(1,1))
+    mag3.magnet.Sphere(magnetization=a3, dim=(1,1))
 def bad_dim_input8():
     """Sphere dim init"""
-    mag3.magnet.Sphere(mag=a3)
+    mag3.magnet.Sphere(magnetization=a3)
 
 def bad_dim_input9():
     """Circular dim type"""
