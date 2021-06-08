@@ -136,7 +136,7 @@ class BaseGeo:
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Set object.position to (0,0,0) and object.rot to unit rotation.
+        Set object.position to (0,0,0) and object.orientation to unit rotation.
         """
         self.position = (0,0,0)
         self.orientation = R.from_quat((0,0,0,1))
