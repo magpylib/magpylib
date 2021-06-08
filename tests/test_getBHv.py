@@ -143,13 +143,13 @@ def test_getHv3():
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
         'magnetization': mag,
-        'dimension': dim
+        'diameter': dim
         }
     B1 = getHv(**dic)
 
     B2 = []
     for i in range(3):
-        pm = Sphere(mag[i],dim)
+        pm = Sphere(mag[i], dim)
         B2 += [getH([pm], pos_obs)]
     B2 = np.array(B2)
 
@@ -170,7 +170,7 @@ def test_getBv4():
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
         'magnetization': mag,
-        'dimension': dim,
+        'diameter': dim,
         'position': pos,
         'orientation': rot
         }
@@ -178,7 +178,7 @@ def test_getBv4():
 
     B2 = []
     for i in range(n):
-        pm = Sphere(mag[i],dim,pos,rot[i])
+        pm = Sphere(mag[i], dim, pos, rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1-B2)
@@ -200,11 +200,11 @@ def test_geBHv_dipole():
 def test_geBHv_circular():
     """ test if Circular implementation gives correct output
     """
-    B = getBv(src_type='Circular', current=1, dimension=2, pos_obs = (0,0,0))
+    B = getBv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
     Btest = np.array([0,0,0.6283185307179586])
     assert np.allclose(B,Btest)
 
-    H = getHv(src_type='Circular', current=1, dimension=2, pos_obs = (0,0,0))
+    H = getHv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
 
@@ -212,10 +212,10 @@ def test_geBHv_circular():
 def test_getBHv_squeeze():
     """ test if squeeze works
     """
-    B1 = getBv(src_type='Circular', current=1, dimension=2, pos_obs = (0,0,0))
-    B2 = getBv(src_type='Circular', current=1, dimension=2, pos_obs = [(0,0,0)])
-    B3 = getBv(src_type='Circular', current=1, dimension=2, pos_obs = [(0,0,0)], squeeze=False)
-    B4 = getBv(src_type='Circular', current=1, dimension=2, pos_obs = [(0,0,0)]*2)
+    B1 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
+    B2 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)])
+    B3 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)], squeeze=False)
+    B4 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)]*2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1

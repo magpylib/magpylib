@@ -180,7 +180,7 @@ def cyl_no_dim():
 def sphere_no_mag():
     """ Cylinder with no mag input
     """
-    mag3.magnet.Sphere(dimension=1)
+    mag3.magnet.Sphere(diameter=1)
 
 
 def sphere_no_dim():
@@ -198,7 +198,7 @@ def dipole_no_mom():
 def circular_no_current():
     """ Circular with no current input
     """
-    mag3.current.Circular(dimension=1)
+    mag3.current.Circular(diameter=1)
 
 
 def circular_no_dim():

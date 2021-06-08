@@ -57,8 +57,8 @@ def test_Sphere_basics():
 def test_Sphere_add():
     """ testing __add__
     """
-    src1 = Sphere((1,2,3),11)
-    src2 = Sphere((1,2,3),11)
+    src1 = Sphere(magnetization=(1,2,3), diameter=11)
+    src2 = Sphere((1,2,3), 11)
     col = src1 + src2
     assert isinstance(col, Collection), 'adding boxes fail'
 

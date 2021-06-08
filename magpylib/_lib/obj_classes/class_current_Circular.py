@@ -8,7 +8,6 @@ from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_scalar_type, check_scalar_init
 
 # init for tool tips
-dia=None
 i0=None
 
 # ON INTERFACE
@@ -78,7 +77,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def __init__(
             self,
             current = i0,
-            dimension = dia,
+            diameter = None,
             position = (0,0,0),
             orientation = None):
 
@@ -88,22 +87,22 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         BaseCurrent.__init__(self, current)
 
         # set mag and dim attributes
-        self.dimension = dimension
+        self.diameter = diameter
         self.object_type = 'Circular'
 
     @property
-    def dimension(self):
+    def diameter(self):
         """ Circular loop diameter in [mm].
         """
-        return self._dimension
+        return self._diameter
 
-    @dimension.setter
-    def dimension(self, dim):
+    @diameter.setter
+    def diameter(self, dia):
         """ Set Circular loop diameter, float, [mm].
         """
         # input type and init check
         if Config.CHECK_INPUTS:
-            check_scalar_init(dim, 'dimension')
-            check_scalar_type(dim, 'dimension')
+            check_scalar_init(dia, 'diameter')
+            check_scalar_type(dia, 'diameter')
 
-        self._dimension = float(dim)
+        self._diameter = float(dia)

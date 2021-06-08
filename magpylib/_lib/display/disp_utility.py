@@ -102,7 +102,7 @@ def faces_sphere(src, show_path):
     res = 15 #surface discretization
 
     # generate sphere faces
-    r = src.dimension/2
+    r = src.diameter/2
     phis = np.linspace(0,2*np.pi,res)
     phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
     ths = np.linspace(0,np.pi,res)

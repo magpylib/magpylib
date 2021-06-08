@@ -62,7 +62,7 @@ def test_Circular_display():
     """ testing display for Circular source
     """
     ax = plt.subplot(projection='3d')
-    src = mag3.current.Circular(current=1, dimension=1)
+    src = mag3.current.Circular(current=1, diameter=1)
     x = src.display(axis=ax)
     assert x is None, 'display test fail'
 

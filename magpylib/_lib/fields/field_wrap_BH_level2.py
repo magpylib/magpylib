@@ -23,10 +23,10 @@ def tile_dim2(group: list, n_pp: int):
     return dimv
 
 
-def tile_dim1(group: list, n_pp: int):
-    """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
+def tile_dia(group: list, n_pp: int):
+    """ tile up diameter
     """
-    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])
+    dimv = np.array([np.tile(src.diameter, n_pp) for src in group])
     dimv = dimv.flatten()
     return dimv
 
@@ -69,8 +69,8 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
-        dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
+        diav = tile_dia(group, n_pp)
+        return {'src_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
@@ -86,8 +86,8 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
-        dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'current':currv, 'dimension':dimv, 'position':posv,
+        diav = tile_dia(group, n_pp)
+        return {'src_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Line':

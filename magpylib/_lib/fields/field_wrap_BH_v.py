@@ -69,8 +69,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Sphere':
             mag = np.array(kwargs['magnetization'], dtype=float)
             tile_params['magnetization'] = (mag,2)
-            dim = np.array(kwargs['dimension'], dtype=float)
-            tile_params['dimension'] = (dim,1)
+            dia = np.array(kwargs['diameter'], dtype=float)
+            tile_params['diameter'] = (dia,1)
 
         elif src_type == 'Dipole':
             moment = np.array(kwargs['moment'], dtype=float)
@@ -79,8 +79,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Circular':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
-            dim = np.array(kwargs['dimension'], dtype=float)
-            tile_params['dimension'] = (dim,1)
+            dia = np.array(kwargs['diameter'], dtype=float)
+            tile_params['diameter'] = (dia,1)
 
         elif src_type == 'Line':
             current = np.array(kwargs['current'], dtype=float)

@@ -1,6 +1,7 @@
 """ matplotlib draw-functionalities"""
 
 import numpy as np
+import magpylib as mag3
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
@@ -16,6 +17,10 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     """
     #pylint: disable=protected-access
 
+    # avoid circular imports
+    Box = mag3._lib.obj_classes.Box
+    Cylinder = mag3._lib.obj_classes.Cylinder
+
     for i,obj in enumerate(faced_objects):
 
         # add src attributes position and orientation depending on show_path
@@ -27,7 +32,10 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             poss = [obj._position[-1]]
 
         # vector length, color and magnetization
-        length = 1.8*np.amax(obj.dimension)
+        if isinstance(obj, (Box, Cylinder)):
+            length = 1.8*np.amax(obj.dimension)
+        else:
+            length = 1.8*obj.diameter # Sphere
         col = cmap(i/len(faced_objects))
         mag = obj.magnetization
 
@@ -232,7 +240,7 @@ def draw_circular(circulars, show_path, ax):
             poss = [circ._position[-1]]
 
         # init orientation line positions
-        radius = circ.dimension/2
+        radius = circ.diameter/2
         angs = np.linspace(0, 2*np.pi, discret)
         possis0 = np.array([radius*np.cos(angs), radius*np.sin(angs), np.zeros((discret))]).T
 

@@ -146,11 +146,11 @@ def badMag_input3():
 
 def badCurrent_input1():
     """bad current input type"""
-    mag3.current.Circular(current='1', dimension=1)
+    mag3.current.Circular(current='1', diameter=1)
 
 def badCurrent_input2():
     """missing current input"""
-    mag3.current.Circular(dimension=1)
+    mag3.current.Circular(diameter=1)
 
 # DIMENSIONS --------------------------------------------
 
@@ -176,14 +176,14 @@ def bad_dim_input6():
 
 def bad_dim_input7():
     """Sphere dim type"""
-    mag3.magnet.Sphere(magnetization=a3, dimension=(1,1))
+    mag3.magnet.Sphere(magnetization=a3, diameter=(1,1))
 def bad_dim_input8():
     """Sphere dim init"""
     mag3.magnet.Sphere(magnetization=a3)
 
 def bad_dim_input9():
     """Circular dim type"""
-    mag3.current.Circular(current=1, dimension=(1,1))
+    mag3.current.Circular(current=1, diameter=(1,1))
 def bad_dim_input10():
     """Circular dim init"""
     mag3.current.Circular(current=1)
@@ -215,7 +215,7 @@ def bad_misc_input6():
 
 # OBSERVER ------------------------------------------------------------
 
-src = mag3.current.Circular(current=1, dimension=1)
+src = mag3.current.Circular(current=1, diameter=1)
 sens = mag3.Sensor()
 def bad_observer_input1():
     """getBH observer format"""

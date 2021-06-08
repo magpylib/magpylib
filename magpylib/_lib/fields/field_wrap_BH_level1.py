@@ -47,15 +47,15 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Sphere':
         mag = kwargs['magnetization']
-        dim = kwargs['dimension']
-        B = field_BH_sphere(bh, mag, dim, pos_rel_rot)
+        dia = kwargs['diameter']
+        B = field_BH_sphere(bh, mag, dia, pos_rel_rot)
     elif src_type == 'Dipole':
         moment = kwargs['moment']
         B = field_BH_dipole(bh, moment, pos_rel_rot)
     elif src_type == 'Circular':
         current = kwargs['current']
-        dim = kwargs['dimension']
-        B = field_BH_circular(bh, current, dim, pos_rel_rot)
+        dia = kwargs['diameter']
+        B = field_BH_circular(bh, current, dia, pos_rel_rot)
     elif src_type =='Line':
         current = kwargs['current']
         if 'vertices' in kwargs:
