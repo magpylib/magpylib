@@ -10,7 +10,7 @@ from magpylib import _lib
 def tile_mag(group: list, n_pp: int):
     """ tile up magnetizations of shape (3,)
     """
-    magv = np.array([np.tile(src.mag, n_pp) for src in group])
+    magv = np.array([np.tile(src.magnetization, n_pp) for src in group])
     magv = magv.reshape((-1, 3))
     return magv
 
@@ -18,15 +18,15 @@ def tile_mag(group: list, n_pp: int):
 def tile_dim2(group: list, n_pp: int):
     """ tile up dimensions of shape (2,) and bigger
     """
-    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
-    dimv = dimv.reshape((-1,len(group[0].dim)))
+    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])
+    dimv = dimv.reshape((-1,len(group[0].dimension)))
     return dimv
 
 
-def tile_dim1(group: list, n_pp: int):
-    """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
+def tile_dia(group: list, n_pp: int):
+    """ tile up diameter
     """
-    dimv = np.array([np.tile(src.dim, n_pp) for src in group])
+    dimv = np.array([np.tile(src.diameter, n_pp) for src in group])
     dimv = dimv.flatten()
     return dimv
 
@@ -54,41 +54,41 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pylint: disable=protected-access
 
     # tile up basic attributes that all sources have
-    # pos
-    posv = np.array([np.tile(src._pos, n_pix).reshape(n_pp,3) for src in group])
+    # position
+    posv = np.array([np.tile(src._position, n_pix).reshape(n_pp,3) for src in group])
     posv = posv.reshape((-1, 3))
-    # rot
-    rotv = np.array([np.tile(src._rot.as_quat(),n_pix).reshape(n_pp,4) for src in group])
+    # orientation
+    rotv = np.array([np.tile(src._orientation.as_quat(),n_pix).reshape(n_pp,4) for src in group])
     rotv = rotv.reshape((-1, 4))
     rotobj = R.from_quat(rotv)
     # pos_obs
     posov = np.tile(poso, (len(group),1))
 
     # determine which group we are dealing with
-    src_type = group[0].obj_type
+    src_type = group[0].object_type
 
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
-        dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
-            'pos_obs': posov, 'rot':rotobj}
+        diav = tile_dia(group, n_pp)
+        return {'src_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
+            'pos_obs': posov, 'orientation':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
-        return {'src_type':src_type, 'mag':magv, 'dim':dimv, 'pos':posv,
-            'pos_obs': posov, 'rot':rotobj}
+        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
+            'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
-        return {'src_type':src_type, 'moment':momv, 'pos':posv,
-            'pos_obs': posov, 'rot':rotobj}
+        return {'src_type':src_type, 'moment':momv, 'position':posv,
+            'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
-        dimv = tile_dim1(group, n_pp)
-        return {'src_type':src_type, 'current':currv, 'dim':dimv, 'pos':posv,
-            'pos_obs': posov, 'rot':rotobj}
+        diav = tile_dia(group, n_pp)
+        return {'src_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
+            'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Line':
         # get_BH_line_from_vert function tiles internally !
@@ -96,7 +96,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
         return {'src_type':src_type, 'current':currv, 'vertices':vert_list,
-            'pos':posv, 'pos_obs': posov, 'rot':rotobj}
+            'position':posv, 'pos_obs': posov, 'orientation':rotobj}
 
     raise MagpylibInternalError('Bad src_type in get_src_dict')
 
@@ -110,7 +110,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     - sources (src_obj or list): source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
     - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K sensors with
-        similar pathlength M and/or 1 and sensor pos_pix of shape (N1,N2,...,3).
+        similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
@@ -152,23 +152,25 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # format observer inputs:
     #   allow only bare sensor, possis, or a list/tuple thereof
-    #   create a list of sensor instances where possi inputs are moved to pos_pix
+    #   create a list of sensor instances where possi inputs are moved to pixel
     sensors = format_obs_inputs(observers)
 
     # check if all sensor pixel shapes are similar.
     #   Cannot accept different obs pos input shapes as this would lead to incomplete
     #   axes in the return arrays.
-    pix_shapes = [sens.pos_pix.shape for sens in sensors]
+    pix_shapes = [sens.pixel.shape for sens in sensors]
     if not all_same(pix_shapes):
         raise MagpylibBadUserInput('Different observer input shapes not allowed.'+
-            ' All pos_pix and pos_obs input shapes must be similar !')
+            ' All pixel and pos_obs input shapes must be similar !')
     pix_shape = pix_shapes[0]
 
     # check which sensors have unit roation
     #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0,0,0,1.])
-    unrotated_sensors = [all(all(r==unitQ) for r in sens._rot.as_quat()) for sens in sensors]
+    unrotated_sensors = [all(all(r==unitQ)
+        for r in sens._orientation.as_quat())
+        for sens in sensors]
 
     # check which sensors have a static orientation
     #   either static sensor or translation path
@@ -184,7 +186,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
     #   postion/orientation of the object (static paths)
-    path_lengths = [len(obj._pos) for obj in obj_list]
+    path_lengths = [len(obj._position) for obj in obj_list]
     m = max(path_lengths)
 
     # objects to tile up and reset below
@@ -197,18 +199,18 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
             # length to be tiled
             m_tile = m-m0
             # tile up position
-            tile_pos = np.tile(obj._pos[-1], (m_tile,1))
-            obj.pos = np.concatenate((obj._pos, tile_pos))
+            tile_pos = np.tile(obj._position[-1], (m_tile,1))
+            obj.position = np.concatenate((obj._position, tile_pos))
             # tile up orientation
-            tile_orient = np.tile(obj._rot.as_quat()[-1], (m_tile,1))
-            tile_orient = np.concatenate((obj._rot.as_quat(), tile_orient))
-            obj.rot = R.from_quat(tile_orient)
+            tile_orient = np.tile(obj._orientation.as_quat()[-1], (m_tile,1))
+            tile_orient = np.concatenate((obj._orientation.as_quat(), tile_orient))
+            obj.orientation = R.from_quat(tile_orient)
 
     # combine information form all sensors to generate pos_obs with-------------
-    #   shape (m * concat all sens flat pos_pix, 3)
-    #   allows sensors with different pos_pix shapes <- relevant?
-    poso =[[r.apply(sens.pos_pix.reshape(-1,3)) + p
-            for r,p in zip(sens._rot, sens._pos)]
+    #   shape (m * concat all sens flat pixel, 3)
+    #   allows sensors with different pixel shapes <- relevant?
+    poso =[[r.apply(sens.pixel.reshape(-1,3)) + p
+            for r,p in zip(sens._orientation, sens._position)]
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)
     n_pp = len(poso)
@@ -268,14 +270,14 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
                 # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
                 Bpart_flat = np.reshape(Bpart, (k_pixel*l0*m,3))
                 # apply sensor rotation
-                Bpart_flat_rot = sens._rot[0].inv().apply(Bpart_flat)
+                Bpart_flat_rot = sens._orientation[0].inv().apply(Bpart_flat)
                 # overwrite Bpart in B
                 B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,m,k_pixel,3))
             else:                         # general case: different rotations along path
                 for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
                     Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
                     Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
-                    Bpart_flat_rot = sens._rot[j].inv().apply(Bpart_flat)  # apply rotation
+                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotation
                     B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3)) # ov
 
     # rearrange sensor-pixel shape
@@ -292,7 +294,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # reset tiled objects
     for obj,m0 in zip(reset_obj, reset_obj_m0):
-        obj.pos = obj.pos[:m0]
-        obj.rot = obj.rot[:m0]
+        obj.position = obj.position[:m0]
+        obj.orientation = obj.orientation[:m0]
 
     return B

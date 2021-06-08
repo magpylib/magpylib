@@ -31,7 +31,7 @@ def test_sensor2():
     B1 = np.array([pm.getB(poss) for poss in [poss1,poss2,poss3]])
     B1 = np.swapaxes(B1,0,1)
 
-    sens = mag3.Sensor(pos_pix=[(0,0,2),(0,0,3),(0,0,4)])
+    sens = mag3.Sensor(pixel=[(0,0,2),(0,0,3),(0,0,4)])
     sens.move([(t,0,0) for t in poz], start=0)
     B2 = sens.getB(pm)
 
@@ -42,7 +42,7 @@ def test_sensor2():
 def test_Sensor_getB_specs():
     """ test input of sens getB
     """
-    sens1 = mag3.Sensor(pos_pix=(4,4,4))
+    sens1 = mag3.Sensor(pixel=(4,4,4))
     pm1 = mag3.magnet.Cylinder((111,222,333),(1,2))
 
     B1 = sens1.getB(pm1)
@@ -59,7 +59,7 @@ def test_Sensor_squeeze():
     """ testing squeeze output
     """
     src = mag3.magnet.Sphere((1,1,1),1)
-    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = sensor.getB(src)
     assert B.shape==(2,3)
     H = sensor.getH(src)

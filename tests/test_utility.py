@@ -28,7 +28,7 @@ def test_format_getBH_class_inputs():
     """ special case testing of different input formats
     """
     possis = [3,3,3]
-    sens = mag3.Sensor(pos=(3,3,3))
+    sens = mag3.Sensor(position=(3,3,3))
     pm1 = mag3.magnet.Box((11,22,33),(1,2,3))
     pm2 = mag3.magnet.Box((11,22,33),(1,2,3))
     col = pm1 + pm2

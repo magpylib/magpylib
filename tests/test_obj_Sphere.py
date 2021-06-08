@@ -57,8 +57,8 @@ def test_Sphere_basics():
 def test_Sphere_add():
     """ testing __add__
     """
-    src1 = Sphere((1,2,3),11)
-    src2 = Sphere((1,2,3),11)
+    src1 = Sphere(magnetization=(1,2,3), diameter=11)
+    src2 = Sphere((1,2,3), 11)
     col = src1 + src2
     assert isinstance(col, Collection), 'adding boxes fail'
 
@@ -67,7 +67,7 @@ def test_Sphere_squeeze():
     """ testing squeeze output
     """
     src1 = Sphere((1,1,1),1)
-    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
     H = src1.getH(sensor)

@@ -8,7 +8,6 @@ from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_scalar_init, check_scalar_type
 
 # init for tool tips
-dia=None
 mx=my=mz=None
 
 # ON INTERFACE
@@ -51,7 +50,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     getH(observers):
         Compute H-field of Sphere at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Sphere graphically using Matplotlib.
 
     move_by(displacement, steps=None):
@@ -76,33 +75,33 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     def __init__(
             self,
-            mag = (mx,my,mz),
-            dim = dia,
-            pos = (0,0,0),
-            rot = None):
+            magnetization = (mx,my,mz),
+            diameter = None,
+            position = (0,0,0),
+            orientation = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, mag)
+        BaseHomMag.__init__(self, magnetization)
 
         # set attributes
-        self.dim = dim
-        self.obj_type = 'Sphere'
+        self.diameter = diameter
+        self.object_type = 'Sphere'
 
     @property
-    def dim(self):
-        """ Sphere dimension dia in [mm].
+    def diameter(self):
+        """ Sphere diameter in [mm].
         """
-        return self._dim
+        return self._diameter
 
-    @dim.setter
-    def dim(self, dim):
-        """ Set Sphere dimension dia, float, [mm].
+    @diameter.setter
+    def diameter(self, dia):
+        """ Set Sphere diameter, float, [mm].
         """
         # input type and init check
         if Config.CHECK_INPUTS:
-            check_scalar_init(dim, 'dimension')
-            check_scalar_type(dim, 'dimension')
+            check_scalar_init(dia, 'diameter')
+            check_scalar_type(dia, 'diameter')
 
-        self._dim = float(dim)
+        self._diameter = float(dia)

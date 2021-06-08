@@ -8,12 +8,12 @@ def test_getB_interfaces1():
     src = mag3.magnet.Box((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
         src_type='Box',
-        pos=src.pos,
-        mag=(1,2,3),
-        dim=(1,2,3),
+        position=src.position,
+        magnetization=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
     B1 = np.tile(B,(2,2,1,1))
     B1 = np.swapaxes(B1,0,2)
@@ -41,12 +41,12 @@ def test_getB_interfaces2():
     src = mag3.magnet.Box((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
         src_type='Box',
-        pos=src.pos,
-        mag=(1,2,3),
-        dim=(1,2,3),
+        position=src.position,
+        magnetization=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
 
     B2 = np.tile(B,(2,2,2,1,1))
@@ -67,12 +67,12 @@ def test_getB_interfaces3():
     src = mag3.magnet.Box((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
         src_type='Box',
-        pos=src.pos,
-        mag=(1,2,3),
-        dim=(1,2,3),
+        position=src.position,
+        magnetization=(1,2,3),
+        dimension=(1,2,3),
         pos_obs=(-1,-1,-1))
 
     B3 = np.tile(B,(2,2,2,1,1))
@@ -96,17 +96,17 @@ def test_getH_interfaces1():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
         src_type='Box',
-        pos=src.pos,
-        mag=mag,
-        dim=dim,
+        position=src.position,
+        magnetization=mag,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
     H1 = np.tile(H,(2,2,1,1))
     H1 = np.swapaxes(H1,0,2)
@@ -133,17 +133,17 @@ def test_getH_interfaces2():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
         src_type='Box',
-        pos=src.pos,
-        mag=mag,
-        dim=dim,
+        position=src.position,
+        magnetization=mag,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
 
     H2 = np.tile(H,(2,2,2,1,1))
@@ -163,17 +163,17 @@ def test_getH_interfaces3():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag,dim)
+    src = mag3.magnet.Box(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pos_pix=poso)
+    sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
         src_type='Box',
-        pos=src.pos,
-        mag=mag,
-        dim=dim,
+        position=src.position,
+        magnetization=mag,
+        dimension=dim,
         pos_obs=(-1,-2,-3))
 
     H3 = np.tile(H,(2,2,2,1,1))

@@ -22,7 +22,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Properties
     ----------
-    mag: array_like, shape (3,), unit [mT]
+    magnetization: array_like, shape (3,), unit [mT]
         Magnetization vector (remanence field) in units of [mT].
 
     dim: array_like, shape (3,), unit [mm]
@@ -53,7 +53,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     getH(observers):
         Compute H-field of Box at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Box graphically using Matplotlib.
 
     move_by(displacement, steps=None):
@@ -78,31 +78,31 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     def __init__(
             self,
-            mag = (mx,my,mz),
-            dim = (a,b,c),
-            pos = (0,0,0),
-            rot = None):
+            magnetization = (mx,my,mz),
+            dimension = (a,b,c),
+            position = (0,0,0),
+            orientation = None):
 
         # inherit
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, mag)
+        BaseHomMag.__init__(self, magnetization)
 
         # set attributes
-        self.dim = dim
-        self.obj_type = 'Box'
+        self.dimension = dimension
+        self.object_type = 'Box'
 
 
     # properties ----------------------------------------------------
 
     @property
-    def dim(self):
+    def dimension(self):
         """ Box dimension (a,b,c) in [mm].
         """
-        return self._dim
+        return self._dimension
 
-    @dim.setter
-    def dim(self, dim):
+    @dimension.setter
+    def dimension(self, dim):
         """ Set Box dimension (a,b,c), shape (3,), [mm].
         """
         # input type and init check
@@ -117,4 +117,4 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         if Config.CHECK_INPUTS:
             check_vector_format(dim, (3,), 'dimension')
 
-        self._dim = dim
+        self._dimension = dim

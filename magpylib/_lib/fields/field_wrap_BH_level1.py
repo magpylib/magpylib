@@ -28,8 +28,8 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     src_type = kwargs['src_type']
     bh = kwargs['bh']      # True=B, False=H
 
-    rot = kwargs['rot']    # only rotation object allowed as input
-    pos = kwargs['pos']
+    rot = kwargs['orientation']    # only rotation object allowed as input
+    pos = kwargs['position']
     poso = kwargs['pos_obs']
 
     # transform obs_pos into source CS
@@ -38,24 +38,24 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
 
     # compute field
     if src_type == 'Box':
-        mag = kwargs['mag']
-        dim = kwargs['dim']
+        mag = kwargs['magnetization']
+        dim = kwargs['dimension']
         B = field_BH_box(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder':
-        mag = kwargs['mag']
-        dim = kwargs['dim']
+        mag = kwargs['magnetization']
+        dim = kwargs['dimension']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Sphere':
-        mag = kwargs['mag']
-        dim = kwargs['dim']
-        B = field_BH_sphere(bh, mag, dim, pos_rel_rot)
+        mag = kwargs['magnetization']
+        dia = kwargs['diameter']
+        B = field_BH_sphere(bh, mag, dia, pos_rel_rot)
     elif src_type == 'Dipole':
         moment = kwargs['moment']
         B = field_BH_dipole(bh, moment, pos_rel_rot)
     elif src_type == 'Circular':
         current = kwargs['current']
-        dim = kwargs['dim']
-        B = field_BH_circular(bh, current, dim, pos_rel_rot)
+        dia = kwargs['diameter']
+        B = field_BH_circular(bh, current, dia, pos_rel_rot)
     elif src_type =='Line':
         current = kwargs['current']
         if 'vertices' in kwargs:

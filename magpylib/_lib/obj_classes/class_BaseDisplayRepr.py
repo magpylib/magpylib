@@ -15,7 +15,7 @@ class BaseDisplayRepr:
     - repr
     """
     def __init__(self):
-        self.obj_type = None
+        self.object_type = None
 
     # ------------------------------------------------------------------
     # INTERFACE
@@ -23,10 +23,10 @@ class BaseDisplayRepr:
         self,
         markers=[(0,0,0)],
         axis=None,
-        direc=False,
+        show_direction=False,
         show_path=True,
         size_sensors=1,
-        size_direc=1):
+        size_direction=1):
         """
         Display objects and paths graphically using matplotlib 3D.
 
@@ -42,7 +42,7 @@ class BaseDisplayRepr:
             Display graphical output in a given pyplot axis (must be 3D). By default a new
             pyplot figure is created and displayed.
 
-        direc: bool, default=False
+        show_direction: bool, default=False
             Set True to show magnetization and current directions.
 
         show_path: bool or int, default=True
@@ -53,7 +53,7 @@ class BaseDisplayRepr:
         size_sensor: float, default=1
             Adjust automatic display size of sensors.
 
-        size_direc: float, default=1
+        size_direction: float, default=1
             Adjust automatic display size of direction arrows
 
         Returns
@@ -65,12 +65,12 @@ class BaseDisplayRepr:
             self,
             markers=markers,
             axis=axis,
-            direc=direc,
+            show_direction=show_direction,
             show_path=show_path,
-            size_direc=size_direc,
+            size_direction=size_direction,
             size_sensors=size_sensors)
 
     # ------------------------------------------------------------------
     # INTERFACE
     def __repr__(self) -> str:
-        return f'{self.obj_type}(id={str(id(self))})'
+        return f'{self.object_type}(id={str(id(self))})'

@@ -53,7 +53,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     getH(observers):
         Compute H-field of Line at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Line graphically using Matplotlib.
 
     move_by(displacement, steps=None):
@@ -81,17 +81,17 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             self,
             current = i0,
             vertices = [pos1, pos2],
-            pos = (0,0,0),
-            rot = None):
+            position = (0,0,0),
+            orientation = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 
         # set mag and dim attributes
         self.vertices = vertices
-        self.obj_type = 'Line'
+        self.object_type = 'Line'
 
     @property
     def vertices(self):

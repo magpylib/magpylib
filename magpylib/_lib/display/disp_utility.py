@@ -11,17 +11,17 @@ def faces_box(src, show_path):
     returns all faces when show_path=all
     """
     # pylint: disable=protected-access
-    a,b,c = src.dim
+    a,b,c = src.dimension
     vert0 = np.array(((0,0,0),(a,0,0),(0,b,0),(0,0,c),
                      (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
-    vert0 = vert0 - src.dim/2
+    vert0 = vert0 - src.dimension/2
 
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
-        rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+    if not isinstance(show_path, bool) and src._position.ndim>1:
+        rots = src._orientation[::-show_path]
+        poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        rots = [src._orientation[-1]]
+        poss = [src._position[-1]]
 
     faces = []
     for rot,pos in zip(rots,poss):
@@ -54,7 +54,7 @@ def faces_cylinder(src, show_path):
     res = 15 #surface discretization
 
     # generate cylinder faces
-    r,h2 = src.dim/2
+    r,h2 = src.dimension/2
     hs = np.array([-h2,h2])
     phis = np.linspace(0,2*np.pi,res)
     phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
@@ -69,12 +69,12 @@ def faces_cylinder(src, show_path):
          for phi in phis]) for h in hs]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
-        rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+    if not isinstance(show_path, bool) and src._position.ndim>1:
+        rots = src._orientation[::-show_path]
+        poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        rots = [src._orientation[-1]]
+        poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -102,7 +102,7 @@ def faces_sphere(src, show_path):
     res = 15 #surface discretization
 
     # generate sphere faces
-    r = src.dim/2
+    r = src.diameter/2
     phis = np.linspace(0,2*np.pi,res)
     phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
     ths = np.linspace(0,np.pi,res)
@@ -117,12 +117,12 @@ def faces_sphere(src, show_path):
             for p in phis]) for th in [ths[1],ths[-2]]]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._pos.ndim>1:
-        rots = src._rot[::-show_path]
-        poss = src._pos[::-show_path]
+    if not isinstance(show_path, bool) and src._position.ndim>1:
+        rots = src._orientation[::-show_path]
+        poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
-        poss = [src._pos[-1]]
+        rots = [src._orientation[-1]]
+        poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []

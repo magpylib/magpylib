@@ -47,7 +47,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     getH(observers):
         Compute H-field of Dipole at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Dipole graphically using Matplotlib.
 
     move_by(displacement, steps=None):
@@ -73,16 +73,16 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     def __init__(
             self,
             moment = (mx,my,mz),
-            pos = (0,0,0),
-            rot = None):
+            position = (0,0,0),
+            orientation = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
 
         # set moment attribute using setter
         self.moment = moment
-        self.obj_type = 'Dipole'
+        self.object_type = 'Dipole'
 
     # properties ----------------------------------------------------
     @property

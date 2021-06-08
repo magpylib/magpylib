@@ -45,32 +45,32 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
         # optional general inputs -------------------
         # if no input set pos=0
-        pos = np.array(kwargs.get('pos', (0,0,0)), dtype=float)
-        tile_params['pos'] = (pos,2)
+        pos = np.array(kwargs.get('position', (0,0,0)), dtype=float)
+        tile_params['position'] = (pos,2)
         # if no input set rot=unit
-        rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
-        tile_params['rot'] = (rot.as_quat(),2)
+        rot = kwargs.get('orientation', R.from_quat((0,0,0,1)))
+        tile_params['orientation'] = (rot.as_quat(),2)
         # if no input set squeeze=True
         squeeze = kwargs.get('squeeze', True)
 
         # mandatory class specific inputs -----------
         if src_type == 'Box':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'], dtype=float)
-            tile_params['dim'] = (dim,2)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
+            dim = np.array(kwargs['dimension'], dtype=float)
+            tile_params['dimension'] = (dim,2)
 
         elif src_type == 'Cylinder':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'], dtype=float)
-            tile_params['dim'] = (dim,2)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
+            dim = np.array(kwargs['dimension'], dtype=float)
+            tile_params['dimension'] = (dim,2)
 
         elif src_type == 'Sphere':
-            mag = np.array(kwargs['mag'], dtype=float)
-            tile_params['mag'] = (mag,2)
-            dim = np.array(kwargs['dim'], dtype=float)
-            tile_params['dim'] = (dim,1)
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
+            dia = np.array(kwargs['diameter'], dtype=float)
+            tile_params['diameter'] = (dia,1)
 
         elif src_type == 'Dipole':
             moment = np.array(kwargs['moment'], dtype=float)
@@ -79,8 +79,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Circular':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
-            dim = np.array(kwargs['dim'], dtype=float)
-            tile_params['dim'] = (dim,1)
+            dia = np.array(kwargs['diameter'], dtype=float)
+            tile_params['diameter'] = (dia,1)
 
         elif src_type == 'Line':
             current = np.array(kwargs['current'], dtype=float)
@@ -114,7 +114,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             kwargs[key] = val
 
     # change rot to Rotation object
-    kwargs['rot'] = R.from_quat(kwargs['rot'])
+    kwargs['orientation'] = R.from_quat(kwargs['orientation'])
 
     # compute and return B
     B = getBH_level1(**kwargs)

@@ -18,16 +18,16 @@ def test_getBv1():
     pm.move([(0,x,0) for x in np.linspace(0,5,5)])
     B2 = pm.getB(pos_obs)
 
-    pos = pm.pos
-    rot = pm.rot
+    pos = pm.position
+    rot = pm.orientation
 
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim,
-        'pos': pos,
-        'rot':rot
+        'magnetization': mag,
+        'dimension': dim,
+        'position': pos,
+        'orientation':rot
         }
     B1 = getBv(**dic)
 
@@ -45,13 +45,13 @@ def test_getBv2():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim,
-        'pos': pos
+        'magnetization': mag,
+        'dimension': dim,
+        'position': pos
         }
     B1 = getBv(**dic)
 
-    pm = Cylinder(mag, dim, pos=pos)
+    pm = Cylinder(mag, dim, position=pos)
     B2 = getB([pm],pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -67,8 +67,8 @@ def test_getHv1():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim,
+        'magnetization': mag,
+        'dimension': dim,
         }
     B1 = getHv(**dic)
 
@@ -89,8 +89,8 @@ def test_getHv2():
     dic = {
         'src_type': 'Cylinder',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim
+        'magnetization': mag,
+        'dimension': dim
         }
     B1 = getHv(**dic)
 
@@ -116,10 +116,10 @@ def test_getBv3():
     dic = {
         'src_type': 'Box',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim,
-        'pos': pos,
-        'rot': rot
+        'magnetization': mag,
+        'dimension': dim,
+        'position': pos,
+        'orientation': rot
         }
     B1 = getBv(**dic)
 
@@ -142,14 +142,14 @@ def test_getHv3():
     dic = {
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim
+        'magnetization': mag,
+        'diameter': dim
         }
     B1 = getHv(**dic)
 
     B2 = []
     for i in range(3):
-        pm = Sphere(mag[i],dim)
+        pm = Sphere(mag[i], dim)
         B2 += [getH([pm], pos_obs)]
     B2 = np.array(B2)
 
@@ -169,16 +169,16 @@ def test_getBv4():
     dic = {
         'src_type': 'Sphere',
         'pos_obs': pos_obs,
-        'mag': mag,
-        'dim': dim,
-        'pos': pos,
-        'rot': rot
+        'magnetization': mag,
+        'diameter': dim,
+        'position': pos,
+        'orientation': rot
         }
     B1 = getBv(**dic)
 
     B2 = []
     for i in range(n):
-        pm = Sphere(mag[i],dim,pos,rot[i])
+        pm = Sphere(mag[i], dim, pos, rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1-B2)
@@ -200,11 +200,11 @@ def test_geBHv_dipole():
 def test_geBHv_circular():
     """ test if Circular implementation gives correct output
     """
-    B = getBv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    B = getBv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
     Btest = np.array([0,0,0.6283185307179586])
     assert np.allclose(B,Btest)
 
-    H = getHv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
+    H = getHv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
 
@@ -212,10 +212,10 @@ def test_geBHv_circular():
 def test_getBHv_squeeze():
     """ test if squeeze works
     """
-    B1 = getBv(src_type='Circular', current=1, dim=2, pos_obs = (0,0,0))
-    B2 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)])
-    B3 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)], squeeze=False)
-    B4 = getBv(src_type='Circular', current=1, dim=2, pos_obs = [(0,0,0)]*2)
+    B1 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = (0,0,0))
+    B2 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)])
+    B3 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)], squeeze=False)
+    B4 = getBv(src_type='Circular', current=1, diameter=2, pos_obs = [(0,0,0)]*2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1
@@ -247,24 +247,24 @@ def test_getBHv_line2():
     assert np.allclose(B1, np.array([0,-x,0]))
 
     # move z-line to x=-1
-    B2 = getBv(src_type='Line', pos = (-2,0,0), pos_obs=(0,0,0), current=1,
+    B2 = getBv(src_type='Line', position=(-2,0,0), pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B2, np.array([0,x,0]))
 
     # rotate 1
     rot = R.from_euler('z', 90, degrees=True)
-    B3 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B3 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B3, np.array([x,0,0]))
 
     # rotate 2
     rot = R.from_euler('x', 90, degrees=True)
-    B4 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B4 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B4, np.array([0,0,-x]))
 
     # rotate 3
     rot = R.from_euler('y', 90, degrees=True)
-    B5 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B5 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B5, np.array([0,-x,0]))

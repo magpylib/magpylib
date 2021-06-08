@@ -56,7 +56,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     getH(observers):
         Compute H-field of Cylinder at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Cylinder graphically using Matplotlib.
 
     move_by(displacement, steps=None):
@@ -81,28 +81,28 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     def __init__(
             self,
-            mag = (mx,my,mz),
-            dim = (d,h),
-            pos = (0,0,0),
-            rot = None):
+            magnetization = (mx,my,mz),
+            dimension = (d,h),
+            position = (0,0,0),
+            orientation = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, pos, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, mag)
+        BaseHomMag.__init__(self, magnetization)
 
         # set attributes
-        self.dim = dim
-        self.obj_type = 'Cylinder'
+        self.dimension = dimension
+        self.object_type = 'Cylinder'
 
     @property
-    def dim(self):
+    def dimension(self):
         """ Cylinder dimension (d,h), unit [mm]
         """
-        return self._dim
+        return self._dimension
 
-    @dim.setter
-    def dim(self, dim):
+    @dimension.setter
+    def dimension(self, dim):
         """ Set Cylinder dimension (d,h), shape (2,), [mm].
         """
         # input type and init check
@@ -117,4 +117,4 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         if Config.CHECK_INPUTS:
             check_vector_format(dim, (2,), 'dimension')
 
-        self._dim = dim
+        self._dimension = dim

@@ -131,7 +131,7 @@ def format_obs_inputs(observers) -> list:
     if isinstance(observers, np.ndarray):
         if Config.CHECK_INPUTS:
             check_position_format(observers, 'observer position')
-        return [Sensor(pos_pix=observers)]
+        return [Sensor(pixel=observers)]
 
     #case 3: list or tuple
     if isinstance(observers, (list, tuple)):
@@ -145,7 +145,7 @@ def format_obs_inputs(observers) -> list:
                 elif isinstance(obs, (list, tuple, np.ndarray)):
                     if Config.CHECK_INPUTS:
                         check_position_format(np.array(obs), 'observer position')
-                    sensors += [Sensor(pos_pix=obs)]
+                    sensors += [Sensor(pixel=obs)]
                 else:
                     raise MagpylibBadUserInput(msg)
 
@@ -153,7 +153,7 @@ def format_obs_inputs(observers) -> list:
         else:
             if Config.CHECK_INPUTS:
                 check_position_format(np.array(observers), 'observer position')
-            sensors = [Sensor(pos_pix=observers)]
+            sensors = [Sensor(pixel=observers)]
     else:
         raise MagpylibBadUserInput(msg)
 
@@ -166,10 +166,10 @@ def check_static_sensor_orient(sensors):
     #pylint: disable=protected-access
     static_sensor_rot = []
     for sens in sensors:
-        if len(sens._pos)==1:           # no sensor path (sensor is static)
+        if len(sens._position)==1:           # no sensor path (sensor is static)
             static_sensor_rot += [True]
         else:                           # there is a sensor path
-            rot = sens.rot.as_quat()
+            rot = sens.orientation.as_quat()
             if np.all(rot == rot[0]):          # path with static orient (e.g. translation)
                 static_sensor_rot += [True]
             else:                              # sensor rotation changes along path
@@ -213,7 +213,7 @@ def test_path_format(inp):
     # pylint: disable=protected-access
     if not isinstance(inp,list):
         inp = [inp]
-    result = all(len(obj._pos) == len(obj._rot) for obj in inp)
+    result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
         msg = 'Bad path format (rot-pos with different lengths)'

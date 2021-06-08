@@ -5,7 +5,7 @@ import magpylib as mag3
 def test_Dipole_basicB():
     """ Basic dipole class test
     """
-    src = mag3.misc.Dipole(moment=(1,2,3),pos=(1,2,3))
+    src = mag3.misc.Dipole(moment=(1,2,3),position=(1,2,3))
     sens = mag3.Sensor()
 
     B = src.getB(sens)
@@ -16,7 +16,7 @@ def test_Dipole_basicB():
 def test_Dipole_basicH():
     """ Basic dipole class test
     """
-    src = mag3.misc.Dipole(moment=(1,2,3),pos=(1,2,3))
+    src = mag3.misc.Dipole(moment=(1,2,3),position=(1,2,3))
     sens = mag3.Sensor()
     H = src.getH(sens)
     Htest = np.array([0.00241779, 0.00483558, 0.00725336])

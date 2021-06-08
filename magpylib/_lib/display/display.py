@@ -15,10 +15,10 @@ def display(
         *objects,
         markers=[(0,0,0)],
         axis=None,
-        direc=False,
+        show_direction=False,
         show_path=True,
         size_sensors=1,
-        size_direc=1,
+        size_direction=1,
         size_dipoles=1):
     """
     Display objects and paths graphically using matplotlib 3D.
@@ -35,7 +35,7 @@ def display(
         Display graphical output in a given pyplot axis (must be 3D). By default a new
         pyplot figure is created and displayed.
 
-    direc: bool, default=False
+    show_direction: bool, default=False
         Set True to show magnetization and current directions.
 
     show_path: bool or int, default=True
@@ -45,7 +45,7 @@ def display(
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
 
-    size_direc: float, default=1
+    size_direction: float, default=1
         Adjust automatic display size of direction arrows
 
     Returns
@@ -130,7 +130,7 @@ def display(
     sensor_points = draw_pixel(sensors, ax, show_path)
 
     # get dipole positions
-    dipole_points = [dip.pos for dip in dipoles]
+    dipole_points = [dip.position for dip in dipoles]
 
     # draw circulars and get line positions
     current_points = draw_circular(circulars, show_path, ax)
@@ -161,9 +161,9 @@ def display(
         markers = np.array(markers)
         draw_markers(markers, ax)
 
-    # draw direc arrows (based on src size) -------------------------
-    if direc:
-        draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc)
+    # draw direction arrows (based on src size) -------------------------
+    if show_direction:
+        draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction)
 
     # determine system size -----------------------------------------
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(

@@ -22,11 +22,11 @@ def test_Sphere_display():
     """
     ax = plt.subplot(projection='3d')
     src = Sphere((1,2,3),2)
-    x = src.display(axis=ax,show_path=15)
+    x = src.display(axis=ax, show_path=15)
     assert x is None, 'show_path should revert to True'
 
     src.move([(.4,.4,.4)]*20, increment=True)
-    x = src.display(axis=ax,show_path=False)
+    x = src.display(axis=ax, show_path=False, show_direction=True)
     assert x is None, 'display test fail'
 
 
@@ -36,12 +36,12 @@ def test_Box_display():
     src = Box((1,2,3),(1,2,3))
     src.move([(.1,.1,.1)]*20, increment=True)
     plt.ion()
-    x = src.display(show_path=5, direc=True)
+    x = src.display(show_path=5, show_direction=True)
     plt.close()
     assert x is None, 'display test fail'
 
     ax = plt.subplot(projection='3d')
-    x = src.display(axis=ax, show_path=False, direc=True)
+    x = src.display(axis=ax, show_path=False, show_direction=True)
     assert x is None, 'display test fail'
 
 
@@ -49,7 +49,7 @@ def test_Sensor_display():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    sens = mag3.Sensor(pos_pix=[(1,2,3),(2,3,4)])
+    sens = mag3.Sensor(pixel=[(1,2,3),(2,3,4)])
     sens.move([(.4,.4,.4)]*33, increment=True)
     x = sens.display(axis=ax, markers=[(100,100,100)], show_path=15)
     assert x is None, 'display test fail'
@@ -62,7 +62,7 @@ def test_Circular_display():
     """ testing display for Circular source
     """
     ax = plt.subplot(projection='3d')
-    src = mag3.current.Circular(current=1, dim=1)
+    src = mag3.current.Circular(current=1, diameter=1)
     x = src.display(axis=ax)
     assert x is None, 'display test fail'
 
@@ -88,8 +88,8 @@ def test_dipole_display():
     """
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection='3d')
-    dip = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
-    dip2 = mag3.misc.Dipole(moment=(1,2,3), pos=(2,2,2))
+    dip = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
+    dip2 = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
     dip2.move([(.4,.4,.4)]*5, increment=True)
     x = dip.display(axis=ax2)
     assert x is None, 'display test fail'
