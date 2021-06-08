@@ -36,12 +36,12 @@ def test_Box_display():
     src = Box((1,2,3),(1,2,3))
     src.move([(.1,.1,.1)]*20, increment=True)
     plt.ion()
-    x = src.display(show_path=5, direc=True)
+    x = src.display(show_path=5, show_direction=True)
     plt.close()
     assert x is None, 'display test fail'
 
     ax = plt.subplot(projection='3d')
-    x = src.display(axis=ax, show_path=False, direc=True)
+    x = src.display(axis=ax, show_path=False, show_direction=True)
     assert x is None, 'display test fail'
 
 

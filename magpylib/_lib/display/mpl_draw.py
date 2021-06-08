@@ -4,7 +4,7 @@ import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 
-def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
+def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     """draw direction of magetization of faced magnets
 
     Parameters
@@ -44,7 +44,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direc):
         # color and vector length
         ax.quiver(draw_pos[:,0], draw_pos[:,1], draw_pos[:,2],
             draw_direc[:,0], draw_direc[:,1], draw_direc[:,2],
-            length=length*size_direc,
+            length=length*size_direction,
             color=col)
 
 

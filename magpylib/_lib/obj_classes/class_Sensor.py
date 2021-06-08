@@ -42,7 +42,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     getH(sources):
         Compute H-field of sources at Sensor.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Sensor graphically using Matplotlib.
 
     move_by(displacement, steps=None):

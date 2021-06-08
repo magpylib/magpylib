@@ -52,7 +52,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     getH(observers):
         Compute H-field of collection at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Collection graphically using Matplotlib.
 
     move_by(displacement, steps=None):

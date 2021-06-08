@@ -53,7 +53,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     getH(observers):
         Compute H-field of Box at observers.
 
-    display(markers=[(0,0,0)], axis=None, direc=False, show_path=True):
+    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
         Display Box graphically using Matplotlib.
 
     move_by(displacement, steps=None):
