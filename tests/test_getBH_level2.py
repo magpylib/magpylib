@@ -154,17 +154,17 @@ def test_path_tile():
     pm2.move([[10/33]*3]*33, increment=True)
 
     path1p = pm1.position
-    path1r = pm1.rot
+    path1r = pm1.orientation
 
     path2p = pm2.position
-    path2r = pm2.rot
+    path2r = pm2.orientation
 
     _ = mag3.getB([pm1,pm2],[0,0,0])
 
     assert np.all(path1p == pm1.position), 'FAILED: getB modified object path'
-    assert np.all(path1r.as_quat() == pm1.rot.as_quat()), 'FAILED: getB modified object path'
+    assert np.all(path1r.as_quat() == pm1.orientation.as_quat()), 'FAILED: getB modified object path'
     assert np.all(path2p == pm2.position), 'FAILED: getB modified object path'
-    assert np.all(path2r.as_quat() == pm2.rot.as_quat()), 'FAILED: getB modified object path'
+    assert np.all(path2r.as_quat() == pm2.orientation.as_quat()), 'FAILED: getB modified object path'
 
 
 def test_sensor_rotation1():
@@ -260,11 +260,11 @@ def test_object_tiling():
     assert src4.position.shape == (31, 3), 'a4'
     assert sens.position.shape == (3,), 'a5'
 
-    assert src1.rot.as_quat().shape == (31, 4), 'b1'
-    assert src2.rot.as_quat().shape == (21, 4), 'b2'
-    assert src3.rot.as_quat().shape == (12, 4), 'b3'
-    assert src4.rot.as_quat().shape == (31, 4), 'b4'
-    assert sens.rot.as_quat().shape == (4,), 'b5'
+    assert src1.orientation.as_quat().shape == (31, 4), 'b1'
+    assert src2.orientation.as_quat().shape == (21, 4), 'b2'
+    assert src3.orientation.as_quat().shape == (12, 4), 'b3'
+    assert src4.orientation.as_quat().shape == (31, 4), 'b4'
+    assert sens.orientation.as_quat().shape == (4,), 'b5'
 
     B = mag3.getB([src1,src2,col], [sens,possis])
     assert B.shape == (3, 31, 2, 5, 3)
@@ -275,8 +275,8 @@ def test_object_tiling():
     assert src4.position.shape == (31, 3), 'c4'
     assert sens.position.shape == (3,), 'c5'
 
-    assert src1.rot.as_quat().shape == (31, 4), 'd1'
-    assert src2.rot.as_quat().shape == (21, 4), 'd2'
-    assert src3.rot.as_quat().shape == (12, 4), 'd3'
-    assert src4.rot.as_quat().shape == (31, 4), 'd4'
-    assert sens.rot.as_quat().shape == (4,), 'd5'
+    assert src1.orientation.as_quat().shape == (31, 4), 'd1'
+    assert src2.orientation.as_quat().shape == (21, 4), 'd2'
+    assert src3.orientation.as_quat().shape == (12, 4), 'd3'
+    assert src4.orientation.as_quat().shape == (31, 4), 'd4'
+    assert sens.orientation.as_quat().shape == (4,), 'd5'

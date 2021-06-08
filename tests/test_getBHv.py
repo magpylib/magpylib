@@ -19,7 +19,7 @@ def test_getBv1():
     B2 = pm.getB(pos_obs)
 
     pos = pm.position
-    rot = pm.rot
+    rot = pm.orientation
 
     dic = {
         'src_type': 'Cylinder',
@@ -27,7 +27,7 @@ def test_getBv1():
         'magnetization': mag,
         'dimension': dim,
         'position': pos,
-        'rot':rot
+        'orientation':rot
         }
     B1 = getBv(**dic)
 
@@ -119,7 +119,7 @@ def test_getBv3():
         'magnetization': mag,
         'dimension': dim,
         'position': pos,
-        'rot': rot
+        'orientation': rot
         }
     B1 = getBv(**dic)
 
@@ -172,7 +172,7 @@ def test_getBv4():
         'magnetization': mag,
         'dimension': dim,
         'position': pos,
-        'rot': rot
+        'orientation': rot
         }
     B1 = getBv(**dic)
 
@@ -253,18 +253,18 @@ def test_getBHv_line2():
 
     # rotate 1
     rot = R.from_euler('z', 90, degrees=True)
-    B3 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B3 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B3, np.array([x,0,0]))
 
     # rotate 2
     rot = R.from_euler('x', 90, degrees=True)
-    B4 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B4 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B4, np.array([0,0,-x]))
 
     # rotate 3
     rot = R.from_euler('y', 90, degrees=True)
-    B5 = getBv(src_type='Line', rot = rot, pos_obs=(0,0,0), current=1,
+    B5 = getBv(src_type='Line', orientation=rot, pos_obs=(0,0,0), current=1,
         pos_start=(1,0,-1), pos_end=(1,0,1))
     assert np.allclose(B5, np.array([0,-x,0]))

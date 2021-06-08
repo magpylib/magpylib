@@ -17,10 +17,10 @@ def faces_box(src, show_path):
     vert0 = vert0 - src.dimension/2
 
     if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._rot[::-show_path]
+        rots = src._orientation[::-show_path]
         poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
+        rots = [src._orientation[-1]]
         poss = [src._position[-1]]
 
     faces = []
@@ -70,10 +70,10 @@ def faces_cylinder(src, show_path):
 
     # add src attributes position and orientation depending on show_path
     if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._rot[::-show_path]
+        rots = src._orientation[::-show_path]
         poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
+        rots = [src._orientation[-1]]
         poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot
@@ -118,10 +118,10 @@ def faces_sphere(src, show_path):
 
     # add src attributes position and orientation depending on show_path
     if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._rot[::-show_path]
+        rots = src._orientation[::-show_path]
         poss = src._position[::-show_path]
     else:
-        rots = [src._rot[-1]]
+        rots = [src._orientation[-1]]
         poss = [src._position[-1]]
 
     # all faces (incl. along path) adding pos and rot

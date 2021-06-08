@@ -169,7 +169,7 @@ def check_static_sensor_orient(sensors):
         if len(sens._position)==1:           # no sensor path (sensor is static)
             static_sensor_rot += [True]
         else:                           # there is a sensor path
-            rot = sens.rot.as_quat()
+            rot = sens.orientation.as_quat()
             if np.all(rot == rot[0]):          # path with static orient (e.g. translation)
                 static_sensor_rot += [True]
             else:                              # sensor rotation changes along path
@@ -213,7 +213,7 @@ def test_path_format(inp):
     # pylint: disable=protected-access
     if not isinstance(inp,list):
         inp = [inp]
-    result = all(len(obj._position) == len(obj._rot) for obj in inp)
+    result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
         msg = 'Bad path format (rot-pos with different lengths)'

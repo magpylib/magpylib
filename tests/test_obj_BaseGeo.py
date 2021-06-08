@@ -20,34 +20,34 @@ def test_BaseGeo_basics():
 
     bgeo = BaseGeo((0,0,0),None)
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     bgeo.position = (1,2,3)
-    bgeo.rot = R.from_rotvec((.1,.2,.3))
+    bgeo.orientation = R.from_rotvec((.1,.2,.3))
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     bgeo.move((-1,-2,-3))
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((-.1,-.2,-.3))
     bgeo.rotate(rot)
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     bgeo.rotate_from_angax(45,(1,2,3))
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     bgeo.rotate_from_angax(-np.pi/4,(1,2,3),degree=False)
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((.1,.2,.3))
     bgeo.rotate(rot,anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
     poss += [bgeo.position.copy()]
-    rots += [bgeo.rot.as_rotvec()]
+    rots += [bgeo.orientation.as_rotvec()]
 
     poss = np.array(poss)
     rots = np.array(rots)
@@ -79,7 +79,7 @@ def test_BaseGeo_anchor_None():
     pos3 = np.array([pos]*3)
     rot3 = np.array([(0,0,0),(.1,.2,.3),(.2,.4,.6)])
     assert np.allclose(bg.position,pos3), 'None rotation changed position'
-    assert np.allclose(bg.rot.as_rotvec(),rot3), 'None rotation did not adjust rot'
+    assert np.allclose(bg.orientation.as_rotvec(),rot3), 'None rotation did not adjust rot'
 
 
 def evall(objj):
@@ -87,7 +87,7 @@ def evall(objj):
     """
     #pylint: disable=protected-access
     pp = objj._position
-    rr = objj._rot.as_quat()
+    rr = objj._orientation.as_quat()
     rr = np.array([r/max(r) for r in rr])
     return (pp,rr)
 
@@ -105,7 +105,7 @@ def test_attach():
         bg2.rotate(roto, start='attach')
 
     assert np.allclose(bg.position,bg2.position), 'attach p'
-    assert np.allclose(bg.rot.as_quat(),bg2.rot.as_quat()), 'attach o'
+    assert np.allclose(bg.orientation.as_quat(),bg2.orientation.as_quat()), 'attach o'
 
 
 def test_path_functionality1():

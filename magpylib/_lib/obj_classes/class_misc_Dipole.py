@@ -74,10 +74,10 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
             self,
             moment = (mx,my,mz),
             position = (0,0,0),
-            rot = None):
+            orientation = None):
 
         # inherit base_geo class
-        BaseGeo.__init__(self, position, rot)
+        BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
 
         # set moment attribute using setter

@@ -45,10 +45,10 @@ class BaseGeo:
 
     """
 
-    def __init__(self, position, rot):
+    def __init__(self, position, orientation):
         # set pos and orient attributes
         self.position = position
-        self.rot = rot
+        self.orientation = orientation
 
     # properties ----------------------------------------------------
     @property
@@ -87,26 +87,26 @@ class BaseGeo:
         self._position = pos
 
     @property
-    def rot(self):
-        """ Object rotation-path relative to init_state.
+    def orientation(self):
+        """ Object orientation-path relative to init_state.
 
         Returns
         -------
-        object rotation-path: scipy Rotation object, shape (1,) or (N,)
-            Set rotation-path of object.
+        object orientation-path: scipy Rotation object, shape (1,) or (N,)
+            Set orientation-path of object.
         """
+        # cannot squeeze (its a Rotation object)
+        if len(self._orientation)==1:      # single path orientation - reduce dimension
+            return self._orientation[0]
+        return self._orientation           # return full path
 
-        if len(self._rot)==1:      # single path rotation - reduce dimension
-            return self._rot[0]
-        return self._rot           # return full path
 
-
-    @rot.setter
-    def rot(self, rot):
-        """ Set object rotation-path.
+    @orientation.setter
+    def orientation(self, rot):
+        """ Set object orientation-path.
 
         rot: None or scipy Rotation, shape (1,) or (N,), default=None
-            Set rotation-path of object. None generates a unit rotation
+            Set orientation-path of object. None generates a unit orientation
             for every path step.
         """
         # check input type
@@ -115,15 +115,15 @@ class BaseGeo:
 
         # None input generates unit rotation
         if rot is None:
-            self._rot = R.from_quat([(0,0,0,1)]*len(self._position))
+            self._orientation = R.from_quat([(0,0,0,1)]*len(self._position))
 
         # expand rot.as_quat() to shape (1,4)
         else:
             val = rot.as_quat()
             if val.ndim == 1:
-                self._rot = R.from_quat([val])
+                self._orientation = R.from_quat([val])
             else:
-                self._rot = rot
+                self._orientation = rot
 
 
     # dunders -------------------------------------------------------
@@ -139,7 +139,7 @@ class BaseGeo:
         Set object.position to (0,0,0) and object.rot to unit rotation.
         """
         self.position = (0,0,0)
-        self.rot = R.from_quat((0,0,0,1))
+        self.orientation = R.from_quat((0,0,0,1))
 
 
     def move(self, displacement, start=-1, increment=False):
@@ -194,7 +194,7 @@ class BaseGeo:
 
         # load old path
         old_ppath = self._position
-        old_opath = self._rot.as_quat()
+        old_opath = self._orientation.as_quat()
         lenop = len(old_ppath)
         lenin = len(inpath)
 
@@ -212,7 +212,7 @@ class BaseGeo:
         if til > 0: # case inpos extends beyond old_path -> tile up old_path
             old_ppath = np.pad(old_ppath, ((0,til),(0,0)), 'edge')
             old_opath = np.pad(old_opath, ((0,til),(0,0)), 'edge')
-            self.rot = R.from_quat(old_opath)
+            self.orientation = R.from_quat(old_opath)
 
         # add new_ppath to old_ppath
         old_ppath[start:end] += inpath
@@ -283,7 +283,7 @@ class BaseGeo:
 
         # load old path
         old_ppath = self._position
-        old_opath = self._rot.as_quat()
+        old_opath = self._orientation.as_quat()
 
         lenop = len(old_ppath)
         lenin = len(inrotQ)
@@ -322,7 +322,7 @@ class BaseGeo:
         new_opath[start:end] = (rot*oldrot).as_quat()
 
         # store new position and orientation
-        self.rot = R.from_quat(new_opath)
+        self.orientation = R.from_quat(new_opath)
         self.position = new_ppath
 
         return self

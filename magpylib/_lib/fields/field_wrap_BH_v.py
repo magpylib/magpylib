@@ -48,8 +48,8 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         pos = np.array(kwargs.get('position', (0,0,0)), dtype=float)
         tile_params['position'] = (pos,2)
         # if no input set rot=unit
-        rot = kwargs.get('rot', R.from_quat((0,0,0,1)))
-        tile_params['rot'] = (rot.as_quat(),2)
+        rot = kwargs.get('orientation', R.from_quat((0,0,0,1)))
+        tile_params['orientation'] = (rot.as_quat(),2)
         # if no input set squeeze=True
         squeeze = kwargs.get('squeeze', True)
 
@@ -114,7 +114,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             kwargs[key] = val
 
     # change rot to Rotation object
-    kwargs['rot'] = R.from_quat(kwargs['rot'])
+    kwargs['orientation'] = R.from_quat(kwargs['orientation'])
 
     # compute and return B
     B = getBH_level1(**kwargs)
