@@ -168,7 +168,9 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0,0,0,1.])
-    unrotated_sensors = [all(all(r==unitQ) for r in sens._orientation.as_quat()) for sens in sensors]
+    unrotated_sensors = [all(all(r==unitQ)
+        for r in sens._orientation.as_quat())
+        for sens in sensors]
 
     # check which sensors have a static orientation
     #   either static sensor or translation path

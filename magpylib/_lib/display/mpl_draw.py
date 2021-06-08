@@ -1,8 +1,8 @@
 """ matplotlib draw-functionalities"""
 
 import numpy as np
-import magpylib as mag3
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from magpylib import _lib
 
 
 def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
@@ -18,8 +18,8 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     #pylint: disable=protected-access
 
     # avoid circular imports
-    Box = mag3._lib.obj_classes.Box
-    Cylinder = mag3._lib.obj_classes.Cylinder
+    Box = _lib.obj_classes.Box
+    Cylinder = _lib.obj_classes.Cylinder
 
     for i,obj in enumerate(faced_objects):
 
