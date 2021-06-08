@@ -91,7 +91,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # set mag and dim attributes
         self.vertices = vertices
-        self.obj_type = 'Line'
+        self.object_type = 'Line'
 
     @property
     def vertices(self):

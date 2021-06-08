@@ -77,7 +77,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         # set mag and dim attributes
         self.pos_pix = pos_pix
-        self.obj_type = 'Sensor'
+        self.object_type = 'Sensor'
 
 
     # properties ----------------------------------------------------

@@ -89,7 +89,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # set mag and dim attributes
         self.dimension = dimension
-        self.obj_type = 'Circular'
+        self.object_type = 'Circular'
 
     @property
     def dimension(self):

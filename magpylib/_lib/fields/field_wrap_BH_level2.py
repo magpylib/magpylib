@@ -65,7 +65,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     posov = np.tile(poso, (len(group),1))
 
     # determine which group we are dealing with
-    src_type = group[0].obj_type
+    src_type = group[0].object_type
 
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)

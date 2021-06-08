@@ -88,7 +88,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # set attributes
         self.dimension = dimension
-        self.obj_type = 'Sphere'
+        self.object_type = 'Sphere'
 
     @property
     def dimension(self):

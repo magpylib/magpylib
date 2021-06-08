@@ -81,7 +81,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         BaseDisplayRepr.__init__(self)
 
         self.sources = sources
-        self.obj_type = 'Collection'
+        self.object_type = 'Collection'
 
 
     # sources properties --------------------------------------------

@@ -93,7 +93,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # set attributes
         self.dimension = dimension
-        self.obj_type = 'Cylinder'
+        self.object_type = 'Cylinder'
 
     @property
     def dimension(self):

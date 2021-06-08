@@ -90,7 +90,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # set attributes
         self.dimension = dimension
-        self.obj_type = 'Box'
+        self.object_type = 'Box'
 
 
     # properties ----------------------------------------------------

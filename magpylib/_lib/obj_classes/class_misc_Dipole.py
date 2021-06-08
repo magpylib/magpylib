@@ -82,7 +82,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
         # set moment attribute using setter
         self.moment = moment
-        self.obj_type = 'Dipole'
+        self.object_type = 'Dipole'
 
     # properties ----------------------------------------------------
     @property
