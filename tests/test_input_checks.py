@@ -193,11 +193,11 @@ def bad_dim_input10():
 # MISC SOURCE ------------------------------------------------------------
 
 def bad_misc_input1():
-    """Sensor pos_pix type"""
-    mag3.Sensor(pos_pix=1)
+    """Sensor pixel type"""
+    mag3.Sensor(pixel=1)
 def bad_misc_input2():
-    """Sensor pos_pix format"""
-    mag3.Sensor(pos_pix=[[1,2]]*3)
+    """Sensor pixel format"""
+    mag3.Sensor(pixel=[[1,2]]*3)
 
 def bad_misc_input3():
     """Line vertex type"""

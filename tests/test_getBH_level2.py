@@ -19,8 +19,8 @@ def test_getB_level2_input_simple():
     col4 = mag3.Collection([pm1,pm2,pm3,pm4])
     pos_obs = (1,2,3)
     sens1 = mag3.Sensor(position=pos_obs)
-    sens2 = mag3.Sensor(pos_pix=pos_obs)
-    sens3 = mag3.Sensor(position=(1,2,0),pos_pix=(0,0,3))
+    sens2 = mag3.Sensor(pixel=pos_obs)
+    sens3 = mag3.Sensor(position=(1,2,0),pixel=(0,0,3))
 
     fb1 = mag3.getB(pm1,pos_obs)
     fc1 = mag3.getB(pm3,pos_obs)
@@ -70,7 +70,7 @@ def test_getB_level2_input_shape22():
     col3 = mag3.Collection([pm1,pm2,pm3])
     col4 = mag3.Collection([pm1,pm2,pm3,pm4])
     pos_obs = [[(1,2,3),(1,2,3)],[(1,2,3),(1,2,3)]]
-    sens1 = mag3.Sensor(pos_pix=pos_obs)
+    sens1 = mag3.Sensor(pixel=pos_obs)
 
     fb22 = mag3.getB(pm1,pos_obs)
     fc22 = mag3.getB(pm3,pos_obs)
@@ -112,7 +112,7 @@ def test_getB_level2_input_path():
     pm1 = mag3.magnet.Box(mag,dim_box)
     pm2 = mag3.magnet.Box(mag,dim_box)
     sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor(pos_pix=[(0,0,0),(0,0,1),(0,0,2)])
+    sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
 
     fb = pm1.getB([(x,0,0) for x in np.linspace(0,-1,11)])
 
@@ -189,10 +189,10 @@ def test_sensor_rotation2():
     col = mag3.Collection(src,src2)
 
     poss = (0,0,0)
-    sens = mag3.Sensor(pos_pix=poss)
+    sens = mag3.Sensor(pixel=poss)
     sens.rotate_from_angax([0,45,90], 'z')
 
-    sens2 = mag3.Sensor(pos_pix=poss)
+    sens2 = mag3.Sensor(pixel=poss)
     sens2.rotate_from_angax(-45,'z')
 
     x1 = np.array([-9.82, 0, 0])
@@ -252,7 +252,7 @@ def test_object_tiling():
     src4.move([(1,1,1)]*31)
 
     possis = [[1,2,3]]*5
-    sens = mag3.Sensor(pos_pix=possis)
+    sens = mag3.Sensor(pixel=possis)
 
     assert src1.position.shape == (31, 3), 'a1'
     assert src2.position.shape == (21, 3), 'a2'

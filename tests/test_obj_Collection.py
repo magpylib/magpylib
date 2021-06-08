@@ -134,7 +134,7 @@ def test_Collection_squeeze():
     pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
     col = mag3.Collection(pm1,pm2)
-    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = col.getB(sensor)
     assert B.shape==(2,3)
     H = col.getH(sensor)

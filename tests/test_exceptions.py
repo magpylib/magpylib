@@ -35,7 +35,7 @@ def getBH_level2_bad_input2():
     dim_box = (1,2,3)
     pm1 = mag3.magnet.Box(mag,dim_box)
     sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor(pos_pix=[(0,0,0),(0,0,1),(0,0,2)])
+    sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
     mag3.getB(pm1,[sens1,sens2])
 
 

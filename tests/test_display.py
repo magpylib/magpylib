@@ -49,7 +49,7 @@ def test_Sensor_display():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    sens = mag3.Sensor(pos_pix=[(1,2,3),(2,3,4)])
+    sens = mag3.Sensor(pixel=[(1,2,3),(2,3,4)])
     sens.move([(.4,.4,.4)]*33, increment=True)
     x = sens.display(axis=ax, markers=[(100,100,100)], show_path=15)
     assert x is None, 'display test fail'

@@ -110,7 +110,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     - sources (src_obj or list): source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
     - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K sensors with
-        similar pathlength M and/or 1 and sensor pos_pix of shape (N1,N2,...,3).
+        similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
@@ -152,16 +152,16 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # format observer inputs:
     #   allow only bare sensor, possis, or a list/tuple thereof
-    #   create a list of sensor instances where possi inputs are moved to pos_pix
+    #   create a list of sensor instances where possi inputs are moved to pixel
     sensors = format_obs_inputs(observers)
 
     # check if all sensor pixel shapes are similar.
     #   Cannot accept different obs pos input shapes as this would lead to incomplete
     #   axes in the return arrays.
-    pix_shapes = [sens.pos_pix.shape for sens in sensors]
+    pix_shapes = [sens.pixel.shape for sens in sensors]
     if not all_same(pix_shapes):
         raise MagpylibBadUserInput('Different observer input shapes not allowed.'+
-            ' All pos_pix and pos_obs input shapes must be similar !')
+            ' All pixel and pos_obs input shapes must be similar !')
     pix_shape = pix_shapes[0]
 
     # check which sensors have unit roation
@@ -205,9 +205,9 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
             obj.orientation = R.from_quat(tile_orient)
 
     # combine information form all sensors to generate pos_obs with-------------
-    #   shape (m * concat all sens flat pos_pix, 3)
-    #   allows sensors with different pos_pix shapes <- relevant?
-    poso =[[r.apply(sens.pos_pix.reshape(-1,3)) + p
+    #   shape (m * concat all sens flat pixel, 3)
+    #   allows sensors with different pixel shapes <- relevant?
+    poso =[[r.apply(sens.pixel.reshape(-1,3)) + p
             for r,p in zip(sens._orientation, sens._position)]
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)

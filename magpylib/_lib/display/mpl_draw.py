@@ -118,7 +118,7 @@ def draw_pixel(sensors, ax, show_path):
         else:
             rots = [sens._orientation[-1]]
             poss = [sens._position[-1]]
-        pos_pixel_flat = np.reshape(sens.pos_pix, (-1,3))
+        pos_pixel_flat = np.reshape(sens.pixel, (-1,3))
 
         for rot,pos in zip(rots,poss):
             pos_sens += [pos]

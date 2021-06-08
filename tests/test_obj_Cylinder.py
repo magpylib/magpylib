@@ -62,7 +62,7 @@ def test_Cylinder_squeeze():
     """ testing squeeze output
     """
     src1 = Cylinder((1,1,1),(1,1))
-    sensor = mag3.Sensor(pos_pix=[(1,2,3),(1,2,3)])
+    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
     H = src1.getH(sensor)

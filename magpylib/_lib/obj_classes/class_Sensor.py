@@ -17,7 +17,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     Properties
     ----------
-    pos_pix: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
+    pixel: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
         Sensor pixel inside of 'package'. Positions are given in local sensor CS.
         getBH computations return the field at the sensor pixels.
 
@@ -68,7 +68,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def __init__(
             self,
             position = (0,0,0),
-            pos_pix=(0,0,0),
+            pixel=(0,0,0),
             orientation = None):
 
         # inherit base_geo class
@@ -76,36 +76,36 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         BaseDisplayRepr.__init__(self)
 
         # set mag and dim attributes
-        self.pos_pix = pos_pix
+        self.pixel = pixel
         self.object_type = 'Sensor'
 
 
     # properties ----------------------------------------------------
     @property
-    def pos_pix(self):
+    def pixel(self):
         """
         Pixel pos in Sensor CS, ndarray, shape (...,3,)
         """
-        return self._pos_pix
+        return self._pixel
 
 
-    @pos_pix.setter
-    def pos_pix(self, pix_pos):
+    @pixel.setter
+    def pixel(self, pix):
         """
         Set Sensor pixel positions in Sensor CS, array_like, shape (...,3,)
         """
         # check input type
         if Config.CHECK_INPUTS:
-            check_vector_type(pix_pos, 'pixel_position')
+            check_vector_type(pix, 'pixel_position')
 
         # input type -> ndarray
-        pix_pos = np.array(pix_pos, dtype=float)
+        pix = np.array(pix, dtype=float)
 
         # check input format
         if Config.CHECK_INPUTS:
-            check_position_format(pix_pos, 'pixel_position')
+            check_position_format(pix, 'pixel_position')
 
-        self._pos_pix = pix_pos
+        self._pixel = pix
 
 
     # methods -------------------------------------------------------

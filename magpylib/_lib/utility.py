@@ -131,7 +131,7 @@ def format_obs_inputs(observers) -> list:
     if isinstance(observers, np.ndarray):
         if Config.CHECK_INPUTS:
             check_position_format(observers, 'observer position')
-        return [Sensor(pos_pix=observers)]
+        return [Sensor(pixel=observers)]
 
     #case 3: list or tuple
     if isinstance(observers, (list, tuple)):
@@ -145,7 +145,7 @@ def format_obs_inputs(observers) -> list:
                 elif isinstance(obs, (list, tuple, np.ndarray)):
                     if Config.CHECK_INPUTS:
                         check_position_format(np.array(obs), 'observer position')
-                    sensors += [Sensor(pos_pix=obs)]
+                    sensors += [Sensor(pixel=obs)]
                 else:
                     raise MagpylibBadUserInput(msg)
 
@@ -153,7 +153,7 @@ def format_obs_inputs(observers) -> list:
         else:
             if Config.CHECK_INPUTS:
                 check_position_format(np.array(observers), 'observer position')
-            sensors = [Sensor(pos_pix=observers)]
+            sensors = [Sensor(pixel=observers)]
     else:
         raise MagpylibBadUserInput(msg)
 
