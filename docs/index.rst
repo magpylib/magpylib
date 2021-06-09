@@ -7,7 +7,7 @@ What is Magpylib ?
 ##################
 
 - Python package for calculating 3D static magnetic fields of magnets (e.g. Cuboids, Cylinders, Spheres, ...), line currents (e.g. straight or loops) and other sources (e.g. Dipoles).
-- The fields are computed using analytical solutions which makes the computation very fast (fully vectorized), is limited to simple geometries (and superpositions thereof) and cannot (at this point) model material response.
+- The fields are computed using analytical solutions which makes the computation very fast (fully vectorized)
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 .. image:: _static/images/index/source_fundamentals.png
