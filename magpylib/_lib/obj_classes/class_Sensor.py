@@ -11,7 +11,7 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 # ON INTERFACE
 class Sensor(BaseGeo, BaseDisplayRepr):
     """
-    Magnetic field point sensor. Can be used as observer input.
+    Magnetic field sensor. Can be used as observer input.
 
     initial state: The axes of the sensor are parallel to the global CS axes. The
     sensor-point is located in the origin.

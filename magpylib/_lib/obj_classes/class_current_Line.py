@@ -15,65 +15,31 @@ pos1=pos2=None
 # ON INTERFACE
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
-    Line current.
+    Current flowing in straight lines from vertex to vertex.
 
-    init_state: The line current flows in straight lines from vertex to vertex. The total
-        assembly of line currents given by the vertices represents the Line object.
+    init_state: Vertices lie as placed in the local coordinate system of the Line object.
 
     Properties
     ----------
-    current: float, unit [A]
-        Current that flows along the lines.
+    current: float
+        Electrical current in units of [A].
 
-    vertices: array_like, shape (N,3), unit [mm]
-        The line current flows in straight lines from vertex to vertex.
+    vertices: array_like, shape (N,3)
+        Current flows along vertices, given in units of [mm].
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of Sphere center in units of [mm]. For N>1 pos respresents a path in
-        in the global CS.
+    position: array_like, shape (3,) or (M,3), default=(0,0,0)
+        Position of the Line current local CS origin in units of [mm]. For M>1, the
+        position attribute represents a path in the global CS. The attributes
+        orientation and position must always be of the same length.
 
-    rot: scipy Rotation object with length 1 or N, default=unit rotation
-        Source rotation relative to the init_state. For N>1 rot represents different rotations
-        along a position-path.
-
-    Dunders
-    -------
-
-    __add__:
-        Adding sources creates a Collection "col = src1 + src2"
-
-    __repr__:
-        returns string "Line(id)"
-
-    Methods
-    -------
-    getB(observers):
-        Compute B-field of Line at observers.
-
-    getH(observers):
-        Compute H-field of Line at observers.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display Line graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of Line by argument vector.
-
-    move_to(target_pos, steps=None):
-        Linear motion of Line to target_pos.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate Line about anchor.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        Line rotation from angle-axis-anchor input.
-
-    reset_path():
-        Set Line.pos to (0,0,0) and Line.rot to unit rotation.
+    orientation: scipy Rotation object with length 1 or M, default=unit rotation
+        Line orientation relative to the initial state. For M>1 orientation
+        represents different values along a path. The attributes orientation and
+        position must always be of the same length.
 
     Returns
     -------
-    Line object
+    Line object: Line
     """
     # pylint: disable=dangerous-default-value
 
@@ -95,7 +61,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
     @property
     def vertices(self):
-        """ Line vertices in units of [mm].
+        """ Object vertices attribute getter and setter.
         """
         return self._vertices
 
