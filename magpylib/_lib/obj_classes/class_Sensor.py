@@ -13,22 +13,23 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     """
     Magnetic field sensor. Can be used as observer input.
 
-    initial state: The axes of the sensor are parallel to the global CS axes. The
-    sensor-point is located in the origin.
+    Reference position: Origin of the local CS of the sensor.
+
+    Reference orientation: Local and global CS coincide at initialization.
 
     Parameters
     ----------
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Position of the center of the Sensor in units of [mm]. For M>1, the
+        Reference position in the global CS in units of [mm]. For M>1, the
         position attribute represents a path in the global CS. The attributes
         orientation and position must always be of the same length.
 
     pixel: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
         Sensor pixel positions inside of a sensor package. Positions are given in
-        the local sensor CS.
+        the local Sensor CS.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Sensor orientation relative to the initial state. For M>1 orientation
+        Orientation relative to the reference orientation. For M>1 orientation
         represents different values along a path. The attributes orientation and
         position must always be of the same length.
 

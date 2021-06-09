@@ -15,10 +15,11 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
 
-    initial state: The current loop lies in the xy-plane of the global coordinate system
-    with its geometric center in the origin.
+    Reference position: Center of the loop.
 
-    Properties
+    Reference orientation: The loop lies in the xy-plane of the global CS.
+
+    Parameters
     ----------
     current: float
         Electrical current in units of [A].
@@ -27,12 +28,12 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Diameter of the loop in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Position of the geometric center of the current loop in units of [mm]. For M>1, the
+        Reference position in the global CS in units of [mm]. For M>1, the
         position attribute represents a path in the global CS. The attributes
         orientation and position must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Circular orientation relative to the initial state. For M>1 orientation
+        Orientation relative to the reference orientation. For M>1 orientation
         represents different values along a path. The attributes orientation and
         position must always be of the same length.
 

@@ -1,10 +1,5 @@
 """
-The misc sub-package contains miscellaneous source objects.
-
-Currently implemented classes are:
-
-Dipole(moment, position, orientation)
-    Represents a magnetic dipole moment.
+This sub-package contains miscellaneous source objects.
 """
 
 __all__ = ['Dipole']

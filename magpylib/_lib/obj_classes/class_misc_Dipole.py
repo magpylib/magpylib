@@ -16,58 +16,30 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
     Magnetic dipole moment.
 
-    Properties
+    Reference position: Dipole position.
+
+    Reference orientation: Local and global CS coincide at initialization.
+
+    Parameters
     ----------
     moment: array_like, shape (3,), unit [mT*mm^3]
-        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
-        relation is moment=magnetization*volume.
+        Magnetic dipole moment in units of [mT*mm^3] given in the local CS of the
+        Dipole object. For homogeneous magnets there is a relation
+        moment=magnetization*volume.
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of Sphere center in units of [mm]. For N>1 pos respresents a path in
-        in the global CS.
+    position: array_like, shape (3,) or (M,3), default=(0,0,0)
+        Reference position in the global CS in units of [mm]. For M>1, the
+        position attribute represents a path in the global CS. The attributes
+        orientation and position must always be of the same length.
 
-    rot: scipy Rotation object with length 1 or N, default=unit rotation
-        Source rotation relative to the init_state. For N>1 rot represents different rotations
-        along a position-path.
-
-    Dunders
-    -------
-
-    __add__:
-        Adding sources creates a Collection "col = src1 + src2"
-
-    __repr__:
-        returns string "Dipole(id)"
-
-    Methods
-    -------
-    getB(observers):
-        Compute B-field of Dipole at observers.
-
-    getH(observers):
-        Compute H-field of Dipole at observers.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display Dipole graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of Dipole by argument vector.
-
-    move_to(target_pos, steps=None):
-        Linear motion of Dipole to target_pos.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate Dipole about anchor.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        Dipole rotation from angle-axis-anchor input.
-
-    reset_path():
-        Set Dipole.pos to (0,0,0) and Dipole.rot to unit rotation.
+    orientation: scipy Rotation object with length 1 or M, default=unit rotation
+        Orientation relative to the reference orientation. For M>1 orientation
+        represents different values along a path. The attributes orientation and
+        position must always be of the same length.
 
     Returns
     -------
-    Dipole object
+    Dipole object: Dipole
     """
 
     def __init__(
@@ -87,7 +59,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     # properties ----------------------------------------------------
     @property
     def moment(self):
-        """ Dipole moment in units of [mT*mm^3].
+        """ Object moment attributes getter and setter.
         """
         return self._moment
 

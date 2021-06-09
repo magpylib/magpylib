@@ -254,9 +254,6 @@ class BaseGeo:
         -------
         self: Magpylib object
 
-        Notes
-        -----
-        Thanks to Benjamin for pointing this natural functionality out.
         """
 
         # check input types

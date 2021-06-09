@@ -17,66 +17,35 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Cylinder magnet with homogeneous magnetization.
 
-    init_state: the geometric center is in the global CS origin, the axis of the
-        cylinder coincides  with the z-axis.
+    Reference position: Geometric center of the Cylinder.
+
+    Reference orientation: Cylinder axis coincides with the z-axis of the global CS.
 
     By default ITER_CYLINDER=50 for iteration of diametral magnetization computation.
-        Use "magpylib.Config.ITER_CYLINDER=X" to change this setting.
+    Use ``magpylib.Config.ITER_CYLINDER=X`` to change this setting.
 
-    Properties
+    Parameters
     ----------
-    mag: array_like, shape (3,), unit [mT]
-        Magnetization vector (remanence field) in units of [mT].
+    magnetization: array_like, shape (3,)
+        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        the local CS of the Cylinder object.
 
-    dim: array_like, shape (2,), unit [mm]
+    dimension: array_like, shape (2,)
         Dimension/Size of the Cylinder with diameter/height (d,h) in units of [mm].
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of Cylinder center in units of [mm]. For N>1 pos respresents a path in
-        in the global CS.
+    position: array_like, shape (3,) or (M,3), default=(0,0,0)
+        Reference position in the global CS in units of [mm]. For M>1, the
+        position attribute represents a path in the global CS. The attributes
+        orientation and position must always be of the same length.
 
-    rot: scipy Rotation object with length 1 or N, default=unit rotation
-        Source rotation relative to the init_state. For N>1 rot represents different rotations
-        along a position-path.
-
-    Dunders
-    -------
-
-    __add__:
-        Adding sources creates a Collection "col = src1 + src2"
-
-    __repr__:
-        returns string "Cylinder(id)"
-
-    Methods
-    -------
-    getB(observers):
-        Compute B-field of Cylinder at observers.
-
-    getH(observers):
-        Compute H-field of Cylinder at observers.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display Cylinder graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of Cylinder by argument vector.
-
-    move_to(target_pos, steps=None):
-        Linear motion of Cylinder to target_pos.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate Cylinder about anchor.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        Cylinder rotation from angle-axis-anchor input.
-
-    reset_path():
-        Set Cylinder.pos to (0,0,0) and Cylinder.rot to unit rotation.
+    orientation: scipy Rotation object with length 1 or M, default=unit rotation
+        Orientation relative to the reference orientation. For M>1 orientation
+        represents different values along a path. The attributes orientation and
+        position must always be of the same length.
 
     Returns
     -------
-    Cylinder object
+    Cylinder object: Cylinder
     """
 
     def __init__(
@@ -97,7 +66,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @property
     def dimension(self):
-        """ Cylinder dimension (d,h), unit [mm]
+        """ Object dimension attribute getter and setter.
         """
         return self._dimension
 

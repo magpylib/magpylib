@@ -17,23 +17,26 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Current flowing in straight lines from vertex to vertex.
 
-    init_state: Vertices lie as placed in the local coordinate system of the Line object.
+    Reference position: Origin of the local CS of the Line.
 
-    Properties
+    Reference orientation: Local and global CS coincide at initialization.
+
+    Parameters
     ----------
     current: float
         Electrical current in units of [A].
 
     vertices: array_like, shape (N,3)
-        Current flows along vertices, given in units of [mm].
+        Current flows along vertices, given in units of [mm]. Vertices are defined
+        in the local CS of the Line object.
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Position of the Line current local CS origin in units of [mm]. For M>1, the
+        Reference position in the global CS in units of [mm]. For M>1, the
         position attribute represents a path in the global CS. The attributes
         orientation and position must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Line orientation relative to the initial state. For M>1 orientation
+        Orientation relative to the reference orientation. For M>1 orientation
         represents different values along a path. The attributes orientation and
         position must always be of the same length.
 

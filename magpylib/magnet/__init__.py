@@ -1,16 +1,7 @@
 """
-The magnet sub-package contains all permanent magnet classes.
-
-Currently implemented magnet classes are:
-
-Box(mag, dim, pos, rot)
-    Homogenously magnetized permanent magnet with Cuboid shape.
-
-Cylinder(mag, dim, pos, rot)
-    Homogenously magnetized permanent magnet with Cylinder shape.
-
-Sphere(mag, dim, pos, rot)
-    Homogeneously magnetized permanent magnet with spherical shape.
+This subpackage contains all magnet classes. Magnets are modeled with homogeneous
+magnetization given in units of millitesla [mT] through mu0*M. See documentation
+for details on field computations.
 """
 
 __all__ = ['Box', 'Cylinder', 'Sphere']
