@@ -148,15 +148,16 @@ class BaseGeo:
 
         Parameters
         ----------
-        displacement: array_like, shape (3,) or (N,3), units [mm]
-            Displacement vector (3,) or path (N,3) in units of [mm].
+        displacement: array_like, shape (3,) or (N,3)
+            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If ``start=len(old_path)`` or ``start='append'``, inp_path will be attached to
             the old_path.
+
+            If ``start=0``, inp_path will start with the beginning of the old_path.
+            If ``start=-1``, inp_path will start at the last old_path position.
 
         increment: bool, default=False
             If `increment=False`, input displacements are absolute.
@@ -240,7 +241,7 @@ class BaseGeo:
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -352,7 +353,7 @@ class BaseGeo:
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -425,7 +426,7 @@ def adjust_start(start, lenop):
     change start to a value inside of [0,lenop], i.e. inside of the
     old path.
     """
-    if start=='attach':
+    if start=='append':
         start = lenop
     elif start<0:
         start += lenop

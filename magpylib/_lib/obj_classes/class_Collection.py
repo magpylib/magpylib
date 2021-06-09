@@ -182,7 +182,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -223,7 +223,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -266,7 +266,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False

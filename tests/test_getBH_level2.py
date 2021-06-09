@@ -116,7 +116,7 @@ def test_getB_level2_input_path():
 
     fb = pm1.getB([(x,0,0) for x in np.linspace(0,-1,11)])
 
-    pm1.move([(.1,0,0)]*10, start='attach', increment=True)
+    pm1.move([(.1,0,0)]*10, start='append', increment=True)
     B=mag3.getB(pm1,(0,0,0))
     result = fb
     assert B.shape == result.shape, "FAILOR3a shape"

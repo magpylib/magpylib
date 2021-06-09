@@ -61,7 +61,7 @@ def setup(app):
 
 # -- Project information -----------------------------------------------------
 
-project = 'magpylib'
+project = 'Magpylib'
 copyright = '2019, SAL - Silicon Austria Labs'
 author = 'Michael Ortner <magpylib@gmail.com>'
 
@@ -125,7 +125,7 @@ pygments_style = None
 # a list of builtin themes.
 #
 html_theme = 'sphinx_rtd_theme'
-html_logo = './_static/images/logo_rtd.jpg'
+html_logo = './_static/images/logo_rtd2.jpg'
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.

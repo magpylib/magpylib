@@ -70,7 +70,7 @@ def test_rotate_vs_rotate_from():
     bg2 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
     angs = np.linalg.norm(roz, axis=1)
     for ang,ax in zip(angs,roz):
-        bg2.rotate_from_angax(angle=ang, degree=False, axis=ax, anchor=(-3,-2,1), start='attach')
+        bg2.rotate_from_angax(angle=ang, degree=False, axis=ax, anchor=(-3,-2,1), start='append')
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
@@ -124,7 +124,7 @@ def test_attach():
     bg2 = BaseGeo([0,0,0], R.from_rotvec((0,0,0)))
     roto = R.from_rotvec((1,0,0))
     for _ in range(10):
-        bg2.rotate(roto, start='attach')
+        bg2.rotate(roto, start='append')
 
     assert np.allclose(bg.position,bg2.position), 'attach p'
     assert np.allclose(bg.orientation.as_quat(),bg2.orientation.as_quat()), 'attach o'
@@ -201,7 +201,7 @@ def test_path_functionality2():
     assert np.allclose(pos, P)
     assert np.allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start='attach'))
+    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start='append'))
     P = np.array([b1, b2, b3, b4, b5, b5+c1, b5+c2, b5+c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     assert np.allclose(pos, P)

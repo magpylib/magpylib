@@ -43,7 +43,7 @@ def check_rot_type(inp):
 def check_start_type(start):
     """ start input must be int or str
     """
-    if not (isinstance(start, int) or start=='attach'):
+    if not (isinstance(start, int) or start=='append'):
         msg = 'start input must be int or str ("attach")'
         raise MagpylibBadUserInput(msg)
 
