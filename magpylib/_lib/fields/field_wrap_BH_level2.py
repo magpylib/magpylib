@@ -70,24 +70,24 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
         diav = tile_dia(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
+        return {'source_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
-        return {'src_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
+        return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
-        return {'src_type':src_type, 'moment':momv, 'position':posv,
+        return {'source_type':src_type, 'moment':momv, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
         diav = tile_dia(group, n_pp)
-        return {'src_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
+        return {'source_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
             'pos_obs': posov, 'orientation':rotobj}
 
     if src_type == 'Line':
@@ -95,10 +95,10 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         #currv = tile_current(group, n_pp)
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
-        return {'src_type':src_type, 'current':currv, 'vertices':vert_list,
+        return {'source_type':src_type, 'current':currv, 'vertices':vert_list,
             'position':posv, 'pos_obs': posov, 'orientation':rotobj}
 
-    raise MagpylibInternalError('Bad src_type in get_src_dict')
+    raise MagpylibInternalError('Bad source_type in get_src_dict')
 
 
 def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:

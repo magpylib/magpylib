@@ -39,7 +39,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
     # mandatory general inputs ------------------
     try:
-        src_type = kwargs['src_type']
+        src_type = kwargs['source_type']
         poso = np.array(kwargs['pos_obs'], dtype=float)
         tile_params['pos_obs'] = (poso,2)    # <-- (input,tdim)
 
@@ -127,11 +127,11 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 # ON INTERFACE
 def getBv(**kwargs):
     """
-    B-Field computation from dictionary of input vectors.
+    B-Field computation in units of [mT] from a dictionary of input vectors.
 
     This function avoids the object-oriented Magpylib interface and gives direct
-        access to the field implementations. It is the fastet way to compute fields
-        with Magpylib.
+    access to the field implementations. It is the fastet way to compute fields
+    with Magpylib.
 
     Inputs will automatically be tiled to shape (N,x) to fit with other inputs.
 

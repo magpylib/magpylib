@@ -4,18 +4,19 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 # ON INTERFACE
 def getB(sources, observers, sumup=False, squeeze=True, **specs):
     """
-    Compute B-field for given sources and observers.
+    Compute B-field in [mT] for given sources and observers.
 
     Parameters
     ----------
-    sources: src objects, Collections or arbitrary lists thereof
-        Source object or a 1D list of L source objects and/or collections. Pathlength of all
-        sources must be M or 1. Sources with Pathlength=1 will be considered as static.
+    sources: source object, Collection or 1D list thereof
+        Sources can be a single source object, a Collection or a 1D list of L source
+        objects and/or collections.
 
-    observers: array_like or Sensor or list of Sensors
-        Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
-        a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
-        of [mm].
+    observers: array_like or Sensor or 1D list thereof
+        Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
+        should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
+        a 1D list of K Sensor objects with similar pixel shape. All positions are given
+        in units of [mm].
 
     sumup: bool, default=False
         If True, the field of all sources is summed up.
@@ -27,34 +28,36 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
     Returns
     -------
     B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [mT]
-        B-field of each source (L) at each path position (M) for each sensor (K) and each sensor
-        pixel position (Ni) in units of [mT].
-        Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-        single sensor or no sensor or single pixel) is removed.
+        B-field of each source (L) at each path position (M) for each sensor (K) and each
+        sensor pixel position (Ni) in units of [mT]. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than M will be
+        considered as static beyond their end.
 
-    Info
+    Note
     ----
-    This function automatically joins all sensor and position inputs together and groups similar
-    sources for optimal vectorization of the computation. For maximal performance call this
-    function as little as possible, do not use it in a loop if not absolutely necessary.
+    This function automatically joins all sensor and position inputs together and groups
+    similar sources for optimal vectorization of the computation. For maximal performance
+    call this function as little as possible and avoid using it in loops.
     """
     return getBH_level2(True, sources, observers, sumup, squeeze, **specs)
 
 
 # ON INTERFACE
 def getH(sources, observers, sumup=False, squeeze=True, **specs):
-    """ Compute H-field for given sources and observers.
+    """
+    Compute H-field in [kA/m] for given sources and observers.
 
     Parameters
     ----------
-    sources: src_obj, col_obj or list thereof
-        Source object or a 1D list of L source objects and/or collections. Pathlength of all
-        sources must be M or 1. Sources with Pathlength=1 will be considered as static.
+    sources: source object, Collection or 1D list thereof
+        Sources can be a single source object, a Collection or a 1D list of L source
+        objects and/or collections.
 
-    observers: array_like or sens_obj or list of sens_obj
-        Observers can be array_like positions of shape (N1, N2, ..., 3) or a Sensor object or
-        a 1D list of K Sensor objects with pixel position shape of (N1, N2, ..., 3) in units
-        of [mm].
+    observers: array_like or Sensor or 1D list thereof
+        Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
+        should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
+        a 1D list of K Sensor objects with similar pixel shape. All positions are given
+        in units of [mm].
 
     sumup: bool, default=False
         If True, the field of all sources is summed up.
@@ -66,15 +69,15 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     Returns
     -------
     H-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [kA/m]
-        H-field of each source (L) at each path position (M) for each sensor (K) and each sensor
-        pixel position (Ni) in units of [kA/m].
-        Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-        single sensor or no sensor or single pixel) is removed.
+        H-field of each source (L) at each path position (M) for each sensor (K) and each
+        sensor pixel position (Ni) in units of [mT]. Sensor pixel positions are equivalent
+        to simple observer positions. Paths of objects that are shorter than M will be
+        considered as static beyond their end.
 
-    Info
+    Note
     ----
-    This function automatically joins all sensor and position inputs together and groups similar
-    sources for optimal vectorization of the computation. For maximal performance call this
-    function as little as possible, do not use it in a loop if not absolutely necessary.
+    This function automatically joins all sensor and position inputs together and groups
+    similar sources for optimal vectorization of the computation. For maximal performance
+    call this function as little as possible and avoid using it in loops.
     """
     return getBH_level2(False, sources, observers, sumup, squeeze, **specs)

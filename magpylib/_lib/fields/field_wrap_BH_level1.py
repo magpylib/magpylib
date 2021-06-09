@@ -25,7 +25,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     """
 
     # base inputs of all sources
-    src_type = kwargs['src_type']
+    src_type = kwargs['source_type']
     bh = kwargs['bh']      # True=B, False=H
 
     rot = kwargs['orientation']    # only rotation object allowed as input
