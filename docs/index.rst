@@ -6,13 +6,8 @@
 What is Magpylib ?
 ##################
 
-- Python package for calculating static magnetic fields of magnets, currents and other sources.
-- The fields are computed using analytical solutions 
-    
-    - very fast (fully vectorized)
-    - limited geometries (and superpositions thereof)
-    - no material response
-
+- Python package for calculating 3D static magnetic fields of magnets (e.g. Cuboids, Cylinders, Spheres, ...), line currents (e.g. straight or loops) and other sources (e.g. Dipoles).
+- The fields are computed using analytical solutions which makes the computation very fast (fully vectorized), is limited to simple geometries (and superpositions thereof) and cannot (at this point) model material response.
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 .. image:: _static/images/index/source_fundamentals.png
@@ -50,12 +45,6 @@ This **Example code** calculates the magnetic field of a cylindrical magnet.
 A cylinder shaped permanent magnet with diameter and height of 4 and 5 millimeter, respectively, is created in a global coordinate system with cylinder axis parallel to the z-axis and geometric magnet center in the origin. The magnetization is homogeneous and points in z-direction with an amplitude of 350 millitesla. The magnetic field is calculated in units of millitesla at the observer position (4,4,4) in units of millimeter.
 
 
-**Resources**
-
-Examples can be found in the `Examples Section <_pages/2_guideExamples/>`_.
-
-Technical details can be found in the `Documentation <_pages/0_documentation/>`_.
-
 .. toctree::
    :glob:
    :maxdepth: 1
@@ -71,7 +60,8 @@ Technical details can be found in the `Documentation <_pages/0_documentation/>`_
    _autogen/magpylib
 
 
-**Index**
+Index
+#####
 
 * :ref:`genindex`
 * :ref:`modindex`
