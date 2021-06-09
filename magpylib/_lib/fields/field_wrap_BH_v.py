@@ -85,10 +85,10 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Line':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
-            pos_start = np.array(kwargs['pos_start'], dtype=float)
-            tile_params['pos_start'] = (pos_start,2)
-            pos_end = np.array(kwargs['pos_end'], dtype=float)
-            tile_params['pos_end'] = (pos_end,2)
+            pos_start = np.array(kwargs['start_position'], dtype=float)
+            tile_params['start_position'] = (pos_start,2)
+            pos_end = np.array(kwargs['end_position'], dtype=float)
+            tile_params['end_position'] = (pos_end,2)
 
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
@@ -153,41 +153,28 @@ def getBv(**kwargs):
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
+    magnetization: array_like, shape (3,) or (N,3)
+        ONLY `source_type in ('Box', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        remanence field of homogeneous magnet magnetization in units of [mT].
 
-
-
-    Parameters - homogenous magnets
-    -------------------------------
-    mag: array_like, shape (3,) or (N,3)
-        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
-
-    dim: array_like, shape is src_type dependent
-        Magnet dimension input in units of [mm].
-
-    Parameters - Dipole
-    -------------------
     moment:  array_like, shape (3,) or (N,3)
-        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
-        relation is moment = magnetization*volume.
+        ONLY `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+        homogeneous magnets the relation is moment = magnetization*volume.
 
-    Parameters - Circular current loop
-    ----------------------------------
     current: array_like, shape (N,)
-        Current flowing in loop in units of [A].
+        ONLY `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
 
-    dim: array_like, shape (N,)
-        Diameter of circular loop in units of [mm].
+    dimension: array_like
+        ONLY `source_type in ('Box', 'Cylinder')`! Magnet dimension input in units of [mm].
 
-    Parameters - Line current
-    -------------------------
-    current: array_like, shape (N,)
-        Current in units of [A]
+    diameter: array_like, shape (N)
+        ONLY `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
 
-    pos_start: array_like, shape (N,3)
-        Start positions of line current segments.
+    start_position: array_like, shape (N,3)
+        Start positions of line current segments in units of [mm].
 
-    pos_end: array_like, shape (N,3)
-        End positions of line current segments.
+    end_position: array_like, shape (N,3)
+        End positions of line current segments in units of [mm].
 
     Returns
     -------
