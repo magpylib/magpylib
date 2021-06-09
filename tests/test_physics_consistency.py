@@ -8,7 +8,7 @@ def test_dipole_approximation():
     mag = np.array([111,222,333])
     pos = (1234,-234, 345)
 
-    # box with volume = 1 mm^3 
+    # box with volume = 1 mm^3
     src1 = mag3.magnet.Box(mag, dimension=(1,1,1))
     B1 = src1.getB(pos)
 
@@ -78,7 +78,7 @@ def test_Line_vs_Circular():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = mag3.getBv(source_type='Line', pos_obs=p, current=1, pos_start=ps, pos_end=pe)
+        Bl = mag3.getBv(source_type='Line', observer=p, current=1, pos_start=ps, pos_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
@@ -108,7 +108,7 @@ def test_Line_vs_Infinite():
     pe = (0,0,1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [mag3.getBv(source_type='Line', pos_obs=p, current=1, pos_start=ps, pos_end=pe)]
+        Bls += [mag3.getBv(source_type='Line', observer=p, current=1, pos_start=ps, pos_end=pe)]
         Binfs += [Binf(1,p)]
     Bls = np.array(Bls)
     Binfs = np.array(Binfs)

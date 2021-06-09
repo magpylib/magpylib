@@ -71,24 +71,24 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         magv = tile_mag(group, n_pp)
         diav = tile_dia(group, n_pp)
         return {'source_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
-            'pos_obs': posov, 'orientation':rotobj}
+            'observer': posov, 'orientation':rotobj}
 
     if src_type in {'Box', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
         return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
-            'pos_obs': posov, 'orientation':rotobj}
+            'observer': posov, 'orientation':rotobj}
 
     if src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
         return {'source_type':src_type, 'moment':momv, 'position':posv,
-            'pos_obs': posov, 'orientation':rotobj}
+            'observer': posov, 'orientation':rotobj}
 
     if src_type == 'Circular':
         currv = tile_current(group, n_pp)
         diav = tile_dia(group, n_pp)
         return {'source_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
-            'pos_obs': posov, 'orientation':rotobj}
+            'observer': posov, 'orientation':rotobj}
 
     if src_type == 'Line':
         # get_BH_line_from_vert function tiles internally !
@@ -96,7 +96,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
         return {'source_type':src_type, 'current':currv, 'vertices':vert_list,
-            'position':posv, 'pos_obs': posov, 'orientation':rotobj}
+            'position':posv, 'observer': posov, 'orientation':rotobj}
 
     raise MagpylibInternalError('Bad source_type in get_src_dict')
 

@@ -14,7 +14,7 @@ def test_getB_interfaces1():
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
-        pos_obs=(-1,-1,-1))
+        observer=(-1,-1,-1))
     B1 = np.tile(B,(2,2,1,1))
     B1 = np.swapaxes(B1,0,2)
 
@@ -47,7 +47,7 @@ def test_getB_interfaces2():
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
-        pos_obs=(-1,-1,-1))
+        observer=(-1,-1,-1))
 
     B2 = np.tile(B,(2,2,2,1,1))
     B2 = np.swapaxes(B2,1,3)
@@ -73,7 +73,7 @@ def test_getB_interfaces3():
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
-        pos_obs=(-1,-1,-1))
+        observer=(-1,-1,-1))
 
     B3 = np.tile(B,(2,2,2,1,1))
     B3 = np.swapaxes(B3,0,3)
@@ -107,7 +107,7 @@ def test_getH_interfaces1():
         position=src.position,
         magnetization=mag,
         dimension=dim,
-        pos_obs=(-1,-2,-3))
+        observer=(-1,-2,-3))
     H1 = np.tile(H,(2,2,1,1))
     H1 = np.swapaxes(H1,0,2)
 
@@ -144,7 +144,7 @@ def test_getH_interfaces2():
         position=src.position,
         magnetization=mag,
         dimension=dim,
-        pos_obs=(-1,-2,-3))
+        observer=(-1,-2,-3))
 
     H2 = np.tile(H,(2,2,2,1,1))
     H2 = np.swapaxes(H2,1,3)
@@ -174,7 +174,7 @@ def test_getH_interfaces3():
         position=src.position,
         magnetization=mag,
         dimension=dim,
-        pos_obs=(-1,-2,-3))
+        observer=(-1,-2,-3))
 
     H3 = np.tile(H,(2,2,2,1,1))
     H3 = np.swapaxes(H3,0,3)
