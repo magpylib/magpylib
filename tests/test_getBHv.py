@@ -230,8 +230,8 @@ def test_getBHv_line():
         source_type='Line',
         observer=[(1,1,1),(1,2,3),(2,2,2)],
         current=1,
-        start_position=(0,0,0),
-        end_position=[(0,0,0),(2,2,2),(2,2,2)])
+        segment_start=(0,0,0),
+        segment_end=[(0,0,0),(2,2,2),(2,2,2)])
     x = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])*10/4/np.pi
     assert np.allclose(x, H)
 
@@ -243,28 +243,28 @@ def test_getBHv_line2():
 
     # z-line on x=1
     B1 = getBv(source_type='Line', observer=(0,0,0), current=1,
-        start_position=(1,0,-1), end_position=(1,0,1))
+        segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B1, np.array([0,-x,0]))
 
     # move z-line to x=-1
     B2 = getBv(source_type='Line', position=(-2,0,0), observer=(0,0,0), current=1,
-        start_position=(1,0,-1), end_position=(1,0,1))
+        segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B2, np.array([0,x,0]))
 
     # rotate 1
     rot = R.from_euler('z', 90, degrees=True)
     B3 = getBv(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
-        start_position=(1,0,-1), end_position=(1,0,1))
+        segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B3, np.array([x,0,0]))
 
     # rotate 2
     rot = R.from_euler('x', 90, degrees=True)
     B4 = getBv(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
-        start_position=(1,0,-1), end_position=(1,0,1))
+        segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B4, np.array([0,0,-x]))
 
     # rotate 3
     rot = R.from_euler('y', 90, degrees=True)
     B5 = getBv(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
-        start_position=(1,0,-1), end_position=(1,0,1))
+        segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B5, np.array([0,-x,0]))

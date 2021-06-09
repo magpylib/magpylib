@@ -85,10 +85,10 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Line':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
-            pos_start = np.array(kwargs['start_position'], dtype=float)
-            tile_params['start_position'] = (pos_start,2)
-            pos_end = np.array(kwargs['end_position'], dtype=float)
-            tile_params['end_position'] = (pos_end,2)
+            pos_start = np.array(kwargs['segment_start'], dtype=float)
+            tile_params['segment_start'] = (pos_start,2)
+            pos_end = np.array(kwargs['segment_end'], dtype=float)
+            tile_params['segment_end'] = (pos_end,2)
 
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
@@ -170,10 +170,10 @@ def getBv(**kwargs):
     diameter: array_like, shape (N)
         ONLY `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
 
-    start_position: array_like, shape (N,3)
+    segment_start: array_like, shape (N,3)
         Start positions of line current segments in units of [mm].
 
-    end_position: array_like, shape (N,3)
+    segment_end: array_like, shape (N,3)
         End positions of line current segments in units of [mm].
 
     Returns

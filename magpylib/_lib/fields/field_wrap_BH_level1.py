@@ -62,8 +62,8 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
             vertices = kwargs['vertices']
             B = field_BH_line_from_vert(bh, current, vertices, pos_rel_rot)
         else:
-            pos_start = kwargs['start_position']
-            pos_end = kwargs['end_position']
+            pos_start = kwargs['segment_start']
+            pos_end = kwargs['segment_end']
             B = field_BH_line(bh, current, pos_start, pos_end, pos_rel_rot)
     else:
         raise MagpylibInternalError('Bad src input type in level1')
