@@ -19,7 +19,7 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
         in units of [mm].
 
     sumup: bool, default=False
-        If True, the field of all sources is summed up.
+        If True, the fields of all sources are summed up.
 
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -27,11 +27,11 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
 
     Returns
     -------
-    B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [mT]
+    B-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3)
         B-field of each source (L) at each path position (M) for each sensor (K) and each
-        sensor pixel position (Ni) in units of [mT]. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than M will be
-        considered as static beyond their end.
+        sensor pixel position (N1,N2,...) in units of [mT]. Sensor pixel positions are
+        equivalent to simple observer positions. Paths of objects that are shorter than
+        M will be considered as static beyond their end.
 
     Note
     ----
@@ -60,7 +60,7 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
         in units of [mm].
 
     sumup: bool, default=False
-        If True, the field of all sources is summed up.
+        If True, the fields of all sources are summed up.
 
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -68,11 +68,11 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
 
     Returns
     -------
-    H-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3), unit [kA/m]
+    H-field: ndarray, shape squeeze(L, M, K, N1, N2, ..., 3)
         H-field of each source (L) at each path position (M) for each sensor (K) and each
-        sensor pixel position (Ni) in units of [mT]. Sensor pixel positions are equivalent
-        to simple observer positions. Paths of objects that are shorter than M will be
-        considered as static beyond their end.
+        sensor pixel position (N1,N2,...) in units of [kA/m]. Sensor pixel positions are
+        equivalent to simple observer positions. Paths of objects that are shorter than
+        M will be considered as static beyond their end.
 
     Note
     ----

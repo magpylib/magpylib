@@ -21,15 +21,16 @@ def display(
         size_direction=1,
         size_dipoles=1):
     """
-    Display objects and paths graphically using matplotlib 3D.
+    Display objects and paths graphically using matplotlib 3D plotting.
 
     Parameters
     ----------
     objects: sources, collections or sensors
-        Show a 3D reprensation of given objects in matplotlib.
+        Objects to be displayed.
 
     markers: array_like, shape (N,3), default=[(0,0,0)]
-        Display position markers in the global CS. By default a marker is in the origin.
+        Display position markers in the global CS. By default a marker is placed
+        in the origin.
 
     axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D). By default a new
@@ -39,18 +40,22 @@ def display(
         Set True to show magnetization and current directions.
 
     show_path: bool or int, default=True
-        Options True, False, positive int. By default object paths are shown. If show_path is
-        a positive integer, objects will be displayed at each path position in steps of show_path.
+        Options True, False, positive int. By default object paths are shown. If
+        show_path is a positive integer, objects will be displayed at multiple path
+        positions along the path, in steps of show_path.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
 
     size_direction: float, default=1
-        Adjust automatic display size of direction arrows
+        Adjust automatic display size of direction arrows.
+
+    size_dipoles: float, default=1
+        Adjust automatic display size of dipoles.
 
     Returns
     -------
-    None
+    None: NoneType
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches

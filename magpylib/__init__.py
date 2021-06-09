@@ -1,74 +1,115 @@
 """
-Magpylib provides static 3D magnetic field computation based on analytical
-formulas.
+Welcome to Magpylib !
+---------------------
+
+Magpylib provides static 3D magnetic field computation for permanent magnets,
+currents and other sources using (semi-) analytical formulas from the literature.
 
 Resources
-----------
+---------
+
+Documentation on Read-the-docs:
+
 https://magpylib.readthedocs.io/en/latest/
+
+Github repository:
+
 https://github.com/magpylib/magpylib
+
+Original software publication (version 2):
+
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
-Sources
--------
-Create source objects that represent physical magnetic field sources.
-Classes can be found in top-level sub-packages.
+Introduction
+------------
+Magpylib uses units of
 
-magpylib.magnet
-- .Box()
-- .Cylinder()
-- .Sphere()
+    - [mT]: for the B-field and the magnetization (mu0*M).
+    - [kA/m]: for the H-field.
+    - [mm]: for all position inputs.
+    - [deg]: for angle inputs by default.
+    - [A]: for current inputs.
 
-magpylib.current
-- .Line()
-- .Circular()
+Magpylib objects represent magnetic field sources and sensors:
 
-magpylib.misc
-- .Dipole()
+>>> import magpylib as mag3
+>>> # magnets
+>>> src1 = mag3.magnet.Box()
+>>> src2 = mag3.magnet.Cylinder()
+>>> src3 = mag3.magnet.Sphere()
+>>> # currents
+>>> src4 = mag3.current.Line()
+>>> src5 = mag3.current.Circular()
+>>> # dipoles
+>>> src6 = mag3.misc.Dipole()
+>>> # sensors
+>>> sens = mag3.Sensor()
 
-Manipulate sources through provided methods and parameters
+These objects are endowed with position and orientation attributes in a global
+coordinate system. Manipulate position and orientation directly through source
+attributes,
 
-- src.pos = new_position
-- src.rot = new_orientation
-- src.move_by(displacement)
-- src.move_to(target_position)
-- src.rotate(rotation input)
-- src.rotate_from_angax(rotation input)
+>>> src.position = new_position
+>>> src.orientation = new_orientation
 
-pos and rot can also represent complete source paths. Use "steps"
-variable with move and rotate methods to conveniently generate such
-paths.
+or through provided methods,
 
-Collections
------------
-Group sources for common manipulation.
+>>> src.move()
+>>> src.rotate()
+>>> src.rotate_from_angax()
 
-- col = src1 + src2 + src3 ...
-- magpylib.Collection(src1, src2, ...)
+Source position and rotation attributes can also represent complete source paths in the
+global coordinate system. Such paths can be generated conveniently using the `.move` and
+`.rotate` methods.
 
-All methods that work for sources also work for collections.
+Grouping objects
+----------------
+
+Use the Collection class to group objects for common manipulation.
+
+>>> col = src1 + src2 + src3 ...
+>>> col = mag3.Collection(src1, src2, ...)
+
+All methods that work for objects also work for Collections.
+
+>>> col.move()    # moves all objects in the Collection
+>>> col.rotate()  # rotates all objects in the Collection
 
 Field computation
 -----------------
-There are three ways to compute the field.
 
-sources are e.g. magnet.Box objects, current.Line objects
-observers are positions (array_like) or Sensor objects
+The magnetic field can be computed through the top level functions `getB` and `getH`,
 
-1. src.getB(observers) ----------------> field of one source at all observers
-2. sens.getB(sources) -----------------> field of all sources at one sensor
-3. magpylib.getB(sources, observers) --> fields of all sources at all observers
-4. magpylib.getBv(**kwargs) -----------> direct access to core formulas (fastest)
+>>> import magpylib as mag3
+>>> mag3.getB(sources, observers)
 
-In addition to getB there is getH.
+or throught object methods
+
+>>> src.getB(observers)
+>>> sens.getB(sources)
+>>> col.getB(observers)
+
+Sources are magpylib source objects like Box or Line. Observers are magpylib Sensor
+objects or simply sets (list, tuple, ndarray) of positions.
+
+Finally there is a direct (very fast) interface to the field computation formulas
+
+>>> mag3.getBv()
 
 Graphic output
 --------------
-Display sources, collections, paths and sensors using Matplotlib
+Display sources, collections, paths and sensors using Matplotlib from top level
+functions,
 
-- magpylib.display(src1, src2, sens, col, ...)
-- src.display()
-- sens.display()
-- col.display()
+>>> import magpylib as mag3
+>>> mag3.display(src1, src2, sens, col, ...)
+
+or through object methods
+
+>>> src.display()
+>>> sens.display()
+>>> col.display()
+
 """
 
 # module level dunders

@@ -11,58 +11,30 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 # ON INTERFACE
 class Sensor(BaseGeo, BaseDisplayRepr):
     """
-    3D Magnetic field sensor.
+    Magnetic field point sensor. Can be used as observer input.
 
-    init_state: The axes of the sensor are parallel to the global CS axes.
+    initial state: The axes of the sensor are parallel to the global CS axes. The
+    sensor-point is located in the origin.
 
-    Properties
+    Parameters
     ----------
+    position: array_like, shape (3,) or (M,3), default=(0,0,0)
+        Position of the center of the Sensor in units of [mm]. For M>1, the
+        position attribute represents a path in the global CS. The attributes
+        orientation and position must always be of the same length.
+
     pixel: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
-        Sensor pixel inside of 'package'. Positions are given in local sensor CS.
-        getBH computations return the field at the sensor pixels.
+        Sensor pixel positions inside of a sensor package. Positions are given in
+        the local sensor CS.
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of geometric center of Sensor in units of [mm]. For N>1 pos respresents a path in
-        in the global CS.
-
-    rot: scipy Rotation object with length 1 or N, default=unit rotation
-        Sensor rotation relative to the init_state. For N>1 rot represents different rotations
-        along a position-path.
-
-    Dunders
-    -------
-    __repr__:
-        returns string "Sensor(id(self))"
-
-    Methods
-    -------
-    getB(sources):
-        Compute B-field of sources at Sensor.
-
-    getH(sources):
-        Compute H-field of sources at Sensor.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display Sensor graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of Sensor by argument vector.
-
-    move_to(target_pos, steps=None):
-        Linear motion of Sensor to target_pos.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate Sensor about anchor.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        Sensor rotation from angle-axis-anchor input.
-
-    reset_path():
-        Set Sensor.pos to (0,0,0) and Sensor.rot to unit rotation.
+    orientation: scipy Rotation object with length 1 or M, default=unit rotation
+        Sensor orientation relative to the initial state. For M>1 orientation
+        represents different values along a path. The attributes orientation and
+        position must always be of the same length.
 
     Returns
     -------
-    Sensor object
+    Sensor object: Sensor
     """
 
     def __init__(
@@ -83,8 +55,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     # properties ----------------------------------------------------
     @property
     def pixel(self):
-        """
-        Pixel pos in Sensor CS, ndarray, shape (...,3,)
+        """ Sensor pixel attribute getter and setter.
         """
         return self._pixel
 
@@ -111,16 +82,15 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     # methods -------------------------------------------------------
     def getB(self, *sources, sumup=False, squeeze=True):
         """
-        Compute B-field of sources at Sensor.
+        Compute B-field in [mT] for given sources.
 
         Parameters
         ----------
-        sources: src objects, Collections or arbitrary lists thereof
-            Source object or a 1D list of L source objects and/or collections. Pathlength of all
-            sources must be M or 1. Sources with Pathlength=1 will be considered as static.
+        sources: source objects or Collections
+            Sources can be a mixture of L source objects or Collections.
 
         sumup: bool, default=False
-            If True, the field of all sources is summed up.
+            If True, the fields of all sources are summed up.
 
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -128,11 +98,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Returns
         -------
-        B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [mT]
-            B-field of each source (L) at each path position (M) and each sensor pixel position (N)
-            in units of [mT].
-            Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-            or single pixel) is removed.
+        B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
+            B-field of each source (L) at each path position (M) and each sensor pixel
+            position (N1,N2,...) in units of [mT]. Paths of objects that are shorter than
+            M will be considered as static beyond their end.
         """
         sources = format_star_input(sources)
         return getBH_level2(True, sources, self, sumup, squeeze)
@@ -140,16 +109,15 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     def getH(self, *sources, sumup=False, squeeze=True):
         """
-        Compute H-field of sources at Sensor.
+        Compute H-field in [kA/m] for given sources.
 
         Parameters
         ----------
-        sources: src objects, Collections or arbitrary lists thereof
-            Source object or a 1D list of L source objects and/or collections. Pathlength of all
-            sources must be M or 1. Sources with Pathlength=1 will be considered as static.
+        sources: source objects or Collections
+            Sources can be a mixture of L source objects or Collections.
 
         sumup: bool, default=False
-            If True, the field of all sources is summed up.
+            If True, the fields of all sources are summed up.
 
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -157,11 +125,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Returns
         -------
-        H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3), unit [kA/m]
-            H-field of each source (L) at each path position (M) and each sensor pixel position (N)
-            in units of [kA/m].
-            Output is squeezed, i.e. every dimension of length 1 (single source or sumup=True or
-            or single pixel) is removed.
+        H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
+            H-field of each source (L) at each path position (M) and each sensor pixel
+            position (N1,N2,...) in units of [kA/m]. Paths of objects that are shorter than
+            M will be considered as static beyond their end.
         """
         sources = format_star_input(sources)
         return getBH_level2(False, sources, self, sumup, squeeze)
