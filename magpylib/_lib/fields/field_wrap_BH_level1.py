@@ -25,12 +25,12 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     """
 
     # base inputs of all sources
-    src_type = kwargs['src_type']
+    src_type = kwargs['source_type']
     bh = kwargs['bh']      # True=B, False=H
 
     rot = kwargs['orientation']    # only rotation object allowed as input
     pos = kwargs['position']
-    poso = kwargs['pos_obs']
+    poso = kwargs['observer']
 
     # transform obs_pos into source CS
     pos_rel = poso - pos                           # relative position
@@ -62,8 +62,8 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
             vertices = kwargs['vertices']
             B = field_BH_line_from_vert(bh, current, vertices, pos_rel_rot)
         else:
-            pos_start = kwargs['pos_start']
-            pos_end = kwargs['pos_end']
+            pos_start = kwargs['segment_start']
+            pos_end = kwargs['segment_end']
             B = field_BH_line(bh, current, pos_start, pos_end, pos_rel_rot)
     else:
         raise MagpylibInternalError('Bad src input type in level1')

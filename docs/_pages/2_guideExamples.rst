@@ -9,4 +9,4 @@ This section includes a few code examples that show how the library can be used 
 
 .. note::
     
-    Magpylib v3 examples are WIP - for now, please refer to code inspection and old example codes.
+    Magpylib v3 examples are WIP - for now, please refer to library docstrings and old example codes.

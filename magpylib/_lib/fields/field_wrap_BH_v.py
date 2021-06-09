@@ -39,9 +39,9 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
     # mandatory general inputs ------------------
     try:
-        src_type = kwargs['src_type']
-        poso = np.array(kwargs['pos_obs'], dtype=float)
-        tile_params['pos_obs'] = (poso,2)    # <-- (input,tdim)
+        src_type = kwargs['source_type']
+        poso = np.array(kwargs['observer'], dtype=float)
+        tile_params['observer'] = (poso,2)    # <-- (input,tdim)
 
         # optional general inputs -------------------
         # if no input set pos=0
@@ -85,10 +85,10 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         elif src_type == 'Line':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
-            pos_start = np.array(kwargs['pos_start'], dtype=float)
-            tile_params['pos_start'] = (pos_start,2)
-            pos_end = np.array(kwargs['pos_end'], dtype=float)
-            tile_params['pos_end'] = (pos_end,2)
+            pos_start = np.array(kwargs['segment_start'], dtype=float)
+            tile_params['segment_start'] = (pos_start,2)
+            pos_end = np.array(kwargs['segment_end'], dtype=float)
+            tile_params['segment_end'] = (pos_end,2)
 
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
@@ -127,69 +127,61 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 # ON INTERFACE
 def getBv(**kwargs):
     """
-    B-Field computation from dictionary of input vectors.
+    B-Field computation in units of [mT] from a dictionary of input vectors.
 
     This function avoids the object-oriented Magpylib interface and gives direct
-        access to the field implementations. It is the fastet way to compute fields
-        with Magpylib.
+    access to the field implementations. It is the fastet way to compute fields
+    with Magpylib.
 
     Inputs will automatically be tiled to shape (N,x) to fit with other inputs.
 
+    Required inputs depend on chosen src_type!
+
     Parameters
     ----------
-    src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
-        'Circular' or 'Line'.
+    source_type: string
+        Source type for computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
+        'Circular' or 'Line'. Expected input parameters depend on source_type.
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0)
+    position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
 
-    rot: scipy Rotation object, default=unit rotation
-        Source rotations relative to the init_state.
+    orientation: scipy Rotation object, default=unit rotation
+        Source rotations relative to the initial state (see object docstrings).
 
-    pos_obs: array_like, shape (3,) or (N,3)
+    observer: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
 
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
-    Parameters - homogenous magnets
-    -------------------------------
-    mag: array_like, shape (3,) or (N,3)
-        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
+    magnetization: array_like, shape (3,) or (N,3)
+        Only `source_type in ('Box', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        remanence field of homogeneous magnet magnetization in units of [mT].
 
-    dim: array_like, shape is src_type dependent
-        Magnet dimension input in units of [mm].
-
-    Parameters - Dipole
-    -------------------
     moment:  array_like, shape (3,) or (N,3)
-        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
-        relation is moment = magnetization*volume.
+        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+        homogeneous magnets the relation is moment = magnetization*volume.
 
-    Parameters - Circular current loop
-    ----------------------------------
     current: array_like, shape (N,)
-        Current flowing in loop in units of [A].
+        Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
 
-    dim: array_like, shape (N,)
-        Diameter of circular loop in units of [mm].
+    dimension: array_like
+        Only `source_type in ('Box', 'Cylinder')`! Magnet dimension input in units of [mm].
 
-    Parameters - Line current
-    -------------------------
-    current: array_like, shape (N,)
-        Current in units of [A]
+    diameter: array_like, shape (N)
+        Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
 
-    pos_start: array_like, shape (N,3)
-        Start positions of line current segments.
+    segment_start: array_like, shape (N,3)
+        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
 
-    pos_end: array_like, shape (N,3)
-        End positions of line current segments.
+    segment_end: array_like, shape (N,3)
+        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
     Returns
     -------
     B-field: ndarray, shape (N,3)
-        B-field generated by source at pos_obs in units of [mT].
+        B-field generated by sources at observer positions in units of [mT].
     """
     return getBHv_level2(bh=True, **kwargs)
 
@@ -197,68 +189,60 @@ def getBv(**kwargs):
 # ON INTERFACE
 def getHv(**kwargs):
     """
-    H-Field computation from dictionary of input vectors.
+    H-Field computation in units of [kA/m] from a dictionary of input vectors.
 
     This function avoids the object-oriented Magpylib interface and gives direct
-        access to the field implementations. It is the fastet way to compute fields
-        with Magpylib.
+    access to the field implementations. It is the fastet way to compute fields
+    with Magpylib.
 
     Inputs will automatically be tiled to shape (N,x) to fit with other inputs.
 
+    Required inputs depend on chosen src_type!
+
     Parameters
     ----------
-    src_type: string
-        Source type of computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
-        'Circular' or 'Line'.
+    source_type: string
+        Source type for computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
+        'Circular' or 'Line'. Expected input parameters depend on source_type.
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0)
+    position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
 
-    rot: scipy Rotation object, default=unit rotation
-        Source rotations relative to the init_state.
+    orientation: scipy Rotation object, default=unit rotation
+        Source rotations relative to the initial state (see object docstrings).
 
-    pos_obs: array_like, shape (3,) or (N,3)
+    observer: array_like, shape (3,) or (N,3)
         Observer positions in units of [mm].
 
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
-    Parameters - homogenous magnets
-    -------------------------------
-    mag: array_like, shape (3,) or (N,3)
-        Homogeneous magnet magnetization vector (remanence field) in units of [mT].
+    magnetization: array_like, shape (3,) or (N,3)
+        Only `source_type in ('Box', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        remanence field of homogeneous magnet magnetization in units of [mT].
 
-    dim: array_like, shape is src_type dependent
-        Magnet dimension input
-
-    Parameters - Dipole
-    -------------------
     moment:  array_like, shape (3,) or (N,3)
-        Magnetic dipole moment in units of [mT*mm^3]. For homogeneous magnets the
-        relation is moment = magnetization*volume.
+        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+        homogeneous magnets the relation is moment = magnetization*volume.
 
-    Parameters - Circular current loop
-    ----------------------------------
     current: array_like, shape (N,)
-        Current flowing in loop in units of [A].
+        Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
 
-    dim: array_like, shape (N,)
-        Diameter of circular loop in units of [mm].
+    dimension: array_like
+        Only `source_type in ('Box', 'Cylinder')`! Magnet dimension input in units of [mm].
 
-    Parameters - Line current
-    -------------------------
-    current: array_like, shape (N,)
-        Current in units of [A]
+    diameter: array_like, shape (N)
+        Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
 
-    pos_start: array_like, shape (N,3)
-        Start positions of line current segments.
+    segment_start: array_like, shape (N,3)
+        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
 
-    pos_end: array_like, shape (N,3)
-        End positions of line current segments.
+    segment_end: array_like, shape (N,3)
+        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
     Returns
     -------
     H-field: ndarray, shape (N,3)
-        H-field generated by source at pos_obs in units of [kA/m].
+        H-field generated by sources at observer positions in units of [kA/m].
     """
     return getBHv_level2(bh=False, **kwargs)

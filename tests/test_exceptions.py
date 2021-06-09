@@ -12,11 +12,11 @@ from magpylib._lib.utility import test_path_format as tpf
 
 
 def getBH_level1_internal_error():
-    """ bad src_type input should not happen
+    """ bad source_type input should not happen
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(bh=True,src_type='woot', magnetization=x, dimension=x, pos_obs=x,
+    getBH_level1(bh=True,source_type='woot', magnetization=x, dimension=x, observer=x,
         position=x, orientation=rot)
 
 
@@ -52,35 +52,35 @@ def getBHv_missing_input1():
     """ missing bh
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(src_type='Box', pos_obs=x, magnetization=x, dimension=x)
+    getBHv_level2(source_type='Box', observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input2():
-    """ missing src_type
+    """ missing source_type
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, pos_obs=x, magnetization=x, dimension=x)
+    getBHv_level2(bh=True, observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input3():
-    """ missing pos_obs
+    """ missing observer
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Box', magnetization=x, dimension=x)
+    getBHv_level2(bh=True, source_type='Box', magnetization=x, dimension=x)
 
 
 def getBHv_missing_input4_box():
     """ missing Box mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Box', pos_obs=x, dimension=x)
+    getBHv_level2(bh=True, source_type='Box', observer=x, dimension=x)
 
 
 def getBHv_missing_input5_box():
     """ missing Box dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Box', pos_obs=x, magnetization=x)
+    getBHv_level2(bh=True, source_type='Box', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_cyl():
@@ -88,28 +88,28 @@ def getBHv_missing_input4_cyl():
     """
     x=np.array([(1,2,3)])
     y = np.array([(1,2)])
-    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, dimension=y)
+    getBHv_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
 
 
 def getBHv_missing_input5_cyl():
     """ missing Cylinder dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Cylinder', pos_obs=x, magnetization=x)
+    getBHv_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_sphere():
     """ missing Sphere mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, dimension=1)
+    getBHv_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
 
 
 def getBHv_missing_input5_sphere():
     """ missing Sphere dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, src_type='Sphere', pos_obs=x, magnetization=x)
+    getBHv_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
 
 
 def getBHv_bad_input():
@@ -117,7 +117,7 @@ def getBHv_bad_input():
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
-    getBHv_level2(bh=True, src_type='Box', pos_obs=x, magnetization=x2, dimension=x)
+    getBHv_level2(bh=True, source_type='Box', observer=x, magnetization=x2, dimension=x)
 
 
 def utility_format_obj_input():

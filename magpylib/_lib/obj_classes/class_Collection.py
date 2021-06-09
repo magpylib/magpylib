@@ -13,66 +13,19 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     Group multiple sources in one Collection for common manipulation.
 
     Operations applied to a Collection are sequentially applied to all sources in the Collection.
+    Collections do not allow duplicate sources (will be eliminated automatically).
 
-    Collections do not allow duplicate sources. They will be eliminated automatically.
+    Collections have the following dunders defined: __add__, __sub__, __iter__, __getitem__,
+    __repr__
 
     Parameters
     ----------
-    sources: src_obj, Collections or arbitrary lists thereof
+    sources: source objects, Collections or arbitrary lists thereof
         Ordered list of sources in the Collection.
-
-    Dunders
-    -------
-    __add__:
-        Add collections like "col1 + col2".
-
-    __sub__:
-        Subtract sources like "col - src".
-
-    __iter__:
-        Sources list is returned as Collection iterable "[src for src in col]".
-
-    __getitem__:
-        Sources list is returned for getitem "src = col[1]".
-
-    __repr__:
-        Returns "Collection(id)".
-
-    Methods
-    -------
-    add(*sources):
-        Add arbitrary sources to Collection.
-
-    remove(source):
-        Remove source from Collection.
-
-    getB(observers):
-        Compute B-field of Collection at observers.
-
-    getH(observers):
-        Compute H-field of collection at observers.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display Collection graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of Collection by argument vector.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate all sources in Collection.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None):
-        Rotate all sources in Collection using angle-axis-anchor input.
-
-    copy():
-        Returns a copy of the Collection.
-
-    reset_path():
-        Set all src.pos to (0,0,0) and src.rot to unit rotation.
 
     Returns
     -------
-    Collection object
+    Collection object: Collection
     """
 
     def __init__(self, *sources):
@@ -87,7 +40,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     # sources properties --------------------------------------------
     @property
     def sources(self):
-        """ List of sources in Collection.
+        """ Collection sources attribute getter and setter.
         """
         return self._sources
 
@@ -128,7 +81,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     # methods -------------------------------------------------------
     def add(self,*sources):
         """
-        Add arbitrary sources to Collection.
+        Add arbitrary sources or Collections.
 
         Parameters
         ----------
@@ -137,8 +90,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             The new sources will be added at the end of self.sources. Duplicates
             will be eliminated.
 
-        Returns:
-        --------
+        Returns
+        -------
         self: Collection
         """
         # format input
@@ -171,18 +124,23 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def move(self, displacement, start=-1, increment=False):
         """
-        Translates all objects in the collection by the input displacement (can be a path).
+        Translates each object in the Collection by the input displacement (can be a path).
+
+        This method uses vector addition to merge the input path given by displacement and the
+        existing old path of an object. It keeps the old orientation. If the input path extends
+        beyond the old path, the old path will be padded by its last entry before paths are
+        added up.
 
         Parameters
         ----------
-        displacement: array_like, shape (3,) or (N,3), units [mm]
-            Displacement vector (3,) or path (N,3) in units of [mm].
+        displacement: array_like, shape (3,) or (N,3)
+            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -191,12 +149,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
             corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
 
-        Note:
-        -----
-        This operation is sequentielly applied to every object in the collection.
-
-        Returns:
-        --------
+        Returns
+        -------
         self: Collection
         """
         for s in self:
@@ -206,15 +160,19 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def rotate(self, rot, anchor=None, start=-1, increment=False):
         """
-        Rotates all objects in the collection by a given rotation input (can be a path).
+        Rotates all objects in the Collection by a given rotation input (can be a path).
+
+        This method applies given rotations to the original orientation. If the input path
+        extends beyond the existing path, the old path will be padded by its last entry before paths
+        are added up.
 
         Parameters
         ----------
-        rot: scipy Rotation object
+        rotation: scipy Rotation object
             Rotation to be applied. The rotation object can feature a single rotation
             of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
-        anchor: None or array_like, shape (3,), default=None, unit [mm]
+        anchor: None, 0 or array_like, shape (3,), default=None
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin (0,0,0).
@@ -223,19 +181,15 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
             If `increment=False`, input rotations are absolute.
             If `increment=True`, input rotations are interpreted as increments of each other.
 
-        Notes:
-        ------
-        This operation is sequentielly applied to every object in the collection.
-
-        Returns:
-        --------
+        Returns
+        -------
         self: Collection
         """
         for s in self:
@@ -245,7 +199,11 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
         """
-        Rotates all objects in the collection using angle-axis-anchor input.
+        Rotation of all objects in the Collection from angle-axis input.
+
+        This method applies given rotations to the original orientation. If the input path
+        extends beyond the existingp path, the oldpath will be padded by its last entry before paths
+        are added up.
 
         Parameters
         ----------
@@ -266,7 +224,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -279,12 +237,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             By default angle is given in units of [deg]. If degree=False, angle is given
             in units of [rad].
 
-        Notes:
-        ------
-        This operation is sequentielly applied to every object in the collection.
-
-        Returns:
-        --------
+        Returns
+        -------
         self: Collection
         """
         for s in self:
@@ -295,13 +249,22 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     def copy(self):
         """
         Returns a copy of the Collection.
+
+        Returns
+        -------
+        self: Collection
         """
         return copy.copy(self)
 
 
     def reset_path(self):
         """
-        Set all src.pos to (0,0,0) and src.rot to unit rotation.
+        Reset all object paths to position = (0,0,0) and orientation = unit rotation.
+
+        Returns
+        -------
+        self: Collection
         """
         for obj in self:
             obj.reset_path()
+        return self

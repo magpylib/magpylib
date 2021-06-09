@@ -15,63 +15,31 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
 
-    init_state: The current loop lies in the xy-plane of the global CS with its
-        geometric center in the origin.
+    Reference position: Center of the loop.
 
-    Properties
+    Reference orientation: The loop lies in the xy-plane of the global CS.
+
+    Parameters
     ----------
-    current: float, unit [A]
-        Current that flows in the loop.
+    current: float
+        Electrical current in units of [A].
 
-    dim: float, unit [mm]
+    diameter: float
         Diameter of the loop in units of [mm].
 
-    pos: array_like, shape (3,) or (N,3), default=(0,0,0), unit [mm]
-        Position of Sphere center in units of [mm]. For N>1 pos respresents a path in
-        in the global CS.
+    position: array_like, shape (3,) or (M,3), default=(0,0,0)
+        Reference position in the global CS in units of [mm]. For M>1, the
+        position attribute represents a path in the global CS. The attributes
+        orientation and position must always be of the same length.
 
-    rot: scipy Rotation object with length 1 or N, default=unit rotation
-        Source rotation relative to the init_state. For N>1 rot represents different rotations
-        along a position-path.
-
-    Dunders
-    -------
-
-    __add__:
-        Adding sources creates a Collection "col = src1 + src2"
-
-    __repr__:
-        returns string "Circular(id)"
-
-    Methods
-    -------
-    getB(observers):
-        Compute B-field of loop at observers.
-
-    getH(observers):
-        Compute H-field of loop at observers.
-
-    display(markers=[(0,0,0)], axis=None, show_direction=False, show_path=True):
-        Display loop graphically using Matplotlib.
-
-    move_by(displacement, steps=None):
-        Linear displacement of loop by argument vector.
-
-    move_to(target_pos, steps=None):
-        Linear motion of loop to target_pos.
-
-    rotate(rot, anchor=None, steps=None):
-        Rotate loop about anchor.
-
-    rotate_from_angax(angle, axis, anchor=None, steps=None, degree=True):
-        loop rotation from angle-axis-anchor input.
-
-    reset_path():
-        Set Circular.pos to (0,0,0) and Circular.rot to unit rotation.
+    orientation: scipy Rotation object with length 1 or M, default=unit rotation
+        Orientation relative to the reference orientation. For M>1 orientation
+        represents different values along a path. The attributes orientation and
+        position must always be of the same length.
 
     Returns
     -------
-    Circular object
+    Circular object: Circular
     """
 
     def __init__(
@@ -92,7 +60,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
     @property
     def diameter(self):
-        """ Circular loop diameter in [mm].
+        """ Object diameter attribute getter and setter.
         """
         return self._diameter
 

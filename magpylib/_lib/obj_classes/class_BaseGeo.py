@@ -53,11 +53,7 @@ class BaseGeo:
     # properties ----------------------------------------------------
     @property
     def position(self):
-        """ Object position-path.
-
-        Returns
-        -------
-        object position-path: np.array, shape (3,) or (N,3)
+        """ Object position attribute getter and setter.
         """
         return np.squeeze(self._position)
 
@@ -88,12 +84,7 @@ class BaseGeo:
 
     @property
     def orientation(self):
-        """ Object orientation-path relative to init_state.
-
-        Returns
-        -------
-        object orientation-path: scipy Rotation object, shape (1,) or (N,)
-            Set orientation-path of object.
+        """ Object orientation attribute getter and setter.
         """
         # cannot squeeze (its a Rotation object)
         if len(self._orientation)==1:      # single path orientation - reduce dimension
@@ -128,7 +119,12 @@ class BaseGeo:
 
     # dunders -------------------------------------------------------
     def __add__(self, source):
-        """ sources add up to a Collection object
+        """
+        Add up sources to a Collection object.
+
+        Returns
+        -------
+        Collection: Collection
         """
         return Collection(self,source)
 
@@ -136,7 +132,11 @@ class BaseGeo:
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Set object.position to (0,0,0) and object.orientation to unit rotation.
+        Reset object path to position = (0,0,0) and orientation = unit rotation.
+
+        Returns
+        -------
+        self: Magpylib object
         """
         self.position = (0,0,0)
         self.orientation = R.from_quat((0,0,0,1))
@@ -146,16 +146,21 @@ class BaseGeo:
         """
         Translates the object by the input displacement (can be a path).
 
+        This method uses vector addition to merge the input path given by displacement and the
+        existing old path of an object. It keeps the old orientation. If the input path extends
+        beyond the old path, the old path will be padded by its last entry before paths are
+        added up.
+
         Parameters
         ----------
-        displacement: array_like, shape (3,) or (N,3), units [mm]
-            Displacement vector (3,) or path (N,3) in units of [mm].
+        displacement: array_like, shape (3,) or (N,3)
+            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
 
         start: int or str, default=-1
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -164,15 +169,9 @@ class BaseGeo:
             For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
             corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
 
-        Note:
-        -----
-        'move' simply uses vector addition to merge inp_path and old_path. It keeps the old
-        orientation. If inp_path extends beyond the old_path, the old_path will be padded
-        by its last entry before paths are added up.
-
-        Returns:
-        --------
-        self: Object with pos and rot properties
+        Returns
+        -------
+        self: Magpylib object
         """
 
         # check input types
@@ -225,13 +224,17 @@ class BaseGeo:
         """
         Rotates the object by a given rotation input (can be a path).
 
+        This method applies given rotations to the original orientation. If the input path
+        extends beyond the existing path, the old path will be padded by its last entry before paths
+        are added up.
+
         Parameters
         ----------
         rotation: scipy Rotation object
             Rotation to be applied. The rotation object can feature a single rotation
             of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
 
-        anchor: None, 0 or array_like, shape (3,), default=None, unit [mm]
+        anchor: None, 0 or array_like, shape (3,), default=None
             The axis of rotation passes through the anchor point given in units of [mm].
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin (0,0,0).
@@ -240,23 +243,17 @@ class BaseGeo:
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
             If `increment=False`, input rotations are absolute.
             If `increment=True`, input rotations are interpreted as increments of each other.
 
-        Returns:
-        --------
-        self: Object with pos and rot properties
+        Returns
+        -------
+        self: Magpylib object
 
-        Notes:
-        ------
-        'rotate' applies given rotations to the original orientation. If inp_path extends beyond
-        the old_path, the old_path will be padded by its last entry before paths are added up.
-
-        Thanks to Benjamin for pointing this natural functionality out.
         """
 
         # check input types
@@ -331,7 +328,11 @@ class BaseGeo:
 
     def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
         """
-        Object rotation from angle-axis-anchor input.
+        Object rotation from angle-axis input.
+
+        This method applies given rotations to the original orientation. If the input path
+        extends beyond the existingp path, the oldpath will be padded by its last entry before paths
+        are added up.
 
         Parameters
         ----------
@@ -352,7 +353,7 @@ class BaseGeo:
             Choose at which index of the original object path, the input path will begin.
             If `start=-1`, inp_path will start at the last old_path position.
             If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='attach'`, inp_path will be attached to
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
         increment: bool, default=False
@@ -365,14 +366,9 @@ class BaseGeo:
             By default angle is given in units of [deg]. If degree=False, angle is given
             in units of [rad].
 
-        Notes:
-        ------
-        'rotate' applies given rotations to the original orientation. If inp_path extends beyond
-        the old_path, the old_path will be padded by its last entry before paths are added up.
-
-        Returns:
-        --------
-        self : object with position and orientation properties
+        Returns
+        -------
+        self: Magpylib object
         """
 
         # check input types
@@ -425,7 +421,7 @@ def adjust_start(start, lenop):
     change start to a value inside of [0,lenop], i.e. inside of the
     old path.
     """
-    if start=='attach':
+    if start=='append':
         start = lenop
     elif start<0:
         start += lenop

@@ -23,7 +23,7 @@ class BaseHomMag:
 
     @property
     def magnetization(self):
-        """ Magnet magnetization in units of [mT].
+        """ Object magnetization attribute getter and setter.
         """
         return self._magnetization
 
@@ -63,7 +63,7 @@ class BaseCurrent:
 
     @property
     def current(self):
-        """ Current in units of [A].
+        """ Object current attribute getter and setter.
         """
         return self._current
 
