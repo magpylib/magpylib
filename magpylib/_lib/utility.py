@@ -235,9 +235,10 @@ def only_allowed_src_types(src_list):
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
     new_list = []
     for src in src_list:
-        if isinstance(src, (Box, Cylinder, Sphere, Dipole, Circular)):
+        if isinstance(src, (Box, Cylinder, Sphere, Dipole, Circular, Line)):
             new_list += [src]
         else:
             print(f'Warning, cannot add {src.__repr__()} to Collection.')
