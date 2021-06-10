@@ -1,7 +1,6 @@
 """ Display function codes"""
 
 import numpy as np
-from numpy import sin,cos
 
 def faces_box(src, show_path):
     """
@@ -107,13 +106,13 @@ def faces_sphere(src, show_path):
     phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
     ths = np.linspace(0,np.pi,res)
     faces = [r*np.array([
-            (cos(p)*sin(t1), sin(p)*sin(t1), cos(t1)),
-            (cos(p)*sin(t2), sin(p)*sin(t2), cos(t2)),
-            (cos(p2)*sin(t2), sin(p2)*sin(t2), cos(t2)),
-            (cos(p2)*sin(t1), sin(p2)*sin(t1), cos(t1))])
+            (np.cos(p)*np.sin(t1), np.sin(p)*np.sin(t1), np.cos(t1)),
+            (np.cos(p)*np.sin(t2), np.sin(p)*np.sin(t2), np.cos(t2)),
+            (np.cos(p2)*np.sin(t2), np.sin(p2)*np.sin(t2), np.cos(t2)),
+            (np.cos(p2)*np.sin(t1), np.sin(p2)*np.sin(t1), np.cos(t1))])
             for p,p2 in zip(phis,phis2) for t1,t2 in zip(ths[1:-2],ths[2:-1])]
     faces += [r*np.array([
-            (cos(p)*sin(th), sin(p)*sin(th), cos(th))
+            (np.cos(p)*np.sin(th), np.sin(p)*np.sin(th), np.cos(th))
             for p in phis]) for th in [ths[1],ths[-2]]]
 
     # add src attributes position and orientation depending on show_path
