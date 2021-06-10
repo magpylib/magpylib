@@ -165,3 +165,21 @@ def test_repr_collection():
     pm2 = mag3.magnet.Cylinder((1,2,3),(2,3))
     col = mag3.Collection(pm1,pm2)
     assert col.__repr__()[:10]== 'Collection', 'Collection repr failed'
+
+
+def test_adding_sources():
+    """ test if all sources can be added
+    """
+    src1 = mag3.magnet.Box((1,2,3), (1,2,3))
+    src2 = mag3.magnet.Cylinder((1,2,3), (1,2))
+    src3 = mag3.magnet.Sphere((1,2,3), 1)
+    src4 = mag3.current.Circular(1,1)
+    src5 = mag3.current.Line(1, [(1,2,3),(2,3,4)])
+    src6 = mag3.misc.Dipole((1,2,3))
+    col = src1 + src2 + src3 + src4 + src5 + src6
+
+    strs = ''
+    for src in col:
+        strs += str(src)[:3]
+
+    assert strs == 'BoxCylSphCirLinDip'
