@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="250"><p>
+<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="200"><p>
 
 ---
 <div>
