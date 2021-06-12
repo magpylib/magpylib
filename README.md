@@ -1,5 +1,5 @@
 
-<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png height="200"><p>
+<p align="center"><img align="center" src=docs/_static/images/magpylib_flag.png ><p>
 
 ---
 <div>
@@ -9,7 +9,6 @@
   </a>
 <a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
 <a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
-<a href="https://ci.appveyor.com/project/OrtnerMichael/magpylib/branch/master"> <img align='center' src="https://ci.appveyor.com/api/projects/status/0mka52e1tqnkgnx3/branch/master?svg=true"> </a>
 
 </p>
 
@@ -30,7 +29,9 @@
 <a href="https://pypi.org/project/magpylib/">
 <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
 <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18"></a>
-<a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a>
+<a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/downloads.svg" alt="Conda Cloud" height="18"></a> 
+ <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a> 
+
 </p>
 
 </div>
@@ -43,7 +44,7 @@
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 <p align="center">
-    <img align='center' src=docs/_static/images/index/source_fundamentals.png height="290">
+    <img align='center' src=docs/_static/images/index/source_fundamentals.png>
 </p>
 
 ---
