@@ -173,14 +173,14 @@ functions,
 >>> src1 = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
 >>> src2 = mag3.current.Circular(current=15, diameter=3)
 >>> mag3.display(src1, src2)
-graphic output
+--> graphic output
 
 or directly through object methods
 
 >>> import magpylib as mag3
 >>> src = mag3.current.Circular(current=15, diameter=3)
 >>> src.display()
-graphic output
+--> graphic output
 
 """
 

@@ -41,6 +41,7 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
 
     Examples
     --------
+
     Compute the B-field of a spherical magnet at a sensor positioned at (1,2,3):
 
     >>> import magpylib as mag3
@@ -59,12 +60,13 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
     >>> B = mag3.getB(source, (1,2,3))
     >>> print(B)
     [[-0.88894262  0.          0.        ]
-    [-0.62497314 -0.34089444 -0.51134166]
-    [-0.17483825 -0.41961181 -0.62941771]
-    [ 0.09177028 -0.33037301 -0.49555952]
-    [ 0.17480239 -0.22080302 -0.33120453]]
+     [-0.62497314 -0.34089444 -0.51134166]
+     [-0.17483825 -0.41961181 -0.62941771]
+     [ 0.09177028 -0.33037301 -0.49555952]
+     [ 0.17480239 -0.22080302 -0.33120453]]
 
-    Compute the B-field of two sources at two observer positions:
+    Compute the B-field of two sources at two observer positions, with and without
+    sumup:
 
     >>> import magpylib as mag3
     >>> src1 = mag3.current.Circular(current=15, diameter=2)
@@ -76,6 +78,10 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
       [0.05387784 0.10775569 0.0872515 ]]
      [[3.06293831 3.06293831 3.06293831]
       [0.04340403 0.23872216 0.43404028]]]
+    >>> B = mag3.getB([src1,src2], obs_pos, sumup=True)
+    >>> print(B)
+    [[3.99833439 3.99833439 3.46340502]
+     [0.09728187 0.34647784 0.52129178]]
 
     """
     return getBH_level2(True, sources, observers, sumup, squeeze, **specs)
@@ -139,12 +145,13 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     >>> H = mag3.getH(source, (1,2,3))
     >>> print(H)
     [[-0.70739806  0.          0.        ]
-    [-0.49733782 -0.27127518 -0.40691277]
-    [-0.13913186 -0.33391647 -0.5008747 ]
-    [ 0.07302847 -0.26290249 -0.39435373]
-    [ 0.13910332 -0.17570946 -0.26356419]]
+     [-0.49733782 -0.27127518 -0.40691277]
+     [-0.13913186 -0.33391647 -0.5008747 ]
+     [ 0.07302847 -0.26290249 -0.39435373]
+     [ 0.13910332 -0.17570946 -0.26356419]]
 
-    Compute the H-field of two sources at two observer positions:
+    Compute the H-field of two sources at two observer positions, with and without
+    sumup:
 
     >>> import magpylib as mag3
     >>> src1 = mag3.current.Circular(current=15, diameter=2)
@@ -156,6 +163,10 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
       [0.04287463 0.08574925 0.06943254]]
      [[2.43740886 2.43740886 2.43740886]
       [0.03453983 0.18996906 0.34539828]]]
+    >>> H = mag3.getH([src1,src2], obs_pos, sumup=True)
+    >>> print(H)
+    [[3.18177341 3.18177341 2.75609015]
+     [0.07741445 0.27571831 0.41483082]]
 
     """
     return getBH_level2(False, sources, observers, sumup, squeeze, **specs)
