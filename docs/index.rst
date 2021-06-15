@@ -10,7 +10,7 @@ What is Magpylib ?
 - The fields are computed using analytical solutions which makes the computation very fast (fully vectorized)
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
-.. image:: _static/images/index/source_fundamentals.png
+.. image:: _static/images/index/source_fundamentals2.png
    :align: center
 
 When can you use Magpylib ?

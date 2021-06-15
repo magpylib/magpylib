@@ -43,7 +43,7 @@
 - The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
 <p align="center">
-    <img align='center' src=docs/_static/images/index/source_fundamentals.png height="290">
+    <img align='center' src=docs/_static/images/index/source_fundamentals2.png height="290">
 </p>
 
 ---
