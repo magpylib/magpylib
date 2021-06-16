@@ -287,11 +287,12 @@ class BaseGeo:
 
     def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
-        Rotates the object by a given rotation input (can be a path).
+        Rotates the object in the global coordinate system by a given rotation input
+        (can be a path).
 
         This method applies given rotations to the original orientation. If the input path
-        extends beyond the existing path, the old path will be padded by its last entry before paths
-        are added up.
+        extends beyond the existing path, the old path will be padded by its last entry
+        before paths are added up.
 
         Parameters
         ----------
@@ -322,8 +323,8 @@ class BaseGeo:
         Examples
         --------
 
-        With the ``rotate`` method Magpylib objects can be rotated about their reference
-        position:
+        With the ``rotate`` method Magpylib objects can be rotated about their local coordinate
+        system center:
 
         >>> import magpylib as mag3
         >>> from scipy.spatial.transform import Rotation as R
@@ -486,7 +487,7 @@ class BaseGeo:
 
     def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
         """
-        Object rotation from angle-axis input.
+        Object rotation in the global coordinate system from angle-axis input.
 
         This method applies given rotations to the original orientation. If the input path
         extends beyond the existingp path, the oldpath will be padded by its last entry before paths
@@ -530,8 +531,8 @@ class BaseGeo:
 
         Examples
         --------
-        With the ``rotate_from_angax`` method Magpylib objects can be rotated about their reference
-        position:
+        With the ``rotate_from_angax`` method Magpylib objects can be rotated about their local
+        coordinte system center:
 
         >>> import magpylib as mag3
         >>> sensor = mag3.Sensor()

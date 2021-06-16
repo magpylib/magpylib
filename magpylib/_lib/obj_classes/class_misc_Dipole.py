@@ -16,26 +16,25 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
     Magnetic dipole moment.
 
-    Reference position and orientation: Local (Dipole) and global coordinate systems
-    coincide when pos = (0,0,0) and orientation = unit rotation.
+    Local object coordinates: The Dipole is located in the origin of
+    the local object coordinate system. Local (Dipole) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
     moment: array_like, shape (3,), unit [mT*mm^3]
-        Magnetic dipole moment in units of [mT*mm^3] given in the local CS of the
-        Dipole object. For homogeneous magnets there is a relation
-        moment=magnetization*volume.
+        Magnetic dipole moment in units of [mT*mm^3] given in the local CS.
+        For homogeneous magnets there is a relation moment=magnetization*volume.
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position in the global CS relative to the reference position in
-        units of [mm]. For M>1, the position attribute represents a path in the
-        global CS. The attributes orientation and position must always be of
-        the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation in the global CS relative to the reference orientation.
-        For M>1 orientation represents different values along a path. The attributes
-        orientation and position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------

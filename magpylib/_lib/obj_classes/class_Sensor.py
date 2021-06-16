@@ -14,25 +14,25 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Magnetic field sensor. Can be used as observer input for magnetic field
     computation.
 
-    Reference position and orientation: Local (Sensor) and global coordinate systems
-    coincide when pos = (0,0,0) and orientation = unit rotation.
+    Local object coordinates: Sensor pixel (=sensing elements) are defined in the local
+    object coordinate system. Local (Sensor) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position in the global CS relative to the reference position in
-        units of [mm]. For M>1, the position attribute represents a path in the
-        global CS. The attributes orientation and position must always be of
-        the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     pixel: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
-        Sensor pixel positions inside of a sensor package. Positions are given in
-        the local Sensor CS.
+        Sensor pixel positions (=sensing elements) in the local Sensor CS in
+        units of [mm]. The magnetic field is evaluated at Sensor pixels.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation in the global CS relative to the reference orientation.
-        For M>1 orientation represents different values along a path. The attributes
-        orientation and position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
@@ -144,7 +144,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     # methods -------------------------------------------------------
     def getB(self, *sources, sumup=False, squeeze=True):
         """
-        Compute B-field in [mT] for given sources.
+        Compute B-field in [mT] for given sources as seen by the Sensor.
 
         Parameters
         ----------
@@ -219,7 +219,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     def getH(self, *sources, sumup=False, squeeze=True):
         """
-        Compute H-field in [kA/m] for given sources.
+        Compute H-field in [kA/m] for given sources as seen by the Sensor.
 
         Parameters
         ----------

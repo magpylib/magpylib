@@ -17,9 +17,10 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Cylinder magnet with homogeneous magnetization.
 
-    Reference position: Geometric center of the Cylinder.
-
-    Reference orientation: Cylinder axis coincides with the z-axis of the global CS.
+    Local object coordinates: The geometric center of the Cylinder is located
+    in the origin of the local object coordinate system. The Cylinder axis conincides
+    with the local CS z-axis. Local (Cylinder) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     By default ITER_CYLINDER=50 for iteration of diametral magnetization computation.
     Use ``magpylib.Config.ITER_CYLINDER=X`` to change this setting.
@@ -34,14 +35,14 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         Dimension/Size of the Cylinder with diameter/height (d,h) in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------

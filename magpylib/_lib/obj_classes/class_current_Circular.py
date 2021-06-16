@@ -14,10 +14,10 @@ i0=None
 class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
-
-    Reference position: Center of the loop.
-
-    Reference orientation: The loop lies in the xy-plane of the global CS.
+    
+    Local object coordinates: The Circular current loop lies in the x-y plane of
+    the local object coordinate system, with its center in the origin. Local (Circular)
+    and global CS coincide when position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
@@ -28,14 +28,14 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Diameter of the loop in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
