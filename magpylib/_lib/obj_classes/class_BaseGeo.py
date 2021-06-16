@@ -137,6 +137,19 @@ class BaseGeo:
         Returns
         -------
         self: Magpylib object
+
+        Examples
+        --------
+        Create an object with non-zero path
+
+        >>> import magpylib as mag3
+        >>> obj = mag3.Sensor(position=(1,2,3))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> obj.reset_path()
+        >>> print(obj.position)
+        [0. 0. 0.]
+
         """
         self.position = (0,0,0)
         self.orientation = R.from_quat((0,0,0,1))

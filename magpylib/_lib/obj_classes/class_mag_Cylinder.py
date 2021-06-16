@@ -46,6 +46,42 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Returns
     -------
     Cylinder object: Cylinder
+
+    Examples
+    --------
+    By default a Cylinder is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.magnet.Cylinder(magnetization=(100,100,100), dimension=(1,1))
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Cylinders are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above Cylinder at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [1.95851744 1.95851744 1.8657571 ]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[1.95851744 1.95851744 1.8657571 ]
+     [0.24025917 0.24025917 0.23767364]
+     [0.07101874 0.07101874 0.07068512]]
+
+    The same result is obtained when the Cylinder moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[1.95851744 1.95851744 1.8657571 ]
+     [0.24025917 0.24025917 0.23767364]
+     [0.07101874 0.07101874 0.07068512]]
     """
 
     def __init__(

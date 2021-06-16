@@ -49,7 +49,7 @@ class BaseGetBH:
 
         Examples
         --------
-        Compute the B-field at a sensor directly through the source method:
+        Compute the B-field [mT] at a sensor directly through the source method:
 
         >>> import magpylib as mag3
         >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
@@ -58,7 +58,7 @@ class BaseGetBH:
         >>> print(B)
         [-0.62497314  0.34089444  0.51134166]
 
-        Compute the B-field of a source at five path positions as seen
+        Compute the B-field [mT] of a source at five path positions as seen
         by an observer at position (1,2,3):
 
         >>> import magpylib as mag3
@@ -72,7 +72,7 @@ class BaseGetBH:
         [ 0.09177028 -0.33037301 -0.49555952]
         [ 0.17480239 -0.22080302 -0.33120453]]
 
-        Compute the B-field of a source at two sensors:
+        Compute the B-field [mT] of a source at two sensors:
 
         >>> import magpylib as mag3
         >>> source = mag3.current.Circular(current=15, diameter=1)
@@ -119,7 +119,7 @@ class BaseGetBH:
 
         Examples
         --------
-        Compute the H-field at a sensor directly through the source method:
+        Compute the H-field [kA/m] at a sensor directly through the source method:
 
         >>> import magpylib as mag3
         >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
@@ -128,7 +128,7 @@ class BaseGetBH:
         >>> print(H)
         [-0.49733782  0.27127518  0.40691277]
 
-        Compute the H-field of a source at five path positions as seen
+        Compute the H-field [kA/m] of a source at five path positions as seen
         by an observer at position (1,2,3):
 
         >>> import magpylib as mag3
@@ -142,7 +142,7 @@ class BaseGetBH:
         [ 0.07302847 -0.26290249 -0.39435373]
         [ 0.13910332 -0.17570946 -0.26356419]]
 
-        Compute the H-field of a source at two sensors:
+        Compute the H-field [kA/m] of a source at two sensors:
 
         >>> import magpylib as mag3
         >>> source = mag3.current.Circular(current=15, diameter=1)

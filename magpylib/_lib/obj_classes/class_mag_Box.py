@@ -43,6 +43,42 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Returns
     -------
     Box object: Box
+
+    Examples
+    --------
+    By default a Box is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.magnet.Box(magnetization=(100,100,100), dimension=(1,1,1))
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Boxs are magnetic field sources. Below we compute the H-field [kA/m] of the above Box at the
+    observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [2.4844679 2.4844679 2.4844679]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[2.4844679  2.4844679  2.4844679 ]
+     [0.30499798 0.30499798 0.30499798]
+     [0.0902928  0.0902928  0.0902928 ]]
+
+    The same result is obtained when the Box moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[2.4844679  2.4844679  2.4844679 ]
+     [0.30499798 0.30499798 0.30499798]
+     [0.0902928  0.0902928  0.0902928 ]]
     """
 
     def __init__(

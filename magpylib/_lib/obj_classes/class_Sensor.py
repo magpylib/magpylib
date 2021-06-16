@@ -11,31 +11,92 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 # ON INTERFACE
 class Sensor(BaseGeo, BaseDisplayRepr):
     """
-    Magnetic field sensor. Can be used as observer input.
+    Magnetic field sensor. Can be used as observer input for magnetic field
+    computation.
 
-    Reference position: Origin of the local CS of the sensor.
-
-    Reference orientation: Local and global CS coincide at initialization.
+    Reference position and orientation: Local (Sensor) and global coordinate systems
+    coincide when pos = (0,0,0) and orientation = unit rotation.
 
     Parameters
     ----------
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position in the global CS relative to the reference position in
+        units of [mm]. For M>1, the position attribute represents a path in the
+        global CS. The attributes orientation and position must always be of
+        the same length.
 
     pixel: array_like, shape (3,) or (N1,N2,...,3), default=(0,0,0)
         Sensor pixel positions inside of a sensor package. Positions are given in
         the local Sensor CS.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation in the global CS relative to the reference orientation.
+        For M>1 orientation represents different values along a path. The attributes
+        orientation and position must always be of the same length.
 
     Returns
     -------
     Sensor object: Sensor
+
+    Examples
+    --------
+
+    By default a Sensor is initialized at position (0,0,0), with unit rotation
+    and pixel (0,0,0):
+
+    >>> import magpylib as mag3
+    >>> sensor = mag3.Sensor()
+    >>> print(sensor.position)
+    [0. 0. 0.]
+    >>> print(sensor.pixel)
+    [0. 0. 0.]
+    >>> print(sensor.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Sensors are observers for magnetic field computation. In this example we compute the
+    H-field as seen by the sensor in the center of a circular current loop:
+
+    >>> import magpylib as mag3
+    >>> sensor = mag3.Sensor()
+    >>> loop = mag3.current.Circular(current=1, diameter=1)
+    >>> H = sensor.getH(loop)
+    >>> print(H)
+    [0. 0. 1.]
+
+    Field computation is performed at every pixel of a sensor. The above example is reproduced
+    for a 2x2-pixel sensor:
+
+    >>> import magpylib as mag3
+    >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+    >>> loop = mag3.current.Circular(current=1, diameter=1)
+    >>> H = sensor.getH(loop)
+    >>> print(H.shape)
+    (2, 2, 3)
+    >>> print(H)
+    [[[0.         0.         1.        ]
+      [0.         0.         0.08944272]]
+     [[0.         0.         0.0142668 ]
+      [0.         0.         0.00444322]]]
+
+    Compute the field of a sensor along a path. The path positions are chosen so that
+    they coincide with the pixel positions of the previous example:
+
+    >>> import magpylib as mag3
+    >>> loop = mag3.current.Circular(current=1, diameter=1)
+    >>> sensor = mag3.Sensor()
+    >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
+    >>> print(sensor.position)
+    [[0. 0. 0.]
+     [0. 0. 1.]
+     [0. 0. 2.]
+     [0. 0. 3.]]
+    >>> H = sensor.getH(loop)
+    >>> print(H)
+    [[0.         0.         1.        ]
+     [0.         0.         0.08944272]
+     [0.         0.         0.0142668 ]
+     [0.         0.         0.00444322]]
+
     """
 
     def __init__(
@@ -103,6 +164,54 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             B-field of each source (L) at each path position (M) and each sensor pixel
             position (N1,N2,...) in units of [mT]. Paths of objects that are shorter than
             M will be considered as static beyond their end.
+
+        Examples
+        --------
+
+        Sensors are observers for magnetic field computation. In this example we compute the
+        B-field [mT] as seen by the sensor in the center of a circular current loop:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> B = sensor.getB(loop)
+        >>> print(B)
+        [0.         0.         1.25663706]
+
+        Field computation is performed at every pixel of a sensor. The above example is reproduced
+        for a 2x2-pixel sensor:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> B = sensor.getB(loop)
+        >>> print(B.shape)
+        (2, 2, 3)
+        >>> print(B)
+        [[[0.         0.         1.25663706]
+          [0.         0.         0.11239704]]
+         [[0.         0.         0.01792819]
+          [0.         0.         0.00558351]]]
+
+        Compute the field of a sensor along a path. The path positions are chosen so that
+        they coincide with the pixel positions in the previous example.
+
+        >>> import magpylib as mag3
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> sensor = mag3.Sensor()
+        >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
+        >>> print(sensor.position)
+        [[0. 0. 0.]
+         [0. 0. 1.]
+         [0. 0. 2.]
+         [0. 0. 3.]]
+        >>> B = sensor.getB(loop)
+        >>> print(B)
+        [[0.         0.         1.25663706]
+         [0.         0.         0.11239704]
+         [0.         0.         0.01792819]
+         [0.         0.         0.00558351]]
+
         """
         sources = format_star_input(sources)
         return getBH_level2(True, sources, self, sumup, squeeze)
@@ -130,6 +239,54 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             H-field of each source (L) at each path position (M) and each sensor pixel
             position (N1,N2,...) in units of [kA/m]. Paths of objects that are shorter than
             M will be considered as static beyond their end.
+
+        Examples
+        --------
+
+        Sensors are observers for magnetic field computation. In this example we compute the
+        H-field as seen by the sensor in the center of a circular current loop:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> H = sensor.getH(loop)
+        >>> print(H)
+        [0. 0. 1.]
+
+        Field computation is performed at every pixel of a sensor. The above example is reproduced
+        for a 2x2-pixel sensor:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> H = sensor.getH(loop)
+        >>> print(H.shape)
+        (2, 2, 3)
+        >>> print(H)
+        [[[0.         0.         1.        ]
+          [0.         0.         0.08944272]]
+         [[0.         0.         0.0142668 ]
+          [0.         0.         0.00444322]]]
+
+        Compute the field of a sensor along a path. The path positions are chosen so that
+        they coincide with the pixel positions in the previous example.
+
+        >>> import magpylib as mag3
+        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> sensor = mag3.Sensor()
+        >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
+        >>> print(sensor.position)
+        [[0. 0. 0.]
+         [0. 0. 1.]
+         [0. 0. 2.]
+         [0. 0. 3.]]
+        >>> H = sensor.getH(loop)
+        >>> print(H)
+        [[0.         0.         1.        ]
+         [0.         0.         0.08944272]
+         [0.         0.         0.0142668 ]
+         [0.         0.         0.00444322]]
+
         """
         sources = format_star_input(sources)
         return getBH_level2(False, sources, self, sumup, squeeze)

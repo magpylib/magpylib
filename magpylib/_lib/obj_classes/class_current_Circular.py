@@ -40,6 +40,42 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     Returns
     -------
     Circular object: Circular
+
+    Examples
+    --------
+    # By default a Circular is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.current.Circular(current=100, diameter=2)
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Circulars are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above Circular at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [4.96243034 4.96243034 2.12454191]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[4.96243034 4.96243034 2.12454191]
+     [0.61894364 0.61894364 0.06167939]
+     [0.18075829 0.18075829 0.00789697]]
+
+    The same result is obtained when the Circular moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[4.96243034 4.96243034 2.12454191]
+     [0.61894364 0.61894364 0.06167939]
+     [0.18075829 0.18075829 0.00789697]]
     """
 
     def __init__(

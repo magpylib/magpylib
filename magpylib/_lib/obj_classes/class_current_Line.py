@@ -43,6 +43,42 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     Returns
     -------
     Line object: Line
+
+    Examples
+    --------
+    # By default a Line is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.current.Line(current=100, vertices=[(-1,0,0),(1,0,0)])
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Lines are magnetic field sources. Below we compute the H-field [kA/m] of the above Line at the
+    observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [ 0.         -3.24873667  3.24873667]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[ 0.         -3.24873667  3.24873667]
+     [ 0.         -0.78438229  0.78438229]
+     [ 0.         -0.34429579  0.34429579]]
+
+    The same result is obtained when the Line moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[ 0.         -3.24873667  3.24873667]
+     [ 0.         -0.78438229  0.78438229]
+     [ 0.         -0.34429579  0.34429579]]
     """
     # pylint: disable=dangerous-default-value
 
