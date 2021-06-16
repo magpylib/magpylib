@@ -20,6 +20,30 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
+    
+    Examples
+    --------
+    Compute the field very close to a line current:
+
+    >>> import magpylib as mag3
+    >>> current = mag3.current.Line(current=1, vertices=[(-.1,0,0),(.1,0,0)])
+    >>> B_close = current.getB((0,0,1e-11))
+    >>> print(B_close)
+    [ 0.e+00 -2.e+10  0.e+00]
+
+    Change the edgesize setting so that the position is now inside of the cut-off region
+
+    >>> mag3.Config.EDGESIZE=1e-10
+    >>> B_close = current.getB((0,0,1e-11))
+    >>> print(B_close)
+    [0. 0. 0.]
+
+    Reset the Config to original values:
+
+    >>> mag3.Config.reset()
+    >>> B_close = current.getB((0,0,1e-11))
+    >>> print(B_close)
+    [ 0.e+00 -2.e+10  0.e+00]
     """
 
     CHECK_INPUTS = True
