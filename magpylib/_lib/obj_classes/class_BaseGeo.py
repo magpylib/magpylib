@@ -485,7 +485,7 @@ class BaseGeo:
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
         """
         Object rotation in the global coordinate system from angle-axis input.
 
@@ -521,8 +521,8 @@ class BaseGeo:
             For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
             [1,2,3,5,7].
 
-        degree: bool, default=True
-            By default angle is given in units of [deg]. If degree=False, angle is given
+        degrees: bool, default=True
+            By default angle is given in units of [deg]. If degrees=False, angle is given
             in units of [rad].
 
         Returns
@@ -620,7 +620,7 @@ class BaseGeo:
             check_anchor_type(anchor)
             check_start_type(start)
             check_increment_type(increment)
-            check_degree_type(degree)
+            check_degree_type(degrees)
 
         # generate axis from string
         if isinstance(axis, str):
@@ -646,7 +646,7 @@ class BaseGeo:
             # axis must not be (0,0,0)
 
         # degree to rad
-        if degree:
+        if degrees:
             angle = angle/180*np.pi
 
         # apply rotation

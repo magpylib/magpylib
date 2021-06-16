@@ -14,7 +14,7 @@ i0=None
 class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
-    
+
     Local object coordinates: The Circular current loop lies in the x-y plane of
     the local object coordinate system, with its center in the origin. Local (Circular)
     and global CS coincide when position=(0,0,0) and orientation=unit_rotation.

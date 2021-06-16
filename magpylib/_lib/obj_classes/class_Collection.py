@@ -326,7 +326,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
         """
         Rotates each object in the Collection individually from angle-axis input.
 
@@ -362,8 +362,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
             [1,2,3,5,7].
 
-        degree: bool, default=True
-            By default angle is given in units of [deg]. If degree=False, angle is given
+        degrees: bool, default=True
+            By default angle is given in units of [deg]. If degrees=False, angle is given
             in units of [rad].
 
         Returns
@@ -395,7 +395,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         """
         for s in self:
-            s.rotate_from_angax(angle, axis, anchor, start, increment, degree)
+            s.rotate_from_angax(angle, axis, anchor, start, increment, degrees)
         return self
 
 
