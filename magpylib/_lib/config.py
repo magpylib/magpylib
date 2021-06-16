@@ -20,7 +20,7 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
-    
+
     Examples
     --------
     Compute the field very close to a line current:
