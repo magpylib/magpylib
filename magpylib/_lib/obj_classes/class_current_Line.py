@@ -17,9 +17,9 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Current flowing in straight lines from vertex to vertex.
 
-    Reference position: Origin of the local CS of the Line.
-
-    Reference orientation: Local and global CS coincide at initialization.
+    Local object coordinates: The Line current vertices are defined in the local object
+    coordinate system. Local (Line) and global CS coincide when position=(0,0,0)
+    and orientation=unit_rotation.
 
     Parameters
     ----------
@@ -27,22 +27,58 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Electrical current in units of [A].
 
     vertices: array_like, shape (N,3)
-        Current flows along vertices, given in units of [mm]. Vertices are defined
-        in the local CS of the Line object.
+        The current flows along the vertices which are given in units of [mm] in the
+        local CS of the Line object.
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
     Line object: Line
+
+    Examples
+    --------
+    # By default a Line is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.current.Line(current=100, vertices=[(-1,0,0),(1,0,0)])
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Lines are magnetic field sources. Below we compute the H-field [kA/m] of the above Line at the
+    observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [ 0.         -3.24873667  3.24873667]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[ 0.         -3.24873667  3.24873667]
+     [ 0.         -0.78438229  0.78438229]
+     [ 0.         -0.34429579  0.34429579]]
+
+    The same result is obtained when the Line moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[ 0.         -3.24873667  3.24873667]
+     [ 0.         -0.78438229  0.78438229]
+     [ 0.         -0.34429579  0.34429579]]
     """
     # pylint: disable=dangerous-default-value
 

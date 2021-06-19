@@ -110,9 +110,9 @@ def badInput_rotate_from_angax5():
     bg.rotate_from_angax(123, (1,2,3), increment=None)
 
 def badInput_rotate_from_angax6():
-    """ bad degree input type"""
+    """ bad degrees input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate_from_angax(123, (1,2,3), degree=None)
+    bg.rotate_from_angax(123, (1,2,3), degrees=None)
 
 def badInput_rotate_from_angax7():
     """ bad angle input format"""

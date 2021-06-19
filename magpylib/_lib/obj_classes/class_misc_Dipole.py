@@ -16,30 +16,66 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
     Magnetic dipole moment.
 
-    Reference position: Dipole position.
-
-    Reference orientation: Local and global CS coincide at initialization.
+    Local object coordinates: The Dipole is located in the origin of
+    the local object coordinate system. Local (Dipole) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
     moment: array_like, shape (3,), unit [mT*mm^3]
-        Magnetic dipole moment in units of [mT*mm^3] given in the local CS of the
-        Dipole object. For homogeneous magnets there is a relation
-        moment=magnetization*volume.
+        Magnetic dipole moment in units of [mT*mm^3] given in the local CS.
+        For homogeneous magnets there is a relation moment=magnetization*volume.
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
     Dipole object: Dipole
+
+    Examples
+    --------
+    By default a Dipole is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> dipole = mag3.misc.Dipole(moment=(100,100,100))
+    >>> print(dipole.position)
+    [0. 0. 0.]
+    >>> print(dipole.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Dipoles are magnetic field sources. Below we compute the H-field [kA/m] of the above Dipole at
+    an observer position (1,1,1),
+
+    >>> H = dipole.getH((1,1,1))
+    >>> print(H)
+    [2.43740886 2.43740886 2.43740886]
+
+    or at a set of observer positions:
+
+    >>> H = dipole.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[2.43740886 2.43740886 2.43740886]
+     [0.30467611 0.30467611 0.30467611]
+     [0.0902744  0.0902744  0.0902744 ]]
+
+    The same result is obtained when the Dipole object moves along a path,
+    away from the observer:
+
+    >>> dipole.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = dipole.getH((1,1,1))
+    >>> print(H)
+    [[2.43740886 2.43740886 2.43740886]
+     [0.30467611 0.30467611 0.30467611]
+     [0.0902744  0.0902744  0.0902744 ]]
+
     """
 
     def __init__(

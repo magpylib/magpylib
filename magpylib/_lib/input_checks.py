@@ -93,10 +93,10 @@ def check_axis_format(axis):
 
 
 def check_degree_type(deg):
-    """ degree input must be bool
+    """ degrees input must be bool
     """
     if not isinstance(deg, bool):
-        msg = 'degree input must be bool (True or False).'
+        msg = 'degrees input must be bool (True or False).'
         raise MagpylibBadUserInput(msg)
 
 

@@ -137,6 +137,19 @@ class BaseGeo:
         Returns
         -------
         self: Magpylib object
+
+        Examples
+        --------
+        Create an object with non-zero path
+
+        >>> import magpylib as mag3
+        >>> obj = mag3.Sensor(position=(1,2,3))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> obj.reset_path()
+        >>> print(obj.position)
+        [0. 0. 0.]
+
         """
         self.position = (0,0,0)
         self.orientation = R.from_quat((0,0,0,1))
@@ -172,6 +185,58 @@ class BaseGeo:
         Returns
         -------
         self: Magpylib object
+
+        Examples
+        --------
+
+        With the ``move`` method Magpylib objects can be repositioned in the global coordinate
+        system:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> print(sensor.position)
+        [0. 0. 0.]
+        >>> sensor.move((1,1,1))
+        >>> print(sensor.position)
+        [1. 1. 1.]
+
+        It is also a powerful tool for creating paths:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> sensor.move((1,1,1), start='append')
+        >>> print(sensor.position)
+        [[0. 0. 0.]
+         [1. 1. 1.]]
+        >>> sensor.move([(.1,.1,.1)]*2, start='append')
+        >>> print(sensor.position)
+        [[0.  0.  0. ]
+         [1.  1.  1. ]
+         [1.1 1.1 1.1]
+         [1.1 1.1 1.1]]
+
+        Complex paths can be generated with ease, by making use of the ``increment`` keyword
+        and superposition of subsequent paths:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> sensor.move([(1,1,1)]*4, start='append', increment=True)
+        >>> print(sensor.position)
+        [[0. 0. 0.]
+         [1. 1. 1.]
+         [2. 2. 2.]
+         [3. 3. 3.]
+         [4. 4. 4.]]
+        >>> sensor.move([(.1,.1,.1)]*5, start=2)
+        >>> print(sensor.position)
+        [[0.  0.  0. ]
+         [1.  1.  1. ]
+         [2.1 2.1 2.1]
+         [3.1 3.1 3.1]
+         [4.1 4.1 4.1]
+         [4.1 4.1 4.1]
+         [4.1 4.1 4.1]]
+
         """
 
         # check input types
@@ -222,11 +287,12 @@ class BaseGeo:
 
     def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
-        Rotates the object by a given rotation input (can be a path).
+        Rotates the object in the global coordinate system by a given rotation input
+        (can be a path).
 
         This method applies given rotations to the original orientation. If the input path
-        extends beyond the existing path, the old path will be padded by its last entry before paths
-        are added up.
+        extends beyond the existing path, the old path will be padded by its last entry
+        before paths are added up.
 
         Parameters
         ----------
@@ -253,6 +319,99 @@ class BaseGeo:
         Returns
         -------
         self: Magpylib object
+
+        Examples
+        --------
+
+        With the ``rotate`` method Magpylib objects can be rotated about their local coordinate
+        system center:
+
+        >>> import magpylib as mag3
+        >>> from scipy.spatial.transform import Rotation as R
+        >>> sensor = mag3.Sensor()
+        >>> print(sensor.position)
+        [0. 0. 0.]
+        >>> print(sensor.orientation.as_euler('xyz'))
+        [0. 0. 0.]
+        >>> rotation_object = R.from_euler('x', 45, degrees=True)
+        >>> sensor.rotate(rotation_object)
+        >>> print(sensor.position)
+        [0. 0. 0.]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [45.  0.  0.]
+
+        With the ``anchor`` keyword the object rotates about a designated axis that passes
+        through the given anchor point:
+
+        >>> import magpylib as mag3
+        >>> from scipy.spatial.transform import Rotation as R
+        >>> sensor = mag3.Sensor()
+        >>> rotation_object = R.from_euler('x', 90, degrees=True)
+        >>> sensor.rotate(rotation_object, anchor=(0,1,0))
+        >>> print(sensor.position)
+        [ 0.  1. -1.]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [90.  0.  0.]
+
+        The method can also be used to generate paths, making use of scipy.Rotation object
+        vector input:
+
+        >>> import magpylib as mag3
+        >>> from scipy.spatial.transform import Rotation as R
+        >>> sensor = mag3.Sensor()
+        >>> rotation_object = R.from_euler('x', 90, degrees=True)
+        >>> sensor.rotate(rotation_object, anchor=(0,1,0), start='append')
+        >>> print(sensor.position)
+        [[ 0.  0.  0.]
+         [ 0.  1. -1.]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  0.]
+         [90.  0.  0.]]
+        >>> rotation_object = R.from_euler('x', [10,20,30], degrees=True)
+        >>> sensor.rotate(rotation_object, anchor=(0,1,0), start='append')
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [ 0.          1.         -1.        ]
+         [ 0.          1.17364818 -0.98480775]
+         [ 0.          1.34202014 -0.93969262]
+         [ 0.          1.5        -0.8660254 ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[  0.   0.   0.]
+         [ 90.   0.   0.]
+         [100.   0.   0.]
+         [110.   0.   0.]
+         [120.   0.   0.]]
+
+        Complex paths can be generated by making use of the ``increment`` keyword
+        and the superposition of subsequent paths:
+
+        >>> import magpylib as mag3
+        >>> from scipy.spatial.transform import Rotation as R
+        >>> sensor = mag3.Sensor()
+        >>> rotation_object = R.from_euler('x', [10]*3, degrees=True)
+        >>> sensor.rotate(rotation_object, anchor=(0,1,0), start='append', increment=True)
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [ 0.          0.01519225 -0.17364818]
+         [ 0.          0.06030738 -0.34202014]
+         [ 0.          0.1339746  -0.5       ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  0.]
+         [10.  0.  0.]
+         [20.  0.  0.]
+         [30.  0.  0.]]
+        >>> rotation_object = R.from_euler('z', [5]*4, degrees=True)
+        >>> sensor.rotate(rotation_object, anchor=0, start=0, increment=True)
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [-0.00263811  0.01496144 -0.17364818]
+         [-0.0156087   0.05825246 -0.34202014]
+         [-0.04582201  0.12589494 -0.5       ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  5.]
+         [10.  0. 10.]
+         [20.  0. 15.]
+         [30.  0. 20.]]
 
         """
 
@@ -326,9 +485,9 @@ class BaseGeo:
         return self
 
 
-    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degree=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
         """
-        Object rotation from angle-axis input.
+        Object rotation in the global coordinate system from angle-axis input.
 
         This method applies given rotations to the original orientation. If the input path
         extends beyond the existingp path, the oldpath will be padded by its last entry before paths
@@ -362,13 +521,96 @@ class BaseGeo:
             For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
             [1,2,3,5,7].
 
-        degree: bool, default=True
-            By default angle is given in units of [deg]. If degree=False, angle is given
+        degrees: bool, default=True
+            By default angle is given in units of [deg]. If degrees=False, angle is given
             in units of [rad].
 
         Returns
         -------
         self: Magpylib object
+
+        Examples
+        --------
+        With the ``rotate_from_angax`` method Magpylib objects can be rotated about their local
+        coordinte system center:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> print(sensor.position)
+        [0. 0. 0.]
+        >>> print(sensor.orientation.as_euler('xyz'))
+        [0. 0. 0.]
+        >>> sensor.rotate_from_angax(angle=45, axis='x')
+        >>> print(sensor.position)
+        [0. 0. 0.]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [45.  0.  0.]
+
+        With the ``anchor`` keyword the object rotates about a designated axis
+        that passes through the given anchor point:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> sensor.rotate_from_angax(angle=90, axis=(1,0,0), anchor=(0,1,0))
+        >>> print(sensor.position)
+        [ 0.  1. -1.]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [90.  0.  0.]
+
+        The method can also be used to generate paths, making use of scipy.Rotation
+        object vector input:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> sensor.rotate_from_angax(angle=90, axis='x', anchor=(0,1,0), start='append')
+        >>> print(sensor.position)
+        [[ 0.  0.  0.]
+         [ 0.  1. -1.]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  0.]
+         [90.  0.  0.]]
+        >>> sensor.rotate_from_angax(angle=[10,20,30], axis='x', anchor=(0,1,0), start='append')
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [ 0.          1.         -1.        ]
+         [ 0.          1.17364818 -0.98480775]
+         [ 0.          1.34202014 -0.93969262]
+         [ 0.          1.5        -0.8660254 ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[  0.   0.   0.]
+         [ 90.   0.   0.]
+         [100.   0.   0.]
+         [110.   0.   0.]
+         [120.   0.   0.]]
+
+        Complex paths can be generated by making use of the ``increment`` keyword
+        and the superposition of subsequent paths:
+
+        >>> import magpylib as mag3
+        >>> sensor = mag3.Sensor()
+        >>> sensor.rotate_from_angax([10]*3, 'x', (0,1,0), start=1, increment=True)
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [ 0.          0.01519225 -0.17364818]
+         [ 0.          0.06030738 -0.34202014]
+         [ 0.          0.1339746  -0.5       ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  0.]
+         [10.  0.  0.]
+         [20.  0.  0.]
+         [30.  0.  0.]]
+        >>> sensor.rotate_from_angax(angle=[5]*4, axis='z', anchor=0, start=0, increment=True)
+        >>> print(sensor.position)
+        [[ 0.          0.          0.        ]
+         [-0.00263811  0.01496144 -0.17364818]
+         [-0.0156087   0.05825246 -0.34202014]
+         [-0.04582201  0.12589494 -0.5       ]]
+        >>> print(sensor.orientation.as_euler('xyz', degrees=True))
+        [[ 0.  0.  5.]
+         [10.  0. 10.]
+         [20.  0. 15.]
+         [30.  0. 20.]]
+
         """
 
         # check input types
@@ -378,7 +620,7 @@ class BaseGeo:
             check_anchor_type(anchor)
             check_start_type(start)
             check_increment_type(increment)
-            check_degree_type(degree)
+            check_degree_type(degrees)
 
         # generate axis from string
         if isinstance(axis, str):
@@ -404,7 +646,7 @@ class BaseGeo:
             # axis must not be (0,0,0)
 
         # degree to rad
-        if degree:
+        if degrees:
             angle = angle/180*np.pi
 
         # apply rotation

@@ -15,9 +15,9 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Spherical magnet with homogeneous magnetization.
 
-    Reference position: Center of Sphere.
-
-    Reference orientation: Local and global CS coincide at initialization.
+    Local object coordinates: The Sphere center is located in the origin of
+    the local object coordinate system. Local (Sphere) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
@@ -29,18 +29,54 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         Diameter of the Sphere in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
     Sphere object: Sphere
+
+    Examples
+    --------
+    By default a Sphere is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.magnet.Sphere(magnetization=(100,100,100), diameter=1)
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Spheres are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above Sphere at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [1.27622429 1.27622429 1.27622429]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[1.27622429 1.27622429 1.27622429]
+     [0.15952804 0.15952804 0.15952804]
+     [0.04726757 0.04726757 0.04726757]]
+
+    The same result is obtained when the Sphere object moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[1.27622429 1.27622429 1.27622429]
+     [0.15952804 0.15952804 0.15952804]
+     [0.04726757 0.04726757 0.04726757]]
     """
 
     def __init__(

@@ -17,9 +17,10 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Cylinder magnet with homogeneous magnetization.
 
-    Reference position: Geometric center of the Cylinder.
-
-    Reference orientation: Cylinder axis coincides with the z-axis of the global CS.
+    Local object coordinates: The geometric center of the Cylinder is located
+    in the origin of the local object coordinate system. The Cylinder axis conincides
+    with the local CS z-axis. Local (Cylinder) and global CS coincide when
+    position=(0,0,0) and orientation=unit_rotation.
 
     By default ITER_CYLINDER=50 for iteration of diametral magnetization computation.
     Use ``magpylib.Config.ITER_CYLINDER=X`` to change this setting.
@@ -34,18 +35,54 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         Dimension/Size of the Cylinder with diameter/height (d,h) in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
     Cylinder object: Cylinder
+
+    Examples
+    --------
+    By default a Cylinder is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.magnet.Cylinder(magnetization=(100,100,100), dimension=(1,1))
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Cylinders are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above Cylinder at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [1.95851744 1.95851744 1.8657571 ]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[1.95851744 1.95851744 1.8657571 ]
+     [0.24025917 0.24025917 0.23767364]
+     [0.07101874 0.07101874 0.07068512]]
+
+    The same result is obtained when the Cylinder moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[1.95851744 1.95851744 1.8657571 ]
+     [0.24025917 0.24025917 0.23767364]
+     [0.07101874 0.07101874 0.07068512]]
     """
 
     def __init__(

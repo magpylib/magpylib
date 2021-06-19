@@ -15,9 +15,9 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
     Circular current loop.
 
-    Reference position: Center of the loop.
-
-    Reference orientation: The loop lies in the xy-plane of the global CS.
+    Local object coordinates: The Circular current loop lies in the x-y plane of
+    the local object coordinate system, with its center in the origin. Local (Circular)
+    and global CS coincide when position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
@@ -28,18 +28,54 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Diameter of the loop in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Reference position in the global CS in units of [mm]. For M>1, the
-        position attribute represents a path in the global CS. The attributes
-        orientation and position must always be of the same length.
+        Object position (local CS origin) in the global CS in units of [mm].
+        For M>1, the position represents a path. The position and orientation
+        parameters must always be of the same length.
 
     orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Orientation relative to the reference orientation. For M>1 orientation
-        represents different values along a path. The attributes orientation and
-        position must always be of the same length.
+        Object orientation (local CS orientation) in the global CS. For M>1
+        orientation represents different values along a path. The position and
+        orientation parameters must always be of the same length.
 
     Returns
     -------
     Circular object: Circular
+
+    Examples
+    --------
+    # By default a Circular is initialized at position (0,0,0), with unit rotation:
+
+    >>> import magpylib as mag3
+    >>> magnet = mag3.current.Circular(current=100, diameter=2)
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
+
+    Circulars are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above Circular at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [4.96243034 4.96243034 2.12454191]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[4.96243034 4.96243034 2.12454191]
+     [0.61894364 0.61894364 0.06167939]
+     [0.18075829 0.18075829 0.00789697]]
+
+    The same result is obtained when the Circular moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[4.96243034 4.96243034 2.12454191]
+     [0.61894364 0.61894364 0.06167939]
+     [0.18075829 0.18075829 0.00789697]]
     """
 
     def __init__(

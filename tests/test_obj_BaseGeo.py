@@ -40,7 +40,7 @@ def test_BaseGeo_basics():
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
-    bgeo.rotate_from_angax(-np.pi/4,(1,2,3),degree=False)
+    bgeo.rotate_from_angax(-np.pi/4,(1,2,3),degrees=False)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -70,7 +70,7 @@ def test_rotate_vs_rotate_from():
     bg2 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
     angs = np.linalg.norm(roz, axis=1)
     for ang,ax in zip(angs,roz):
-        bg2.rotate_from_angax(angle=ang, degree=False, axis=ax, anchor=(-3,-2,1), start='append')
+        bg2.rotate_from_angax(angle=ang, degrees=False, axis=ax, anchor=(-3,-2,1), start='append')
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
