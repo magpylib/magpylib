@@ -6,7 +6,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [3.0.0] - 2021-very soonish :)
+## [3.0.0] - 2021-06-27
 
 ### Overview
 
@@ -70,10 +70,10 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 ### Class method changes
 
 - The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(rotation, anchor, increment, start)` method where `rotation` ist a scipy `Rotation` object.
-- The original angle-axis-anchor rotation is now provided by the new method `.rotate_from_angax(angle, axis, anchor, increment, start, degree)`.
+- The original angle-axis-anchor rotation is now provided by the new method `.rotate_from_angax(angle, axis, anchor, increment, start, degrees)`.
   - The argument `axis` can now easily be set to the gloabl CS axes with `"x"`, `"y"`, `"z"`.
   - The anchor argument `anchor=0` represents the origin `(0,0,0)`.
-  - `angle` argument is in units of deg by default. It can now be set to rad unsing the `degree` argument.
+  - `angle` argument is in units of deg by default. It can now be set to rad unsing the `degrees` argument.
 - The "move"-class method is now `.move(displacement, increment, start)`
 - Rotation and move methods can now be used to generate paths using vector input and the `increment` and `start` arguments.
 - All operations can now be chained (e.g. `.move_by().rotate().move_to()`)
