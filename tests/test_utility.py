@@ -1,103 +1,53 @@
-from magpylib._lib.utility import checkDimensions, isPosVector,isDisplayMarker
-from magpylib._lib.utility import isSensor
-from numpy import array
-import pytest
+import numpy as np
+import magpylib as mag3
+from magpylib._lib.utility import (check_duplicates,
+    only_allowed_src_types)
 
-# -------------------------------------------------------------------------------
-def test_IsDisplayMarker_error():
-    marker1=[0,0,0]
-    marker2=[0,0,1]
-    marker3=[0,0,1,"hello world!"] 
-    marker4=[0,0,1,-1] # Should fail!
 
-    markerList = [marker1,marker2,marker3,marker4]
-    with pytest.raises(AssertionError):
-        for marker in markerList:
-            assert isDisplayMarker(marker)
+def test_duplicates():
+    """ test duplicate elimination and sorting
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cylinder((1,2,3),(1,2))
+    src_list = [pm1,pm2,pm1]
+    src_list_new = check_duplicates(src_list)
+    assert src_list_new == [pm1,pm2], 'duplicate elimination failed'
 
-# -------------------------------------------------------------------------------
-def test_IsDisplayMarker():
-    errMsg = "marker identifier has failed: "
-    marker1=[0,0,0]
-    marker2=[0,0,1]
-    marker3=[0,0,1,"hello world!"]
+def test_only_allowed_src_types():
+    """ tests elimination of unwanted types
+    """
+    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cylinder((1,2,3),(1,2))
+    sens = mag3.Sensor()
+    src_list = [pm1,pm2,sens]
+    list_new = only_allowed_src_types(src_list)
+    assert list_new == [pm1,pm2], 'Failed to eliminate sensor'
 
-    markerList = [marker1,marker2,marker3]
-    for marker in markerList:
-        assert isDisplayMarker(marker), errMsg + str(marker)
 
-# -------------------------------------------------------------------------------
-def test_checkDimensionZero():
-    # errMsg = "Did not raise all zeros Error"
-    with pytest.raises(AssertionError):
-        checkDimensions(3,dim=(.0,0,.0))
+def test_format_getBH_class_inputs():
+    """ special case testing of different input formats
+    """
+    possis = [3,3,3]
+    sens = mag3.Sensor(position=(3,3,3))
+    pm1 = mag3.magnet.Box((11,22,33),(1,2,3))
+    pm2 = mag3.magnet.Box((11,22,33),(1,2,3))
+    col = pm1 + pm2
 
-    with pytest.raises(AssertionError):
-        checkDimensions(0,dim=[])
+    B1 = pm1.getB(possis)
+    B2 = pm1.getB(sens)
+    assert np.allclose(B1,B2), 'pos_obs shold give same as sens'
 
-# -------------------------------------------------------------------------------
-def test_checkDimensionMembers():
-    # errMsg = "Did not raise expected Value Error"
-    with pytest.raises(ValueError):
-        checkDimensions(3,dim=(3,'r',6))
+    B3 = pm1.getB(sens,sens)
+    B4 = pm1.getB([sens,sens])
+    B44 = pm1.getB((sens,sens))
+    assert np.allclose(B3, B4), 'sens,sens should give same as [sens,sens]'
+    assert np.allclose(B3, B44), 'sens,sens should give same as (sens,sens)'
 
-# -------------------------------------------------------------------------------
-def test_checkDimensionSize():
-    errMsg = "Did not raise wrong dimension size Error"
-    with pytest.raises(AssertionError) as error:
-        checkDimensions(3,dim=(3,5,9,6))
-    assert error.type == AssertionError, errMsg
+    B1 = sens.getH(pm1)*4
+    B2 = sens.getH(pm1,pm2,col, sumup=True)
+    B3 = sens.getH([col])*2
+    B4 = sens.getH([col,pm1,pm2], sumup=True)
 
-# -------------------------------------------------------------------------------
-def test_checkDimensionReturn():
-    errMsg = "Wrong return dimension size"
-    result = checkDimensions(4,dim=(3,5,9,10))
-    assert len(result) == 4, errMsg
-    result = checkDimensions(3,dim=(3,5,9))
-    assert len(result) == 3, errMsg
-    result = checkDimensions(2,dim=(3,5))
-    assert len(result) == 2, errMsg
-    result = checkDimensions(1,dim=(3))
-    assert len(result) == 1, errMsg
-    
-# -------------------------------------------------------------------------------
-def test_isPosVector():
-    errMsg = "isPosVector returned unexpected False value"
-    position = [1,2,3]
-    assert isPosVector(position), errMsg
-
-# -------------------------------------------------------------------------------
-def test_isPosVectorArray():
-    from numpy import array
-    errMsg = "isPosVector returned unexpected False value"
-    position = array([1,2,3])
-    assert isPosVector(position), errMsg
-
-# -------------------------------------------------------------------------------
-def test_isPosVectorArray2():
-    from numpy import array
-    errMsg = "isPosVector returned unexpected False value"
-    position = array([1,4,-24.242])
-    assert isPosVector(position), errMsg
-
-# -------------------------------------------------------------------------------
-def test_isSensor():
-    from magpylib._lib.classes.sensor import Sensor 
-    s = Sensor()
-
-    assert isSensor(s)
-
-# -------------------------------------------------------------------------------
-def test_isPosVectorArgs():
-    from numpy import array
-
-    listOfArgs = [  [   [1,2,3],        #pos
-                    [0,0,1],        #MPos
-                    (180,(0,1,0)),],#Morientation
-                 [   [1,2,3],
-                     [0,1,0],
-                     (90,(1,0,0)),],
-                 [   [1,2,3],
-                     [1,0,0],
-                     (255,(0,1,0)),],]
-    assert any(isPosVector(a)==False for a in listOfArgs)                 
+    assert np.allclose(B1,B2), 'src,src should give same as [src,src]'
+    assert np.allclose(B1,B3), 'src should give same as [src]'
+    assert np.allclose(B1,B4), 'src,src should give same as [src,src]'

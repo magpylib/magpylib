@@ -6,54 +6,43 @@
 What is Magpylib ?
 ##################
 
-- Free Python package for calculating magnetic fields of magnets, currents and moments (sources).
-- Provides convenient methods to create, geometrically manipulate, group and visualize assemblies of sources.
-- The magnetic fields are determined from underlying analytical solutions which results in fast computation times and requires little computation power, memory and background knowledge.
-- For high performance computation (e.g. for multivariate parameter space analysis) all functions are also available in vectorized form.
+- Python package for calculating 3D static magnetic fields of magnets (e.g. Cuboids, Cylinders, Spheres, ...), line currents (e.g. straight or loops) and other sources (e.g. Dipoles).
+- The fields are computed using analytical solutions which makes the computation very fast (fully vectorized)
+- The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to determine relative motion between sources and observers.
 
-.. image:: _static/images/index/sourceFundamentals.png
+.. image:: _static/images/index/source_fundamentals.png
    :align: center
 
 When can you use Magpylib ?
 ###########################
 
-The analytical solutions are only valid if there is little or no material response. This means that whenever there is a lot of demagnetization in permanent magnets or soft magnetic materials like magnetic shields or transformer cores, these computations cannot be used. Magpylib is at its best dealing with air-coils and permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
+The analytical solutions are exact when there is no material response. In permanent magnets, when (remanent) permeabilities are below :math:`\mu_r < 1.1` the error is typically below 1% (long magnet shapes are better, large distance from magnet is better). For more details check out the `physics section`__.
 
+__ _pages/9_physics/
+
+Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
 
 Quickstart
 ##########
 
-Install magpylib with pip: ``>> pip install magpylib``.
+**Install Magpylib** with pip or conda:
 
-**Example:**
+``> pip install magpylib``.
 
-Run this simple code to calculate the magnetic field of a cylindrical magnet.
+``> conda install magpylib``.
+
+This **Example code** calculates the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
 
-    from magpylib.source.magnet import Cylinder
-    s = Cylinder( mag = [0,0,350], dim = [4,5])
-    print(s.getB([4,4,4]))       
+    import magpylib as mag3
+    s = mag3.magnet.Cylinder(magnetization=(0,0,350), dimension=(4,5))
+    observer_pos = (4,4,4)
+    print(s.getB(observer_pos))
 
     # Output: [ 5.08641867  5.08641867 -0.60532983]
 
-In this example the cylinder axis is parallel to the z-axis. The diameter and height of the magnet are 4 millimeter and 5 millimeter respectively and the magnet position (=geometric center) is in the
-origin. The magnetization / remanence field is homogeneous and points in z-direction with an amplitude of 350 millitesla.  Finally, the magnetic field **B** is calculated in units of millitesla at
-the positition *[4,4,4]* millimeter.
-
-**Example:**
-
-The following code calculates the combined field of two magnets. They are geometrically manipulated, the system geometry is displayed together with the field in the xz-plane.
-
-.. plot:: pyplots/examples/01_SimpleCollection.py
-   :include-source:
-
-
-More examples can be found in the `Examples Section`__.
-
-__ _pages/2_guideExamples/
-
-Technical details can be found in the :ref:`docu` .
+A cylinder shaped permanent magnet with diameter and height of 4 and 5 millimeter, respectively, is created in a global coordinate system with cylinder axis parallel to the z-axis and geometric magnet center in the origin. The magnetization is homogeneous and points in z-direction with an amplitude of 350 millitesla. The magnetic field is calculated in units of millitesla at the observer position (4,4,4) in units of millimeter.
 
 
 .. toctree::
@@ -69,13 +58,10 @@ Technical details can be found in the :ref:`docu` .
    :caption: Library Docstrings:
 
    _autogen/magpylib
-   _autogen/magpylib.source
-   _autogen/magpylib.math
 
 
 Index
-################
+#####
 
 * :ref:`genindex`
 * :ref:`modindex`
-.. * :ref:`search`
