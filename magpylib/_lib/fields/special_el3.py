@@ -590,7 +590,7 @@ def el3_angle(phi:np.ndarray, n:np.ndarray, m:np.ndarray) -> np.ndarray:
 
         results3 = np.zeros(np.sum(mask3))
         onez = np.ones(np.sum(mask3))
-        cel3_res = cel(kc3, p3, onez, onez)
+        cel3_res = cel(kc3, p3, onez, onez) #3rd kind cel
 
         mask3a = (phi_red3> np.pi/2-10**(-D))
         mask3b = (phi_red3<-np.pi/2+10**(-D))
@@ -617,10 +617,10 @@ def el3_angle(phi:np.ndarray, n:np.ndarray, m:np.ndarray) -> np.ndarray:
 
         if np.any(mask3xa):
             onez = np.ones(np.sum(mask3xa))
-            results3x[mask3xa] = cel(kc3x[mask3xa], p3x[mask3xa], onez, onez)
+            results3x[mask3xa] = cel(kc3x[mask3xa], p3x[mask3xa], onez, onez) #3rd kind cel
         if np.any(mask3xb):
             onez = np.ones(np.sum(mask3xb))
-            results3x[mask3xb] = -cel(kc3x[mask3xb], p3x[mask3xb], onez, onez)
+            results3x[mask3xb] = -cel(kc3x[mask3xb], p3x[mask3xb], onez, onez) #3rd kind cel
         if np.any(mask3xc):
             results3x[mask3xc] = el3(np.tan(phi3x[mask3xc]), kc3x[mask3xc], p3x[mask3xc])
 

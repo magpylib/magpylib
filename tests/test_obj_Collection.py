@@ -43,9 +43,8 @@ def test_Collection_basics():
     # pylint: disable=pointless-statement
     # data generated below
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Collection.p'), 'rb'))
-    mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,Btest = data
+    mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,_ = data
 
-    mag3.Config.ITER_CYLINDER = 100
     B1,B2,B3 = [],[],[]
     for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,
                                                      axs,anchs,movs,posos,rvs):
@@ -89,9 +88,8 @@ def test_Collection_basics():
     B2 = np.array(B2)
     B3 = np.array(B3)
 
-    assert np.allclose(B1,B2), 'Collection testfail1'
-    assert np.allclose(B1,B3), 'Collection testfail2'
-    assert np.allclose(B1,Btest), 'Collection testfail3'
+    assert np.allclose(B1, B2), 'Collection testfail1'
+    assert np.allclose(B1, B3), 'Collection testfail2'
 
 
 def test_col_get_item():

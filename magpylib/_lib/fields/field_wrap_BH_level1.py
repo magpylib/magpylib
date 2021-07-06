@@ -44,6 +44,13 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'Cylinder':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
+        # transform dim2 to dim6
+        if len(dim[0]) == 2:
+            n = len(dim)
+            null = np.zeros(n)
+            eins = np.ones(n)
+            d, h = dim.T
+            dim = np.array([null, d/2, null, eins*360, -h/2, h/2]).T
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Sphere':
         mag = kwargs['magnetization']

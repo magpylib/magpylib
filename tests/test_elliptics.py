@@ -2,6 +2,7 @@ import numpy as np
 from magpylib._lib.fields.special_el3 import el30, el3v, el3, el3_angle
 from magpylib._lib.fields.special_cel import cel0, celv, cel
 
+
 def test_el3_vs_original():
     """
     test new and vectroized el3 implemtnation vs original one

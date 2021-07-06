@@ -47,10 +47,10 @@ def test_Circular_vs_Cylinder_field():
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 
-    pos_obs = np.random.rand(111,3)
+    pos_obs = np.random.rand(111,3) + np.array([0,0,10])
 
     r0 = 2
-    h0 = 1e-6
+    h0 = 1e-4
     i0 = 1
     src1 = mag3.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dimension=(r0,h0))
     src2 = mag3.current.Circular(current=i0, diameter=r0)
