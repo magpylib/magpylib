@@ -4,7 +4,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib._lib.fields.special_functions import celv
+from magpylib._lib.fields.special_cel import cel
 from magpylib._lib.config import Config
 
 
@@ -50,11 +50,11 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
     one = np.ones(n)
 
     # radial field (unit magnetization)
-    Br = d*(celv(k1, one, one, -one)/sq1 - celv(k0, one, one, -one)/sq0)/np.pi
+    Br = d*(cel(k1, one, one, -one)/sq1 - cel(k0, one, one, -one)/sq0)/np.pi
 
     # axial field (unit magnetization)
-    Bz = d/dpr*(zph*celv(k1, gamma**2, one, gamma)/sq1
-              - zmh*celv(k0, gamma**2, one, gamma)/sq0)/np.pi
+    Bz = d/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
+              - zmh*cel(k0, gamma**2, one, gamma)/sq0)/np.pi
 
     return [Br, Bz]  # contribution from axial magnetization
 

@@ -1,13 +1,55 @@
-'''
-special functions computations beyond scipy.special
-'''
-
 import numpy as np
+
+
+def cel0(kc, p, c, s):
+    """
+    complete elliptic integral algorithm vom Kirby2009
+    """
+    if kc == 0:
+        raise RuntimeError('FAIL')
+    errtol = .000001
+    k = abs(kc)
+    pp = p
+    cc = c
+    ss = s
+    em = 1.
+    if p > 0:
+        pp = np.sqrt(p)
+        ss = s/pp
+    else:
+        f = kc*kc
+        q = 1.-f
+        g = 1. - pp
+        f = f - pp
+        q = q*(ss - c*pp)
+        pp = np.sqrt(f/g)
+        cc = (c-ss)/g
+        ss = -q/(g*g*pp) + cc*pp
+    f = cc
+    cc = cc + ss/pp
+    g = k/pp
+    ss = 2*(ss + f*g)
+    pp = g + pp
+    g = em
+    em = k + em
+    kk = k
+    while abs(g-k) > g*errtol:
+        k = 2*np.sqrt(kk)
+        kk = k*em
+        f = cc
+        cc = cc + ss/pp
+        g = kk/pp
+        ss = 2*(ss + f*g)
+        pp = g + pp
+        g = em
+        em = k+em
+    return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
+
+
 
 def celv(kc, p, c, s):
     """
-    vectorized version of the cel integral
-    original implementation from [Kirby]
+    vectorized version of the cel integral above
     """
 
     #if kc == 0:
@@ -68,35 +110,13 @@ def celv(kc, p, c, s):
     return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
 
 
-# unused quantities -----------------------------------------
+def cel(kcv:np.ndarray, pv:np.ndarray, cv:np.ndarray, sv:np.ndarray) ->np.ndarray:
+    """
+    combine vectorized and non-vectorized implementations for improved performance
+    """
+    n_input = len(kcv)
 
-# def ellipticKV(x):
-#     '''
-#     special case complete cel integral of first kind ellipticK
-#     0 <= x <1
-#     '''
-#     N = len(x)
-#     onez = np.ones([N])
-#     return celv((1-x)**(1/2.), onez, onez, onez)
+    if n_input < 10:
+        return np.array([cel0(kc,p,c,s) for kc,p,c,s in zip(kcv,pv,cv,sv)])
 
-
-# def ellipticEV(x):
-#     '''
-#     special case complete elliptic integral of second kind ellipticE
-#     E(x) = int_0^pi/2 (1-x sin(phi)^2)^(1/2) dphi
-#     requires x < 1 !
-#     '''
-#     N = len(x)
-#     onez = np.ones([N])
-#     return celv((1-x)**(1/2.), onez, onez, 1-x)
-
-
-# def ellipticPiV(x, y):
-#     '''
-#     special case complete elliptic integral of third kind ellipticPi
-#     E(x) = int_0^pi/2 (1-x sin(phi)^2)^(1/2) dphi
-#     requires x < 1 !
-#     '''
-#     N = len(x)
-#     onez = np.ones([N])
-#     return celv((1-y)**(1/2.), 1-x, onez, onez)
+    return celv(kcv, pv, cv, sv)
