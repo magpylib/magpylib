@@ -142,7 +142,7 @@ def field_Hcy_transv(
     return [Br,Bphi,Bz]
 
 
-def field_BH_cylinder(
+def field_BH_cylinder_old(
         bh: bool,
         mag: np.ndarray,
         dim: np.ndarray,

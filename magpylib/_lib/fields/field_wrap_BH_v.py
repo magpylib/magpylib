@@ -66,6 +66,12 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             dim = np.array(kwargs['dimension'], dtype=float)
             tile_params['dimension'] = (dim,2)
 
+        elif src_type == 'Cylinder_old':
+            mag = np.array(kwargs['magnetization'], dtype=float)
+            tile_params['magnetization'] = (mag,2)
+            dim = np.array(kwargs['dimension'], dtype=float)
+            tile_params['dimension'] = (dim,2)
+
         elif src_type == 'Sphere':
             mag = np.array(kwargs['magnetization'], dtype=float)
             tile_params['magnetization'] = (mag,2)

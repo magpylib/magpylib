@@ -1,6 +1,7 @@
 import numpy as np
 from magpylib._lib.fields.field_BH_box import field_BH_box
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
+from magpylib._lib.fields.field_BH_cylinder_old import field_BH_cylinder_old
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
@@ -52,6 +53,10 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
             d, h = dim.T
             dim = np.array([null, d/2, null, eins*360, -h/2, h/2]).T
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
+    elif src_type == 'Cylinder_old':
+        mag = kwargs['magnetization']
+        dim = kwargs['dimension']
+        B = field_BH_cylinder_old(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Sphere':
         mag = kwargs['magnetization']
         dia = kwargs['diameter']
