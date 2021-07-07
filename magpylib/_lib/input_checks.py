@@ -141,8 +141,32 @@ def check_vector_format(inp, shape, origin):
     - return error msg with reference to origin
     """
     if not inp.shape == shape:
-        msg = f'Bad {origin} input shape. Must be shape f{shape}.'
+        msg = f'Bad {origin} input shape. Must be shape {shape}.'
         raise MagpylibBadInputShape(msg)
+
+
+def check_vector_format_dim_cyl(inp):
+    """
+    - check if cylinder dimension has correct format (2,) or (5,)
+    - check if cylinder shape (5,) input is r1<r2, phi1<phi2
+    - return error msg
+    """
+    if not ((inp.shape==(2,)) or (inp.shape==(5,))):
+        msg = 'Bad dimension input shape. Must be shape (2,) or (5,).'
+        raise MagpylibBadInputShape(msg)
+
+    if inp.shape==(5,):
+        r1,r2,phi1,phi2,_ = inp
+        if r1>=r2:
+            msg = 'r1 must be smaller than r2.'
+            raise MagpylibBadUserInput(msg)
+        if phi1>=phi2:
+            msg = 'phi1 must be smaller than phi2.'
+            raise MagpylibBadUserInput(msg)
+        if (phi2-phi1)>360:
+            msg = 'phi2-phi1 cannot be larger than 360°.'
+            raise MagpylibBadUserInput(msg)
+
 
 
 def check_position_format(inp, origin):

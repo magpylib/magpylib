@@ -148,8 +148,8 @@ def getBv(**kwargs):
     Parameters
     ----------
     source_type: string
-        Source type for computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
-        'Circular' or 'Line'. Expected input parameters depend on source_type.
+        Source type for computation. Must be either 'Box', 'Cylinder', 'Cylinder_old', 'Sphere',
+        'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -249,8 +249,8 @@ def getHv(**kwargs):
     Parameters
     ----------
     source_type: string
-        Source type for computation. Must be either 'Box', 'Cylinder', 'Sphere', 'Dipole',
-        'Circular' or 'Line'. Expected input parameters depend on source_type.
+        Source type for computation. Must be either 'Box', 'Cylinder','Cylinder_old', 'Sphere',
+        'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].

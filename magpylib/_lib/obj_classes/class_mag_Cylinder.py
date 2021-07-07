@@ -6,7 +6,8 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_vector_format, check_vector_init, check_vector_type
+from magpylib._lib.input_checks import (check_vector_format_dim_cyl, check_vector_init,
+    check_vector_type)
 
 # init for tool tips
 d=h=None
@@ -121,6 +122,6 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_vector_format(dim, (2,), 'dimension')
+            check_vector_format_dim_cyl(dim)
 
         self._dimension = dim
