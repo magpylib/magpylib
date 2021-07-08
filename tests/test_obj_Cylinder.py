@@ -1,3 +1,4 @@
+import numpy as np
 import magpylib as mag3
 from magpylib.magnet import Cylinder
 
@@ -32,3 +33,51 @@ def test_repr():
     """
     pm2 = mag3.magnet.Cylinder((1,2,3),(2,3))
     assert pm2.__repr__()[:8] == 'Cylinder', 'Cylinder repr failed'
+
+
+def test_Cylinder_getBH():
+    """
+    test Cylinder geB and getH with diffeent inputs
+    vs the vectorized form
+    """
+    mag = (22,33,44)
+    poso = (np.random.rand(100, 3)-.5)*5
+
+    dim2 = (1,2)
+    dim2_6 = (0,0.5,0,360,-1,1)
+
+    dim5 = (1.1,2.2,30,145,5)
+    dim5_6 = (1.1,2.2,30,145,-2.5,2.5)
+
+    for dim,dim6 in zip([dim2, dim5], [dim2_6, dim5_6]):
+        src = mag3.magnet.Cylinder(mag, dim)
+        B1 = src.getB(poso)
+        H1 = src.getH(poso)
+
+        B2 = mag3.getBv(
+            source_type='Cylinder',
+            magnetization=mag,
+            dimension=dim,
+            observer=poso)
+        H2 = mag3.getHv(
+            source_type='Cylinder',
+            magnetization=mag,
+            dimension=dim,
+            observer=poso)
+
+        B3 = mag3.getBv(
+            source_type='Cylinder',
+            magnetization=mag,
+            dimension=dim6,
+            observer=poso)
+        H3 = mag3.getHv(
+            source_type='Cylinder',
+            magnetization=mag,
+            dimension=dim6,
+            observer=poso)
+
+        assert np.allclose(B1, B2)
+        assert np.allclose(B1, B3)
+
+        assert np.allclose(H1, H2)
+        assert np.allclose(H1, H3)

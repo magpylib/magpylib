@@ -37,21 +37,24 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     pos_rel = poso - pos                           # relative position
     pos_rel_rot = rot.apply(pos_rel, inverse=True) # rotate rel_pos into source CS
 
-    # compute field
+    # collect dictionary inputs and compute field
     if src_type == 'Box':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
         B = field_BH_box(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder':
+        # Cylinder dimension input can be shape (2,), (5,) or (6,)
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
-        # transform dim2 to dim6
-        if len(dim[0]) == 2:
+        if len(dim[0]) == 2: # (d,h) type input
             n = len(dim)
             null = np.zeros(n)
             eins = np.ones(n)
             d, h = dim.T
             dim = np.array([null, d/2, null, eins*360, -h/2, h/2]).T
+        elif len(dim[0]) == 5: # (r1,r2,phi1,phi2,h) type input
+            r1,r2,phi1,phi2,h = dim.T
+            dim = np.array([r1,r2,phi1,phi2,-h/2,h/2]).T
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder_old':
         mag = kwargs['magnetization']
