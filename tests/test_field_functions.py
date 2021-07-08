@@ -1,7 +1,7 @@
 import pickle
 import os
 import numpy as np
-from magpylib._lib.fields.field_BH_box import field_BH_box
+from magpylib._lib.fields.field_BH_cuboid import field_BH_cuboid
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
@@ -39,35 +39,35 @@ from magpylib import Config
 
 # Bs = []
 # for dim,pos in zip(dims,poss):
-#     Bs += [field_BH_box(True, mag, dim, pos)]
+#     Bs += [field_BH_cuboid(True, mag, dim, pos)]
 # Bs = np.array(Bs)
 
 # print(Bs)
-# pickle.dump([mag, dims, poss, Bs], open('testdata_field_BH_box.p','wb'))
+# pickle.dump([mag, dims, poss, Bs], open('testdata_field_BH_cuboid.p','wb'))
 
 
-def test_field_BH_box():
-    """ test box field
+def test_field_BH_cuboid():
+    """ test cuboid field
     """
     Config.EDGESIZE=1e-14
     mag, dims, poss, B = pickle.load(open(
-        os.path.abspath('tests/testdata/testdata_field_BH_box.p') ,'rb'))
+        os.path.abspath('tests/testdata/testdata_field_BH_cuboid.p') ,'rb'))
     Btest = []
     for dim,pos in zip(dims,poss):
-        Btest += [field_BH_box(True, mag, dim, pos)]
+        Btest += [field_BH_cuboid(True, mag, dim, pos)]
     Btest = np.array(Btest)
-    assert np.allclose(B, Btest), 'Box field computation broken'
+    assert np.allclose(B, Btest), 'Cuboid field computation broken'
 
 
-def test_field_BH_box_mag0():
-    """ test box field magnetization=0
+def test_field_BH_cuboid_mag0():
+    """ test cuboid field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,3)
     pos = np.random.rand(n,3)
-    B = field_BH_box(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Box magnetization=0 case broken'
+    B = field_BH_cuboid(True, mag, dim, pos)
+    assert np.allclose(mag,B), 'Cuboid magnetization=0 case broken'
 
 
 def test_field_BH_cylinder_mag0():
@@ -107,14 +107,14 @@ def test_field_sphere_vs_v2():
 
 
 def test_field_BH_sphere_mag0():
-    """ test box field magnetization=0
+    """ test cuboid field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n)
     pos = np.random.rand(n,3)
     B = field_BH_sphere(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Box magnetization=0 case broken'
+    assert np.allclose(mag,B), 'Cuboid magnetization=0 case broken'
 
 
 def test_field_dipole1():

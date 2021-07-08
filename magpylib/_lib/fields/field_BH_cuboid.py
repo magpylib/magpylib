@@ -7,13 +7,13 @@ import numpy as np
 from magpylib._lib.config import Config
 
 
-def field_BH_box(
+def field_BH_cuboid(
         bh: bool,
         mag: np.ndarray,
         dim: np.ndarray,
         pos_obs: np.ndarray
         ) -> np.ndarray:
-    """ setting up the Box field computation
+    """ setting up the Cuboid field computation
     - separate mag=0 cases (returning 0)
     - separate edge/corner cases (returning 0)
     - call field computation for general cases
@@ -60,7 +60,7 @@ def field_BH_box(
 
     # compute field -------------------------------
     if np.any(mask_gen):
-        B[mask_gen] = field_B_box(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+        B[mask_gen] = field_B_cuboid(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
     # return B or compute and retun H -------------
     if bh:
@@ -78,7 +78,7 @@ def field_BH_box(
     return H
 
 
-def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.ndarray:
+def field_B_cuboid(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.ndarray:
     """ Compute B-field of Cuboid magnet with homogenous magnetization.
 
     ### Args:
@@ -117,7 +117,7 @@ def field_B_box(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.nda
 
     On the magnet surface either inside or outside field is returned.
 
-    Indeterminate forms at box edges and corners remain. The numerical
+    Indeterminate forms at cuboid edges and corners remain. The numerical
     evaluation is instable in the vicinity. Avoid field computation near
     (1e-6*sidelength) Cuboid edges. FIX THIS PROBLEM !!!
     """

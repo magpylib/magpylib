@@ -54,7 +54,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
         squeeze = kwargs.get('squeeze', True)
 
         # mandatory class specific inputs -----------
-        if src_type == 'Box':
+        if src_type == 'Cuboid':
             mag = np.array(kwargs['magnetization'], dtype=float)
             tile_params['magnetization'] = (mag,2)
             dim = np.array(kwargs['dimension'], dtype=float)
@@ -148,7 +148,7 @@ def getBv(**kwargs):
     Parameters
     ----------
     source_type: string
-        Source type for computation. Must be either 'Box', 'Cylinder', 'Cylinder_old', 'Sphere',
+        Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old', 'Sphere',
         'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
@@ -164,7 +164,7 @@ def getBv(**kwargs):
         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     magnetization: array_like, shape (3,) or (N,3)
-        Only `source_type in ('Box', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
         remanence field of homogeneous magnet magnetization in units of [mT].
 
     moment:  array_like, shape (3,) or (N,3)
@@ -175,7 +175,7 @@ def getBv(**kwargs):
         Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
 
     dimension: array_like
-        Only `source_type in ('Box', 'Cylinder')`! Magnet dimension input in units of [mm].
+        Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
 
     diameter: array_like, shape (N)
         Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
@@ -214,7 +214,7 @@ def getBv(**kwargs):
     >>> import numpy as np
     >>> import magpylib as mag3
     >>> B = mag3.getBv(
-    >>>     source_type='Box',
+    >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
     >>>     observer=(1,2,3))
@@ -249,7 +249,7 @@ def getHv(**kwargs):
     Parameters
     ----------
     source_type: string
-        Source type for computation. Must be either 'Box', 'Cylinder','Cylinder_old', 'Sphere',
+        Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old', 'Sphere',
         'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
@@ -265,7 +265,7 @@ def getHv(**kwargs):
         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
     magnetization: array_like, shape (3,) or (N,3)
-        Only `source_type in ('Box', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
         remanence field of homogeneous magnet magnetization in units of [mT].
 
     moment:  array_like, shape (3,) or (N,3)
@@ -276,7 +276,7 @@ def getHv(**kwargs):
         Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
 
     dimension: array_like
-        Only `source_type in ('Box', 'Cylinder')`! Magnet dimension input in units of [mm].
+        Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
 
     diameter: array_like, shape (N)
         Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
@@ -315,7 +315,7 @@ def getHv(**kwargs):
     >>> import numpy as np
     >>> import magpylib as mag3
     >>> H = mag3.getHv(
-    >>>     source_type='Box',
+    >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
     >>>     observer=(1,2,3))

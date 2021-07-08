@@ -73,7 +73,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         return {'source_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
             'observer': posov, 'orientation':rotobj}
 
-    if src_type in {'Box', 'Cylinder'}:
+    if src_type in {'Cuboid', 'Cylinder'}:
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
         return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
@@ -134,7 +134,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # pylint: disable=too-many-statements
 
     # avoid circular imports --------------------------------------------------
-    Box = _lib.obj_classes.Box
+    Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
     Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
@@ -220,7 +220,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     src_sorted = [[],[],[],[],[],[]]   # store groups here
     order = [[],[],[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
-        if isinstance(src, Box):
+        if isinstance(src, Cuboid):
             src_sorted[0] += [src]
             order[0] += [i]
         elif isinstance(src, Cylinder):

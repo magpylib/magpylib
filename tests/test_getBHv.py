@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib
-from magpylib.magnet import Box, Cylinder, Sphere
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 from magpylib import getBv, getHv, getB, getH
 
 
@@ -114,7 +114,7 @@ def test_getBv3():
     rot = R.from_quat([(t,.2,.3,.4) for t in np.linspace(0,.1,n)])
 
     dic = {
-        'source_type': 'Box',
+        'source_type': 'Cuboid',
         'observer': pos_obs,
         'magnetization': mag,
         'dimension': dim,
@@ -125,7 +125,7 @@ def test_getBv3():
 
     B2 = []
     for i in range(n):
-        pm = Box(mag[i],dim,pos,rot[i])
+        pm = Cuboid(mag[i],dim,pos,rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1-B2)

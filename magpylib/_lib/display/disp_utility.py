@@ -2,10 +2,10 @@
 
 import numpy as np
 
-def faces_box(src, show_path):
+def faces_cuboid(src, show_path):
     """
-    compute vertices and faces of Box input for plotting
-    takes Box source
+    compute vertices and faces of Cuboid input for plotting
+    takes Cuboid source
     returns vert, faces
     returns all faces when show_path=all
     """

@@ -5,7 +5,7 @@ import magpylib as mag3
 def test_sensor1():
     """ self-consistent test of the sensor class
     """
-    pm = mag3.magnet.Box((11,22,33),(1,2,3))
+    pm = mag3.magnet.Cuboid((11,22,33),(1,2,3))
     angs = np.linspace(0,555,44)
     possis = [(3*np.cos(t/180*np.pi),3*np.sin(t/180*np.pi),1) for t in angs]
     sens = mag3.Sensor()
@@ -23,7 +23,7 @@ def test_sensor1():
 def test_sensor2():
     """ self-consistent test of the sensor class
     """
-    pm = mag3.magnet.Box((11,22,33),(1,2,3))
+    pm = mag3.magnet.Cuboid((11,22,33),(1,2,3))
     poz = np.linspace(0,5,33)
     poss1 = [(t,0,2) for t in poz]
     poss2 = [(t,0,3) for t in poz]

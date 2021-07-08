@@ -52,8 +52,8 @@ The following MATLAB 2019 script showcases most functionalities.
     sensorPos = vec3
 
     %% Execute Python
-    % 2 positional and 1 keyword argument in Box
-    box = py.magpylib.source.magnet.Box(mag,dim,pyargs('angle',angle))
+    % 2 positional and 1 keyword argument in Cuboid
+    box = py.magpylib.source.magnet.Cuboid(mag,dim,pyargs('angle',angle))
     col = py.magpylib.Collection(box)
     pythonResult = col.getB(sensorPos)
 

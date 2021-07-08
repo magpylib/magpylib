@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import magpylib as mag3
-from magpylib.magnet import Cylinder, Box, Sphere
+from magpylib.magnet import Cylinder, Cuboid, Sphere
 
 # pylint: disable=assignment-from-no-return
 
@@ -44,10 +44,10 @@ def test_Sphere_display():
     assert x is None, 'display test fail'
 
 
-def test_Box_display():
+def test_Cuboid_display():
     """ testing display
     """
-    src = Box((1,2,3),(1,2,3))
+    src = Cuboid((1,2,3),(1,2,3))
     src.move([(.1,.1,.1)]*20, increment=True)
     plt.ion()
     x = src.display(show_path=5, show_direction=True)
@@ -90,8 +90,8 @@ def test_col_display():
     """
     # pylint: disable=assignment-from-no-return
     ax = plt.subplot(projection='3d')
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
     col = mag3.Collection(pm1,pm2)
     x = col.display(axis=ax)
     assert x is None, 'colletion display test fail'

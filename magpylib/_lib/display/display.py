@@ -5,7 +5,7 @@ import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
-from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
+from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
     faces_sphere)
 from magpylib import _lib
 
@@ -78,7 +78,7 @@ def display(
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as mag3
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = mag3.magnet.Box(magnetization=(0,0,1), dimension=(1,2,3))
+    >>> magnet = mag3.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
     >>> sens = mag3.Sensor(position=(0,0,3))
     >>> mag3.display(magnet, sens, axis=my_axis)
     >>> plt.show()
@@ -91,7 +91,7 @@ def display(
     # pylint: disable=dangerous-default-value
 
     # avoid circular imports
-    Box = _lib.obj_classes.Box
+    Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
@@ -122,7 +122,7 @@ def display(
 
     # objects with faces
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
-        Box,
+        Cuboid,
         Cylinder,
         Sphere
         ))]
@@ -144,8 +144,8 @@ def display(
     for i, obj in enumerate(faced_objects):
         col = cmap(i/len(faced_objects))
 
-        if isinstance(obj, Box):
-            faces = faces_box(obj,show_path)
+        if isinstance(obj, Cuboid):
+            faces = faces_cuboid(obj,show_path)
             lw = 0.5
             face_points += draw_faces(faces, col, lw, ax)
 

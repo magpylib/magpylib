@@ -1,4 +1,4 @@
-"""Magnet Box class code"""
+"""Magnet Cuboid class code"""
 
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
@@ -13,23 +13,23 @@ a=b=c=None
 mx=my=mz=None
 
 # ON INTERFACE
-class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Cuboid magnet with homogeneous magnetization.
 
-    Local object coordinates: The geometric center of the Box is located
-    in the origin of the local object coordinate system. Box sides are
-    parallel to the local basis vectors. Local (Box) and global CS coincide when
+    Local object coordinates: The geometric center of the Cuboid is located
+    in the origin of the local object coordinate system. Cuboid sides are
+    parallel to the local basis vectors. Local (Cuboid) and global CS coincide when
     position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,)
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-        the local CS of the Box object.
+        the local CS of the Cuboid object.
 
     dimension: array_like, shape (3,)
-        Dimension/Size of the Box with sides [a,b,c] in units of [mm].
+        Dimension/Size of the Cuboid with sides [a,b,c] in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
         Object position (local CS origin) in the global CS in units of [mm].
@@ -43,20 +43,20 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Returns
     -------
-    Box object: Box
+    Cuboid object: Cuboid
 
     Examples
     --------
-    By default a Box is initialized at position (0,0,0), with unit rotation:
+    By default a Cuboid is initialized at position (0,0,0), with unit rotation:
 
     >>> import magpylib as mag3
-    >>> magnet = mag3.magnet.Box(magnetization=(100,100,100), dimension=(1,1,1))
+    >>> magnet = mag3.magnet.Cuboid(magnetization=(100,100,100), dimension=(1,1,1))
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
     [0. 0. 0. 1.]
 
-    Boxs are magnetic field sources. Below we compute the H-field [kA/m] of the above Box at the
+    Cuboids are magnetic field sources. Below we compute the H-field [kA/m] of the above Cuboid at the
     observer position (1,1,1),
 
     >>> H = magnet.getH((1,1,1))
@@ -71,7 +71,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
      [0.30499798 0.30499798 0.30499798]
      [0.0902928  0.0902928  0.0902928 ]]
 
-    The same result is obtained when the Box moves along a path,
+    The same result is obtained when the Cuboid moves along a path,
     away from the observer:
 
     >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
@@ -96,7 +96,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # set attributes
         self.dimension = dimension
-        self.object_type = 'Box'
+        self.object_type = 'Cuboid'
 
 
     # properties ----------------------------------------------------
@@ -109,7 +109,7 @@ class Box(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @dimension.setter
     def dimension(self, dim):
-        """ Set Box dimension (a,b,c), shape (3,), [mm].
+        """ Set Cuboid dimension (a,b,c), shape (3,), [mm].
         """
         # input type and init check
         if Config.CHECK_INPUTS:

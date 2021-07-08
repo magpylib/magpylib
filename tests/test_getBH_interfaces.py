@@ -5,12 +5,12 @@ import magpylib as mag3
 def test_getB_interfaces1():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Box((1,2,3), (1,2,3))
+    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
@@ -38,12 +38,12 @@ def test_getB_interfaces1():
 def test_getB_interfaces2():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Box((1,2,3), (1,2,3))
+    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
@@ -64,12 +64,12 @@ def test_getB_interfaces2():
 def test_getB_interfaces3():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Box((1,2,3), (1,2,3))
+    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = mag3.Sensor(pixel=poso)
     B = mag3.getBv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
         dimension=(1,2,3),
@@ -96,14 +96,14 @@ def test_getH_interfaces1():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag, dim)
+    src = mag3.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=mag,
         dimension=dim,
@@ -133,14 +133,14 @@ def test_getH_interfaces2():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag, dim)
+    src = mag3.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=mag,
         dimension=dim,
@@ -163,14 +163,14 @@ def test_getH_interfaces3():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Box(mag, dim)
+    src = mag3.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = mag3.Sensor(pixel=poso)
 
     H = mag3.getHv(
-        source_type='Box',
+        source_type='Cuboid',
         position=src.position,
         magnetization=mag,
         dimension=dim,

@@ -1,5 +1,5 @@
 import numpy as np
-from magpylib._lib.fields.field_BH_box import field_BH_box
+from magpylib._lib.fields.field_BH_cuboid import field_BH_cuboid
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_cylinder_old import field_BH_cylinder_old
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
@@ -39,10 +39,10 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     pos_rel_rot = rot.apply(pos_rel, inverse=True) # rotate rel_pos into source CS
 
     # collect dictionary inputs and compute field
-    if src_type == 'Box':
+    if src_type == 'Cuboid':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
-        B = field_BH_box(bh, mag, dim, pos_rel_rot)
+        B = field_BH_cuboid(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder':
         # Cylinder dimension input can be shape (2,), (5,) or (6,)
         mag = kwargs['magnetization']

@@ -7,7 +7,7 @@ import magpylib as mag3
 # # GENERATE TESTDATA
 # N = 5
 # mags = (np.random.rand(N,6,3)-0.5)*1000
-# dims3 = (np.random.rand(N,3,3)-0.5)*5     # 5x box
+# dims3 = (np.random.rand(N,3,3)-0.5)*5     # 5x cuboid
 # dims2 = (np.random.rand(N,3,2)-0.5)*5     # 5x cylinder
 # posos = (np.random.rand(N,23,3)-0.5)*10 #readout at 333 positions
 
@@ -20,9 +20,9 @@ import magpylib as mag3
 # B = []
 # for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,axs,anchs,movs,posos,rvs):
 #     rot = R.from_rotvec(rv)
-#     pm1b = mag3.magnet.Box(mag[0],dim3[0])
-#     pm2b = mag3.magnet.Box(mag[1],dim3[1])
-#     pm3b = mag3.magnet.Box(mag[2],dim3[2])
+#     pm1b = mag3.magnet.Cuboid(mag[0],dim3[0])
+#     pm2b = mag3.magnet.Cuboid(mag[1],dim3[1])
+#     pm3b = mag3.magnet.Cuboid(mag[2],dim3[2])
 #     pm4b = mag3.magnet.Cylinder(mag[3],dim2[0])
 #     pm5b = mag3.magnet.Cylinder(mag[4],dim2[1])
 #     pm6b = mag3.magnet.Cylinder(mag[5],dim2[2])
@@ -50,16 +50,16 @@ def test_Collection_basics():
                                                      axs,anchs,movs,posos,rvs):
         rot = R.from_rotvec(rv)
 
-        pm1b = mag3.magnet.Box(mag[0],dim3[0])
-        pm2b = mag3.magnet.Box(mag[1],dim3[1])
-        pm3b = mag3.magnet.Box(mag[2],dim3[2])
+        pm1b = mag3.magnet.Cuboid(mag[0],dim3[0])
+        pm2b = mag3.magnet.Cuboid(mag[1],dim3[1])
+        pm3b = mag3.magnet.Cuboid(mag[2],dim3[2])
         pm4b = mag3.magnet.Cylinder(mag[3],dim2[0])
         pm5b = mag3.magnet.Cylinder(mag[4],dim2[1])
         pm6b = mag3.magnet.Cylinder(mag[5],dim2[2])
 
-        pm1 = mag3.magnet.Box(mag[0],dim3[0])
-        pm2 = mag3.magnet.Box(mag[1],dim3[1])
-        pm3 = mag3.magnet.Box(mag[2],dim3[2])
+        pm1 = mag3.magnet.Cuboid(mag[0],dim3[0])
+        pm2 = mag3.magnet.Cuboid(mag[1],dim3[1])
+        pm3 = mag3.magnet.Cuboid(mag[2],dim3[2])
         pm4 = mag3.magnet.Cylinder(mag[3],dim2[0])
         pm5 = mag3.magnet.Cylinder(mag[4],dim2[1])
         pm6 = mag3.magnet.Cylinder(mag[5],dim2[2])
@@ -95,9 +95,9 @@ def test_Collection_basics():
 def test_col_get_item():
     """ test get_item with collections
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm3 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm3 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
 
     col = mag3.Collection(pm1,pm2,pm3)
     assert col[1]==pm2, 'get_item failed'
@@ -117,8 +117,8 @@ def test_col_getH():
 def test_col_reset_path():
     """ testing display
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
     col = mag3.Collection(pm1,pm2)
     col.move([(1,2,3)]*10)
     col.reset_path()
@@ -129,8 +129,8 @@ def test_col_reset_path():
 def test_Collection_squeeze():
     """ testing squeeze output
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
     col = mag3.Collection(pm1,pm2)
     sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = col.getB(sensor)
@@ -159,7 +159,7 @@ def test_Collection_with_Dipole():
 def test_repr_collection():
     """ test __repr__
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Cylinder((1,2,3),(2,3))
     col = mag3.Collection(pm1,pm2)
     assert col.__repr__()[:10]== 'Collection', 'Collection repr failed'
@@ -168,7 +168,7 @@ def test_repr_collection():
 def test_adding_sources():
     """ test if all sources can be added
     """
-    src1 = mag3.magnet.Box((1,2,3), (1,2,3))
+    src1 = mag3.magnet.Cuboid((1,2,3), (1,2,3))
     src2 = mag3.magnet.Cylinder((1,2,3), (1,2))
     src3 = mag3.magnet.Sphere((1,2,3), 1)
     src4 = mag3.current.Circular(1,1)
@@ -180,4 +180,4 @@ def test_adding_sources():
     for src in col:
         strs += str(src)[:3]
 
-    assert strs == 'BoxCylSphCirLinDip'
+    assert strs == 'CubCylSphCirLinDip'

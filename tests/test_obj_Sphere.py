@@ -34,7 +34,7 @@ import magpylib as mag3
 # pickle.dump(inp,open('testdata_Sphere.p', 'wb'))
 
 def test_Sphere_basics():
-    """ test Box fundamentals, test against magpylib2 fields
+    """ test Cuboid fundamentals, test against magpylib2 fields
     """
     # data generated below
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Sphere.p'), 'rb'))
@@ -60,7 +60,7 @@ def test_Sphere_add():
     src1 = Sphere(magnetization=(1,2,3), diameter=11)
     src2 = Sphere((1,2,3), 11)
     col = src1 + src2
-    assert isinstance(col, Collection), 'adding boxes fail'
+    assert isinstance(col, Collection), 'adding cuboides fail'
 
 
 def test_Sphere_squeeze():

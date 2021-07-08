@@ -134,15 +134,15 @@ def badInput_rotate_from_angax9():
 
 def badMag_input1():
     """bad magnetization input type"""
-    mag3.magnet.Box(magnetization='woot', dimension=a3)
+    mag3.magnet.Cuboid(magnetization='woot', dimension=a3)
 
 def badMag_input2():
     """bad magnetization input format"""
-    mag3.magnet.Box(magnetization=(1,2,3,4), dimension=a3)
+    mag3.magnet.Cuboid(magnetization=(1,2,3,4), dimension=a3)
 
 def badMag_input3():
     """no magnetization input"""
-    mag3.magnet.Box(dimension=a3)
+    mag3.magnet.Cuboid(dimension=a3)
 
 def badCurrent_input1():
     """bad current input type"""
@@ -155,14 +155,14 @@ def badCurrent_input2():
 # DIMENSIONS --------------------------------------------
 
 def bad_dim_input1():
-    """box dim type"""
-    mag3.magnet.Box(magnetization=a3, dimension=1)
+    """cuboid dim type"""
+    mag3.magnet.Cuboid(magnetization=a3, dimension=1)
 def bad_dim_input2():
-    """box dim init"""
-    mag3.magnet.Box(magnetization=a3)
+    """cuboid dim init"""
+    mag3.magnet.Cuboid(magnetization=a3)
 def bad_dim_input3():
-    """box dim format"""
-    mag3.magnet.Box(magnetization=a3, dimension=(1,2))
+    """cuboid dim format"""
+    mag3.magnet.Cuboid(magnetization=a3, dimension=(1,2))
 
 def bad_dim_input4():
     """cylinder dim type"""

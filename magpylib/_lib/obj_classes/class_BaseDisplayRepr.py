@@ -79,7 +79,7 @@ class BaseDisplayRepr:
         >>> import matplotlib.pyplot as plt
         >>> import magpylib as mag3
         >>> my_axis = plt.axes(projection='3d')
-        >>> obj = mag3.magnet.Box(magnetization=(0,0,1), dimension=(1,2,3))
+        >>> obj = mag3.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
         >>> obj.move([(x,0,0) for x in [0,1,2,3,4,5]])
         >>> obj.display(axis=my_axis)
         >>> plt.show()

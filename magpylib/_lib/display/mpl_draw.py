@@ -19,7 +19,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     # pylint: disable=too-many-branches
 
     # avoid circular imports
-    Box = _lib.obj_classes.Box
+    Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
 
     for i,obj in enumerate(faced_objects):
@@ -33,7 +33,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             poss = [obj._position[-1]]
 
         # vector length, color and magnetization
-        if isinstance(obj, Box):
+        if isinstance(obj, Cuboid):
             length = 1.8*np.amax(obj.dimension)
         elif isinstance(obj, Cylinder):
             odim = obj.dimension
@@ -108,13 +108,13 @@ def draw_path(obj, col, ax):
 def draw_faces(faces, col, lw, ax):
     """ draw faces in respective color and return list of vertex-points
     """
-    boxf = Poly3DCollection(
+    cuboidf = Poly3DCollection(
         faces,
         facecolors=col,
         linewidths=lw,
         edgecolors='k',
         alpha=1)
-    ax.add_collection3d(boxf)
+    ax.add_collection3d(cuboidf)
     return faces
 
 

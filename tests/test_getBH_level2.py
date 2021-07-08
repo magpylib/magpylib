@@ -7,10 +7,10 @@ def test_getB_level2_input_simple():
     inputs - simple position inputs
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
+    dim_cuboid = (1,2,3)
     dim_cyl = (1,2)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
+    pm1 = mag3.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = mag3.magnet.Cuboid(mag,dim_cuboid)
     pm3 = mag3.magnet.Cylinder(mag,dim_cyl)
     pm4 = mag3.magnet.Cylinder(mag,dim_cyl)
     col1 = mag3.Collection([pm1])
@@ -59,10 +59,10 @@ def test_getB_level2_input_shape22():
     inputs - position input with shape (2,2)
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
+    dim_cuboid = (1,2,3)
     dim_cyl = (1,2)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
+    pm1 = mag3.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = mag3.magnet.Cuboid(mag,dim_cuboid)
     pm3 = mag3.magnet.Cylinder(mag,dim_cyl)
     pm4 = mag3.magnet.Cylinder(mag,dim_cyl)
     col1 = mag3.Collection([pm1])
@@ -108,9 +108,9 @@ def test_getB_level2_input_path():
     inputs - input objects with path
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
+    dim_cuboid = (1,2,3)
+    pm1 = mag3.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = mag3.magnet.Cuboid(mag,dim_cuboid)
     sens1 = mag3.Sensor()
     sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
 
@@ -149,8 +149,8 @@ def test_path_tile():
     """ Test if auto-tiled paths of objects will properly be reset
     in getB_level2 before returning
     """
-    pm1 = mag3.magnet.Box((11,22,33),(1,2,3))
-    pm2 = mag3.magnet.Box((11,22,33),(1,2,3))
+    pm1 = mag3.magnet.Cuboid((11,22,33),(1,2,3))
+    pm2 = mag3.magnet.Cuboid((11,22,33),(1,2,3))
     pm2.move([[10/33]*3]*33, increment=True)
 
     path1p = pm1.position
@@ -170,7 +170,7 @@ def test_path_tile():
 def test_sensor_rotation1():
     """ Test simple sensor rotation using sin/cos
     """
-    src = mag3.magnet.Box((1000,0,0),(1,1,1))
+    src = mag3.magnet.Cuboid((1000,0,0),(1,1,1))
     sens = mag3.Sensor(position=(1,0,0))
     sens.rotate_from_angax([360/55]*55, 'z', start=1, anchor=None, increment=True)
     B = src.getB(sens)
@@ -184,8 +184,8 @@ def test_sensor_rotation1():
 def test_sensor_rotation2():
     """ test sensor roations with different combinations of inputs mag/col + sens/pos
     """
-    src = mag3.magnet.Box((1000,0,0),(1,1,1),(0,0,2))
-    src2 = mag3.magnet.Box((1000,0,0),(1,1,1),(0,0,2))
+    src = mag3.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
+    src2 = mag3.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
     col = mag3.Collection(src,src2)
 
     poss = (0,0,0)
@@ -223,7 +223,7 @@ def test_sensor_rotation3():
     """ testing rotated static sensor path
     """
     # case static sensor rot
-    src = mag3.magnet.Box((1000,0,0),(1,1,1))
+    src = mag3.magnet.Cuboid((1000,0,0),(1,1,1))
     sens = mag3.Sensor()
     sens.rotate_from_angax(45,'z')
     B0 = mag3.getB(src,sens)
@@ -241,11 +241,11 @@ def test_object_tiling():
     src1 = mag3.current.Circular(current=1, diameter=1)
     src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
 
-    src2 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src2 = mag3.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
     src2.move([(1,1,1)]*21)
 
-    src3 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
-    src4 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src3 = mag3.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src4 = mag3.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
 
     col = mag3.Collection(src3, src4)
     src3.move([(1,1,1)]*12)

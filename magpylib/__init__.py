@@ -36,7 +36,7 @@ attributes
 >>> import magpylib as mag3
 >>>
 >>> # magnets
->>> src1 = mag3.magnet.Box(magnetization=(0,0,1000), dimension=(1,2,3))
+>>> src1 = mag3.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
 >>> src2 = mag3.magnet.Cylinder(magnetization=(0,1000,0), dimension=(1,2))
 >>> src3 = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
 >>>
@@ -52,7 +52,7 @@ attributes
 >>>
 >>> for obj in [src1, src2, src3, src4, src5, src6, sens]:
 >>>     print(obj)
-Box(id=1792490441024)
+Cuboid(id=1792490441024)
 Cylinder(id=1792490439680)
 Sphere(id=1792491053792)
 Circular(id=1792491053456)
@@ -99,7 +99,7 @@ global coordinate system. Such paths can be generated conveniently using the ``m
 ``rotate`` methods.
 
 >>> import magpylib as mag3
->>> src = mag3.magnet.Box(magnetization=(1,2,3), dimension=(1,2,3))
+>>> src = mag3.magnet.Cuboid(magnetization=(1,2,3), dimension=(1,2,3))
 >>> src.move([(1,1,1),(2,2,2),(3,3,3),(4,4,4)], start='append')
 >>> print(src.position)
 [[0. 0. 0.]  [1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]  [4. 4. 4.]]
@@ -112,7 +112,7 @@ Use the Collection class to group objects for common manipulation. All object me
 also be applied to complete Collections.
 
 >>> import magpylib as mag3
->>> src1 = mag3.magnet.Box(magnetization=(0,0,1000), dimension=(1,2,3))
+>>> src1 = mag3.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
 >>> src2 = mag3.magnet.Cylinder(magnetization=(0,1000,0), dimension=(1,2))
 >>> col = src1 + src2
 >>> col.move((1,2,3))

@@ -8,8 +8,8 @@ def test_dipole_approximation():
     mag = np.array([111,222,333])
     pos = (1234,-234, 345)
 
-    # box with volume = 1 mm^3
-    src1 = mag3.magnet.Box(mag, dimension=(1,1,1))
+    # cuboid with volume = 1 mm^3
+    src1 = mag3.magnet.Cuboid(mag, dimension=(1,1,1))
     B1 = src1.getB(pos)
 
     # Cylinder with volume = 1 mm^3

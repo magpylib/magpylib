@@ -2,10 +2,10 @@ import pickle
 import os
 import numpy as np
 import magpylib as mag3
-from magpylib.magnet import Box
+from magpylib.magnet import Cuboid
 from magpylib._lib.obj_classes.class_Sensor import Sensor
 
-# """data generation for test_Box()"""
+# """data generation for test_Cuboid()"""
 
 # N = 100
 
@@ -20,7 +20,7 @@ from magpylib._lib.obj_classes.class_Sensor import Sensor
 
 # B = []
 # for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-#     pm = Box(mag,dim)
+#     pm = Cuboid(mag,dim)
 
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -31,19 +31,19 @@ from magpylib._lib.obj_classes.class_Sensor import Sensor
 
 # inp = [mags,dims,posos,angs,axs,anchs,movs,B]
 
-# pickle.dump(inp,open(os.path.abspath('./../'testdata_Box.p', 'wb'))
+# pickle.dump(inp,open(os.path.abspath('./../'testdata_Cuboid.p', 'wb'))
 
 
-def test_Box_basics():
-    """ test Box fundamentals, test against magpylib2 fields
+def test_Cuboid_basics():
+    """ test Cuboid fundamentals, test against magpylib2 fields
     """
     # data generated below
-    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Box.p'), 'rb'))
+    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Cuboid.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     btest = []
     for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-        pm = Box(mag,dim)
+        pm = Cuboid(mag,dim)
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -52,22 +52,22 @@ def test_Box_basics():
         btest += [pm.getB(poso)]
     btest = np.array(btest)
 
-    assert np.allclose(B, btest), "test_Box failed big time"
+    assert np.allclose(B, btest), "test_Cuboid failed big time"
 
 
-def test_Box_add():
+def test_Cuboid_add():
     """ testing __add__
     """
-    src1 = Box((1,2,3),(1,2,3))
-    src2 = Box((1,2,3),(1,2,3))
+    src1 = Cuboid((1,2,3),(1,2,3))
+    src2 = Cuboid((1,2,3),(1,2,3))
     col = src1 + src2
-    assert isinstance(col,mag3.Collection), 'adding boxes fail'
+    assert isinstance(col,mag3.Collection), 'adding cuboides fail'
 
 
-def test_Box_squeeze():
+def test_Cuboid_squeeze():
     """ testing squeeze output
     """
-    src1 = Box((1,1,1),(1,1,1))
+    src1 = Cuboid((1,1,1),(1,1,1))
     sensor = Sensor(pixel=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
@@ -80,8 +80,8 @@ def test_Box_squeeze():
     assert H.shape==(1,1,1,2,3)
 
 
-def test_repr_box():
+def test_repr_cuboid():
     """ test __repr__
     """
-    pm1 = Box((1,2,3),(1,2,3))
-    assert pm1.__repr__()[:3] == 'Box', 'Box repr failed'
+    pm1 = Cuboid((1,2,3),(1,2,3))
+    assert pm1.__repr__()[:6] == 'Cuboid', 'Cuboid repr failed'
