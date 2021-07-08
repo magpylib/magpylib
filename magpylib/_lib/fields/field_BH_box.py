@@ -59,7 +59,8 @@ def field_BH_box(
     mask_gen = ~mask_edge & ~mask0
 
     # compute field -------------------------------
-    B[mask_gen] = field_B_box(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+    if np.any(mask_gen):
+        B[mask_gen] = field_B_box(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
     # return B or compute and retun H -------------
     if bh:
