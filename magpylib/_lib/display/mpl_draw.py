@@ -56,6 +56,8 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
                     r_mid = (r2+r1)/2
                     shift = r_mid*np.array([np.cos(phi_mid),np.sin(phi_mid),0])
                     draw_pos += [pos + shift]
+                else:
+                    draw_pos += [pos]
             else:
                 draw_pos += [pos]
             direc = mag / (np.linalg.norm(mag)+1e-6)

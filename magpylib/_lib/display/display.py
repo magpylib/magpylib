@@ -213,9 +213,9 @@ def display(
         xlabel = 'x [mm]',
         ylabel = 'y [mm]',
         zlabel = 'z [mm]',
-        xlim=(limx0, limx1),
-        ylim=(limy0, limy1),
-        zlim=(limz0, limz1)
+        xlim=(limx0-abs(limx0)*.5, limx1+abs(limx1)*.5),
+        ylim=(limy0-abs(limy0)*.5, limy1+abs(limy1)*.5),
+        zlim=(limz0-abs(limz0)*.5, limz1+abs(limz1)*.5)
         )
 
     # generate output ------------------------------------------------
