@@ -82,8 +82,7 @@ def el30(x, kc, p):
     pz=np.abs(g*f)
     de=np.sqrt(pz)
     q=np.sqrt(np.abs(p1))
-    if pm>0.5:
-        pm=0.5
+    pm = min(0.5, pm)
     pm=p1-pm
 
     if pm>=0.0:
