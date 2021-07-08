@@ -30,6 +30,14 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# coderunner
+tempCodeRunnerFile.py
+
+#temp files
+__temp.py
+__temp2.py
+__temp3.py
+
 # PyInstaller
 #  Usually these files are written by a python script from a template
 #  before PyInstaller builds the exe, so as to inject date/other infos into it.
