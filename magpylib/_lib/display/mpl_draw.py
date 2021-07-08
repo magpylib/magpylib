@@ -15,7 +15,8 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     - ax(Pyplot 3D axis): to draw in
     - show_path(bool or int): draw on every position where object is displayed
     """
-    #pylint: disable=protected-access
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
 
     # avoid circular imports
     Box = _lib.obj_classes.Box

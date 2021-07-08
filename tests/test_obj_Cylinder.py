@@ -81,3 +81,28 @@ def test_Cylinder_getBH():
 
         assert np.allclose(H1, H2)
         assert np.allclose(H1, H3)
+
+
+def test_Cylinder_vs_old_inside():
+    """
+    test Cylinder vs old version
+    """
+    # inside
+    mag = (np.random.rand(10,3)-.5)*1000
+    dim = np.random.rand(10,2)+1
+    poso = (np.random.rand(10, 3)-.5)
+
+    mag3.Config.ITER_CYLINDER = 1000
+    H_new = mag3.getHv(
+        source_type='Cylinder',
+        magnetization=mag,
+        dimension=dim,
+        observer=poso)
+    H_old = mag3.getHv(
+        source_type='Cylinder_old',
+        magnetization=mag,
+        dimension=dim,
+        observer=poso)
+
+    err = np.linalg.norm(H_new-H_old)/np.linalg.norm(H_new)
+    assert err<1e-1

@@ -1,6 +1,30 @@
+import unittest
 import numpy as np
 from magpylib._lib.fields.special_el3 import el30, el3v, el3, el3_angle
 from magpylib._lib.fields.special_cel import cel0, celv, cel
+
+
+class TestEllExceptions(unittest.TestCase):
+    """ test class for exception testing
+    """
+    def test_except_cel0(self):
+        """ bad cel0 input
+        """
+        def cel0_kc0():
+            cel0(0,.1,.2,.3)
+        self.assertRaises(RuntimeError, cel0_kc0)
+
+    def test_except_el30(self):
+        """ bad el3 """
+        def el30_error1():
+            el30(1,1,-1)
+        self.assertRaises(RuntimeError, el30_error1)
+
+
+def test_el3_inputs():
+    """xxx"""
+    assert el30(.1,.1,1)==0.09983241728793554
+    assert el30(1,.5,.25)==1.0155300257327204
 
 
 def test_el3_vs_original():

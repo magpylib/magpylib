@@ -24,6 +24,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     field: ndarray, shape (N,3)
 
     """
+    # pylint: disable=too-many-statements
 
     # base inputs of all sources
     src_type = kwargs['source_type']

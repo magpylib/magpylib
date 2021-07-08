@@ -9,12 +9,26 @@ def test_Cylinder_display():
     """
     ax = plt.subplot(projection='3d')
     src = Cylinder((1,2,3),(1,2))
-    x = src.display(axis=ax,show_path=15)
+    x = src.display(axis=ax, show_path=15)
     assert x is None, 'show_path should revert to True'
 
     src.move([(.4,.4,.4)]*33, increment=True)
-    x = src.display(axis=ax,show_path=False)
+    x = src.display(axis=ax, show_path=False, show_direction=True)
     assert x is None, 'display test fail'
+
+
+def test_Cylinder_display_dim5():
+    """ testing display
+    """
+    ax = plt.subplot(projection='3d')
+    src = Cylinder((1,2,3),(1,2,30,40,5))
+    x = src.display(axis=ax, show_path=15)
+    assert x is None, 'show_path should revert to True'
+
+    src.move([(.4,.4,.4)]*33, increment=True)
+    x = src.display(axis=ax, show_path=False, show_direction=True)
+    assert x is None, 'display test fail'
+
 
 
 def test_Sphere_display():

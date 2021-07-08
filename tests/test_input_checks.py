@@ -173,6 +173,15 @@ def bad_dim_input5():
 def bad_dim_input6():
     """cylinder dim format"""
     mag3.magnet.Cylinder(magnetization=a3, dimension=(1,2,3))
+def bad_dim_input6a():
+    """cylinder dim format"""
+    mag3.magnet.Cylinder(magnetization=a3, dimension=(2,1,100,150,5))
+def bad_dim_input6b():
+    """cylinder dim format"""
+    mag3.magnet.Cylinder(magnetization=a3, dimension=(1,2,100,50,5))
+def bad_dim_input6c():
+    """cylinder dim format"""
+    mag3.magnet.Cylinder(magnetization=a3, dimension=(1,2,100,550,5))
 
 def bad_dim_input7():
     """Sphere dim type"""
@@ -284,6 +293,9 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, bad_dim_input4)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input5)
         self.assertRaises(MagpylibBadInputShape, bad_dim_input6)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input6a)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input6b)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input6c)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input7)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input8)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input9)
