@@ -47,7 +47,7 @@ class Config:
     """
 
     CHECK_INPUTS = True
-    EDGESIZE = 1e-14
+    EDGESIZE = 1e-8
     ITER_CYLINDER = 50
 
     @classmethod
