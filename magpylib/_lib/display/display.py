@@ -19,7 +19,8 @@ def display(
         show_path=True,
         size_sensors=1,
         size_direction=1,
-        size_dipoles=1):
+        size_dipoles=1,
+        zoom=0.5):
     """
     Display objects and paths graphically using matplotlib 3D plotting.
 
@@ -213,9 +214,9 @@ def display(
         xlabel = 'x [mm]',
         ylabel = 'y [mm]',
         zlabel = 'z [mm]',
-        xlim=(limx0-abs(limx0)*.5, limx1+abs(limx1)*.5),
-        ylim=(limy0-abs(limy0)*.5, limy1+abs(limy1)*.5),
-        zlim=(limz0-abs(limz0)*.5, limz1+abs(limz1)*.5)
+        xlim=(limx0-abs(limx0)*zoom, limx1+abs(limx1)*zoom),
+        ylim=(limy0-abs(limy0)*zoom, limy1+abs(limy1)*zoom),
+        zlim=(limz0-abs(limz0)*zoom, limz1+abs(limz1)*zoom)
         )
 
     # generate output ------------------------------------------------
