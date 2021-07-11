@@ -12,7 +12,7 @@ The analytical solutions
 Magnetic field computations in Magpylib are based on known analytical solutions (formulas) to permanent magnet and current problems. For Magpylib we have used the following references:
 
 * Field of cuboid magnets: [1999Yang, 2005Engel-Herbert, 2013Camacho]
-* Field of cylindrical magnets: [1994Furlani, 2009Derby]
+* Field of cylindrical magnets: [1994Furlani, 2009Derby, 2021Slanovc]
 * Field of facet bodies: [2009Janssen, 2013Rubeck]
 * Field of circular line current: [1950Smythe, 2001Simpson, 2017Ortner]
 * all others derived by hand
@@ -67,6 +67,7 @@ In some special cases (simple shapes, homogeneous magnetizations and current dis
 
 * [2009Ravaud] R. Ravaud and G. Lamarquand, "Comparison of the coulombian and amperian current models for calculating the magnetic field produced by radially magnetized arc-shaped permanent magnets", HAL Id: hal-00412346
 
+* [2021Slanovc] F. Slanovc et al., "Full Analytical Solution for the Magnetic field of Uniformly Magnetized Cylinder Tiles", in preparation
 
 Accuracy of the Solutions and Demagnetization
 #############################################
