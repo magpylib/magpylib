@@ -44,12 +44,14 @@ def test_Cylinder_getBH():
     poso = (np.random.rand(100, 3)-.5)*5
 
     dim2 = (1,2)
-    dim2_6 = (0,0.5,0,360,-1,1)
+    dim2_5 = (1,2,0,0,360)
 
-    dim5 = (1.1,2.2,30,145,5)
-    dim5_6 = (1.1,2.2,30,145,-2.5,2.5)
+    dim3 = (1,2,.5)
+    dim3_5 = (1,2,.5,0,360)
 
-    for dim,dim6 in zip([dim2, dim5], [dim2_6, dim5_6]):
+    dim5 = (2.1,5,1.2,30,145)
+
+    for dim,dim6 in zip([dim2, dim3, dim5], [dim2_5, dim3_5, dim5]):
         src = mag3.magnet.Cylinder(mag, dim)
         B1 = src.getB(poso)
         H1 = src.getH(poso)

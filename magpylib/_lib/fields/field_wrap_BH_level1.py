@@ -25,6 +25,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
 
     """
     # pylint: disable=too-many-statements
+    # pylint: disable=too-many-branches
 
     # base inputs of all sources
     src_type = kwargs['source_type']
@@ -49,13 +50,20 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         dim = kwargs['dimension']
         if len(dim[0]) == 2: # (d,h) type input
             n = len(dim)
-            null = np.zeros(n)
-            eins = np.ones(n)
             d, h = dim.T
-            dim = np.array([null, d/2, null, eins*360, -h/2, h/2]).T
-        elif len(dim[0]) == 5: # (r1,r2,phi1,phi2,h) type input
-            r1,r2,phi1,phi2,h = dim.T
-            dim = np.array([r1,r2,phi1,phi2,-h/2,h/2]).T
+            di = np.zeros(n)
+            phi1 = np.zeros(n)
+            phi2=np.ones(n)*360
+        elif len(dim[0]) == 3: # (d,h,di) type input
+            n = len(dim)
+            d, h, di = dim.T
+            phi1 = np.zeros(n)
+            phi2=np.ones(n)*360
+        else: # (d,h,di,phi1,phi2) type input
+            d,h,di,phi1,phi2 = dim.T
+        r1, r2 = di/2, d/2
+        z1, z2 = -h/2, h/2
+        dim = np.array([r1,r2,phi1,phi2,z1,z2]).T
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
     elif src_type == 'Cylinder_old':
         mag = kwargs['magnetization']

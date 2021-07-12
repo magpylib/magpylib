@@ -311,8 +311,9 @@ def test_BHv_Cylinder_FEM():
     # compare against FEM
     B = magpylib.getBv(
         source_type='Cylinder',
-        dimension=(1,2,90,360,0,1),
+        dimension=(4,1,2,90,360),
         magnetization=np.array((1,2,3))*1000/np.sqrt(14),
+        position = (0,0,0.5),
         observer=obsp)
 
     err = np.linalg.norm(B-Bfem*1000, axis=1)/np.linalg.norm(B,axis=1)
@@ -324,7 +325,7 @@ def test_BHv_solid_cylinder():
     # combine multiple slices to one big Cylinder
     B1 = magpylib.getBv(
         source_type='Cylinder',
-        dimension=[(0,1,20,120,-1,1), (0,1,120,220,-1,1), (0,1,220,380,-1,1)],
+        dimension=[(2,2,0,20,120), (2,2,0,120,220), (2,2,0,220,380)],
         magnetization=(22,33,44),
         observer=(1,2,3))
     B1 = np.sum(B1,axis=0)

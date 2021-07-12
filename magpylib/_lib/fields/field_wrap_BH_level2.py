@@ -5,6 +5,7 @@ from magpylib._lib.utility import (all_same, check_static_sensor_orient,
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibInternalError
 from magpylib import _lib
+from magpylib._lib.input_checks import check_excitations, check_dimensions
 
 
 def tile_mag(group: list, n_pp: int):
@@ -18,10 +19,25 @@ def tile_mag(group: list, n_pp: int):
 def tile_dim2(group: list, n_pp: int):
     """ tile up dimensions of shape (2,) and bigger
     """
-    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])
-    dimv = dimv.reshape((-1,len(group[0].dimension)))
-    return dimv
+    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])   # performance issue!!!!
+    dimv = dimv.reshape((-1,len(group[0].dimension)))                  # tile is called very often
+    return dimv                                                        # bad code layout !!!!!
 
+def tile_dim_cylinder(group: list, n_pp: int):
+    """
+    tile up cylinder dimensions. They can be shape (2,), (3,) or (5,)
+    For tiling all dimensions are extended to shape(5,)
+    """
+    dims = [src.dimension for src in group]
+    for i,d in enumerate(dims):
+        if len(d) == 2:
+            dims[i] = np.array([d[0], d[1], 0, 0, 360])
+        elif len(d) == 3:
+            dims[i] = np.array([d[0], d[1], d[2], 0, 360])
+    dims = np.array(dims)
+    dimv = np.tile(dims, n_pp)
+    dimv = dimv.reshape((-1, 5))
+    return dimv
 
 def tile_dia(group: list, n_pp: int):
     """ tile up diameter
@@ -73,9 +89,15 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         return {'source_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
             'observer': posov, 'orientation':rotobj}
 
-    if src_type in {'Cuboid', 'Cylinder'}:
+    if src_type == 'Cuboid':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim2(group, n_pp)
+        return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
+            'observer': posov, 'orientation':rotobj}
+
+    if src_type == 'Cylinder':
+        magv = tile_mag(group, n_pp)
+        dimv = tile_dim_cylinder(group, n_pp)
         return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
             'observer': posov, 'orientation':rotobj}
 
@@ -149,6 +171,10 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     #   out: sources = ordered list of sources
     #   out: src_list = ordered list of sources with flattened collections
     sources, src_list = format_src_inputs(sources)
+
+    # test if all source dimensions and excitations are initialized
+    check_dimensions(sources)
+    check_excitations(sources)
 
     # format observer inputs:
     #   allow only bare sensor, possis, or a list/tuple thereof
