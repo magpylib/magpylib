@@ -332,7 +332,7 @@ def test_cylinder_field1():
     implementations
     """
     N = 100
-    magg, dim, poso, H0 = np.load('testdata_full_cyl.npy')
+    magg, dim, poso, H0 = np.load('tests/testdata/testdata_full_cyl.npy')
 
     nulll = np.zeros(N)
     eins = np.ones(N)
