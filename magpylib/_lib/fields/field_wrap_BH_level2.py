@@ -11,17 +11,17 @@ from magpylib._lib.input_checks import check_excitations, check_dimensions
 def tile_mag(group: list, n_pp: int):
     """ tile up magnetizations of shape (3,)
     """
-    magv = np.array([np.tile(src.magnetization, n_pp) for src in group])
-    magv = magv.reshape((-1, 3))
+    mags = np.array([src.magnetization for src in group])
+    magv = np.tile(mags, n_pp).reshape((-1, 3))
     return magv
 
 
-def tile_dim2(group: list, n_pp: int):
-    """ tile up dimensions of shape (2,) and bigger
+def tile_dim_cuboid(group: list, n_pp: int):
+    """ tile up cuboid dimension
     """
-    dimv = np.array([np.tile(src.dimension, n_pp) for src in group])   # performance issue!!!!
-    dimv = dimv.reshape((-1,len(group[0].dimension)))                  # tile is called very often
-    return dimv                                                        # bad code layout !!!!!
+    dims = np.array([src.dimension for src in group])
+    dimv = np.tile(dims, n_pp).reshape((-1, 3))
+    return dimv
 
 def tile_dim_cylinder(group: list, n_pp: int):
     """
@@ -35,31 +35,30 @@ def tile_dim_cylinder(group: list, n_pp: int):
         elif len(d) == 3:
             dims[i] = np.array([d[0], d[1], d[2], 0, 360])
     dims = np.array(dims)
-    dimv = np.tile(dims, n_pp)
-    dimv = dimv.reshape((-1, 5))
+    dimv = np.tile(dims, n_pp).reshape((-1, 5))
     return dimv
 
 def tile_dia(group: list, n_pp: int):
     """ tile up diameter
     """
-    dimv = np.array([np.tile(src.diameter, n_pp) for src in group])
-    dimv = dimv.flatten()
+    dims = np.array([src.diameter for src in group])
+    dimv = np.tile(dims, n_pp).flatten()
     return dimv
 
 
 def tile_moment(group: list, n_pp: int):
     """ tile up moments of shape (3,)
     """
-    momv = np.array([np.tile(src.moment, n_pp) for src in group])
-    momv = momv.reshape((-1, 3))
+    moms = np.array([src.moment for src in group])
+    momv = np.tile(moms, n_pp).reshape((-1, 3))
     return momv
 
 
 def tile_current(group: list, n_pp: int):
-    """ tile up 1 dimensional dimensions (Sphere, Circular, ...)
+    """ tile up current inputs
     """
-    currv = np.array([np.tile(src.current, n_pp) for src in group])
-    currv = currv.flatten()
+    currs = np.array([src.current for src in group])
+    currv = np.tile(currs, n_pp).flatten()
     return currv
 
 
@@ -71,12 +70,14 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     # tile up basic attributes that all sources have
     # position
-    posv = np.array([np.tile(src._position, n_pix).reshape(n_pp,3) for src in group])
-    posv = posv.reshape((-1, 3))
+    poss = np.array([src._position for src in group])
+    posv = np.tile(poss, n_pix).reshape((-1, 3))
+
     # orientation
-    rotv = np.array([np.tile(src._orientation.as_quat(),n_pix).reshape(n_pp,4) for src in group])
-    rotv = rotv.reshape((-1, 4))
+    rots = np.array([src._orientation.as_quat() for src in group])
+    rotv = np.tile(rots, n_pix).reshape((-1, 4))
     rotobj = R.from_quat(rotv)
+
     # pos_obs
     posov = np.tile(poso, (len(group),1))
 
@@ -91,7 +92,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     if src_type == 'Cuboid':
         magv = tile_mag(group, n_pp)
-        dimv = tile_dim2(group, n_pp)
+        dimv = tile_dim_cuboid(group, n_pp)
         return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
             'observer': posov, 'orientation':rotobj}
 
