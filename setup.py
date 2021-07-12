@@ -16,7 +16,7 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-_magPyVersion = "3.0.2"
+_magPyVersion = "3.1.0"
 
 _SphinxVersion = "1.8.2"
 _name = "magpylib"

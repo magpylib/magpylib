@@ -6,6 +6,20 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [3.1.0] - 2021-07-12
+
+### Core feature
+- Cylinder tile computation. Cylinder class can now have (d,h) inputs or with inner diameter (d,h,di) or with inner diameter and cylinder sector angles (d,h,di,phi1,phi2). The old computation is still accessible through getBHv. The new implementation is exact (closed form, no more iteration) and is implemented from a new paper from F.Slanovc(preprint, 2021). Computation times 50-100 µs. Performance increases planned in the future.
+
+### Other changes
+- Documentation and Example codes now available on read the docs.
+- Box class renamed to Cuboid for obvious reasons.
+- EDGESIZE set to 1e-8 by default to avoid problems in Cuboid corners.
+- zoom option in display function.
+- Magpyib objects can now be initialized without excitation and dimension attributes.
+- Improved performance of getBH functions and methods.
+
+
 ## [3.0.0] - 2021-06-27
 
 ### Overview

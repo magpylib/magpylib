@@ -185,7 +185,7 @@ or directly through object methods
 """
 
 # module level dunders
-__version__ = '3.0.0'
+__version__ = '3.1.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc',
