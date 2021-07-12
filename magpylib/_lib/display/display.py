@@ -54,6 +54,9 @@ def display(
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
 
+    zoom: float, default = 0.5
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+
     Returns
     -------
     None: NoneType

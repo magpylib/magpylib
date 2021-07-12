@@ -56,8 +56,8 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     >>> print(magnet.orientation.as_quat())
     [0. 0. 0. 1.]
 
-    Cuboids are magnetic field sources. Below we compute the H-field [kA/m] of the above Cuboid at the
-    observer position (1,1,1),
+    Cuboids are magnetic field sources. Below we compute the H-field [kA/m] of the above Cuboid
+    at the observer position (1,1,1),
 
     >>> H = magnet.getH((1,1,1))
     >>> print(H)
