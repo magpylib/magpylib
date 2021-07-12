@@ -27,7 +27,8 @@ class BaseDisplayRepr:
         show_path=True,
         size_sensors=1,
         size_direction=1,
-        size_dipoles=1):
+        size_dipoles=1,
+        zoom = 0.5):
         """
         Display object graphically using matplotlib 3D plotting.
 
@@ -98,7 +99,8 @@ class BaseDisplayRepr:
             show_path=show_path,
             size_direction=size_direction,
             size_sensors=size_sensors,
-            size_dipoles=size_dipoles)
+            size_dipoles=size_dipoles,
+            zoom = zoom)
 
     # ------------------------------------------------------------------
     # INTERFACE

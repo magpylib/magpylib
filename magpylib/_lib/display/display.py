@@ -8,6 +8,7 @@ from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw
 from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
     faces_sphere)
 from magpylib import _lib
+from magpylib._lib.input_checks import check_excitations, check_dimensions
 
 
 # ON INTERFACE
@@ -118,6 +119,11 @@ def display(
 
     # flatten input
     obj_list = format_obj_input(objects)
+
+    # test if all source dimensions and excitations (if sho_direc=True) have been initialized
+    check_dimensions(obj_list)
+    if show_direction:
+        check_excitations(obj_list)
 
     # test if every individual obj_path is good
     test_path_format(obj_list)

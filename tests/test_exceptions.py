@@ -40,7 +40,7 @@ def getBH_level2_bad_input2():
 
 
 def getBH_level2_internal_error1():
-    """ somhow an unrecognized objects end up in get_src_dict
+    """ somehow an unrecognized objects end up in get_src_dict
     """
     # pylint: disable=protected-access
     sens = mag3.Sensor()
@@ -48,6 +48,7 @@ def getBH_level2_internal_error1():
     mag3._lib.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
 
 
+# getBHv missing inputs ------------------------------------------------------
 def getBHv_missing_input1():
     """ missing bh
     """
@@ -111,7 +112,7 @@ def getBHv_missing_input5_sphere():
     x=np.array([(1,2,3)])
     getBHv_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
 
-
+# bad inputs -------------------------------------------------------------------
 def getBHv_bad_input():
     """ different input lengths
     """
@@ -129,7 +130,7 @@ def utility_format_obj_input():
 
 
 def utility_format_src_inputs():
-    """ bar src input
+    """ bad src input
     """
     pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
     pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
@@ -137,7 +138,7 @@ def utility_format_src_inputs():
 
 
 def utility_format_obs_inputs():
-    """ bar src input
+    """ bad src input
     """
     sens1 = mag3.Sensor()
     sens2 = mag3.Sensor()
@@ -153,58 +154,58 @@ def utility_test_path_format():
     tpf(pm1)
 
 
-def cuboid_no_mag():
-    """ Cuboid with no mag input
-    """
-    mag3.magnet.Cuboid(dimension=(1,2,3))
+# def cuboid_no_mag():
+#     """ Cuboid with no mag input
+#     """
+#     mag3.magnet.Cuboid(dimension=(1,2,3))
 
 
-def cuboid_no_dim():
-    """ Cuboid with no dim input
-    """
-    mag3.magnet.Cuboid(magnetization=(1,2,3))
+# def cuboid_no_dim():
+#     """ Cuboid with no dim input
+#     """
+#     mag3.magnet.Cuboid(magnetization=(1,2,3))
 
 
-def cyl_no_mag():
-    """ Cylinder with no mag input
-    """
-    mag3.magnet.Cylinder(dimension=(1,2))
+# def cyl_no_mag():
+#     """ Cylinder with no mag input
+#     """
+#     mag3.magnet.Cylinder(dimension=(1,2))
 
 
-def cyl_no_dim():
-    """ Cylinder with no dim input
-    """
-    mag3.magnet.Cylinder(magnetization=(1,2,3))
+# def cyl_no_dim():
+#     """ Cylinder with no dim input
+#     """
+#     mag3.magnet.Cylinder(magnetization=(1,2,3))
 
 
-def sphere_no_mag():
-    """ Cylinder with no mag input
-    """
-    mag3.magnet.Sphere(diameter=1)
+# def sphere_no_mag():
+#     """ Cylinder with no mag input
+#     """
+#     mag3.magnet.Sphere(diameter=1)
 
 
-def sphere_no_dim():
-    """ Cylinder with no dim input
-    """
-    mag3.magnet.Sphere(magnetization=(1,2,3))
+# def sphere_no_dim():
+#     """ Cylinder with no dim input
+#     """
+#     mag3.magnet.Sphere(magnetization=(1,2,3))
 
 
-def dipole_no_mom():
-    """ Cylinder with no mag input
-    """
-    mag3.misc.Dipole()
+# def dipole_no_mom():
+#     """ Cylinder with no mag input
+#     """
+#     mag3.misc.Dipole()
 
 
-def circular_no_current():
-    """ Circular with no current input
-    """
-    mag3.current.Circular(diameter=1)
+# def circular_no_current():
+#     """ Circular with no current input
+#     """
+#     mag3.current.Circular(diameter=1)
 
 
-def circular_no_dim():
-    """ Circular with no dim input
-    """
-    mag3.current.Circular(current=1)
+# def circular_no_dim():
+#     """ Circular with no dim input
+#     """
+#     mag3.current.Circular(current=1)
 
 ########################################################################
 # BAD INPUT SHAPE EXCEPTIONS
@@ -274,34 +275,34 @@ def bad_input_shape_dipole_mom():
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
     """
-    def test_except_class_Cuboid(self):
-        """ class_Cuboid
-        """
-        self.assertRaises(MagpylibBadUserInput, cuboid_no_mag)
-        self.assertRaises(MagpylibBadUserInput, cuboid_no_dim)
+    # def test_except_class_Cuboid(self):
+    #     """ class_Cuboid
+    #     """
+    #     self.assertRaises(MagpylibBadUserInput, cuboid_no_mag)
+    #     self.assertRaises(MagpylibBadUserInput, cuboid_no_dim)
 
-    def test_except_class_Cylinder(self):
-        """ class_Cylinder
-        """
-        self.assertRaises(MagpylibBadUserInput, cyl_no_mag)
-        self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
+    # def test_except_class_Cylinder(self):
+    #     """ class_Cylinder
+    #     """
+    #     self.assertRaises(MagpylibBadUserInput, cyl_no_mag)
+    #     self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
 
-    def test_except_class_Sphere(self):
-        """ class_Sphere
-        """
-        self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
-        self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
+    # def test_except_class_Sphere(self):
+    #     """ class_Sphere
+    #     """
+    #     self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
+    #     self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
 
-    def test_except_class_Dipole(self):
-        """ class_Dipole
-        """
-        self.assertRaises(MagpylibBadUserInput, dipole_no_mom)
+    # def test_except_class_Dipole(self):
+    #     """ class_Dipole
+    #     """
+    #     self.assertRaises(MagpylibBadUserInput, dipole_no_mom)
 
-    def test_except_class_Circular(self):
-        """ class_Circular
-        """
-        self.assertRaises(MagpylibBadUserInput, circular_no_current)
-        self.assertRaises(MagpylibBadUserInput, circular_no_dim)
+    # def test_except_class_Circular(self):
+    #     """ class_Circular
+    #     """
+    #     self.assertRaises(MagpylibBadUserInput, circular_no_current)
+    #     self.assertRaises(MagpylibBadUserInput, circular_no_dim)
 
     def test_except_utility(self):
         """ utility

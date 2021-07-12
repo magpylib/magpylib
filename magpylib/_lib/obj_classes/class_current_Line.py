@@ -6,11 +6,11 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_vector_init, check_vertex_format, check_vector_type
+from magpylib._lib.input_checks import check_vertex_format, check_vector_type
 
 # init for tool tips
 i0=None
-pos1=pos2=None
+pos1=pos2=(None,None,None)
 
 # ON INTERFACE
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
@@ -111,7 +111,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         # input type and init check
         if Config.CHECK_INPUTS:
             check_vector_type(vert, 'vertices')
-            check_vector_init(vert, 'vertices')
+            #check_vector_init(vert, 'vertices')
 
         vert = np.array(vert)
 

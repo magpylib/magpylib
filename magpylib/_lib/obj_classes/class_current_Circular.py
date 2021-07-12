@@ -5,10 +5,11 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_scalar_type, check_scalar_init
+from magpylib._lib.input_checks import check_scalar_type
 
 # init for tool tips
 i0=None
+d=None
 
 # ON INTERFACE
 class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
@@ -81,7 +82,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def __init__(
             self,
             current = i0,
-            diameter = None,
+            diameter = d,
             position = (0,0,0),
             orientation = None):
 
@@ -106,7 +107,11 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         """
         # input type and init check
         if Config.CHECK_INPUTS:
-            check_scalar_init(dia, 'diameter')
+            #check_scalar_init(dia, 'diameter')
             check_scalar_type(dia, 'diameter')
 
-        self._diameter = float(dia)
+        # secure type
+        if dia is None:
+            self._diameter = None
+        else:
+            self._diameter = float(dia)

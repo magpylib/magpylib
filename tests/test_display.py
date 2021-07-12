@@ -21,7 +21,7 @@ def test_Cylinder_display_dim5():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    src = Cylinder((1,2,3),(1,2,30,40,5))
+    src = Cylinder((1,2,3),(4,5,2,30,40))
     x = src.display(axis=ax, show_path=15)
     assert x is None, 'show_path should revert to True'
 

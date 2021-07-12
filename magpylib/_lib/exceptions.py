@@ -11,3 +11,7 @@ class MagpylibInternalError(Exception):
 class MagpylibBadInputShape(Exception):
     """ catching bad input shapes
     """
+
+class MagpylibMissingInput(Exception):
+    """ catching missing user inputs
+    """

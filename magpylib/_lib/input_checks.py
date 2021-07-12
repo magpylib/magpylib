@@ -2,8 +2,54 @@
 
 import numpy as np
 from scipy.spatial.transform import Rotation
-from magpylib._lib.exceptions import (MagpylibBadUserInput,
-    MagpylibBadInputShape)
+from magpylib._lib.exceptions import (MagpylibBadUserInput, MagpylibBadInputShape,
+    MagpylibMissingInput)
+from magpylib import _lib
+
+
+def check_dimensions(sources):
+    """ check if all sources have dimension (or similar) initialized
+    """
+    # avoid circular imports
+    Cuboid = _lib.obj_classes.Cuboid
+    Cylinder = _lib.obj_classes.Cylinder
+    Sphere = _lib.obj_classes.Sphere
+    Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
+
+    for s in sources:
+        if isinstance(s, (Cuboid, Cylinder)):
+            if np.isnan(s.dimension).any():
+                raise MagpylibMissingInput(f'{s} dimension must be initialized.')
+        elif isinstance(s, (Sphere, Circular)):
+            if s.diameter is None:
+                raise MagpylibMissingInput(f'{s} diameter must be initialized.')
+        elif isinstance(s, Line):
+            if None in s.vertices[0]:
+                raise MagpylibMissingInput(f'{s} vertices must be initialized.')
+
+
+def check_excitations(sources):
+    """ check if all sources have dimension (or similar) initialized
+    """
+    # avoid circular imports
+    Cuboid = _lib.obj_classes.Cuboid
+    Cylinder = _lib.obj_classes.Cylinder
+    Sphere = _lib.obj_classes.Sphere
+    Circular = _lib.obj_classes.Circular
+    Line = _lib.obj_classes.Line
+    Dipole = _lib.obj_classes.Dipole
+
+    for s in sources:
+        if isinstance(s, (Cuboid, Cylinder, Sphere)):
+            if np.isnan(s.magnetization).any():
+                raise MagpylibMissingInput(f'{s} magnetization must be initialized.')
+        elif isinstance(s, (Circular, Line)):
+            if s.current is None:
+                raise MagpylibMissingInput(f'{s} current must be initialized.')
+        elif isinstance(s, Dipole):
+            if np.isnan(s.moment).any():
+                raise MagpylibMissingInput(f'{s} moment must be initialized.')
 
 
 def check_path_format(inp, origin):
@@ -102,18 +148,19 @@ def check_degree_type(deg):
 
 
 def check_scalar_type(inp, origin):
-    """ scalar input must be int or float
+    """ scalar input must be int or float or nan
     """
-    if not isinstance(inp, (int, float)):
+    if not (isinstance(inp, (int, float)) or inp is None):
         msg = origin + ' input must be scalar (int or float).'
         raise MagpylibBadUserInput(msg)
 
-def check_scalar_init(inp, origin):
-    """ check if scalar input was initialized (former None)
-    """
-    if inp is None:
-        msg = origin + ' input required.'
-        raise MagpylibBadUserInput(msg)
+
+# def check_scalar_init(inp, origin):
+#     """ check if scalar input was initialized (former None)
+#     """
+#     if inp is None:
+#         msg = origin + ' must be initialized.'
+#         raise MagpylibBadUserInput(msg)
 
 
 
@@ -126,14 +173,14 @@ def check_vector_type(inp, origin):
         msg = origin + ' input must be vector type (list, tuple or ndarray).'
         raise MagpylibBadUserInput(msg)
 
-def check_vector_init(inp, origin):
-    """
-    - check if vector input was initialized (former None vetor)
-    - return error msg with reference to origin
-    """
-    if None in inp:
-        msg = origin + ' input required.'
-        raise MagpylibBadUserInput(msg)
+# def check_vector_init(inp, origin):
+#     """
+#     - check if vector input was initialized (former None vector)
+#     - return error msg with reference to origin
+#     """
+#     if None in inp:
+#         msg = origin + ' must be initialized.'
+#         raise MagpylibBadUserInput(msg)
 
 def check_vector_format(inp, shape, origin):
     """
@@ -147,26 +194,29 @@ def check_vector_format(inp, shape, origin):
 
 def check_vector_format_dim_cyl(inp):
     """
-    - check if cylinder dimension has correct format (2,) or (5,)
-    - check if cylinder shape (5,) input is r1<r2, phi1<phi2
+    - check if cylinder dimension has correct format (2,) or(3,) or (5,)
+    - check if di<d, phi1<phi2
     - return error msg
     """
-    if not ((inp.shape==(2,)) or (inp.shape==(5,))):
-        msg = 'Bad dimension input shape. Must be shape (2,) or (5,).'
+    if not (inp.shape in [(2,), (3,), (5,)]):
+        msg = '''Bad dimension input shape. Dimension must be (d,h) or (d,h,di)
+            or (d,h,di,phi1,phi2).'''
         raise MagpylibBadInputShape(msg)
 
-    if inp.shape==(5,):
-        r1,r2,phi1,phi2,_ = inp
-        if r1>=r2:
-            msg = 'r1 must be smaller than r2.'
+    if inp.shape in [(3,),(5,)]:
+        d,_,di = inp[:3]
+        if di >= d:
+            msg = 'di must be smaller than d.'
             raise MagpylibBadUserInput(msg)
+
+    if inp.shape==(5,):
+        _,_,_,phi1,phi2 = inp
         if phi1>=phi2:
             msg = 'phi1 must be smaller than phi2.'
             raise MagpylibBadUserInput(msg)
         if (phi2-phi1)>360:
             msg = 'phi2-phi1 cannot be larger than 360°.'
             raise MagpylibBadUserInput(msg)
-
 
 
 def check_position_format(inp, origin):
