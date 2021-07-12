@@ -70,7 +70,7 @@ Performance
 
 The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 
-The fastest way to compute fields is through the direct access to the top-level ``getBv`` and ``getHv`` functions. However, this requires the user to vectorize the input properly. The object-oriented interface automatically vectorizes the computation for the user (similar source types of multiple input-objects are grouped). The additional overhead makes the object-oriented interface slightly slower (by a factor of 1.2-2), specfically, when a large number of source objects are handed to ``getB`` or ``getH``.
+The fastest way to compute fields is through the direct access to the top-level ``getBv`` and ``getHv`` functions. However, this requires the user to vectorize the input properly. The object-oriented interface automatically vectorizes the computation for the user (similar source types of multiple input-objects are grouped). The additional overhead makes the object-oriented interface slightly slower (by a factor of 1.1-2), specfically, when only single field evaluations are made (overhead gets in the way) or when a large number of source objects are handed to ``getB`` or ``getH``.
 
 
 .. _docu-units_scaling:
