@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import magpylib as mag3
+import magpylib as magpy
 
 # observer positions
 poso = [(x,0,2) for x in np.linspace(-3,3,100)]
 
 # getBv computation - only observer is a shape (n,x)-vector
-B1 = mag3.getBv(
+B1 = magpy.getBv(
     source_type='Cuboid',
     magnetization=(0,0,1000),
     dimension=(1,1,1),
@@ -20,7 +20,7 @@ dim = [(d,d,d) for d in np.linspace(0,2,100)]
 
 # getBv computation - observer and dimension are shape (n,x)-vectors
 #   -> the magnet increases in size as the observer changes position
-B2 = mag3.getBv(
+B2 = magpy.getBv(
     source_type='Cuboid',
     magnetization=(0,0,1000),
     dimension=dim,

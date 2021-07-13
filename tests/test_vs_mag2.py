@@ -1,7 +1,7 @@
 import pickle
 import os
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 
 # GENERATE TESTDATA ---------------------------------------
 # import pickle
@@ -34,9 +34,9 @@ def test_vs_mag2_linear():
     """
     data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[0]
     poso = [(t,-t,t) for t in np.linspace(0,3,100)]
-    pm = mag3.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
+    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
 
-    B = mag3.getB(pm, poso)
+    B = magpy.getB(pm, poso)
     assert np.allclose(B, data), 'vs mag2 - linear'
 
 
@@ -44,7 +44,7 @@ def test_vs_mag2_rotation():
     """ test against margpylib v2
     """
     data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[1]
-    pm = mag3.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
+    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
     possis = [(3*np.sin(t/180*np.pi),3*np.cos(t/180*np.pi),0) for t in np.linspace(0,444,100)]
     B = pm.getB(possis)
     assert np.allclose(B, data), 'vs mag2 - rot'
@@ -54,7 +54,7 @@ def test_vs_mag2_spiral():
     """ test against margpylib v2
     """
     data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[2]
-    pm = mag3.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3), position=(3,0,0))
+    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3), position=(3,0,0))
 
     angs = np.linspace(0,297,100)
     pm.rotate_from_angax(angs, 'z', anchor=0, start=0)
@@ -68,7 +68,7 @@ def test_vs_mag2_line():
     """
     Btest = np.array([ 1.47881931, -1.99789688,  0.2093811])
 
-    src = mag3.current.Line(current=10, vertices=[(0,-5,0),(0,5,0),(3,3,3),
+    src = magpy.current.Line(current=10, vertices=[(0,-5,0),(0,5,0),(3,3,3),
         (-1,-2,-3),(1,1,1),(2,3,4)])
     B = src.getB([1,2,3])
 

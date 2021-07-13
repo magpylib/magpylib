@@ -43,8 +43,8 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     --------
     By default a Dipole is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> dipole = mag3.misc.Dipole(moment=(100,100,100))
+    >>> import magpylib as magpy
+    >>> dipole = magpy.misc.Dipole(moment=(100,100,100))
     >>> print(dipole.position)
     [0. 0. 0.]
     >>> print(dipole.orientation.as_quat())

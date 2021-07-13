@@ -5,7 +5,7 @@ Testing all cases against a large set of pre-computed values
 import numpy as np
 from magpylib._lib.fields.field_BH_cylinder import field_H_cylinder_tile
 from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
-import magpylib as mag3
+import magpylib as magpy
 
 
 # creating test data
@@ -318,8 +318,8 @@ def test_cases9():
 
 
 # from magpylib._lib.fields.field_BH_cylinder_old import field_BH_cylinder
-# import magpylib as mag3
-# mag3.Config.ITER_CYLINDER = 10000
+# import magpylib as magpy
+# magpy.Config.ITER_CYLINDER = 10000
 # N = 100
 # mag = (np.random.rand(N, 3)-.5)*1000
 # dim = np.random.rand(N, 3)
@@ -346,7 +346,7 @@ def test_cylinder_field1():
 def test_cylinder_field2():
     """test various inputs combinations surface-inside-outside
     """
-    src = mag3.magnet.Cylinder((22,33,44), (2,2))
+    src = magpy.magnet.Cylinder((22,33,44), (2,2))
 
     binn = (14.74170286, 22.25914246, 31.06627547)
     bout = (0.25006525, 0.60708923, 0.94121555)
@@ -390,7 +390,7 @@ def test_cylinder_field2():
 
 def test_cylinder_field3():
     """ testing H for all input combinations"""
-    src = mag3.magnet.Cylinder((22,33,44), (2,2))
+    src = magpy.magnet.Cylinder((22,33,44), (2,2))
 
     hinn = (-5.77596934,  -8.54730285, -10.29233096)
     hout = (0.19899561, 0.48310626, 0.74899554)

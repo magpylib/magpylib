@@ -49,8 +49,8 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     --------
     By default a Cuboid is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> magnet = mag3.magnet.Cuboid(magnetization=(100,100,100), dimension=(1,1,1))
+    >>> import magpylib as magpy
+    >>> magnet = magpy.magnet.Cuboid(magnetization=(100,100,100), dimension=(1,1,1))
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())

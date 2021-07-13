@@ -67,25 +67,25 @@ def display(
 
     Display multiple objects, object paths, markers in 3D using Matplotlib:
 
-    >>> import magpylib as mag3
-    >>> col = mag3.Collection(
-        [mag3.magnet.Sphere(magnetization=(0,0,1), diameter=1) for _ in range(3)])
+    >>> import magpylib as magpy
+    >>> col = magpy.Collection(
+        [magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1) for _ in range(3)])
     >>> for displ,src in zip([(.1414,0,0),(-.1,-.1,0),(-.1,.1,0)], col):
     >>>     src.move([displ]*50, increment=True)
     >>>     src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
     >>> ts = [-.6,-.4,-.2,0,.2,.4,.6]
-    >>> sens = mag3.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> mag3.display(col, sens)
+    >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
+    >>> magpy.display(col, sens)
     --> graphic output
 
     Display figure on your own 3D Matplotlib axis:
 
     >>> import matplotlib.pyplot as plt
-    >>> import magpylib as mag3
+    >>> import magpylib as magpy
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = mag3.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
-    >>> sens = mag3.Sensor(position=(0,0,3))
-    >>> mag3.display(magnet, sens, axis=my_axis)
+    >>> magnet = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
+    >>> sens = magpy.Sensor(position=(0,0,3))
+    >>> magpy.display(magnet, sens, axis=my_axis)
     >>> plt.show()
     --> graphic output
 

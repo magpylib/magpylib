@@ -4,7 +4,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.exceptions import (MagpylibBadUserInput,
     MagpylibBadInputShape, MagpylibMissingInput)
-import magpylib as mag3
+import magpylib as magpy
 
 a3 = np.array([1,2,3])
 a2 = np.array([1,2])
@@ -14,57 +14,57 @@ r0 = R.from_quat((0,0,0,1))
 # Check error throwing when dimension or excitation is not initialized
 def init_dim_display1():
     """throw dimension init error from display"""
-    src1 = mag3.current.Circular(current=1)
-    src2 = mag3.magnet.Sphere(magnetization=(1,2,3))
-    mag3.display(src1, src2)
+    src1 = magpy.current.Circular(current=1)
+    src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
+    magpy.display(src1, src2)
 
 def init_dim_display2():
     """throw dimension init error from display"""
-    src1 = mag3.current.Circular(current=1, diameter=2)
-    src2 = mag3.magnet.Cuboid(magnetization=(1,2,3))
-    mag3.display(src1, src2)
+    src1 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.magnet.Cuboid(magnetization=(1,2,3))
+    magpy.display(src1, src2)
 
 def init_dim_display3():
     """throw dimension init error from display"""
-    src1 = mag3.current.Circular(current=1, diameter=2)
-    src2 = mag3.current.Line(current=1)
-    mag3.display(src1, src2)
+    src1 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.current.Line(current=1)
+    magpy.display(src1, src2)
 
 def init_dim_getBH1():
     """throw dimension init error from getB"""
-    src1 = mag3.current.Circular(current=1)
-    src2 = mag3.magnet.Sphere(magnetization=(1,2,3))
-    mag3.getB([src1,src2], (1,2,3))
+    src1 = magpy.current.Circular(current=1)
+    src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
+    magpy.getB([src1,src2], (1,2,3))
 
 def init_exite_display1():
     """throw excitation init error from display"""
-    src1 = mag3.current.Circular(diameter=1)
-    src2 = mag3.magnet.Sphere(diameter=2)
-    mag3.display(src1, src2, show_direction=True)
+    src1 = magpy.current.Circular(diameter=1)
+    src2 = magpy.magnet.Sphere(diameter=2)
+    magpy.display(src1, src2, show_direction=True)
 
 def init_exite_getBH1():
     """throw excitation init error from getB"""
-    src1 = mag3.current.Circular(diameter=1, current=1)
-    src2 = mag3.magnet.Sphere(diameter=2)
-    mag3.getB([src1, src2], (1,2,3))
+    src1 = magpy.current.Circular(diameter=1, current=1)
+    src2 = magpy.magnet.Sphere(diameter=2)
+    magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH2():
     """throw excitation init error from getB"""
-    src1 = mag3.current.Circular(current=1, diameter=2)
-    src2 = mag3.magnet.Cuboid(dimension=(1,2,3))
-    mag3.getB([src1, src2], (1,2,3))
+    src1 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.magnet.Cuboid(dimension=(1,2,3))
+    magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH3():
     """throw excitation init error from getB"""
-    src1 = mag3.current.Circular(current=1, diameter=2)
-    src2 = mag3.current.Line(vertices=[(1,2,3),(2,3,4)])
-    mag3.getB([src1, src2], (1,2,3))
+    src1 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.current.Line(vertices=[(1,2,3),(2,3,4)])
+    magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH4():
     """throw excitation init error from getB"""
-    src1 = mag3.current.Circular(current=1, diameter=2)
-    src2 = mag3.misc.Dipole()
-    mag3.getB([src1, src2], (1,2,3))
+    src1 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.misc.Dipole()
+    magpy.getB([src1, src2], (1,2,3))
 
 # BAD BASEGEO INPUTS --------------------------------------
 def badInput_BaseGeo1():
@@ -189,49 +189,49 @@ def badInput_rotate_from_angax9():
 
 def badMag_input1():
     """bad magnetization input type"""
-    mag3.magnet.Cuboid(magnetization='woot', dimension=a3)
+    magpy.magnet.Cuboid(magnetization='woot', dimension=a3)
 
 def badMag_input2():
     """bad magnetization input format"""
-    mag3.magnet.Cuboid(magnetization=(1,2,3,4), dimension=a3)
+    magpy.magnet.Cuboid(magnetization=(1,2,3,4), dimension=a3)
 
 def badCurrent_input1():
     """bad current input type"""
-    mag3.current.Circular(current='1', diameter=1)
+    magpy.current.Circular(current='1', diameter=1)
 
 # DIMENSIONS --------------------------------------------
 
 def bad_dim_input1():
     """cuboid dim type"""
-    mag3.magnet.Cuboid(magnetization=a3, dimension=1)
+    magpy.magnet.Cuboid(magnetization=a3, dimension=1)
 
 def bad_dim_input3():
     """cuboid dim format"""
-    mag3.magnet.Cuboid(magnetization=a3, dimension=(1,2))
+    magpy.magnet.Cuboid(magnetization=a3, dimension=(1,2))
 
 def bad_dim_input4():
     """cylinder dim type"""
-    mag3.magnet.Cylinder(magnetization=a3, dimension=1)
+    magpy.magnet.Cylinder(magnetization=a3, dimension=1)
 def bad_dim_input6():
     """cylinder bad dim shape"""
-    mag3.magnet.Cylinder(magnetization=a3, dimension=(1,2,0,45))
+    magpy.magnet.Cylinder(magnetization=a3, dimension=(1,2,0,45))
 def bad_dim_input6a():
     """cylinder bad dim input di>d """
-    mag3.magnet.Cylinder(magnetization=a3, dimension=(1,5,2,100,150))
+    magpy.magnet.Cylinder(magnetization=a3, dimension=(1,5,2,100,150))
 def bad_dim_input6b():
     """cylinder dim input phi1>phi2"""
-    mag3.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,50))
+    magpy.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,50))
 def bad_dim_input6c():
     """cylinder dim input phi2-phi1>360"""
-    mag3.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,550))
+    magpy.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,550))
 
 def bad_dim_input7():
     """Sphere dim type"""
-    mag3.magnet.Sphere(magnetization=a3, diameter=(1,1))
+    magpy.magnet.Sphere(magnetization=a3, diameter=(1,1))
 
 def bad_dim_input9():
     """Circular dim type"""
-    mag3.current.Circular(current=1, diameter=(1,1))
+    magpy.current.Circular(current=1, diameter=(1,1))
 
 
 
@@ -240,41 +240,41 @@ def bad_dim_input9():
 
 def bad_misc_input1():
     """Sensor pixel type"""
-    mag3.Sensor(pixel=1)
+    magpy.Sensor(pixel=1)
 def bad_misc_input2():
     """Sensor pixel format"""
-    mag3.Sensor(pixel=[[1,2]]*3)
+    magpy.Sensor(pixel=[[1,2]]*3)
 
 def bad_misc_input3():
     """Line vertex type"""
-    mag3.current.Line(1, '1')
+    magpy.current.Line(1, '1')
 def bad_misc_input4():
     """Line vertex format 1"""
-    mag3.current.Line(1, [(1,2,3)])
+    magpy.current.Line(1, [(1,2,3)])
 def bad_misc_input5():
     """Line vertex format 2"""
-    mag3.current.Line(1, [[(1,2,3)]*2]*2)
+    magpy.current.Line(1, [[(1,2,3)]*2]*2)
 def bad_misc_input6():
     """Line vertex format 3"""
-    mag3.current.Line(1, [(1,2)]*2)
+    magpy.current.Line(1, [(1,2)]*2)
 
 
 # OBSERVER ------------------------------------------------------------
 
-src = mag3.current.Circular(current=1, diameter=1)
-sens = mag3.Sensor()
+src = magpy.current.Circular(current=1, diameter=1)
+sens = magpy.Sensor()
 def bad_observer_input1():
     """getBH observer format"""
-    mag3.getB(src, a234)
+    magpy.getB(src, a234)
 def bad_observer_input2():
     """getBH observer format"""
-    mag3.getB(src, [sens, [(1,2),(1,2)]])
+    magpy.getB(src, [sens, [(1,2),(1,2)]])
 def bad_observer_input3():
     """getBH observer format"""
-    mag3.getB(src, [(1,2),(1,2)])
+    magpy.getB(src, [(1,2),(1,2)])
 def bad_observer_input4():
     """bad observer type"""
-    mag3.getB(src, 123)
+    magpy.getB(src, 123)
 
 
 class TestExceptions(unittest.TestCase):

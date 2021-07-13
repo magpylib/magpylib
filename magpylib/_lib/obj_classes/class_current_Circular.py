@@ -46,8 +46,8 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     --------
     # By default a Circular is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> magnet = mag3.current.Circular(current=100, diameter=2)
+    >>> import magpylib as magpy
+    >>> magnet = magpy.current.Circular(current=100, diameter=2)
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())

@@ -11,7 +11,7 @@ from magpylib import Config
 
 # # GENERATE TEST DATA
 # n = 500
-# mag3.Config.EDGESIZE = 1e-14
+# magpy.Config.EDGESIZE = 1e-14
 
 # # dim general
 # dim_gen = np.random.rand(n,3)

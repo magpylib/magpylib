@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
 from scipy.spatial.transform.rotation import Rotation as R
-import magpylib as mag3
+import magpylib as magpy
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._lib.fields.field_wrap_BH_v import getBHv_level2
@@ -23,8 +23,8 @@ def getBH_level1_internal_error():
 def getBH_level2_bad_input1():
     """ test BadUserInput error at getBH_level2
     """
-    src = mag3.magnet.Cuboid((1,1,2),(1,1,1))
-    sens = mag3.Sensor()
+    src = magpy.magnet.Cuboid((1,1,2),(1,1,1))
+    sens = magpy.Sensor()
     getBH_level2(True, [src,sens],(0,0,0),False,True)
 
 
@@ -33,19 +33,19 @@ def getBH_level2_bad_input2():
     """
     mag = (1,2,3)
     dim_cuboid = (1,2,3)
-    pm1 = mag3.magnet.Cuboid(mag,dim_cuboid)
-    sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
-    mag3.getB(pm1,[sens1,sens2])
+    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
+    magpy.getB(pm1,[sens1,sens2])
 
 
 def getBH_level2_internal_error1():
     """ somehow an unrecognized objects end up in get_src_dict
     """
     # pylint: disable=protected-access
-    sens = mag3.Sensor()
+    sens = magpy.Sensor()
     x = np.zeros((10,3))
-    mag3._lib.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
+    magpy._lib.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
 
 
 # getBHv missing inputs ------------------------------------------------------
@@ -124,24 +124,24 @@ def getBHv_bad_input():
 def utility_format_obj_input():
     """ bad input object
     """
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     format_obj_input([pm1,pm2,333])
 
 
 def utility_format_src_inputs():
     """ bad src input
     """
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     format_src_inputs([pm1,pm2,1])
 
 
 def utility_format_obs_inputs():
     """ bad src input
     """
-    sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor()
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor()
     possis = [1,2,3]
     format_obs_inputs([sens1,sens2,possis,'whatever'])
 
@@ -149,7 +149,7 @@ def utility_format_obs_inputs():
 def utility_test_path_format():
     """ bad path format input
     """
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     pm1.position = [(1,2,3),(1,2,3)]
     tpf(pm1)
 
@@ -157,55 +157,55 @@ def utility_test_path_format():
 # def cuboid_no_mag():
 #     """ Cuboid with no mag input
 #     """
-#     mag3.magnet.Cuboid(dimension=(1,2,3))
+#     magpy.magnet.Cuboid(dimension=(1,2,3))
 
 
 # def cuboid_no_dim():
 #     """ Cuboid with no dim input
 #     """
-#     mag3.magnet.Cuboid(magnetization=(1,2,3))
+#     magpy.magnet.Cuboid(magnetization=(1,2,3))
 
 
 # def cyl_no_mag():
 #     """ Cylinder with no mag input
 #     """
-#     mag3.magnet.Cylinder(dimension=(1,2))
+#     magpy.magnet.Cylinder(dimension=(1,2))
 
 
 # def cyl_no_dim():
 #     """ Cylinder with no dim input
 #     """
-#     mag3.magnet.Cylinder(magnetization=(1,2,3))
+#     magpy.magnet.Cylinder(magnetization=(1,2,3))
 
 
 # def sphere_no_mag():
 #     """ Cylinder with no mag input
 #     """
-#     mag3.magnet.Sphere(diameter=1)
+#     magpy.magnet.Sphere(diameter=1)
 
 
 # def sphere_no_dim():
 #     """ Cylinder with no dim input
 #     """
-#     mag3.magnet.Sphere(magnetization=(1,2,3))
+#     magpy.magnet.Sphere(magnetization=(1,2,3))
 
 
 # def dipole_no_mom():
 #     """ Cylinder with no mag input
 #     """
-#     mag3.misc.Dipole()
+#     magpy.misc.Dipole()
 
 
 # def circular_no_current():
 #     """ Circular with no current input
 #     """
-#     mag3.current.Circular(diameter=1)
+#     magpy.current.Circular(diameter=1)
 
 
 # def circular_no_dim():
 #     """ Circular with no dim input
 #     """
-#     mag3.current.Circular(current=1)
+#     magpy.current.Circular(current=1)
 
 ########################################################################
 # BAD INPUT SHAPE EXCEPTIONS
@@ -214,7 +214,7 @@ def bad_input_shape_basegeo_pos():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cuboid(vec3, vec3, vec4)
+    magpy.magnet.Cuboid(vec3, vec3, vec4)
 
 
 def bad_input_shape_cuboid_dim():
@@ -222,7 +222,7 @@ def bad_input_shape_cuboid_dim():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cuboid(vec3, vec4)
+    magpy.magnet.Cuboid(vec3, vec4)
 
 
 def bad_input_shape_cuboid_mag():
@@ -230,7 +230,7 @@ def bad_input_shape_cuboid_mag():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cuboid(vec4, vec3)
+    magpy.magnet.Cuboid(vec4, vec3)
 
 
 def bad_input_shape_cyl_dim():
@@ -238,7 +238,7 @@ def bad_input_shape_cyl_dim():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cylinder(vec3, vec4)
+    magpy.magnet.Cylinder(vec3, vec4)
 
 
 def bad_input_shape_cyl_mag():
@@ -246,14 +246,14 @@ def bad_input_shape_cyl_mag():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cylinder(vec4, vec3)
+    magpy.magnet.Cylinder(vec4, vec3)
 
 
 def bad_input_shape_sphere_mag():
     """ bad sphere magnetization shape
     """
     vec4 = (1,2,3,4)
-    mag3.magnet.Sphere(vec4, 1)
+    magpy.magnet.Sphere(vec4, 1)
 
 
 def bad_input_shape_sensor_pix_pos():
@@ -261,14 +261,14 @@ def bad_input_shape_sensor_pix_pos():
     """
     vec4 = (1,2,3,4)
     vec3 = (1,2,3)
-    mag3.Sensor(vec3, vec4)
+    magpy.Sensor(vec3, vec4)
 
 
 def bad_input_shape_dipole_mom():
     """ bad sphere magnetization shape
     """
     vec4 = (1,2,3,4)
-    mag3.misc.Dipole(moment=vec4)
+    magpy.misc.Dipole(moment=vec4)
 
 
 ########################################################################

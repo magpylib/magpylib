@@ -1,5 +1,5 @@
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 from magpylib.magnet import Cylinder
 
 
@@ -9,14 +9,14 @@ def test_Cylinder_add():
     src1 = Cylinder((1,2,3),(1,2))
     src2 = Cylinder((1,2,3),(1,2))
     col = src1 + src2
-    assert isinstance(col,mag3.Collection), 'adding cylinder fail'
+    assert isinstance(col,magpy.Collection), 'adding cylinder fail'
 
 
 def test_Cylinder_squeeze():
     """ testing squeeze output
     """
     src1 = Cylinder((1,1,1),(1,1))
-    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
+    sensor = magpy.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
     H = src1.getH(sensor)
@@ -31,7 +31,7 @@ def test_Cylinder_squeeze():
 def test_repr():
     """ test __repr__
     """
-    pm2 = mag3.magnet.Cylinder((1,2,3),(2,3))
+    pm2 = magpy.magnet.Cylinder((1,2,3),(2,3))
     assert pm2.__repr__()[:8] == 'Cylinder', 'Cylinder repr failed'
 
 
@@ -52,27 +52,27 @@ def test_Cylinder_getBH():
     dim5 = (2.1,5,1.2,30,145)
 
     for dim,dim6 in zip([dim2, dim3, dim5], [dim2_5, dim3_5, dim5]):
-        src = mag3.magnet.Cylinder(mag, dim)
+        src = magpy.magnet.Cylinder(mag, dim)
         B1 = src.getB(poso)
         H1 = src.getH(poso)
 
-        B2 = mag3.getBv(
+        B2 = magpy.getBv(
             source_type='Cylinder',
             magnetization=mag,
             dimension=dim,
             observer=poso)
-        H2 = mag3.getHv(
+        H2 = magpy.getHv(
             source_type='Cylinder',
             magnetization=mag,
             dimension=dim,
             observer=poso)
 
-        B3 = mag3.getBv(
+        B3 = magpy.getBv(
             source_type='Cylinder',
             magnetization=mag,
             dimension=dim6,
             observer=poso)
-        H3 = mag3.getHv(
+        H3 = magpy.getHv(
             source_type='Cylinder',
             magnetization=mag,
             dimension=dim6,
@@ -94,13 +94,13 @@ def test_Cylinder_vs_old_inside():
     dim = np.random.rand(10,2)+1
     poso = (np.random.rand(10, 3)-.5)
 
-    mag3.Config.ITER_CYLINDER = 1000
-    H_new = mag3.getHv(
+    magpy.Config.ITER_CYLINDER = 1000
+    H_new = magpy.getHv(
         source_type='Cylinder',
         magnetization=mag,
         dimension=dim,
         observer=poso)
-    H_old = mag3.getHv(
+    H_old = magpy.getHv(
         source_type='Cylinder_old',
         magnetization=mag,
         dimension=dim,

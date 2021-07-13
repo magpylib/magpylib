@@ -27,8 +27,8 @@ This **Example code** calculates the magnetic field of a cylindrical magnet.
 
 .. code-block:: python
 
-    import magpylib as mag3
-    s = mag3.magnet.Cylinder(magnetization=(0,0,350), dimension=(4,5))
+    import magpylib as magpy
+    s = magpy.magnet.Cylinder(magnetization=(0,0,350), dimension=(4,5))
     observer_pos = (4,4,4)
     print(s.getB(observer_pos))
 

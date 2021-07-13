@@ -48,8 +48,8 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     --------
     # By default a Line is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> magnet = mag3.current.Line(current=100, vertices=[(-1,0,0),(1,0,0)])
+    >>> import magpylib as magpy
+    >>> magnet = magpy.current.Line(current=100, vertices=[(-1,0,0),(1,0,0)])
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
