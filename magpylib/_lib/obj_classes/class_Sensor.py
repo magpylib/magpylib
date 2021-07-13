@@ -105,22 +105,21 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             pixel=(0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
 
-        # set mag and dim attributes
+        # instance attributes
         self.pixel = pixel
-        self.object_type = 'Sensor'
+        self._object_type = 'Sensor'
 
 
-    # properties ----------------------------------------------------
+    # property getters and setters
     @property
     def pixel(self):
         """ Sensor pixel attribute getter and setter.
         """
         return self._pixel
-
 
     @pixel.setter
     def pixel(self, pix):

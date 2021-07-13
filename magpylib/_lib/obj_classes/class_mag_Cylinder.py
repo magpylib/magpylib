@@ -102,15 +102,16 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             position = (0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 
-        # set attributes
+        # instance attributes
         self.dimension = dimension
-        self.object_type = 'Cylinder'
+        self._object_type = 'Cylinder'
 
+    # property getters and setters
     @property
     def dimension(self):
         """ Object dimension attribute getter and setter.
@@ -122,10 +123,9 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """ Set Cylinder dimension (d,h) or (d,h,di) or (d,h,di,phi1,phi2)
             shape (2,) or (3,) or (5,), [mm, deg].
         """
-        # input type and init check
+        # input type check
         if Config.CHECK_INPUTS:
             check_vector_type(dim, 'dimension')
-            #check_vector_init(dim, 'dimension')
 
         # input type -> ndarray
         dim = np.array(dim,dtype=float)

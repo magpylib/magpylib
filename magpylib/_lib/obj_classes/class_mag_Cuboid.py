@@ -89,18 +89,16 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             position = (0,0,0),
             orientation = None):
 
-        # inherit
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 
-        # set attributes
+        # instance attributes
         self.dimension = dimension
-        self.object_type = 'Cuboid'
+        self._object_type = 'Cuboid'
 
-
-    # properties ----------------------------------------------------
-
+    # property getters and setters
     @property
     def dimension(self):
         """ Object dimension attribute getter and setter.
@@ -111,10 +109,9 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     def dimension(self, dim):
         """ Set Cuboid dimension (a,b,c), shape (3,), [mm].
         """
-        # input type and init check
+        # input type check
         if Config.CHECK_INPUTS:
             check_vector_type(dim, 'dimension')
-            #check_vector_init(dim, 'dimension')
 
         # input type -> ndarray
         dim = np.array(dim,dtype=float)

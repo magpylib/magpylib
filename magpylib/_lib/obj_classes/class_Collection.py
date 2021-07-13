@@ -83,20 +83,19 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def __init__(self, *sources):
 
-        # inherit
+        # init inheritance
         BaseDisplayRepr.__init__(self)
 
+        # instance attributes
         self.sources = sources
-        self.object_type = 'Collection'
+        self._object_type = 'Collection'
 
-
-    # sources properties --------------------------------------------
+    # property getters and setters
     @property
     def sources(self):
         """ Collection sources attribute getter and setter.
         """
         return self._sources
-
 
     @sources.setter
     def sources(self, sources):
@@ -112,7 +111,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         self._sources = src_list
 
 
-    # dunders -------------------------------------------------------
+    # dunders
     def __add__(self, source):
         self.add(source)
         return self

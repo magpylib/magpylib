@@ -15,7 +15,7 @@ class BaseDisplayRepr:
     - repr
     """
     def __init__(self):
-        self.object_type = None
+        self._object_type = None
 
     # ------------------------------------------------------------------
     # INTERFACE
@@ -105,4 +105,4 @@ class BaseDisplayRepr:
     # ------------------------------------------------------------------
     # INTERFACE
     def __repr__(self) -> str:
-        return f'{self.object_type}(id={str(id(self))})'
+        return f'{self._object_type}(id={str(id(self))})'

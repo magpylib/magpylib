@@ -89,15 +89,16 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             position = (0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 
-        # set mag and dim attributes
+        # instance attributes
         self.vertices = vertices
-        self.object_type = 'Line'
+        self._object_type = 'Line'
 
+    # property getters and setters
     @property
     def vertices(self):
         """ Object vertices attribute getter and setter.
@@ -108,11 +109,11 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def vertices(self, vert):
         """ Set Line vertices, array_like, [mm].
         """
-        # input type and init check
+        # input type check
         if Config.CHECK_INPUTS:
             check_vector_type(vert, 'vertices')
-            #check_vector_init(vert, 'vertices')
 
+        # input type -> ndarray
         vert = np.array(vert)
 
         # input format check
