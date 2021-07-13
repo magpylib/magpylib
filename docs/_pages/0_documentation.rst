@@ -1,7 +1,7 @@
 .. _docu:
 
 ***********************************
-Documentation v3.1.0
+Documentation v4.0.0
 ***********************************
 
 Brief overview and some critical information.
