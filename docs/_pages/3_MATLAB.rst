@@ -35,27 +35,25 @@ The following MATLAB 2019 script showcases most functionalities.
     %%%%%%%%%%%%%%%%%% magpytest.m %%%%%%%%%%%%%%
     %% Showcase Python + MATLAB Interoperability.    
     %% Define and calculate the field of a 
-    %% Cuboid magnet inside a Collection.
+    %% Cuboid magnet.
     %%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
 
-    %% Import the library
+    %% Import the magpylib v4 library
     py.importlib.import_module("magpylib")
 
     %% Define Python types for input
     vec3 = py.list({1,2,3})
-    scalar = py.int(90)
 
     %% Define input
-    mag = vec3
-    dim = vec3
-    angle = scalar
-    sensorPos = vec3
+    mag = py.list({22,33,44})
+    dim = py.list({2,2,2})
+    pos = py.list({1,2,3})
+    observer = py.list({2,3,4})
 
     %% Execute Python
-    % 2 positional and 1 keyword argument in Cuboid
-    box = py.magpylib.source.magnet.Cuboid(mag,dim,pyargs('angle',angle))
-    col = py.magpylib.Collection(box)
-    pythonResult = col.getB(sensorPos)
+    % 2 positional and 1 keyword argument in Cuboid class
+    src = py.magpylib.magnet.Cuboid(mag, dim, pyargs('position', pos))
+    pythonResult = src.getB(observer)
 
     %% Convert Python Result to MATLAB data format
     matlabResult = double(pythonResult) 
