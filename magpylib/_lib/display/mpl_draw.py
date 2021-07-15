@@ -40,7 +40,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             if odim.shape == (2,):
                 length = 1.8*np.amax(odim)
             else:
-                length = 1.8*np.amax(odim[[1,4]]) #r2,h
+                length = 1.8*np.amax(odim[[0,1]]) #r2,h
         else:
             length = 1.8*obj.diameter # Sphere
         col = cmap(i/len(faced_objects))
@@ -52,7 +52,8 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             if isinstance(obj, Cylinder): # change cylinder_tile draw_pos to geometric center
                 odim = obj.dimension
                 if odim.shape==(5,):
-                    r1,r2,phi1,phi2,_ = odim
+                    d,_,di,phi1,phi2 = odim
+                    r1,r2  = di/2, d/2
                     phi_mid = (phi1+phi2)/2*np.pi/180
                     r_mid = (r2+r1)/2
                     shift = r_mid*np.array([np.cos(phi_mid),np.sin(phi_mid),0])

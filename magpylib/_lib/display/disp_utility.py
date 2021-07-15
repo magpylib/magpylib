@@ -68,7 +68,8 @@ def faces_cylinder(src, show_path):
             (r*np.cos(phi), r*np.sin(phi), h)
             for phi in phis]) for h in hs]
     else:     # case2: cylinder tile
-        r1,r2,phi1,phi2,h = src.dimension
+        d,h,di,phi1,phi2 = src.dimension
+        r1,r2  = di/2, d/2
         res_tile = int((phi2-phi1)/360 * 2*res)+2  # resolution used for tile curved surface
         phis = np.linspace(phi1,phi2,res_tile)/180*np.pi
         phis2 = np.roll(phis,1)
