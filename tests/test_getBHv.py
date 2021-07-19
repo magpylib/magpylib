@@ -285,7 +285,7 @@ def test_BHv_Cylinder_FEM():
 
     # compare against FEM
     B = magpylib.getBv(
-        source_type='CylinderSection',
+        source_type='CylinderSegment',
         dimension=(2,4,1,90,360),
         magnetization=np.array((1,2,3))*1000/np.sqrt(14),
         position = (0,0,0.5),
@@ -299,7 +299,7 @@ def test_BHv_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
     B1 = magpylib.getBv(
-        source_type='CylinderSection',
+        source_type='CylinderSegment',
         dimension=[(0,2,2,20,120), (0,2,2,120,220), (0,2,2,220,380)],
         magnetization=(22,33,44),
         observer=(1,2,3))
@@ -307,7 +307,7 @@ def test_BHv_solid_cylinder():
 
     # one big cylinder
     B2 = magpylib.getBv(
-        source_type='CylinderSection',
+        source_type='CylinderSegment',
         dimension=(0,2,2,0,360),
         magnetization=(22,33,44),
         observer=(1,2,3))

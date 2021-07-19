@@ -86,7 +86,7 @@ def faces_cylinder(src, show_path):
 
 def faces_cylinder_section(src, show_path):
     """
-    Compute vertices and faces of CylinderSection for plotting.
+    Compute vertices and faces of CylinderSegment for plotting.
 
     Parameters
     ----------

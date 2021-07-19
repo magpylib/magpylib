@@ -37,8 +37,8 @@ def test_repr():
 def test_repr2():
     """ test __repr__
     """
-    pm2 = magpy.magnet.CylinderSection((1,2,3),(2,3,1,0,45))
-    assert pm2.__repr__()[:15] == 'CylinderSection', 'CylinderSection repr failed'
+    pm2 = magpy.magnet.CylinderSegment((1,2,3),(2,3,1,0,45))
+    assert pm2.__repr__()[:15] == 'CylinderSegment', 'CylinderSegment repr failed'
 
 
 def test_Cylinder_getBH():
@@ -55,7 +55,7 @@ def test_Cylinder_getBH():
     for d2,d5 in zip(dim2,dim5):
 
         src1 = magpy.magnet.Cylinder(mag, d2)
-        src2 = magpy.magnet.CylinderSection(mag, d5)
+        src2 = magpy.magnet.CylinderSegment(mag, d5)
         B0 = src1.getB(poso)
         H0 = src1.getH(poso)
 
@@ -74,12 +74,12 @@ def test_Cylinder_getBH():
             observer=poso)
 
         B3 = magpy.getBv(
-            source_type='CylinderSection',
+            source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,
             observer=poso)
         H3 = magpy.getHv(
-            source_type='CylinderSection',
+            source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,
             observer=poso)

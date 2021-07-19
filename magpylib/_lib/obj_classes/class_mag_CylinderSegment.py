@@ -13,7 +13,7 @@ d1=d2=h=phi1=phi2=None
 mx=my=mz=None
 
 # ON INTERFACE
-class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
     Cylinder-Section/Tile (Ring-Section) magnet with homogeneous magnetization.
 
@@ -45,7 +45,7 @@ class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Returns
     -------
-    CylinderSection object: CylinderSection
+    CylinderSegment object: CylinderSegment
 
     Examples
     --------
@@ -56,7 +56,7 @@ class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Cylinder, with unit rotation:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.CylinderSection(magnetization=(100,100,100), dimension=(1,2,2,0,90))
+    >>> magnet = magpy.magnet.CylinderSegment(magnetization=(100,100,100), dimension=(1,2,2,0,90))
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
@@ -102,7 +102,7 @@ class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'CylinderSection'
+        self._object_type = 'CylinderSegment'
 
     # property getters and setters
     @property

@@ -9,7 +9,7 @@ ax2 = fig.add_subplot(132, projection='3d')  # 3D-axis
 ax3 = fig.add_subplot(133)                   # 2D-axis
 
 # define two sources and display in figure
-src1 = magpy.magnet.CylinderSection(magnetization=(0,0,1000), dimension=(2,3,1,-45,45))
+src1 = magpy.magnet.CylinderSegment(magnetization=(0,0,1000), dimension=(2,3,1,-45,45))
 src2 = magpy.current.Circular(current=500, diameter=1)
 magpy.display(src1, src2, axis=ax1)
 

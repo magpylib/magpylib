@@ -50,7 +50,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         dim = kwargs['dimension']
         B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
 
-    elif src_type == 'CylinderSection':
+    elif src_type == 'CylinderSegment':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
         d1,d2,h,phi1,phi2 = dim.T

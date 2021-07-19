@@ -101,10 +101,10 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         return {'source_type':'Cylinder', 'magnetization':magv, 'dimension':dimv,
             'position':posv, 'observer': posov, 'orientation':rotobj}
 
-    if src_type == 'CylinderSection':
+    if src_type == 'CylinderSegment':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim_cylinder_section(group, n_pp)
-        return {'source_type':'CylinderSection', 'magnetization':magv, 'dimension':dimv,
+        return {'source_type':'CylinderSegment', 'magnetization':magv, 'dimension':dimv,
             'position':posv, 'observer': posov, 'orientation':rotobj}
 
     if src_type == 'Dipole':
@@ -164,7 +164,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # avoid circular imports --------------------------------------------------
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
-    CylinderSection = _lib.obj_classes.CylinderSection
+    CylinderSegment = _lib.obj_classes.CylinderSegment
     Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
     Dipole = _lib.obj_classes.Dipole
@@ -259,7 +259,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif isinstance(src, Cylinder):
             src_sorted[1] += [src]
             order[1] += [i]
-        elif isinstance(src, CylinderSection):
+        elif isinstance(src, CylinderSegment):
             src_sorted[2] += [src]
             order[2] += [i]
         elif isinstance(src, Sphere):

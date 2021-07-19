@@ -345,7 +345,7 @@ def test_cylinder_field1():
 
 def test_cylinder_field2():
     """ testing B for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSection((22,33,44), (1,2,2,0,90))
+    src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
 
     binn = ( 5.52525937, 13.04561569, 40.11111556)
     bout = (0.0177018,  0.1277188,  0.27323195)
@@ -389,7 +389,7 @@ def test_cylinder_field2():
 
 def test_cylinder_field3():
     """ testing H for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSection((22,33,44), (1,2,2,0,90))
+    src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
 
     hinn = (-13.11018204, -15.87919449,  -3.09467591)
     hout = (0.01408664, 0.1016354,  0.21743108)

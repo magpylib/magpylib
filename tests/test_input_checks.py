@@ -226,16 +226,16 @@ def bad_dim_input9():
 
 def bad_dim_input10():
     """cylinder section bad dim shape"""
-    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,0,45))
+    magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,0,45))
 def bad_dim_input11():
     """cylinder section bad dim d1>d2"""
-    magpy.magnet.CylinderSection(magnetization=a3, dimension=(3,2,2,0,45))
+    magpy.magnet.CylinderSegment(magnetization=a3, dimension=(3,2,2,0,45))
 def bad_dim_input12():
     """cylinder section bad dim phi1>phi2"""
-    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,2,100,45))
+    magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,100,45))
 def bad_dim_input13():
     """cylinder section bad dim phi2-phi1>360"""
-    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,2,0,1145))
+    magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,0,1145))
 
 
 # MISC SOURCE ------------------------------------------------------------

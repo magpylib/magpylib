@@ -98,7 +98,7 @@ def display(
     # avoid circular imports
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
-    CylinderSection = _lib.obj_classes.CylinderSection
+    CylinderSegment = _lib.obj_classes.CylinderSegment
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
@@ -135,7 +135,7 @@ def display(
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
         Cuboid,
         Cylinder,
-        CylinderSection,
+        CylinderSegment,
         Sphere
         ))]
 
@@ -166,7 +166,7 @@ def display(
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif isinstance(obj, CylinderSection):
+        elif isinstance(obj, CylinderSegment):
             faces = faces_cylinder_section(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
