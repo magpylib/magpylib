@@ -6,18 +6,18 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_vector_type, check_vector_format
+from magpylib._lib.input_checks import check_input_cyl_sect, check_vector_type
 
 # init for tool tips
-d=h=None
+d1=d2=h=phi1=phi2=None
 mx=my=mz=None
 
 # ON INTERFACE
-class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
-    Cylinder magnet with homogeneous magnetization.
+    Cylinder-Section/Tile (Ring-Section) magnet with homogeneous magnetization. 
 
-    Local object coordinates: The geometric center of the Cylinder is located
+    Local object coordinates: The geometric center of the full Cylinder is located
     in the origin of the local object coordinate system. The Cylinder axis conincides
     with the local CS z-axis. Local (Cylinder) and global CS coincide when
     position=(0,0,0) and orientation=unit_rotation.
@@ -28,8 +28,10 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
         the local CS of the Cylinder object.
 
-    dimension: array_like, shape (2,)
-        Dimension/Size of the solid Cylinder with diameter/height (d,h) in units of [mm].
+    dimension: array_like, shape (5,)
+        Dimension/Size of a Cylinder-Section (d1,d2,h,phi1,phi2) where d1 < d2 denote inner
+        and outer diameter in units of [mm], phi1 < phi2 denote the Cylinder section angles
+        in units of [deg] and h the Cylinder height in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
         Object position (local CS origin) in the global CS in units of [mm].
@@ -43,49 +45,26 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Returns
     -------
-    Cylinder object: Cylinder
+    CylinderSection object: CylinderSection
 
     Examples
     --------
-    By default a Cylinder is initialized at position (0,0,0), with unit rotation:
+
+    A Cylinder-Tile with inner diameter d1=2, outer diameter d2=4, spanning over 90 deg in the
+    positive quadrant of the local CS and height h=5.
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.Cylinder(magnetization=(100,100,100), dimension=(1,1))
-    >>> print(magnet.position)
-    [0. 0. 0.]
-    >>> print(magnet.orientation.as_quat())
-    [0. 0. 0. 1.]
+    >>> magnet = magpy.magnet.Cylinder(magnetization=(100,100,100), dimension=(2,4,5,0,90))
+    >>> B = magnet.getB((1,2,3))
+    >>> print(B)
+    [-2.74825633  9.77282601 21.43280135]
 
-    Cylinders are magnetic field sources. Below we compute the H-field [kA/m] of the
-    above Cylinder at the observer position (1,1,1),
-
-    >>> H = magnet.getH((1,1,1))
-    >>> print(H)
-    [1.95851744 1.95851744 1.8657571 ]
-
-    or at a set of observer positions:
-
-    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[1.95851744 1.95851744 1.8657571 ]
-     [0.24025917 0.24025917 0.23767364]
-     [0.07101874 0.07101874 0.07068512]]
-
-    The same result is obtained when the Cylinder moves along a path,
-    away from the observer:
-
-    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
-    >>> H = magnet.getH((1,1,1))
-    >>> print(H)
-    [[1.95851744 1.95851744 1.8657571 ]
-     [0.24025917 0.24025917 0.23767364]
-     [0.07101874 0.07101874 0.07068512]]
     """
 
     def __init__(
             self,
             magnetization = (mx,my,mz),
-            dimension = (d,h),
+            dimension = (d1,d2,h,phi1,phi2),
             position = (0,0,0),
             orientation = None):
 
@@ -96,7 +75,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'Cylinder'
+        self._object_type = 'CylinderSection'
 
     # property getters and setters
     @property
@@ -107,7 +86,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @dimension.setter
     def dimension(self, dim):
-        """ Set Cylinder dimension (d,h) in units of [mm].
+        """ Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg].
         """
         # input type check
         if Config.CHECK_INPUTS:
@@ -118,6 +97,6 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_vector_format(dim, (2,), 'Cylinder')
+            check_input_cyl_sect(dim)
 
         self._dimension = dim

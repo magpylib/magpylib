@@ -38,7 +38,7 @@ def faces_cuboid(src, show_path):
 
 def faces_cylinder(src, show_path):
     """
-    Compute vertices and faces of Sphere input for plotting.
+    Compute vertices and faces of Cylinder input for plotting.
 
     Parameters
     ----------
@@ -53,50 +53,83 @@ def faces_cylinder(src, show_path):
     res = 15 #surface discretization
 
     # generate cylinder faces
-    if len(src.dimension) == 2: # case1: solid cylinders
-        r,h2 = src.dimension/2
-        hs = np.array([-h2,h2])
-        phis = np.linspace(0,2*np.pi,res)
-        phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
-        faces = [np.array([
-            (r*np.cos(p1), r*np.sin(p1),  h2),
-            (r*np.cos(p1), r*np.sin(p1), -h2),
-            (r*np.cos(p2), r*np.sin(p2), -h2),
-            (r*np.cos(p2), r*np.sin(p2),  h2)])
-            for p1,p2 in zip(phis,phis2)]
-        faces += [np.array([
-            (r*np.cos(phi), r*np.sin(phi), h)
-            for phi in phis]) for h in hs]
-    else:     # case2: cylinder tile
-        d,h,di,phi1,phi2 = src.dimension
-        r1,r2  = di/2, d/2
-        res_tile = int((phi2-phi1)/360 * 2*res)+2  # resolution used for tile curved surface
-        phis = np.linspace(phi1,phi2,res_tile)/180*np.pi
-        phis2 = np.roll(phis,1)
-        faces = [np.array([  # inner curved surface
-            (r1*np.cos(p1), r1*np.sin(p1),  h/2),
-            (r1*np.cos(p1), r1*np.sin(p1), -h/2),
-            (r1*np.cos(p2), r1*np.sin(p2), -h/2),
-            (r1*np.cos(p2), r1*np.sin(p2),  h/2)])
-            for p1,p2 in zip(phis[1:],phis2[1:])]
-        faces += [np.array([ # outer curved surface
-            (r2*np.cos(p1), r2*np.sin(p1),  h/2),
-            (r2*np.cos(p1), r2*np.sin(p1), -h/2),
-            (r2*np.cos(p2), r2*np.sin(p2), -h/2),
-            (r2*np.cos(p2), r2*np.sin(p2),  h/2)])
-            for p1,p2 in zip(phis[1:],phis2[1:])]
-        faces += [np.array([ # sides
-            (r1*np.cos(p), r1*np.sin(p),  h/2),
-            (r2*np.cos(p), r2*np.sin(p),  h/2),
-            (r2*np.cos(p), r2*np.sin(p),  -h/2),
-            (r1*np.cos(p), r1*np.sin(p),  -h/2)])
-            for p in [phis[0],phis[-1]]]
-        faces += [np.array( # top surface
-            [(r1*np.cos(p), r1*np.sin(p), h/2) for p in phis]
-            + [(r2*np.cos(p), r2*np.sin(p), h/2) for p in phis[::-1]])]
-        faces += [np.array( # bottom surface
-            [(r1*np.cos(p), r1*np.sin(p), -h/2) for p in phis]
-            + [(r2*np.cos(p), r2*np.sin(p), -h/2) for p in phis[::-1]])]
+    r,h2 = src.dimension/2
+    hs = np.array([-h2,h2])
+    phis = np.linspace(0,2*np.pi,res)
+    phis2 = np.roll(np.linspace(0,2*np.pi,res),1)
+    faces = [np.array([
+        (r*np.cos(p1), r*np.sin(p1),  h2),
+        (r*np.cos(p1), r*np.sin(p1), -h2),
+        (r*np.cos(p2), r*np.sin(p2), -h2),
+        (r*np.cos(p2), r*np.sin(p2),  h2)])
+        for p1,p2 in zip(phis,phis2)]
+    faces += [np.array([
+        (r*np.cos(phi), r*np.sin(phi), h)
+        for phi in phis]) for h in hs]
+
+    # add src attributes position and orientation depending on show_path
+    if not isinstance(show_path, bool) and src._position.ndim>1:
+        rots = src._orientation[::-show_path]
+        poss = src._position[::-show_path]
+    else:
+        rots = [src._orientation[-1]]
+        poss = [src._position[-1]]
+
+    # all faces (incl. along path) adding pos and rot
+    all_faces = []
+    for rot,pos in zip(rots,poss):
+        for face in faces:
+            all_faces += [[rot.apply(f) + pos for f in face]]
+
+    return all_faces
+
+
+def faces_cylinder_section(src, show_path):
+    """
+    Compute vertices and faces of CylinderSection for plotting.
+
+    Parameters
+    ----------
+    - src (source object)
+    - show_path (bool or int)
+
+    Returns
+    -------
+    vert, faces (returns all faces when show_path=int)
+    """
+    # pylint: disable=protected-access
+    res = 15 #surface discretization
+
+    # generate cylinder section faces
+    di,d,h,phi1,phi2 = src.dimension
+    r1,r2  = di/2, d/2
+    res_tile = int((phi2-phi1)/360 * 2*res)+2  # resolution used for tile curved surface
+    phis = np.linspace(phi1,phi2,res_tile)/180*np.pi
+    phis2 = np.roll(phis,1)
+    faces = [np.array([  # inner curved surface
+        (r1*np.cos(p1), r1*np.sin(p1),  h/2),
+        (r1*np.cos(p1), r1*np.sin(p1), -h/2),
+        (r1*np.cos(p2), r1*np.sin(p2), -h/2),
+        (r1*np.cos(p2), r1*np.sin(p2),  h/2)])
+        for p1,p2 in zip(phis[1:],phis2[1:])]
+    faces += [np.array([ # outer curved surface
+        (r2*np.cos(p1), r2*np.sin(p1),  h/2),
+        (r2*np.cos(p1), r2*np.sin(p1), -h/2),
+        (r2*np.cos(p2), r2*np.sin(p2), -h/2),
+        (r2*np.cos(p2), r2*np.sin(p2),  h/2)])
+        for p1,p2 in zip(phis[1:],phis2[1:])]
+    faces += [np.array([ # sides
+        (r1*np.cos(p), r1*np.sin(p),  h/2),
+        (r2*np.cos(p), r2*np.sin(p),  h/2),
+        (r2*np.cos(p), r2*np.sin(p),  -h/2),
+        (r1*np.cos(p), r1*np.sin(p),  -h/2)])
+        for p in [phis[0],phis[-1]]]
+    faces += [np.array( # top surface
+        [(r1*np.cos(p), r1*np.sin(p), h/2) for p in phis]
+        + [(r2*np.cos(p), r2*np.sin(p), h/2) for p in phis[::-1]])]
+    faces += [np.array( # bottom surface
+        [(r1*np.cos(p), r1*np.sin(p), -h/2) for p in phis]
+        + [(r2*np.cos(p), r2*np.sin(p), -h/2) for p in phis[::-1]])]
 
     # add src attributes position and orientation depending on show_path
     if not isinstance(show_path, bool) and src._position.ndim>1:

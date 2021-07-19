@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 import magpylib as magpy
-from magpylib.magnet import Cylinder, Cuboid, Sphere
+from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSection
 
 # pylint: disable=assignment-from-no-return
 
@@ -17,11 +17,11 @@ def test_Cylinder_display():
     assert x is None, 'display test fail'
 
 
-def test_Cylinder_display_dim5():
+def test_CylinderSection_display():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    src = Cylinder((1,2,3),(4,5,2,30,40))
+    src = CylinderSection((1,2,3),(2,4,5,30,40))
     x = src.display(axis=ax, show_path=15)
     assert x is None, 'show_path should revert to True'
 

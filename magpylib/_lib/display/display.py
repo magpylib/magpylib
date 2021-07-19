@@ -6,7 +6,7 @@ from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
-    faces_sphere)
+    faces_sphere, faces_cylinder_section)
 from magpylib import _lib
 from magpylib._lib.input_checks import check_excitations, check_dimensions
 
@@ -98,6 +98,7 @@ def display(
     # avoid circular imports
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
+    CylinderSection = _lib.obj_classes.CylinderSection
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
@@ -134,6 +135,7 @@ def display(
     faced_objects = [obj for obj in obj_list if isinstance(obj, (
         Cuboid,
         Cylinder,
+        CylinderSection,
         Sphere
         ))]
 
@@ -161,6 +163,11 @@ def display(
 
         elif isinstance(obj, Cylinder):
             faces = faces_cylinder(obj,show_path)
+            lw = 0.25
+            face_points += draw_faces(faces, col, lw, ax)
+
+        elif isinstance(obj, CylinderSection):
+            faces = faces_cylinder_section(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 

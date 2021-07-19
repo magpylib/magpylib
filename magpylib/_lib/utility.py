@@ -32,6 +32,7 @@ def format_obj_input(objects: Sequence) -> list:
     # avoid circular imports
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
+    CylinderSection = _lib.obj_classes.CylinderSection
     Collection = _lib.obj_classes.Collection
     Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
@@ -48,6 +49,7 @@ def format_obj_input(objects: Sequence) -> list:
         elif isinstance(obj, (
                 Cuboid,
                 Cylinder,
+                CylinderSection,
                 Sphere,
                 Sensor,
                 Dipole,
@@ -80,6 +82,7 @@ def format_src_inputs(sources) -> list:
     src_class_types = (
         _lib.obj_classes.Cuboid,
         _lib.obj_classes.Cylinder,
+        _lib.obj_classes.CylinderSection,
         _lib.obj_classes.Sphere,
         _lib.obj_classes.Dipole,
         _lib.obj_classes.Circular,
@@ -230,15 +233,17 @@ def only_allowed_src_types(src_list):
     """
     return only allowed objects. Throw a warning when something is eliminated.
     """
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    Sphere = _lib.obj_classes.Sphere
-    Dipole = _lib.obj_classes.Dipole
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
+    src_class_types = (
+        _lib.obj_classes.Cuboid,
+        _lib.obj_classes.Cylinder,
+        _lib.obj_classes.CylinderSection,
+        _lib.obj_classes.Sphere,
+        _lib.obj_classes.Dipole,
+        _lib.obj_classes.Circular,
+        _lib.obj_classes.Line)
     new_list = []
     for src in src_list:
-        if isinstance(src, (Cuboid, Cylinder, Sphere, Dipole, Circular, Line)):
+        if isinstance(src, src_class_types):
             new_list += [src]
         else:
             print(f'Warning, cannot add {src.__repr__()} to Collection.')

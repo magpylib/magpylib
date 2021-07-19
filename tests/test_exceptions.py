@@ -11,6 +11,15 @@ from magpylib._lib.utility import format_obj_input, format_src_inputs, format_ob
 from magpylib._lib.utility import test_path_format as tpf
 
 
+def getBHv_unknown_source_type():
+    """ unknown source type """
+    magpy.getBv(
+        source_type='badName',
+        magnetization=(1,0,0),
+        dimension=(0,2,1,0,360),
+        position=(0,0,-.5),
+        observer=(1.5,0,-.1))
+
 def getBH_level1_internal_error():
     """ bad source_type input should not happen
     """
@@ -242,7 +251,7 @@ def bad_input_shape_cyl_dim():
 
 
 def bad_input_shape_cyl_mag():
-    """ bad cuboid magnetization shape
+    """ bad cylinder magnetization shape
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
@@ -325,6 +334,7 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cyl)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_sphere)
         self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
+        self.assertRaises(MagpylibBadUserInput, getBHv_unknown_source_type)
 
     def test_except_getBH_lev1(self):
         """ getBH_level1 exception testing

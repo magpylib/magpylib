@@ -1,7 +1,7 @@
 """_lib.obj_classes"""
 
 __all__ = ['Cuboid', 'Cylinder', 'Sphere', 'Collection', 'Sensor',
-    'Dipole', 'Circular', 'Line']
+    'Dipole', 'Circular', 'Line', 'CylinderSection']
 
 # create interface to outside of package
 from magpylib._lib.obj_classes.class_mag_Cuboid import Cuboid
@@ -12,3 +12,4 @@ from magpylib._lib.obj_classes.class_mag_Sphere import Sphere
 from magpylib._lib.obj_classes.class_misc_Dipole import Dipole
 from magpylib._lib.obj_classes.class_current_Circular import Circular
 from magpylib._lib.obj_classes.class_current_Line import Line
+from magpylib._lib.obj_classes.class_mag_CylinderSection import CylinderSection

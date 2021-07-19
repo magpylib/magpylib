@@ -78,31 +78,6 @@ def test_getHv1():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_getHv2():
-    """test field wrapper functions
-    """
-    pos_obs = (1,2,2)
-    mag = [[111,222,333],[22,2,2],[22,-33,-44]]
-    dim = [3,3]
-
-    magpylib.Config.ITER_CYLINDER=75
-    dic = {
-        'source_type': 'Cylinder',
-        'observer': pos_obs,
-        'magnetization': mag,
-        'dimension': dim
-        }
-    B1 = getHv(**dic)
-
-    B2 = []
-    for i in range(3):
-        pm = Cylinder(mag[i],dim)
-        B2 += [getH([pm], pos_obs)]
-    B2 = np.array(B2)
-
-    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
-
-
 def test_getBv3():
     """test field wrapper functions
     """
@@ -310,8 +285,8 @@ def test_BHv_Cylinder_FEM():
 
     # compare against FEM
     B = magpylib.getBv(
-        source_type='Cylinder',
-        dimension=(4,1,2,90,360),
+        source_type='CylinderSection',
+        dimension=(2,4,1,90,360),
         magnetization=np.array((1,2,3))*1000/np.sqrt(14),
         position = (0,0,0.5),
         observer=obsp)
@@ -324,23 +299,22 @@ def test_BHv_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
     B1 = magpylib.getBv(
-        source_type='Cylinder',
-        dimension=[(2,2,0,20,120), (2,2,0,120,220), (2,2,0,220,380)],
+        source_type='CylinderSection',
+        dimension=[(0,2,2,20,120), (0,2,2,120,220), (0,2,2,220,380)],
         magnetization=(22,33,44),
         observer=(1,2,3))
     B1 = np.sum(B1,axis=0)
 
     # one big cylinder
     B2 = magpylib.getBv(
-        source_type='Cylinder',
-        dimension=(2,2),
+        source_type='CylinderSection',
+        dimension=(0,2,2,0,360),
         magnetization=(22,33,44),
         observer=(1,2,3))
 
-    # compute with old code
-    magpylib.Config.ITER_CYLINDER=1000
+    # compute with solid cylinder code
     B3 = magpylib.getBv(
-        source_type='Cylinder_old',
+        source_type='Cylinder',
         dimension=(2,2),
         magnetization=(22,33,44),
         observer=(1,2,3))

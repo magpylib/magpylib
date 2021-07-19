@@ -215,15 +215,6 @@ def bad_dim_input4():
 def bad_dim_input6():
     """cylinder bad dim shape"""
     magpy.magnet.Cylinder(magnetization=a3, dimension=(1,2,0,45))
-def bad_dim_input6a():
-    """cylinder bad dim input di>d """
-    magpy.magnet.Cylinder(magnetization=a3, dimension=(1,5,2,100,150))
-def bad_dim_input6b():
-    """cylinder dim input phi1>phi2"""
-    magpy.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,50))
-def bad_dim_input6c():
-    """cylinder dim input phi2-phi1>360"""
-    magpy.magnet.Cylinder(magnetization=a3, dimension=(4,5,2,100,550))
 
 def bad_dim_input7():
     """Sphere dim type"""
@@ -233,7 +224,18 @@ def bad_dim_input9():
     """Circular dim type"""
     magpy.current.Circular(current=1, diameter=(1,1))
 
-
+def bad_dim_input10():
+    """cylinder section bad dim shape"""
+    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,0,45))
+def bad_dim_input11():
+    """cylinder section bad dim d1>d2"""
+    magpy.magnet.CylinderSection(magnetization=a3, dimension=(3,2,2,0,45))
+def bad_dim_input12():
+    """cylinder section bad dim phi1>phi2"""
+    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,2,100,45))
+def bad_dim_input13():
+    """cylinder section bad dim phi2-phi1>360"""
+    magpy.magnet.CylinderSection(magnetization=a3, dimension=(1,2,2,0,1145))
 
 
 # MISC SOURCE ------------------------------------------------------------
@@ -339,11 +341,12 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, bad_dim_input3)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input4)
         self.assertRaises(MagpylibBadInputShape, bad_dim_input6)
-        self.assertRaises(MagpylibBadUserInput, bad_dim_input6a)
-        self.assertRaises(MagpylibBadUserInput, bad_dim_input6b)
-        self.assertRaises(MagpylibBadUserInput, bad_dim_input6c)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input7)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input9)
+        self.assertRaises(MagpylibBadInputShape, bad_dim_input10)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input11)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input12)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input13)
 
     def test_misc_source_inputs(self):
         """ bad misc source inputs"""

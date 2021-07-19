@@ -3,8 +3,8 @@ Testing all cases against a large set of pre-computed values
 """
 
 import numpy as np
-from magpylib._lib.fields.field_BH_cylinder import field_H_cylinder_tile
-from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
+from magpylib._lib.fields.field_BH_cylinder_tile import (field_H_cylinder_tile,
+    field_BH_cylinder_tile)
 import magpylib as magpy
 
 
@@ -338,23 +338,22 @@ def test_cylinder_field1():
     eins = np.ones(N)
     d,h,_ = dim.T
     dim6 = np.array([nulll, d/2, nulll, eins*360, -h/2, h/2]).T
-    H1 = field_BH_cylinder(True, magg, dim6, poso)
+    H1 = field_BH_cylinder_tile(True, magg, dim6, poso)
 
     assert np.allclose(H1, H0)
 
 
 def test_cylinder_field2():
-    """test various inputs combinations surface-inside-outside
-    """
-    src = magpy.magnet.Cylinder((22,33,44), (2,2))
+    """ testing B for all input combinations in/out/surface of Tile solution"""
+    src = magpy.magnet.CylinderSection((22,33,44), (1,2,2,0,90))
 
-    binn = (14.74170286, 22.25914246, 31.06627547)
-    bout = (0.25006525, 0.60708923, 0.94121555)
+    binn = ( 5.52525937, 13.04561569, 40.11111556)
+    bout = (0.0177018,  0.1277188,  0.27323195)
     nulll = (0,0,0)
 
     # only inside
     btest = np.array([binn]*3)
-    B = src.getB([[.1,.2,.3]]*3)
+    B = src.getB([[.5,.6,.3]]*3)
     assert np.allclose(B, btest)
 
     # only surf
@@ -369,36 +368,36 @@ def test_cylinder_field2():
 
     # surf + out
     btest = np.array([nulll,nulll,bout])
-    B = src.getB([0,0,1],[1,0,.5],[1,2,3])
+    B = src.getB([.6,0,1],[1,0,.5],[1,2,3])
     assert np.allclose(B, btest)
 
     # surf + in
     btest = np.array([nulll,nulll,binn])
-    B = src.getB([0,0,1],[1,0,.5],[.1,.2,.3])
+    B = src.getB([0,.5,1],[1,0,.5],[.5,.6,.3])
     assert np.allclose(B, btest)
 
     # in + out
     btest = np.array([bout,binn])
-    B = src.getB([1,2,3],[.1,.2,.3])
+    B = src.getB([1,2,3],[.5,.6,.3])
     assert np.allclose(B, btest)
 
     # in + out + surf
-    btest = np.array([nulll,nulll,binn,bout,nulll,nulll])
-    B = src.getB([0,0,1],[1,0,.5],[.1,.2,.3],[1,2,3],[.1,.2,-1],[0,-1,.5])
+    btest = np.array([nulll,nulll,binn,bout,nulll, nulll])
+    B = src.getB([.5,.5,1],[0,1,.5],[.5,.6,.3],[1,2,3],[.5,.6,-1], [0,1,-.3])
     assert np.allclose(B, btest)
 
 
 def test_cylinder_field3():
-    """ testing H for all input combinations"""
-    src = magpy.magnet.Cylinder((22,33,44), (2,2))
+    """ testing H for all input combinations in/out/surface of Tile solution"""
+    src = magpy.magnet.CylinderSection((22,33,44), (1,2,2,0,90))
 
-    hinn = (-5.77596934,  -8.54730285, -10.29233096)
-    hout = (0.19899561, 0.48310626, 0.74899554)
+    hinn = (-13.11018204, -15.87919449,  -3.09467591)
+    hout = (0.01408664, 0.1016354,  0.21743108)
     nulll = (0,0,0)
 
     # only inside
     htest = np.array([hinn]*3)
-    H = src.getH([[.1,.2,.3]]*3)
+    H = src.getH([[.5,.6,.3]]*3)
     assert np.allclose(H, htest)
 
     # only surf
@@ -413,20 +412,21 @@ def test_cylinder_field3():
 
     # surf + out
     htest = np.array([nulll,nulll,hout])
-    H = src.getH([0,0,1],[1,0,.5],[1,2,3])
+    H = src.getH([.6,0,1],[1,0,.5],[1,2,3])
     assert np.allclose(H, htest)
 
     # surf + in
     htest = np.array([nulll,nulll,hinn])
-    H = src.getH([0,0,1],[1,0,.5],[.1,.2,.3])
+    H = src.getH([0,.5,1],[1,0,.5],[.5,.6,.3])
     assert np.allclose(H, htest)
 
     # in + out
     htest = np.array([hout,hinn])
-    H = src.getH([1,2,3],[.1,.2,.3])
+    H = src.getH([1,2,3],[.5,.6,.3])
     assert np.allclose(H, htest)
 
     # in + out + surf
-    htest = np.array([nulll,nulll,hinn,hout,nulll,nulll])
-    H = src.getH([0,0,1],[1,0,.5],[.1,.2,.3],[1,2,3],[.1,.2,-1],[0,-1,.5])
+    htest = np.array([nulll,nulll,hinn,hout,nulll, nulll])
+    H = src.getH([.5,.5,1],[0,1,.5],[.5,.6,.3],[1,2,3],[.5,.6,-1], [0,1,-.3])
     assert np.allclose(H, htest)
+
