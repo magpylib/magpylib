@@ -113,6 +113,15 @@ def celv(kc, p, c, s):
 def cel(kcv:np.ndarray, pv:np.ndarray, cv:np.ndarray, sv:np.ndarray) ->np.ndarray:
     """
     combine vectorized and non-vectorized implementations for improved performance
+
+    def ellipticK(x):
+        return elliptic((1-x)**(1/2.), 1, 1, 1)
+
+    def ellipticE(x):
+        return elliptic((1-x)**(1/2.), 1, 1, 1-x)
+
+    def ellipticPi(x, y):
+        return elliptic((1-y)**(1/2.), 1-x, 1, 1)
     """
     n_input = len(kcv)
 
