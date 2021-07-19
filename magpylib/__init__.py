@@ -190,7 +190,7 @@ __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc',
            'getB', 'getH', 'getBv', 'getHv','Sensor',
-           'Collection', 'display', 'Config']
+           'Collection', 'display', 'Config', '__version__']
 
 # create interface to outside of package
 from magpylib import magnet
