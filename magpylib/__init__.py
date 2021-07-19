@@ -188,9 +188,9 @@ or directly through object methods
 __version__ = '4.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-__all__ = ['magnet', 'current', 'misc',
-           'getB', 'getH', 'getBv', 'getHv','Sensor',
-           'Collection', 'display', 'Config', '__version__']
+__all__ = ['magnet', 'current', 'misc', 'getB', 'getH', 'getBv', 'getHv',
+    'Sensor', 'Collection', 'display', 'Config', '__version__',
+    '__author__', '__credits__']
 
 # create interface to outside of package
 from magpylib import magnet
