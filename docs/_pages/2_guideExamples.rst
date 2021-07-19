@@ -20,6 +20,7 @@ Contents
 * :ref:`examples-sensor`
 * :ref:`examples-collection`
 * :ref:`examples-getBHv`
+* :ref:`examples-coil`
 
 
 .. _examples-simple:
@@ -112,4 +113,15 @@ getBHv - Direct access to analytical solutions
 Magpylib provides direct access to the vectorized analytical formulas through the top level ``getBv`` and ``getHv`` functions. The input arguments must be shape (n,x) vectors/lists/tuple. Depending on the ``source_type``, different input arguments are expected (see docstring for details). Static inputs e.g. of shape (3,) are automatically tiled up to shape (n,3).
 
 .. plot:: _codes/examples_getBHv.py
+    :include-source:
+
+
+.. _examples-coil:
+
+Modelling a Coil
+################
+
+A coil consists of large number of windings that can be modeled using ``Circular`` sources. The total coil is then a ``Collection`` of windings.
+
+.. plot:: _codes/examples_coil.py
     :include-source:
