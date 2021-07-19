@@ -15,7 +15,7 @@ mx=my=mz=None
 # ON INTERFACE
 class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
-    Cylinder-Section/Tile (Ring-Section) magnet with homogeneous magnetization. 
+    Cylinder-Section/Tile (Ring-Section) magnet with homogeneous magnetization.
 
     Local object coordinates: The geometric center of the full Cylinder is located
     in the origin of the local object coordinate system. The Cylinder axis conincides
@@ -50,15 +50,42 @@ class CylinderSection(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Examples
     --------
 
-    A Cylinder-Tile with inner diameter d1=2, outer diameter d2=4, spanning over 90 deg in the
-    positive quadrant of the local CS and height h=5.
+    Initialize a CylinderSegment with inner diameter d1=1, outer diameter d2=2,
+    height h=2 spanning over 90 deg in the positive quadrant. By default a CylinderSegment
+    is initialized at position (0,0,0), which corresponds to the center of the full
+    Cylinder, with unit rotation:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.Cylinder(magnetization=(100,100,100), dimension=(2,4,5,0,90))
-    >>> B = magnet.getB((1,2,3))
-    >>> print(B)
-    [-2.74825633  9.77282601 21.43280135]
+    >>> magnet = magpy.magnet.CylinderSection(magnetization=(100,100,100), dimension=(1,2,2,0,90))
+    >>> print(magnet.position)
+    [0. 0. 0.]
+    >>> print(magnet.orientation.as_quat())
+    [0. 0. 0. 1.]
 
+    CylinderSegments are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above CylinderSegment at the observer position (1,1,1),
+
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [9.68649054 9.68649054 7.98245579]
+
+    or at a set of observer positions:
+
+    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(H)
+    [[9.68649054 9.68649054 7.98245579]
+     [0.55368221 0.55368221 0.68274112]
+     [0.13864524 0.13864524 0.16646942]]
+
+    The same result is obtained when the Cylinder moves along a path,
+    away from the observer:
+
+    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
+    >>> H = magnet.getH((1,1,1))
+    >>> print(H)
+    [[9.68649054 9.68649054 7.98245579]
+     [0.55368221 0.55368221 0.68274112]
+     [0.13864524 0.13864524 0.16646942]]
     """
 
     def __init__(
