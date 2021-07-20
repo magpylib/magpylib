@@ -44,20 +44,20 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
 
     Compute the B-field of a spherical magnet at a sensor positioned at (1,2,3):
 
-    >>> import magpylib as mag3
-    >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
-    >>> sensor = mag3.Sensor(position=(1,2,3))
-    >>> B = mag3.getB(source, sensor)
+    >>> import magpylib as magpy
+    >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+    >>> sensor = magpy.Sensor(position=(1,2,3))
+    >>> B = magpy.getB(source, sensor)
     >>> print(B)
     [-0.62497314  0.34089444  0.51134166]
 
     Compute the B-field of a spherical magnet at five path positions as seen
     by an observer at position (1,2,3):
 
-    >>> import magpylib as mag3
-    >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+    >>> import magpylib as magpy
+    >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
     >>> source.move([(x,0,0) for x in [1,2,3,4,5]])
-    >>> B = mag3.getB(source, (1,2,3))
+    >>> B = magpy.getB(source, (1,2,3))
     >>> print(B)
     [[-0.88894262  0.          0.        ]
      [-0.62497314 -0.34089444 -0.51134166]
@@ -68,17 +68,17 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
     Compute the B-field of two sources at two observer positions, with and without
     sumup:
 
-    >>> import magpylib as mag3
-    >>> src1 = mag3.current.Circular(current=15, diameter=2)
-    >>> src2 = mag3.misc.Dipole(moment=(100,100,100))
+    >>> import magpylib as magpy
+    >>> src1 = magpy.current.Circular(current=15, diameter=2)
+    >>> src2 = magpy.misc.Dipole(moment=(100,100,100))
     >>> obs_pos = [(1,1,1), (1,2,3)]
-    >>> B = mag3.getB([src1,src2], obs_pos)
+    >>> B = magpy.getB([src1,src2], obs_pos)
     >>> print(B)
     [[[0.93539608 0.93539608 0.40046672]
       [0.05387784 0.10775569 0.0872515 ]]
      [[3.06293831 3.06293831 3.06293831]
       [0.04340403 0.23872216 0.43404028]]]
-    >>> B = mag3.getB([src1,src2], obs_pos, sumup=True)
+    >>> B = magpy.getB([src1,src2], obs_pos, sumup=True)
     >>> print(B)
     [[3.99833439 3.99833439 3.46340502]
      [0.09728187 0.34647784 0.52129178]]
@@ -129,20 +129,20 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     --------
     Compute the H-field of a spherical magnet at a sensor positioned at (1,2,3):
 
-    >>> import magpylib as mag3
-    >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
-    >>> sensor = mag3.Sensor(position=(1,2,3))
-    >>> H = mag3.getH(source, sensor)
+    >>> import magpylib as magpy
+    >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+    >>> sensor = magpy.Sensor(position=(1,2,3))
+    >>> H = magpy.getH(source, sensor)
     >>> print(H)
     [-0.49733782  0.27127518  0.40691277]
 
     Compute the H-field of a spherical magnet at five path positions as seen
     by an observer at position (1,2,3):
 
-    >>> import magpylib as mag3
-    >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+    >>> import magpylib as magpy
+    >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
     >>> source.move([(x,0,0) for x in [1,2,3,4,5]])
-    >>> H = mag3.getH(source, (1,2,3))
+    >>> H = magpy.getH(source, (1,2,3))
     >>> print(H)
     [[-0.70739806  0.          0.        ]
      [-0.49733782 -0.27127518 -0.40691277]
@@ -153,17 +153,17 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
     Compute the H-field of two sources at two observer positions, with and without
     sumup:
 
-    >>> import magpylib as mag3
-    >>> src1 = mag3.current.Circular(current=15, diameter=2)
-    >>> src2 = mag3.misc.Dipole(moment=(100,100,100))
+    >>> import magpylib as magpy
+    >>> src1 = magpy.current.Circular(current=15, diameter=2)
+    >>> src2 = magpy.misc.Dipole(moment=(100,100,100))
     >>> obs_pos = [(1,1,1), (1,2,3)]
-    >>> H = mag3.getH([src1,src2], obs_pos)
+    >>> H = magpy.getH([src1,src2], obs_pos)
     >>> print(H)
     [[[0.74436455 0.74436455 0.31868129]
       [0.04287463 0.08574925 0.06943254]]
      [[2.43740886 2.43740886 2.43740886]
       [0.03453983 0.18996906 0.34539828]]]
-    >>> H = mag3.getH([src1,src2], obs_pos, sumup=True)
+    >>> H = magpy.getH([src1,src2], obs_pos, sumup=True)
     >>> print(H)
     [[3.18177341 3.18177341 2.75609015]
      [0.07741445 0.27571831 0.41483082]]

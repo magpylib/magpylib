@@ -24,17 +24,16 @@ def tile_dim_cuboid(group: list, n_pp: int):
     return dimv
 
 def tile_dim_cylinder(group: list, n_pp: int):
+    """ tile up cylinder dimensions.
     """
-    tile up cylinder dimensions. They can be shape (2,), (3,) or (5,)
-    For tiling all dimensions are extended to shape(5,)
+    dims = np.array([src.dimension for src in group])
+    dimv = np.tile(dims, n_pp).reshape((-1, 2))
+    return dimv
+
+def tile_dim_cylinder_section(group: list, n_pp: int):
+    """ tile up cylinder section dimensions.
     """
-    dims = [src.dimension for src in group]
-    for i,d in enumerate(dims):
-        if len(d) == 2:
-            dims[i] = np.array([d[0], d[1], 0, 0, 360])
-        elif len(d) == 3:
-            dims[i] = np.array([d[0], d[1], d[2], 0, 360])
-    dims = np.array(dims)
+    dims = np.array([src.dimension for src in group])
     dimv = np.tile(dims, n_pp).reshape((-1, 5))
     return dimv
 
@@ -63,10 +62,10 @@ def tile_current(group: list, n_pp: int):
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
-    """
-    create dictionary for level1 input
+    """ create dictionaries for level1 input
     """
     # pylint: disable=protected-access
+    # pylint: disable=too-many-return-statements
 
     # tile up basic attributes that all sources have
     # position
@@ -81,8 +80,8 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pos_obs
     posov = np.tile(poso, (len(group),1))
 
-    # determine which group we are dealing with
-    src_type = group[0].object_type
+    # determine which group we are dealing with and tile up dim and exitation
+    src_type = group[0]._object_type
 
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
@@ -99,8 +98,14 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     if src_type == 'Cylinder':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim_cylinder(group, n_pp)
-        return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
-            'observer': posov, 'orientation':rotobj}
+        return {'source_type':'Cylinder', 'magnetization':magv, 'dimension':dimv,
+            'position':posv, 'observer': posov, 'orientation':rotobj}
+
+    if src_type == 'CylinderSegment':
+        magv = tile_mag(group, n_pp)
+        dimv = tile_dim_cylinder_section(group, n_pp)
+        return {'source_type':'CylinderSegment', 'magnetization':magv, 'dimension':dimv,
+            'position':posv, 'observer': posov, 'orientation':rotobj}
 
     if src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
@@ -159,6 +164,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # avoid circular imports --------------------------------------------------
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
+    CylinderSegment = _lib.obj_classes.CylinderSegment
     Sphere = _lib.obj_classes.Sphere
     Collection = _lib.obj_classes.Collection
     Dipole = _lib.obj_classes.Dipole
@@ -244,8 +250,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     n_pix = int(n_pp/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[],[],[],[],[]]   # store groups here
-    order = [[],[],[],[],[],[]]        # keep track of the source order
+    src_sorted = [[],[],[],[],[],[],[]]   # store groups here
+    order = [[],[],[],[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
         if isinstance(src, Cuboid):
             src_sorted[0] += [src]
@@ -253,18 +259,21 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif isinstance(src, Cylinder):
             src_sorted[1] += [src]
             order[1] += [i]
-        elif isinstance(src, Sphere):
+        elif isinstance(src, CylinderSegment):
             src_sorted[2] += [src]
             order[2] += [i]
-        elif isinstance(src, Dipole):
+        elif isinstance(src, Sphere):
             src_sorted[3] += [src]
             order[3] += [i]
-        elif isinstance(src, Circular):
+        elif isinstance(src, Dipole):
             src_sorted[4] += [src]
             order[4] += [i]
-        elif isinstance(src, Line):
+        elif isinstance(src, Circular):
             src_sorted[5] += [src]
             order[5] += [i]
+        elif isinstance(src, Line):
+            src_sorted[6] += [src]
+            order[6] += [i]
 
     # evaluate each group in one vectorized step -------------------------------
     B = np.empty((l,m,n_pix,3))                               # allocate B

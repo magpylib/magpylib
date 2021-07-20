@@ -46,8 +46,8 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     --------
     By default a Sphere is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> magnet = mag3.magnet.Sphere(magnetization=(100,100,100), diameter=1)
+    >>> import magpylib as magpy
+    >>> magnet = magpy.magnet.Sphere(magnetization=(100,100,100), diameter=1)
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
@@ -86,15 +86,16 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             position = (0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 
-        # set attributes
+        # instance attributes
         self.diameter = diameter
-        self.object_type = 'Sphere'
+        self._object_type = 'Sphere'
 
+    # property getters and setters
     @property
     def diameter(self):
         """ Object diameter attribute getter and setter.
@@ -105,9 +106,8 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     def diameter(self, dia):
         """ Set Sphere diameter, float, [mm].
         """
-        # input type and init check
+        # input type check
         if Config.CHECK_INPUTS:
-            #check_scalar_init(dia, 'diameter')
             check_scalar_type(dia, 'diameter')
 
         # secure type

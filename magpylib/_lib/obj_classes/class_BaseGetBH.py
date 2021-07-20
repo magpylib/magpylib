@@ -51,9 +51,9 @@ class BaseGetBH:
         --------
         Compute the B-field [mT] at a sensor directly through the source method:
 
-        >>> import magpylib as mag3
-        >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
-        >>> sensor = mag3.Sensor(position=(1,2,3))
+        >>> import magpylib as magpy
+        >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+        >>> sensor = magpy.Sensor(position=(1,2,3))
         >>> B = source.getB(sensor)
         >>> print(B)
         [-0.62497314  0.34089444  0.51134166]
@@ -61,8 +61,8 @@ class BaseGetBH:
         Compute the B-field [mT] of a source at five path positions as seen
         by an observer at position (1,2,3):
 
-        >>> import magpylib as mag3
-        >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+        >>> import magpylib as magpy
+        >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
         >>> source.move([(x,0,0) for x in [1,2,3,4,5]])
         >>> B = source.getB((1,2,3))
         >>> print(B)
@@ -74,10 +74,10 @@ class BaseGetBH:
 
         Compute the B-field [mT] of a source at two sensors:
 
-        >>> import magpylib as mag3
-        >>> source = mag3.current.Circular(current=15, diameter=1)
-        >>> sens1 = mag3.Sensor(position=(1,2,3))
-        >>> sens2 = mag3.Sensor(position=(2,3,4))
+        >>> import magpylib as magpy
+        >>> source = magpy.current.Circular(current=15, diameter=1)
+        >>> sens1 = magpy.Sensor(position=(1,2,3))
+        >>> sens2 = magpy.Sensor(position=(2,3,4))
         >>> B = source.getB(sens1, sens2)
         >>> print(B)
         [[0.01421427 0.02842853 0.02114728]
@@ -121,9 +121,9 @@ class BaseGetBH:
         --------
         Compute the H-field [kA/m] at a sensor directly through the source method:
 
-        >>> import magpylib as mag3
-        >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
-        >>> sensor = mag3.Sensor(position=(1,2,3))
+        >>> import magpylib as magpy
+        >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+        >>> sensor = magpy.Sensor(position=(1,2,3))
         >>> H = source.getH(sensor)
         >>> print(H)
         [-0.49733782  0.27127518  0.40691277]
@@ -131,8 +131,8 @@ class BaseGetBH:
         Compute the H-field [kA/m] of a source at five path positions as seen
         by an observer at position (1,2,3):
 
-        >>> import magpylib as mag3
-        >>> source = mag3.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+        >>> import magpylib as magpy
+        >>> source = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
         >>> source.move([(x,0,0) for x in [1,2,3,4,5]])
         >>> H = source.getH((1,2,3))
         >>> print(H)
@@ -144,10 +144,10 @@ class BaseGetBH:
 
         Compute the H-field [kA/m] of a source at two sensors:
 
-        >>> import magpylib as mag3
-        >>> source = mag3.current.Circular(current=15, diameter=1)
-        >>> sens1 = mag3.Sensor(position=(1,2,3))
-        >>> sens2 = mag3.Sensor(position=(2,3,4))
+        >>> import magpylib as magpy
+        >>> source = magpy.current.Circular(current=15, diameter=1)
+        >>> sens1 = magpy.Sensor(position=(1,2,3))
+        >>> sens2 = magpy.Sensor(position=(2,3,4))
         >>> H = source.getH(sens1, sens2)
         >>> print(H)
         [[0.01131135 0.02262271 0.01682847]

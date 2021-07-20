@@ -44,8 +44,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     By default a Sensor is initialized at position (0,0,0), with unit rotation
     and pixel (0,0,0):
 
-    >>> import magpylib as mag3
-    >>> sensor = mag3.Sensor()
+    >>> import magpylib as magpy
+    >>> sensor = magpy.Sensor()
     >>> print(sensor.position)
     [0. 0. 0.]
     >>> print(sensor.pixel)
@@ -56,9 +56,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Sensors are observers for magnetic field computation. In this example we compute the
     H-field as seen by the sensor in the center of a circular current loop:
 
-    >>> import magpylib as mag3
-    >>> sensor = mag3.Sensor()
-    >>> loop = mag3.current.Circular(current=1, diameter=1)
+    >>> import magpylib as magpy
+    >>> sensor = magpy.Sensor()
+    >>> loop = magpy.current.Circular(current=1, diameter=1)
     >>> H = sensor.getH(loop)
     >>> print(H)
     [0. 0. 1.]
@@ -66,9 +66,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Field computation is performed at every pixel of a sensor. The above example is reproduced
     for a 2x2-pixel sensor:
 
-    >>> import magpylib as mag3
-    >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-    >>> loop = mag3.current.Circular(current=1, diameter=1)
+    >>> import magpylib as magpy
+    >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+    >>> loop = magpy.current.Circular(current=1, diameter=1)
     >>> H = sensor.getH(loop)
     >>> print(H.shape)
     (2, 2, 3)
@@ -81,9 +81,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Compute the field of a sensor along a path. The path positions are chosen so that
     they coincide with the pixel positions of the previous example:
 
-    >>> import magpylib as mag3
-    >>> loop = mag3.current.Circular(current=1, diameter=1)
-    >>> sensor = mag3.Sensor()
+    >>> import magpylib as magpy
+    >>> loop = magpy.current.Circular(current=1, diameter=1)
+    >>> sensor = magpy.Sensor()
     >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
     >>> print(sensor.position)
     [[0. 0. 0.]
@@ -105,22 +105,21 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             pixel=(0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
 
-        # set mag and dim attributes
+        # instance attributes
         self.pixel = pixel
-        self.object_type = 'Sensor'
+        self._object_type = 'Sensor'
 
 
-    # properties ----------------------------------------------------
+    # property getters and setters
     @property
     def pixel(self):
         """ Sensor pixel attribute getter and setter.
         """
         return self._pixel
-
 
     @pixel.setter
     def pixel(self, pix):
@@ -171,9 +170,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensors are observers for magnetic field computation. In this example we compute the
         B-field [mT] as seen by the sensor in the center of a circular current loop:
 
-        >>> import magpylib as mag3
-        >>> sensor = mag3.Sensor()
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> import magpylib as magpy
+        >>> sensor = magpy.Sensor()
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
         >>> B = sensor.getB(loop)
         >>> print(B)
         [0.         0.         1.25663706]
@@ -181,9 +180,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Field computation is performed at every pixel of a sensor. The above example is reproduced
         for a 2x2-pixel sensor:
 
-        >>> import magpylib as mag3
-        >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> import magpylib as magpy
+        >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
         >>> B = sensor.getB(loop)
         >>> print(B.shape)
         (2, 2, 3)
@@ -196,9 +195,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Compute the field of a sensor along a path. The path positions are chosen so that
         they coincide with the pixel positions in the previous example.
 
-        >>> import magpylib as mag3
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
-        >>> sensor = mag3.Sensor()
+        >>> import magpylib as magpy
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> sensor = magpy.Sensor()
         >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
         >>> print(sensor.position)
         [[0. 0. 0.]
@@ -246,9 +245,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensors are observers for magnetic field computation. In this example we compute the
         H-field as seen by the sensor in the center of a circular current loop:
 
-        >>> import magpylib as mag3
-        >>> sensor = mag3.Sensor()
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> import magpylib as magpy
+        >>> sensor = magpy.Sensor()
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
         >>> H = sensor.getH(loop)
         >>> print(H)
         [0. 0. 1.]
@@ -256,9 +255,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Field computation is performed at every pixel of a sensor. The above example is reproduced
         for a 2x2-pixel sensor:
 
-        >>> import magpylib as mag3
-        >>> sensor = mag3.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
+        >>> import magpylib as magpy
+        >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
         >>> H = sensor.getH(loop)
         >>> print(H.shape)
         (2, 2, 3)
@@ -271,9 +270,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Compute the field of a sensor along a path. The path positions are chosen so that
         they coincide with the pixel positions in the previous example.
 
-        >>> import magpylib as mag3
-        >>> loop = mag3.current.Circular(current=1, diameter=1)
-        >>> sensor = mag3.Sensor()
+        >>> import magpylib as magpy
+        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> sensor = magpy.Sensor()
         >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
         >>> print(sensor.position)
         [[0. 0. 0.]

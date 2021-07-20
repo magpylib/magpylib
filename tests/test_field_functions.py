@@ -2,7 +2,7 @@ import pickle
 import os
 import numpy as np
 from magpylib._lib.fields.field_BH_cuboid import field_BH_cuboid
-from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
+from magpylib._lib.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
@@ -11,7 +11,7 @@ from magpylib import Config
 
 # # GENERATE TEST DATA
 # n = 500
-# mag3.Config.EDGESIZE = 1e-14
+# magpy.Config.EDGESIZE = 1e-14
 
 # # dim general
 # dim_gen = np.random.rand(n,3)
@@ -70,8 +70,8 @@ def test_field_BH_cuboid_mag0():
     assert np.allclose(mag,B), 'Cuboid magnetization=0 case broken'
 
 
-def test_field_BH_cylinder_mag0():
-    """test cylinder field magnetization=0
+def test_field_BH_cylinder_tile_mag0():
+    """test cylinder_tile field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
@@ -81,8 +81,8 @@ def test_field_BH_cylinder_mag0():
     z2=z1+z2
     dim = np.array([r1,r2,phi1,phi2,z1,z2]).T
     pos = np.random.rand(n,3)
-    B = field_BH_cylinder(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Cylinder magnetization=0 case broken'
+    B = field_BH_cylinder_tile(True, mag, dim, pos)
+    assert np.allclose(mag,B), 'CylinderTile magnetization=0 case broken'
 
 
 def test_field_sphere_vs_v2():

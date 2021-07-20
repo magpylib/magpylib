@@ -34,11 +34,11 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     are stored in the ``sources`` attribute, which is an ordered set (list with
     unique elements only)
 
-    >>> import magpylib as mag3
-    >>> sphere = mag3.magnet.Sphere((1,2,3),1)
-    >>> loop = mag3.current.Circular(1,1)
-    >>> dipole = mag3.misc.Dipole((1,2,3))
-    >>> col = mag3.Collection(sphere, loop, dipole)
+    >>> import magpylib as magpy
+    >>> sphere = magpy.magnet.Sphere((1,2,3),1)
+    >>> loop = magpy.current.Circular(1,1)
+    >>> dipole = magpy.misc.Dipole((1,2,3))
+    >>> col = magpy.Collection(sphere, loop, dipole)
     >>> print(col.sources)
     [Sphere(id=1879891544384), Circular(id=1879891543040), Dipole(id=1879892157152)]
 
@@ -66,9 +66,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     Manipulate all objects in a Collection directly using ``move`` and ``rotate`` methods
 
-    >>> import magpylib as mag3
-    >>> sphere = mag3.magnet.Sphere((1,2,3),1)
-    >>> loop = mag3.current.Circular(1,1)
+    >>> import magpylib as magpy
+    >>> sphere = magpy.magnet.Sphere((1,2,3),1)
+    >>> loop = magpy.current.Circular(1,1)
     >>> col = sphere + loop
     >>> col.move((1,1,1))
     >>> print(sphere.position)
@@ -83,20 +83,19 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def __init__(self, *sources):
 
-        # inherit
+        # init inheritance
         BaseDisplayRepr.__init__(self)
 
+        # instance attributes
         self.sources = sources
-        self.object_type = 'Collection'
+        self._object_type = 'Collection'
 
-
-    # sources properties --------------------------------------------
+    # property getters and setters
     @property
     def sources(self):
         """ Collection sources attribute getter and setter.
         """
         return self._sources
-
 
     @sources.setter
     def sources(self, sources):
@@ -112,7 +111,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         self._sources = src_list
 
 
-    # dunders -------------------------------------------------------
+    # dunders
     def __add__(self, source):
         self.add(source)
         return self
@@ -152,9 +151,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         Add sources to a Collection:
 
-        >>> import magpylib as mag3
-        >>> src = mag3.current.Circular(1,1)
-        >>> col = mag3.Collection()
+        >>> import magpylib as magpy
+        >>> src = magpy.current.Circular(1,1)
+        >>> col = magpy.Collection()
         >>> col.add(src)
         >>> print(col.sources)
         [Circular(id=2519738714432)]
@@ -188,9 +187,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         --------
         Remove a specific source from a Collection:
 
-        >>> import magpylib as mag3
-        >>> src1 = mag3.current.Circular(1,1)
-        >>> src2 = mag3.current.Circular(1,1)
+        >>> import magpylib as magpy
+        >>> src1 = magpy.current.Circular(1,1)
+        >>> src2 = magpy.current.Circular(1,1)
         >>> col = src1 + src2
         >>> print(col.sources)
         [Circular(id=2405009623360), Circular(id=2405010235504)]
@@ -239,9 +238,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         --------
         This method will apply the ``move`` operation to each Collection object individually.
 
-        >>> import magpylib as mag3
-        >>> dipole = mag3.misc.Dipole((1,2,3))
-        >>> loop = mag3.current.Circular(1,1)
+        >>> import magpylib as magpy
+        >>> dipole = magpy.misc.Dipole((1,2,3))
+        >>> loop = magpy.current.Circular(1,1)
         >>> col = loop + dipole
         >>> col.move([(1,1,1), (2,2,2)])
         >>> for src in col:
@@ -302,9 +301,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         This method will apply the ``rotate`` operation to each Collection object individually.
 
         >>> from scipy.spatial.transform import Rotation as R
-        >>> import magpylib as mag3
-        >>> dipole = mag3.misc.Dipole((1,2,3))
-        >>> loop = mag3.current.Circular(1,1)
+        >>> import magpylib as magpy
+        >>> dipole = magpy.misc.Dipole((1,2,3))
+        >>> loop = magpy.current.Circular(1,1)
         >>> col = loop + dipole
         >>> col.rotate(R.from_euler('x', [45,90], degrees=True))
         >>> for src in col:
@@ -375,9 +374,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         This method will apply the ``rotate_from_angax`` operation to each Collection object
         individually.
 
-        >>> import magpylib as mag3
-        >>> dipole = mag3.misc.Dipole((1,2,3))
-        >>> loop = mag3.current.Circular(1,1)
+        >>> import magpylib as magpy
+        >>> dipole = magpy.misc.Dipole((1,2,3))
+        >>> loop = magpy.current.Circular(1,1)
         >>> col = loop + dipole
         >>> col.rotate_from_angax([45,90], 'x')
         >>> for src in col:
@@ -411,8 +410,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         --------
         Create a copy of a Collection object:
 
-        >>> import magpylib as mag3
-        >>> col = mag3.Collection()
+        >>> import magpylib as magpy
+        >>> col = magpy.Collection()
         >>> print(id(col))
         2221754911040
         >>> col2 = col.copy()
@@ -435,9 +434,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         --------
         Create a collection with non-zero paths
 
-        >>> import magpylib as mag3
-        >>> dipole = mag3.misc.Dipole((1,2,3), position=(1,2,3))
-        >>> loop = mag3.current.Circular(1,1, position=[(1,1,1)]*2)
+        >>> import magpylib as magpy
+        >>> dipole = magpy.misc.Dipole((1,2,3), position=(1,2,3))
+        >>> loop = magpy.current.Circular(1,1, position=[(1,1,1)]*2)
         >>> col = loop + dipole
         >>> for src in col:
         >>>     print(src.position)

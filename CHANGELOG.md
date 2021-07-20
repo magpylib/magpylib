@@ -6,7 +6,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [3.1.0] - 2021-07-12
+## [4.0.0] - 2021-07-12
 
 ### Core feature
 - Cylinder tile computation. Cylinder class can now have (d,h) inputs or with inner diameter (d,h,di) or with inner diameter and cylinder sector angles (d,h,di,phi1,phi2). The old computation is still accessible through getBHv. The new implementation is exact (closed form, no more iteration) and is implemented from a new paper from F.Slanovc(preprint, 2021). Computation times 50-100 µs. Performance increases planned in the future.

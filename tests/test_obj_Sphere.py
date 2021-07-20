@@ -3,7 +3,7 @@ import pickle
 import numpy as np
 from magpylib.magnet import Sphere
 from magpylib import Collection
-import magpylib as mag3
+import magpylib as magpy
 
 # """data generation for test_Sphere()"""
 
@@ -67,7 +67,7 @@ def test_Sphere_squeeze():
     """ testing squeeze output
     """
     src1 = Sphere((1,1,1),1)
-    sensor = mag3.Sensor(pixel=[(1,2,3),(1,2,3)])
+    sensor = magpy.Sensor(pixel=[(1,2,3),(1,2,3)])
     B = src1.getB(sensor)
     assert B.shape==(2,3)
     H = src1.getH(sensor)
@@ -82,5 +82,5 @@ def test_Sphere_squeeze():
 def test_repr():
     """ test __repr__
     """
-    pm3 = mag3.magnet.Sphere((1,2,3),3)
+    pm3 = magpy.magnet.Sphere((1,2,3),3)
     assert pm3.__repr__()[:6] == 'Sphere', 'Sphere repr failed'

@@ -21,6 +21,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     # avoid circular imports
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
+    CylinderSegment = _lib.obj_classes.CylinderSegment
 
     for i,obj in enumerate(faced_objects):
 
@@ -33,14 +34,10 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             poss = [obj._position[-1]]
 
         # vector length, color and magnetization
-        if isinstance(obj, Cuboid):
+        if isinstance(obj, (Cuboid,Cylinder)):
             length = 1.8*np.amax(obj.dimension)
-        elif isinstance(obj, Cylinder):
-            odim = obj.dimension
-            if odim.shape == (2,):
-                length = 1.8*np.amax(odim)
-            else:
-                length = 1.8*np.amax(odim[[1,4]]) #r2,h
+        elif isinstance(obj, CylinderSegment):
+            length = 1.8*np.amax(obj.dimension[:3]) #d1,d2,h
         else:
             length = 1.8*obj.diameter # Sphere
         col = cmap(i/len(faced_objects))
@@ -49,16 +46,14 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
         # collect all draw positions and directions
         draw_pos, draw_direc = [], []
         for rot,pos in zip(rots,poss):
-            if isinstance(obj, Cylinder): # change cylinder_tile draw_pos to geometric center
+            if isinstance(obj, CylinderSegment): # change cylinder_tile draw_pos to geometric center
                 odim = obj.dimension
-                if odim.shape==(5,):
-                    r1,r2,phi1,phi2,_ = odim
-                    phi_mid = (phi1+phi2)/2*np.pi/180
-                    r_mid = (r2+r1)/2
-                    shift = r_mid*np.array([np.cos(phi_mid),np.sin(phi_mid),0])
-                    draw_pos += [pos + shift]
-                else:
-                    draw_pos += [pos]
+                d1,d2,_,phi1,phi2 = odim
+                r1,r2  = d1/2, d2/2
+                phi_mid = (phi1+phi2)/2*np.pi/180
+                r_mid = (r2+r1)/2
+                shift = r_mid*np.array([np.cos(phi_mid),np.sin(phi_mid),0])
+                draw_pos += [pos + shift]
             else:
                 draw_pos += [pos]
             direc = mag / (np.linalg.norm(mag)+1e-6)

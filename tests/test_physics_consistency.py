@@ -1,5 +1,5 @@
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 
 
 def test_dipole_approximation():
@@ -9,23 +9,23 @@ def test_dipole_approximation():
     pos = (1234,-234, 345)
 
     # cuboid with volume = 1 mm^3
-    src1 = mag3.magnet.Cuboid(mag, dimension=(1,1,1))
+    src1 = magpy.magnet.Cuboid(mag, dimension=(1,1,1))
     B1 = src1.getB(pos)
 
     # Cylinder with volume = 1 mm^3
     dia = np.sqrt(4/np.pi)
-    src2 = mag3.magnet.Cylinder(mag, dimension=(dia,1))
+    src2 = magpy.magnet.Cylinder(mag, dimension=(dia,1))
     B2 = src2.getB(pos)
     assert np.allclose(B1,B2)
 
     # Sphere with volume = 1 mm^3
     dia = (6/np.pi)**(1/3)
-    src3 = mag3.magnet.Sphere(mag, dia)
+    src3 = magpy.magnet.Sphere(mag, dia)
     B3 = src3.getB(pos)
     assert np.allclose(B1,B3)
 
     #  Dipole with mom=mag
-    src4 = mag3.misc.Dipole(moment=mag)
+    src4 = magpy.misc.Dipole(moment=mag)
     B4 = src4.getB(pos)
     assert np.allclose(B1,B4)
 
@@ -33,8 +33,8 @@ def test_dipole_approximation():
     dia = 2
     i0 = 234
     m0 = dia**2 * np.pi**2 / 10 * i0
-    src1 = mag3.current.Circular(current=i0, diameter=dia)
-    src2 = mag3.misc.Dipole(moment=(0,0,m0))
+    src1 = magpy.current.Circular(current=i0, diameter=dia)
+    src2 = magpy.misc.Dipole(moment=(0,0,m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
     assert np.allclose(H1, H2)
@@ -52,8 +52,8 @@ def test_Circular_vs_Cylinder_field():
     r0 = 2
     h0 = 1e-4
     i0 = 1
-    src1 = mag3.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dimension=(r0,h0))
-    src2 = mag3.current.Circular(current=i0, diameter=r0)
+    src1 = magpy.magnet.Cylinder(magnetization=(0,0,i0/h0*4*np.pi/10), dimension=(r0,h0))
+    src2 = magpy.current.Circular(current=i0, diameter=r0)
 
     H1 = src1.getH(pos_obs)
     H2 = src2.getH(pos_obs)
@@ -78,13 +78,13 @@ def test_Line_vs_Circular():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = mag3.getBv(source_type='Line', observer=p, current=1,
+        Bl = magpy.getBv(source_type='Line', observer=p, current=1,
             segment_start=ps, segment_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
     # field from current loop
-    src = mag3.current.Circular(current=1, diameter=2)
+    src = magpy.current.Circular(current=1, diameter=2)
     Bcs = src.getB(po)
 
     assert np.allclose(Bls,Bcs)
@@ -109,7 +109,7 @@ def test_Line_vs_Infinite():
     pe = (0,0,1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [mag3.getBv(source_type='Line', observer=p, current=1,
+        Bls += [magpy.getBv(source_type='Line', observer=p, current=1,
             segment_start=ps, segment_end=pe)]
         Binfs += [Binf(1,p)]
     Bls = np.array(Bls)

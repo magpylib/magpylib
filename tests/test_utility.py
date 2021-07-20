@@ -1,5 +1,5 @@
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 from magpylib._lib.utility import (check_duplicates,
     only_allowed_src_types)
 
@@ -7,8 +7,8 @@ from magpylib._lib.utility import (check_duplicates,
 def test_duplicates():
     """ test duplicate elimination and sorting
     """
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Cylinder((1,2,3),(1,2))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cylinder((1,2,3),(1,2))
     src_list = [pm1,pm2,pm1]
     src_list_new = check_duplicates(src_list)
     assert src_list_new == [pm1,pm2], 'duplicate elimination failed'
@@ -16,9 +16,9 @@ def test_duplicates():
 def test_only_allowed_src_types():
     """ tests elimination of unwanted types
     """
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Cylinder((1,2,3),(1,2))
-    sens = mag3.Sensor()
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cylinder((1,2,3),(1,2))
+    sens = magpy.Sensor()
     src_list = [pm1,pm2,sens]
     list_new = only_allowed_src_types(src_list)
     assert list_new == [pm1,pm2], 'Failed to eliminate sensor'
@@ -28,9 +28,9 @@ def test_format_getBH_class_inputs():
     """ special case testing of different input formats
     """
     possis = [3,3,3]
-    sens = mag3.Sensor(position=(3,3,3))
-    pm1 = mag3.magnet.Cuboid((11,22,33),(1,2,3))
-    pm2 = mag3.magnet.Cuboid((11,22,33),(1,2,3))
+    sens = magpy.Sensor(position=(3,3,3))
+    pm1 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
     col = pm1 + pm2
 
     B1 = pm1.getB(possis)

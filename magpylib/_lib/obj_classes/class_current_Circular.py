@@ -46,8 +46,8 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     --------
     # By default a Circular is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> magnet = mag3.current.Circular(current=100, diameter=2)
+    >>> import magpylib as magpy
+    >>> magnet = magpy.current.Circular(current=100, diameter=2)
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
@@ -86,15 +86,16 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             position = (0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 
-        # set mag and dim attributes
+        # instance attributes
         self.diameter = diameter
-        self.object_type = 'Circular'
+        self._object_type = 'Circular'
 
+    # property getters and setters
     @property
     def diameter(self):
         """ Object diameter attribute getter and setter.
@@ -105,9 +106,8 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def diameter(self, dia):
         """ Set Circular loop diameter, float, [mm].
         """
-        # input type and init check
+        # input type check
         if Config.CHECK_INPUTS:
-            #check_scalar_init(dia, 'diameter')
             check_scalar_type(dia, 'diameter')
 
         # secure type

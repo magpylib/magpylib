@@ -43,8 +43,8 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     --------
     By default a Dipole is initialized at position (0,0,0), with unit rotation:
 
-    >>> import magpylib as mag3
-    >>> dipole = mag3.misc.Dipole(moment=(100,100,100))
+    >>> import magpylib as magpy
+    >>> dipole = magpy.misc.Dipole(moment=(100,100,100))
     >>> print(dipole.position)
     [0. 0. 0.]
     >>> print(dipole.orientation.as_quat())
@@ -83,15 +83,15 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
             position = (0,0,0),
             orientation = None):
 
-        # inherit base_geo class
+        # init inheritance
         BaseGeo.__init__(self, position, orientation)
         BaseDisplayRepr.__init__(self)
 
-        # set moment attribute using setter
+        # instance attributes
         self.moment = moment
-        self.object_type = 'Dipole'
+        self._object_type = 'Dipole'
 
-    # properties ----------------------------------------------------
+    # property getters and setters
     @property
     def moment(self):
         """ Object moment attributes getter and setter.
@@ -105,7 +105,6 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # input type check
         if Config.CHECK_INPUTS:
             check_vector_type(mom, 'moment')
-            #check_vector_init(mom, 'moment')
 
         # secure type
         mom = np.array(mom, dtype=float)

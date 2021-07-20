@@ -66,7 +66,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             dim = np.array(kwargs['dimension'], dtype=float)
             tile_params['dimension'] = (dim,2)
 
-        elif src_type == 'Cylinder_old':
+        elif src_type == 'CylinderSegment':
             mag = np.array(kwargs['magnetization'], dtype=float)
             tile_params['magnetization'] = (mag,2)
             dim = np.array(kwargs['dimension'], dtype=float)
@@ -95,6 +95,10 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
             tile_params['segment_start'] = (pos_start,2)
             pos_end = np.array(kwargs['segment_end'], dtype=float)
             tile_params['segment_end'] = (pos_end,2)
+
+        else:
+            msg = 'Unknown source_type'
+            raise MagpylibBadUserInput(msg)
 
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
@@ -196,8 +200,8 @@ def getBv(**kwargs):
 
     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
-    >>> import magpylib as mag3
-    >>> B = mag3.getBv(
+    >>> import magpylib as magpy
+    >>> B = magpy.getBv(
     >>>     source_type='Dipole',
     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
     >>>     moment=(100,100,100),
@@ -212,8 +216,8 @@ def getBv(**kwargs):
     respectively. The observer position is (1,2,3) for each evaluation.
 
     >>> import numpy as np
-    >>> import magpylib as mag3
-    >>> B = mag3.getBv(
+    >>> import magpylib as magpy
+    >>> B = magpy.getBv(
     >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
@@ -297,8 +301,8 @@ def getHv(**kwargs):
 
     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
-    >>> import magpylib as mag3
-    >>> H = mag3.getHv(
+    >>> import magpylib as magpy
+    >>> H = magpy.getHv(
     >>>     source_type='Dipole',
     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
     >>>     moment=(100,100,100),
@@ -313,8 +317,8 @@ def getHv(**kwargs):
     by default. The observer position is (1,2,3) for each evaluation.
 
     >>> import numpy as np
-    >>> import magpylib as mag3
-    >>> H = mag3.getHv(
+    >>> import magpylib as magpy
+    >>> H = magpy.getHv(
     >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],

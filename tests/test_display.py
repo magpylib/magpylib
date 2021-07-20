@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
-import magpylib as mag3
-from magpylib.magnet import Cylinder, Cuboid, Sphere
+import magpylib as magpy
+from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
 
 # pylint: disable=assignment-from-no-return
 
@@ -17,11 +17,11 @@ def test_Cylinder_display():
     assert x is None, 'display test fail'
 
 
-def test_Cylinder_display_dim5():
+def test_CylinderSegment_display():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    src = Cylinder((1,2,3),(4,5,2,30,40))
+    src = CylinderSegment((1,2,3),(2,4,5,30,40))
     x = src.display(axis=ax, show_path=15)
     assert x is None, 'show_path should revert to True'
 
@@ -63,7 +63,7 @@ def test_Sensor_display():
     """ testing display
     """
     ax = plt.subplot(projection='3d')
-    sens = mag3.Sensor(pixel=[(1,2,3),(2,3,4)])
+    sens = magpy.Sensor(pixel=[(1,2,3),(2,3,4)])
     sens.move([(.4,.4,.4)]*33, increment=True)
     x = sens.display(axis=ax, markers=[(100,100,100)], show_path=15)
     assert x is None, 'display test fail'
@@ -76,7 +76,7 @@ def test_Circular_display():
     """ testing display for Circular source
     """
     ax = plt.subplot(projection='3d')
-    src = mag3.current.Circular(current=1, diameter=1)
+    src = magpy.current.Circular(current=1, diameter=1)
     x = src.display(axis=ax)
     assert x is None, 'display test fail'
 
@@ -90,9 +90,9 @@ def test_col_display():
     """
     # pylint: disable=assignment-from-no-return
     ax = plt.subplot(projection='3d')
-    pm1 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Cuboid((1,2,3),(1,2,3))
-    col = mag3.Collection(pm1,pm2)
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    col = magpy.Collection(pm1,pm2)
     x = col.display(axis=ax)
     assert x is None, 'colletion display test fail'
 
@@ -102,8 +102,8 @@ def test_dipole_display():
     """
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection='3d')
-    dip = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
-    dip2 = mag3.misc.Dipole(moment=(1,2,3), position=(2,2,2))
+    dip = magpy.misc.Dipole(moment=(1,2,3), position=(2,2,2))
+    dip2 = magpy.misc.Dipole(moment=(1,2,3), position=(2,2,2))
     dip2.move([(.4,.4,.4)]*5, increment=True)
     x = dip.display(axis=ax2)
     assert x is None, 'display test fail'
@@ -116,11 +116,11 @@ def test_circular_line_display():
     """
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection='3d')
-    src1 = mag3.current.Circular(1,2)
-    src2 = mag3.current.Circular(1,2)
+    src1 = magpy.current.Circular(1,2)
+    src2 = magpy.current.Circular(1,2)
     src1.move([(.4,.4,.4)]*5, increment=True)
-    src3 = mag3.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
-    src4 = mag3.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
+    src3 = magpy.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
+    src4 = magpy.current.Line(1, [(0,0,0),(1,1,1),(2,2,2)])
     src3.move([(.4,.4,.4)]*5, increment=False)
     x = src1.display(axis=ax2, show_path=2)
     assert x is None, 'display test fail'

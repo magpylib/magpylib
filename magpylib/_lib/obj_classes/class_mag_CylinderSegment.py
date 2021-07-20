@@ -1,4 +1,4 @@
-"""Magnet Cuboid class code"""
+"""Magnet Cylinder class code"""
 
 import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
@@ -6,30 +6,32 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._lib.config import Config
-from magpylib._lib.input_checks import check_vector_format, check_vector_type
+from magpylib._lib.input_checks import check_input_cyl_sect, check_vector_type
 
 # init for tool tips
-a=b=c=None
+d1=d2=h=phi1=phi2=None
 mx=my=mz=None
 
 # ON INTERFACE
-class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
-    Cuboid magnet with homogeneous magnetization.
+    Cylinder-Section/Tile (Ring-Section) magnet with homogeneous magnetization.
 
-    Local object coordinates: The geometric center of the Cuboid is located
-    in the origin of the local object coordinate system. Cuboid sides are
-    parallel to the local basis vectors. Local (Cuboid) and global CS coincide when
+    Local object coordinates: The geometric center of the full Cylinder is located
+    in the origin of the local object coordinate system. The Cylinder axis conincides
+    with the local CS z-axis. Local (Cylinder) and global CS coincide when
     position=(0,0,0) and orientation=unit_rotation.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,)
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-        the local CS of the Cuboid object.
+        the local CS of the Cylinder object.
 
-    dimension: array_like, shape (3,)
-        Dimension/Size of the Cuboid with sides [a,b,c] in units of [mm].
+    dimension: array_like, shape (5,)
+        Dimension/Size of a Cylinder-Section (d1,d2,h,phi1,phi2) where d1 < d2 denote inner
+        and outer diameter in units of [mm], phi1 < phi2 denote the Cylinder section angles
+        in units of [deg] and h the Cylinder height in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
         Object position (local CS origin) in the global CS in units of [mm].
@@ -43,49 +45,53 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Returns
     -------
-    Cuboid object: Cuboid
+    CylinderSegment object: CylinderSegment
 
     Examples
     --------
-    By default a Cuboid is initialized at position (0,0,0), with unit rotation:
+
+    Initialize a CylinderSegment with inner diameter d1=1, outer diameter d2=2,
+    height h=2 spanning over 90 deg in the positive quadrant. By default a CylinderSegment
+    is initialized at position (0,0,0), which corresponds to the center of the full
+    Cylinder, with unit rotation:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.Cuboid(magnetization=(100,100,100), dimension=(1,1,1))
+    >>> magnet = magpy.magnet.CylinderSegment(magnetization=(100,100,100), dimension=(1,2,2,0,90))
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
     [0. 0. 0. 1.]
 
-    Cuboids are magnetic field sources. Below we compute the H-field [kA/m] of the above Cuboid
-    at the observer position (1,1,1),
+    CylinderSegments are magnetic field sources. Below we compute the H-field [kA/m] of the
+    above CylinderSegment at the observer position (1,1,1),
 
     >>> H = magnet.getH((1,1,1))
     >>> print(H)
-    [2.4844679 2.4844679 2.4844679]
+    [9.68649054 9.68649054 7.98245579]
 
     or at a set of observer positions:
 
     >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(H)
-    [[2.4844679  2.4844679  2.4844679 ]
-     [0.30499798 0.30499798 0.30499798]
-     [0.0902928  0.0902928  0.0902928 ]]
+    [[9.68649054 9.68649054 7.98245579]
+     [0.55368221 0.55368221 0.68274112]
+     [0.13864524 0.13864524 0.16646942]]
 
-    The same result is obtained when the Cuboid moves along a path,
+    The same result is obtained when the Cylinder moves along a path,
     away from the observer:
 
     >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
     >>> H = magnet.getH((1,1,1))
     >>> print(H)
-    [[2.4844679  2.4844679  2.4844679 ]
-     [0.30499798 0.30499798 0.30499798]
-     [0.0902928  0.0902928  0.0902928 ]]
+    [[9.68649054 9.68649054 7.98245579]
+     [0.55368221 0.55368221 0.68274112]
+     [0.13864524 0.13864524 0.16646942]]
     """
 
     def __init__(
             self,
             magnetization = (mx,my,mz),
-            dimension = (a,b,c),
+            dimension = (d1,d2,h,phi1,phi2),
             position = (0,0,0),
             orientation = None):
 
@@ -96,7 +102,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'Cuboid'
+        self._object_type = 'CylinderSegment'
 
     # property getters and setters
     @property
@@ -107,7 +113,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @dimension.setter
     def dimension(self, dim):
-        """ Set Cuboid dimension (a,b,c), shape (3,), [mm].
+        """ Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg].
         """
         # input type check
         if Config.CHECK_INPUTS:
@@ -118,6 +124,6 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_vector_format(dim, (3,), 'dimension')
+            check_input_cyl_sect(dim)
 
         self._dimension = dim

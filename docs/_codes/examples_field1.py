@@ -1,12 +1,12 @@
 import numpy as np
 import matplotlib.pyplot as plt
-import magpylib as mag3
+import magpylib as magpy
 
 # define Pyplot figure
 fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(10,5))
 
 # define Magpylib source
-src = mag3.magnet.Cuboid(magnetization=(500,0,500), dimension=(2,2,2))
+src = magpy.magnet.Cuboid(magnetization=(500,0,500), dimension=(2,2,2))
 
 # create a grid in the xz-symmetry plane
 ts = np.linspace(-3, 3, 30)
@@ -17,7 +17,7 @@ B = src.getB(grid)
 ampB = np.linalg.norm(B, axis=2)
 
 #compute H-field on grid using the top-level function
-H = mag3.getH(src, grid)
+H = magpy.getH(src, grid)
 ampH = np.linalg.norm(H, axis=2)
 
 # display field with Pyplot

@@ -1,13 +1,13 @@
-import magpylib as mag3
+import magpylib as magpy
 
 # define Magpylib sources
-s1 = mag3.magnet.Sphere(magnetization=(0,0,100), diameter=1)
-s2 = mag3.magnet.Cuboid(magnetization=(0,0,100), dimension=(1,1,1))
-s3 = mag3.current.Circular(current=1, diameter=1)
-s4 = mag3.magnet.Cylinder(magnetization=(0,0,100), dimension=(1,1))
+s1 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1)
+s2 = magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(1,1,1))
+s3 = magpy.current.Circular(current=1, diameter=1)
+s4 = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(1,1))
 
 # create a Collection of three sources
-col = mag3.Collection(s1, s2, s3)
+col = magpy.Collection(s1, s2, s3)
 
 # add another source to the collection using __add__
 col = col + s4

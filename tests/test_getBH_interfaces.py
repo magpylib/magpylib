@@ -1,15 +1,15 @@
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 
 
 def test_getB_interfaces1():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
+    src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
-    B = mag3.getBv(
+    sens = magpy.Sensor(pixel=poso)
+    B = magpy.getBv(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -18,9 +18,9 @@ def test_getB_interfaces1():
     B1 = np.tile(B,(2,2,1,1))
     B1 = np.swapaxes(B1,0,2)
 
-    B_test = mag3.getB(src, sens)
-    assert B_test.shape == B1.shape, 'mag3.getB1 shape failed'
-    assert np.allclose(B1, B_test), 'mag3.getB1 value failed'
+    B_test = magpy.getB(src, sens)
+    assert B_test.shape == B1.shape, 'magpy.getB1 shape failed'
+    assert np.allclose(B1, B_test), 'magpy.getB1 value failed'
 
     B_test = src.getB(poso)
     assert B_test.shape == B1.shape, 'src.getB shape failed'
@@ -38,11 +38,11 @@ def test_getB_interfaces1():
 def test_getB_interfaces2():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
+    src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
-    B = mag3.getBv(
+    sens = magpy.Sensor(pixel=poso)
+    B = magpy.getBv(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -52,9 +52,9 @@ def test_getB_interfaces2():
     B2 = np.tile(B,(2,2,2,1,1))
     B2 = np.swapaxes(B2,1,3)
 
-    B_test = mag3.getB([src,src], sens)
-    assert B_test.shape == B2.shape, 'mag3.getB2 shape failed'
-    assert np.allclose(B2, B_test), 'mag3.getB2 value failed'
+    B_test = magpy.getB([src,src], sens)
+    assert B_test.shape == B2.shape, 'magpy.getB2 shape failed'
+    assert np.allclose(B2, B_test), 'magpy.getB2 value failed'
 
     B_test = sens.getB([src,src])
     assert B_test.shape == B2.shape, 'sens.getB2 shape failed'
@@ -64,11 +64,11 @@ def test_getB_interfaces2():
 def test_getB_interfaces3():
     """ self-consitent test of different possibilities for computing the field
     """
-    src = mag3.magnet.Cuboid((1,2,3), (1,2,3))
+    src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
-    B = mag3.getBv(
+    sens = magpy.Sensor(pixel=poso)
+    B = magpy.getBv(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -78,9 +78,9 @@ def test_getB_interfaces3():
     B3 = np.tile(B,(2,2,2,1,1))
     B3 = np.swapaxes(B3,0,3)
 
-    B_test = mag3.getB(src, [sens,sens])
-    assert B_test.shape == B3.shape, 'mag3.getB3 shape failed'
-    assert np.allclose(B3, B_test), 'mag3.getB3 value failed'
+    B_test = magpy.getB(src, [sens,sens])
+    assert B_test.shape == B3.shape, 'magpy.getB3 shape failed'
+    assert np.allclose(B3, B_test), 'magpy.getB3 value failed'
 
     B_test = src.getB([poso,poso])
     assert B_test.shape == B3.shape, 'src.getB2 shape failed'
@@ -96,13 +96,13 @@ def test_getH_interfaces1():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
+    sens = magpy.Sensor(pixel=poso)
 
-    H = mag3.getHv(
+    H = magpy.getHv(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
@@ -111,9 +111,9 @@ def test_getH_interfaces1():
     H1 = np.tile(H,(2,2,1,1))
     H1 = np.swapaxes(H1,0,2)
 
-    H_test = mag3.getH(src, sens)
-    assert H_test.shape == H1.shape, 'mag3.getH1 shape failed'
-    assert np.allclose(H1, H_test), 'mag3.getH1 value failed'
+    H_test = magpy.getH(src, sens)
+    assert H_test.shape == H1.shape, 'magpy.getH1 shape failed'
+    assert np.allclose(H1, H_test), 'magpy.getH1 value failed'
 
     H_test = src.getH(poso)
     assert H_test.shape == H1.shape, 'src.getH shape failed'
@@ -133,13 +133,13 @@ def test_getH_interfaces2():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
+    sens = magpy.Sensor(pixel=poso)
 
-    H = mag3.getHv(
+    H = magpy.getHv(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
@@ -149,9 +149,9 @@ def test_getH_interfaces2():
     H2 = np.tile(H,(2,2,2,1,1))
     H2 = np.swapaxes(H2,1,3)
 
-    H_test = mag3.getH([src,src], sens)
-    assert H_test.shape == H2.shape, 'mag3.getH2 shape failed'
-    assert np.allclose(H2, H_test), 'mag3.getH2 value failed'
+    H_test = magpy.getH([src,src], sens)
+    assert H_test.shape == H2.shape, 'magpy.getH2 shape failed'
+    assert np.allclose(H2, H_test), 'magpy.getH2 value failed'
 
     H_test = sens.getH([src,src])
     assert H_test.shape == H2.shape, 'sens.getH2 shape failed'
@@ -163,13 +163,13 @@ def test_getH_interfaces3():
     """
     mag=(22,-33,44)
     dim=(3,2,3)
-    src = mag3.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(mag, dim)
     src.move([(.1,.2,.3)]*10, increment=True)
 
     poso = [[(-1,-2,-3)]*2]*2
-    sens = mag3.Sensor(pixel=poso)
+    sens = magpy.Sensor(pixel=poso)
 
-    H = mag3.getHv(
+    H = magpy.getHv(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
@@ -179,9 +179,9 @@ def test_getH_interfaces3():
     H3 = np.tile(H,(2,2,2,1,1))
     H3 = np.swapaxes(H3,0,3)
 
-    H_test = mag3.getH(src, [sens,sens])
-    assert H_test.shape == H3.shape, 'mag3.getH3 shape failed'
-    assert np.allclose(H3, H_test), 'mag3.getH3 value failed'
+    H_test = magpy.getH(src, [sens,sens])
+    assert H_test.shape == H3.shape, 'magpy.getH3 shape failed'
+    assert np.allclose(H3, H_test), 'magpy.getH3 value failed'
 
     H_test = src.getH([poso,poso])
     assert H_test.shape == H3.shape, 'src.getH2 shape failed'

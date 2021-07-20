@@ -1,7 +1,7 @@
 import pickle
 import os
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 from magpylib.magnet import Cuboid
 from magpylib._lib.obj_classes.class_Sensor import Sensor
 
@@ -61,7 +61,7 @@ def test_Cuboid_add():
     src1 = Cuboid((1,2,3),(1,2,3))
     src2 = Cuboid((1,2,3),(1,2,3))
     col = src1 + src2
-    assert isinstance(col,mag3.Collection), 'adding cuboides fail'
+    assert isinstance(col,magpy.Collection), 'adding cuboides fail'
 
 
 def test_Cuboid_squeeze():

@@ -15,7 +15,7 @@ class BaseDisplayRepr:
     - repr
     """
     def __init__(self):
-        self.object_type = None
+        self._object_type = None
 
     # ------------------------------------------------------------------
     # INTERFACE
@@ -71,8 +71,8 @@ class BaseDisplayRepr:
 
         Display Magpylib objects graphically using Matplotlib:
 
-        >>> import magpylib as mag3
-        >>> obj = mag3.magnet.Sphere(magnetization=(0,0,1), diameter=1)
+        >>> import magpylib as magpy
+        >>> obj = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
         >>> obj.move([(.2,0,0)]*50, increment=True)
         >>> obj.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
         >>> obj.display(show_direction=True, show_path=10)
@@ -81,9 +81,9 @@ class BaseDisplayRepr:
         Display figure on your own 3D Matplotlib axis:
 
         >>> import matplotlib.pyplot as plt
-        >>> import magpylib as mag3
+        >>> import magpylib as magpy
         >>> my_axis = plt.axes(projection='3d')
-        >>> obj = mag3.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
+        >>> obj = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
         >>> obj.move([(x,0,0) for x in [0,1,2,3,4,5]])
         >>> obj.display(axis=my_axis)
         >>> plt.show()
@@ -105,4 +105,4 @@ class BaseDisplayRepr:
     # ------------------------------------------------------------------
     # INTERFACE
     def __repr__(self) -> str:
-        return f'{self.object_type}(id={str(id(self))})'
+        return f'{self._object_type}(id={str(id(self))})'

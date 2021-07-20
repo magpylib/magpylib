@@ -192,31 +192,29 @@ def check_vector_format(inp, shape, origin):
         raise MagpylibBadInputShape(msg)
 
 
-def check_vector_format_dim_cyl(inp):
+def check_input_cyl_sect(inp):
     """
-    - check if cylinder dimension has correct format (2,) or(3,) or (5,)
-    - check if di<d, phi1<phi2
+    - check if cylinder dimension has correct format (5,)
+    - check if d1<d2, phi1<phi2
+    - check if phi2-phi1 > 360
     - return error msg
     """
-    if not (inp.shape in [(2,), (3,), (5,)]):
-        msg = '''Bad dimension input shape. Dimension must be (d,h) or (d,h,di)
-            or (d,h,di,phi1,phi2).'''
+    if not inp.shape == (5,):
+        msg = '''Bad dimension input shape. Dimension must be (d1,d2,h,phi1,phi2).'''
         raise MagpylibBadInputShape(msg)
 
-    if inp.shape in [(3,),(5,)]:
-        d,_,di = inp[:3]
-        if di >= d:
-            msg = 'di must be smaller than d.'
-            raise MagpylibBadUserInput(msg)
+    d1,d2,_,phi1,phi2 = inp
+    if d1 >= d2:
+        msg = 'd1 must be smaller than d2.'
+        raise MagpylibBadUserInput(msg)
 
-    if inp.shape==(5,):
-        _,_,_,phi1,phi2 = inp
-        if phi1>=phi2:
-            msg = 'phi1 must be smaller than phi2.'
-            raise MagpylibBadUserInput(msg)
-        if (phi2-phi1)>360:
-            msg = 'phi2-phi1 cannot be larger than 360°.'
-            raise MagpylibBadUserInput(msg)
+    if phi1>=phi2:
+        msg = 'phi1 must be smaller than phi2.'
+        raise MagpylibBadUserInput(msg)
+
+    if (phi2-phi1)>360:
+        msg = 'phi2-phi1 cannot be larger than 360°.'
+        raise MagpylibBadUserInput(msg)
 
 
 def check_position_format(inp, origin):
