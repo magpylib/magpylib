@@ -7,6 +7,17 @@ from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_position_format
 
+
+def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
+    """
+    determine if arg1 and arg2 lie close to each other
+    input: ndarray, shape (n,) or numpy-interpretable scalar
+    output: ndarray, dtype=bool
+    """
+    EDGESIZE = Config.EDGESIZE
+    return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
+
+
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"

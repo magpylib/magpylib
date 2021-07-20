@@ -5,16 +5,7 @@
 import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._lib.fields.special_el3 import el3_angle
-from magpylib._lib.config import Config
-
-def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
-    """
-    determine if arg1 and arg2 lie close to each other
-    input: ndarray, shape (n,) or numpy-interpretable scalar
-    output: ndarray, dtype=bool
-    """
-    EDGESIZE = Config.EDGESIZE
-    return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
+from magpylib._lib.utility import close
 
 
 def arctan_k_tan_2(k, phi):
