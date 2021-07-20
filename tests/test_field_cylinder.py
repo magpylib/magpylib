@@ -343,7 +343,7 @@ def test_cylinder_field1():
     assert np.allclose(H1, H0)
 
 
-def test_cylinder_field2():
+def test_cylinder_slanovc_field2():
     """ testing B for all input combinations in/out/surface of Tile solution"""
     src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
 
@@ -387,7 +387,7 @@ def test_cylinder_field2():
     assert np.allclose(B, btest)
 
 
-def test_cylinder_field3():
+def test_cylinder_slanovc_field3():
     """ testing H for all input combinations in/out/surface of Tile solution"""
     src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
 
@@ -430,3 +430,15 @@ def test_cylinder_field3():
     H = src.getH([.5,.5,1],[0,1,.5],[.5,.6,.3],[1,2,3],[.5,.6,-1], [0,1,-.3])
     assert np.allclose(H, htest)
 
+
+def test_cylinder_rauber_field4():
+    """
+    test continuiuty across indefinite form in cylinder_rauber field when observer at r=r0
+    """
+    src = magpy.magnet.Cylinder((22,33,0), (2,2))
+    es = list(10**-np.linspace(11,15,50))
+    xs = np.r_[1-np.array(es), 1, 1+np.array(es)[::-1]]
+    possis = [(x,0,1.5) for x in xs]
+    B = src.getB(possis)
+    B = B/B[25]
+    assert np.all(abs(1-B) < 1e-8)

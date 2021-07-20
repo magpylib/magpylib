@@ -131,7 +131,7 @@ def field_Hcy_transv(
     #   result is numerically stable in the vicinity of of r=r0
     #   so only the special case must be caught (not the surroundings)
     mask_special = rm==0
-    argc = np.zeros(n)
+    argc = np.ones(n)*1e16      # should be np.Inf but leads to 1/0 problems in cel
     argc[~mask_special] = -4*rr0[~mask_special]/rm2[~mask_special]
 
     elle_p = ellipe(argp)
@@ -162,8 +162,6 @@ def field_Hcy_transv(
         - zm*am             * elle_m   +  zp*ap             * elle_p
         + zm/am*(2*r02+zm2) * ellk_m   -  zp/ap*(2*r02+zp2) * ellk_p
         + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+r02) * one_over_rm)
-    # prefactor        
-    #Hr = - np.cos(phi)/(4*np.pi*r2)*Hr
 
     # implementation of Furlani1993
     # # generating the iterative summand basics for simpsons approximation
