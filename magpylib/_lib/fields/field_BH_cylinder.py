@@ -7,7 +7,7 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 import numpy as np
 from scipy.special import ellipk, ellipe
 from magpylib._lib.fields.special_cel import cel
-from magpylib._lib.config import Config
+from magpylib._lib.utility import close
 
 
 def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
@@ -126,7 +126,13 @@ def field_Hcy_transv(
 
     argp = -4*rr0/ap2
     argm = -4*rr0/am2
-    argc = -4*rr0/rm2
+
+    # special case r=r0 : indefinite form
+    #   result is numerically stable in the vicinity of of r=r0
+    #   so only the special case must be caught (not the surroundings)
+    mask_special = rm==0
+    argc = np.zeros(n)
+    argc[~mask_special] = -4*rr0[~mask_special]/rm2[~mask_special]
 
     elle_p = ellipe(argp)
     elle_m = ellipe(argm)
@@ -137,12 +143,6 @@ def field_Hcy_transv(
     ellpi_m = cel(np.sqrt(1-argm), 1-argc, onez, onez) # elliptic_Pi
 
     # compute fields
-    Hr = - np.cos(phi)/(4*np.pi*r2)*(
-            - zm*am             * elle_m   +  zp*ap             * elle_p
-            + zm/am*(2*r02+zm2) * ellk_m   -  zp/ap*(2*r02+zp2) * ellk_p
-            + (zm/am            * ellpi_m  -  zp/ap             * ellpi_p) * rp*(r2+r02)/rm
-            )
-
     Hphi = np.sin(phi)/(4*np.pi*r2)*(
         + zm*am                  * elle_m   -  zp*ap                  * elle_p
         - zm/am*(2*r02+zm2+2*r2) * ellk_m   +  zp/ap*(2*r02+zp2+2*r2) * ellk_p
@@ -153,6 +153,17 @@ def field_Hcy_transv(
         + am              * elle_m  -  ap              * elle_p
         - (r02+zm2+r2)/am * ellk_m  +  (r02+zp2+r2)/ap * ellk_p
         )
+
+    # special case 1/rm
+    one_over_rm = np.zeros(n)
+    one_over_rm[~mask_special] = 1/rm[~mask_special]
+
+    Hr = - np.cos(phi)/(4*np.pi*r2)*(
+        - zm*am             * elle_m   +  zp*ap             * elle_p
+        + zm/am*(2*r02+zm2) * ellk_m   -  zp/ap*(2*r02+zp2) * ellk_p
+        + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+r02) * one_over_rm)
+    # prefactor        
+    #Hr = - np.cos(phi)/(4*np.pi*r2)*Hr
 
     # implementation of Furlani1993
     # # generating the iterative summand basics for simpsons approximation
@@ -224,8 +235,6 @@ def field_BH_cylinder(
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
 
-    edgesize = Config.EDGESIZE
-
     # transform to Cy CS --------------------------------------------
     x, y, z = pos_obs.T
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
@@ -235,22 +244,31 @@ def field_BH_cylinder(
     Br, Bphi, Bz = np.zeros((3,len(x)))
 
     # create masks to distinguish between cases ---------------------
-    # special case mag = 0
+
+    r0,z0 = dim.T/2
+    m0 = close(r, r0)        # on Cylinder plane
+    m1 = close(abs(z), z0)   # on top or bottom plane
+    m2 = np.abs(z)<=z0       # inside Cylinder plane
+    m3 = r<=r0               # in-between top and bottom plane
+
+    # special case: mag = 0
     mask0 = (np.linalg.norm(mag,axis=1)==0)
-    # special case on/off edge
-    d,h = dim.T
-    mask_edge = (abs(r-d/2) < edgesize) | (abs(abs(z)-h/2) < edgesize)
-    # not special case
+
+    # special case: on Cylinder surface
+    mask_edge = (m0 & m2) | (m1 & m3)
+
+    # general case
     mask_gen = ~mask0 & ~mask_edge
 
-    # ax/transv
+    # axial/transv magnetization cases
     magx, magy, magz = mag.T
     mask_tv = (magx != 0) | (magy != 0)
     mask_ax = (magz != 0)
-    # inside/outside
-    mask_inside = (r<dim[:,0]/2) * (abs(z)<dim[:,1]/2)
 
-    # general cases
+    # inside/outside
+    mask_inside = m2 & m3
+
+    # general case masks
     mask_tv = mask_tv & mask_gen
     mask_ax = mask_ax & mask_gen
     mask_inside = mask_inside & mask_gen
