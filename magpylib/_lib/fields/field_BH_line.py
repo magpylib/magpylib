@@ -39,7 +39,10 @@ def field_BH_line_from_vert(
     pos_end = np.concatenate([vert[1:] for vert in vertex_sets])
 
     # create input for vectorized computation in one go
-    pos_obs = np.tile(pos_obs[:npp], (nseg,1))
+    pos_obs = np.reshape(pos_obs, (nv, npp,3))
+    pos_obs = np.repeat(pos_obs, nvs, axis=0)
+    pos_obs = np.reshape(pos_obs, (-1, 3))
+
     curr_tile = np.repeat(curr_tile, npp)
     pos_start = np.repeat(pos_start, npp, axis=0)
     pos_end = np.repeat(pos_end, npp, axis=0)

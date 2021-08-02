@@ -22,6 +22,7 @@ def tile_dim_cuboid(group: list, n_pp: int):
     dimv = np.tile(dims, n_pp).reshape((-1, 3))
     return dimv
 
+
 def tile_dim_cylinder(group: list, n_pp: int):
     """ tile up cylinder dimensions.
     """
@@ -29,12 +30,14 @@ def tile_dim_cylinder(group: list, n_pp: int):
     dimv = np.tile(dims, n_pp).reshape((-1, 2))
     return dimv
 
+
 def tile_dim_cylinder_section(group: list, n_pp: int):
     """ tile up cylinder section dimensions.
     """
     dims = np.array([src.dimension for src in group])
     dimv = np.tile(dims, n_pp).reshape((-1, 5))
     return dimv
+
 
 def tile_dia(group: list, n_pp: int):
     """ tile up diameter
@@ -160,15 +163,6 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
-    # avoid circular imports --------------------------------------------------
-    #Cuboid = _lib.obj_classes.Cuboid
-    #Cylinder = _lib.obj_classes.Cylinder
-    #CylinderSegment = _lib.obj_classes.CylinderSegment
-    #Sphere = _lib.obj_classes.Sphere
-    #Collection = _lib.obj_classes.Collection
-    #Dipole = _lib.obj_classes.Dipole
-    #Circular = _lib.obj_classes.Circular
-    #Line = _lib.obj_classes.Line
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
 

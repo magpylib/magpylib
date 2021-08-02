@@ -62,3 +62,26 @@ def test_Line_specials():
     line = magpy.current.Line(current=0, vertices=[(1,2,3),(3,2,1)])
     b = line.getB([0,0,0])
     assert np.allclose(b,np.zeros(3))
+
+
+def test_line_position_bug():
+    """ line positions were not properly computed in collections
+    """
+    verts1 = np.array([(1,0,0), (0,1,0), (-1,0,0)])
+    verts2 = np.array([(1,0,0), (0,1,0), (-1,0,0), (0,-1,0)])
+
+    poso = [[(0,.99,.5), (0,.99,-.5)]]*3
+
+    s1=magpy.current.Line(1, verts1+np.array((0,0,.5)))
+    s2=magpy.current.Line(1, verts2-np.array((0,0,.5)))
+    col = s1+s2
+    #B1 = col.getB([(0,.99,.5), (0,.99,-.5)])
+    B1 = col.getB(poso)
+
+    s1=magpy.current.Line(1, verts1, position=(0,0,.5))
+    s2=magpy.current.Line(1, verts2, position=(0,0,-.5))
+    col = s1+s2
+    #B2 = col.getB([(0,.99,.5), (0,.99,-.5)])
+    B2 = col.getB(poso)
+
+    assert np.allclose(B1, B2)
