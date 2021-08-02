@@ -40,36 +40,28 @@ def format_obj_input(objects: Sequence) -> list:
     ### Info:
     - exits if invalid sources are given
     """
-    # avoid circular imports
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    CylinderSegment = _lib.obj_classes.CylinderSegment
-    Collection = _lib.obj_classes.Collection
-    Sensor = _lib.obj_classes.Sensor
-    Sphere = _lib.obj_classes.Sphere
-    Dipole = _lib.obj_classes.Dipole
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
+    # pylint: disable=protected-access
 
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
             obj_list += format_obj_input(obj) # recursive flattening
-        elif isinstance(obj, Collection):
-            obj_list += obj.sources
-        elif isinstance(obj, (
-                Cuboid,
-                Cylinder,
-                CylinderSegment,
-                Sphere,
-                Sensor,
-                Dipole,
-                Circular,
-                Line)):
-            obj_list += [obj]
         else:
-            msg = 'Unknown input object type.'
-            raise MagpylibBadUserInput(msg)
+            try:
+                if obj._object_type == 'Collection':
+                    obj_list += obj.sources
+                elif obj._object_type in (
+                    'Cuboid',
+                    'Cylinder',
+                    'CylinderSegment',
+                    'Sphere',
+                    'Sensor',
+                    'Dipole',
+                    'Circular',
+                    'Line'):
+                    obj_list += [obj]
+            except Exception as error:
+                raise MagpylibBadUserInput('Unknown input object type.') from error
 
     return obj_list
 
@@ -89,30 +81,27 @@ def format_src_inputs(sources) -> list:
     ### Info:
     - raises an error if sources format is bad
     """
-    # avoid circular imports
-    src_class_types = (
-        _lib.obj_classes.Cuboid,
-        _lib.obj_classes.Cylinder,
-        _lib.obj_classes.CylinderSegment,
-        _lib.obj_classes.Sphere,
-        _lib.obj_classes.Dipole,
-        _lib.obj_classes.Circular,
-        _lib.obj_classes.Line)
-    Collection = _lib.obj_classes.Collection
+    # pylint: disable=protected-access
 
-    # bare source -> list
+    src_class_types = (
+        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Circular', 'Line')
+
+    # if bare source make into list
     if not isinstance(sources, (list,tuple)):
         sources = [sources]
 
     # flatten collections
     src_list = []
-    for src in sources:
-        if isinstance(src, Collection):
-            src_list += src.sources
-        elif isinstance(src, src_class_types):
-            src_list += [src]
-        else:
-            raise MagpylibBadUserInput('Unknown source type of input.')
+    try:
+        for src in sources:
+            if src._object_type == 'Collection':
+                src_list += src.sources
+            elif src._object_type in src_class_types:
+                src_list += [src]
+            else:
+                raise MagpylibBadUserInput
+    except Exception as error:
+        raise MagpylibBadUserInput('Unknown source type of input.') from error
 
     return list(sources), src_list
 
@@ -242,20 +231,17 @@ def all_same(lst:list)->bool:
 
 def only_allowed_src_types(src_list):
     """
-    return only allowed objects. Throw a warning when something is eliminated.
+    return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
-    src_class_types = (
-        _lib.obj_classes.Cuboid,
-        _lib.obj_classes.Cylinder,
-        _lib.obj_classes.CylinderSegment,
-        _lib.obj_classes.Sphere,
-        _lib.obj_classes.Dipole,
-        _lib.obj_classes.Circular,
-        _lib.obj_classes.Line)
+    # pylint: disable=protected-access
+
+    src_class_types = ('Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole',
+        'Circular', 'Line')
     new_list = []
     for src in src_list:
-        if isinstance(src, src_class_types):
+        if src._object_type in src_class_types:
             new_list += [src]
         else:
-            print(f'Warning, cannot add {src.__repr__()} to Collection.')
+            if Config.CHECK_INPUTS:
+                print(f'Warning, cannot add {src.__repr__()} to Collection.')
     return new_list

@@ -2,7 +2,6 @@
 
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from magpylib import _lib
 
 
 def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
@@ -18,11 +17,6 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
 
-    # avoid circular imports
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    CylinderSegment = _lib.obj_classes.CylinderSegment
-
     for i,obj in enumerate(faced_objects):
 
         # add src attributes position and orientation depending on show_path
@@ -34,9 +28,9 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
             poss = [obj._position[-1]]
 
         # vector length, color and magnetization
-        if isinstance(obj, (Cuboid,Cylinder)):
+        if obj._object_type in ('Cuboid', 'Cylinder'):
             length = 1.8*np.amax(obj.dimension)
-        elif isinstance(obj, CylinderSegment):
+        elif obj._object_type == 'CylinderSegment':
             length = 1.8*np.amax(obj.dimension[:3]) #d1,d2,h
         else:
             length = 1.8*obj.diameter # Sphere
@@ -46,7 +40,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
         # collect all draw positions and directions
         draw_pos, draw_direc = [], []
         for rot,pos in zip(rots,poss):
-            if isinstance(obj, CylinderSegment): # change cylinder_tile draw_pos to geometric center
+            if obj._object_type == 'CylinderSegment': # change cylinder_tile draw_pos to geo center
                 odim = obj.dimension
                 d1,d2,_,phi1,phi2 = odim
                 r1,r2  = d1/2, d2/2

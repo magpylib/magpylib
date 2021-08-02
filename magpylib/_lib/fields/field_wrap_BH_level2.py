@@ -4,7 +4,6 @@ from magpylib._lib.utility import (all_same, check_static_sensor_orient,
     format_src_inputs, format_obs_inputs)
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib import _lib
 from magpylib._lib.input_checks import check_excitations, check_dimensions
 
 
@@ -162,14 +161,14 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # pylint: disable=too-many-statements
 
     # avoid circular imports --------------------------------------------------
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    CylinderSegment = _lib.obj_classes.CylinderSegment
-    Sphere = _lib.obj_classes.Sphere
-    Collection = _lib.obj_classes.Collection
-    Dipole = _lib.obj_classes.Dipole
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
+    #Cuboid = _lib.obj_classes.Cuboid
+    #Cylinder = _lib.obj_classes.Cylinder
+    #CylinderSegment = _lib.obj_classes.CylinderSegment
+    #Sphere = _lib.obj_classes.Sphere
+    #Collection = _lib.obj_classes.Collection
+    #Dipole = _lib.obj_classes.Dipole
+    #Circular = _lib.obj_classes.Circular
+    #Line = _lib.obj_classes.Line
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
 
@@ -253,25 +252,25 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     src_sorted = [[],[],[],[],[],[],[]]   # store groups here
     order = [[],[],[],[],[],[],[]]        # keep track of the source order
     for i,src in enumerate(src_list):
-        if isinstance(src, Cuboid):
+        if src._object_type == 'Cuboid':
             src_sorted[0] += [src]
             order[0] += [i]
-        elif isinstance(src, Cylinder):
+        elif src._object_type == 'Cylinder':
             src_sorted[1] += [src]
             order[1] += [i]
-        elif isinstance(src, CylinderSegment):
+        elif src._object_type == 'CylinderSegment':
             src_sorted[2] += [src]
             order[2] += [i]
-        elif isinstance(src, Sphere):
+        elif src._object_type == 'Sphere':
             src_sorted[3] += [src]
             order[3] += [i]
-        elif isinstance(src, Dipole):
+        elif src._object_type == 'Dipole':
             src_sorted[4] += [src]
             order[4] += [i]
-        elif isinstance(src, Circular):
+        elif src._object_type == 'Circular':
             src_sorted[5] += [src]
             order[5] += [i]
-        elif isinstance(src, Line):
+        elif src._object_type == 'Line':
             src_sorted[6] += [src]
             order[6] += [i]
 
@@ -290,7 +289,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # rearrange B when there is at least one Collection with more than one source
     if l > l0:
         for i,src in enumerate(sources):
-            if isinstance(src, Collection):
+            if src._object_type == 'Collection':
                 col_len = len(src.sources)
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice

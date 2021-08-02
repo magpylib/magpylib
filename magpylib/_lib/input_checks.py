@@ -4,27 +4,19 @@ import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._lib.exceptions import (MagpylibBadUserInput, MagpylibBadInputShape,
     MagpylibMissingInput)
-from magpylib import _lib
-
 
 def check_dimensions(sources):
     """ check if all sources have dimension (or similar) initialized
     """
-    # avoid circular imports
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    Sphere = _lib.obj_classes.Sphere
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
-
+    # pylint: disable=protected-access
     for s in sources:
-        if isinstance(s, (Cuboid, Cylinder)):
+        if s._object_type in ('Cuboid', 'Cylinder'):
             if np.isnan(s.dimension).any():
                 raise MagpylibMissingInput(f'{s} dimension must be initialized.')
-        elif isinstance(s, (Sphere, Circular)):
+        elif s._object_type in ('Sphere', 'Circular'):
             if s.diameter is None:
                 raise MagpylibMissingInput(f'{s} diameter must be initialized.')
-        elif isinstance(s, Line):
+        elif s._object_type == 'Line':
             if None in s.vertices[0]:
                 raise MagpylibMissingInput(f'{s} vertices must be initialized.')
 
@@ -32,22 +24,15 @@ def check_dimensions(sources):
 def check_excitations(sources):
     """ check if all sources have dimension (or similar) initialized
     """
-    # avoid circular imports
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    Sphere = _lib.obj_classes.Sphere
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
-    Dipole = _lib.obj_classes.Dipole
-
+    # pylint: disable=protected-access
     for s in sources:
-        if isinstance(s, (Cuboid, Cylinder, Sphere)):
+        if s._object_type in ('Cuboid', 'Cylinder', 'Sphere'):
             if np.isnan(s.magnetization).any():
                 raise MagpylibMissingInput(f'{s} magnetization must be initialized.')
-        elif isinstance(s, (Circular, Line)):
+        elif s._object_type in ('Circular', 'Line'):
             if s.current is None:
                 raise MagpylibMissingInput(f'{s} current must be initialized.')
-        elif isinstance(s, Dipole):
+        elif s._object_type == 'Dipole':
             if np.isnan(s.moment).any():
                 raise MagpylibMissingInput(f'{s} moment must be initialized.')
 
