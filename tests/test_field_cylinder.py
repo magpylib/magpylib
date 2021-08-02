@@ -442,3 +442,13 @@ def test_cylinder_rauber_field4():
     B = src.getB(possis)
     B = B/B[25]
     assert np.all(abs(1-B) < 1e-8)
+
+
+def test_cylinder_tile_negative_phi():
+    """ same result for phi>0 and phi<0 inputs
+    """
+    src1 = magpy.magnet.CylinderSegment((11,22,33), (2,4,4,0,45))
+    src2 = magpy.magnet.CylinderSegment((11,22,33), (2,4,4,-360,-315))
+    B1 = src1.getB((1,.5,.1))
+    B2 = src2.getB((1,.5,.1))
+    assert np.allclose(B1,B2)

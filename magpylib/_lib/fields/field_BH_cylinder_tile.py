@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._lib.fields.special_el3 import el3_angle
 from magpylib._lib.utility import close
+from magpylib._lib.config import Config
 
 
 def arctan_k_tan_2(k, phi):
@@ -1317,7 +1318,7 @@ def field_BH_cylinder_tile(
     - bh (boolean): True=B, False=H
     - mag (ndarray Nx3): homogeneous magnetization vector in cartesian CS units of [mT]
     - dim (ndarray Nx6): dimension of Cylinder (r1,r2,phi1,phi2,z1,z2) in units of [mm], [deg]
-        expects 0<=r1<r2, phi1<phi2, z1<z2
+        expects 0<=r1<r2, -2pi<phi1<phi2<2pi, z1<z2
     - pos_obs (ndarray Nx3): position of observer in units of [mm]
     - return 0 when on surface (analytic code yields unphysical solutions on edges and surfaces)
 
@@ -1338,13 +1339,30 @@ def field_BH_cylinder_tile(
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
     pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 
-    # determine when points lie on surface of magnet ------------------------
-    mask_on_bound = (close(z, z1) + close(z, z2) + close(r, r1) + close(r, r2)
-        + close(phi, phi1) + close(phi, phi2))
-    phi[phi<0] += 2*np.pi  # map phi on interval [0,2pi]
-    mask_inside = (r1<=r) * (r<=r2) * (phi1<=phi) * (phi<=phi2) * (z1<=z) * (z<=z2)
-    mask_on_surface = mask_on_bound * mask_inside
+    # determine when points lie inside and on surface of magnet -------------
+
+    # phip1 in [-2pi,0], phio2 in [0,2pi]
+    phio1 = phi
+    phio2 = phi - np.sign(phi)*2*np.pi
+
+    # phi=phi1, phi=phi2
+    mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
+    mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
+
+    # r, phi ,z lies in-between
+    mask_r_in = (r1-Config.EDGESIZE<r) & (r<r2+Config.EDGESIZE)
+    mask_phi_in = (np.sign(phio1-phi1)!=np.sign(phio1-phi2)) | (np.sign(phio2-phi1)!=np.sign(phio2-phi2))
+    mask_z_in = (z1-Config.EDGESIZE<z) & (z<z2+Config.EDGESIZE)
+
+    # on surface
+    mask_surf_z = (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in # top / bottom
+    mask_surf_r = (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in # in / out
+    mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in # in / out
+    mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
     mask_not_on_surf = ~mask_on_surface
+
+    # inside
+    mask_inside = mask_r_in & mask_phi_in & mask_z_in
 
     # return 0 when all points are on surface --------------------------------
     if np.all(mask_on_surface):
