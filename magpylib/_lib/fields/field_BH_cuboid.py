@@ -60,7 +60,7 @@ def field_BH_cuboid(
 
     # compute field -------------------------------
     if np.any(mask_gen):
-        B[mask_gen] = field_B_cuboid(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+        B[mask_gen] = cuboid_B_Yang1999(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
     # return B or compute and retun H -------------
     if bh:
@@ -78,23 +78,36 @@ def field_BH_cuboid(
     return H
 
 
-def field_B_cuboid(mag: np.ndarray, dim: np.ndarray, pos_obs: np.ndarray) -> np.ndarray:
-    """ Compute B-field of Cuboid magnet with homogenous magnetization.
+# ON INTERFACE
+def cuboid_B_Yang1999(
+    mag: np.ndarray,
+    dim: np.ndarray,
+    pos_obs: np.ndarray) -> np.ndarray:
+    """
+    B-field in Cartesian CS of Cuboid magnet with homogenous magnetization.
+    The Cuboid sides are parallel to the CS axes.
+    The geometric center of the Cuboid lies in the origin.
 
-    ### Args:
-    - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
-    - dim (ndarray Nx3): dimension of Cuboid side lengths in units of mm
-    - pos_obs (ndarray Nx3): position of observer in units of mm
+    Implementation from [Yang1999], [Engel-Herbert2005], [Camacho2013], [Cichon2019].
 
-    ### Returns:
-    - B-field (ndarray Nx3): B-field vectors at pos_obs in units of mT
+    Parameters
+    ----------
+    mag: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT]
 
-    ### init_state:
-    A Cuboid with side lengths a,b,c. The sides are parallel to the
-    axes x,y,z of a Cartesian CS. The geometric center of the Cuboid
-    is in the origin of the CS.
+    dim: ndarray, shape (n,3)
+        Cuboid side lengths in units of [mm]
 
-    ### Computation info:
+    pos_obs: ndarray, (n,3)
+        position of observer in units of [mm]
+
+    Returns
+    -------
+    B-field: ndarray, shape (n,3)
+        B-field of Cuboid (Bx, By, Bz) in units of [mT].
+
+    Info
+    ----
     Field computations via magnetic surface charge density. See e.g.
     - Camacho: Revista Mexicana de F´ısica E 59 (2013) 8–17
     - Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
