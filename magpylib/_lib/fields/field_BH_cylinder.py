@@ -61,40 +61,37 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
     return [Br, Bz]  # contribution from axial magnetization
 
 
-def field_Hcy_transv(
+# ON INTERFACE
+def fieldH_cyl_dia_Rauber2021(
         tetta: np.ndarray,
         dim: np.ndarray,
         pos_obs: np.ndarray,
         ) -> list:
-    """ Compute H-field of Cylinder magnet with homogenous unit diametral
-            magnetization in Cylindrical CS.
+    """
+    H-field in Cylindrical CS of Cylinder magnet with homogenous
+    diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
+    CS. The geometric center of the Cylinder is in the origin.
 
-    ### Args:
-    - tetta (ndarray N): angle between xymag and x-axis
-    - dim (ndarray Nx2): dimension of Cylinder (d x h) in units of mm
-    - obs_pos (ndarray Nx3): position of observer (r,phi,z) in mm/rad/mm
+    Implementation from [Rauber2021].
 
-    ### Returns:
-    - list with [Hr, Hphi Hz] in units of [mT]
+    Parameters
+    ----------
+    dim: ndarray, shape (n,2)
+        dimension of Cylinder (d, h), diameter and height, in units of [mm]
+    tetta: ndarray, shape (n,)
+        angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
+    obs_pos: ndarray, shape (N,3)
+        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
 
-    ### init_state:
-    A Cylinder with diameter d  and height h. The Cylinder axis coincides
-    with the z-axis of a Cartesian CS. The geometric center of the Cylinder
-    is in the origin of the CS.
+    Returns
+    -------
+    H-field: ndarray, shape (n,3)
+        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
 
-    ### Computation info (Rauber):
-    H-Field computed analytically via the magnetic scalar potential. Integration
+    Info
+    ----
+    H-Field computed analytically via the magnetic scalar potential. Final integration
     reduced to complete elliptic integrals.
-
-    ### Computation info (Furlani, old):
-    H-Field computed from the charge picture, Simpsons approximation used
-        to approximate the intergral
-    - Furlani: "A three dimensional field solution for bipolar cylinders" (1994)
-
-    ### Numerical instabilities
-        When approaching the edges numerical instabilities appear
-        at 1e-15. Default wrapper returns 0 when approaching edges.
-        SOLUTION NEEDS TESTING
     """
 
     r0, z0 = dim.T/2
@@ -163,49 +160,96 @@ def field_Hcy_transv(
         + zm/am*(2*r02+zm2) * ellk_m   -  zp/ap*(2*r02+zp2) * ellk_p
         + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+r02) * one_over_rm)
 
-    # implementation of Furlani1993
-    # # generating the iterative summand basics for simpsons approximation
-    # phi0 = 2*np.pi/niter       # discretization
-    # sphi = np.arange(niter+1)
-    # sphi[sphi%2==0] = 2.
-    # sphi[sphi%2==1] = 4.
-    # sphi[0] = 1.
-    # sphi[-1] = 1.
+    return np.array([Hr, Hphi, Hz]).T
 
-    # sphiex = np.outer(sphi, np.ones(n))
-    # phi0ex = np.outer(np.arange(niter+1), np.ones(n))*phi0
-    # zex    = np.outer(np.ones(niter+1), z)
-    # hex   = np.outer(np.ones(niter+1), h)       # pylint: disable=redefined-builtin
-    # phiex  = np.outer(np.ones(niter+1), phi)
-    # dr2ex  = np.outer(np.ones(niter+1), 2*d*r)
-    # r2d2ex = np.outer(np.ones(niter+1), r**2+d**2)
 
-    # # repetitives
-    # cos_phi0ex = np.cos(phi0ex)
-    # cos_phi = np.cos(phiex-phi0ex)
+# ON INTERFACE
+def fieldH_cyl_dia_Furlani1994(
+        tetta: np.ndarray,
+        dim: np.ndarray,
+        pos_obs: np.ndarray,
+        niter: int,
+        ) -> list:
+    """
+    H-field in Cylindrical CS of Cylinder magnet with homogenous
+    diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
+    CS. The geometric center of the Cylinder is in the origin.
 
-    # # compute r-phi components
-    # mask = (r2d2ex-dr2ex*cos_phi == 0) # special case r = d/2 and cos_phi=1
-    # unite  = np.ones([niter+1,n])
-    # unite[mask] = - (1/2)/(zex[mask]+hex[mask])**2 + (1/2)/(zex[mask]-hex[mask])**2
+    Implementation from [Furlani1994].
 
-    # rrc = r2d2ex[~mask] - dr2ex[~mask]*cos_phi[~mask]
-    # g_m = 1/np.sqrt(rrc + (zex[~mask] + hex[~mask])**2)
-    # g_p = 1/np.sqrt(rrc + (zex[~mask] - hex[~mask])**2)
-    # unite[~mask] = ((zex+hex)[~mask]*g_m - (zex-hex)[~mask]*g_p)/rrc
+    Parameters
+    ----------
+    dim: ndarray, shape (n,2)
+        dimension of Cylinder (d, h), diameter and height, in units of [mm]
+    tetta: ndarray, shape (n,)
+        angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
+    obs_pos: ndarray, shape (N,3)
+        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+    niter: int
+        Iterations for Simpsons approximation of the final integral
 
-    # summand = sphiex/3*cos_phi0ex*unite
+    Returns
+    -------
+    H-field: ndarray, shape (n,3)
+        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
 
-    # Br   = d/2/niter*np.sum(summand*(r-d*cos_phi), axis=0)
-    # Bphi = d**2/2/niter*np.sum(summand*np.sin(phiex-phi0ex), axis=0)
+    Info
+    ----
+    H-Field computed from the charge picture, Simpsons approximation used
+        to approximate the intergral
+    """
 
-    # # compute z-component
-    # gz_m = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (zex+h)**2)
-    # gz_p = 1/np.sqrt(r**2 + d**2 - 2*d*r*cos_phi + (zex-h)**2)
-    # summandz = sphiex/3*cos_phi0ex*(gz_p - gz_m)
-    # Bz = d/2/niter*np.sum(summandz, axis=0)
+    r0, z0 = dim.T/2
+    r, phi, z = pos_obs.T
+    n = len(r0)
 
-    return [Hr, Hphi, Hz]
+    # phi is now relative between mag and pos_obs
+    phi = phi-tetta
+
+    #implementation of Furlani1993
+    # generating the iterative summand basics for simpsons approximation
+    phi0 = 2*np.pi/niter       # discretization
+    sphi = np.arange(niter+1)
+    sphi[sphi%2==0] = 2.
+    sphi[sphi%2==1] = 4.
+    sphi[0] = 1.
+    sphi[-1] = 1.
+
+    sphiex = np.outer(sphi, np.ones(n))
+    phi0ex = np.outer(np.arange(niter+1), np.ones(n))*phi0
+    zex    = np.outer(np.ones(niter+1), z)
+    hex   = np.outer(np.ones(niter+1), z0)       # pylint: disable=redefined-builtin
+    phiex  = np.outer(np.ones(niter+1), phi)
+    dr2ex  = np.outer(np.ones(niter+1), 2*r0*r)
+    r2d2ex = np.outer(np.ones(niter+1), r**2+r0**2)
+
+    # repetitives
+    cos_phi0ex = np.cos(phi0ex)
+    cos_phi = np.cos(phiex-phi0ex)
+
+    # compute r-phi components
+    mask = (r2d2ex-dr2ex*cos_phi == 0) # special case r = d/2 and cos_phi=1
+    unite  = np.ones([niter+1,n])
+    unite[mask] = - (1/2)/(zex[mask]+hex[mask])**2 + (1/2)/(zex[mask]-hex[mask])**2
+
+    rrc = r2d2ex[~mask] - dr2ex[~mask]*cos_phi[~mask]
+    g_m = 1/np.sqrt(rrc + (zex[~mask] + hex[~mask])**2)
+    g_p = 1/np.sqrt(rrc + (zex[~mask] - hex[~mask])**2)
+    unite[~mask] = ((zex+hex)[~mask]*g_m - (zex-hex)[~mask]*g_p)/rrc
+
+    summand = sphiex/3*cos_phi0ex*unite
+
+    Br   = r0/2/niter*np.sum(summand*(r-r0*cos_phi), axis=0)
+    Bphi = r0**2/2/niter*np.sum(summand*np.sin(phiex-phi0ex), axis=0)
+
+    # compute z-component
+    gz_m = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex+z0)**2)
+    gz_p = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex-z0)**2)
+    summandz = sphiex/3*cos_phi0ex*(gz_p - gz_m)
+    Bz = r0/2/niter*np.sum(summandz, axis=0)
+
+    return np.array([Br, Bphi, Bz]).T
+
 
 
 def field_BH_cylinder(
@@ -279,7 +323,7 @@ def field_BH_cylinder(
         pos_obs_tv = pos_obs_cy[mask_tv]
         dim_tv = dim[mask_tv]
         # compute H-field (in mT)
-        br_tv, bphi_tv, bz_tv = field_Hcy_transv(tetta, dim_tv, pos_obs_tv)
+        br_tv, bphi_tv, bz_tv = fieldH_cyl_dia_Rauber2021(tetta, dim_tv, pos_obs_tv).T
         # add to H-field (inside magxy is missing for B)
         Br[mask_tv]   += magxy*br_tv
         Bphi[mask_tv] += magxy*bphi_tv
