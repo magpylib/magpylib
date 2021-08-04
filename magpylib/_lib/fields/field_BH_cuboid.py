@@ -60,7 +60,7 @@ def field_BH_cuboid(
 
     # compute field -------------------------------
     if np.any(mask_gen):
-        B[mask_gen] = cuboid_B_Yang1999(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+        B[mask_gen] = magnet_cuboid_B_Yang1999(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
     # return B or compute and retun H -------------
     if bh:
@@ -79,7 +79,7 @@ def field_BH_cuboid(
 
 
 # ON INTERFACE
-def cuboid_B_Yang1999(
+def magnet_cuboid_B_Yang1999(
     mag: np.ndarray,
     dim: np.ndarray,
     pos_obs: np.ndarray) -> np.ndarray:

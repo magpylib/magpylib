@@ -1243,7 +1243,7 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     return results
 
 # ON INTERFACE
-def cyl_tile_H_Slanovc2021(
+def magnet_cyl_tile_H_Slanovc2021(
     obs_pos: np.ndarray,
     dim: np.ndarray,
     mag:np.ndarray) ->np.ndarray:
@@ -1400,7 +1400,7 @@ def field_BH_cylinder_tile(
     mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = cyl_tile_H_Slanovc2021(pos_obs_cy, dim, mag_sph)
+    H_cy = magnet_cyl_tile_H_Slanovc2021(pos_obs_cy, dim, mag_sph)
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
     Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)

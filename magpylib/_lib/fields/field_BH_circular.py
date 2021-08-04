@@ -7,18 +7,62 @@ a circular current loop. Computation details in function docstrings.
 import numpy as np
 from scipy.special import ellipe, ellipk
 
+
 def field_BH_circular(
     bh: bool,
     current: np.ndarray,
-    dim: np.ndarray,
+    dia: np.ndarray,
     pos_obs: np.ndarray
     ) -> list:
+    """
+    """
+    x, y, z = pos_obs.T
+    r0 = dia/2
+    n = len(x)
+
+    # cylindrical coordinates ----------------------------------------------
+    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
+    pos_obs_cy = np.concatenate(((r,),(z,)),axis=0).T
+
+    # allocate fields as zeros ----------------------------------------------
+    #    singularities will become zero, other will be overwritten
+    Br_all = np.zeros(n)
+    Bz_all = np.zeros(n)
+
+    # determine singularity positions (pos_obs on wire) ------------------------
+    mask0 = (r==r0)*(z==0)
+
+    # forward only non-singularity observer positions for computation--------
+    Br, _, Bz = current_loop_B_Smythe1950(r0[~mask0], pos_obs_cy[~mask0]).T
+
+    # insert non-singular computations into total vectors----------------------
+    Br_all[~mask0] = Br
+    Bz_all[~mask0] = Bz
+
+    # transform field to cartesian CS -----------------------------------------
+    Bx = Br_all*np.cos(phi)
+    By = Br_all*np.sin(phi)
+    B_cart = np.concatenate(((Bx,),(By,),(Bz_all,)),axis=0) # ugly but fast
+
+    B_cart *= current/10
+
+    # B or H field
+    if bh:
+        return B_cart.T
+    return B_cart.T*10/4/np.pi
+
+
+# ON INTERFACE
+def current_loop_B_Smythe1950(
+    radius: np.ndarray,
+    pos_obs: np.ndarray
+    ) -> np.ndarray:
     """ Compute B-field of circular current loop carrying a unit current
     in the cylindrical CS
 
     ### Args:
     - dim  (ndarray N): diameter of current loop in units of [mm]
-    - obs_pos (ndarray Nx3): position of observer (x,y,z) in [mm]
+    - pos_obs (ndarray Nx3): position of observer (x,y,z) in [mm]
 
     ### Returns:
     - Bfield, ndarray (N,3), in cartesian CS in units of [mT]
@@ -41,29 +85,9 @@ def field_BH_circular(
     """
 
     # inputs   -----------------------------------------------------------
-    x, y, z = pos_obs.T
-    r0 = dim/2
-    n = len(x)
-
-    # cylindrical coordinates ----------------------------------------------
-    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
-    #pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
-    #pos_obs_cy = np.array([r,phi,z]).T
-
-    # allocate fields as zeros ----------------------------------------------
-    #    singularities will become zero, other will be overwritten
-    Br_all = np.zeros(n)
-    Bz_all = np.zeros(n)
-
-    # determine singularity points (pos_obs on wire) ------------------------
-    mask0 = (r==r0)*(z==0)
-
-    # forward only non-singularity observer positions for computation--------
-    r0 = r0[~mask0]
-    r = r[~mask0]
-    z = z[~mask0]
-    n = np.sum(~mask0)
-    current = current[~mask0]
+    r0 = radius
+    r, z = pos_obs.T
+    n = len(r0)
 
     # pre compute small quantities that might not get stored in the cache otherwise
     r2 = r**2
@@ -77,26 +101,12 @@ def field_BH_circular(
     ellip_e = ellipe(k2)
     ellip_k = ellipk(k2)
 
-    # compute fields from formulas (paper Ortner) -----------------------------
+    # compute fields from formulas [Ortner2017] -----------------------------
     mask1 = r==0
     z_over_r = np.zeros(n)
     z_over_r[~mask1] = z[~mask1]/r[~mask1] # will be zero when r=0 -> Br=0
 
-    prefactor = 1/10*current
-    Br = prefactor/2*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellip_e - 2*ellip_k)
-    Bz = prefactor*k_over_sq_rr0 * (ellip_k - (r2-r02+z2)/((r0-r)**2+z2)*ellip_e)
+    Br = .5*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellip_e - 2*ellip_k)
+    Bz = k_over_sq_rr0 * (ellip_k - (r2-r02+z2)/((r0-r)**2+z2)*ellip_e)
 
-    # insert non-singular computations into total vectors----------------------
-    Br_all[~mask0] = Br
-    Bz_all[~mask0] = Bz
-
-    # transform field to cartesian CS -----------------------------------------
-    Bx = Br_all*np.cos(phi)
-    By = Br_all*np.sin(phi)
-    B_cart = np.concatenate(((Bx,),(By,),(Bz_all,)),axis=0).T # ugly but fast
-
-    if bh:
-        return B_cart
-
-    # transform to H-field
-    return B_cart*10/4/np.pi
+    return np.array([Br, np.zeros(n), Bz]).T

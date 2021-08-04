@@ -11,7 +11,7 @@ from magpylib._lib.utility import close
 
 
 # ON INTERFACE
-def cyl_axial_B_Derby2009(
+def magnet_cyl_axial_B_Derby2009(
     dim: np.ndarray,
     pos_obs: np.ndarray) -> list:
     """
@@ -66,7 +66,7 @@ def cyl_axial_B_Derby2009(
 
 
 # ON INTERFACE
-def cyl_dia_H_Rauber2021(
+def magnet_cyl_dia_H_Rauber2021(
         tetta: np.ndarray,
         dim: np.ndarray,
         pos_obs: np.ndarray,
@@ -168,7 +168,7 @@ def cyl_dia_H_Rauber2021(
 
 
 # ON INTERFACE
-def cyl_dia_H_Furlani1994(
+def magnet_cyl_dia_H_Furlani1994(
         tetta: np.ndarray,
         dim: np.ndarray,
         pos_obs: np.ndarray,
@@ -327,7 +327,7 @@ def field_BH_cylinder(
         pos_obs_tv = pos_obs_cy[mask_tv]
         dim_tv = dim[mask_tv]
         # compute H-field (in mT)
-        br_tv, bphi_tv, bz_tv = cyl_dia_H_Rauber2021(tetta, dim_tv, pos_obs_tv).T
+        br_tv, bphi_tv, bz_tv = magnet_cyl_dia_H_Rauber2021(tetta, dim_tv, pos_obs_tv).T
         # add to H-field (inside magxy is missing for B)
         Br[mask_tv]   += magxy*br_tv
         Bphi[mask_tv] += magxy*bphi_tv
@@ -340,7 +340,7 @@ def field_BH_cylinder(
         magz_ax = magz[mask_ax]
         dim_ax = dim[mask_ax]
         # compute B-field
-        br_ax, _, bz_ax = cyl_axial_B_Derby2009(dim_ax, pos_obs_ax).T
+        br_ax, _, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax).T
         # add to B-field
         Br[mask_ax] += magz_ax*br_ax
         Bz[mask_ax] += magz_ax*bz_ax
