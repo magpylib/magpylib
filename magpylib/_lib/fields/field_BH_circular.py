@@ -15,6 +15,10 @@ def field_BH_circular(
     pos_obs: np.ndarray
     ) -> list:
     """
+    Field of circular current loop.
+    - B or H
+    - singularity at wire
+    - Cylinder CS <-> Cartesian CS
     """
     x, y, z = pos_obs.T
     r0 = dia/2
@@ -33,7 +37,7 @@ def field_BH_circular(
     mask0 = (r==r0)*(z==0)
 
     # forward only non-singularity observer positions for computation--------
-    Br, _, Bz = current_loop_B_Smythe1950(r0[~mask0], pos_obs_cy[~mask0]).T
+    Br, Bz = current_loop_B_Smythe1950(r0[~mask0], pos_obs_cy[~mask0]).T
 
     # insert non-singular computations into total vectors----------------------
     Br_all[~mask0] = Br
@@ -57,21 +61,27 @@ def current_loop_B_Smythe1950(
     radius: np.ndarray,
     pos_obs: np.ndarray
     ) -> np.ndarray:
-    """ Compute B-field of circular current loop carrying a unit current
-    in the cylindrical CS
+    """
+    B-field in cylindrical CS of circular line-current loop.
+    The current loop lies in the z=0 plane with the origin at its center.
 
-    ### Args:
-    - dim  (ndarray N): diameter of current loop in units of [mm]
-    - pos_obs (ndarray Nx3): position of observer (x,y,z) in [mm]
+    Implementation from [Smythe1950], [Simpson2001], [Ortner2017].
 
-    ### Returns:
-    - Bfield, ndarray (N,3), in cartesian CS in units of [mT]
+    Parameters
+    ----------
+    radius: ndarray, shape (n,)
+        Radius of current loop in units of [mm].
 
-    ### init_state:
-    A circular current loop with diameter d lies in the x-y plane. The geometric
-    center of the current loop is the origin of the CS.
+    pos_obs: ndarray, (n,3)
+        position of observer in units of [mm].
 
-    ### Computation info:
+    Returns
+    -------
+    B-field: ndarray, shape (n,3)
+        B-field of current loop (Br, Bz) in units of [mT].
+
+    Info
+    ----
     This field can be ontained by direct application of the Biot-Savardt law.
     Several sources in the literature provides these formulas.
     - Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
@@ -80,8 +90,7 @@ def current_loop_B_Smythe1950(
     - Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
         IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
 
-    ### Numerical instabilities:
-        - singularity at r=r0 & z=0 (pos_obs = wire pos). Set to zero there
+    Numerical instabilities: singularity at r=r0 & z=0 (pos_obs = wire pos).
     """
 
     # inputs   -----------------------------------------------------------
@@ -109,4 +118,4 @@ def current_loop_B_Smythe1950(
     Br = .5*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellip_e - 2*ellip_k)
     Bz = k_over_sq_rr0 * (ellip_k - (r2-r02+z2)/((r0-r)**2+z2)*ellip_e)
 
-    return np.array([Br, np.zeros(n), Bz]).T
+    return np.array([Br, Bz]).T

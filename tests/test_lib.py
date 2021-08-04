@@ -44,7 +44,7 @@ def test_cylinder_diametral():
     [9.33957124e-01,8.18605047e-01,2.78177542e-01], [5.58570068e-02,8.57444127e-01,4.15788651e-01],
     [1.69506465e-01, 5.47790769e-01, 3.43305054e-02]])
 
-    B1 = magpy.lib.cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
-    B2 = magpy.lib.cyl_dia_H_Rauber2021(tetta, dim, obs)
+    B1 = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
+    B2 = magpy.lib.magnet_cyl_dia_H_Rauber2021(tetta, dim, obs)
 
     assert np.allclose(B1, B2)
