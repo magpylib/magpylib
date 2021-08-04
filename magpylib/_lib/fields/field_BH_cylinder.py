@@ -10,29 +10,33 @@ from magpylib._lib.fields.special_cel import cel
 from magpylib._lib.utility import close
 
 
-def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
-    """ Compute B-field of Cylinder magnet with homogenous unit axial
-            magnetization in Cylindrical CS.
+# ON INTERFACE
+def fieldB_cyl_axial_Derby2009(
+    dim: np.ndarray,
+    pos_obs: np.ndarray) -> list:
+    """
+    B-field in Cylindrical CS of Cylinder magnet with homogenous axial unit
+    magnetization. The Cylinder axis coincides with the z-axis of the
+    CS. The geometric center of the Cylinder is in the origin.
 
-    ### Args:
-    - dim  (ndarray Nx2): dimension of Cylinder (d x h) in units of mm
-    - obs_pos (ndarray Nx3): position of observer (r,phi,z) in mm/rad/mm
+    Implementation from [Derby2009].
 
-    ### Returns:
-    - list with [Br, Bz] in units of mT
+    Parameters
+    ----------
+    dim: ndarray, shape (n,2)
+        dimension of cylinder (d, h), diameter and height, in units of [mm]
+    pos_obs: ndarray, shape (n,3)
+        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
 
-    ### init_state:
-    A Cylinder with diameter d  and height h. The Cylinder axis coincides
-    with the z-axis of a Cartesian CS. The geometric center of the Cylinder
-    is in the origin of the CS.
+    Returns
+    -------
+    B-field: ndarray, shape (n,3)
+        B-field in cylindrical coordinates (Br, Bphi Bz) in units of [mT].
 
-    ### Computation info:
-    Field computed from the current picture (perfect solenoid)
-    - Derby: "Cylindrical Magnets and Ideal Solenoids" (2009)
-
-    ### Numerical instabilities:
-        When approaching the edges numerical instabilities appear
-        at 1e-15. Default wrapper returns 0 when approaching edges.
+    Info
+    ----
+    Field computed from the current picture (perfect solenoid). Integrals reduced to cel
+    function.
     """
 
     d,h = dim.T / 2       # d/h are now radius and h/2
@@ -58,7 +62,7 @@ def field_Bcy_axial(dim: np.ndarray, pos_obs: np.ndarray) -> list:
     Bz = d/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
               - zmh*cel(k0, gamma**2, one, gamma)/sq0)/np.pi
 
-    return [Br, Bz]  # contribution from axial magnetization
+    return np.array([Br, np.zeros(n), Bz]).T
 
 
 # ON INTERFACE
@@ -66,7 +70,7 @@ def fieldH_cyl_dia_Rauber2021(
         tetta: np.ndarray,
         dim: np.ndarray,
         pos_obs: np.ndarray,
-        ) -> list:
+        ) -> np.ndarray:
     """
     H-field in Cylindrical CS of Cylinder magnet with homogenous
     diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
@@ -77,10 +81,10 @@ def fieldH_cyl_dia_Rauber2021(
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of Cylinder (d, h), diameter and height, in units of [mm]
+        dimension of cylinder (d, h), diameter and height, in units of [mm]
     tetta: ndarray, shape (n,)
         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
-    obs_pos: ndarray, shape (N,3)
+    obs_pos: ndarray, shape (n,3)
         position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
 
     Returns
@@ -169,7 +173,7 @@ def fieldH_cyl_dia_Furlani1994(
         dim: np.ndarray,
         pos_obs: np.ndarray,
         niter: int,
-        ) -> list:
+        ) -> np.ndarray:
     """
     H-field in Cylindrical CS of Cylinder magnet with homogenous
     diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
@@ -180,7 +184,7 @@ def fieldH_cyl_dia_Furlani1994(
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of Cylinder (d, h), diameter and height, in units of [mm]
+        dimension of cylinder (d, h), diameter and height, in units of [mm]
     tetta: ndarray, shape (n,)
         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
     obs_pos: ndarray, shape (N,3)
@@ -336,7 +340,7 @@ def field_BH_cylinder(
         magz_ax = magz[mask_ax]
         dim_ax = dim[mask_ax]
         # compute B-field
-        br_ax, bz_ax = field_Bcy_axial(dim_ax, pos_obs_ax)
+        br_ax, _, bz_ax = fieldB_cyl_axial_Derby2009(dim_ax, pos_obs_ax).T
         # add to B-field
         Br[mask_ax] += magz_ax*br_ax
         Bz[mask_ax] += magz_ax*bz_ax
