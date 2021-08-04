@@ -1242,17 +1242,36 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     results[:,2,2] = Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     return results
 
-
-def field_H_cylinder_tile(obs_pos: np.ndarray, dim: np.ndarray, mag:np.ndarray) ->np.ndarray:
+# ON INTERFACE
+def cyl_tile_H_Slanovc2021(
+    obs_pos: np.ndarray,
+    dim: np.ndarray,
+    mag:np.ndarray) ->np.ndarray:
     """
-    Core computation of the Cylinder tile field based on Slanovc 2021
+    H-field of Cylinder Tile magnet with homogenous magnetization.
+    The full cylinder axis coincides with the z-axis of the CS.
+    The geometric center of the full Cylinder is in the origin.
 
-    obs_pos : ndarray, shape (N,3)
+    Implementation from [Slanovc2021].
+
+    Parameters
+    ----------
+    obs_pos : ndarray, shape (n,3)
         observer positions (r,phi,z) in cy CS, units: [mm] [rad]
-    dim: ndarray, shape (N,6)
+    dim: ndarray, shape (n,6)
         section dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
-    mag: ndarray, shape (N,3)
+    mag: ndarray, shape (n,3)
         magnetization vector (|M|, phi, th) in spherical CS, units: [mT] [rad]
+
+    Returns
+    -------
+    H-field: ndarray, shape (n,3)
+        H-field in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
+
+    Info
+    ----
+    Field computed in the surface charge picture. Final integrals reduced to incomplete
+    elliptic integrals.
     """
 
     # tile inputs into 8-stacks (boundary cases)
@@ -1381,7 +1400,7 @@ def field_BH_cylinder_tile(
     mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = field_H_cylinder_tile(pos_obs_cy, dim, mag_sph)
+    H_cy = cyl_tile_H_Slanovc2021(pos_obs_cy, dim, mag_sph)
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
     Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)
