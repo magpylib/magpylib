@@ -7,7 +7,6 @@ from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
     faces_sphere, faces_cylinder_section)
-from magpylib import _lib
 from magpylib._lib.input_checks import check_excitations, check_dimensions
 
 
@@ -95,16 +94,6 @@ def display(
     # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
-    # avoid circular imports
-    Cuboid = _lib.obj_classes.Cuboid
-    Cylinder = _lib.obj_classes.Cylinder
-    CylinderSegment = _lib.obj_classes.CylinderSegment
-    Sensor = _lib.obj_classes.Sensor
-    Sphere = _lib.obj_classes.Sphere
-    Dipole = _lib.obj_classes.Dipole
-    Circular = _lib.obj_classes.Circular
-    Line = _lib.obj_classes.Line
-
     # create or set plotting axis
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8,8))
@@ -132,22 +121,22 @@ def display(
     # sort input objects --------------------------------------------------------
 
     # objects with faces
-    faced_objects = [obj for obj in obj_list if isinstance(obj, (
-        Cuboid,
-        Cylinder,
-        CylinderSegment,
-        Sphere
-        ))]
+    faced_objects = [obj for obj in obj_list if obj._object_type in (
+        'Cuboid',
+        'Cylinder',
+        'CylinderSegment',
+        'Sphere'
+        )]
 
     # sensors
-    sensors = [obj for obj in obj_list if isinstance(obj, Sensor)]
+    sensors = [obj for obj in obj_list if obj._object_type == 'Sensor']
 
     # dipoles
-    dipoles = [obj for obj in obj_list if isinstance(obj, Dipole)]
+    dipoles = [obj for obj in obj_list if obj._object_type == 'Dipole']
 
     # currents
-    circulars = [obj for obj in obj_list if isinstance(obj, Circular)]
-    lines = [obj for obj in obj_list if isinstance(obj, Line)]
+    circulars = [obj for obj in obj_list if obj._object_type == 'Circular']
+    lines = [obj for obj in obj_list if obj._object_type == 'Line']
 
     # draw objects and evaluate system size --------------------------------------
 
@@ -156,22 +145,22 @@ def display(
     for i, obj in enumerate(faced_objects):
         col = cmap(i/len(faced_objects))
 
-        if isinstance(obj, Cuboid):
+        if obj._object_type == 'Cuboid':
             faces = faces_cuboid(obj,show_path)
             lw = 0.5
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif isinstance(obj, Cylinder):
+        elif obj._object_type == 'Cylinder':
             faces = faces_cylinder(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif isinstance(obj, CylinderSegment):
+        elif obj._object_type == 'CylinderSegment':
             faces = faces_cylinder_section(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif isinstance(obj, Sphere):
+        elif obj._object_type == 'Sphere':
             faces = faces_sphere(obj,show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
