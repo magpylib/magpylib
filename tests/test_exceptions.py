@@ -4,7 +4,7 @@ from scipy.spatial.transform.rotation import Rotation as R
 import magpylib as magpy
 from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
-from magpylib._lib.fields.field_wrap_BH_v import getBHv_level2
+from magpylib._lib.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._lib.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
     MagpylibBadInputShape)
 from magpylib._lib.utility import format_obj_input, format_src_inputs, format_obs_inputs
@@ -13,7 +13,7 @@ from magpylib._lib.utility import test_path_format as tpf
 
 def getBHv_unknown_source_type():
     """ unknown source type """
-    magpy.getBv(
+    magpy.getB_dict(
         source_type='badName',
         magnetization=(1,0,0),
         dimension=(0,2,1,0,360),
@@ -62,35 +62,35 @@ def getBHv_missing_input1():
     """ missing bh
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(source_type='Cuboid', observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(source_type='Cuboid', observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input2():
     """ missing source_type
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input3():
     """ missing observer
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Cuboid', magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', magnetization=x, dimension=x)
 
 
 def getBHv_missing_input4_cuboid():
     """ missing Cuboid mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Cuboid', observer=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, dimension=x)
 
 
 def getBHv_missing_input5_cuboid():
     """ missing Cuboid dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_cyl():
@@ -98,28 +98,28 @@ def getBHv_missing_input4_cyl():
     """
     x=np.array([(1,2,3)])
     y = np.array([(1,2)])
-    getBHv_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
 
 
 def getBHv_missing_input5_cyl():
     """ missing Cylinder dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_sphere():
     """ missing Sphere mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
+    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
 
 
 def getBHv_missing_input5_sphere():
     """ missing Sphere dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
 
 # bad inputs -------------------------------------------------------------------
 def getBHv_bad_input():
@@ -127,7 +127,7 @@ def getBHv_bad_input():
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
-    getBHv_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x2, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x2, dimension=x)
 
 
 def utility_format_obj_input():

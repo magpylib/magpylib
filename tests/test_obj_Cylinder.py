@@ -62,23 +62,23 @@ def test_Cylinder_getBH():
         B1 = src2.getB(poso)
         H1 = src2.getH(poso)
 
-        B2 = magpy.getBv(
+        B2 = magpy.getB_dict(
             source_type='Cylinder',
             magnetization=mag,
             dimension=d2,
             observer=poso)
-        H2 = magpy.getHv(
+        H2 = magpy.getH_dict(
             source_type='Cylinder',
             magnetization=mag,
             dimension=d2,
             observer=poso)
 
-        B3 = magpy.getBv(
+        B3 = magpy.getB_dict(
             source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,
             observer=poso)
-        H3 = magpy.getHv(
+        H3 = magpy.getH_dict(
             source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,

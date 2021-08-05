@@ -114,5 +114,5 @@ Magpylib code is fully `vectorized <https://en.wikipedia.org/wiki/Array_programm
     
     Maximal performance is achieved when :code:`.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 
-Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function :code:`magpylib.getBv`.
+Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function :code:`magpylib.getB_dict`.
 

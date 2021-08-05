@@ -9,7 +9,7 @@ def test_getB_interfaces1():
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getBv(
+    B = magpy.getB_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -42,7 +42,7 @@ def test_getB_interfaces2():
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getBv(
+    B = magpy.getB_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -68,7 +68,7 @@ def test_getB_interfaces3():
     src.move([(.1,.2,.3)]*10, increment=True)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
-    B = magpy.getBv(
+    B = magpy.getB_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=(1,2,3),
@@ -102,7 +102,7 @@ def test_getH_interfaces1():
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getHv(
+    H = magpy.getH_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
@@ -139,7 +139,7 @@ def test_getH_interfaces2():
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getHv(
+    H = magpy.getH_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
@@ -169,7 +169,7 @@ def test_getH_interfaces3():
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)
 
-    H = magpy.getHv(
+    H = magpy.getH_dict(
         source_type='Cuboid',
         position=src.position,
         magnetization=mag,
