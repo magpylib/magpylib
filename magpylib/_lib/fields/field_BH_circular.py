@@ -16,8 +16,9 @@ def field_BH_circular(
     ) -> list:
     """
     Field of circular current loop.
-    - B or H
-    - singularity at wire
+    - wraps fundamental implementation Smythe1950
+    - selects B or H
+    - sets singularity at wire to 0
     - Cylinder CS <-> Cartesian CS
     """
     x, y, z = pos_obs.T
@@ -70,10 +71,11 @@ def current_loop_B_Smythe1950(
     Parameters
     ----------
     radius: ndarray, shape (n,)
-        Radius of current loop in units of [mm].
+        radius of current loop in units of [mm].
 
-    pos_obs: ndarray, (n,3)
-        position of observer in units of [mm].
+    pos_obs: ndarray, (n,2)
+        position of observer in cylindrical coordinates (r, z)
+        in units of [mm].
 
     Returns
     -------
@@ -82,7 +84,7 @@ def current_loop_B_Smythe1950(
 
     Info
     ----
-    This field can be ontained by direct application of the Biot-Savardt law.
+    This field can be obtained by direct application of the Biot-Savardt law.
     Several sources in the literature provides these formulas.
     - Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
     - Simpson, "Simple analytic expressions for the magnetic field of a circular
@@ -90,7 +92,9 @@ def current_loop_B_Smythe1950(
     - Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
         IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
 
-    Numerical instabilities: singularity at r=r0 & z=0 (pos_obs = wire pos).
+    Numerical instabilities:
+    - singularity at r=r0 & z=0 (pos_obs = wire pos)
+    - numerically instable towards r=0 when z!=0 <--- FIX THIS
     """
 
     # inputs   -----------------------------------------------------------

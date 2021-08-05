@@ -25,8 +25,8 @@ def magnet_cyl_axial_B_Derby2009(
     ----------
     dim: ndarray, shape (n,2)
         dimension of cylinder (d, h), diameter and height, in units of [mm]
-    pos_obs: ndarray, shape (n,3)
-        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+    pos_obs: ndarray, shape (n,2)
+        position of observer (r,z) in cylindrical coordinates in units of [mm]
 
     Returns
     -------
@@ -40,7 +40,7 @@ def magnet_cyl_axial_B_Derby2009(
     """
 
     d,h = dim.T / 2       # d/h are now radius and h/2
-    r,_,z = pos_obs.T
+    r,z = pos_obs.T
     n = len(d)
 
     # some important quantitites
@@ -62,7 +62,7 @@ def magnet_cyl_axial_B_Derby2009(
     Bz = d/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
               - zmh*cel(k0, gamma**2, one, gamma)/sq0)/np.pi
 
-    return np.array([Br, np.zeros(n), Bz]).T
+    return np.array([Br, Bz]).T
 
 
 # ON INTERFACE
@@ -96,6 +96,9 @@ def magnet_cyl_dia_H_Rauber2021(
     ----
     H-Field computed analytically via the magnetic scalar potential. Final integration
     reduced to complete elliptic integrals.
+
+    Numerical Instabilities:
+    Highly numerically instable towards r=0 <--- FIX THIS
     """
 
     r0, z0 = dim.T/2
@@ -340,7 +343,7 @@ def field_BH_cylinder(
         magz_ax = magz[mask_ax]
         dim_ax = dim[mask_ax]
         # compute B-field
-        br_ax, _, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax).T
+        br_ax, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax[:,(0,2)]).T
         # add to B-field
         Br[mask_ax] += magz_ax*br_ax
         Bz[mask_ax] += magz_ax*bz_ax
