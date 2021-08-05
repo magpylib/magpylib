@@ -30,11 +30,25 @@ def magnet_cyl_axial_B_Derby2009(
 
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field in cylindrical coordinates (Br, Bphi Bz) in units of [mT].
+    B-field: ndarray
+        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of [mT].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute the field of three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,2), (2,3), (4,4)])
+    >>> B = magpy.lib.magnet_cyl_axial_B_Derby2009(dim, obs)
+    >>> print(B)
+    [[0.0080244  0.12016141]
+     [0.02622945 0.01635106]
+     [0.01931265 0.00475101]]
+
+    Notes
+    -----
     Field computed from the current picture (perfect solenoid). Integrals reduced to cel
     function.
     """
@@ -89,16 +103,30 @@ def magnet_cyl_dia_H_Rauber2021(
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+    H-field: ndarray
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute field for three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> tetta = np.zeros(3)
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
+    >>> B = magpy.lib.magnet_cyl_dia_H_Rauber2021(tetta, dim, obs)
+    >>> print(B)
+    [[-0.05992403  0.          0.0080244 ]
+     [ 0.00193283  0.00219048  0.02604082]
+     [ 0.05270086  0.00606112  0.01546927]]
+
+    Notes
+    -----
     H-Field computed analytically via the magnetic scalar potential. Final integration
     reduced to complete elliptic integrals.
 
-    Numerical Instabilities:
-    Highly numerically instable towards r=0 <--- FIX THIS
+    Numerical Instabilities: See discussion on GitHub.
     """
 
     r0, z0 = dim.T/2
@@ -197,13 +225,28 @@ def magnet_cyl_dia_H_Furlani1994(
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+    H-field: ndarray
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute field at three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> tetta = np.zeros(3)
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
+    >>> B = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
+    >>> print(B)
+    [[-5.99240321e-02  1.41132875e-19  8.02440419e-03]
+     [ 1.93282782e-03  2.19048077e-03  2.60408201e-02]
+     [ 5.27008607e-02  6.06112282e-03  1.54692676e-02]]
+
+    Notes
+    -----
     H-Field computed from the charge picture, Simpsons approximation used
-        to approximate the intergral
+    to approximate the intergral.
     """
 
     r0, z0 = dim.T/2

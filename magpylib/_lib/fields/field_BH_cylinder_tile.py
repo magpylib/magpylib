@@ -1244,9 +1244,10 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
 
 # ON INTERFACE
 def magnet_cyl_tile_H_Slanovc2021(
-    obs_pos: np.ndarray,
+    mag: np.ndarray,
     dim: np.ndarray,
-    mag:np.ndarray) ->np.ndarray:
+    obs_pos: np.ndarray
+    ) ->np.ndarray:
     """
     H-field of Cylinder Tile magnet with homogenous magnetization.
     The full cylinder axis coincides with the z-axis of the CS.
@@ -1261,15 +1262,30 @@ def magnet_cyl_tile_H_Slanovc2021(
     dim: ndarray, shape (n,6)
         section dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
     mag: ndarray, shape (n,3)
-        magnetization vector (|M|, phi, th) in spherical CS, units: [mT] [rad]
+        magnetization vector (M, phi, th) in spherical CS, units: [mT] [rad]
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
+    H-field: ndarray
+        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of [kA/m].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute the field of three instances.
+
+    >>> import numpy as np
+    >>> from numpy import pi
+    >>> import magpylib as magpy
+    >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
+    >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
+    >>> obs = np.array([(.1,0,3), (1,pi,3)])
+    >>> B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, obs)
+    >>> print(B)
+    [[-0.84506541 -0.9207606   1.48474874]
+     [ 3.95719801  3.59131966  3.11703698]]
+
+    Notes
+    -----
     Field computed in the surface charge picture. Final integrals reduced to incomplete
     elliptic integrals.
     """
@@ -1400,7 +1416,7 @@ def field_BH_cylinder_tile(
     mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cyl_tile_H_Slanovc2021(pos_obs_cy, dim, mag_sph)
+    H_cy = magnet_cyl_tile_H_Slanovc2021(mag_sph, dim, pos_obs_cy)
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
     Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)

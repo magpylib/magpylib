@@ -182,7 +182,7 @@ def test_cases0():
     r = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[0]
     assert np.allclose(H, H0)
 
@@ -196,7 +196,7 @@ def test_cases1():
     r = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[1]
     assert np.allclose(H, H0)
 
@@ -210,7 +210,7 @@ def test_cases2():
     r1 = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[2]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -224,7 +224,7 @@ def test_cases3():
     r1 = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[3]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -238,7 +238,7 @@ def test_cases4():
     r = r2
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[4]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -253,7 +253,7 @@ def test_cases5():
     r1 = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[5]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -267,7 +267,7 @@ def test_cases6():
     r = r1
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[6]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -283,7 +283,7 @@ def test_cases7():
     r1 = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[7]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -298,7 +298,7 @@ def test_cases8():
     r1 = null
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[8]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
@@ -312,7 +312,7 @@ def test_cases9():
     r = r2
     obs_pos = np.array([r, phi, z]).T
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
-    H = magnet_cyl_tile_H_Slanovc2021(obs_pos, dim, mag)
+    H = magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
     H0 = DATA[9]
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
