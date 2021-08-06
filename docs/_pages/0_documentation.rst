@@ -58,7 +58,7 @@ When all source and sensor objects are created and all paths are defined the ``d
 
 The functions (top level) or methods (all Magpylib objects) ``getB`` and ``getH`` are used for magnetic field computation. This always requires ``sources`` and ``observers`` inputs. Sources are single Magpylib source objects, Collections or lists thereof.  Observers are arbitrary tensors of position vectors `(shape (n1,n2,n3,...,3))`, sensors or lists thereof. The output of the most general field computation through the top level function ``magpylib.getB(sources, observers)`` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the pathlength, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or shape of position vector and `3` the three magnetic field components `(x,y,z)`. The B-field is computed in [mT], the H-field in [kA/m].
 
-Finally the ``magpylib.getBv`` and ``magpylib.getHv`` functions give direct access to the analytical formulas implemented in Magpylib.
+Finally the ``magpylib.getB_dict`` and ``magpylib.getHv`` functions give direct access to the analytical formulas implemented in Magpylib.
 
 The functionality of Magpylib is demonstrated with several intuitive examples in the :ref:`examples` section. Details can be found in the library docstrings :ref:`genindex`.
 
@@ -70,7 +70,7 @@ Performance
 
 The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 
-The fastest way to compute fields is through the direct access to the top-level ``getBv`` and ``getHv`` functions. However, this requires the user to vectorize the input properly. The object-oriented interface automatically vectorizes the computation for the user (similar source types of multiple input-objects are grouped). The additional overhead makes the object-oriented interface slightly slower (by a factor of 1.1-2), specfically, when only single field evaluations are made (overhead gets in the way) or when a large number of source objects are handed to ``getB`` or ``getH``.
+The fastest way to compute fields is through the direct access to the top-level ``getB_dict`` and ``getHv`` functions. However, this requires the user to vectorize the input properly. The object-oriented interface automatically vectorizes the computation for the user (similar source types of multiple input-objects are grouped). The additional overhead makes the object-oriented interface slightly slower (by a factor of 1.1-2), specfically, when only single field evaluations are made (overhead gets in the way) or when a large number of source objects are handed to ``getB`` or ``getH``.
 
 
 .. _docu-units_scaling:

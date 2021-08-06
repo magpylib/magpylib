@@ -110,7 +110,7 @@ Multiple Magpylib sources can be grouped into Collection objects for common mani
 getBHv - Direct access to analytical solutions
 ##############################################
 
-Magpylib provides direct access to the vectorized analytical formulas through the top level ``getBv`` and ``getHv`` functions. The input arguments must be shape (n,x) vectors/lists/tuple. Depending on the ``source_type``, different input arguments are expected (see docstring for details). Static inputs e.g. of shape (3,) are automatically tiled up to shape (n,3).
+Magpylib provides direct access to the vectorized analytical formulas through the top level ``getB_dict`` and ``getH_dict`` functions. The input arguments must be shape (n,x) vectors/lists/tuple. Depending on the ``source_type``, different input arguments are expected (see docstring for details). Static inputs e.g. of shape (3,) are automatically tiled up to shape (n,3).
 
 .. plot:: _codes/examples_getBHv.py
     :include-source:

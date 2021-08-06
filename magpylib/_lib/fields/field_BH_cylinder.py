@@ -25,22 +25,36 @@ def magnet_cyl_axial_B_Derby2009(
     ----------
     dim: ndarray, shape (n,2)
         dimension of cylinder (d, h), diameter and height, in units of [mm]
-    pos_obs: ndarray, shape (n,3)
-        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+    pos_obs: ndarray, shape (n,2)
+        position of observer (r,z) in cylindrical coordinates in units of [mm]
 
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field in cylindrical coordinates (Br, Bphi Bz) in units of [mT].
+    B-field: ndarray
+        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of [mT].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute the field of three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,2), (2,3), (4,4)])
+    >>> B = magpy.lib.magnet_cyl_axial_B_Derby2009(dim, obs)
+    >>> print(B)
+    [[0.0080244  0.12016141]
+     [0.02622945 0.01635106]
+     [0.01931265 0.00475101]]
+
+    Notes
+    -----
     Field computed from the current picture (perfect solenoid). Integrals reduced to cel
     function.
     """
 
     d,h = dim.T / 2       # d/h are now radius and h/2
-    r,_,z = pos_obs.T
+    r,z = pos_obs.T
     n = len(d)
 
     # some important quantitites
@@ -62,7 +76,7 @@ def magnet_cyl_axial_B_Derby2009(
     Bz = d/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
               - zmh*cel(k0, gamma**2, one, gamma)/sq0)/np.pi
 
-    return np.array([Br, np.zeros(n), Bz]).T
+    return np.array([Br, Bz]).T
 
 
 # ON INTERFACE
@@ -89,13 +103,30 @@ def magnet_cyl_dia_H_Rauber2021(
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+    H-field: ndarray
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute field for three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> tetta = np.zeros(3)
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
+    >>> B = magpy.lib.magnet_cyl_dia_H_Rauber2021(tetta, dim, obs)
+    >>> print(B)
+    [[-0.05992403  0.          0.0080244 ]
+     [ 0.00193283  0.00219048  0.02604082]
+     [ 0.05270086  0.00606112  0.01546927]]
+
+    Notes
+    -----
     H-Field computed analytically via the magnetic scalar potential. Final integration
     reduced to complete elliptic integrals.
+
+    Numerical Instabilities: See discussion on GitHub.
     """
 
     r0, z0 = dim.T/2
@@ -194,13 +225,28 @@ def magnet_cyl_dia_H_Furlani1994(
 
     Returns
     -------
-    H-field: ndarray, shape (n,3)
-        H-field in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+    H-field: ndarray
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
 
-    Info
-    ----
+    Examples
+    --------
+    Compute field at three instances.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> tetta = np.zeros(3)
+    >>> dim = np.array([(2,2), (2,3), (3,4)])
+    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
+    >>> B = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
+    >>> print(B)
+    [[-5.99240321e-02  1.41132875e-19  8.02440419e-03]
+     [ 1.93282782e-03  2.19048077e-03  2.60408201e-02]
+     [ 5.27008607e-02  6.06112282e-03  1.54692676e-02]]
+
+    Notes
+    -----
     H-Field computed from the charge picture, Simpsons approximation used
-        to approximate the intergral
+    to approximate the intergral.
     """
 
     r0, z0 = dim.T/2
@@ -340,7 +386,7 @@ def field_BH_cylinder(
         magz_ax = magz[mask_ax]
         dim_ax = dim[mask_ax]
         # compute B-field
-        br_ax, _, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax).T
+        br_ax, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax[:,(0,2)]).T
         # add to B-field
         Br[mask_ax] += magz_ax*br_ax
         Bz[mask_ax] += magz_ax*bz_ax

@@ -24,7 +24,7 @@ level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
     - generate vector input format for getBH_level1
     - adjust Bfield output format to (pos_obs, path, sources) input format
 
-level3(getB, getH, getBv, getHv): <--- USER INTERFACE
+level3(getB, getH, getB_dict, getH_dict): <--- USER INTERFACE
     - docstrings
     - separated B and H
     - transform input into dict for level2

@@ -78,7 +78,7 @@ def test_Line_vs_Circular():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = magpy.getBv(source_type='Line', observer=p, current=1,
+        Bl = magpy.getB_dict(source_type='Line', observer=p, current=1,
             segment_start=ps, segment_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
@@ -109,7 +109,7 @@ def test_Line_vs_Infinite():
     pe = (0,0,1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [magpy.getBv(source_type='Line', observer=p, current=1,
+        Bls += [magpy.getB_dict(source_type='Line', observer=p, current=1,
             segment_start=ps, segment_end=pe)]
         Binfs += [Binf(1,p)]
     Bls = np.array(Bls)

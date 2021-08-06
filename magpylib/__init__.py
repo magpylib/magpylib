@@ -156,7 +156,7 @@ Finally there is a direct (very fast) interface to the field computation formula
 that avoids the object oriented Magpylib interface:
 
 >>> import magpylib as magpy
->>> B = magpy.getBv(
+>>> B = magpy.getB_dict(
 >>>     source_type='Dipole',
 >>>     moment=(100,100,100),
 >>>     observer=[(1,1,1), (1,2,3)])
@@ -188,7 +188,7 @@ or directly through object methods
 __version__ = '4.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-__all__ = ['magnet', 'current', 'misc', 'lib', 'getB', 'getH', 'getBv', 'getHv',
+__all__ = ['magnet', 'current', 'misc', 'lib', 'getB', 'getH', 'getB_dict', 'getH_dict',
     'Sensor', 'Collection', 'display', 'Config', '__version__',
     '__author__', '__credits__']
 
@@ -198,6 +198,6 @@ from magpylib import current
 from magpylib import misc
 from magpylib import lib
 from magpylib._lib.config import Config
-from magpylib._lib.fields import getB, getH, getBv, getHv
+from magpylib._lib.fields import getB, getH, getB_dict, getH_dict
 from magpylib._lib.obj_classes import Collection, Sensor
 from magpylib._lib.display import display

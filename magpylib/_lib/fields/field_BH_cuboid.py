@@ -98,22 +98,39 @@ def magnet_cuboid_B_Yang1999(
     dim: ndarray, shape (n,3)
         Cuboid side lengths in units of [mm]
 
-    pos_obs: ndarray, (n,3)
+    pos_obs: ndarray, shape (n,3)
         position of observer in units of [mm]
 
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field of Cuboid (Bx, By, Bz) in units of [mT].
+    B-field: ndarray
+        B-field of Cuboid in Cartesian CS, shape (n,3) in units of [mT].
 
-    Info
-    ----
-    Field computations via magnetic surface charge density. See e.g.
-    - Camacho: Revista Mexicana de F´ısica E 59 (2013) 8–17
-    - Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
-    - Yang: Superconductor Science and Technology 3(12):591 (1999)
+    Examples
+    --------
+    Compute the field of three instances.
 
-    On magnet corners/edges (0,0,0) is returned
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
+    >>> dim = np.array([(1,1,1), (2,3,4), (1,2,3)])
+    >>> obs = np.array([(1,2,3), (2,3,4), (0,0,0)])
+    >>> B = magpy.lib.magnet_cuboid_B_Yang1999(mag, dim, obs)
+    >>> print(B)
+    [[ 0.49343022  1.15608356  1.65109312]
+     [ 0.82221622  1.18511282  1.46945423]
+     [ 0.          0.         88.77487579]]
+
+    Notes
+    -----
+    Field computations via magnetic surface charge density. Published
+    several times with similar expressions:
+
+    Camacho: Revista Mexicana de F´ısica E 59 (2013) 8–17
+
+    Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
+
+    Yang: Superconductor Science and Technology 3(12):591 (1999)
 
     Avoiding indeterminate forms:
 
@@ -126,13 +143,9 @@ def magnet_cuboid_B_Yang1999(
     Chosen solution: use symmetries of the problem to change all
     positions to their bottQ4 counterparts. see also
 
-    Cichon: IEEE SENSORS JOURNAL, VOL. 19, NO. 7, APRIL 1, 2019, p.2509
+    Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
 
-    On the magnet surface either inside or outside field is returned.
-
-    Indeterminate forms at cuboid edges and corners remain. The numerical
-    evaluation is instable in the vicinity. Avoid field computation near
-    (1e-6*sidelength) Cuboid edges. FIX THIS PROBLEM !!!
+    Numerical instabilities: see GitHub discussion
     """
     # pylint: disable=too-many-statements
 

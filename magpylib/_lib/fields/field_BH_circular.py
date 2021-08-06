@@ -16,8 +16,9 @@ def field_BH_circular(
     ) -> list:
     """
     Field of circular current loop.
-    - B or H
-    - singularity at wire
+    - wraps fundamental implementation Smythe1950
+    - selects B or H
+    - sets singularity at wire to 0
     - Cylinder CS <-> Cartesian CS
     """
     x, y, z = pos_obs.T
@@ -70,27 +71,46 @@ def current_loop_B_Smythe1950(
     Parameters
     ----------
     radius: ndarray, shape (n,)
-        Radius of current loop in units of [mm].
+        radius of current loop in units of [mm].
 
-    pos_obs: ndarray, (n,3)
-        position of observer in units of [mm].
+    pos_obs: ndarray, shape (n,2)
+        position of observer in cylindrical coordinates (r, z)
+        in units of [mm].
 
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field of current loop (Br, Bz) in units of [mT].
+    B-field: ndarray
+        B-field of current loop in cylindrical coordinates (Br, Bz),
+        shape (n,2) in units of [mT].
 
-    Info
-    ----
-    This field can be ontained by direct application of the Biot-Savardt law.
-    Several sources in the literature provides these formulas.
-    - Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
-    - Simpson, "Simple analytic expressions for the magnetic field of a circular
-        current loop," 2001.
-    - Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
-        IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
+    Examples
+    --------
+    Compute the field of three different loops at three different positions.
 
-    Numerical instabilities: singularity at r=r0 & z=0 (pos_obs = wire pos).
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> rad = np.array([1,2,3])
+    >>> obs = np.array([(1,1), (2,2), (3,3)])
+    >>> B = magpy.lib.current_loop_B_Smythe1950(rad, obs)
+    >>> print(B)
+    [[1.14331448 0.96483239]
+     [0.57165724 0.48241619]
+     [0.38110483 0.3216108 ]]
+
+    Notes
+    -----
+    This field can be obtained by direct application of the Biot-Savardt law.
+    Several sources in the literature provides these formulas:
+
+    Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
+
+    Simpson, "Simple analytic expressions for the magnetic field of a circular current
+    loop," 2001.
+
+    Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
+    IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
+
+    Numerical instabilities: see discussion on GitHub
     """
 
     # inputs   -----------------------------------------------------------

@@ -6,7 +6,7 @@ from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._lib.exceptions import MagpylibBadUserInput
 
 
-def getBHv_level2(**kwargs: dict) -> np.ndarray:
+def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
 
     Parameters
@@ -135,7 +135,7 @@ def getBHv_level2(**kwargs: dict) -> np.ndarray:
 
 
 # ON INTERFACE
-def getBv(**kwargs):
+def getB_dict(**kwargs):
     """
     B-Field computation in units of [mT] from a dictionary of input vectors of
     length N.
@@ -201,7 +201,7 @@ def getBv(**kwargs):
     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
     >>> import magpylib as magpy
-    >>> B = magpy.getBv(
+    >>> B = magpy.getB_dict(
     >>>     source_type='Dipole',
     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
     >>>     moment=(100,100,100),
@@ -217,7 +217,7 @@ def getBv(**kwargs):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> B = magpy.getBv(
+    >>> B = magpy.getB_dict(
     >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
@@ -232,11 +232,11 @@ def getBv(**kwargs):
 
 
     """
-    return getBHv_level2(bh=True, **kwargs)
+    return getBH_dict_level2(bh=True, **kwargs)
 
 
 # ON INTERFACE
-def getHv(**kwargs):
+def getH_dict(**kwargs):
     """
     H-Field computation in units of [kA/m] from a dictionary of input vectors of
     length N.
@@ -302,7 +302,7 @@ def getHv(**kwargs):
     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
     >>> import magpylib as magpy
-    >>> H = magpy.getHv(
+    >>> H = magpy.getH_dict(
     >>>     source_type='Dipole',
     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
     >>>     moment=(100,100,100),
@@ -318,7 +318,7 @@ def getHv(**kwargs):
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> H = magpy.getHv(
+    >>> H = magpy.getH_dict(
     >>>     source_type='Cuboid',
     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
@@ -332,4 +332,4 @@ def getHv(**kwargs):
      [ 6.18280903 12.49670731  9.13702808]]
 
     """
-    return getBHv_level2(bh=False, **kwargs)
+    return getBH_dict_level2(bh=False, **kwargs)
