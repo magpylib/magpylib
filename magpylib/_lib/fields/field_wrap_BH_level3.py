@@ -2,7 +2,7 @@ from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
 
 # ON INTERFACE
-def getB(sources, observers, sumup=False, squeeze=True, **specs):
+def getB(sources, observers, sumup=False, squeeze=True):
     """
     Compute B-field in [mT] for given sources and observers.
 
@@ -84,11 +84,11 @@ def getB(sources, observers, sumup=False, squeeze=True, **specs):
      [0.09728187 0.34647784 0.52129178]]
 
     """
-    return getBH_level2(True, sources, observers, sumup, squeeze, **specs)
+    return getBH_level2(True, sources, observers, sumup, squeeze)
 
 
 # ON INTERFACE
-def getH(sources, observers, sumup=False, squeeze=True, **specs):
+def getH(sources, observers, sumup=False, squeeze=True):
     """
     Compute H-field in [kA/m] for given sources and observers.
 
@@ -169,4 +169,4 @@ def getH(sources, observers, sumup=False, squeeze=True, **specs):
      [0.07741445 0.27571831 0.41483082]]
 
     """
-    return getBH_level2(False, sources, observers, sumup, squeeze, **specs)
+    return getBH_level2(False, sources, observers, sumup, squeeze)
