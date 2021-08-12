@@ -1257,12 +1257,12 @@ def magnet_cyl_tile_H_Slanovc2021(
 
     Parameters
     ----------
+    mag: ndarray, shape (n,3)
+        magnetization vector (M, phi, th) in spherical CS, units: [mT] [rad]
     obs_pos : ndarray, shape (n,3)
         observer positions (r,phi,z) in cy CS, units: [mm] [rad]
     dim: ndarray, shape (n,6)
         section dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
-    mag: ndarray, shape (n,3)
-        magnetization vector (M, phi, th) in spherical CS, units: [mT] [rad]
 
     Returns
     -------

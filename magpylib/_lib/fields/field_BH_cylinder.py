@@ -218,7 +218,7 @@ def magnet_cyl_dia_H_Furlani1994(
         dimension of cylinder (d, h), diameter and height, in units of [mm]
     tetta: ndarray, shape (n,)
         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
-    obs_pos: ndarray, shape (N,3)
+    obs_pos: ndarray, shape (n,3)
         position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
     niter: int
         Iterations for Simpsons approximation of the final integral
