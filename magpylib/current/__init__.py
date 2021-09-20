@@ -6,4 +6,4 @@ Biot-Savardt.
 
 __all__ = ['Circular', 'Line']
 
-from magpylib._lib.obj_classes import Circular, Line
+from magpylib._src.obj_classes import Circular, Line

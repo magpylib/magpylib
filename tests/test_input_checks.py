@@ -1,8 +1,8 @@
 import unittest
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._lib.exceptions import (MagpylibBadUserInput,
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.exceptions import (MagpylibBadUserInput,
     MagpylibBadInputShape, MagpylibMissingInput)
 import magpylib as magpy
 

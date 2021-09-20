@@ -1,12 +1,12 @@
 import pickle
 import os
 import numpy as np
-from magpylib._lib.fields.field_BH_cuboid import field_BH_cuboid
-from magpylib._lib.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
-from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
-from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
-from magpylib._lib.fields.field_BH_circular import field_BH_circular
-from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
+from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid
+from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
+from magpylib._src.fields.field_BH_sphere import field_BH_sphere
+from magpylib._src.fields.field_BH_dipole import field_BH_dipole
+from magpylib._src.fields.field_BH_circular import field_BH_circular
+from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
 from magpylib import Config
 
 # # GENERATE TEST DATA

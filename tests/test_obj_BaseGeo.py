@@ -2,7 +2,7 @@
 #import pickle
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 
 
 def test_BaseGeo_basics():

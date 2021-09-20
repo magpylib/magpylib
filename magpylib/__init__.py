@@ -322,7 +322,7 @@ from magpylib import magnet
 from magpylib import current
 from magpylib import misc
 from magpylib import lib
-from magpylib._lib.config import Config
-from magpylib._lib.fields import getB, getH, getB_dict, getH_dict
-from magpylib._lib.obj_classes import Collection, Sensor
-from magpylib._lib.display import display
+from magpylib._src.config import Config
+from magpylib._src.fields import getB, getH, getB_dict, getH_dict
+from magpylib._src.obj_classes import Collection, Sensor
+from magpylib._src.display import display
