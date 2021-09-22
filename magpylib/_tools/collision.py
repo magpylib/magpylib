@@ -62,4 +62,4 @@ def collision_xy_cuboids(obj1, obj2):
     no_collision = no_collision1 | no_collision2                      # on edge1 or edge2
     no_collision = no_collision[:n] | no_collision[n:]                # obj1->obj2 OR obj2->obj1
 
-    return no_collision
+    return ~no_collision
