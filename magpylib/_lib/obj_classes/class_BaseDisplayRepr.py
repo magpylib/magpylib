@@ -28,9 +28,11 @@ class BaseDisplayRepr:
         size_sensors=1,
         size_direction=1,
         size_dipoles=1,
-        zoom = 0.5):
+        zoom = 0.5,
+        plotting_backend=None,
+        **kwargs):
         """
-        Display object graphically using matplotlib 3D plotting.
+        Display object graphically.
 
         Parameters
         ----------
@@ -58,10 +60,15 @@ class BaseDisplayRepr:
 
         size_dipoles: float, default=1
             Adjust automatic display size of dipoles.
+            define plotting backend
 
         zoom: float, default = 0.5
             Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
 
+        plotting_backend: default=None
+            One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+            Config.PLOTTING_BACKEND
+            
         Returns
         -------
         None: NoneType
@@ -100,7 +107,9 @@ class BaseDisplayRepr:
             size_direction=size_direction,
             size_sensors=size_sensors,
             size_dipoles=size_dipoles,
-            zoom = zoom)
+            zoom=zoom,
+            plotting_backend=plotting_backend,
+            **kwargs)
 
     # ------------------------------------------------------------------
     # INTERFACE

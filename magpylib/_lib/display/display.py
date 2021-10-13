@@ -7,7 +7,9 @@ from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
     faces_sphere, faces_cylinder_section)
+from magpylib._lib.display.plotly_draw import display_plotly
 from magpylib._lib.input_checks import check_excitations, check_dimensions
+from magpylib._lib.config import Config
 
 
 # ON INTERFACE
@@ -20,9 +22,11 @@ def display(
         size_sensors=1,
         size_direction=1,
         size_dipoles=1,
-        zoom=0.5):
+        zoom=0.5,
+        plotting_backend=None,
+        **kwargs):
     """
-    Display objects and paths graphically using matplotlib 3D plotting.
+    Display objects and paths graphically.
 
     Parameters
     ----------
@@ -53,6 +57,10 @@ def display(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
+    
+    plotting_backend: default=None
+            One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+            Config.PLOTTING_BACKEND
 
     zoom: float, default = 0.5
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -94,19 +102,6 @@ def display(
     # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
-    # create or set plotting axis
-    if axis is None:
-        fig = plt.figure(dpi=80, figsize=(8,8))
-        ax = fig.add_subplot(111, projection='3d')
-        ax.set_box_aspect((1, 1, 1))
-        generate_output = True
-    else:
-        ax = axis
-        generate_output = False
-
-    # load color map
-    cmap = plt.cm.get_cmap('hsv')
-
     # flatten input
     obj_list = format_obj_input(objects)
 
@@ -118,7 +113,33 @@ def display(
     # test if every individual obj_path is good
     test_path_format(obj_list)
 
-    # sort input objects --------------------------------------------------------
+    if plotting_backend is None:
+        plotting_backend = Config.PLOTTING_BACKEND
+    if plotting_backend == 'matplotlib':
+        diplay_matplotlib(
+            obj_list,
+            axis, 
+            show_path, 
+            markers, 
+            show_direction, 
+            size_direction, 
+            size_sensors, 
+            size_dipoles,
+            zoom,
+        )
+    elif plotting_backend == 'plotly':
+        display_plotly(*obj_list, **kwargs)
+
+def diplay_matplotlib(
+    obj_list,
+    axis, 
+    show_path, 
+    markers, 
+    show_direction, 
+    size_direction, 
+    size_sensors, 
+    size_dipoles,
+    zoom):
 
     # objects with faces
     faced_objects = [obj for obj in obj_list if obj._object_type in (
@@ -138,6 +159,19 @@ def display(
     circulars = [obj for obj in obj_list if obj._object_type == 'Circular']
     lines = [obj for obj in obj_list if obj._object_type == 'Line']
 
+    # create or set plotting axis
+    if axis is None:
+        fig = plt.figure(dpi=80, figsize=(8,8))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_box_aspect((1, 1, 1))
+        generate_output = True
+    else:
+        ax = axis
+        generate_output = False
+
+    # load color map
+    cmap = plt.cm.get_cmap('hsv')
+    
     # draw objects and evaluate system size --------------------------------------
 
     # draw faced objects and store vertices
