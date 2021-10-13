@@ -126,7 +126,6 @@ def display(
             size_sensors, 
             size_dipoles,
             zoom,
-            size_dipoles
         )
     elif plotting_backend == 'plotly':
         display_plotly(*obj_list, **kwargs)

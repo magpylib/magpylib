@@ -66,7 +66,7 @@ def _getColorscale(color_transition=0.1, north_color=None, south_color=None):
         [1, north_color]
     ]
 
-def makeBaseBox(dim=(1.,1.,1.), pos=(0.,0.,0.)):
+def makeBaseCuboid(dim=(1.,1.,1.), pos=(0.,0.,0.)):
     return dict(
         i = np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
         j = np.array([3, 4, 1, 2, 5, 6, 5, 5, 0, 1, 2, 2]),
@@ -120,21 +120,21 @@ def make_Ellipsoid(dim=(1.,1.,1.), pos=(0.,0.,0.), Nvert=40):
     x,y,z = x.flatten(), y.flatten(), z.flatten()
     return dict(x=x, y=y ,z=z, alphahull=0)
 
-def make_Box(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
-    name = 'Box' if name is None else name
+def make_Cuboid(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
+    name = 'Cuboid' if name is None else name
     name_suffix = " ({}mx{}mx{}m)".format(*(unit_prefix(d/1000) for d in dim)) if name_suffix is None else f' ({name_suffix})'
-    box = makeBaseBox(dim=dim, pos=pos)
-    vertices = np.array([box[k] for k in ('x','y','z')])
+    cuboid = makeBaseCuboid(dim=dim, pos=pos)
+    vertices = np.array([cuboid[k] for k in ('x','y','z')])
     if color_transition>=0:
-        box['colorscale'] = _getColorscale(color_transition, north_color=north_color, south_color=south_color)
-        box['intensity'] = _getIntensity(vertices=vertices, mag=mag, pos=pos)
+        cuboid['colorscale'] = _getColorscale(color_transition, north_color=north_color, south_color=south_color)
+        cuboid['intensity'] = _getIntensity(vertices=vertices, mag=mag, pos=pos)
     x, y, z = orientation.apply(vertices.T).T
-    box.update(
+    cuboid.update(
         x=x, y=y, z=z, 
         showscale=False,
         name=f'''{name}{name_suffix}''', **kwargs
     )
-    return go.Mesh3d(**box)
+    return go.Mesh3d(**cuboid)
 
 def make_Cylinder(mag=(0.,0.,1000.),  base_vertices=50, diameter=1, height=1., pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
     name = 'Cylinder' if name is None else name
@@ -173,10 +173,10 @@ def getTrace(input_obj, sensorsources=None, color_transition=0., color=None, Nve
              opacity='default',
              sensorsize=SENSORSIZE, visible=None, **kwargs):
              
-    Box = _lib.obj_classes.Box
+    Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
-    Sensor = _lib.obj_classes.Sensor
     Sphere = _lib.obj_classes.Sphere
+    Sensor = _lib.obj_classes.Sensor
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
@@ -185,8 +185,8 @@ def getTrace(input_obj, sensorsources=None, color_transition=0., color=None, Nve
         opacity = 1
     kwargs['opacity'] = opacity
 
-    if isinstance(input_obj, Box):
-        trace = make_Box(mag=input_obj.magnetization, dim=input_obj.dimension, 
+    if isinstance(input_obj, Cuboid):
+        trace = make_Cuboid(mag=input_obj.magnetization, dim=input_obj.dimension, 
                 pos=input_obj.position, orientation=input_obj.orientation,
                 color_transition=color_transition,
                 **kwargs)
