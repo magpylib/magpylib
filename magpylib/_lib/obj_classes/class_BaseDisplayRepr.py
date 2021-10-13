@@ -62,9 +62,12 @@ class BaseDisplayRepr:
             Adjust automatic display size of dipoles.
             define plotting backend
 
+<<<<<<< HEAD
         zoom: float, default = 0.5
             Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
 
+=======
+>>>>>>> 532ee543e3d8a0b385ef8cbfee88317255a0a37f
         plotting_backend: default=None
             One of 'matplotlib', 'plolty'. If not set, parameter will default to 
             Config.PLOTTING_BACKEND
