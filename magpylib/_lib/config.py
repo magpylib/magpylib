@@ -20,6 +20,26 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
+        
+    PLOTTING_BACKEND: str, default='matplotlib'
+        One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not 
+        set explicitly in the display function.
+
+    SOUTH_COLOR: 
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    NORTH_COLOR: 
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
 
     Examples
     --------
@@ -45,11 +65,15 @@ class Config:
     >>> print(B_close)
     [ 0.e+00 -2.e+10  0.e+00]
     """
+    _SUPPORTED_PLOTTING_BACKENDS = ('matplotlib', 'plotly')
 
     CHECK_INPUTS = True
     EDGESIZE = 1e-14
     ITER_CYLINDER = 50
-
+    PLOTTING_BACKEND = 'matplotlib'
+    NORTH_COLOR = 'red' # 'magenta'
+    SOUTH_COLOR = 'blue' # 'turquoise'
+    
     @classmethod
     def reset(cls):
         """
@@ -62,3 +86,6 @@ class Config:
         cls.CHECK_INPUTS = True
         cls.EDGESIZE = 1e-14
         cls.ITER_CYLINDER = 50
+        cls.PLOTTING_BACKEND = 'matplotlib'
+        cls.NORTH_COLOR = 'red' # 'magenta'
+        cls.SOUTH_COLOR = 'blue' # 'turquoise'

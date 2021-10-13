@@ -27,9 +27,11 @@ class BaseDisplayRepr:
         show_path=True,
         size_sensors=1,
         size_direction=1,
-        size_dipoles=1):
+        size_dipoles=1,
+        plotting_backend=None,
+        **kwargs):
         """
-        Display object graphically using matplotlib 3D plotting.
+        Display object graphically.
 
         Parameters
         ----------
@@ -57,7 +59,12 @@ class BaseDisplayRepr:
 
         size_dipoles: float, default=1
             Adjust automatic display size of dipoles.
+            define plotting backend
 
+        plotting_backend: default=None
+            One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+            Config.PLOTTING_BACKEND
+            
         Returns
         -------
         None: NoneType
@@ -95,7 +102,9 @@ class BaseDisplayRepr:
             show_path=show_path,
             size_direction=size_direction,
             size_sensors=size_sensors,
-            size_dipoles=size_dipoles)
+            size_dipoles=size_dipoles,
+            plotting_backend=plotting_backend,
+            **kwargs)
 
     # ------------------------------------------------------------------
     # INTERFACE

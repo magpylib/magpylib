@@ -7,6 +7,8 @@ from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_box, faces_cylinder, system_size,
     faces_sphere)
+from magpylib._lib.config import Config
+from magpylib._lib.display.plotly_draw import display_plotly
 from magpylib import _lib
 
 
@@ -19,9 +21,11 @@ def display(
         show_path=True,
         size_sensors=1,
         size_direction=1,
-        size_dipoles=1):
+        size_dipoles=1,
+        plotting_backend=None,
+        **kwargs):
     """
-    Display objects and paths graphically using matplotlib 3D plotting.
+    Display objects and paths graphically.
 
     Parameters
     ----------
@@ -52,6 +56,10 @@ def display(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
+    
+    plotting_backend: default=None
+            One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+            Config.PLOTTING_BACKEND
 
     Returns
     -------
@@ -90,6 +98,38 @@ def display(
     # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
+    # flatten input
+    obj_list = format_obj_input(objects)
+
+    # test if every individual obj_path is good
+    test_path_format(obj_list)
+
+    if plotting_backend is None:
+        plotting_backend = Config.PLOTTING_BACKEND
+    if plotting_backend == 'matplotlib':
+        diplay_matplotlib(
+            obj_list,
+            axis, 
+            show_path, 
+            markers, 
+            show_direction, 
+            size_direction, 
+            size_sensors, 
+            size_dipoles
+        )
+    elif plotting_backend == 'plotly':
+        display_plotly(*obj_list, **kwargs)
+
+def diplay_matplotlib(
+    obj_list,
+    axis, 
+    show_path, 
+    markers, 
+    show_direction, 
+    size_direction, 
+    size_sensors, 
+    size_dipoles):
+
     # avoid circular imports
     Box = _lib.obj_classes.Box
     Cylinder = _lib.obj_classes.Cylinder
@@ -98,25 +138,6 @@ def display(
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
-
-    # create or set plotting axis
-    if axis is None:
-        fig = plt.figure(dpi=80, figsize=(8,8))
-        ax = fig.add_subplot(111, projection='3d')
-        ax.set_box_aspect((1, 1, 1))
-        generate_output = True
-    else:
-        ax = axis
-        generate_output = False
-
-    # load color map
-    cmap = plt.cm.get_cmap('hsv')
-
-    # flatten input
-    obj_list = format_obj_input(objects)
-
-    # test if every individual obj_path is good
-    test_path_format(obj_list)
 
     # sort input objects --------------------------------------------------------
 
@@ -136,7 +157,20 @@ def display(
     # currents
     circulars = [obj for obj in obj_list if isinstance(obj, Circular)]
     lines = [obj for obj in obj_list if isinstance(obj, Line)]
+    
+    # create or set plotting axis
+    if axis is None:
+        fig = plt.figure(dpi=80, figsize=(8,8))
+        ax = fig.add_subplot(111, projection='3d')
+        ax.set_box_aspect((1, 1, 1))
+        generate_output = True
+    else:
+        ax = axis
+        generate_output = False
 
+    # load color map
+    cmap = plt.cm.get_cmap('hsv')
+    
     # draw objects and evaluate system size --------------------------------------
 
     # draw faced objects and store vertices
