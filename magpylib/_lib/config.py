@@ -25,6 +25,11 @@ class Config:
         One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not 
         set explicitly in the display function.
 
+    COLOR_TRANSITION, float, default=0
+        value between 0 and 1 sets the smoothness of the color transition from north to south pole 
+        visualization. If set to a negative value (e.g. `-1`), the magnet polarity will be hidden
+        and the object color will be uniform and managed by the plotting library.
+    
     SOUTH_COLOR: 
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
@@ -71,8 +76,10 @@ class Config:
     EDGESIZE = 1e-8
     ITER_CYLINDER = 50
     PLOTTING_BACKEND = 'matplotlib'
+    COLOR_TRANSITION = 0.
     NORTH_COLOR = 'red' # 'magenta'
     SOUTH_COLOR = 'blue' # 'turquoise'
+    COLOR_TRANSITION = 0
     
     @classmethod
     def reset(cls):
@@ -87,5 +94,6 @@ class Config:
         cls.EDGESIZE = 1e-14
         cls.ITER_CYLINDER = 50
         cls.PLOTTING_BACKEND = 'matplotlib'
+        cls.COLOR_TRANSITION = 0.
         cls.NORTH_COLOR = 'red' # 'magenta'
         cls.SOUTH_COLOR = 'blue' # 'turquoise'

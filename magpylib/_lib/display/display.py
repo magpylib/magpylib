@@ -59,8 +59,8 @@ def display(
         Adjust automatic display size of dipoles.
     
     plotting_backend: default=None
-            One of 'matplotlib', 'plolty'. If not set, parameter will default to 
-            Config.PLOTTING_BACKEND
+        One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+        Config.PLOTTING_BACKEND
 
     zoom: float, default = 0.5
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -128,7 +128,7 @@ def display(
             zoom,
         )
     elif plotting_backend == 'plotly':
-        display_plotly(*obj_list, **kwargs)
+        display_plotly(*obj_list, show_path=show_path, **kwargs)
 
 def diplay_matplotlib(
     obj_list,
