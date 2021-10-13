@@ -7,7 +7,6 @@ from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw
     draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
 from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
     faces_sphere, faces_cylinder_section)
-from magpylib._lib.display.plotly_draw import display_plotly
 from magpylib._lib.input_checks import check_excitations, check_dimensions
 from magpylib._lib.config import Config
 
@@ -128,6 +127,7 @@ def display(
             zoom,
         )
     elif plotting_backend == 'plotly':
+        from magpylib._lib.display.plotly_draw import display_plotly
         display_plotly(*obj_list, show_path=show_path, **kwargs)
 
 def diplay_matplotlib(

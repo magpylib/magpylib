@@ -1,7 +1,11 @@
 """ plolty draw-functionalities"""
 
 from re import M
-import plotly.graph_objects as go
+try:
+    import plotly.graph_objects as go
+except ImportError:
+    raise ImportError(
+        '''In order to use the plotly plotting backend, you need to install plotly via pip or conda, see https://github.com/plotly/plotly.py''')
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
