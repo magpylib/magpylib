@@ -1,5 +1,19 @@
 """Config class code"""
 
+
+DEFAULTS = dict(
+    _SUPPORTED_PLOTTING_BACKENDS = ('matplotlib', 'plotly'),
+    CHECK_INPUTS = True,
+    EDGESIZE = 1e-8,
+    ITER_CYLINDER = 50,
+    PLOTTING_BACKEND = 'matplotlib',
+    NORTH_COLOR = 'rgb(231,17,17)',  # 'red'
+    MIDDLE_COLOR = 'rgb(221,221,221)', # 'grey'
+    SOUTH_COLOR = 'rgb(0,176,80)', # 'green'
+    COLOR_TRANSITION = 0,
+)
+
+
 # ON INTERFACE
 class Config:
     """
@@ -38,6 +52,15 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
+    MIDDLE_COLOR: 
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+
     NORTH_COLOR: 
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
@@ -70,30 +93,23 @@ class Config:
     >>> print(B_close)
     [ 0.e+00 -2.e+10  0.e+00]
     """
-    _SUPPORTED_PLOTTING_BACKENDS = ('matplotlib', 'plotly')
-
-    CHECK_INPUTS = True
-    EDGESIZE = 1e-8
-    ITER_CYLINDER = 50
-    PLOTTING_BACKEND = 'matplotlib'
-    COLOR_TRANSITION = 0.
-    NORTH_COLOR = 'red' # 'magenta'
-    SOUTH_COLOR = 'blue' # 'turquoise'
-    COLOR_TRANSITION = 0
     
+
     @classmethod
-    def reset(cls):
+    def reset(cls, args=None):
         """
         Reset Config to default values.
-
+        Parameters
+        ----------
+        args: iterable of strings. If not set, all defaults will be reset.
+        
         Returns
         -------
         None: NoneType
         """
-        cls.CHECK_INPUTS = True
-        cls.EDGESIZE = 1e-14
-        cls.ITER_CYLINDER = 50
-        cls.PLOTTING_BACKEND = 'matplotlib'
-        cls.COLOR_TRANSITION = 0.
-        cls.NORTH_COLOR = 'red' # 'magenta'
-        cls.SOUTH_COLOR = 'blue' # 'turquoise'
+        if args is None:
+            args = DEFAULTS.keys()
+        for k in args:
+            setattr(cls, k, DEFAULTS[k])
+
+Config.reset()
