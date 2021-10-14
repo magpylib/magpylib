@@ -128,7 +128,7 @@ def display(
         )
     elif plotting_backend == 'plotly':
         from magpylib._lib.display.plotly_draw import display_plotly
-        display_plotly(*obj_list, show_path=show_path, **kwargs)
+        display_plotly(*obj_list, show_path=show_path, size_dipoles=size_dipoles, **kwargs)
 
 def diplay_matplotlib(
     obj_list,

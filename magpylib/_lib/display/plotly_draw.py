@@ -66,16 +66,20 @@ def _getIntensity(vertices, mag, pos):
     else:
         return vertices[0]*0
 
-def _getColorscale(color_transition=0.1, north_color=None, south_color=None):
+def _getColorscale(color_transition=0.1, north_color=None, middle_color=None, south_color=None):
     if north_color is None:
         north_color = Config.NORTH_COLOR
     if south_color is None:
         south_color = Config.SOUTH_COLOR
+    if middle_color is None:
+        middle_color = Config.MIDDLE_COLOR
     return [
-        [0, south_color], 
-        [0.5*(1-color_transition), south_color],
-        [0.5*(1+color_transition), north_color], 
-        [1, north_color]
+        [0., south_color], 
+        [0.2-0.2*(color_transition), south_color],
+        [0.2+0.3*(color_transition), middle_color], 
+        [0.8-0.3*(color_transition), middle_color],
+        [0.8+0.2*(color_transition), north_color], 
+        [1., north_color]
     ]
 
 def makeBaseCuboid(dim=(1.,1.,1.), pos=(0.,0.,0.)):
@@ -151,18 +155,69 @@ def make_Ellipsoid(dim=(1.,1.,1.), pos=(0.,0.,0.), Nvert=15):
 
     return dict(type='mesh3d', x=x, y=y, z=z, i=i, j=j, k=k)
 
-def make_Cuboid(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
+def make_Cone(base_vertices=3, diameter=1, height=1, pos=(0.,0.,0.)):
+    N=base_vertices
+    t = np.linspace(0, 2*np.pi, N, endpoint=False)
+    c = np.array([np.cos(t), np.sin(t), t*0-1])*0.5
+    tp = np.array([[0,0,0.5]]).T
+    c = np.concatenate([c, tp], axis=1)
+    c = c.T*np.array([diameter, diameter, height]) + np.array(pos)
+    x,y,z = c.T
+
+    i = np.arange(N, dtype=int)
+    j = i+1 ; j[-1]=0
+    k = np.array([N]*N, dtype=int)
+    return dict(type='mesh3d', x=x, y=y, z=z, i=i, j=j, k=k)
+
+def make_BaseArrow(base_vertices=30, diameter=0.3, height=1):
+    h, d = height, diameter
+    cone = make_Cone(base_vertices=base_vertices, diameter=d, height=d, pos=(0.,0.,(h-d)/2))
+    prism = make_BasePrism(base_vertices=base_vertices, diameter=d/2, height=h-d, pos=(0.,0.,-d/2))
+    arrow = merge_meshes(cone, prism)
+    return arrow
+
+def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1.,  orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
+    name = 'Dipole' if name is None else name
+    x,y,z = np.array([[p] for p in pos])
+    mom_mag = np.linalg.norm(moment)
+    name_suffix = " (moment={}T/m³)".format(unit_prefix(mom_mag)) if name_suffix is None else f' ({name_suffix})'
+    dipole = make_BaseArrow(base_vertices=10, diameter=0.3*size, height=size)
+    vertices = np.array([dipole[k] for k in 'xyz'])
+    if color_transition>=0:
+        if middle_color=='auto':
+            middle_color = kwargs.get('color', None)
+        dipole['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
+        dipole['intensity'] = _getIntensity(vertices=vertices, mag=(0,0,1), pos=(0.,0.,0.))
+    rotvec = np.cross(np.array(moment),np.array([0,0,1]))
+    n = np.linalg.norm(rotvec)
+    t = np.arcsin(n)
+    mag_orient = RotScipy.from_rotvec(-t*rotvec/n)
+    if orientation is not None:
+        orientation = mag_orient*orientation
+    else:
+        orientation = mag_orient
+    vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
+    dipole.update(
+        x=x, y=y, z=z, 
+        showscale=False,
+        name=f'''{name}{name_suffix}''', **kwargs
+    )
+    return dipole
+
+def make_Cuboid(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Cuboid' if name is None else name
     name_suffix = " ({}mx{}mx{}m)".format(*(unit_prefix(d/1000) for d in dim)) if name_suffix is None else f' ({name_suffix})'
     cuboid = makeBaseCuboid(dim=dim, pos=(0.,0.,0.))
     vertices = np.array([cuboid[k] for k in 'xyz'])
     if color_transition>=0:
-        cuboid['colorscale'] = _getColorscale(color_transition, north_color=north_color, south_color=south_color)
+        if middle_color=='auto':
+            middle_color = kwargs.get('color', None)
+        cuboid['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
         cuboid['intensity'] = _getIntensity(vertices=vertices, mag=mag, pos=(0.,0.,0.))
     if orientation is not None:
-        x, y, z = (orientation.apply(vertices.T) + pos).T
-    else:
-        x, y, z = vertices
+        vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
     cuboid.update(
         x=x, y=y, z=z, 
         showscale=False,
@@ -170,18 +225,19 @@ def make_Cuboid(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=
     )
     return cuboid
 
-def make_Cylinder(mag=(0.,0.,1000.),  base_vertices=50, diameter=1, height=1., pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
+def make_Cylinder(mag=(0.,0.,1000.),  base_vertices=50, diameter=1, height=1., pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Cylinder' if name is None else name
     name_suffix = " (D={}m, H={}m)".format(*(unit_prefix(d/1000) for d in (diameter, height)))  if name_suffix is None else f' ({name_suffix})'
     cylinder = make_BasePrism(base_vertices=base_vertices, diameter=diameter, height=height, pos=(0.,0.,0.))
     vertices = np.array([cylinder[k] for k in 'xyz'])
     if color_transition>=0:
-        cylinder['colorscale'] = _getColorscale(color_transition, north_color=north_color, south_color=south_color)
+        if middle_color=='auto':
+            middle_color = kwargs.get('color', None)
+        cylinder['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
         cylinder['intensity'] = _getIntensity(vertices=vertices, mag=mag, pos=(0.,0.,0.))
     if orientation is not None:
-        x, y, z = (orientation.apply(vertices.T) + pos).T
-    else:
-        x, y, z = vertices
+        vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
     cylinder.update(
         x=x, y=y, z=z, 
         showscale=False,
@@ -189,18 +245,19 @@ def make_Cylinder(mag=(0.,0.,1000.),  base_vertices=50, diameter=1, height=1., p
     )
     return cylinder
 
-def make_Sphere(mag=(0.,0.,1000.),  Nvert=15, diameter=1, height=1., pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, south_color=None, **kwargs):
+def make_Sphere(mag=(0.,0.,1000.),  Nvert=15, diameter=1, height=1., pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Sphere' if name is None else name
     name_suffix = " (D={}m)".format(unit_prefix(diameter/1000)) if name_suffix is None else f' ({name_suffix})' 
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter]*3, pos=(0.,0.,0.))
     vertices = np.array([sphere[k] for k in 'xyz'])
     if color_transition>=0:
-        sphere['colorscale'] = _getColorscale(color_transition, north_color=north_color, south_color=south_color)
+        if middle_color=='auto':
+            middle_color = kwargs.get('color', None)
+        sphere['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
         sphere['intensity'] = _getIntensity(vertices=vertices, mag=mag, pos=(0.,0.,0.))
     if orientation is not None:
-        x, y, z = (orientation.apply(vertices.T) + pos).T
-    else:
-        x, y, z = vertices
+        vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
     sphere.update(
         x=x, y=y, z=z, 
         showscale=False,
@@ -213,7 +270,7 @@ def merge_meshes(*traces, concat_xyz=True):
     L = np.array([0]+[len(b['x']) for b in traces[:-1]]).cumsum()
     for k in 'ijk':
         if k in traces[0]:
-            merged_trace[k] = (np.array([b[k] for i,b in enumerate(traces)]).T + L).T.flatten()
+            merged_trace[k] = np.hstack([b[k]+l for b,l in zip(traces,L)])
     for k in 'xyz':
         if concat_xyz:
             merged_trace[k] = np.concatenate([b[k] for b in traces])
@@ -228,7 +285,7 @@ def merge_meshes(*traces, concat_xyz=True):
 
 
 def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=None, color=None, Nver=40, maxpos=None,
-             showhoverdata=True, dipolesizeref=DIPOLESIZEREF, 
+             showhoverdata=True, size_dipoles=1, 
              opacity='default',
              sensorsize=SENSORSIZE, visible=None, **kwargs):
              
@@ -276,6 +333,15 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
             **kwargs
         )
         make_func = make_Sphere
+    elif isinstance(input_obj, Dipole):
+        kwargs.update(
+            moment=input_obj.moment,
+            color_transition=color_transition,
+            color=color,
+            size=size_dipoles,
+            **kwargs
+        )
+        make_func = make_Dipole
 
     if haspath:
         if show_path is True or show_path is False:
@@ -304,7 +370,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
     return traces
 
 
-def display_plotly(*objs, show_path=False, fig=None, **kwargs):
+def display_plotly(*objs, show_path=False, fig=None, renderer=None, **kwargs):
     show_fig=False
     if fig is None:
         show_fig = True
@@ -320,4 +386,4 @@ def display_plotly(*objs, show_path=False, fig=None, **kwargs):
             zaxis_title='z [mm]',
             aspectmode='data')
     if show_fig:
-        fig.show()
+        fig.show(renderer=renderer)
