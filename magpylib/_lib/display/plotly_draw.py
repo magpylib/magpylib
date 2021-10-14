@@ -173,10 +173,10 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1):
     h, d = height, diameter
     cone = make_Cone(base_vertices=base_vertices, diameter=d, height=d, pos=(0.,0.,(h-d)/2))
     prism = make_BasePrism(base_vertices=base_vertices, diameter=d/2, height=h-d, pos=(0.,0.,-d/2))
-    arrow = merge_meshes(cone, prism)
+    arrow = merge_mesh3d(cone, prism)
     return arrow
 
-def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1.,  orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
+def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1., orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Dipole' if name is None else name
     x,y,z = np.array([[p] for p in pos])
     mom_mag = np.linalg.norm(moment)
@@ -188,15 +188,22 @@ def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1.,  orientation=None,
             middle_color = kwargs.get('color', None)
         dipole['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
         dipole['intensity'] = _getIntensity(vertices=vertices, mag=(0,0,1), pos=(0.,0.,0.))
-    rotvec = np.cross(np.array(moment),np.array([0,0,1]))
-    n = np.linalg.norm(rotvec)
-    t = np.arcsin(n)
-    mag_orient = RotScipy.from_rotvec(-t*rotvec/n)
-    if orientation is not None:
-        orientation = mag_orient*orientation
+    nvec = np.array(moment)/mom_mag
+    zaxis = np.array([0,0,1])
+    cross = np.cross(nvec,zaxis)
+    dot = np.dot(nvec,zaxis)
+    n = np.linalg.norm(cross)
+    if n!=0:
+        t = np.arccos(dot)
+        mag_orient = RotScipy.from_rotvec(-t*cross/n)
+    else:
+        mag_orient = None
+    if orientation is not None and mag_orient is not None:
+        orientation = orientation*mag_orient
     else:
         orientation = mag_orient
-    vertices = orientation.apply(vertices.T).T
+    if orientation is not None:
+        vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
     dipole.update(
         x=x, y=y, z=z, 
@@ -204,6 +211,67 @@ def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1.,  orientation=None,
         name=f'''{name}{name_suffix}''', **kwargs
     )
     return dipole
+
+def turn_arrow(vec, pos, sign=1):
+    hy=sign*0.1
+    hx=0.06
+    norm = np.linalg.norm(vec)
+    arrow = np.array([
+        [0,-0.5,0],
+        [0,0,0],
+        [-hx,0-hy,0],
+        [0,0,0],
+        [hx,0-hy,0],
+        [0,0,0],
+        [0,0.5,0],
+    ])*norm
+    nvec = np.array(vec)/norm
+    yaxis = np.array([0,1,0])
+    cross = np.cross(nvec,yaxis)
+    dot = np.dot(nvec,yaxis)
+    n = np.linalg.norm(cross)
+    if n!=0:
+        t = np.arccos(dot)
+        R = RotScipy.from_rotvec(-t*cross/n)
+        arrow = R.apply(arrow) 
+    x,y,z = (arrow + pos).T
+    return x,y,z
+
+def make_Line(current=0.0, vertices=[(-1.0, 0.0, 0.0),(1.0,0.0,0.0)], pos=(0.,0.,0.), show_arrows=True, orientation=None, name=None, name_suffix=None, color=None, **kwargs):
+    name = 'Line Curent' if name is None else name
+    name_suffix = " ({}A)".format(unit_prefix(current)) if name_suffix is None else f' ({name_suffix})'
+    if show_arrows:
+        vectors = np.diff(vertices, axis=0)
+        positions = vertices[:-1] + vectors/2
+        vertices = np.concatenate([turn_arrow(vec, pos, np.sign(current)) for vec,pos in zip(vectors,positions)], axis=1)
+    else:
+        vertices = np.array(vertices).T
+    if orientation is not None:
+        vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
+    line = dict(type='scatter3d', x=x, y=y, z=z, name=f'''{name}{name_suffix}''', mode='lines', line_width=5, line_color=color)
+    return {**line, **kwargs}
+
+def make_Circular(current=0.0, diameter=1., pos=(0.,0.,0.), Nvert=50, show_arrows=True, orientation=None, name=None, name_suffix=None, color=None, **kwargs):
+    name = 'Circular Curent' if name is None else name
+    name_suffix = " ({}A)".format(unit_prefix(current)) if name_suffix is None else f' ({name_suffix})'
+    t = np.linspace(0, 2*np.pi, Nvert)
+    x = np.cos(t)
+    y = np.sin(t)
+    if show_arrows:
+        hy=0.2*np.sign(current)
+        hx=0.15
+        x = np.hstack([x, [1+hx,1,1-hx]])
+        y = np.hstack([y, [-hy,0,-hy]])
+    x = x*diameter/2
+    y = y*diameter/2
+    z = np.zeros(x.shape)
+    vertices = np.array([x,y,z])
+    if orientation is not None:
+        vertices = orientation.apply(vertices.T).T
+    x, y, z = (vertices.T + pos).T
+    circular = dict(type='scatter3d', x=x, y=y, z=z, name=f'''{name}{name_suffix}''', mode='lines', line_width=5, line_color=color)
+    return {**circular, **kwargs}
 
 def make_Cuboid(mag=(0.,0.,1000.),  dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Cuboid' if name is None else name
@@ -265,7 +333,7 @@ def make_Sphere(mag=(0.,0.,1000.),  Nvert=15, diameter=1, height=1., pos=(0.,0.,
     )
     return sphere
 
-def merge_meshes(*traces, concat_xyz=True):
+def merge_mesh3d(*traces, concat_xyz=True):
     merged_trace = dict()
     L = np.array([0]+[len(b['x']) for b in traces[:-1]]).cumsum()
     for k in 'ijk':
@@ -283,11 +351,25 @@ def merge_meshes(*traces, concat_xyz=True):
             merged_trace[k] = v
     return merged_trace
 
+def merge_scatter3d(*traces):
+    merged_trace = dict()
+    for k in 'xyz':
+        merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
+    for k,v in traces[0].items():
+        if k not in merged_trace:
+            merged_trace[k] = v
+    return merged_trace
 
-def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=None, color=None, Nver=40, maxpos=None,
-             showhoverdata=True, size_dipoles=1, 
-             opacity='default',
-             sensorsize=SENSORSIZE, visible=None, **kwargs):
+def merge_traces(*traces, concat_xyz=True):
+    if traces[0]['type']=='mesh3d':
+        trace = merge_mesh3d(*traces, concat_xyz=concat_xyz)
+    elif traces[0]['type']=='scatter3d':
+        trace = merge_scatter3d(*traces)
+    return trace
+
+
+def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_dipoles=1, show_arrows=True, show_path_numbering=False,
+             opacity=None, color_transition=0., north_color=None, middle_color=None, south_color=None, **kwargs):
              
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
@@ -297,19 +379,24 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
 
+    mag_color_kwargs = dict(color_transition=color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
+    
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
-    if opacity == 'default':
+
+    if opacity is None:
         opacity = 1
-    haspath = input_obj.position.ndim>1
     kwargs['opacity'] = opacity
+
+    haspath = input_obj.position.ndim>1
+
     traces=[]
     if isinstance(input_obj, Cuboid):
         kwargs.update(
             mag=input_obj.magnetization, 
             dim=input_obj.dimension, 
-            color_transition=color_transition,
             color=color,
+            **mag_color_kwargs,
             **kwargs
         )
         make_func = make_Cuboid
@@ -319,8 +406,8 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
             mag=input_obj.magnetization,
             diameter=input_obj.dimension[0], height=input_obj.dimension[0], 
             base_vertices=base_vertices,
-            color_transition=color_transition,
             color=color,
+            **mag_color_kwargs,
             **kwargs
         )
         make_func = make_Cylinder
@@ -328,20 +415,38 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
         kwargs.update(
             mag=input_obj.magnetization,
             diameter=input_obj.diameter,
-            color_transition=color_transition,
             color=color,
+            **mag_color_kwargs,
             **kwargs
         )
         make_func = make_Sphere
     elif isinstance(input_obj, Dipole):
         kwargs.update(
             moment=input_obj.moment,
-            color_transition=color_transition,
-            color=color,
             size=size_dipoles,
+            color=color,
+            **mag_color_kwargs,
             **kwargs
         )
         make_func = make_Dipole
+    elif isinstance(input_obj, Line):
+        kwargs.update(
+            vertices=input_obj.vertices,
+            current=input_obj.current,
+            show_arrows=show_arrows,
+            color=color,
+            **kwargs
+        )
+        make_func = make_Line
+    elif isinstance(input_obj, Circular):
+        kwargs.update(
+            diameter=input_obj.diameter,
+            current=input_obj.current,
+            show_arrows=show_arrows,
+            color=color,
+            **kwargs
+        )
+        make_func = make_Circular
 
     if haspath:
         if show_path is True or show_path is False:
@@ -353,17 +458,18 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color_transition=N
         path_traces = []
         for pos,orient in zip(input_obj.position[inds], input_obj.orientation[inds]):
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
-        trace = merge_meshes(*path_traces)
+        trace = merge_traces(*path_traces)
     else:
         trace = make_func(pos=input_obj.position, orientation=input_obj.orientation, **kwargs)
     trace.update({'legendgroup':f'{input_obj}', 'showlegend':True})
     traces.append(trace)
     if haspath and show_path is not False:
         x,y,z = input_obj.position.T
+        txt_kwargs = {'mode':'markers+text+lines', 'text':list(range(len(x)))} if show_path_numbering else {'mode':'markers+lines'}
         scatter_path = dict(
             type='scatter3d', x=x, y=y, z=z, name=f'Path: {input_obj}', 
             showlegend=False, legendgroup=f'{input_obj}', 
-            marker_size=3,marker_color=color, line_color=color
+            marker_size=1, marker_color=color, line_color=color, line_width=1, **txt_kwargs,
         )
         traces.append(scatter_path)
 
