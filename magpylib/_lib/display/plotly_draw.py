@@ -335,9 +335,33 @@ def make_Sphere(mag=(0.,0.,1000.),  Nvert=15, diameter=1, pos=(0.,0.,0.), orient
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter]*3, pos=(0.,0.,0.))
     return _update_mag_mesh(sphere, name, name_suffix, mag, orientation, pos, color_transition, north_color, middle_color, south_color, **kwargs)
 
-def _update_mag_mesh(mesh_dict, name, name_suffix, magnetization, orientation, position, color_transition, north_color, middle_color, south_color, **kwargs):
+def make_Sensor(pixel=(0.,0.,0.), dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, color=None, **kwargs):
+    name = 'Sensor' if name is None else name
+    pixel = np.array(pixel)
+    pixel_str = f''' ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)''' if pixel.ndim!=1 else ''
+    name_suffix = pixel_str if name_suffix is None else f' ({name_suffix})'
+    from magpylib._lib.display.sensor_plotly_mesh import SENSOR_MESH as mesh_dict
+    sensor = mesh_dict.copy()
+    vertices  = np.array([mesh_dict[k] for k in 'xyz']).T
+    if color is not None:
+        s = sensor['facecolor']
+        s[s=='rgb(238,238,238)'] = color
+    if pixel.ndim==1:
+        dim_ext = dim  
+        dim = 0 
+    else:
+        dim = pixel.max(axis=0)- pixel.min(axis=0)
+        dim_ext = np.mean(dim)
+    cube_mask = (vertices<1).all(axis=1)
+    vertices[cube_mask] = dim*vertices[cube_mask]
+    vertices[~cube_mask] = dim_ext*vertices[~cube_mask]
+    x,y,z = vertices.T
+    sensor.update(x=x, y=y, z=z)
+    return _update_mag_mesh(sensor, name, name_suffix, orientation=orientation, position=pos, **kwargs)
+
+def _update_mag_mesh(mesh_dict, name, name_suffix, magnetization=None, orientation=None, position=None, color_transition=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     vertices = np.array([mesh_dict[k] for k in 'xyz'])
-    if color_transition>=0:
+    if magnetization is not None and color_transition>=0:
         if middle_color=='auto':
             middle_color = kwargs.get('color', None)
         mesh_dict['colorscale'] = _getColorscale(color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
@@ -363,8 +387,9 @@ def merge_mesh3d(*traces, concat_xyz=True):
             merged_trace[k] = np.concatenate([b[k] for b in traces])
         else:
             merged_trace[k] = np.array([b[k] for b in traces])
-    if 'intensity' in traces[0]:
-        merged_trace['intensity'] = np.concatenate([b['intensity'] for b in traces])
+    for k in ('intensity', 'facecolor'):
+        if k in traces[0] and traces[0][k] is not None:
+            merged_trace[k] = np.hstack([b[k] for b in traces])
     for k,v in traces[0].items():
         if k not in merged_trace:
             merged_trace[k] = v
@@ -387,30 +412,36 @@ def merge_traces(*traces, concat_xyz=True):
     return trace
 
 
-def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_dipoles=1, show_arrows=True, show_path_numbering=False,
+def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, size_sensors=1, show_arrows=True, show_path_numbering=False,
              opacity=None, color_transition=0., north_color=None, middle_color=None, south_color=None, **kwargs):
              
+    Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
     CylinderSegment = _lib.obj_classes.CylinderSegment
     Sphere = _lib.obj_classes.Sphere
-    Sensor = _lib.obj_classes.Sensor
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
 
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
-        
+
     mag_color_kwargs = dict(color_transition=color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
     
 
     kwargs['opacity'] = 1 if opacity is None else opacity
+    color = kwargs.get('color', None)
 
     haspath = input_obj.position.ndim>1
-
     traces=[]
-    if isinstance(input_obj, Cuboid):
+    if isinstance(input_obj, Sensor):
+        kwargs.update( 
+            dim = getattr(input_obj, 'dimension', size_sensors),
+            pixel = getattr(input_obj, 'pixel', (0.,0.,0.)),
+        )
+        make_func = make_Sensor
+    elif isinstance(input_obj, Cuboid):
         kwargs.update(
             mag=input_obj.magnetization, 
             dim=input_obj.dimension, 
