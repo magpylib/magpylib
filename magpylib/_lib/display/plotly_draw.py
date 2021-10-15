@@ -515,9 +515,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, si
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
         trace = merge_traces(*path_traces)
     else:
-        position = getattr(input_obj, 'position', (0,0,0))
-        orientation = getattr(input_obj, 'orientation,', None)
-        trace = make_func(pos=position, orientation=orientation, **kwargs)
+        trace = make_func(pos=input_obj.position, orientation=input_obj.orientation, **kwargs)
     trace.update({'legendgroup':f'{input_obj}', 'showlegend':True})
     traces.append(trace)
     if haspath and show_path is not False:
