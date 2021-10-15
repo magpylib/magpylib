@@ -399,10 +399,11 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
 
-    mag_color_kwargs = dict(color_transition=color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
-    
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
+        
+    mag_color_kwargs = dict(color_transition=color_transition, north_color=north_color, middle_color=middle_color, south_color=south_color)
+    
 
     kwargs['opacity'] = 1 if opacity is None else opacity
 
