@@ -457,7 +457,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
         if show_path is True or show_path is False:
             inds = [-1]
         elif isinstance(show_path, int):
-            inds = slice(None,None,show_path)
+            inds = slice(None,None,-show_path)
         else:
             inds = np.array(show_path)
         path_traces = []
