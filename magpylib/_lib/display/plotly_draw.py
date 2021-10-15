@@ -283,6 +283,16 @@ def make_Circular(current=0.0, diameter=1., pos=(0.,0.,0.), Nvert=50, show_arrow
     circular = dict(type='scatter3d', x=x, y=y, z=z, name=f'''{name}{name_suffix}''', mode='lines', line_width=5, line_color=color)
     return {**circular, **kwargs}
 
+def make_UnsupportedObject(pos=(0.,0.,0.), orientation=None, name=None, name_suffix=None, color=None, **kwargs):
+    name = 'Unkwnon obj' if name is None else name
+    name_suffix = " (Usupported visualisation)" if name_suffix is None else f' ({name_suffix})'
+    x,y,z = pos
+    obj = dict(
+        type='scatter3d', x=[x], y=[y], z=[z], name=f'''{name}{name_suffix}''', text=name, 
+        mode='markers+text',marker_size=10, marker_color=color, marker_symbol='diamond'
+    )
+    return {**obj, **kwargs}
+
 def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1., orientation=None, color_transition=0., name=None, name_suffix=None, north_color=None, middle_color=None, south_color=None, **kwargs):
     name = 'Dipole' if name is None else name
     moment_mag = np.linalg.norm(moment)
@@ -452,6 +462,11 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             show_arrows=show_arrows,
         )
         make_func = make_Circular
+    else:
+        kwargs.update(
+            name = type(input_obj).__name__
+        )
+        make_func = make_UnsupportedObject
 
     if haspath:
         if show_path is True or show_path is False:
@@ -465,7 +480,9 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
         trace = merge_traces(*path_traces)
     else:
-        trace = make_func(pos=input_obj.position, orientation=input_obj.orientation, **kwargs)
+        position = getattr(input_obj, 'position', (0,0,0))
+        orientation = getattr(input_obj, 'orientation,', None)
+        trace = make_func(pos=position, orientation=orientation, **kwargs)
     trace.update({'legendgroup':f'{input_obj}', 'showlegend':True})
     traces.append(trace)
     if haspath and show_path is not False:
