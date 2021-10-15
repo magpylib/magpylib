@@ -306,7 +306,10 @@ def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1., orientation=None, 
     t = np.arccos(dot)
     vec = -t*cross/n if n!=0 else (0,0,0)
     mag_orient = RotScipy.from_rotvec(vec)
-    orientation = orientation*mag_orient
+    if orientation is not None:
+        orientation = orientation*mag_orient
+    else:
+        orientation = mag_orient
     mag = (0,0,1)
     return _update_mag_mesh(dipole, name, name_suffix, mag, orientation, pos, color_transition, north_color, middle_color, south_color, **kwargs)
 
