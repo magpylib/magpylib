@@ -394,9 +394,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
 
-    if opacity is None:
-        opacity = 1
-    kwargs['opacity'] = opacity
+    kwargs['opacity'] = 1 if opacity is None else opacity
 
     haspath = input_obj.position.ndim>1
 
@@ -405,9 +403,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
         kwargs.update(
             mag=input_obj.magnetization, 
             dim=input_obj.dimension, 
-            color=color,
             **mag_color_kwargs,
-            **kwargs
         )
         make_func = make_Cuboid
     elif isinstance(input_obj, Cylinder):
@@ -416,9 +412,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             mag=input_obj.magnetization,
             diameter=input_obj.dimension[0], height=input_obj.dimension[0], 
             base_vertices=base_vertices,
-            color=color,
             **mag_color_kwargs,
-            **kwargs
         )
         make_func = make_Cylinder
     elif isinstance(input_obj, CylinderSegment):
@@ -427,27 +421,21 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             mag=input_obj.magnetization,
             dimension=input_obj.dimension,
             Nvert=Nvert,
-            color=color,
             **mag_color_kwargs,
-            **kwargs
         )
         make_func = make_CylinderSegment
     elif isinstance(input_obj, Sphere):
         kwargs.update(
             mag=input_obj.magnetization,
             diameter=input_obj.diameter,
-            color=color,
             **mag_color_kwargs,
-            **kwargs
         )
         make_func = make_Sphere
     elif isinstance(input_obj, Dipole):
         kwargs.update(
             moment=input_obj.moment,
             size=size_dipoles,
-            color=color,
             **mag_color_kwargs,
-            **kwargs
         )
         make_func = make_Dipole
     elif isinstance(input_obj, Line):
@@ -455,8 +443,6 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             vertices=input_obj.vertices,
             current=input_obj.current,
             show_arrows=show_arrows,
-            color=color,
-            **kwargs
         )
         make_func = make_Line
     elif isinstance(input_obj, Circular):
@@ -464,8 +450,6 @@ def getTraces(input_obj, show_path=False, sensorsources=None, color=None, size_d
             diameter=input_obj.diameter,
             current=input_obj.current,
             show_arrows=show_arrows,
-            color=color,
-            **kwargs
         )
         make_func = make_Circular
 
