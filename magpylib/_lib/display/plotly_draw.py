@@ -11,6 +11,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from itertools import cycle
+from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 
 # Defaults
 SENSORSIZE = 1
@@ -343,12 +344,10 @@ def make_Sensor(pixel=(0.,0.,0.), dim=(1.,1.,1.), pos=(0.,0.,0.), orientation=No
     pixel = np.array(pixel)
     pixel_str = f''' ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)''' if pixel.ndim!=1 else ''
     name_suffix = pixel_str if name_suffix is None else f' ({name_suffix})'
-    from magpylib._lib.display.sensor_plotly_mesh import SENSOR_MESH as mesh_dict
-    sensor = mesh_dict.copy()
-    vertices  = np.array([mesh_dict[k] for k in 'xyz']).T
+    sensor = get_sensor_mesh()
+    vertices  = np.array([sensor[k] for k in 'xyz']).T
     if color is not None:
-        s = sensor['facecolor']
-        s[s=='rgb(238,238,238)'] = color
+        sensor['facecolor'][sensor['facecolor']=='rgb(238,238,238)'] = color
     if pixel.ndim==1:
         dim_ext = dim  
         dim = 0 
@@ -504,12 +503,16 @@ def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, si
         make_func = make_UnsupportedObject
 
     if haspath:
+        path_len = input_obj.position.shape[0]
         if show_path is True or show_path is False:
             inds = [-1]
         elif isinstance(show_path, int):
             inds = slice(None,None,-show_path)
         else:
             inds = np.array(show_path)
+            inds = inds[inds<path_len]
+            if inds.size==0:
+                inds = np.array([path_len-1])
         path_traces = []
         for pos,orient in zip(input_obj.position[inds], input_obj.orientation[inds]):
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
@@ -531,20 +534,84 @@ def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, si
     return traces
 
 
-def display_plotly(*objs, show_path=False, fig=None, renderer=None, **kwargs):
+def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, frame_rate=10, zoom=1, backtofirst=False,**kwargs):
     show_fig=False
     if fig is None:
         show_fig = True
-        fig = go.Figure(layout_title_text = getattr(objs[0],'name',None) if len(objs)==1 else None)
-    traces_dicts = {obj : getTraces(obj, show_path=show_path, color=color, **kwargs) for obj,color in zip(objs, cycle(COLORMAP))}
-    traces = [t for tr in traces_dicts.values() for t in tr]
+        fig = go.Figure()
 
+    title = getattr(objs[0],'name',None) if len(objs)==1 else None
+    
     with fig.batch_update():
-        fig.add_traces(traces)
-        fig.update_scenes(
-            xaxis_title='x [mm]',
-            yaxis_title='y [mm]',
-            zaxis_title='z [mm]',
-            aspectmode='data')
+        if show_path=='animate':
+            title = '3D-Paths Animation' if title is None else title
+            animate_path(fig, objs, title=title, duration=duration, frame_rate=frame_rate, zoom=zoom, backtofirst=backtofirst, renderer=renderer, **kwargs)
+        else:
+            traces_dicts = {obj : getTraces(obj, show_path=show_path, color=color, **kwargs) for obj,color in zip(objs, cycle(COLORMAP))}
+            traces = [t for tr in traces_dicts.values() for t in tr]
+            fig.add_traces(traces)
+            fig.update_layout(
+                title_text = title,
+                **{f'scene_{k}axis_title': f'{k} [mm]' for k in 'xyz'},
+                scene_aspectmode='data'
+            )
     if show_fig:
         fig.show(renderer=renderer)
+
+
+def animate_path(fig, objs, title="3D-Paths Animation", duration=5, frame_rate=50, zoom=1, renderer=None, backtofirst=False, **kwargs):
+    #make sure animated pos don't exceed maxpos, downsample if necessary
+    path_lengths = [obj.position.shape[0] if obj.position.ndim>1 else 0 for obj in objs]
+    N = max(path_lengths)
+    ds_inds = np.arange(N) # indices
+    maxpos = duration*frame_rate
+    if N>maxpos:
+        round_step = N/(maxpos-1)
+        ar = np.linspace(0,N, N, endpoint=False)
+        ds_inds = np.unique(np.floor(ar/round_step)*round_step).astype(int) # downsampled indices
+        ds_inds[-1] = N-1
+    # create frames from objects copies for path animation
+    exp = np.log10(ds_inds.max()).astype(int)+1 if ds_inds.max()>0 else 1
+    
+    frames=[]
+    for ind in ds_inds:
+        traces_dicts = {obj : getTraces(obj, show_path=[ind], color=color, **kwargs) for obj,color in zip(objs, cycle(COLORMAP))}
+        traces = [t for tr in traces_dicts.values() for t in tr]
+        frames.append(go.Frame(
+            data=traces,
+            layout=dict(title=f'''{title} - frame: {ind+1:0{exp}d}''')
+        ))
+    
+    if backtofirst:
+        frames += frames[:1] #add first frame again, so that the last frame shows starting state
+
+    # calculate max ranges
+    range_factor = max(1, zoom)
+    ranges={k:[] for k in ('x','y','z')}
+    for frame in frames:
+        for t in frame.data:
+            for k,v in ranges.items():
+                v.extend([np.min(t[k]), np.max(t[k])])
+    for k,v in ranges.items():
+        ranges[k] = np.array([np.min(v),np.max(v)])*range_factor
+    
+    # update fig
+    frame_duration = int(duration*1000/ds_inds.shape[0])
+    fig.frames = frames
+    fig.add_traces(frames[0].data)
+    fig.update_layout(
+        height=None,
+        **{f'scene_{k}axis':dict(range=ranges[k], autorange=False, title=f'{k} [mm]') for k in 'xyz'},
+        scene_aspectratio = {k:(np.diff(v)/np.diff(ranges['x']))[0] for k,v in ranges.items()},
+        scene_aspectmode = 'manual',
+        title=title,
+        updatemenus=[dict(
+            type="buttons",
+            buttons=[dict(label="Play",
+                            method="animate",
+                            args=[None, {"frame": {"duration": frame_duration}}]
+                            )],
+            x=0.01, xanchor='left',
+            y=1.01, yanchor="bottom"
+        )],
+    )

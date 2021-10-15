@@ -115,6 +115,7 @@ def display(
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND
     if plotting_backend == 'matplotlib':
+        assert show_path!='animate', 'the matplotlib backend does not support animation'
         diplay_matplotlib(
             obj_list,
             axis, 
