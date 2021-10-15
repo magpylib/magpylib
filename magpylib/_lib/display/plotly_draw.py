@@ -212,7 +212,7 @@ def make_Dipole(moment=(0., 0., 1.), pos=(0.,0.,0.), size=1., orientation=None, 
     )
     return dipole
 
-def turn_arrow(vec, pos, sign=1):
+def draw_arrow(vec, pos, sign=1):
     hy=sign*0.1
     hx=0.06
     norm = np.linalg.norm(vec)
@@ -243,7 +243,7 @@ def make_Line(current=0.0, vertices=[(-1.0, 0.0, 0.0),(1.0,0.0,0.0)], pos=(0.,0.
     if show_arrows:
         vectors = np.diff(vertices, axis=0)
         positions = vertices[:-1] + vectors/2
-        vertices = np.concatenate([turn_arrow(vec, pos, np.sign(current)) for vec,pos in zip(vectors,positions)], axis=1)
+        vertices = np.concatenate([draw_arrow(vec, pos, np.sign(current)) for vec,pos in zip(vectors,positions)], axis=1)
     else:
         vertices = np.array(vertices).T
     if orientation is not None:
