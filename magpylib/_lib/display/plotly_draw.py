@@ -415,7 +415,7 @@ def merge_traces(*traces, concat_xyz=True):
 
 
 def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, size_sensors=1, show_arrows=True, show_path_numbering=False,
-             opacity=None, color_transition=0., north_color=None, middle_color=None, south_color=None, **kwargs):
+             opacity=None, color_transition=None, north_color=None, middle_color=None, south_color=None, **kwargs):
              
     Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
