@@ -1,17 +1,17 @@
 """ plolty draw-functionalities"""
 
+from itertools import cycle
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:
     raise ModuleNotFoundError(
-        """In order to use the plotly plotting backend, you need to install plotly via pip or conda, 
+        """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
-from itertools import cycle
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 
 # Defaults
@@ -628,12 +628,8 @@ def make_Sensor(
     dim=(1.0, 1.0, 1.0),
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
     color=None,
     **kwargs,
 ):
@@ -741,7 +737,6 @@ def merge_traces(*traces, concat_xyz=True):
 def getTraces(
     input_obj,
     show_path=False,
-    sensorsources=None,
     size_dipoles=1,
     size_sensors=1,
     show_arrows=True,
@@ -953,7 +948,6 @@ def animate_path(
     duration=5,
     max_frame_rate=50,
     zoom=1,
-    renderer=None,
     backtofirst=False,
     **kwargs,
 ):
