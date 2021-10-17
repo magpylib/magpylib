@@ -116,7 +116,7 @@ def _getColorscale(
         ]
 
 
-def makeBaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)):
+def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)):
     return dict(
         type="mesh3d",
         i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
@@ -405,15 +405,15 @@ def make_UnsupportedObject(
     name_suffix = (
         " (Unsupported visualisation)" if name_suffix is None else f" ({name_suffix})"
     )
-    x, y, z = pos
-    vertices = np.array([x, y, z])
+    vertices = np.array([pos])
     if orientation is not None:
-        vertices = orientation.apply(vertices.T).T
+        vertices = orientation.apply(vertices).T
+    x, y, z = vertices
     obj = dict(
         type="scatter3d",
-        x=[x],
-        y=[y],
-        z=[z],
+        x=x,
+        y=y,
+        z=z,
         name=f"""{name}{name_suffix}""",
         text=name,
         mode="markers+text",
@@ -492,7 +492,7 @@ def make_Cuboid(
         if name_suffix is None
         else f" ({name_suffix})"
     )
-    cuboid = makeBaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
+    cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
         cuboid,
         name,
@@ -651,7 +651,9 @@ def make_Sensor(
         dim = 0
     else:
         dim = pixel.max(axis=0) - pixel.min(axis=0)
+        mask = np.diff(pixel, axis=0).sum(axis=0) == 0
         dim_ext = np.mean(dim)
+        dim[mask] = dim_ext / 10
     cube_mask = (vertices < 1).all(axis=1)
     vertices[cube_mask] = dim * vertices[cube_mask]
     vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
