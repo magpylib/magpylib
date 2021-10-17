@@ -543,6 +543,10 @@ def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, 
     title = getattr(objs[0],'name',None) if len(objs)==1 else None
     
     with fig.batch_update():
+        if not any(obj.position.ndim>1 for obj in objs): # check if some path exist for any object
+            show_path = True
+            import warnings
+            warnings.warn("No path to be animated detected, displaying standard plot")
         if show_path=='animate':
             title = '3D-Paths Animation' if title is None else title
             animate_path(fig, objs, title=title, duration=duration, max_frame_rate=max_frame_rate, zoom=zoom, backtofirst=backtofirst, renderer=renderer, **kwargs)
@@ -560,32 +564,36 @@ def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, 
 
 
 def animate_path(fig, objs, title="3D-Paths Animation", duration=5, max_frame_rate=50, zoom=1, renderer=None, backtofirst=False, **kwargs):
-    #make sure animated pos don't exceed maxpos, downsample if necessary
+    # make sure the number of frames does not exceed the max_frame_rate
+    # downsample if necessary
     path_lengths = [obj.position.shape[0] if obj.position.ndim>1 else 0 for obj in objs]
     N = max(path_lengths)
-    ds_inds = np.arange(N) # indices
-    maxpos = duration*max_frame_rate
-    if N>maxpos:
+    maxpos = duration * max_frame_rate
+    if N <= maxpos:
+        path_indices = np.arange(N)
+    else:
         round_step = N/(maxpos-1)
         ar = np.linspace(0,N, N, endpoint=False)
-        ds_inds = np.unique(np.floor(ar/round_step)*round_step).astype(int) # downsampled indices
-        ds_inds[-1] = N-1
-    # create frames from objects copies for path animation
-    exp = np.log10(ds_inds.max()).astype(int)+1 if ds_inds.max()>0 else 1
+        path_indices = np.unique(np.floor(ar/round_step)*round_step).astype(int) # downsampled indices
+        path_indices[-1] = N-1 # make sure the last frame is the last path position
     
+    # calculate exponent of last frame index to avoid digit shift in frame number display during animation
+    exp = np.log10(path_indices.max()).astype(int)+1 if path_indices.ndim!=0 and path_indices.max()>0 else 1
+    
+    # create frame for each path index or downsampled path index
     frames=[]
-    for ind in ds_inds:
+    for ind in path_indices:
         traces_dicts = {obj : getTraces(obj, show_path=[ind], color=color, **kwargs) for obj,color in zip(objs, cycle(COLORMAP))}
         traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(go.Frame(
             data=traces,
             layout=dict(title=f'''{title} - frame: {ind+1:0{exp}d}''')
         ))
-    
+
     if backtofirst:
         frames += frames[:1] #add first frame again, so that the last frame shows starting state
 
-    # calculate max ranges
+    # calculate max ranges to avoid ranges moving during animation
     range_factor = max(1, zoom)
     ranges={k:[] for k in ('x','y','z')}
     for frame in frames:
@@ -596,7 +604,7 @@ def animate_path(fig, objs, title="3D-Paths Animation", duration=5, max_frame_ra
         ranges[k] = np.array([np.min(v),np.max(v)])*range_factor
     
     # update fig
-    frame_duration = int(duration*1000/ds_inds.shape[0])
+    frame_duration = int(duration*1000/path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
