@@ -534,7 +534,7 @@ def getTraces(input_obj, show_path=False, sensorsources=None, size_dipoles=1, si
     return traces
 
 
-def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, frame_rate=10, zoom=1, backtofirst=False,**kwargs):
+def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, max_frame_rate=10, zoom=1, backtofirst=False,**kwargs):
     show_fig=False
     if fig is None:
         show_fig = True
@@ -545,7 +545,7 @@ def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, 
     with fig.batch_update():
         if show_path=='animate':
             title = '3D-Paths Animation' if title is None else title
-            animate_path(fig, objs, title=title, duration=duration, frame_rate=frame_rate, zoom=zoom, backtofirst=backtofirst, renderer=renderer, **kwargs)
+            animate_path(fig, objs, title=title, duration=duration, max_frame_rate=max_frame_rate, zoom=zoom, backtofirst=backtofirst, renderer=renderer, **kwargs)
         else:
             traces_dicts = {obj : getTraces(obj, show_path=show_path, color=color, **kwargs) for obj,color in zip(objs, cycle(COLORMAP))}
             traces = [t for tr in traces_dicts.values() for t in tr]
@@ -559,12 +559,12 @@ def display_plotly(*objs, show_path=False, fig=None, renderer=None, duration=5, 
         fig.show(renderer=renderer)
 
 
-def animate_path(fig, objs, title="3D-Paths Animation", duration=5, frame_rate=50, zoom=1, renderer=None, backtofirst=False, **kwargs):
+def animate_path(fig, objs, title="3D-Paths Animation", duration=5, max_frame_rate=50, zoom=1, renderer=None, backtofirst=False, **kwargs):
     #make sure animated pos don't exceed maxpos, downsample if necessary
     path_lengths = [obj.position.shape[0] if obj.position.ndim>1 else 0 for obj in objs]
     N = max(path_lengths)
     ds_inds = np.arange(N) # indices
-    maxpos = duration*frame_rate
+    maxpos = duration*max_frame_rate
     if N>maxpos:
         round_step = N/(maxpos-1)
         ar = np.linspace(0,N, N, endpoint=False)
