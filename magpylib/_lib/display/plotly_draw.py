@@ -1,6 +1,7 @@
 """ plolty draw-functionalities"""
 
 from itertools import cycle
+
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:
@@ -905,8 +906,8 @@ def display_plotly(
     title = getattr(objs[0], "name", None) if len(objs) == 1 else None
 
     with fig.batch_update():
-        if not any(
-            obj.position.ndim > 1 for obj in objs
+        if (
+            not any(obj.position.ndim > 1 for obj in objs) and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
             import warnings
