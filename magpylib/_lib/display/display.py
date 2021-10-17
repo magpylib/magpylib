@@ -56,9 +56,9 @@ def display(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
-    
+
     plotting_backend: default=None
-        One of 'matplotlib', 'plolty'. If not set, parameter will default to 
+        One of 'matplotlib', 'plolty'. If not set, parameter will default to
         Config.PLOTTING_BACKEND
 
     zoom: float, default = 0.5
@@ -118,28 +118,28 @@ def display(
         assert show_path!='animate', 'the matplotlib backend does not support animation'
         diplay_matplotlib(
             obj_list,
-            axis, 
-            show_path, 
-            markers, 
-            show_direction, 
-            size_direction, 
-            size_sensors, 
+            axis,
+            show_path,
+            markers,
+            show_direction,
+            size_direction,
+            size_sensors,
             size_dipoles,
             zoom,
         )
     elif plotting_backend == 'plotly':
         from magpylib._lib.display.plotly_draw import display_plotly
-        display_plotly(*obj_list, show_path=show_path, size_dipoles=size_dipoles, 
+        display_plotly(*obj_list, show_path=show_path, size_dipoles=size_dipoles,
             size_sensors=size_sensors, **kwargs)
 
 def diplay_matplotlib(
     obj_list,
-    axis, 
-    show_path, 
-    markers, 
-    show_direction, 
-    size_direction, 
-    size_sensors, 
+    axis,
+    show_path,
+    markers,
+    show_direction,
+    size_direction,
+    size_sensors,
     size_dipoles,
     zoom):
 
@@ -173,7 +173,7 @@ def diplay_matplotlib(
 
     # load color map
     cmap = plt.cm.get_cmap('hsv')
-    
+
     # draw objects and evaluate system size --------------------------------------
 
     # draw faced objects and store vertices

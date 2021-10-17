@@ -34,17 +34,17 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
-        
+
     PLOTTING_BACKEND: str, default='matplotlib'
-        One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not 
+        One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not
         set explicitly in the display function.
 
     COLOR_TRANSITION, float, default=0
-        value between 0 and 1 sets the smoothness of the color transition from north to south pole 
+        value between 0 and 1 sets the smoothness of the color transition from north to south pole
         visualization. If set to a negative value (e.g. `-1`), the magnet polarity will be hidden
         and the object color will be uniform and managed by the plotting library.
-    
-    SOUTH_COLOR: 
+
+    SOUTH_COLOR:
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -52,7 +52,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    MIDDLE_COLOR: 
+    MIDDLE_COLOR:
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -60,8 +60,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-
-    NORTH_COLOR: 
+    NORTH_COLOR:
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -93,7 +92,6 @@ class Config:
     >>> print(B_close)
     [ 0.e+00 -2.e+10  0.e+00]
     """
-    
 
     @classmethod
     def reset(cls, args=None):
@@ -102,7 +100,7 @@ class Config:
         Parameters
         ----------
         args: iterable of strings. If not set, all defaults will be reset.
-        
+
         Returns
         -------
         None: NoneType
