@@ -511,7 +511,7 @@ def make_Cuboid(
 def make_Cylinder(
     mag=(0.0, 0.0, 1000.0),
     base_vertices=50,
-    diameter=1,
+    diameter=1.0,
     height=1.0,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
@@ -823,7 +823,7 @@ def getTraces(
         kwargs.update(
             mag=input_obj.magnetization,
             diameter=input_obj.dimension[0],
-            height=input_obj.dimension[0],
+            height=input_obj.dimension[1],
             base_vertices=base_vertices,
             **mag_color_kwargs,
         )
