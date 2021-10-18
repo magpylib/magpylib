@@ -639,7 +639,7 @@ def make_Sensor(
     name_suffix=None,
     color=None,
     show_pixels=True,
-    pixel_color = None,
+    pixel_color=None,
     **kwargs,
 ):
     name = "Sensor" if name is None else name
@@ -677,7 +677,7 @@ def make_Sensor(
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        dim[dim==0] = pixel_dim/2 if show_pixels else dim_ext/10
+        dim[dim == 0] = pixel_dim / 2 if show_pixels else dim_ext / 10
         hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
@@ -806,7 +806,7 @@ def getTraces(
             dim=getattr(input_obj, "dimension", size_sensors),
             pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
             show_pixels=show_pixels,
-            pixel_color=pixel_color
+            pixel_color=pixel_color,
         )
         make_func = make_Sensor
     elif isinstance(input_obj, Cuboid):
@@ -872,14 +872,14 @@ def getTraces(
     if haspath:
         path_len = input_obj.position.shape[0]
         if show_path is True or show_path is False:
-            inds = [-1]
+            inds = np.array([-1])
         elif isinstance(show_path, int):
-            inds = slice(None, None, -show_path)
-        else:
+            inds = np.arange(path_len, dtype=int)[::-show_path]
+        elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
             inds = np.array(show_path)
-            inds = inds[inds < path_len]
-            if inds.size == 0:
-                inds = np.array([path_len - 1])
+        inds = inds[inds < path_len]
+        if inds.size == 0:
+            inds = np.array([path_len - 1])
         path_traces = []
         for pos, orient in zip(input_obj.position[inds], input_obj.orientation[inds]):
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
@@ -989,8 +989,9 @@ def apply_fig_ranges(fig, zoom=1):
         aspectratio={
             k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
         },
-        aspectmode="manual"
+        aspectmode="manual",
     )
+
 
 def animate_path(
     fig,

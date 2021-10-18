@@ -37,7 +37,7 @@ def display(
     size_dipoles=1,
     zoom=0.5,
     plotting_backend=None,
-    **kwargs
+    **kwargs,
 ):
     """
     Display objects and paths graphically.
@@ -58,10 +58,13 @@ def display(
     show_direction: bool, default=False
         Set True to show magnetization and current directions.
 
-    show_path: bool or int, default=True
+    show_path: bool or int or iterable, default=True
         Options True, False, positive int. By default object paths are shown. If
         show_path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of show_path.
+        positions along the path, in steps of show_path. If show_path is an iterable
+        of integers objects will be displayed for the provided indices.
+        If show_path='animate, the plot will be animated according to the `duration`
+        and 'max_frame_rate' parameters.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
@@ -126,6 +129,12 @@ def display(
 
     # test if every individual obj_path is good
     test_path_format(obj_list)
+    check_show_path = isinstance(show_path, (int, bool)) or (
+        hasattr(show_path, "__iter__") and not isinstance(show_path, str)
+    )
+    assert (
+        check_show_path
+    ), f"""`show_path` argument of type {type(show_path)} is invalid, \n it must be one of (True, False, 'animate'), a positive path index or an Iterable of path indices"""
 
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND
@@ -153,7 +162,7 @@ def display(
             size_dipoles=size_dipoles,
             size_sensors=size_sensors,
             zoom=zoom,
-            **kwargs
+            **kwargs,
         )
 
 
