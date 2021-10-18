@@ -639,6 +639,7 @@ def make_Sensor(
     name_suffix=None,
     color=None,
     show_pixels=True,
+    pixel_color = None,
     **kwargs,
 ):
     name = "Sensor" if name is None else name
@@ -666,15 +667,18 @@ def make_Sensor(
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
         if show_pixels:
+            if pixel_color is None:
+                pixel_color = Config.PIXEL_COLOR
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
             pixel_dim = np.min(dists) / 2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
-            pixels_mesh["facecolor"] = np.repeat("black", len(pixels_mesh["i"]))
+            pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim - pixel_dim * 0.1)
+        dim[dim==0] = pixel_dim/2 if show_pixels else dim_ext/10
+        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     sensor = merge_mesh3d(*meshes_to_merge)
@@ -769,6 +773,7 @@ def getTraces(
     north_color=None,
     middle_color=None,
     south_color=None,
+    pixel_color=None,
     **kwargs,
 ):
 
@@ -801,6 +806,7 @@ def getTraces(
             dim=getattr(input_obj, "dimension", size_sensors),
             pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
             show_pixels=show_pixels,
+            pixel_color=pixel_color
         )
         make_func = make_Sensor
     elif isinstance(input_obj, Cuboid):
@@ -946,7 +952,6 @@ def display_plotly(
                 max_frame_rate=max_frame_rate,
                 zoom=zoom,
                 backtofirst=backtofirst,
-                renderer=renderer,
                 **kwargs,
             )
         else:
