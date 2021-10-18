@@ -1,21 +1,25 @@
 """Config class code"""
 
 
-DEFAULTS = dict(
-    _SUPPORTED_PLOTTING_BACKENDS = ('matplotlib', 'plotly'),
-    CHECK_INPUTS = True,
-    EDGESIZE = 1e-8,
-    ITER_CYLINDER = 50,
-    PLOTTING_BACKEND = 'matplotlib',
-    NORTH_COLOR = 'rgb(231,17,17)',  # 'red'
-    MIDDLE_COLOR = 'rgb(221,221,221)', # 'grey'
-    SOUTH_COLOR = 'rgb(0,176,80)', # 'green'
-    COLOR_TRANSITION = 0,
+from typing import Any
+
+
+_DEFAULTS = dict(
+    _SUPPORTED_PLOTTING_BACKENDS=("matplotlib", "plotly"),
+    CHECK_INPUTS=True,
+    EDGESIZE=1e-8,
+    ITER_CYLINDER=50,
+    PLOTTING_BACKEND="matplotlib",
+    NORTH_COLOR="rgb(231,17,17)",  # 'red'
+    MIDDLE_COLOR="rgb(221,221,221)",  # 'grey'
+    SOUTH_COLOR="rgb(0,176,80)",  # 'green'
+    COLOR_TRANSITION=0,
+    PIXEL_COLOR="grey",
 )
 
 
 # ON INTERFACE
-class Config:
+class BaseConfig:
     """
     Library default settings
 
@@ -68,6 +72,14 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
+    PIXEL_COLOR:
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
     Examples
     --------
     Compute the field very close to a line current:
@@ -93,6 +105,17 @@ class Config:
     [ 0.e+00 -2.e+10  0.e+00]
     """
 
+    def __init__(self):
+        self.reset()
+
+    def __setattr__(self, name: str, value: Any) -> None:
+        if name == "PLOTTING_BACKEND":
+            backends = _DEFAULTS["_SUPPORTED_PLOTTING_BACKENDS"]
+            assert (
+                value in backends
+            ), f"`{value}` is not a valid plotting backend, \n supported backends: {backends}"
+        super().__setattr__(name, value)
+
     @classmethod
     def reset(cls, args=None):
         """
@@ -106,8 +129,9 @@ class Config:
         None: NoneType
         """
         if args is None:
-            args = DEFAULTS.keys()
+            args = _DEFAULTS.keys()
         for k in args:
-            setattr(cls, k, DEFAULTS[k])
+            setattr(cls, k, _DEFAULTS[k])
 
-Config.reset()
+
+Config = BaseConfig()
