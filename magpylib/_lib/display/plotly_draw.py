@@ -1,6 +1,6 @@
 """ plolty draw-functionalities"""
 
-from itertools import cycle
+from itertools import cycle, combinations
 
 try:
     import plotly.graph_objects as go
@@ -624,6 +624,12 @@ def make_Sphere(
     )
 
 
+def make_Pixels(positions, size=1, shape="cube"):
+    if shape == "cube":
+        pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
+    return merge_mesh3d(*pixels)
+
+
 def make_Sensor(
     pixel=(0.0, 0.0, 0.0),
     dim=(1.0, 1.0, 1.0),
@@ -632,6 +638,7 @@ def make_Sensor(
     name=None,
     name_suffix=None,
     color=None,
+    show_pixels=True,
     **kwargs,
 ):
     name = "Sensor" if name is None else name
@@ -648,17 +655,29 @@ def make_Sensor(
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
     if pixel.ndim == 1:
         dim_ext = dim
-        dim = 0
     else:
         dim = pixel.max(axis=0) - pixel.min(axis=0)
-        mask = np.diff(pixel, axis=0).sum(axis=0) == 0
         dim_ext = np.mean(dim)
-        dim[mask] = dim_ext / 10
     cube_mask = (vertices < 1).all(axis=1)
-    vertices[cube_mask] = dim * vertices[cube_mask]
+    vertices[cube_mask] = 0 * vertices[cube_mask]
     vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
+    meshes_to_merge = [sensor]
+    if pixel.ndim != 1:
+        if show_pixels:
+            combs = np.array(list(combinations(pixel, 2)))
+            vecs = np.diff(combs, axis=1)
+            dists = np.linalg.norm(vecs, axis=2)
+            pixel_dim = np.min(dists) / 2
+            pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
+            pixels_mesh["facecolor"] = np.repeat("black", len(pixels_mesh["i"]))
+            meshes_to_merge.append(pixels_mesh)
+        hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
+        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim - pixel_dim * 0.1)
+        hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
+        meshes_to_merge.append(hull_mesh)
+    sensor = merge_mesh3d(*meshes_to_merge)
     return _update_mag_mesh(
         sensor, name, name_suffix, orientation=orientation, position=pos, **kwargs
     )
@@ -743,6 +762,7 @@ def getTraces(
     size_dipoles=1,
     size_sensors=1,
     show_arrows=True,
+    show_pixels=True,
     show_path_numbering=False,
     opacity=None,
     color_transition=None,
@@ -780,6 +800,7 @@ def getTraces(
         kwargs.update(
             dim=getattr(input_obj, "dimension", size_sensors),
             pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
+            show_pixels=show_pixels,
         )
         make_func = make_Sensor
     elif isinstance(input_obj, Cuboid):
