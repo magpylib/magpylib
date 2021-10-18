@@ -966,9 +966,31 @@ def display_plotly(
                 **{f"scene_{k}axis_title": f"{k} [mm]" for k in "xyz"},
                 scene_aspectmode="data",
             )
+            apply_fig_ranges(fig, zoom)
     if show_fig:
         fig.show(renderer=renderer)
 
+
+def apply_fig_ranges(fig, zoom=1):
+    range_factor = max(1, zoom)
+    ranges = {k: [] for k in ("x", "y", "z")}
+    frames = fig.frames if fig.frames else [fig]
+    for frame in frames:
+        for t in frame.data:
+            for k, v in ranges.items():
+                v.extend([np.min(t[k]), np.max(t[k])])
+    for k, v in ranges.items():
+        ranges[k] = np.array([np.min(v), np.max(v)]) * range_factor
+    fig.update_scenes(
+        **{
+            f"{k}axis": dict(range=ranges[k], autorange=False, title=f"{k} [mm]")
+            for k in "xyz"
+        },
+        aspectratio={
+            k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
+        },
+        aspectmode="manual"
+    )
 
 def animate_path(
     fig,
@@ -1023,30 +1045,12 @@ def animate_path(
             :1
         ]  # add first frame again, so that the last frame shows starting state
 
-    # calculate max ranges to avoid ranges moving during animation
-    range_factor = max(1, zoom)
-    ranges = {k: [] for k in ("x", "y", "z")}
-    for frame in frames:
-        for t in frame.data:
-            for k, v in ranges.items():
-                v.extend([np.min(t[k]), np.max(t[k])])
-    for k, v in ranges.items():
-        ranges[k] = np.array([np.min(v), np.max(v)]) * range_factor
-
     # update fig
     frame_duration = int(duration * 1000 / path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
         height=None,
-        **{
-            f"scene_{k}axis": dict(range=ranges[k], autorange=False, title=f"{k} [mm]")
-            for k in "xyz"
-        },
-        scene_aspectratio={
-            k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
-        },
-        scene_aspectmode="manual",
         title=title,
         updatemenus=[
             dict(
@@ -1065,3 +1069,6 @@ def animate_path(
             )
         ],
     )
+
+    # calculate max ranges to avoid ranges moving during animation
+    apply_fig_ranges(fig, zoom)

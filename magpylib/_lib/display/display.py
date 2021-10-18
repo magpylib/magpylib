@@ -152,6 +152,7 @@ def display(
             show_path=show_path,
             size_dipoles=size_dipoles,
             size_sensors=size_sensors,
+            zoom=zoom,
             **kwargs
         )
 
