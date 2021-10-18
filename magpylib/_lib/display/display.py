@@ -3,7 +3,7 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
-Sfrom magpylib._lib.display.mpl_draw import (
+from magpylib._lib.display.mpl_draw import (
     draw_directs_faced,
     draw_faces,
     draw_markers,
