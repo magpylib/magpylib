@@ -133,16 +133,16 @@ def display(
         assert (
             show_path != "animate"
         ), "the matplotlib backend does not support animation"
-        diplay_matplotlib(
-            obj_list,
-            axis,
-            show_path,
-            markers,
-            show_direction,
-            size_direction,
-            size_sensors,
-            size_dipoles,
-            zoom,
+        display_matplotlib(
+            obj_list=obj_list,
+            axis=axis,
+            show_path=show_path,
+            markers=markers,
+            show_direction=show_direction,
+            size_direction=size_direction,
+            size_sensors=size_sensors,
+            size_dipoles=size_dipoles,
+            zoom=zoom,
         )
     elif plotting_backend == "plotly":
         from magpylib._lib.display.plotly_draw import display_plotly
@@ -156,7 +156,7 @@ def display(
         )
 
 
-def diplay_matplotlib(
+def display_matplotlib(
     obj_list,
     axis,
     show_path,
