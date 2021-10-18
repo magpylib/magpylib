@@ -154,6 +154,7 @@ def display(
             zoom=zoom,
         )
     elif plotting_backend == "plotly":
+        # pylint: disable=import-outside-toplevel
         from magpylib._lib.display.plotly_draw import display_plotly
 
         display_plotly(
@@ -177,6 +178,9 @@ def display_matplotlib(
     size_dipoles,
     zoom,
 ):
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
 
     # objects with faces
     faced_objects = [
