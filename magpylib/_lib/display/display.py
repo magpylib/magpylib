@@ -3,27 +3,42 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
-from magpylib._lib.display.mpl_draw import (draw_directs_faced, draw_faces, draw_markers, draw_path,
-    draw_pixel, draw_sensors, draw_dipoles, draw_circular, draw_line)
-from magpylib._lib.display.disp_utility import (faces_cuboid, faces_cylinder, system_size,
-    faces_sphere, faces_cylinder_section)
+Sfrom magpylib._lib.display.mpl_draw import (
+    draw_directs_faced,
+    draw_faces,
+    draw_markers,
+    draw_path,
+    draw_pixel,
+    draw_sensors,
+    draw_dipoles,
+    draw_circular,
+    draw_line,
+)
+from magpylib._lib.display.disp_utility import (
+    faces_cuboid,
+    faces_cylinder,
+    system_size,
+    faces_sphere,
+    faces_cylinder_section,
+)
 from magpylib._lib.input_checks import check_excitations, check_dimensions
 from magpylib._lib.config import Config
 
 
 # ON INTERFACE
 def display(
-        *objects,
-        markers=[(0,0,0)],
-        axis=None,
-        show_direction=False,
-        show_path=True,
-        size_sensors=1,
-        size_direction=1,
-        size_dipoles=1,
-        zoom=0.5,
-        plotting_backend=None,
-        **kwargs):
+    *objects,
+    markers=[(0, 0, 0)],
+    axis=None,
+    show_direction=False,
+    show_path=True,
+    size_sensors=1,
+    size_direction=1,
+    size_dipoles=1,
+    zoom=0.5,
+    plotting_backend=None,
+    **kwargs
+):
     """
     Display objects and paths graphically.
 
@@ -114,8 +129,10 @@ def display(
 
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND
-    if plotting_backend == 'matplotlib':
-        assert show_path!='animate', 'the matplotlib backend does not support animation'
+    if plotting_backend == "matplotlib":
+        assert (
+            show_path != "animate"
+        ), "the matplotlib backend does not support animation"
         diplay_matplotlib(
             obj_list,
             axis,
@@ -127,10 +144,17 @@ def display(
             size_dipoles,
             zoom,
         )
-    elif plotting_backend == 'plotly':
+    elif plotting_backend == "plotly":
         from magpylib._lib.display.plotly_draw import display_plotly
-        display_plotly(*obj_list, show_path=show_path, size_dipoles=size_dipoles,
-            size_sensors=size_sensors, **kwargs)
+
+        display_plotly(
+            *obj_list,
+            show_path=show_path,
+            size_dipoles=size_dipoles,
+            size_sensors=size_sensors,
+            **kwargs
+        )
+
 
 def diplay_matplotlib(
     obj_list,
@@ -141,30 +165,30 @@ def diplay_matplotlib(
     size_direction,
     size_sensors,
     size_dipoles,
-    zoom):
+    zoom,
+):
 
     # objects with faces
-    faced_objects = [obj for obj in obj_list if obj._object_type in (
-        'Cuboid',
-        'Cylinder',
-        'CylinderSegment',
-        'Sphere'
-        )]
+    faced_objects = [
+        obj
+        for obj in obj_list
+        if obj._object_type in ("Cuboid", "Cylinder", "CylinderSegment", "Sphere")
+    ]
 
     # sensors
-    sensors = [obj for obj in obj_list if obj._object_type == 'Sensor']
+    sensors = [obj for obj in obj_list if obj._object_type == "Sensor"]
 
     # dipoles
-    dipoles = [obj for obj in obj_list if obj._object_type == 'Dipole']
+    dipoles = [obj for obj in obj_list if obj._object_type == "Dipole"]
 
     # currents
-    circulars = [obj for obj in obj_list if obj._object_type == 'Circular']
-    lines = [obj for obj in obj_list if obj._object_type == 'Line']
+    circulars = [obj for obj in obj_list if obj._object_type == "Circular"]
+    lines = [obj for obj in obj_list if obj._object_type == "Line"]
 
     # create or set plotting axis
     if axis is None:
-        fig = plt.figure(dpi=80, figsize=(8,8))
-        ax = fig.add_subplot(111, projection='3d')
+        fig = plt.figure(dpi=80, figsize=(8, 8))
+        ax = fig.add_subplot(111, projection="3d")
         ax.set_box_aspect((1, 1, 1))
         generate_output = True
     else:
@@ -172,32 +196,32 @@ def diplay_matplotlib(
         generate_output = False
 
     # load color map
-    cmap = plt.cm.get_cmap('hsv')
+    cmap = plt.cm.get_cmap("hsv")
 
     # draw objects and evaluate system size --------------------------------------
 
     # draw faced objects and store vertices
     face_points = []
     for i, obj in enumerate(faced_objects):
-        col = cmap(i/len(faced_objects))
+        col = cmap(i / len(faced_objects))
 
-        if obj._object_type == 'Cuboid':
-            faces = faces_cuboid(obj,show_path)
+        if obj._object_type == "Cuboid":
+            faces = faces_cuboid(obj, show_path)
             lw = 0.5
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif obj._object_type == 'Cylinder':
-            faces = faces_cylinder(obj,show_path)
+        elif obj._object_type == "Cylinder":
+            faces = faces_cylinder(obj, show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif obj._object_type == 'CylinderSegment':
-            faces = faces_cylinder_section(obj,show_path)
+        elif obj._object_type == "CylinderSegment":
+            faces = faces_cylinder_section(obj, show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
-        elif obj._object_type == 'Sphere':
-            faces = faces_sphere(obj,show_path)
+        elif obj._object_type == "Sphere":
+            faces = faces_sphere(obj, show_path)
             lw = 0.25
             face_points += draw_faces(faces, col, lw, ax)
 
@@ -215,21 +239,20 @@ def diplay_matplotlib(
     path_points = []
     if show_path:  # True or int>0
         for i, obj in enumerate(faced_objects):
-            col = cmap(i/len(faced_objects))
+            col = cmap(i / len(faced_objects))
             path_points += draw_path(obj, col, ax)
 
         for sens in sensors:
-            path_points += draw_path(sens, '.6', ax)
+            path_points += draw_path(sens, ".6", ax)
 
         for dip in dipoles:
-            path_points += draw_path(dip, '.6', ax)
+            path_points += draw_path(dip, ".6", ax)
 
         for circ in circulars:
-            path_points += draw_path(circ, '.6', ax)
+            path_points += draw_path(circ, ".6", ax)
 
         for line in lines:
-            path_points += draw_path(line, '.6', ax)
-
+            path_points += draw_path(line, ".6", ax)
 
     # markers -------------------------------------------------------
     if markers:
@@ -242,9 +265,10 @@ def diplay_matplotlib(
 
     # determine system size -----------------------------------------
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
-        face_points, sensor_points, dipole_points, markers, path_points, current_points)
+        face_points, sensor_points, dipole_points, markers, path_points, current_points
+    )
 
-    sys_size = max([limx1-limx0, limy1-limy0, limz1-limz0])
+    sys_size = max([limx1 - limx0, limy1 - limy0, limz1 - limz0])
 
     # draw all system sized based quantities -------------------------
     draw_sensors(sensors, ax, sys_size, show_path, size_sensors)
@@ -252,13 +276,13 @@ def diplay_matplotlib(
 
     # plot styling --------------------------------------------------
     ax.set(
-        xlabel = 'x [mm]',
-        ylabel = 'y [mm]',
-        zlabel = 'z [mm]',
-        xlim=(limx0-abs(limx0)*zoom, limx1+abs(limx1)*zoom),
-        ylim=(limy0-abs(limy0)*zoom, limy1+abs(limy1)*zoom),
-        zlim=(limz0-abs(limz0)*zoom, limz1+abs(limz1)*zoom)
-        )
+        xlabel="x [mm]",
+        ylabel="y [mm]",
+        zlabel="z [mm]",
+        xlim=(limx0 - abs(limx0) * zoom, limx1 + abs(limx1) * zoom),
+        ylim=(limy0 - abs(limy0) * zoom, limy1 + abs(limy1) * zoom),
+        zlim=(limz0 - abs(limz0) * zoom, limz1 + abs(limz1) * zoom),
+    )
 
     # generate output ------------------------------------------------
     if generate_output:
