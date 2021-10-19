@@ -511,7 +511,7 @@ def make_Cuboid(
 def make_Cylinder(
     mag=(0.0, 0.0, 1000.0),
     base_vertices=50,
-    diameter=1,
+    diameter=1.0,
     height=1.0,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
@@ -639,7 +639,7 @@ def make_Sensor(
     name_suffix=None,
     color=None,
     show_pixels=True,
-    pixel_color = None,
+    pixel_color=None,
     **kwargs,
 ):
     name = "Sensor" if name is None else name
@@ -677,7 +677,7 @@ def make_Sensor(
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        dim[dim==0] = pixel_dim/2 if show_pixels else dim_ext/10
+        dim[dim == 0] = pixel_dim / 2 if show_pixels else dim_ext / 10
         hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
@@ -806,7 +806,7 @@ def getTraces(
             dim=getattr(input_obj, "dimension", size_sensors),
             pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
             show_pixels=show_pixels,
-            pixel_color=pixel_color
+            pixel_color=pixel_color,
         )
         make_func = make_Sensor
     elif isinstance(input_obj, Cuboid):
@@ -823,7 +823,7 @@ def getTraces(
         kwargs.update(
             mag=input_obj.magnetization,
             diameter=input_obj.dimension[0],
-            height=input_obj.dimension[0],
+            height=input_obj.dimension[1],
             base_vertices=base_vertices,
             **mag_color_kwargs,
         )
@@ -872,14 +872,14 @@ def getTraces(
     if haspath:
         path_len = input_obj.position.shape[0]
         if show_path is True or show_path is False:
-            inds = [-1]
+            inds = np.array([-1])
         elif isinstance(show_path, int):
-            inds = slice(None, None, -show_path)
-        else:
+            inds = np.arange(path_len, dtype=int)[::-show_path]
+        elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
             inds = np.array(show_path)
-            inds = inds[inds < path_len]
-            if inds.size == 0:
-                inds = np.array([path_len - 1])
+        inds = inds[inds < path_len]
+        if inds.size == 0:
+            inds = np.array([path_len - 1])
         path_traces = []
         for pos, orient in zip(input_obj.position[inds], input_obj.orientation[inds]):
             path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
@@ -966,8 +966,31 @@ def display_plotly(
                 **{f"scene_{k}axis_title": f"{k} [mm]" for k in "xyz"},
                 scene_aspectmode="data",
             )
+            apply_fig_ranges(fig, zoom)
     if show_fig:
         fig.show(renderer=renderer)
+
+
+def apply_fig_ranges(fig, zoom=1):
+    range_factor = max(1, zoom)
+    ranges = {k: [] for k in ("x", "y", "z")}
+    frames = fig.frames if fig.frames else [fig]
+    for frame in frames:
+        for t in frame.data:
+            for k, v in ranges.items():
+                v.extend([np.min(t[k]), np.max(t[k])])
+    for k, v in ranges.items():
+        ranges[k] = np.array([np.min(v), np.max(v)]) * range_factor
+    fig.update_scenes(
+        **{
+            f"{k}axis": dict(range=ranges[k], autorange=False, title=f"{k} [mm]")
+            for k in "xyz"
+        },
+        aspectratio={
+            k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
+        },
+        aspectmode="manual",
+    )
 
 
 def animate_path(
@@ -1023,30 +1046,12 @@ def animate_path(
             :1
         ]  # add first frame again, so that the last frame shows starting state
 
-    # calculate max ranges to avoid ranges moving during animation
-    range_factor = max(1, zoom)
-    ranges = {k: [] for k in ("x", "y", "z")}
-    for frame in frames:
-        for t in frame.data:
-            for k, v in ranges.items():
-                v.extend([np.min(t[k]), np.max(t[k])])
-    for k, v in ranges.items():
-        ranges[k] = np.array([np.min(v), np.max(v)]) * range_factor
-
     # update fig
     frame_duration = int(duration * 1000 / path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
         height=None,
-        **{
-            f"scene_{k}axis": dict(range=ranges[k], autorange=False, title=f"{k} [mm]")
-            for k in "xyz"
-        },
-        scene_aspectratio={
-            k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
-        },
-        scene_aspectmode="manual",
         title=title,
         updatemenus=[
             dict(
@@ -1065,3 +1070,6 @@ def animate_path(
             )
         ],
     )
+
+    # calculate max ranges to avoid ranges moving during animation
+    apply_fig_ranges(fig, zoom)
