@@ -50,17 +50,18 @@ def unit_prefix(number, unit="", precision=3, char_between=""):
     return f"{new_number_str}{char_between}{prefix}{unit}"
 
 
-def _getIntensity(vertices, mag, pos):
+def _getIntensity(vertices, mag):
     """vertices: [x,y,z] array"""
-    if not all(m == 0 for m in mag):
+    if all(m == 0 for m in mag):
+        return vertices[0] * 0
+    else:
+        pos = np.mean(vertices, axis=1)
         p = np.array(vertices)
         pos = np.array(pos)
         m = np.array(mag) / np.linalg.norm(mag)
         a = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
         b = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2 + (p[2] - pos[2]) ** 2
         return a / np.sqrt(b)
-    else:
-        return vertices[0] * 0
 
 
 def _getColorscale(
@@ -685,7 +686,8 @@ def _update_mag_mesh(
             south_color=south_color,
         )
         mesh_dict["intensity"] = _getIntensity(
-            vertices=vertices, mag=magnetization, pos=(0.0, 0.0, 0.0)
+            vertices=vertices,
+            mag=magnetization,
         )
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
@@ -737,9 +739,9 @@ def merge_traces(*traces, concat_xyz=True):
 def getTraces(
     input_obj,
     show_path=False,
+    show_direction=True,
     size_dipoles=1,
     size_sensors=1,
-    show_arrows=True,
     show_pixels=True,
     show_path_numbering=False,
     opacity=None,
@@ -762,6 +764,8 @@ def getTraces(
 
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
+    if not show_direction:
+        color_transition = -1
 
     mag_color_kwargs = dict(
         color_transition=color_transition,
@@ -829,14 +833,14 @@ def getTraces(
         kwargs.update(
             vertices=input_obj.vertices,
             current=input_obj.current,
-            show_arrows=show_arrows,
+            show_direction=show_direction,
         )
         make_func = make_Line
     elif isinstance(input_obj, Circular):
         kwargs.update(
             diameter=input_obj.diameter,
             current=input_obj.current,
-            show_arrows=show_arrows,
+            show_arrows=show_direction,
         )
         make_func = make_Circular
     else:

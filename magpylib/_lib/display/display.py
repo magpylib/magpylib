@@ -30,7 +30,7 @@ def display(
     *objects,
     markers=[(0, 0, 0)],
     axis=None,
-    show_direction=False,
+    show_direction=True,
     show_path=True,
     size_sensors=1,
     size_direction=1,
@@ -55,8 +55,10 @@ def display(
         Display graphical output in a given pyplot axis (must be 3D). By default a new
         pyplot figure is created and displayed.
 
-    show_direction: bool, default=False
-        Set True to show magnetization and current directions.
+    show_direction: bool, default=True
+        Set True to show magnetization and current directions. The `matplotlib`
+        backend uses arrows and the plotly backend displays direction with a color
+        gradient for magnets/dipoles and arrows for currents.
 
     show_path: bool or int or iterable, default=True
         Options True, False, positive int. By default object paths are shown. If
@@ -161,6 +163,7 @@ def display(
         display_plotly(
             *obj_list,
             show_path=show_path,
+            show_direction=show_direction,
             size_dipoles=size_dipoles,
             size_sensors=size_sensors,
             zoom=zoom,

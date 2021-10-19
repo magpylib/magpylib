@@ -68,10 +68,9 @@ class BaseConfig:
         One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not
         set explicitly in the display function.
 
-    COLOR_TRANSITION, float, default=True
-        value between 0 and 1 sets the smoothness of the color transition from north to south pole
-        visualization. If set to a negative value (e.g. `-1`), the magnet polarity will be hidden
-        and the object color will be uniform and managed by the plotting library.
+    COLOR_TRANSITION, float, default=0
+        A value between 0 and 1. Sets the smoothness of the color transitions from north
+        to south pole visualization.
 
     SOUTH_COLOR, str, default=rgb(0,176,80)
         The property is a color and may be specified as:
