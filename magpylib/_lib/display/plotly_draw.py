@@ -927,7 +927,6 @@ def display_plotly(
                 title=title,
                 duration=duration,
                 max_frame_rate=max_frame_rate,
-                zoom=zoom,
                 backtofirst=backtofirst,
                 **kwargs,
             )
@@ -943,29 +942,29 @@ def display_plotly(
                 **{f"scene_{k}axis_title": f"{k} [mm]" for k in "xyz"},
                 scene_aspectmode="data",
             )
-            apply_fig_ranges(fig, zoom)
+        apply_fig_ranges(fig, zoom)
     if show_fig:
         fig.show(renderer=renderer)
 
 
 def apply_fig_ranges(fig, zoom=1):
-    range_factor = max(1, zoom)
-    ranges = {k: [] for k in ("x", "y", "z")}
+    ranges = {k: [] for k in ("xyz")}
     frames = fig.frames if fig.frames else [fig]
     for frame in frames:
         for t in frame.data:
             for k, v in ranges.items():
                 v.extend([np.min(t[k]), np.max(t[k])])
-    for k, v in ranges.items():
-        ranges[k] = np.array([np.min(v), np.max(v)]) * range_factor
+    r = np.array([[np.min(v), np.max(v)] for v in ranges.values()])
+    size = np.diff(r, axis=1)
+    m = size.max() / 2
+    center = r.mean(axis=1)
+    ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
     fig.update_scenes(
         **{
-            f"{k}axis": dict(range=ranges[k], autorange=False, title=f"{k} [mm]")
-            for k in "xyz"
+            f"{k}axis": dict(range=ranges[i], autorange=False, title=f"{k} [mm]")
+            for i, k in enumerate("xyz")
         },
-        aspectratio={
-            k: (np.diff(v) / np.diff(ranges["x"]))[0] for k, v in ranges.items()
-        },
+        aspectratio={k: 1 for k in "xyz"},
         aspectmode="manual",
     )
 
@@ -977,7 +976,6 @@ def animate_path(
     title="3D-Paths Animation",
     duration=5,
     max_frame_rate=50,
-    zoom=1,
     backtofirst=False,
     **kwargs,
 ):
@@ -998,7 +996,7 @@ def animate_path(
         )  # downsampled indices
         path_indices[-1] = N - 1  # make sure the last frame is the last path position
 
-    # calculate exponent of last frame index to avoid digit shift in 
+    # calculate exponent of last frame index to avoid digit shift in
     # frame number display during animation
     exp = (
         np.log10(path_indices.max()).astype(int) + 1
@@ -1049,6 +1047,3 @@ def animate_path(
             )
         ],
     )
-
-    # calculate max ranges to avoid ranges moving during animation
-    apply_fig_ranges(fig, zoom)

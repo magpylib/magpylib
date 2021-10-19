@@ -35,7 +35,7 @@ def display(
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
-    zoom=0.5,
+    zoom=1,
     plotting_backend=None,
     **kwargs,
 ):
@@ -79,7 +79,7 @@ def display(
         One of 'matplotlib', 'plolty'. If not set, parameter will default to
         Config.PLOTTING_BACKEND
 
-    zoom: float, default = 0.5
+    zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
 
     Returns
