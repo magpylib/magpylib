@@ -129,9 +129,11 @@ def display(
     check_show_path = isinstance(show_path, (int, bool)) or (
         hasattr(show_path, "__iter__") and not isinstance(show_path, str)
     )
-    assert (
-        check_show_path
-    ), f"""`show_path` argument of type {type(show_path)} is invalid, \n it must be one of (True, False, 'animate'), a positive path index or an Iterable of path indices"""
+    assert check_show_path, (
+        f"`show_path` argument of type {type(show_path)} is invalid, \n"
+        "it must be one of (True, False, 'animate'), a positive path index "
+        "or an Iterable of path indices."
+    )
 
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND

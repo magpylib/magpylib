@@ -1,6 +1,8 @@
 """ plolty draw-functionalities"""
 
 from itertools import cycle, combinations
+from math import log10
+import warnings
 
 try:
     import plotly.graph_objects as go
@@ -16,32 +18,6 @@ from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 
 # Defaults
-COLORMAP = [
-    "#2E91E5",
-    "#E15F99",
-    "#1CA71C",
-    "#FB0D0D",
-    "#DA16FF",
-    "#222A2A",
-    "#B68100",
-    "#750D86",
-    "#EB663B",
-    "#511CFB",
-    "#00A08B",
-    "#FB00D1",
-    "#FC0080",
-    "#B2828D",
-    "#6C7C32",
-    "#778AAE",
-    "#862A16",
-    "#A777F1",
-    "#620042",
-    "#1616A7",
-    "#DA60CA",
-    "#6C4516",
-    "#0D2A63",
-    "#AF0038",
-]
 
 _UNIT_PREFIX = {
     -24: "y",  # yocto
@@ -65,8 +41,6 @@ _UNIT_PREFIX = {
 
 
 def unit_prefix(number, unit="", precision=3, char_between=""):
-    from math import log10
-
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
     if prefix != "":
@@ -925,6 +899,7 @@ def display_plotly(
     max_frame_rate=10,
     zoom=1,
     backtofirst=False,
+    color_discrete_sequence=None,
     **kwargs,
 ):
     show_fig = False
@@ -934,19 +909,21 @@ def display_plotly(
 
     title = getattr(objs[0], "name", None) if len(objs) == 1 else None
 
+    if color_discrete_sequence is None:
+        color_discrete_sequence = Config.COLOR_DISCRETE_SEQUENCE
+
     with fig.batch_update():
         if (
             not any(obj.position.ndim > 1 for obj in objs) and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
-            import warnings
-
             warnings.warn("No path to be animated detected, displaying standard plot")
         if show_path == "animate":
             title = "3D-Paths Animation" if title is None else title
             animate_path(
                 fig,
                 objs,
+                color_discrete_sequence,
                 title=title,
                 duration=duration,
                 max_frame_rate=max_frame_rate,
@@ -957,7 +934,7 @@ def display_plotly(
         else:
             traces_dicts = {
                 obj: getTraces(obj, show_path=show_path, color=color, **kwargs)
-                for obj, color in zip(objs, cycle(COLORMAP))
+                for obj, color in zip(objs, cycle(color_discrete_sequence))
             }
             traces = [t for tr in traces_dicts.values() for t in tr]
             fig.add_traces(traces)
@@ -996,6 +973,7 @@ def apply_fig_ranges(fig, zoom=1):
 def animate_path(
     fig,
     objs,
+    color_discrete_sequence=None,
     title="3D-Paths Animation",
     duration=5,
     max_frame_rate=50,
@@ -1020,7 +998,8 @@ def animate_path(
         )  # downsampled indices
         path_indices[-1] = N - 1  # make sure the last frame is the last path position
 
-    # calculate exponent of last frame index to avoid digit shift in frame number display during animation
+    # calculate exponent of last frame index to avoid digit shift in 
+    # frame number display during animation
     exp = (
         np.log10(path_indices.max()).astype(int) + 1
         if path_indices.ndim != 0 and path_indices.max() > 0
@@ -1032,7 +1011,7 @@ def animate_path(
     for ind in path_indices:
         traces_dicts = {
             obj: getTraces(obj, show_path=[ind], color=color, **kwargs)
-            for obj, color in zip(objs, cycle(COLORMAP))
+            for obj, color in zip(objs, cycle(color_discrete_sequence))
         }
         traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(

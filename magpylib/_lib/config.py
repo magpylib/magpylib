@@ -15,13 +15,38 @@ _DEFAULTS = dict(
     SOUTH_COLOR="rgb(0,176,80)",  # 'green'
     COLOR_TRANSITION=0,
     PIXEL_COLOR="grey",
+    COLOR_DISCRETE_SEQUENCE=[
+        "#2E91E5",
+        "#E15F99",
+        "#1CA71C",
+        "#FB0D0D",
+        "#DA16FF",
+        "#222A2A",
+        "#B68100",
+        "#750D86",
+        "#EB663B",
+        "#511CFB",
+        "#00A08B",
+        "#FB00D1",
+        "#FC0080",
+        "#B2828D",
+        "#6C7C32",
+        "#778AAE",
+        "#862A16",
+        "#A777F1",
+        "#620042",
+        "#1616A7",
+        "#DA60CA",
+        "#6C4516",
+        "#0D2A63",
+        "#AF0038",
+    ],
 )
 
 
 # ON INTERFACE
 class BaseConfig:
-    """
-    Library default settings
+    """Library default settings
 
     Parameters
     ----------
@@ -29,26 +54,26 @@ class BaseConfig:
         Check user input types, shapes at various stages and raise errors
         when they are not within designated parameters.
 
-    EDGESIZE: float, default=1e-14
+    EDGESIZE: float, default=True
         getBand getH return 0 on edge, formulas often show singularities there and undefined forms.
         EDGESIZE defines how close to the edge 0 will be returned to avoid running into numerical
         instabilities.
 
-    ITER_CYLINDER: int, default=50
+    ITER_CYLINDER: int, default=True
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
 
-    PLOTTING_BACKEND: str, default='matplotlib'
+    PLOTTING_BACKEND: str, default=True
         One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not
         set explicitly in the display function.
 
-    COLOR_TRANSITION, float, default=0
+    COLOR_TRANSITION, float, default=True
         value between 0 and 1 sets the smoothness of the color transition from north to south pole
         visualization. If set to a negative value (e.g. `-1`), the magnet polarity will be hidden
         and the object color will be uniform and managed by the plotting library.
 
-    SOUTH_COLOR:
+    SOUTH_COLOR, str, default=rgb(0,176,80)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -56,7 +81,7 @@ class BaseConfig:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    MIDDLE_COLOR:
+    MIDDLE_COLOR, str, default=rgb(221,221,221)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -64,7 +89,7 @@ class BaseConfig:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    NORTH_COLOR:
+    NORTH_COLOR, str, default=rgb(231,17,17)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -72,8 +97,21 @@ class BaseConfig:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    PIXEL_COLOR:
+    PIXEL_COLOR, str, default=rgb(231,17,17)
         The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    COLOR_DISCRETE_SEQUENCE, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
       - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
