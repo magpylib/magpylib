@@ -111,9 +111,6 @@ def display(
     --> graphic output
 
     """
-    # pylint: disable=protected-access
-    # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
     # pylint: disable=dangerous-default-value
 
     # flatten input
