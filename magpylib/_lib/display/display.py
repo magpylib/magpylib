@@ -141,6 +141,7 @@ def display(
 
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND
+        
     if plotting_backend == "matplotlib":
         assert (
             show_path != "animate"
@@ -182,6 +183,7 @@ def display_matplotlib(
     size_dipoles,
     zoom,
 ):
+
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements

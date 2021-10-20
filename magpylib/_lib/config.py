@@ -2,7 +2,7 @@
 
 
 from typing import Any
-
+import warnings
 
 _DEFAULTS = dict(
     _SUPPORTED_PLOTTING_BACKENDS=("matplotlib", "plotly"),
@@ -15,7 +15,7 @@ _DEFAULTS = dict(
     SOUTH_COLOR="rgb(0,176,80)",  # 'green'
     COLOR_TRANSITION=0,
     PIXEL_COLOR="grey",
-    COLOR_DISCRETE_SEQUENCE=[
+    COLOR_DISCRETE_SEQUENCE=(
         "#2E91E5",
         "#E15F99",
         "#1CA71C",
@@ -40,12 +40,12 @@ _DEFAULTS = dict(
         "#6C4516",
         "#0D2A63",
         "#AF0038",
-    ],
+    ),
 )
 
 
 # ON INTERFACE
-class BaseConfig:
+class Config:
     """Library default settings
 
     Parameters
@@ -153,6 +153,10 @@ class BaseConfig:
             ), f"`{value}` is not a valid plotting backend, \n supported backends: {backends}"
         super().__setattr__(name, value)
 
+    def __getattr__(self, name):
+        ''' will only get called for undefined attributes '''
+        warnings.warn(f'No member "{name}" contained in settings config.')
+
     @classmethod
     def reset(cls, args=None):
         """
@@ -170,5 +174,4 @@ class BaseConfig:
         for k in args:
             setattr(cls, k, _DEFAULTS[k])
 
-
-Config = BaseConfig()
+Config.reset()
