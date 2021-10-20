@@ -767,7 +767,7 @@ def make_Sensor(
     name=None,
     name_suffix=None,
     color=None,
-    size_pixels=0.5,
+    size_pixels=1,
     pixel_color=None,
     **kwargs,
 ):
@@ -775,9 +775,9 @@ def make_Sensor(
     Creates the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments
 
-    size_pixels: float, default=0.5
-        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+    size_pixels: float, default=1
+        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     name = "Sensor" if name is None else name
@@ -810,7 +810,7 @@ def make_Sensor(
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * size_pixels
+            pixel_dim = np.min(dists) * size_pixels/2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
@@ -923,7 +923,7 @@ def getTraces(
     show_direction=True,
     size_dipoles=1,
     size_sensors=1,
-    size_pixels=0.5,
+    size_pixels=1,
     show_path_numbering=False,
     color_transition=None,
     north_color=None,
@@ -1158,9 +1158,9 @@ def display_plotly(
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
 
-    size_pixels: float, default=0.5
-        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+    size_pixels: float, default=1
+        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
 
     zoom: float, default = 1
