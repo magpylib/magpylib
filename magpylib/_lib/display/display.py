@@ -68,8 +68,8 @@ def display(
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `duration`
-        and 'max_frame_rate' parameters.
+        If show_path='animate, the plot will be animated according to the `animate_time`
+        and 'animate_fps' parameters.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.

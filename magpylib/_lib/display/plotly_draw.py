@@ -1111,8 +1111,8 @@ def display_plotly(
     show_path=False,
     fig=None,
     renderer=None,
-    duration=3,
-    max_frame_rate=10,
+    animate_time=3,
+    animate_fps=30,
     zoom=1,
     backtofirst=False,
     color_discrete_sequence=None,
@@ -1146,8 +1146,8 @@ def display_plotly(
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `duration`
-        and 'max_frame_rate' parameters.
+        If show_path='animate, the plot will be animated according to the `animate_time`
+        and 'animate_fps' parameters.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
@@ -1168,13 +1168,13 @@ def display_plotly(
     backtofirst: bool, default = False
         If True, the last frame of the animation will be the first again.
 
-    duration: float, default = 3
+    animate_time: float, default = 3
         Sets the animation duration
 
-    max_frame_rate: float, default = 50
+    animate_fps: float, default = 50
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
-        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
     title: str, default = "3D-Paths Animation"
@@ -1224,8 +1224,8 @@ def display_plotly(
                 objs,
                 color_discrete_sequence,
                 title=title,
-                duration=duration,
-                max_frame_rate=max_frame_rate,
+                animate_time=animate_time,
+                animate_fps=animate_fps,
                 backtofirst=backtofirst,
                 **kwargs,
             )
@@ -1286,8 +1286,8 @@ def animate_path(
     objs,
     color_discrete_sequence=None,
     title="3D-Paths Animation",
-    duration=3,
-    max_frame_rate=50,
+    animate_time=3,
+    animate_fps=50,
     backtofirst=False,
     **kwargs,
 ):
@@ -1300,13 +1300,13 @@ def animate_path(
     backtofirst: bool, default = False
         If True, the last frame of the animation will be the first again.
 
-    duration: float, default = 3
+    animate_time: float, default = 3
         Sets the animation duration
 
-    max_frame_rate: float, default = 50
+    animate_fps: float, default = 50
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
-        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
     title: str, default = "3D-Paths Animation"
@@ -1329,13 +1329,13 @@ def animate_path(
     -------
     None: NoneTyp
     """
-    # make sure the number of frames does not exceed the max_frame_rate
+    # make sure the number of frames does not exceed the max frames and max frame rate
     # downsample if necessary
     path_lengths = [
         obj.position.shape[0] if obj.position.ndim > 1 else 0 for obj in objs
     ]
     N = max(path_lengths)
-    maxpos = duration * max_frame_rate
+    maxpos = min(animate_time * animate_fps, Config.ANIMATE_MAX_FRAMES)
     if N <= maxpos:
         path_indices = np.arange(N)
     else:
@@ -1374,7 +1374,7 @@ def animate_path(
         ]  # add first frame again, so that the last frame shows starting state
 
     # update fig
-    frame_duration = int(duration * 1000 / path_indices.shape[0])
+    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
