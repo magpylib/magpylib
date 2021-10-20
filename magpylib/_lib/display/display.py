@@ -29,7 +29,7 @@ from magpylib._lib.config import Config
 def display(
     *objects,
     markers=None,
-    axis=None,
+    canvas=None,
     show_direction=True,
     show_path=True,
     size_sensors=1,
@@ -47,12 +47,15 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
+    canvas: pyplot Axis or plotly Figure, default=None
+        Display graphical output in a given canvas:
+        - with matplotlib: pyplot axis (must be 3D).
+        - with plotly: plotly.graph_objects.Figure
+            or plotly.graph_objects.FigureWidget
+        By default a new canvas is created and displayed.
+
     markers: array_like, None, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
-
-    axis: pyplot.axis, default=None
-        Display graphical output in a given pyplot axis (must be 3D). By default a new
-        pyplot figure is created and displayed.
 
     show_direction: bool, default=True
         Set True to show magnetization and current directions. The `matplotlib`
@@ -146,9 +149,9 @@ def display(
         ), "the matplotlib backend does not support animation"
         display_matplotlib(
             *obj_list,
-            axis=axis,
-            show_path=show_path,
+            axis=canvas,
             markers=markers,
+            show_path=show_path,
             show_direction=show_direction,
             size_direction=size_direction,
             size_sensors=size_sensors,
@@ -161,11 +164,12 @@ def display(
 
         display_plotly(
             *obj_list,
+            fig=canvas,
             markers=markers,
             show_path=show_path,
             show_direction=show_direction,
-            size_dipoles=size_dipoles,
             size_sensors=size_sensors,
+            size_dipoles=size_dipoles,
             zoom=zoom,
             **kwargs,
         )
@@ -173,10 +177,10 @@ def display(
 
 def display_matplotlib(
     *obj_list,
-    markers=None,
     axis=None,
-    show_direction=True,
+    markers=None,
     show_path=True,
+    show_direction=True,
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
@@ -190,12 +194,12 @@ def display_matplotlib(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    markers: array_like, shape (N,3), default=[(0,0,0)]
-        Display position markers in the global CS. By default no marker is displayed.
-
     axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D). By default a new
         pyplot figure is created and displayed.
+
+    markers: array_like, shape (N,3), default=[(0,0,0)]
+        Display position markers in the global CS. By default no marker is displayed.
 
     show_direction: bool, default=True
         Set True to show magnetization and current directions with quiver arrows
