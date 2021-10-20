@@ -3,6 +3,7 @@
 
 from itertools import cycle, combinations
 from math import log10
+from typing import Tuple
 import warnings
 
 try:
@@ -41,7 +42,28 @@ _UNIT_PREFIX = {
 }
 
 
-def unit_prefix(number, unit="", precision=3, char_between=""):
+def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+    """
+    displays a number with given unit and precision and uses unit prefixes for the exponents from
+    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
+
+    Parameters
+    ----------
+    number : int, float
+        can be any number
+    unit : str, optional
+        unit symbol can be any string, by default ""
+    precision : int, optional
+        gives the number of significant digits, by default 3
+    char_between : str, optional
+        character to insert between number of prefix. Can be " " or any string, if a space is wanted
+        before the unit symbol , by default ""
+
+    Returns
+    -------
+    str
+        returns formatted number as string
+    """
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
     # pylint: disable=consider-using-f-string
@@ -58,18 +80,32 @@ class Markers:
     def __init__(self, *markers, color=None):
         self.markers = np.array(markers)
         self.color = color
-        self.position = np.array([0.0, 0.0, 0.0])
 
 
-def _getIntensity(vertices, mag):
-    """vertices: [x,y,z] array"""
-    if all(m == 0 for m in mag):
-        return vertices[0] * 0
+def _getIntensity(vertices, axis) -> np.ndarray:
+    """
+    Calculates the intensity values for vertices based on the distance of the vertices to the mean
+    vertices position in the provided axis direction. It can be used for plotting
+    fields on meshes. If `mag` See more infos here:https://plotly.com/python/3d-mesh/
+
+    Parameters
+    ----------
+    vertices : ndarray Nx3
+        the N vertices of the mesh object
+    axis : ndarray 3
+        direction vector
+
+    Returns
+    -------
+    ndarray N
+        returns 1D array of length N
+    """
+    if all(m == 0 for m in axis):
+        return np.array(vertices).T[0] * 0
     else:
-        pos = np.mean(vertices, axis=1)
-        p = np.array(vertices)
-        pos = np.array(pos)
-        m = np.array(mag) / np.linalg.norm(mag)
+        p = np.array(vertices).T
+        pos = np.mean(p, axis=1)
+        m = np.array(axis) / np.linalg.norm(axis)
         a = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
         b = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2 + (p[2] - pos[2]) ** 2
         return a / np.sqrt(b)
@@ -77,7 +113,34 @@ def _getIntensity(vertices, mag):
 
 def _getColorscale(
     color_transition=0.1, north_color=None, middle_color=None, south_color=None
-):
+) -> list:
+    """
+    Provides the colorscale for a plotly mesh3d trace.
+    The colorscale must be an array containing arrays mapping a normalized value to an rgb, rgba,
+    hex, hsl, hsv, or named color string. At minimum, a mapping for the lowest (0) and highest (1)
+    values are required. For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`.
+    In this case the colorscale is created depending on the north/middle/south poles colors. If the
+    middle color is `None` the colorscale will only have north and south pole colors.
+    By default colors as set from the global magpylib Config class.
+
+    Parameters
+    ----------
+    color_transition : float, optional
+        A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
+        visualization., by default 0.1
+    north_color : [type], optional
+        magnetic north pole color , by default None
+    middle_color : [type], optional
+        middle between south and north pole color, by default None
+    south_color : [type], optional
+        magnetic north pole color , by default None
+
+    Returns
+    -------
+    list
+        returns colorscale as list of tuples
+    """
+
     if north_color is None:
         north_color = Config.NORTH_COLOR
     if south_color is None:
@@ -85,14 +148,14 @@ def _getColorscale(
     if middle_color is None:
         middle_color = Config.MIDDLE_COLOR
     if middle_color is False:
-        return [
+        colorscale = [
             [0.0, south_color],
             [0.5 * (1 - color_transition), south_color],
             [0.5 * (1 + color_transition), north_color],
             [1, north_color],
         ]
     else:
-        return [
+        colorscale = [
             [0.0, south_color],
             [0.2 - 0.2 * (color_transition), south_color],
             [0.2 + 0.3 * (color_transition), middle_color],
@@ -100,9 +163,15 @@ def _getColorscale(
             [0.8 + 0.2 * (color_transition), north_color],
             [1.0, north_color],
         ]
+    return colorscale
 
 
-def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)):
+def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)) -> dict:
+    """
+    Provides the base plotly cuboid mesh3d parameters in a dictionary based on dimension and
+    position
+    The zero position is in the barycenter of the vertices.
+    """
     return dict(
         type="mesh3d",
         i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
@@ -114,7 +183,12 @@ def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)):
     )
 
 
-def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)):
+def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
+    """
+    Provides the base plotly prism mesh3d parameters in a dictionary based on number of vertices of
+    the base, the diameter the height and position.
+    The zero position is in the barycenter of the vertices.
+    """
     N = base_vertices
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
     c1 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 - 1]) * 0.5
@@ -150,8 +224,16 @@ def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)):
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_Ellipsoid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0), Nvert=15):
-    N = min(max(Nvert, 3), 20)
+def make_Ellipsoid(
+    dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0), Nvert=15, min_vert=3, max_vert=20
+) -> dict:
+    """
+    Provides the base plotly ellipsoid mesh3d parameters in a dictionary based on number of vertices
+    of the circumference, the 3 dimensions and position.
+    The zero position is in the barycenter of the vertices.
+    `Nvert` will be forced automatically in the range [`min_vert`, `max_vert`]
+    """
+    N = min(max(Nvert, min_vert), max_vert)
     phi = np.linspace(0, 2 * np.pi, Nvert, endpoint=False)
     theta = np.linspace(-np.pi / 2, np.pi / 2, Nvert, endpoint=True)
     phi, theta = np.meshgrid(phi, theta)
@@ -181,7 +263,12 @@ def make_Ellipsoid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0), Nvert=15):
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseCylinderSegment(d1=1, d2=2, h=1, phi1=0, phi2=90, Nvert=30):
+def make_BaseCylinderSegment(d1=1, d2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict:
+    """
+    Provides the base plotly CylinderSegment mesh3d parameters in a dictionary based on inner
+    and outer diameters, height, start angle and end angles in degrees.
+    The zero position is in the barycenter of the vertices.
+    """
     N = Nvert
     phi = np.linspace(phi1, phi2, N)
     x = np.cos(np.deg2rad(phi))
@@ -226,7 +313,12 @@ def make_BaseCylinderSegment(d1=1, d2=2, h=1, phi1=0, phi2=90, Nvert=30):
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_Cone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)):
+def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
+    """
+    Provides the base plotly Cone mesh3d parameters in a dictionary based on number of vertices of
+    the base, the diameter the height and position.
+    The zero position is in the barycenter of the vertices.
+    """
     N = base_vertices
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
     c = np.array([np.cos(t), np.sin(t), t * 0 - 1]) * 0.5
@@ -242,9 +334,14 @@ def make_Cone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)):
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseArrow(base_vertices=30, diameter=0.3, height=1):
+def make_BaseArrow(base_vertices=30, diameter=0.3, height=1) -> dict:
+    """
+    Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
+    of the base, the diameter the height and position.
+    The zero position is in the barycenter of the vertices.
+    """
     h, d = height, diameter
-    cone = make_Cone(
+    cone = make_BaseCone(
         base_vertices=base_vertices, diameter=d, height=d, pos=(0.0, 0.0, (h - d) / 2)
     )
     prism = make_BasePrism(
@@ -257,7 +354,12 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1):
     return arrow
 
 
-def draw_arrow(vec, pos, sign=1):
+def draw_arrow(vec, pos, sign=1) -> Tuple:
+    """
+    Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
+    centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
+    moved to position `pos`.
+    """
     hy = sign * 0.1
     hx = 0.06
     norm = np.linalg.norm(vec)
@@ -298,7 +400,11 @@ def make_Line(
     name_suffix=None,
     color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
+    provided arguments
+    """
     name = "Line Curent" if name is None else name
     name_suffix = (
         f" ({unit_prefix(current)}A)" if name_suffix is None else f" ({name_suffix})"
@@ -343,6 +449,10 @@ def make_Circular(
     color=None,
     **kwargs,
 ):
+    """
+    Creates the plotly scatter3d parameters for a Circular current in a dictionary based on the
+    provided arguments
+    """
     name = "Circular Curent" if name is None else name
     name_suffix = (
         f" ({unit_prefix(current)}A)" if name_suffix is None else f" ({name_suffix})"
@@ -382,7 +492,12 @@ def make_UnsupportedObject(
     name_suffix=None,
     color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly scatter3d parameters for an object with no specifically supported
+    representation. The object will be reprensented by a scatter point and text above with object
+    name.
+    """
     name = "Unkwnon obj" if name is None else name
     name_suffix = (
         " (Unsupported visualisation)" if name_suffix is None else f" ({name_suffix})"
@@ -418,7 +533,11 @@ def make_Dipole(
     middle_color=None,
     south_color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Circular current in a dictionary based on the
+    provided arguments
+    """
     name = "Dipole" if name is None else name
     moment_mag = np.linalg.norm(moment)
     name_suffix = (
@@ -439,7 +558,7 @@ def make_Dipole(
         orientation = orientation * mag_orient
     else:
         orientation = mag_orient
-    mag = (0, 0, 1)
+    mag = np.array((0, 0, 1))
     return _update_mag_mesh(
         dipole,
         name,
@@ -467,7 +586,11 @@ def make_Cuboid(
     middle_color=None,
     south_color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
+    provided arguments
+    """
     name = "Cuboid" if name is None else name
     # pylint: disable=consider-using-f-string
     name_suffix = (
@@ -505,7 +628,11 @@ def make_Cylinder(
     middle_color=None,
     south_color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
+    provided arguments
+    """
     name = "Cylinder" if name is None else name
     # pylint: disable=consider-using-f-string
     name_suffix = (
@@ -548,6 +675,10 @@ def make_CylinderSegment(
     south_color=None,
     **kwargs,
 ):
+    """
+    Creates the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
+    provided arguments
+    """
     name = "CylinderSegment" if name is None else name
     # pylint: disable=consider-using-f-string
     name_suffix = (
@@ -586,7 +717,11 @@ def make_Sphere(
     middle_color=None,
     south_color=None,
     **kwargs,
-):
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
+    provided arguments
+    """
     name = "Sphere" if name is None else name
     name_suffix = (
         f" (D={unit_prefix(diameter / 1000)}m)"
@@ -609,9 +744,17 @@ def make_Sphere(
     )
 
 
-def make_Pixels(positions, size=1, shape="cube"):
+def make_Pixels(positions, size=1, shape="cube") -> dict:
+    """
+    Creates the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
+    For now, only "cube" shape is provided.
+    """
     if shape == "cube":
         pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
+    else:
+        raise NotImplementedError(
+            "pixel shape parameter only supports `cube` at the moment"
+        )
     return merge_mesh3d(*pixels)
 
 
@@ -627,6 +770,15 @@ def make_Sensor(
     pixel_color=None,
     **kwargs,
 ):
+    """
+    Creates the plotly mesh3d parameters for a Sensor object in a dictionary based on the
+    provided arguments
+
+    size_pixels: float, default=0.5
+        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+        distance between any pixel of the same sensor, equal to `size_pixel`.
+    """
     name = "Sensor" if name is None else name
     pixel = np.array(pixel)
     pixel_str = (
@@ -685,7 +837,11 @@ def _update_mag_mesh(
     south_color=None,
     **kwargs,
 ):
-    vertices = np.array([mesh_dict[k] for k in "xyz"])
+    """
+    Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
+    object gets colorized, positioned and oriented based on provided arguments
+    """
+    vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if magnetization is not None and color_transition >= 0:
         if middle_color == "auto":
             middle_color = kwargs.get("color", None)
@@ -697,28 +853,32 @@ def _update_mag_mesh(
         )
         mesh_dict["intensity"] = _getIntensity(
             vertices=vertices,
-            mag=magnetization,
+            axis=magnetization,
         )
     if orientation is not None:
-        vertices = orientation.apply(vertices.T).T
-    x, y, z = (vertices.T + position).T
+        vertices = orientation.apply(vertices)
+    x, y, z = (vertices + position).T
     mesh_dict.update(
         x=x, y=y, z=z, showscale=False, name=f"""{name}{name_suffix}""", **kwargs
     )
     return {**mesh_dict, **kwargs}
 
 
-def merge_mesh3d(*traces, concat_xyz=True):
+def merge_mesh3d(*traces):
+    """
+    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cummulate the
+    indices of each object in order to point to the right vertices in the concatenated vertices.
+    `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also get
+    concatenated if they are present in all objects. All other parameter found in the dictionary
+    keys are taken from the first object, other keys from further objects are ignored.
+    """
     merged_trace = dict()
     L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
     for k in "ijk":
         if k in traces[0]:
             merged_trace[k] = np.hstack([b[k] + l for b, l in zip(traces, L)])
     for k in "xyz":
-        if concat_xyz:
-            merged_trace[k] = np.concatenate([b[k] for b in traces])
-        else:
-            merged_trace[k] = np.array([b[k] for b in traces])
+        merged_trace[k] = np.concatenate([b[k] for b in traces])
     for k in ("intensity", "facecolor"):
         if k in traces[0] and traces[0][k] is not None:
             merged_trace[k] = np.hstack([b[k] for b in traces])
@@ -729,6 +889,11 @@ def merge_mesh3d(*traces, concat_xyz=True):
 
 
 def merge_scatter3d(*traces):
+    """
+    Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
+    `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
+    the first object, other keys from further objects are ignored.
+    """
     merged_trace = dict()
     for k in "xyz":
         merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
@@ -738,9 +903,14 @@ def merge_scatter3d(*traces):
     return merged_trace
 
 
-def merge_traces(*traces, concat_xyz=True):
+def merge_traces(*traces):
+    """
+    Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
+    All traces have be of the same type when merging. Keys are taken from the first object, other
+    keys from further objects are ignored.
+    """
     if traces[0]["type"] == "mesh3d":
-        trace = merge_mesh3d(*traces, concat_xyz=concat_xyz)
+        trace = merge_mesh3d(*traces)
     elif traces[0]["type"] == "scatter3d":
         trace = merge_scatter3d(*traces)
     return trace
@@ -754,14 +924,26 @@ def getTraces(
     size_sensors=1,
     size_pixels=0.5,
     show_path_numbering=False,
-    opacity=None,
     color_transition=None,
     north_color=None,
     middle_color=None,
     south_color=None,
     pixel_color=None,
     **kwargs,
-):
+) -> list:
+    """
+    This is a helper function providing the plotly traces for any object of the magpylib library. In
+    the object is not supported, the trace representation will fall back to a single scatter point
+    with the object name marked above it.
+
+    - If the object has a path (multiple positions), the function will return both the object trace
+    and the corresponding path trace. The legend entry of the path trace will be hidden but both
+    traces will share the same `legendgroup` so that a legend entry click will hide/show both traces
+    at once. From the user's perspective, the traces will be merged.
+
+    - The argument caught by the kwargs dictionary must all be arguments supported both by
+    `scatter3d` and `mesh3d` plotly objects, otherwise an error will be raised.
+    """
     Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
@@ -783,15 +965,12 @@ def getTraces(
         south_color=south_color,
     )
 
-    kwargs["opacity"] = 1 if opacity is None else opacity
     color = kwargs.get("color", None)
-
-    haspath = input_obj.position.ndim > 1
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
         trace = go.Scatter3d(
-            name=f"""markers ({len(x)} point({'s' if len(x)>1 else ''}))""",
+            name='Marker' if len(x)==1 else f'Markers ({len(x)} points)',
             x=x,
             y=y,
             z=z,
@@ -872,6 +1051,7 @@ def getTraces(
             kwargs.update(name=type(input_obj).__name__)
             make_func = make_UnsupportedObject
 
+        haspath = input_obj.position.ndim > 1
         if haspath:
             path_len = input_obj.position.shape[0]
             if show_path is True or show_path is False:
@@ -926,13 +1106,92 @@ def display_plotly(
     show_path=False,
     fig=None,
     renderer=None,
-    duration=5,
+    duration=3,
     max_frame_rate=10,
     zoom=1,
     backtofirst=False,
     color_discrete_sequence=None,
     **kwargs,
 ):
+
+    """
+    Display objects and paths graphically using the plotly library.
+
+    Parameters
+    ----------
+    objects: sources, collections or sensors
+        Objects to be displayed.
+
+    fig: plotly Figure, default=None
+        Display graphical output in a given figure:
+        - plotly.graph_objects.Figure
+        - plotly.graph_objects.FigureWidget
+        By default a new `Figure` is created and displayed.
+
+    markers: array_like, None, shape (N,3), default=None
+        Display position markers in the global CS. By default no marker is displayed.
+
+    show_direction: bool, default=True
+        Set True to show magnetization and current directions. The `matplotlib`
+        backend uses arrows and the plotly backend displays direction with a color
+        gradient for magnets/dipoles and arrows for currents.
+
+    show_path: bool or int or array_like, default=True
+        Options True, False, positive int or iterable. By default object paths are shown. If
+        show_path is a positive integer, objects will be displayed at multiple path
+        positions along the path, in steps of show_path. If show_path is an iterable
+        of integers, objects will be displayed for the provided indices.
+        If show_path='animate, the plot will be animated according to the `duration`
+        and 'max_frame_rate' parameters.
+
+    size_sensor: float, default=1
+        Adjust automatic display size of sensors.
+
+    size_direction: float, default=1
+        Adjust automatic display size of direction arrows.
+
+    size_dipoles: float, default=1
+        Adjust automatic display size of dipoles.
+
+    size_pixels: float, default=0.5
+        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+        distance between any pixel of the same sensor, equal to `size_pixel`.
+
+    zoom: float, default = 1
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+    backtofirst: bool, default = False
+        If True, the last frame of the animation will be the first again.
+
+    duration: float, default = 3
+        Sets the animation duration
+
+    max_frame_rate: float, default = 50
+        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
+        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
+        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        50 by default to avoid hanging the animation process.
+
+    title: str, default = "3D-Paths Animation"
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    color_discrete_sequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    Returns
+    -------
+    None: NoneType
+    """
     show_fig = False
     if fig is None:
         show_fig = True
@@ -948,7 +1207,8 @@ def display_plotly(
 
     with fig.batch_update():
         if (
-            not any(obj.position.ndim > 1 for obj in objs) and show_path == "animate"
+            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in objs)
+            and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
             warnings.warn("No path to be animated detected, displaying standard plot")
@@ -982,6 +1242,19 @@ def display_plotly(
 
 
 def apply_fig_ranges(fig, zoom=1):
+    """This is a helper function which applies the ranges properties of the provided `fig` object
+    according to a certain zoom level. All three space direction will be equal and match the
+    maximum of the ranges needed to display all objects, including their paths.
+
+    Parameters
+    ----------
+    zoom: float, default = 1
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    Returns
+    -------
+    None: NoneType
+    """
     ranges = {k: [] for k in ("xyz")}
     frames = fig.frames if fig.frames else [fig]
     for frame in frames:
@@ -1008,11 +1281,49 @@ def animate_path(
     objs,
     color_discrete_sequence=None,
     title="3D-Paths Animation",
-    duration=5,
+    duration=3,
     max_frame_rate=50,
     backtofirst=False,
     **kwargs,
 ):
+    """This is a helper function which attaches plotly frames to the provided `fig` object
+    according to a certain zoom level. All three space direction will be equal and match the
+    maximum of the ranges needed to display all objects, including their paths.
+
+    Parameters
+    ----------
+    backtofirst: bool, default = False
+        If True, the last frame of the animation will be the first again.
+
+    duration: float, default = 3
+        Sets the animation duration
+
+    max_frame_rate: float, default = 50
+        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
+        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
+        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        50 by default to avoid hanging the animation process.
+
+    title: str, default = "3D-Paths Animation"
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    color_discrete_sequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    Returns
+    -------
+    None: NoneTyp
+    """
     # make sure the number of frames does not exceed the max_frame_rate
     # downsample if necessary
     path_lengths = [

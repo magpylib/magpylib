@@ -35,6 +35,7 @@ def display(
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
+    size_pixels=0.5,
     zoom=1,
     plotting_backend=None,
     **kwargs,
@@ -78,6 +79,11 @@ def display(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
+
+    size_pixels: float, default=0.5
+        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+        distance between any pixel of the same sensor, equal to `size_pixel`.
 
     plotting_backend: default=None
         One of 'matplotlib', 'plolty'. If not set, parameter will default to
@@ -170,6 +176,7 @@ def display(
             show_direction=show_direction,
             size_sensors=size_sensors,
             size_dipoles=size_dipoles,
+            size_pixels=size_pixels,
             zoom=zoom,
             **kwargs,
         )
@@ -218,10 +225,6 @@ def display_matplotlib(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
-
-    plotting_backend: default=None
-        One of 'matplotlib', 'plolty'. If not set, parameter will default to
-        Config.PLOTTING_BACKEND
 
     zoom: float, default=1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
