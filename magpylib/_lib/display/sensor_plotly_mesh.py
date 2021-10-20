@@ -1,6 +1,10 @@
 from numpy import array
 
 def get_sensor_mesh():
+    """
+    returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
+    and  colored respectively in red,green,blue with a central cube of size 1
+    """
     return {
         'type': 'mesh3d',
         'i': array([75, 64,  2, 75, 76, 65, 65, 64,  2,  0,  1,  0, 84, 86, 86, 90, 90, 92,
