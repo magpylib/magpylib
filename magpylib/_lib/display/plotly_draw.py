@@ -101,14 +101,15 @@ def _getIntensity(vertices, axis) -> np.ndarray:
         returns 1D array of length N
     """
     if all(m == 0 for m in axis):
-        return np.array(vertices).T[0] * 0
+        intensity = np.array(vertices).T[0] * 0
     else:
         p = np.array(vertices).T
         pos = np.mean(p, axis=1)
         m = np.array(axis) / np.linalg.norm(axis)
         a = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
         b = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2 + (p[2] - pos[2]) ** 2
-        return a / np.sqrt(b)
+        intensity = a / np.sqrt(b)
+    return intensity
 
 
 def _getColorscale(
@@ -872,7 +873,7 @@ def merge_mesh3d(*traces):
     concatenated if they are present in all objects. All other parameter found in the dictionary
     keys are taken from the first object, other keys from further objects are ignored.
     """
-    merged_trace = dict()
+    merged_trace = {}
     L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
     for k in "ijk":
         if k in traces[0]:
@@ -894,7 +895,7 @@ def merge_scatter3d(*traces):
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
     the first object, other keys from further objects are ignored.
     """
-    merged_trace = dict()
+    merged_trace = {}
     for k in "xyz":
         merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
     for k, v in traces[0].items():
@@ -944,6 +945,10 @@ def getTraces(
     - The argument caught by the kwargs dictionary must all be arguments supported both by
     `scatter3d` and `mesh3d` plotly objects, otherwise an error will be raised.
     """
+
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
     Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
@@ -970,7 +975,7 @@ def getTraces(
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
         trace = go.Scatter3d(
-            name='Marker' if len(x)==1 else f'Markers ({len(x)} points)',
+            name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
             x=x,
             y=y,
             z=z,
