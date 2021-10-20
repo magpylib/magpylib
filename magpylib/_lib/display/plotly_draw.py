@@ -810,7 +810,7 @@ def make_Sensor(
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * size_pixels/2
+            pixel_dim = np.min(dists) * size_pixels / 2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
@@ -1381,19 +1381,36 @@ def animate_path(
         height=None,
         title=title,
         updatemenus=[
-            dict(
-                type="buttons",
-                buttons=[
-                    dict(
-                        label="Play",
-                        method="animate",
-                        args=[None, {"frame": {"duration": frame_duration}}],
-                    )
+            {
+                "buttons": [
+                    {
+                        "args": [
+                            None,
+                            {
+                                "frame": {"duration": frame_duration},
+                                "fromcurrent": True,
+                            },
+                        ],
+                        "label": "Play",
+                        "method": "animate",
+                    },
+                    {
+                        "args": [
+                            [None],
+                            {"frame": {"duration": 0}, "mode": "immediate"},
+                        ],
+                        "label": "Pause",
+                        "method": "animate",
+                    },
                 ],
-                x=0.01,
-                xanchor="left",
-                y=1.01,
-                yanchor="bottom",
-            )
+                "direction": "left",
+                "pad": {"r": 10, "t": 87},
+                "showactive": False,
+                "type": "buttons",
+                "x": 0.1,
+                "xanchor": "right",
+                "y": 0,
+                "yanchor": "top",
+            }
         ],
     )
