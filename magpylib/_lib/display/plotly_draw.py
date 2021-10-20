@@ -1,4 +1,5 @@
 """ plolty draw-functionalities"""
+# pylint: disable=C0302
 
 from itertools import cycle, combinations
 from math import log10
@@ -40,6 +41,17 @@ _UNIT_PREFIX = {
 }
 
 
+def unit_prefix(number, unit="", precision=3, char_between=""):
+    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
+    prefix = _UNIT_PREFIX.get(digits, "")
+    # pylint: disable=consider-using-f-string
+    if prefix != "":
+        new_number_str = "{:.{}g}".format(number / 10 ** digits, precision)
+    else:
+        new_number_str = "{:.{}g}".format(number, precision)
+    return f"{new_number_str}{char_between}{prefix}{unit}"
+
+
 class Markers:
     """A class that stores markers 3D-coordinates"""
 
@@ -47,16 +59,6 @@ class Markers:
         self.markers = np.array(markers)
         self.color = color
         self.position = np.array([0.0, 0.0, 0.0])
-
-
-def unit_prefix(number, unit="", precision=3, char_between=""):
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
-    if prefix != "":
-        new_number_str = "{:.{}g}".format(number / 10 ** digits, precision)
-    else:
-        new_number_str = "{:.{}g}".format(number, precision)
-    return f"{new_number_str}{char_between}{prefix}{unit}"
 
 
 def _getIntensity(vertices, mag):
@@ -299,9 +301,7 @@ def make_Line(
 ):
     name = "Line Curent" if name is None else name
     name_suffix = (
-        " ({}A)".format(unit_prefix(current))
-        if name_suffix is None
-        else f" ({name_suffix})"
+        f" ({unit_prefix(current)}A)" if name_suffix is None else f" ({name_suffix})"
     )
     if show_arrows:
         vectors = np.diff(vertices, axis=0)
@@ -345,9 +345,7 @@ def make_Circular(
 ):
     name = "Circular Curent" if name is None else name
     name_suffix = (
-        " ({}A)".format(unit_prefix(current))
-        if name_suffix is None
-        else f" ({name_suffix})"
+        f" ({unit_prefix(current)}A)" if name_suffix is None else f" ({name_suffix})"
     )
     t = np.linspace(0, 2 * np.pi, Nvert)
     x = np.cos(t)
@@ -424,7 +422,7 @@ def make_Dipole(
     name = "Dipole" if name is None else name
     moment_mag = np.linalg.norm(moment)
     name_suffix = (
-        " (moment={}T/m³)".format(unit_prefix(moment_mag))
+        f" (moment={unit_prefix(moment_mag)}T/m³)".format()
         if name_suffix is None
         else f" ({name_suffix})"
     )
@@ -471,6 +469,7 @@ def make_Cuboid(
     **kwargs,
 ):
     name = "Cuboid" if name is None else name
+    # pylint: disable=consider-using-f-string
     name_suffix = (
         " ({}mx{}mx{}m)".format(*(unit_prefix(d / 1000) for d in dim))
         if name_suffix is None
@@ -508,6 +507,7 @@ def make_Cylinder(
     **kwargs,
 ):
     name = "Cylinder" if name is None else name
+    # pylint: disable=consider-using-f-string
     name_suffix = (
         " (D={}m, H={}m)".format(*(unit_prefix(d / 1000) for d in (diameter, height)))
         if name_suffix is None
@@ -549,6 +549,7 @@ def make_CylinderSegment(
     **kwargs,
 ):
     name = "CylinderSegment" if name is None else name
+    # pylint: disable=consider-using-f-string
     name_suffix = (
         " (d1={}m, d2={}m, h={}m, phi1={}°, phi2={}°)".format(
             *(unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension))
@@ -588,7 +589,7 @@ def make_Sphere(
 ):
     name = "Sphere" if name is None else name
     name_suffix = (
-        " (D={}m)".format(unit_prefix(diameter / 1000))
+        f" (D={unit_prefix(diameter / 1000)}m)"
         if name_suffix is None
         else f" ({name_suffix})"
     )
@@ -650,18 +651,18 @@ def make_Sensor(
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
-        if size_pixels>=0:
+        if size_pixels >= 0:
             if pixel_color is None:
                 pixel_color = Config.PIXEL_COLOR
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists)*size_pixels
+            pixel_dim = np.min(dists) * size_pixels
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        dim[dim == 0] = pixel_dim / 2 if size_pixels!=0 else dim_ext / 10
+        dim[dim == 0] = pixel_dim / 2 if size_pixels != 0 else dim_ext / 10
         hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
@@ -788,10 +789,12 @@ def getTraces(
     haspath = input_obj.position.ndim > 1
     traces = []
     if isinstance(input_obj, Markers):
-        x,y,z = input_obj.markers.T
+        x, y, z = input_obj.markers.T
         trace = go.Scatter3d(
-            name=f'''markers ({len(x)} point({'s' if len(x)>1 else ''}))''',
-            x=x, y=y, z=z,
+            name=f"""markers ({len(x)} point({'s' if len(x)>1 else ''}))""",
+            x=x,
+            y=y,
+            z=z,
             marker_color=input_obj.color,
             marker_symbol="x",
             marker_size=2,
@@ -939,7 +942,7 @@ def display_plotly(
 
     if markers is not None and markers:
         objs = list(objs) + [Markers(*markers)]
-        
+
     if color_discrete_sequence is None:
         color_discrete_sequence = Config.COLOR_DISCRETE_SEQUENCE
 
