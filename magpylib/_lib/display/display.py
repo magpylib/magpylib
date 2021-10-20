@@ -28,7 +28,7 @@ from magpylib._lib.config import Config
 # ON INTERFACE
 def display(
     *objects,
-    markers=[(0, 0, 0)],
+    markers=None,
     axis=None,
     show_direction=True,
     show_path=True,
@@ -47,9 +47,8 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    markers: array_like, shape (N,3), default=[(0,0,0)]
-        Display position markers in the global CS. By default a marker is placed
-        in the origin.
+    markers: array_like, None, shape (N,3), default=None
+        Display position markers in the global CS. By default no marker is displayed.
 
     axis: pyplot.axis, default=None
         Display graphical output in a given pyplot axis (must be 3D). By default a new
@@ -60,11 +59,11 @@ def display(
         backend uses arrows and the plotly backend displays direction with a color
         gradient for magnets/dipoles and arrows for currents.
 
-    show_path: bool or int or iterable, default=True
-        Options True, False, positive int. By default object paths are shown. If
+    show_path: bool or int or array_like, default=True
+        Options True, False, positive int or iterable. By default object paths are shown. If
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
-        of integers objects will be displayed for the provided indices.
+        of integers, objects will be displayed for the provided indices.
         If show_path='animate, the plot will be animated according to the `duration`
         and 'max_frame_rate' parameters.
 
@@ -116,7 +115,6 @@ def display(
     --> graphic output
 
     """
-    # pylint: disable=dangerous-default-value
 
     # flatten input
     obj_list = format_obj_input(objects)
@@ -141,13 +139,13 @@ def display(
 
     if plotting_backend is None:
         plotting_backend = Config.PLOTTING_BACKEND
-        
+
     if plotting_backend == "matplotlib":
         assert (
             show_path != "animate"
         ), "the matplotlib backend does not support animation"
         display_matplotlib(
-            obj_list=obj_list,
+            *obj_list,
             axis=axis,
             show_path=show_path,
             markers=markers,
@@ -163,6 +161,7 @@ def display(
 
         display_plotly(
             *obj_list,
+            markers=markers,
             show_path=show_path,
             show_direction=show_direction,
             size_dipoles=size_dipoles,
@@ -173,17 +172,88 @@ def display(
 
 
 def display_matplotlib(
-    obj_list,
-    axis,
-    show_path,
-    markers,
-    show_direction,
-    size_direction,
-    size_sensors,
-    size_dipoles,
-    zoom,
+    *obj_list,
+    markers=None,
+    axis=None,
+    show_direction=True,
+    show_path=True,
+    size_sensors=1,
+    size_direction=1,
+    size_dipoles=1,
+    zoom=1,
 ):
+    """
+    Display objects and paths graphically with the matplotlib backend.
 
+    Parameters
+    ----------
+    objects: sources, collections or sensors
+        Objects to be displayed.
+
+    markers: array_like, shape (N,3), default=[(0,0,0)]
+        Display position markers in the global CS. By default no marker is displayed.
+
+    axis: pyplot.axis, default=None
+        Display graphical output in a given pyplot axis (must be 3D). By default a new
+        pyplot figure is created and displayed.
+
+    show_direction: bool, default=True
+        Set True to show magnetization and current directions with quiver arrows
+
+    show_path: bool or int or array_like, default=True
+        Options True, False, positive int or iterable. By default object paths are shown. If
+        show_path is a positive integer, objects will be displayed at multiple path
+        positions along the path, in steps of show_path. If show_path is an iterable
+        of integers, objects will be displayed for the provided indices.
+
+    size_sensor: float, default=1
+        Adjust automatic display size of sensors.
+
+    size_direction: float, default=1
+        Adjust automatic display size of direction arrows.
+
+    size_dipoles: float, default=1
+        Adjust automatic display size of dipoles.
+
+    plotting_backend: default=None
+        One of 'matplotlib', 'plolty'. If not set, parameter will default to
+        Config.PLOTTING_BACKEND
+
+    zoom: float, default=1
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+
+    Returns
+    -------
+    None: NoneType
+
+    Examples
+    --------
+
+    Display multiple objects, object paths, markers in 3D using Matplotlib:
+
+    >>> import magpylib as magpy
+    >>> col = magpy.Collection(
+        [magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1) for _ in range(3)])
+    >>> for displ,src in zip([(.1414,0,0),(-.1,-.1,0),(-.1,.1,0)], col):
+    >>>     src.move([displ]*50, increment=True)
+    >>>     src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
+    >>> ts = [-.6,-.4,-.2,0,.2,.4,.6]
+    >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
+    >>> magpy.display(col, sens)
+    --> graphic output
+
+    Display figure on your own 3D Matplotlib axis:
+
+    >>> import matplotlib.pyplot as plt
+    >>> import magpylib as magpy
+    >>> my_axis = plt.axes(projection='3d')
+    >>> magnet = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
+    >>> sens = magpy.Sensor(position=(0,0,3))
+    >>> magpy.display(magnet, sens, axis=my_axis)
+    >>> plt.show()
+    --> graphic output
+
+    """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
@@ -275,9 +345,11 @@ def display_matplotlib(
             path_points += draw_path(line, ".6", ax)
 
     # markers -------------------------------------------------------
-    if markers:
+    if markers is not None and markers:
         markers = np.array(markers)
         draw_markers(markers, ax)
+    else:
+        markers = []
 
     # draw direction arrows (based on src size) -------------------------
     if show_direction:

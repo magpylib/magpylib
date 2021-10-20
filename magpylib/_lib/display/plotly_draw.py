@@ -40,6 +40,15 @@ _UNIT_PREFIX = {
 }
 
 
+class Markers:
+    """A class that stores markers 3D-coordinates"""
+
+    def __init__(self, *markers, color=None):
+        self.markers = np.array(markers)
+        self.color = color
+        self.position = np.array([0.0, 0.0, 0.0])
+
+
 def unit_prefix(number, unit="", precision=3, char_between=""):
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
@@ -752,7 +761,6 @@ def getTraces(
     pixel_color=None,
     **kwargs,
 ):
-
     Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
@@ -779,123 +787,139 @@ def getTraces(
 
     haspath = input_obj.position.ndim > 1
     traces = []
-    if isinstance(input_obj, Sensor):
-        kwargs.update(
-            dim=getattr(input_obj, "dimension", size_sensors),
-            pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
-            show_pixels=show_pixels,
-            pixel_color=pixel_color,
+    if isinstance(input_obj, Markers):
+        x,y,z = input_obj.markers.T
+        trace = go.Scatter3d(
+            name=f'''markers ({len(x)} point({'s' if len(x)>1 else ''}))''',
+            x=x, y=y, z=z,
+            marker_color=input_obj.color,
+            marker_symbol="x",
+            marker_size=2,
+            mode="markers",
         )
-        make_func = make_Sensor
-    elif isinstance(input_obj, Cuboid):
-        kwargs.update(
-            mag=input_obj.magnetization,
-            dim=input_obj.dimension,
-            **mag_color_kwargs,
-        )
-        make_func = make_Cuboid
-    elif isinstance(input_obj, Cylinder):
-        base_vertices = min(
-            50, Config.ITER_CYLINDER
-        )  # no need to render more than 50 vertices
-        kwargs.update(
-            mag=input_obj.magnetization,
-            diameter=input_obj.dimension[0],
-            height=input_obj.dimension[1],
-            base_vertices=base_vertices,
-            **mag_color_kwargs,
-        )
-        make_func = make_Cylinder
-    elif isinstance(input_obj, CylinderSegment):
-        Nvert = min(50, Config.ITER_CYLINDER)  # no need to render more than 50 vertices
-        kwargs.update(
-            mag=input_obj.magnetization,
-            dimension=input_obj.dimension,
-            Nvert=Nvert,
-            **mag_color_kwargs,
-        )
-        make_func = make_CylinderSegment
-    elif isinstance(input_obj, Sphere):
-        kwargs.update(
-            mag=input_obj.magnetization,
-            diameter=input_obj.diameter,
-            **mag_color_kwargs,
-        )
-        make_func = make_Sphere
-    elif isinstance(input_obj, Dipole):
-        kwargs.update(
-            moment=input_obj.moment,
-            size=size_dipoles,
-            **mag_color_kwargs,
-        )
-        make_func = make_Dipole
-    elif isinstance(input_obj, Line):
-        kwargs.update(
-            vertices=input_obj.vertices,
-            current=input_obj.current,
-            show_direction=show_direction,
-        )
-        make_func = make_Line
-    elif isinstance(input_obj, Circular):
-        kwargs.update(
-            diameter=input_obj.diameter,
-            current=input_obj.current,
-            show_arrows=show_direction,
-        )
-        make_func = make_Circular
+        traces.append(trace)
     else:
-        kwargs.update(name=type(input_obj).__name__)
-        make_func = make_UnsupportedObject
+        if isinstance(input_obj, Sensor):
+            kwargs.update(
+                dim=getattr(input_obj, "dimension", size_sensors),
+                pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
+                show_pixels=show_pixels,
+                pixel_color=pixel_color,
+            )
+            make_func = make_Sensor
+        elif isinstance(input_obj, Cuboid):
+            kwargs.update(
+                mag=input_obj.magnetization,
+                dim=input_obj.dimension,
+                **mag_color_kwargs,
+            )
+            make_func = make_Cuboid
+        elif isinstance(input_obj, Cylinder):
+            base_vertices = min(
+                50, Config.ITER_CYLINDER
+            )  # no need to render more than 50 vertices
+            kwargs.update(
+                mag=input_obj.magnetization,
+                diameter=input_obj.dimension[0],
+                height=input_obj.dimension[1],
+                base_vertices=base_vertices,
+                **mag_color_kwargs,
+            )
+            make_func = make_Cylinder
+        elif isinstance(input_obj, CylinderSegment):
+            Nvert = min(
+                50, Config.ITER_CYLINDER
+            )  # no need to render more than 50 vertices
+            kwargs.update(
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
+                Nvert=Nvert,
+                **mag_color_kwargs,
+            )
+            make_func = make_CylinderSegment
+        elif isinstance(input_obj, Sphere):
+            kwargs.update(
+                mag=input_obj.magnetization,
+                diameter=input_obj.diameter,
+                **mag_color_kwargs,
+            )
+            make_func = make_Sphere
+        elif isinstance(input_obj, Dipole):
+            kwargs.update(
+                moment=input_obj.moment,
+                size=size_dipoles,
+                **mag_color_kwargs,
+            )
+            make_func = make_Dipole
+        elif isinstance(input_obj, Line):
+            kwargs.update(
+                vertices=input_obj.vertices,
+                current=input_obj.current,
+                show_arrows=show_direction,
+            )
+            make_func = make_Line
+        elif isinstance(input_obj, Circular):
+            kwargs.update(
+                diameter=input_obj.diameter,
+                current=input_obj.current,
+                show_arrows=show_direction,
+            )
+            make_func = make_Circular
+        else:
+            kwargs.update(name=type(input_obj).__name__)
+            make_func = make_UnsupportedObject
 
-    if haspath:
-        path_len = input_obj.position.shape[0]
-        if show_path is True or show_path is False:
-            inds = np.array([-1])
-        elif isinstance(show_path, int):
-            inds = np.arange(path_len, dtype=int)[::-show_path]
-        elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
-            inds = np.array(show_path)
-        inds = inds[inds < path_len]
-        if inds.size == 0:
-            inds = np.array([path_len - 1])
-        path_traces = []
-        for pos, orient in zip(input_obj.position[inds], input_obj.orientation[inds]):
-            path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
-        trace = merge_traces(*path_traces)
-    else:
-        trace = make_func(
-            pos=input_obj.position, orientation=input_obj.orientation, **kwargs
-        )
-    trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
-    traces.append(trace)
-    if haspath and show_path is not False:
-        x, y, z = input_obj.position.T
-        txt_kwargs = (
-            {"mode": "markers+text+lines", "text": list(range(len(x)))}
-            if show_path_numbering
-            else {"mode": "markers+lines"}
-        )
-        scatter_path = dict(
-            type="scatter3d",
-            x=x,
-            y=y,
-            z=z,
-            name=f"Path: {input_obj}",
-            showlegend=False,
-            legendgroup=f"{input_obj}",
-            marker_size=1,
-            marker_color=color,
-            line_color=color,
-            line_width=1,
-            **txt_kwargs,
-        )
-        traces.append(scatter_path)
-
+        if haspath:
+            path_len = input_obj.position.shape[0]
+            if show_path is True or show_path is False:
+                inds = np.array([-1])
+            elif isinstance(show_path, int):
+                inds = np.arange(path_len, dtype=int)[::-show_path]
+            elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
+                inds = np.array(show_path)
+            inds = inds[inds < path_len]
+            if inds.size == 0:
+                inds = np.array([path_len - 1])
+            path_traces = []
+            for pos, orient in zip(
+                input_obj.position[inds], input_obj.orientation[inds]
+            ):
+                path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+            trace = merge_traces(*path_traces)
+        else:
+            trace = make_func(
+                pos=input_obj.position, orientation=input_obj.orientation, **kwargs
+            )
+        trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
+        traces.append(trace)
+        if haspath and show_path is not False:
+            x, y, z = input_obj.position.T
+            txt_kwargs = (
+                {"mode": "markers+text+lines", "text": list(range(len(x)))}
+                if show_path_numbering
+                else {"mode": "markers+lines"}
+            )
+            scatter_path = dict(
+                type="scatter3d",
+                x=x,
+                y=y,
+                z=z,
+                name=f"Path: {input_obj}",
+                showlegend=False,
+                legendgroup=f"{input_obj}",
+                marker_size=1,
+                marker_color=color,
+                line_color=color,
+                line_width=1,
+                **txt_kwargs,
+            )
+            traces.append(scatter_path)
     return traces
 
 
 def display_plotly(
     *objs,
+    markers=None,
     show_path=False,
     fig=None,
     renderer=None,
@@ -913,6 +937,9 @@ def display_plotly(
 
     title = getattr(objs[0], "name", None) if len(objs) == 1 else None
 
+    if markers is not None and markers:
+        objs = list(objs) + [Markers(*markers)]
+        
     if color_discrete_sequence is None:
         color_discrete_sequence = Config.COLOR_DISCRETE_SEQUENCE
 
