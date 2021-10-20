@@ -622,7 +622,7 @@ def make_Sensor(
     name=None,
     name_suffix=None,
     color=None,
-    show_pixels=True,
+    size_pixels=0.5,
     pixel_color=None,
     **kwargs,
 ):
@@ -650,18 +650,18 @@ def make_Sensor(
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
-        if show_pixels:
+        if size_pixels>=0:
             if pixel_color is None:
                 pixel_color = Config.PIXEL_COLOR
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) / 2
+            pixel_dim = np.min(dists)*size_pixels
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        dim[dim == 0] = pixel_dim / 2 if show_pixels else dim_ext / 10
+        dim[dim == 0] = pixel_dim / 2 if size_pixels!=0 else dim_ext / 10
         hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
@@ -751,7 +751,7 @@ def getTraces(
     show_direction=True,
     size_dipoles=1,
     size_sensors=1,
-    show_pixels=True,
+    size_pixels=0.5,
     show_path_numbering=False,
     opacity=None,
     color_transition=None,
@@ -803,7 +803,7 @@ def getTraces(
             kwargs.update(
                 dim=getattr(input_obj, "dimension", size_sensors),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
-                show_pixels=show_pixels,
+                size_pixels=size_pixels,
                 pixel_color=pixel_color,
             )
             make_func = make_Sensor
