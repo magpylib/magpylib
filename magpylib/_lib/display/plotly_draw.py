@@ -77,9 +77,8 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
 class Markers:
     """A class that stores markers 3D-coordinates"""
 
-    def __init__(self, *markers, color=None):
+    def __init__(self, *markers):
         self.markers = np.array(markers)
-        self.color = color
 
 
 def _getIntensity(vertices, axis) -> np.ndarray:
@@ -979,7 +978,7 @@ def getTraces(
             x=x,
             y=y,
             z=z,
-            marker_color=input_obj.color,
+            marker_color=color,
             marker_symbol="x",
             marker_size=2,
             mode="markers",
