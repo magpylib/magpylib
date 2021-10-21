@@ -791,19 +791,21 @@ def make_Sensor(
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
+    dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3])
     if pixel.ndim == 1:
         dim_ext = dim
     else:
-        dim = pixel.max(axis=0) - pixel.min(axis=0)
-        dim_ext = np.mean(dim)
+        hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
+        dim_ext = max(np.mean(dim), np.min(hull_dim))
     cube_mask = (vertices < 1).all(axis=1)
     vertices[cube_mask] = 0 * vertices[cube_mask]
     vertices[~cube_mask] = dim_ext * vertices[~cube_mask]
+    vertices /= 2  # sensor_mesh vertices are of length 2
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
-        if size_pixels >= 0:
+        if size_pixels > 0:
             if pixel_color is None:
                 pixel_color = Config.PIXEL_COLOR
             combs = np.array(list(combinations(pixel, 2)))
@@ -814,8 +816,8 @@ def make_Sensor(
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
-        dim[dim == 0] = pixel_dim / 2 if size_pixels != 0 else dim_ext / 10
-        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=dim)
+        hull_dim[hull_dim == 0] = pixel_dim / 2
+        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=hull_dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     sensor = merge_mesh3d(*meshes_to_merge)
@@ -1110,6 +1112,8 @@ def display_plotly(
     show_path=False,
     fig=None,
     renderer=None,
+    size_sensors=1,
+    size_dipoles=1,
     animate_time=3,
     animate_fps=30,
     zoom=1,
@@ -1148,11 +1152,8 @@ def display_plotly(
         If show_path='animate, the plot will be animated according to the `animate_time`
         and 'animate_fps' parameters.
 
-    size_sensor: float, default=1
+    size_sensors: float, default=1
         Adjust automatic display size of sensors.
-
-    size_direction: float, default=1
-        Adjust automatic display size of direction arrows.
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
@@ -1196,6 +1197,9 @@ def display_plotly(
     -------
     None: NoneType
     """
+    kwargs["size_sensors"] = size_sensors
+    kwargs["size_dipoles"] = size_dipoles
+
     show_fig = False
     if fig is None:
         show_fig = True
@@ -1216,12 +1220,14 @@ def display_plotly(
         ):  # check if some path exist for any object
             show_path = True
             warnings.warn("No path to be animated detected, displaying standard plot")
+
         if show_path == "animate":
             title = "3D-Paths Animation" if title is None else title
             animate_path(
-                fig,
-                objs,
-                color_discrete_sequence,
+                fig=fig,
+                objs=objs,
+                color_discrete_sequence=color_discrete_sequence,
+                zoom=zoom,
                 title=title,
                 animate_time=animate_time,
                 animate_fps=animate_fps,
@@ -1229,26 +1235,61 @@ def display_plotly(
                 **kwargs,
             )
         else:
-            traces_dicts = {
-                obj: getTraces(obj, show_path=show_path, color=color, **kwargs)
-                for obj, color in zip(objs, cycle(color_discrete_sequence))
-            }
-            traces = [t for tr in traces_dicts.values() for t in tr]
+            traces_dicts, kwargs = draw_frame(
+                objs, color_discrete_sequence, zoom, show_path, **kwargs
+            )
+            traces = [t for obj in objs for t in traces_dicts[obj]]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
-        apply_fig_ranges(fig, zoom)
+            apply_fig_ranges(fig, zoom=zoom)
         fig.update_layout(legend_itemsizing="constant")
     if show_fig:
         fig.show(renderer=renderer)
 
 
-def apply_fig_ranges(fig, zoom=1):
+def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tuple:
+    """
+    Creates traces from input `objs` and provided parameters, updates the size of objects like
+    Sensors and Dipoles in `kwargs` depending on the canvas size.
+
+    Returns
+    -------
+    traces_dicts, kwargs: dict, dict
+        returns the traces in a obj/traces_list dictionary and updated kwargs
+    """
+    traces_dicts = {}
+    traces_colors = {}
+    for obj, color in zip(objs, cycle(color_discrete_sequence)):
+        # pylint: disable=protected-access
+        if obj._object_type not in ("Dipole", "Sensor"):
+            traces_dicts[obj] = getTraces(
+                obj, show_path=show_path, color=color, **kwargs
+            )
+        else:
+            traces_colors[obj] = color
+            # temporary coordinates to be able to calculate ranges
+            x, y, z = obj.position.T
+            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
+    traces = [t for tr in traces_dicts.values() for t in tr]
+    ranges = get_scene_ranges(*traces, zoom=zoom)
+    autosize = np.mean(np.diff(ranges)) / Config.AUTOSIZE_FACTOR
+    kwargs["size_sensors"] *= autosize
+    kwargs["size_dipoles"] *= autosize
+    for obj, color in traces_colors.items():
+        traces_dicts[obj] = getTraces(obj, show_path=show_path, color=color, **kwargs)
+    return traces_dicts, kwargs
+
+
+def apply_fig_ranges(fig, ranges=None, zoom=None):
     """This is a helper function which applies the ranges properties of the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
     maximum of the ranges needed to display all objects, including their paths.
 
     Parameters
     ----------
+    ranges: array of dim=(3,2)
+        min and max graph range
+
     zoom: float, default = 1
         When zoom=0 all objects are just inside the 3D-axes.
 
@@ -1256,17 +1297,10 @@ def apply_fig_ranges(fig, zoom=1):
     -------
     None: NoneType
     """
-    ranges = {k: [] for k in ("xyz")}
-    frames = fig.frames if fig.frames else [fig]
-    for frame in frames:
-        for t in frame.data:
-            for k, v in ranges.items():
-                v.extend([np.min(t[k]), np.max(t[k])])
-    r = np.array([[np.min(v), np.max(v)] for v in ranges.values()])
-    size = np.diff(r, axis=1)
-    m = size.max() / 2
-    center = r.mean(axis=1)
-    ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    if ranges is None:
+        frames = fig.frames if fig.frames else [fig]
+        traces = [t for frame in frames for t in frame.data]
+        ranges = get_scene_ranges(*traces, zoom=zoom)
     fig.update_scenes(
         **{
             f"{k}axis": dict(range=ranges[i], autorange=False, title=f"{k} [mm]")
@@ -1277,10 +1311,29 @@ def apply_fig_ranges(fig, zoom=1):
     )
 
 
+def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
+    """
+    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
+    any plotly trace object or a dict, with x,y,z numbered parameters.
+    """
+    ranges = {k: [] for k in ("xyz")}
+    for t in traces:
+        for k, v in ranges.items():
+            v.extend([np.min(t[k]), np.max(t[k])])
+    r = np.array([[np.min(v), np.max(v)] for v in ranges.values()])
+    size = np.diff(r, axis=1)
+    size[size == 0] = 1
+    m = size.max() / 2
+    center = r.mean(axis=1)
+    ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    return ranges
+
+
 def animate_path(
     fig,
     objs,
     color_discrete_sequence=None,
+    zoom=1,
     title="3D-Paths Animation",
     animate_time=3,
     animate_fps=50,
@@ -1356,12 +1409,18 @@ def animate_path(
 
     # create frame for each path index or downsampled path index
     frames = []
-    for ind in path_indices:
-        traces_dicts = {
-            obj: getTraces(obj, show_path=[ind], color=color, **kwargs)
-            for obj, color in zip(objs, cycle(color_discrete_sequence))
-        }
-        traces = [t for tr in traces_dicts.values() for t in tr]
+    for i, ind in enumerate(path_indices):
+        if i == 0:  # calculate the dipoles and sensors autosize from first frame
+            traces_dicts, kwargs = draw_frame(
+                objs, color_discrete_sequence, zoom, show_path=[ind], **kwargs
+            )
+            traces = [t for obj in objs for t in traces_dicts[obj]]
+        else:
+            traces_dicts = {
+                obj: getTraces(obj, show_path=[ind], color=color, **kwargs)
+                for obj, color in zip(objs, cycle(color_discrete_sequence))
+            }
+            traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(
             go.Frame(
                 data=traces, layout=dict(title=f"""{title} - frame: {ind+1:0{exp}d}""")
@@ -1414,3 +1473,4 @@ def animate_path(
             }
         ],
     )
+    apply_fig_ranges(fig, zoom=zoom)

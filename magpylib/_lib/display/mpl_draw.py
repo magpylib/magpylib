@@ -2,6 +2,7 @@
 
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+from magpylib._lib.config import Config
 
 
 def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
@@ -217,7 +218,7 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles):
     moms = np.array(moms)
 
     # quiver plot of basis vectors
-    arrowlength = sys_size*size_dipoles/15
+    arrowlength = sys_size*size_dipoles/Config.AUTOSIZE_FACTOR
     ax.quiver(possis[:,0], possis[:,1], possis[:,2], moms[:,0], moms[:,1], moms[:,2],
         color='k',
         length=arrowlength)

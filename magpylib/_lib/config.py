@@ -9,6 +9,7 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
+    AUTOSIZE_FACTOR=10,
     ANIMATE_MAX_FRAMES=200,
     PLOTTING_BACKEND="matplotlib",
     NORTH_COLOR="rgb(231,17,17)",  # 'red'
@@ -64,6 +65,10 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
+
+    AUTOSIZE_FACTOR: int, default=15
+        Defines at which scale objects like sensors and dipoles are displayed.
+        -> object_size = canvas_size / AUTOSIZE_FACTOR
 
     PLOTTING_BACKEND: str, default=True
         One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not

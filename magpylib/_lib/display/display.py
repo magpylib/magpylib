@@ -71,7 +71,7 @@ def display(
         If show_path='animate, the plot will be animated according to the `animate_time`
         and 'animate_fps' parameters.
 
-    size_sensor: float, default=1
+    size_sensors: float, default=1
         Adjust automatic display size of sensors.
 
     size_direction: float, default=1
@@ -217,7 +217,7 @@ def display_matplotlib(
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
 
-    size_sensor: float, default=1
+    size_sensors: float, default=1
         Adjust automatic display size of sensors.
 
     size_direction: float, default=1
@@ -366,8 +366,11 @@ def display_matplotlib(
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
         face_points, sensor_points, dipole_points, markers, path_points, current_points
     )
-
-    sys_size = max([limx1 - limx0, limy1 - limy0, limz1 - limz0])
+    # make sure ranges are not null
+    ranges = np.array([[limx0, limx1], [limy0, limy1], [limz0, limz1]])
+    sys_size = np.max(np.diff(ranges))
+    ranges[sys_size==0] += np.array([-1,1])
+    sys_size = np.max(np.diff(ranges))
 
     # draw all system sized based quantities -------------------------
     draw_sensors(sensors, ax, sys_size, show_path, size_sensors)
@@ -378,9 +381,10 @@ def display_matplotlib(
         xlabel="x [mm]",
         ylabel="y [mm]",
         zlabel="z [mm]",
-        xlim=(limx0 - abs(limx0) * zoom, limx1 + abs(limx1) * zoom),
-        ylim=(limy0 - abs(limy0) * zoom, limy1 + abs(limy1) * zoom),
-        zlim=(limz0 - abs(limz0) * zoom, limz1 + abs(limz1) * zoom),
+        **{
+            f"{k}lim": (r[0] - abs(r[0]) * zoom, r[1] - abs(r[1]) * zoom)
+            for k, r in zip("xyz", ranges)
+        },
     )
 
     # generate output ------------------------------------------------
