@@ -970,7 +970,7 @@ def getTraces(
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
         trace = go.Scatter3d(
-            name='Marker' if len(x)==1 else f'Markers ({len(x)} points)',
+            name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
             x=x,
             y=y,
             z=z,
@@ -1231,12 +1231,9 @@ def display_plotly(
             }
             traces = [t for tr in traces_dicts.values() for t in tr]
             fig.add_traces(traces)
-            fig.update_layout(
-                title_text=title,
-                **{f"scene_{k}axis_title": f"{k} [mm]" for k in "xyz"},
-                scene_aspectmode="data",
-            )
+            fig.update_layout(title_text=title)
         apply_fig_ranges(fig, zoom)
+        fig.update_layout(legend_itemsizing="constant")
     if show_fig:
         fig.show(renderer=renderer)
 
@@ -1327,8 +1324,12 @@ def animate_path(
     # make sure the number of frames does not exceed the max_frame_rate
     # downsample if necessary
     path_lengths = [
-        obj.position.shape[0] if obj.position.ndim > 1 else 0 for obj in objs
+        getattr(obj, "position", np.array((0.0, 0.0, 0.0))).shape[0]
+        if getattr(obj, "position", np.array((0.0, 0.0, 0.0))).ndim > 1
+        else 0
+        for obj in objs
     ]
+
     N = max(path_lengths)
     maxpos = duration * max_frame_rate
     if N <= maxpos:
