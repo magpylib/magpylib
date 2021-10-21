@@ -9,6 +9,7 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
+    ANIMATE_MAX_FRAMES=200,
     PLOTTING_BACKEND="matplotlib",
     NORTH_COLOR="rgb(231,17,17)",  # 'red'
     MIDDLE_COLOR="rgb(221,221,221)",  # 'grey'
@@ -71,6 +72,9 @@ class Config:
     COLOR_TRANSITION, float, default=0
         A value between 0 and 1. Sets the smoothness of the color transitions from north
         to south pole visualization.
+
+    ANIMATE_MAX_FRAMES, int, default=200
+        Maximum total number of frames to be displayed before downsampling kicks in
 
     SOUTH_COLOR, str, default=rgb(0,176,80)
         The property is a color and may be specified as:
@@ -154,7 +158,7 @@ class Config:
         super().__setattr__(name, value)
 
     def __getattr__(self, name):
-        ''' will only get called for undefined attributes '''
+        """will only get called for undefined attributes"""
         warnings.warn(f'No member "{name}" contained in settings config.')
 
     @classmethod
@@ -173,5 +177,6 @@ class Config:
             args = _DEFAULTS.keys()
         for k in args:
             setattr(cls, k, _DEFAULTS[k])
+
 
 Config.reset()

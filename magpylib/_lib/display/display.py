@@ -35,7 +35,7 @@ def display(
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
-    size_pixels=0.5,
+    size_pixels=1,
     zoom=1,
     plotting_backend=None,
     **kwargs,
@@ -68,8 +68,8 @@ def display(
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `duration`
-        and 'max_frame_rate' parameters.
+        If show_path='animate, the plot will be animated according to the `animate_time`
+        and 'animate_fps' parameters.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
@@ -80,9 +80,9 @@ def display(
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
 
-    size_pixels: float, default=0.5
-        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+    size_pixels: float, default=1
+        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
 
     plotting_backend: default=None

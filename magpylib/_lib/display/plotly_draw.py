@@ -101,14 +101,15 @@ def _getIntensity(vertices, axis) -> np.ndarray:
         returns 1D array of length N
     """
     if all(m == 0 for m in axis):
-        return np.array(vertices).T[0] * 0
+        intensity = np.array(vertices).T[0] * 0
     else:
         p = np.array(vertices).T
         pos = np.mean(p, axis=1)
         m = np.array(axis) / np.linalg.norm(axis)
         a = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
         b = (p[0] - pos[0]) ** 2 + (p[1] - pos[1]) ** 2 + (p[2] - pos[2]) ** 2
-        return a / np.sqrt(b)
+        intensity = a / np.sqrt(b)
+    return intensity
 
 
 def _getColorscale(
@@ -766,7 +767,7 @@ def make_Sensor(
     name=None,
     name_suffix=None,
     color=None,
-    size_pixels=0.5,
+    size_pixels=1,
     pixel_color=None,
     **kwargs,
 ):
@@ -774,9 +775,9 @@ def make_Sensor(
     Creates the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments
 
-    size_pixels: float, default=0.5
-        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+    size_pixels: float, default=1
+        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
     name = "Sensor" if name is None else name
@@ -809,7 +810,7 @@ def make_Sensor(
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * size_pixels
+            pixel_dim = np.min(dists) * size_pixels / 2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
@@ -872,7 +873,7 @@ def merge_mesh3d(*traces):
     concatenated if they are present in all objects. All other parameter found in the dictionary
     keys are taken from the first object, other keys from further objects are ignored.
     """
-    merged_trace = dict()
+    merged_trace = {}
     L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
     for k in "ijk":
         if k in traces[0]:
@@ -894,7 +895,7 @@ def merge_scatter3d(*traces):
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
     the first object, other keys from further objects are ignored.
     """
-    merged_trace = dict()
+    merged_trace = {}
     for k in "xyz":
         merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
     for k, v in traces[0].items():
@@ -922,7 +923,7 @@ def getTraces(
     show_direction=True,
     size_dipoles=1,
     size_sensors=1,
-    size_pixels=0.5,
+    size_pixels=1,
     show_path_numbering=False,
     color_transition=None,
     north_color=None,
@@ -944,6 +945,10 @@ def getTraces(
     - The argument caught by the kwargs dictionary must all be arguments supported both by
     `scatter3d` and `mesh3d` plotly objects, otherwise an error will be raised.
     """
+
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
     Sensor = _lib.obj_classes.Sensor
     Cuboid = _lib.obj_classes.Cuboid
     Cylinder = _lib.obj_classes.Cylinder
@@ -1106,8 +1111,8 @@ def display_plotly(
     show_path=False,
     fig=None,
     renderer=None,
-    duration=3,
-    max_frame_rate=10,
+    animate_time=3,
+    animate_fps=30,
     zoom=1,
     backtofirst=False,
     color_discrete_sequence=None,
@@ -1141,8 +1146,8 @@ def display_plotly(
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `duration`
-        and 'max_frame_rate' parameters.
+        If show_path='animate, the plot will be animated according to the `animate_time`
+        and 'animate_fps' parameters.
 
     size_sensor: float, default=1
         Adjust automatic display size of sensors.
@@ -1153,9 +1158,9 @@ def display_plotly(
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
 
-    size_pixels: float, default=0.5
-        A value between 0 and 1. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when between 0 and 1 pixel will occupy the ratio of the minimum
+    size_pixels: float, default=1
+        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
+        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
 
     zoom: float, default = 1
@@ -1163,13 +1168,13 @@ def display_plotly(
     backtofirst: bool, default = False
         If True, the last frame of the animation will be the first again.
 
-    duration: float, default = 3
+    animate_time: float, default = 3
         Sets the animation duration
 
-    max_frame_rate: float, default = 50
+    animate_fps: float, default = 50
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
-        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
     title: str, default = "3D-Paths Animation"
@@ -1219,8 +1224,8 @@ def display_plotly(
                 objs,
                 color_discrete_sequence,
                 title=title,
-                duration=duration,
-                max_frame_rate=max_frame_rate,
+                animate_time=animate_time,
+                animate_fps=animate_fps,
                 backtofirst=backtofirst,
                 **kwargs,
             )
@@ -1278,8 +1283,8 @@ def animate_path(
     objs,
     color_discrete_sequence=None,
     title="3D-Paths Animation",
-    duration=3,
-    max_frame_rate=50,
+    animate_time=3,
+    animate_fps=50,
     backtofirst=False,
     **kwargs,
 ):
@@ -1292,13 +1297,13 @@ def animate_path(
     backtofirst: bool, default = False
         If True, the last frame of the animation will be the first again.
 
-    duration: float, default = 3
+    animate_time: float, default = 3
         Sets the animation duration
 
-    max_frame_rate: float, default = 50
+    animate_fps: float, default = 50
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `max_frame_rate` the path position will be downsampled to be lower or equal
-        the `max_frame_rate`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
     title: str, default = "3D-Paths Animation"
@@ -1321,7 +1326,7 @@ def animate_path(
     -------
     None: NoneTyp
     """
-    # make sure the number of frames does not exceed the max_frame_rate
+    # make sure the number of frames does not exceed the max frames and max frame rate
     # downsample if necessary
     path_lengths = [
         getattr(obj, "position", np.array((0.0, 0.0, 0.0))).shape[0]
@@ -1331,7 +1336,7 @@ def animate_path(
     ]
 
     N = max(path_lengths)
-    maxpos = duration * max_frame_rate
+    maxpos = min(animate_time * animate_fps, Config.ANIMATE_MAX_FRAMES)
     if N <= maxpos:
         path_indices = np.arange(N)
     else:
@@ -1370,26 +1375,43 @@ def animate_path(
         ]  # add first frame again, so that the last frame shows starting state
 
     # update fig
-    frame_duration = int(duration * 1000 / path_indices.shape[0])
+    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
         height=None,
         title=title,
         updatemenus=[
-            dict(
-                type="buttons",
-                buttons=[
-                    dict(
-                        label="Play",
-                        method="animate",
-                        args=[None, {"frame": {"duration": frame_duration}}],
-                    )
+            {
+                "buttons": [
+                    {
+                        "args": [
+                            None,
+                            {
+                                "frame": {"duration": frame_duration},
+                                "fromcurrent": True,
+                            },
+                        ],
+                        "label": "Play",
+                        "method": "animate",
+                    },
+                    {
+                        "args": [
+                            [None],
+                            {"frame": {"duration": 0}, "mode": "immediate"},
+                        ],
+                        "label": "Pause",
+                        "method": "animate",
+                    },
                 ],
-                x=0.01,
-                xanchor="left",
-                y=1.01,
-                yanchor="bottom",
-            )
+                "direction": "left",
+                "pad": {"r": 10, "t": 87},
+                "showactive": False,
+                "type": "buttons",
+                "x": 0.1,
+                "xanchor": "right",
+                "y": 0,
+                "yanchor": "top",
+            }
         ],
     )
