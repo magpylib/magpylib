@@ -368,8 +368,7 @@ def display_matplotlib(
     )
     # make sure ranges are not null
     ranges = np.array([[limx0, limx1], [limy0, limy1], [limz0, limz1]])
-    sys_size = np.max(np.diff(ranges))
-    ranges[sys_size==0] += np.array([-1,1])
+    ranges[np.squeeze(np.diff(ranges)) == 0] += np.array([-1, 1])
     sys_size = np.max(np.diff(ranges))
 
     # draw all system sized based quantities -------------------------
@@ -378,11 +377,9 @@ def display_matplotlib(
 
     # plot styling --------------------------------------------------
     ax.set(
-        xlabel="x [mm]",
-        ylabel="y [mm]",
-        zlabel="z [mm]",
+        **{f"{k}label": f"{k} [mm]" for k in "xyz"},
         **{
-            f"{k}lim": (r[0] - abs(r[0]) * zoom, r[1] - abs(r[1]) * zoom)
+            f"{k}lim": (r[0] - abs(r[0]) * zoom, r[1] + abs(r[1]) * zoom)
             for k, r in zip("xyz", ranges)
         },
     )
