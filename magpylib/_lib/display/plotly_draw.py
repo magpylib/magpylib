@@ -1257,11 +1257,12 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    Sensor = _lib.obj_classes.Sensor
+    Dipole = _lib.obj_classes.Dipole
     traces_dicts = {}
     traces_colors = {}
     for obj, color in zip(objs, cycle(color_discrete_sequence)):
-        # pylint: disable=protected-access
-        if obj._object_type not in ("Dipole", "Sensor"):
+        if not isinstance(obj, (Dipole, Sensor)):
             traces_dicts[obj] = getTraces(
                 obj, show_path=show_path, color=color, **kwargs
             )
@@ -1463,11 +1464,11 @@ def animate_path(
                     },
                 ],
                 "direction": "left",
-                "pad": {"r": 10, "t": 87},
+                "pad": {"l": 5, "t": 5},
                 "showactive": False,
                 "type": "buttons",
-                "x": 0.1,
-                "xanchor": "right",
+                "x": 0.,
+                "xanchor": "left",
                 "y": 0,
                 "yanchor": "top",
             }
