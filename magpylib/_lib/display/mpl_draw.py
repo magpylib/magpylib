@@ -181,7 +181,7 @@ def draw_sensors(sensors, ax, sys_size, show_path, size_sensors):
     ezs = np.array(ezs)
 
     # quiver plot of basis vectors
-    arrowlength = sys_size*size_sensors/15
+    arrowlength = sys_size*size_sensors/Config.AUTOSIZE_FACTOR
     for col,es in zip(['r','g','b'],[exs,eys,ezs]):
         ax.quiver(possis[:,0], possis[:,1], possis[:,2], es[:,0], es[:,1], es[:,2],
                  color=col,

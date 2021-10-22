@@ -1,5 +1,6 @@
 """ Display function codes"""
 
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
@@ -29,15 +30,23 @@ from magpylib._lib.config import Config
 def display(
     *objects,
     markers=None,
-    canvas=None,
-    show_direction=True,
     show_path=True,
+    show_direction=True,
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
     size_pixels=1,
     zoom=1,
     plotting_backend=None,
+    canvas=None,
+    renderer=None,
+    animate_time=5,
+    animate_fps=30,
+    color_discrete_sequence=None,
+    north_color=None,
+    middle_color=None,
+    south_color=None,
+    pixel_color=None,
     **kwargs,
 ):
     """
@@ -48,20 +57,8 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    canvas: pyplot Axis or plotly Figure, default=None
-        Display graphical output in a given canvas:
-        - with matplotlib: pyplot axis (must be 3D).
-        - with plotly: plotly.graph_objects.Figure
-            or plotly.graph_objects.FigureWidget
-        By default a new canvas is created and displayed.
-
     markers: array_like, None, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
-
-    show_direction: bool, default=True
-        Set True to show magnetization and current directions. The `matplotlib`
-        backend uses arrows and the plotly backend displays direction with a color
-        gradient for magnets/dipoles and arrows for currents.
 
     show_path: bool or int or array_like, default=True
         Options True, False, positive int or iterable. By default object paths are shown. If
@@ -70,6 +67,11 @@ def display(
         of integers, objects will be displayed for the provided indices.
         If show_path='animate, the plot will be animated according to the `animate_time`
         and 'animate_fps' parameters.
+
+    show_direction: bool, default=True
+        Set True to show magnetization and current directions. The `matplotlib`
+        backend uses arrows and the plotly backend displays direction with a color
+        gradient for magnets/dipoles and arrows for currents.
 
     size_sensors: float, default=1
         Adjust automatic display size of sensors.
@@ -85,12 +87,97 @@ def display(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
 
+    zoom: float, default = 1
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+
     plotting_backend: default=None
         One of 'matplotlib', 'plolty'. If not set, parameter will default to
         Config.PLOTTING_BACKEND
 
-    zoom: float, default = 1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+    canvas: pyplot Axis or plotly Figure, default=None
+        Display graphical output in a given canvas:
+        - with matplotlib: pyplot axis (must be 3D).
+        - with plotly: plotly.graph_objects.Figure
+            or plotly.graph_objects.FigureWidget
+        By default a new canvas is created and displayed.
+
+    renderer: str. default=None,
+        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
+        of contexts.
+        Available renderers are:
+        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
+         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
+         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
+         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
+         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
+
+    animate_time: float, default = 3
+        Sets the animation duration
+
+    animate_fps: float, default = 30
+        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
+        50 by default to avoid hanging the animation process.
+
+    animate_slider: bool, default = False
+        if True, an interactive slider will be displayed and stay in sync with the animation
+
+    color_discrete_sequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    north_color, str default=None,
+        Applies only for magnets. Defines the color of the magnetic north pole.  If not specified,
+        value will fall back to `Config.NORTH_COLOR`
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    middle_color, str default=None,
+        Applies only for magnets. Defines the color of the middle part between north and south
+        poles. If not specified, value will fall back to `Config.MIDDLE_COLOR`. If set to 'auto'
+        the color will be automatically selected by cycling through the 'color_discrete_sequence'
+        when displaying objects. If set to False, no middle color will be displayed and the poles
+        colors will join in the middle.
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    south_color, str default=None,
+        Applies only for magnets. Defines the color of the magnetic south pole.  If not specified,
+        value will fall back to `Config.SOUTH_COLOR`
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    pixel_color, str default=None,
+    Defines the color of Sensor pixels.  If not specified, value will fall back to
+    `Config.PIXEL_COLOR`
+        The property is a color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
 
     Returns
     -------
@@ -150,19 +237,21 @@ def display(
         plotting_backend = Config.PLOTTING_BACKEND
 
     if plotting_backend == "matplotlib":
-        assert (
-            show_path != "animate"
-        ), "the matplotlib backend does not support animation"
+        if show_path == "animate":
+            warnings.warn(
+                "The matplotlib backend does not support animation, falling back to show_path=True"
+            )
+            show_path = True
         display_matplotlib(
             *obj_list,
-            axis=canvas,
             markers=markers,
             show_path=show_path,
             show_direction=show_direction,
-            size_direction=size_direction,
             size_sensors=size_sensors,
+            size_direction=size_direction,
             size_dipoles=size_dipoles,
             zoom=zoom,
+            axis=canvas,
         )
     elif plotting_backend == "plotly":
         # pylint: disable=import-outside-toplevel
@@ -170,7 +259,6 @@ def display(
 
         display_plotly(
             *obj_list,
-            fig=canvas,
             markers=markers,
             show_path=show_path,
             show_direction=show_direction,
@@ -178,6 +266,15 @@ def display(
             size_dipoles=size_dipoles,
             size_pixels=size_pixels,
             zoom=zoom,
+            fig=canvas,
+            renderer=renderer,
+            animate_time=animate_time,
+            animate_fps=animate_fps,
+            color_discrete_sequence=color_discrete_sequence,
+            north_color=north_color,
+            middle_color=middle_color,
+            south_color=south_color,
+            pixel_color=pixel_color,
             **kwargs,
         )
 

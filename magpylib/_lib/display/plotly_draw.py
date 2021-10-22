@@ -918,19 +918,20 @@ def merge_traces(*traces):
     return trace
 
 
-def getTraces(
+def get_plotly_traces(
     input_obj,
     show_path=False,
     show_direction=True,
     size_dipoles=1,
     size_sensors=1,
     size_pixels=1,
-    show_path_numbering=False,
+    path_numbering=False,
     color_transition=None,
     north_color=None,
     middle_color=None,
     south_color=None,
     pixel_color=None,
+    color=None,
     **kwargs,
 ) -> list:
     """
@@ -971,7 +972,6 @@ def getTraces(
         south_color=south_color,
     )
 
-    color = kwargs.get("color", None)
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
@@ -1085,7 +1085,7 @@ def getTraces(
             x, y, z = input_obj.position.T
             txt_kwargs = (
                 {"mode": "markers+text+lines", "text": list(range(len(x)))}
-                if show_path_numbering
+                if path_numbering
                 else {"mode": "markers+lines"}
             )
             scatter_path = dict(
@@ -1107,17 +1107,15 @@ def getTraces(
 
 
 def display_plotly(
-    *objs,
+    *obj_list,
     markers=None,
-    show_path=False,
+    show_path=True,
+    zoom=1,
     fig=None,
     renderer=None,
-    size_sensors=1,
-    size_dipoles=1,
-    animate_time=3,
+    animate_time=5,
     animate_fps=30,
-    zoom=1,
-    backtofirst=False,
+    animate_slider=True,
     color_discrete_sequence=None,
     **kwargs,
 ):
@@ -1130,52 +1128,46 @@ def display_plotly(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    fig: plotly Figure, default=None
-        Display graphical output in a given figure:
-        - plotly.graph_objects.Figure
-        - plotly.graph_objects.FigureWidget
-        By default a new `Figure` is created and displayed.
-
     markers: array_like, None, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
-
-    show_direction: bool, default=True
-        Set True to show magnetization and current directions. The `matplotlib`
-        backend uses arrows and the plotly backend displays direction with a color
-        gradient for magnets/dipoles and arrows for currents.
 
     show_path: bool or int or array_like, default=True
         Options True, False, positive int or iterable. By default object paths are shown. If
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `animate_time`
-        and 'animate_fps' parameters.
-
-    size_sensors: float, default=1
-        Adjust automatic display size of sensors.
-
-    size_dipoles: float, default=1
-        Adjust automatic display size of dipoles.
-
-    size_pixels: float, default=1
-        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
-        distance between any pixel of the same sensor, equal to `size_pixel`.
+        If show_path='animate, the plot will be animated according to the `animate` parameters.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
-    backtofirst: bool, default = False
-        If True, the last frame of the animation will be the first again.
+
+    fig: plotly Figure, default=None
+        Display graphical output in a given figure:
+        - plotly.graph_objects.Figure
+        - plotly.graph_objects.FigureWidget
+        By default a new `Figure` is created and displayed.
+
+    renderer: str. default=None,
+        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
+        of contexts.
+        Available renderers are:
+        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
+         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
+         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
+         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
+         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
 
     animate_time: float, default = 3
         Sets the animation duration
 
-    animate_fps: float, default = 50
+    animate_fps: float, default = 30
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
         exceeds the `animate_fps` the path position will be downsampled to be lower or equal
         the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
+
+    animate_slider: bool, default = False
+        if True, an interactive slider will be displayed and stay in sync with the animation
 
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
@@ -1197,25 +1189,23 @@ def display_plotly(
     -------
     None: NoneType
     """
-    kwargs["size_sensors"] = size_sensors
-    kwargs["size_dipoles"] = size_dipoles
 
     show_fig = False
     if fig is None:
         show_fig = True
         fig = go.Figure()
 
-    title = getattr(objs[0], "name", None) if len(objs) == 1 else None
+    title = getattr(obj_list[0], "name", None) if len(obj_list) == 1 else None
 
     if markers is not None and markers:
-        objs = list(objs) + [Markers(*markers)]
+        obj_list = list(obj_list) + [Markers(*markers)]
 
     if color_discrete_sequence is None:
         color_discrete_sequence = Config.COLOR_DISCRETE_SEQUENCE
 
     with fig.batch_update():
         if (
-            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in objs)
+            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in obj_list)
             and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
@@ -1225,20 +1215,20 @@ def display_plotly(
             title = "3D-Paths Animation" if title is None else title
             animate_path(
                 fig=fig,
-                objs=objs,
+                objs=obj_list,
                 color_discrete_sequence=color_discrete_sequence,
                 zoom=zoom,
                 title=title,
                 animate_time=animate_time,
                 animate_fps=animate_fps,
-                backtofirst=backtofirst,
+                animate_slider=animate_slider,
                 **kwargs,
             )
         else:
             traces_dicts, kwargs = draw_frame(
-                objs, color_discrete_sequence, zoom, show_path, **kwargs
+                obj_list, color_discrete_sequence, zoom, show_path, **kwargs
             )
-            traces = [t for obj in objs for t in traces_dicts[obj]]
+            traces = [t for obj in obj_list for t in traces_dicts[obj]]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
             apply_fig_ranges(fig, zoom=zoom)
@@ -1263,7 +1253,7 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     traces_colors = {}
     for obj, color in zip(objs, cycle(color_discrete_sequence)):
         if not isinstance(obj, (Dipole, Sensor)):
-            traces_dicts[obj] = getTraces(
+            traces_dicts[obj] = get_plotly_traces(
                 obj, show_path=show_path, color=color, **kwargs
             )
         else:
@@ -1277,7 +1267,9 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     kwargs["size_sensors"] *= autosize
     kwargs["size_dipoles"] *= autosize
     for obj, color in traces_colors.items():
-        traces_dicts[obj] = getTraces(obj, show_path=show_path, color=color, **kwargs)
+        traces_dicts[obj] = get_plotly_traces(
+            obj, show_path=show_path, color=color, **kwargs
+        )
     return traces_dicts, kwargs
 
 
@@ -1337,8 +1329,8 @@ def animate_path(
     zoom=1,
     title="3D-Paths Animation",
     animate_time=3,
-    animate_fps=50,
-    backtofirst=False,
+    animate_fps=30,
+    animate_slider=False,
     **kwargs,
 ):
     """This is a helper function which attaches plotly frames to the provided `fig` object
@@ -1347,17 +1339,17 @@ def animate_path(
 
     Parameters
     ----------
-    backtofirst: bool, default = False
-        If True, the last frame of the animation will be the first again.
-
     animate_time: float, default = 3
         Sets the animation duration
 
-    animate_fps: float, default = 50
+    animate_fps: float, default = 30
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
         exceeds the `animate_fps` the path position will be downsampled to be lower or equal
         the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
+
+    animate_slider: bool, default = False
+        if True, an interactive slider will be displayed and stay in sync with the animation
 
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
@@ -1408,6 +1400,48 @@ def animate_path(
         else 1
     )
 
+    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
+
+    if animate_slider:
+        sliders_dict = {
+            "active": 0,
+            "yanchor": "top",
+            "font": {"size": 10},
+            "xanchor": "left",
+            "currentvalue": {"prefix": "Frame:", "visible": True, "xanchor": "right"},
+            "pad": {"b": 10, "t": 10},
+            "len": 0.9,
+            "x": 0.1,
+            "y": 0,
+            "steps": [],
+        }
+
+    buttons_dict = {
+        "buttons": [
+            {
+                "args": [
+                    None,
+                    {"frame": {"duration": frame_duration}, "fromcurrent": True},
+                ],
+                "label": "Play",
+                "method": "animate",
+            },
+            {
+                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
+                "label": "Pause",
+                "method": "animate",
+            },
+        ],
+        "direction": "left",
+        "pad": {"r": 10, "t": 20},
+        "showactive": False,
+        "type": "buttons",
+        "x": 0.1,
+        "xanchor": "right",
+        "y": 0,
+        "yanchor": "top",
+    }
+
     # create frame for each path index or downsampled path index
     frames = []
     for i, ind in enumerate(path_indices):
@@ -1418,60 +1452,38 @@ def animate_path(
             traces = [t for obj in objs for t in traces_dicts[obj]]
         else:
             traces_dicts = {
-                obj: getTraces(obj, show_path=[ind], color=color, **kwargs)
+                obj: get_plotly_traces(obj, show_path=[ind], color=color, **kwargs)
                 for obj, color in zip(objs, cycle(color_discrete_sequence))
             }
             traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(
             go.Frame(
-                data=traces, layout=dict(title=f"""{title} - frame: {ind+1:0{exp}d}""")
+                data=traces,
+                name=str(ind + 1),
+                layout=dict(title=f"""{title} - frame: {ind+1:0{exp}d}"""),
             )
         )
-
-    if backtofirst:
-        frames += frames[
-            :1
-        ]  # add first frame again, so that the last frame shows starting state
+        if animate_slider:
+            slider_step = {
+                "args": [
+                    [str(ind + 1)],
+                    {
+                        "frame": {"duration": 0, "redraw": True},
+                        "mode": "immediate",
+                    },
+                ],
+                "label": str(ind + 1),
+                "method": "animate",
+            }
+            sliders_dict["steps"].append(slider_step)
 
     # update fig
-    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
     fig.frames = frames
     fig.add_traces(frames[0].data)
     fig.update_layout(
         height=None,
         title=title,
-        updatemenus=[
-            {
-                "buttons": [
-                    {
-                        "args": [
-                            None,
-                            {
-                                "frame": {"duration": frame_duration},
-                                "fromcurrent": True,
-                            },
-                        ],
-                        "label": "Play",
-                        "method": "animate",
-                    },
-                    {
-                        "args": [
-                            [None],
-                            {"frame": {"duration": 0}, "mode": "immediate"},
-                        ],
-                        "label": "Pause",
-                        "method": "animate",
-                    },
-                ],
-                "direction": "left",
-                "pad": {"l": 5, "t": 5},
-                "showactive": False,
-                "type": "buttons",
-                "x": 0.,
-                "xanchor": "left",
-                "y": 0,
-                "yanchor": "top",
-            }
-        ],
+        updatemenus=[buttons_dict],
+        sliders=[sliders_dict] if animate_slider else None,
     )
     apply_fig_ranges(fig, zoom=zoom)
