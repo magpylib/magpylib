@@ -960,6 +960,12 @@ def get_plotly_traces(
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
 
+    style = getattr(input_obj, "style", None)
+    if style is not None:
+        if style.color is not None:
+            color = style.color
+    kwargs["color"] = color
+
     if color_transition is None:
         color_transition = Config.COLOR_TRANSITION
     if not show_direction:
