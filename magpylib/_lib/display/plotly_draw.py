@@ -962,6 +962,8 @@ def get_plotly_traces(
             val = getattr(obj_style, param, None)
             if val is not None:
                 kwargs[param] = val
+    
+    color = kwargs['color']
 
     if hasattr(style, 'magnetization'):
         style.magnetization.color.show = show_direction
