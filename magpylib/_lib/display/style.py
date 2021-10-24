@@ -3,17 +3,18 @@ import collections.abc
 from magpylib._lib.config import Config
 
 
-def update_nested_dict(d, u):
+def update_nested_dict(d, u, same_keys_only=False):
     """updates recursively 'd' from 'u'"""
     for k, v in u.items():
-        if isinstance(d, collections.abc.Mapping):
-            if isinstance(v, collections.abc.Mapping):
-                r = update_nested_dict(d.get(k, {}), v)
-                d[k] = r
+        if k in d or not same_keys_only:
+            if isinstance(d, collections.abc.Mapping):
+                if isinstance(v, collections.abc.Mapping):
+                    r = update_nested_dict(d.get(k, {}), v)
+                    d[k] = r
+                else:
+                    d[k] = u[k]
             else:
-                d[k] = u[k]
-        else:
-            d = {k: u[k]}
+                d = {k: u[k]}
     return d
 
 
@@ -119,7 +120,7 @@ class BaseStyleProperties:
                 dict_[k] = val
         return dict_
 
-    def update(self, arg=None, **kwargs):
+    def update(self, arg=None, _match_properties=True, **kwargs):
         """
         updates the class properties with provided arguments, supports magic underscore
         returns self
@@ -129,7 +130,9 @@ class BaseStyleProperties:
         if kwargs:
             arg.update(magic_to_dict(kwargs))
         current_dict = self.get_properties_dict()
-        new_dict = update_nested_dict(current_dict, arg)
+        new_dict = update_nested_dict(
+            current_dict, arg, same_keys_only=_match_properties
+        )
         for k, v in new_dict.items():
             setattr(self, k, v)
         return self
@@ -383,3 +386,68 @@ class MagnetStyle(BaseStyle):
                 "the magnetic color property must be an instance "
                 "of Mag or a dictionary with equivalent key/value pairs"
             )
+
+
+class SensorStyle(BaseStyle):
+    """
+    This class holds Sensor styling properties
+    - size:  size relative to canvas
+    - color: sensor color
+    - pixel: pixel properties, see PixelStyle
+    """
+
+    def __init__(self, pixel=None, **kwargs):
+        super().__init__(pixel=pixel, **kwargs)
+
+    @property
+    def pixel(self):
+        """MagColor class with 'north', 'south', 'middle' and 'transition' values"""
+        return self._pixel
+
+    @pixel.setter
+    def pixel(self, val):
+        if isinstance(val, dict):
+            val = PixelStyle(**val)
+        if isinstance(val, PixelStyle):
+            self._pixel = val
+        elif val is None:
+            self._pixel = PixelStyle()
+        else:
+            raise ValueError(
+                "the pixel property must be an instance "
+                "of PixelStyle or a dictionary with equivalent key/value pairs"
+            )
+
+
+class PixelStyle(BaseStyleProperties):
+    """
+    This class holds sensor pixel styling properties
+    - size: relative pixel size to the min distance between two pixels
+    - color: pixel color
+    """
+
+    def __init__(self, size=1, color=None, **kwargs):
+        super().__init__(size=size, color=color, **kwargs)
+
+    @property
+    def size(self):
+        """positive float for relative arrow size to magnet size"""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        assert (
+            val is None or isinstance(val, (int, float)) and val >= 0
+        ), "size must be a positive number"
+        self._size = val
+
+    @property
+    def color(self):
+        """css color"""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        if val is None:
+            val = Config.PIXEL_COLOR
+        self._color = color_validator(val, parent_name=f"{type(self).__name__}")

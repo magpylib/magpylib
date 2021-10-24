@@ -451,8 +451,6 @@ def make_Circular(
     Nvert=50,
     show_arrows=True,
     orientation=None,
-    name=None,
-    name_suffix=None,
     color=None,
     style=None,
     **kwargs,
@@ -501,8 +499,6 @@ def make_Circular(
 def make_UnsupportedObject(
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    name=None,
-    name_suffix=None,
     color=None,
     style=None,
     **kwargs,
@@ -546,8 +542,6 @@ def make_Dipole(
     pos=(0.0, 0.0, 0.0),
     size=1.0,
     orientation=None,
-    name=None,
-    name_suffix=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -596,8 +590,6 @@ def make_Cuboid(
     dim=(1.0, 1.0, 1.0),
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    name=None,
-    name_suffix=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -635,8 +627,6 @@ def make_Cylinder(
     height=1.0,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    name=None,
-    name_suffix=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -680,8 +670,6 @@ def make_CylinderSegment(
     pos=(0.0, 0.0, 0.0),
     orientation=None,
     Nvert=25.0,
-    name=None,
-    name_suffix=None,
     style=None,
     **kwargs,
 ):
@@ -720,8 +708,6 @@ def make_Sphere(
     diameter=1,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    name=None,
-    name_suffix=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -770,11 +756,7 @@ def make_Sensor(
     dim=(1.0, 1.0, 1.0),
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    name=None,
-    name_suffix=None,
     color=None,
-    size_pixels=1,
-    pixel_color=None,
     style=None,
     **kwargs,
 ):
@@ -820,15 +802,13 @@ def make_Sensor(
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
-        if size_pixels > 0:
-            if pixel_color is None:
-                pixel_color = Config.PIXEL_COLOR
+        if style.pixel.size > 0:
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * size_pixels / 2
+            pixel_dim = np.min(dists) * style.pixel.size / 2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
-            pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
+            pixels_mesh["facecolor"] = np.repeat(style.pixel.color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
         hull_dim[hull_dim == 0] = pixel_dim / 2
@@ -855,22 +835,23 @@ def _update_mag_mesh(
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments
     """
-    color = style.magnetization.color
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
-    if magnetization is not None and color.show:
-        color_middle = (
-            kwargs.get("color", None) if color.middle == "auto" else color.middle
-        )
-        mesh_dict["colorscale"] = _getColorscale(
-            color_transition=color.transition,
-            color_north=color.north,
-            color_middle=color_middle,
-            color_south=color.south,
-        )
-        mesh_dict["intensity"] = _getIntensity(
-            vertices=vertices,
-            axis=magnetization,
-        )
+    if hasattr(style, 'magnetization'):
+        color = style.magnetization.color
+        if magnetization is not None and color.show:
+            color_middle = (
+                kwargs.get("color", None) if color.middle == "auto" else color.middle
+            )
+            mesh_dict["colorscale"] = _getColorscale(
+                color_transition=color.transition,
+                color_north=color.north,
+                color_middle=color_middle,
+                color_south=color.south,
+            )
+            mesh_dict["intensity"] = _getIntensity(
+                vertices=vertices,
+                axis=magnetization,
+            )
     if orientation is not None:
         vertices = orientation.apply(vertices)
     x, y, z = (vertices + position).T
@@ -938,9 +919,7 @@ def get_plotly_traces(
     show_direction=True,
     size_dipoles=1,
     size_sensors=1,
-    size_pixels=1,
     path_numbering=False,
-    pixel_color=None,
     color=None,
     **kwargs,
 ) -> list:
@@ -975,7 +954,7 @@ def get_plotly_traces(
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     if obj_style is not None:
-        style = obj_style.copy().update(**style_kwargs)
+        style = obj_style.copy().update(**style_kwargs, _match_properties=True)
 
     kwargs["color"] = color
 
@@ -985,7 +964,8 @@ def get_plotly_traces(
             if val is not None:
                 kwargs[param] = val
 
-    style.magnetization.color.show = show_direction
+    if hasattr(style, 'magnetization'):
+        style.magnetization.color.show = show_direction
     kwargs["style"] = style
     traces = []
     if isinstance(input_obj, Markers):
@@ -1006,8 +986,6 @@ def get_plotly_traces(
             kwargs.update(
                 dim=getattr(input_obj, "dimension", size_sensors),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
-                size_pixels=size_pixels,
-                pixel_color=pixel_color,
             )
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):

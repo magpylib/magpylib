@@ -35,7 +35,6 @@ def display(
     size_sensors=1,
     size_direction=1,
     size_dipoles=1,
-    size_pixels=1,
     zoom=1,
     plotting_backend=None,
     canvas=None,
@@ -43,7 +42,6 @@ def display(
     animate_time=5,
     animate_fps=30,
     color_discrete_sequence=None,
-    pixel_color=None,
     **kwargs,
 ):
     """
@@ -78,11 +76,6 @@ def display(
 
     size_dipoles: float, default=1
         Adjust automatic display size of dipoles.
-
-    size_pixels: float, default=1
-        A positive number. Adjusts automatic display size of sensor pixels. When set to 0,
-        pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
-        distance between any pixel of the same sensor, equal to `size_pixel`.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -127,17 +120,6 @@ def display(
             '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
         An iterable of color values used to cycle trough for every object displayed.
         A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-
-    pixel_color, str default=None,
-    Defines the color of Sensor pixels.  If not specified, value will fall back to
-    `Config.PIXEL_COLOR`
-        The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
       - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
@@ -229,14 +211,12 @@ def display(
             show_direction=show_direction,
             size_sensors=size_sensors,
             size_dipoles=size_dipoles,
-            size_pixels=size_pixels,
             zoom=zoom,
             fig=canvas,
             renderer=renderer,
             animate_time=animate_time,
             animate_fps=animate_fps,
             color_discrete_sequence=color_discrete_sequence,
-            pixel_color=pixel_color,
             **kwargs,
         )
 
