@@ -112,7 +112,10 @@ def _getIntensity(vertices, axis) -> np.ndarray:
 
 
 def _getColorscale(
-    color_transition=0.1, north_color=None, middle_color=None, south_color=None
+    color_transition=0.1,
+    color_north=None,
+    color_middle=None,
+    color_south=None,
 ) -> list:
     """
     Provides the colorscale for a plotly mesh3d trace.
@@ -128,11 +131,11 @@ def _getColorscale(
     color_transition : float, optional
         A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
         visualization., by default 0.1
-    north_color : [type], optional
+    color_north : [type], optional
         magnetic north pole color , by default None
-    middle_color : [type], optional
+    color_middle : [type], optional
         middle between south and north pole color, by default None
-    south_color : [type], optional
+    color_south : [type], optional
         magnetic north pole color , by default None
 
     Returns
@@ -141,27 +144,27 @@ def _getColorscale(
         returns colorscale as list of tuples
     """
 
-    if north_color is None:
-        north_color = Config.NORTH_COLOR
-    if south_color is None:
-        south_color = Config.SOUTH_COLOR
-    if middle_color is None:
-        middle_color = Config.MIDDLE_COLOR
-    if middle_color is False:
+    if color_north is None:
+        color_north = Config.COLOR_NORTH
+    if color_south is None:
+        color_south = Config.COLOR_SOUTH
+    if color_middle is None:
+        color_middle = Config.COLOR_MIDDLE
+    if color_middle is False:
         colorscale = [
-            [0.0, south_color],
-            [0.5 * (1 - color_transition), south_color],
-            [0.5 * (1 + color_transition), north_color],
-            [1, north_color],
+            [0.0, color_south],
+            [0.5 * (1 - color_transition), color_south],
+            [0.5 * (1 + color_transition), color_north],
+            [1, color_north],
         ]
     else:
         colorscale = [
-            [0.0, south_color],
-            [0.2 - 0.2 * (color_transition), south_color],
-            [0.2 + 0.3 * (color_transition), middle_color],
-            [0.8 - 0.3 * (color_transition), middle_color],
-            [0.8 + 0.2 * (color_transition), north_color],
-            [1.0, north_color],
+            [0.0, color_south],
+            [0.2 - 0.2 * (color_transition), color_south],
+            [0.2 + 0.3 * (color_transition), color_middle],
+            [0.8 - 0.3 * (color_transition), color_middle],
+            [0.8 + 0.2 * (color_transition), color_north],
+            [1.0, color_north],
         ]
     return colorscale
 
@@ -526,12 +529,9 @@ def make_Dipole(
     pos=(0.0, 0.0, 0.0),
     size=1.0,
     orientation=None,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ) -> dict:
     """
@@ -566,10 +566,7 @@ def make_Dipole(
         mag,
         orientation,
         pos,
-        color_transition,
-        north_color,
-        middle_color,
-        south_color,
+        style,
         **kwargs,
     )
 
@@ -579,12 +576,9 @@ def make_Cuboid(
     dim=(1.0, 1.0, 1.0),
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ) -> dict:
     """
@@ -606,10 +600,7 @@ def make_Cuboid(
         mag,
         orientation,
         pos,
-        color_transition,
-        north_color,
-        middle_color,
-        south_color,
+        style,
         **kwargs,
     )
 
@@ -621,12 +612,9 @@ def make_Cylinder(
     height=1.0,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ) -> dict:
     """
@@ -653,10 +641,7 @@ def make_Cylinder(
         mag,
         orientation,
         pos,
-        color_transition,
-        north_color,
-        middle_color,
-        south_color,
+        style,
         **kwargs,
     )
 
@@ -667,12 +652,9 @@ def make_CylinderSegment(
     pos=(0.0, 0.0, 0.0),
     orientation=None,
     Nvert=25.0,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ):
     """
@@ -696,10 +678,7 @@ def make_CylinderSegment(
         mag,
         orientation,
         pos,
-        color_transition,
-        north_color,
-        middle_color,
-        south_color,
+        style,
         **kwargs,
     )
 
@@ -710,12 +689,9 @@ def make_Sphere(
     diameter=1,
     pos=(0.0, 0.0, 0.0),
     orientation=None,
-    color_transition=0.0,
     name=None,
     name_suffix=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ) -> dict:
     """
@@ -736,10 +712,7 @@ def make_Sphere(
         mag,
         orientation,
         pos,
-        color_transition,
-        north_color,
-        middle_color,
-        south_color,
+        style,
         **kwargs,
     )
 
@@ -833,25 +806,24 @@ def _update_mag_mesh(
     magnetization=None,
     orientation=None,
     position=None,
-    color_transition=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
+    style=None,
     **kwargs,
 ):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments
     """
+    color = style.magnetization.color
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
-    if magnetization is not None and color_transition >= 0:
-        if middle_color == "auto":
-            middle_color = kwargs.get("color", None)
+    if magnetization is not None and color.show:
+        color_middle = (
+            kwargs.get("color", None) if color.middle == "auto" else color.middle
+        )
         mesh_dict["colorscale"] = _getColorscale(
-            color_transition,
-            north_color=north_color,
-            middle_color=middle_color,
-            south_color=south_color,
+            color_transition=color.transition,
+            color_north=color.north,
+            color_middle=color_middle,
+            color_south=color.south,
         )
         mesh_dict["intensity"] = _getIntensity(
             vertices=vertices,
@@ -926,10 +898,6 @@ def get_plotly_traces(
     size_sensors=1,
     size_pixels=1,
     path_numbering=False,
-    color_transition=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
     pixel_color=None,
     color=None,
     **kwargs,
@@ -959,25 +927,24 @@ def get_plotly_traces(
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
+    obj_style = getattr(input_obj, "style", None)
 
-    style = getattr(input_obj, "style", None)
-    if style is not None:
-        if style.color is not None:
-            color = style.color
+    style_kwargs = {k[6:]:v for k,v in kwargs.items() if k.startswith('style')}
+    kwargs = {k:v for k,v in kwargs.items() if not k.startswith('style')}
+
+    if obj_style is not None:
+        style = obj_style.copy().update(**style_kwargs)
+
     kwargs["color"] = color
 
-    if color_transition is None:
-        color_transition = Config.COLOR_TRANSITION
-    if not show_direction:
-        color_transition = -1
+    if style is not None:
+        for param in ("opacity", "color"):
+            val = getattr(obj_style, param, None)
+            if val is not None:
+                kwargs[param] = val
 
-    mag_color_kwargs = dict(
-        color_transition=color_transition,
-        north_color=north_color,
-        middle_color=middle_color,
-        south_color=south_color,
-    )
-
+    style.magnetization.color.show = show_direction
+    kwargs["style"] = style
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
@@ -1005,7 +972,6 @@ def get_plotly_traces(
             kwargs.update(
                 mag=input_obj.magnetization,
                 dim=input_obj.dimension,
-                **mag_color_kwargs,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -1017,7 +983,6 @@ def get_plotly_traces(
                 diameter=input_obj.dimension[0],
                 height=input_obj.dimension[1],
                 base_vertices=base_vertices,
-                **mag_color_kwargs,
             )
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
@@ -1028,21 +993,18 @@ def get_plotly_traces(
                 mag=input_obj.magnetization,
                 dimension=input_obj.dimension,
                 Nvert=Nvert,
-                **mag_color_kwargs,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
                 mag=input_obj.magnetization,
                 diameter=input_obj.diameter,
-                **mag_color_kwargs,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
                 moment=input_obj.moment,
                 size=size_dipoles,
-                **mag_color_kwargs,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):

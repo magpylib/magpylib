@@ -12,10 +12,10 @@ _DEFAULTS = dict(
     AUTOSIZE_FACTOR=10,
     ANIMATE_MAX_FRAMES=200,
     PLOTTING_BACKEND="matplotlib",
-    NORTH_COLOR="rgb(231,17,17)",  # 'red'
-    MIDDLE_COLOR="rgb(221,221,221)",  # 'grey'
-    SOUTH_COLOR="rgb(0,176,80)",  # 'green'
-    COLOR_TRANSITION=0,
+    COLOR_NORTH="#E71111",  # 'red'
+    COLOR_MIDDLE="#DDDDDD",  # 'grey'
+    COLOR_SOUTH="#00B050",  # 'green'
+    COLOR_TRANSITION=0.,
     PIXEL_COLOR="grey",
     COLOR_DISCRETE_SEQUENCE=(
         "#2E91E5",
@@ -81,7 +81,7 @@ class Config:
     ANIMATE_MAX_FRAMES, int, default=200
         Maximum total number of frames to be displayed before downsampling kicks in
 
-    SOUTH_COLOR, str, default=rgb(0,176,80)
+    COLOR_SOUTH, str, default=rgb(0,176,80)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -89,7 +89,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    MIDDLE_COLOR, str, default=rgb(221,221,221)
+    COLOR_MIDDLE, str, default=rgb(221,221,221)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -97,7 +97,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    NORTH_COLOR, str, default=rgb(231,17,17)
+    COLOR_NORTH, str, default=rgb(231,17,17)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')

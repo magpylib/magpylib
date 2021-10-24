@@ -43,9 +43,6 @@ def display(
     animate_time=5,
     animate_fps=30,
     color_discrete_sequence=None,
-    north_color=None,
-    middle_color=None,
-    south_color=None,
     pixel_color=None,
     **kwargs,
 ):
@@ -136,38 +133,6 @@ def display(
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    north_color, str default=None,
-        Applies only for magnets. Defines the color of the magnetic north pole.  If not specified,
-        value will fall back to `Config.NORTH_COLOR`
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-    middle_color, str default=None,
-        Applies only for magnets. Defines the color of the middle part between north and south
-        poles. If not specified, value will fall back to `Config.MIDDLE_COLOR`. If set to 'auto'
-        the color will be automatically selected by cycling through the 'color_discrete_sequence'
-        when displaying objects. If set to False, no middle color will be displayed and the poles
-        colors will join in the middle.
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-    south_color, str default=None,
-        Applies only for magnets. Defines the color of the magnetic south pole.  If not specified,
-        value will fall back to `Config.SOUTH_COLOR`
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
 
     pixel_color, str default=None,
     Defines the color of Sensor pixels.  If not specified, value will fall back to
@@ -271,9 +236,6 @@ def display(
             animate_time=animate_time,
             animate_fps=animate_fps,
             color_discrete_sequence=color_discrete_sequence,
-            north_color=north_color,
-            middle_color=middle_color,
-            south_color=south_color,
             pixel_color=pixel_color,
             **kwargs,
         )

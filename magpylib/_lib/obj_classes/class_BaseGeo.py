@@ -5,6 +5,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
+from magpylib._lib.display.style import BaseStyle
 from magpylib._lib.input_checks import (
     check_vector_type,
     check_path_format,
@@ -19,53 +20,6 @@ from magpylib._lib.input_checks import (
     check_angle_format,
     check_axis_format,
 )
-
-
-class MagpyStyle:
-    """
-    Base class for display styling options of BaseGeo objects
-
-    Properties
-    ----------
-    color: srt, default=None
-        css color
-
-    mesh3d: plotly.graph_objects.Mesh3d, default=None
-        can be set trough dict of compatible keys
-    """
-
-    def __init__(self, color=None, mesh3d=None):
-        self.color = color
-        self.mesh3d = mesh3d
-        self._params = ("color", "mesh3d")
-
-    @property
-    def mesh3d(self):
-        """plotly.graph_objects.Mesh3d instance"""
-        return self._mesh3d
-
-    @mesh3d.setter
-    def mesh3d(self, val):
-        # pylint: disable=import-outside-toplevel
-        if val is None:
-            self._mesh3d = val
-        else:
-            import plotly.graph_objects as go
-
-            self._mesh3d = go.Mesh3d(**val)
-
-    @property
-    def color(self):
-        """css color"""
-        return self._color
-
-    @color.setter
-    def color(self, val):
-        self._color = val
-
-    def __repr__(self):
-        dict_str = ", ".join(f"{k}={repr(getattr(self,k))}" for k in self._params)
-        return f"MagpyStyle({dict_str})"
 
 
 # ALL METHODS ON INTERFACE
@@ -103,10 +57,13 @@ class BaseGeo:
 
     """
 
-    def __init__(self, position, orientation, style=None):
+    def __init__(self, position, orientation, style_class=None, style=None):
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
+        if style_class is None:
+            style_class = BaseStyle
+        self.style_class = style_class
         self.style = style
 
     # properties ----------------------------------------------------
@@ -181,9 +138,11 @@ class BaseGeo:
         if val is None:
             val = {}
         if isinstance(val, dict):
-            val = MagpyStyle(**val)
-        if isinstance(val, MagpyStyle):
+            val = self.style_class(**val)
+        if isinstance(val, self.style_class):
             self._style = val
+        else:
+            raise ValueError(f'style must be of type {self.style_class}')
 
     # dunders -------------------------------------------------------
     def __add__(self, source):

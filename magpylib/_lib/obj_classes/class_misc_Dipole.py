@@ -6,6 +6,7 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_vector_format, check_vector_type
+from magpylib._lib.display.style import MagnetStyle
 
 # init for tool tips
 mx=my=mz=None
@@ -84,7 +85,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
             orientation = None):
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation)
+        BaseGeo.__init__(self, position, orientation, style_class=MagnetStyle)
         BaseDisplayRepr.__init__(self)
 
         # instance attributes
