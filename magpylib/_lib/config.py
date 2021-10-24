@@ -9,6 +9,7 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
+    SHOW_DIRECTION = True,
     AUTO_DESCRIPTION=True,
     AUTOSIZE_FACTOR=10,
     ANIMATE_MAX_FRAMES=200,
@@ -66,6 +67,11 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
+
+    SHOW_DIRECTION: bool, default=True
+        Set True to show magnetization and current directions. The `matplotlib`
+        backend uses arrows and the plotly backend displays direction with a color
+        gradient for magnets/dipoles and arrows for currents.
 
     AUTO_DESCRIPTION: bool or str default=True
         adds legend entry suffix based on value:

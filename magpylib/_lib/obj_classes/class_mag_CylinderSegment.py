@@ -94,10 +94,11 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             magnetization = (mx,my,mz),
             dimension = (d1,d2,h,phi1,phi2),
             position = (0,0,0),
-            orientation = None):
+            orientation = None,
+            style = None):
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style_class=MagnetStyle)
+        BaseGeo.__init__(self, position, orientation, style=style, style_class=MagnetStyle)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 

@@ -82,10 +82,11 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
             self,
             moment = (mx,my,mz),
             position = (0,0,0),
-            orientation = None):
+            orientation = None,
+            style = None):
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style_class=MagnetStyle)
+        BaseGeo.__init__(self, position, orientation, style=style, style_class=MagnetStyle)
         BaseDisplayRepr.__init__(self)
 
         # instance attributes

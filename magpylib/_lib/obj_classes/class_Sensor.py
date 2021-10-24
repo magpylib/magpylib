@@ -104,10 +104,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             self,
             position = (0,0,0),
             pixel=(0,0,0),
-            orientation = None):
+            orientation = None,
+            style = None):
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style_class=SensorStyle)
+        BaseGeo.__init__(self, position, orientation, style=style, style_class=SensorStyle)
         BaseDisplayRepr.__init__(self)
 
         # instance attributes

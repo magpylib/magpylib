@@ -6,6 +6,8 @@ from math import log10
 from typing import Tuple
 import warnings
 
+from numpy.core.fromnumeric import size
+
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:
@@ -952,7 +954,6 @@ def get_plotly_traces(
 
     style_kwargs = {k[6:]: v for k, v in kwargs.items() if k.startswith("style")}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-
     if obj_style is not None:
         style = obj_style.copy().update(**style_kwargs, _match_properties=True)
 
@@ -966,6 +967,8 @@ def get_plotly_traces(
 
     if hasattr(style, 'magnetization'):
         style.magnetization.color.show = show_direction
+    if hasattr(style, 'direction'):
+        style.direction = show_direction
     kwargs["style"] = style
     traces = []
     if isinstance(input_obj, Markers):
@@ -983,8 +986,10 @@ def get_plotly_traces(
         traces.append(trace)
     else:
         if isinstance(input_obj, Sensor):
+            if style.size is None:
+                style.size = size_sensors
             kwargs.update(
-                dim=getattr(input_obj, "dimension", size_sensors),
+                dim=getattr(input_obj, "dimension", style.size),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
             )
             make_func = make_Sensor

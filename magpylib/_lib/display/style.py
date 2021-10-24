@@ -289,7 +289,7 @@ class MagColor(BaseStyleProperties):
     """
 
     def __init__(
-        self, north=None, south=None, middle=None, transition=None, show=True, **kwargs
+        self, north=None, south=None, middle=None, transition=None, show=None, **kwargs
     ):
         super().__init__(
             north=north,
@@ -337,11 +337,13 @@ class MagColor(BaseStyleProperties):
 
     @property
     def show(self):
-        """css color"""
+        """show magnetization direction through poles colors"""
         return self._show
 
     @show.setter
     def show(self, val):
+        if val is None:
+            val = Config.SHOW_DIRECTION
         assert isinstance(val, bool), "show must be either `True` or `False`"
         self._show = val
 
@@ -396,8 +398,21 @@ class SensorStyle(BaseStyle):
     - pixel: pixel properties, see PixelStyle
     """
 
-    def __init__(self, pixel=None, **kwargs):
-        super().__init__(pixel=pixel, **kwargs)
+    def __init__(self, size=None, pixel=None, **kwargs):
+        super().__init__(size=size, pixel=pixel, **kwargs)
+
+    @property
+    def size(self):
+        """positive float for relative sensor to size to canvas size"""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {val} instead"
+        )
+        self._size = val
 
     @property
     def pixel(self):
@@ -436,9 +451,10 @@ class PixelStyle(BaseStyleProperties):
 
     @size.setter
     def size(self, val):
-        assert (
-            val is None or isinstance(val, (int, float)) and val >= 0
-        ), "size must be a positive number"
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {val} instead"
+        )
         self._size = val
 
     @property
@@ -451,3 +467,28 @@ class PixelStyle(BaseStyleProperties):
         if val is None:
             val = Config.PIXEL_COLOR
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+
+class CurrentStyle(BaseStyle):
+    """
+    This class holds styling properties for Line and Circular currents
+    - direction: if True current directin is shown with an arrow
+    """
+
+    def __init__(self, direction=True, **kwargs):
+        super().__init__(direction=direction, **kwargs)
+
+    @property
+    def direction(self):
+        """show/hide current direction arrow"""
+        return self._direction
+
+    @direction.setter
+    def direction(self, val):
+        if val is None:
+            val = Config.SHOW_DIRECTION
+        assert isinstance(val, bool), (
+            f"the `direction` property of {type(self).__name__} must be either `True` or `False`"
+            f" but received {val} instead"
+        )
+        self._direction = val
