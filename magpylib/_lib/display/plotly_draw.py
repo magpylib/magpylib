@@ -6,8 +6,6 @@ from math import log10
 from typing import Tuple
 import warnings
 
-from numpy.core.fromnumeric import size
-
 try:
     import plotly.graph_objects as go
 except ImportError as missing_module:
