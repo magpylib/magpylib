@@ -9,13 +9,14 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
+    AUTO_DESCRIPTION=True,
     AUTOSIZE_FACTOR=10,
     ANIMATE_MAX_FRAMES=200,
     PLOTTING_BACKEND="matplotlib",
     COLOR_NORTH="#E71111",  # 'red'
     COLOR_MIDDLE="#DDDDDD",  # 'grey'
     COLOR_SOUTH="#00B050",  # 'green'
-    COLOR_TRANSITION=0.,
+    COLOR_TRANSITION=0.0,
     PIXEL_COLOR="grey",
     COLOR_DISCRETE_SEQUENCE=(
         "#2E91E5",
@@ -65,6 +66,12 @@ class Config:
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
+
+    AUTO_DESCRIPTION: bool or str default=True
+        adds legend entry suffix based on value:
+        - True: base object dimension are shown
+        - False: no suffix is shown
+        - str: user string is shown
 
     AUTOSIZE_FACTOR: int, default=15
         Defines at which scale objects like sensors and dipoles are displayed.

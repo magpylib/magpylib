@@ -155,8 +155,48 @@ class BaseStyle(BaseStyleProperties):
         can be set trough dict of compatible keys
     """
 
-    def __init__(self, color=None, opacity=None, mesh3d=None, **kwargs):
-        super().__init__(color=color, opacity=opacity, mesh3d=mesh3d, **kwargs)
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        color=None,
+        opacity=None,
+        mesh3d=None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            description=description,
+            color=color,
+            opacity=opacity,
+            mesh3d=mesh3d,
+            **kwargs,
+        )
+
+    @property
+    def name(self):
+        """name of object"""
+        return self._name
+
+    @name.setter
+    def name(self, val):
+        self._name = val if val is None else str(val)
+
+    @property
+    def description(self):
+        """
+        object description. Adds legend entry suffix based on value:
+        - True: base object dimension are shown
+        - False: no suffix is shown
+        - str: user string is shown
+        """
+        return self._description
+
+    @description.setter
+    def description(self, val):
+        if val is None:
+            val = Config.AUTO_DESCRIPTION
+        self._description = val if isinstance(val, bool) or val is None else str(val)
 
     @property
     def color(self):
@@ -288,7 +328,7 @@ class MagColor(BaseStyleProperties):
     def middle(self, val):
         if val is None:
             val = Config.COLOR_MIDDLE
-        if val!='auto' and not val is False:
+        if val != "auto" and not val is False:
             val = color_validator(val)
         self._middle = val
 
