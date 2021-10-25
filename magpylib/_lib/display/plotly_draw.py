@@ -963,7 +963,6 @@ def get_plotly_traces(
     style_kwargs.update({k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k!='style'})
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
-    print(kwargs, style_kwargs)
     # create empty style depending on input object
     obj_style = getattr(input_obj, "style", None)
     if obj_style is not None:
