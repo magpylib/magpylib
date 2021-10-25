@@ -451,3 +451,16 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         for obj in self:
             obj.reset_path()
         return self
+
+    def update_styles(self, **kwargs):
+        """
+        Update display style of all sources. Only matching properties will be applied
+
+        Returns
+        -------
+        None
+        """
+        for src in self._sources:
+            # match properties false will try to apply properties from kwargs only if it finds it
+            # withoug throwing an error
+            src.style.update(**kwargs, _match_properties=False)
