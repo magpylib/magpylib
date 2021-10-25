@@ -120,7 +120,7 @@ class BaseStyleProperties:
                 dict_[k] = val
         return dict_
 
-    def update(self, arg=None, _match_properties=True, **kwargs):
+    def update(self, arg=None, _match_properties=False, **kwargs):
         """
         updates the class properties with provided arguments, supports magic underscore
         returns self
@@ -342,7 +342,9 @@ class MagColor(BaseStyleProperties):
 
     @show.setter
     def show(self, val):
-        assert val is None or isinstance(val, bool), "show must be either `True` or `False`"
+        assert val is None or isinstance(
+            val, bool
+        ), "show must be either `True` or `False`"
         self._show = val
 
     @property
@@ -444,7 +446,7 @@ class PixelStyle(BaseStyleProperties):
 
     @property
     def size(self):
-        """positive float for relative arrow size to magnet size"""
+        """positive float, relative pixel size to the min distance between two pixels"""
         return self._size
 
     @size.setter
@@ -486,3 +488,77 @@ class CurrentStyle(BaseStyle):
             f" but received {val} instead"
         )
         self._direction = val
+
+
+class MarkerStyle(BaseStyleProperties):
+    """
+    This class holds marker styling properties
+    - size: marker size
+    - color: marker color
+    - symbol: marker symbol
+    """
+
+    def __init__(self, size=2, color=None, symbol="x", **kwargs):
+        super().__init__(size=size, color=color, symbol=symbol, **kwargs)
+
+    @property
+    def size(self):
+        """marker size"""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._size = val
+
+    @property
+    def color(self):
+        """css color"""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._color = val
+
+    @property
+    def symbol(self):
+        """compatible symbol string for matplotlib or plotly"""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._symbol = val
+
+
+class MarkerTraceStyle(BaseStyleProperties):
+    """
+    This class holds marker styling properties
+    - marker: MarkerStyle class
+    """
+
+    def __init__(self, marker=None, **kwargs):
+        super().__init__(marker=marker, **kwargs)
+
+    @property
+    def marker(self):
+        """MarkerStyle class with 'color', 'symbol', 'size' values"""
+        return self._marker
+
+    @marker.setter
+    def marker(self, val):
+        if isinstance(val, dict):
+            val = MarkerStyle(**val)
+        if isinstance(val, MarkerStyle):
+            self._marker = val
+        elif val is None:
+            self._marker = MarkerStyle()
+        else:
+            raise ValueError(
+                "the marker property must be an instance"
+                "of MarkerStyle or a dictionary with equivalent key/value pairs"
+            )

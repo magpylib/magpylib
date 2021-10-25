@@ -18,7 +18,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
-from magpylib._lib.display.style import BaseStyle
+from magpylib._lib.display.style import BaseStyle, MarkerTraceStyle
 
 # Defaults
 
@@ -79,6 +79,7 @@ class Markers:
     """A class that stores markers 3D-coordinates"""
 
     def __init__(self, *markers):
+        self.style = MarkerTraceStyle()
         self.markers = np.array(markers)
 
 
@@ -930,6 +931,7 @@ def get_plotly_traces(
     size_sensors=None,
     path_numbering=False,
     color=None,
+    opacity=None,
     **kwargs,
 ) -> list:
     """
@@ -959,8 +961,10 @@ def get_plotly_traces(
     Line = _lib.obj_classes.Line
 
     # parse kwargs into style and non style args
-    style_kwargs = kwargs.get('style', {})
-    style_kwargs.update({k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k!='style'})
+    style_kwargs = kwargs.get("style", {})
+    style_kwargs.update(
+        {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
+    )
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     # create empty style depending on input object
@@ -969,7 +973,11 @@ def get_plotly_traces(
         style = obj_style.copy().update(**style_kwargs, _match_properties=True)
     else:
         style = BaseStyle()
+
+    style.update(**style_kwargs, _match_properties=True)
+
     kwargs["color"] = color
+    kwargs["opacity"] = opacity
     for param in ("opacity", "color"):
         val = getattr(obj_style, param, None)
         if val is not None:
@@ -984,18 +992,21 @@ def get_plotly_traces(
     show_arrows = Config.SHOW_DIRECTION if show_direction is None else show_direction
 
     kwargs["style"] = style
+
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
+        marker_dict = style.get_properties_dict()
+        if kwargs['color'] is None:
+            marker_dict['marker']['color'] = kwargs['color'] 
         trace = go.Scatter3d(
             name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
             x=x,
             y=y,
             z=z,
-            marker_color=color,
-            marker_symbol="x",
-            marker_size=2,
+            **marker_dict,
             mode="markers",
+            opacity=kwargs["opacity"],
         )
         traces.append(trace)
     else:
@@ -1104,8 +1115,8 @@ def get_plotly_traces(
                 showlegend=False,
                 legendgroup=f"{input_obj}",
                 marker_size=1,
-                marker_color=color,
-                line_color=color,
+                marker_color=kwargs["color"],
+                line_color=kwargs["color"],
                 line_width=1,
                 **txt_kwargs,
             )
