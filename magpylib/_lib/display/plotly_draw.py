@@ -959,16 +959,17 @@ def get_plotly_traces(
     Line = _lib.obj_classes.Line
 
     # parse kwargs into style and non style args
-    style_kwargs = {k[6:]: v for k, v in kwargs.items() if k.startswith("style")}
+    style_kwargs = kwargs.get('style', {})
+    style_kwargs.update({k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k!='style'})
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
+    print(kwargs, style_kwargs)
     # create empty style depending on input object
     obj_style = getattr(input_obj, "style", None)
     if obj_style is not None:
         style = obj_style.copy().update(**style_kwargs, _match_properties=True)
     else:
         style = BaseStyle()
-
     kwargs["color"] = color
     for param in ("opacity", "color"):
         val = getattr(obj_style, param, None)
