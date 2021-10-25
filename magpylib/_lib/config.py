@@ -9,8 +9,11 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
-    SHOW_DIRECTION = True,
+    SHOW_DIRECTION=True,
     AUTO_DESCRIPTION=True,
+    SENSOR_SIZE=1,
+    DIPOLE_SIZE=1,
+    DIRECTION_SIZE=1,
     AUTOSIZE_FACTOR=10,
     ANIMATE_MAX_FRAMES=200,
     PLOTTING_BACKEND="matplotlib",
@@ -19,6 +22,7 @@ _DEFAULTS = dict(
     COLOR_SOUTH="#00B050",  # 'green'
     COLOR_TRANSITION=0.0,
     PIXEL_COLOR="grey",
+    PIXEL_SIZE="grey",
     COLOR_DISCRETE_SEQUENCE=(
         "#2E91E5",
         "#E15F99",
@@ -78,6 +82,15 @@ class Config:
         - True: base object dimension are shown
         - False: no suffix is shown
         - str: user string is shown
+
+    SENSOR_SIZE: float, default=1
+        Adjust automatic display size of sensors. See also `AUTOSIZE_FACTOR`
+
+    DIPOLE_SIZE: float, default=1
+        Adjust automatic display size of dipoles. See also `AUTOSIZE_FACTOR`
+
+    DIRECTION_SIZE: float, default=1
+        Adjust automatic display size of direction arrows.
 
     AUTOSIZE_FACTOR: int, default=15
         Defines at which scale objects like sensors and dipoles are displayed.

@@ -18,6 +18,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
+from magpylib._lib.display.style import BaseStyle
 
 # Defaults
 
@@ -802,13 +803,19 @@ def make_Sensor(
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
-        if style.pixel.size > 0:
+        pixel_color = style.pixel.color
+        if pixel_color is None:
+            pixel_color = Config.PIXEL_COLOR
+        pixel_size = style.pixel.size
+        if pixel_size is None:
+            pixel_size = Config.PIXEL_SIZE
+        if pixel_size > 0:
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
             dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * style.pixel.size / 2
+            pixel_dim = np.min(dists) * pixel_size / 2
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
-            pixels_mesh["facecolor"] = np.repeat(style.pixel.color, len(pixels_mesh["i"]))
+            pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
         hull_dim[hull_dim == 0] = pixel_dim / 2
@@ -836,8 +843,10 @@ def _update_mag_mesh(
     object gets colorized, positioned and oriented based on provided arguments
     """
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
-    if hasattr(style, 'magnetization'):
+    if hasattr(style, "magnetization"):
         color = style.magnetization.color
+        if color.show is None:
+            color.show = Config.SHOW_DIRECTION
         if magnetization is not None and color.show:
             color_middle = (
                 kwargs.get("color", None) if color.middle == "auto" else color.middle
@@ -916,9 +925,9 @@ def merge_traces(*traces):
 def get_plotly_traces(
     input_obj,
     show_path=False,
-    show_direction=True,
-    size_dipoles=1,
-    size_sensors=1,
+    show_direction=None,
+    size_dipoles=None,
+    size_sensors=None,
     path_numbering=False,
     color=None,
     **kwargs,
@@ -948,27 +957,32 @@ def get_plotly_traces(
     Dipole = _lib.obj_classes.Dipole
     Circular = _lib.obj_classes.Circular
     Line = _lib.obj_classes.Line
-    obj_style = getattr(input_obj, "style", None)
 
+    # parse kwargs into style and non style args
     style_kwargs = {k[6:]: v for k, v in kwargs.items() if k.startswith("style")}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
+
+    # create empty style depending on input object
+    obj_style = getattr(input_obj, "style", None)
     if obj_style is not None:
         style = obj_style.copy().update(**style_kwargs, _match_properties=True)
+    else:
+        style = BaseStyle()
 
     kwargs["color"] = color
+    for param in ("opacity", "color"):
+        val = getattr(obj_style, param, None)
+        if val is not None:
+            kwargs[param] = val
 
-    if style is not None:
-        for param in ("opacity", "color"):
-            val = getattr(obj_style, param, None)
-            if val is not None:
-                kwargs[param] = val
-    
-    color = kwargs['color']
+    if show_direction is not None:
+        if hasattr(style, "magnetization"):
+            style.magnetization.color.show = show_direction
+        if hasattr(style, "direction"):
+            style.direction = show_direction
 
-    if hasattr(style, 'magnetization'):
-        style.magnetization.color.show = show_direction
-    if hasattr(style, 'direction'):
-        style.direction = show_direction
+    show_arrows = Config.SHOW_DIRECTION if show_direction is None else show_direction
+
     kwargs["style"] = style
     traces = []
     if isinstance(input_obj, Markers):
@@ -1036,14 +1050,14 @@ def get_plotly_traces(
             kwargs.update(
                 vertices=input_obj.vertices,
                 current=input_obj.current,
-                show_arrows=show_direction,
+                show_arrows=show_arrows,
             )
             make_func = make_Line
         elif isinstance(input_obj, Circular):
             kwargs.update(
                 diameter=input_obj.diameter,
                 current=input_obj.current,
-                show_arrows=show_direction,
+                show_arrows=show_arrows,
             )
             make_func = make_Circular
         else:
@@ -1257,6 +1271,10 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     autosize = np.mean(np.diff(ranges)) / Config.AUTOSIZE_FACTOR
+    if kwargs["size_sensors"] is None:
+        kwargs["size_sensors"] = Config.SENSOR_SIZE
+    if kwargs["size_dipoles"] is None:
+        kwargs["size_dipoles"] = Config.DIPOLE_SIZE
     kwargs["size_sensors"] *= autosize
     kwargs["size_dipoles"] *= autosize
     for obj, color in traces_colors.items():

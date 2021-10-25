@@ -342,9 +342,7 @@ class MagColor(BaseStyleProperties):
 
     @show.setter
     def show(self, val):
-        if val is None:
-            val = Config.SHOW_DIRECTION
-        assert isinstance(val, bool), "show must be either `True` or `False`"
+        assert val is None or isinstance(val, bool), "show must be either `True` or `False`"
         self._show = val
 
     @property
@@ -464,8 +462,6 @@ class PixelStyle(BaseStyleProperties):
 
     @color.setter
     def color(self, val):
-        if val is None:
-            val = Config.PIXEL_COLOR
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
 
@@ -485,9 +481,7 @@ class CurrentStyle(BaseStyle):
 
     @direction.setter
     def direction(self, val):
-        if val is None:
-            val = Config.SHOW_DIRECTION
-        assert isinstance(val, bool), (
+        assert val is None or isinstance(val, bool), (
             f"the `direction` property of {type(self).__name__} must be either `True` or `False`"
             f" but received {val} instead"
         )

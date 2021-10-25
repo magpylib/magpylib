@@ -31,10 +31,10 @@ def display(
     *objects,
     markers=None,
     show_path=True,
-    show_direction=True,
-    size_sensors=1,
-    size_direction=1,
-    size_dipoles=1,
+    show_direction=None,
+    size_sensors=None,
+    size_direction=None,
+    size_dipoles=None,
     zoom=1,
     plotting_backend=None,
     canvas=None,
@@ -68,14 +68,17 @@ def display(
         backend uses arrows and the plotly backend displays direction with a color
         gradient for magnets/dipoles and arrows for currents.
 
-    size_sensors: float, default=1
-        Adjust automatic display size of sensors.
+    size_sensors: float, default=None
+        Adjust automatic display size of sensors. If not set, value
+        defaults back to `Config.SENSOR_SIZE`
 
-    size_direction: float, default=1
-        Adjust automatic display size of direction arrows.
+    size_direction: float, default=None
+        Adjust automatic display size of direction arrows. If not set, value
+        defaults back to `Config.DIRECTION_SIZE`
 
-    size_dipoles: float, default=1
-        Adjust automatic display size of dipoles.
+    size_dipoles: float, default=None
+        Adjust automatic display size of dipoles. If not set, value
+        defaults back to `Config.DIPOLE_SIZE`
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -203,7 +206,6 @@ def display(
     elif plotting_backend == "plotly":
         # pylint: disable=import-outside-toplevel
         from magpylib._lib.display.plotly_draw import display_plotly
-
         display_plotly(
             *obj_list,
             markers=markers,
@@ -226,10 +228,10 @@ def display_matplotlib(
     axis=None,
     markers=None,
     show_path=True,
-    show_direction=True,
-    size_sensors=1,
-    size_direction=1,
-    size_dipoles=1,
+    show_direction=None,
+    size_sensors=None,
+    size_direction=None,
+    size_dipoles=None,
     zoom=1,
 ):
     """
@@ -244,11 +246,12 @@ def display_matplotlib(
         Display graphical output in a given pyplot axis (must be 3D). By default a new
         pyplot figure is created and displayed.
 
-    markers: array_like, shape (N,3), default=[(0,0,0)]
+    markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
 
-    show_direction: bool, default=True
-        Set True to show magnetization and current directions with quiver arrows
+    show_direction: bool, default=None
+        Set True to show magnetization and current directions with quiver arrows. If not set, value
+        defaults back to `Config.SHOW_DIRECTION`
 
     show_path: bool or int or array_like, default=True
         Options True, False, positive int or iterable. By default object paths are shown. If
@@ -256,14 +259,17 @@ def display_matplotlib(
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
 
-    size_sensors: float, default=1
-        Adjust automatic display size of sensors.
+    size_sensors: float, default=None
+        Adjust automatic display size of sensors. If not set, value
+        defaults back to `Config.SENSOR_SIZE`
 
-    size_direction: float, default=1
-        Adjust automatic display size of direction arrows.
+    size_direction: float, default=None
+        Adjust automatic display size of direction arrows. If not set, value
+        defaults back to `Config.DIRECTION_SIZE`
 
-    size_dipoles: float, default=1
-        Adjust automatic display size of dipoles.
+    size_dipoles: float, default=None
+        Adjust automatic display size of dipoles. If not set, value
+        defaults back to `Config.DIPOLE_SIZE`
 
     zoom: float, default=1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -303,6 +309,16 @@ def display_matplotlib(
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
+
+    # apply config default values if None
+    if show_direction is None:
+        show_direction = Config.SHOW_DIRECTION
+    if size_direction is None:
+        size_direction = Config.DIRECTION_SIZE
+    if size_sensors is None:
+        size_sensors = Config.SENSOR_SIZE
+    if size_dipoles is None:
+        size_dipoles = Config.DIPOLE_SIZE
 
     # objects with faces
     faced_objects = [
