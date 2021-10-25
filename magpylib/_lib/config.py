@@ -20,9 +20,9 @@ _DEFAULTS = dict(
     COLOR_NORTH="#E71111",  # 'red'
     COLOR_MIDDLE="#DDDDDD",  # 'grey'
     COLOR_SOUTH="#00B050",  # 'green'
-    COLOR_TRANSITION=0.0,
+    COLOR_TRANSITION=0.2,
     PIXEL_COLOR="grey",
-    PIXEL_SIZE="grey",
+    PIXEL_SIZE=1,
     COLOR_DISCRETE_SEQUENCE=(
         "#2E91E5",
         "#E15F99",
