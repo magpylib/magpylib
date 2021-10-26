@@ -3,6 +3,7 @@
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 from magpylib._lib.config import Config
+from magpylib._lib.display.disp_utility import get_rot_pos_from_path
 
 
 def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
@@ -21,12 +22,7 @@ def draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction):
     for i,obj in enumerate(faced_objects):
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and obj._position.ndim>1:
-            rots = obj._orientation[::-show_path]
-            poss = obj._position[::-show_path]
-        else:
-            rots = [obj._orientation[-1]]
-            poss = [obj._position[-1]]
+        rots, poss = get_rot_pos_from_path(obj, show_path)
 
         # vector length, color and magnetization
         if obj._object_type in ('Cuboid', 'Cylinder'):
@@ -120,12 +116,8 @@ def draw_pixel(sensors, ax, show_path):
     # collect sensor and pixel positions in global CS
     pos_sens, pos_pixel = [], []
     for sens in sensors:
-        if not isinstance(show_path, bool) and sens._position.ndim>1:
-            rots = sens._orientation[::-show_path]
-            poss = sens._position[::-show_path]
-        else:
-            rots = [sens._orientation[-1]]
-            poss = [sens._position[-1]]
+        rots, poss = get_rot_pos_from_path(sens, show_path)
+
         pos_pixel_flat = np.reshape(sens.pixel, (-1,3))
 
         for rot,pos in zip(rots,poss):
@@ -162,12 +154,7 @@ def draw_sensors(sensors, ax, sys_size, show_path, size_sensors):
     # collect plot data
     possis, exs, eys, ezs = [], [], [], []
     for sens in sensors:
-        if not isinstance(show_path, bool) and sens._position.ndim>1:
-            rots = sens._orientation[::-show_path]
-            poss = sens._position[::-show_path]
-        else:
-            rots = [sens._orientation[-1]]
-            poss = [sens._position[-1]]
+        rots, poss = get_rot_pos_from_path(sens, show_path)
 
         for rot,pos in zip(rots,poss):
             possis += [pos]
@@ -202,12 +189,8 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles):
     # collect plot data
     possis, moms = [], []
     for dip in dipoles:
-        if not isinstance(show_path, bool) and dip._position.ndim>1:
-            rots = dip._orientation[::-show_path]
-            poss = dip._position[::-show_path]
-        else:
-            rots = [dip._orientation[-1]]
-            poss = [dip._position[-1]]
+        rots, poss = get_rot_pos_from_path(dip, show_path)
+
         mom = dip.moment/np.linalg.norm(dip.moment)
 
         for rot,pos in zip(rots,poss):
@@ -240,12 +223,8 @@ def draw_circular(circulars, show_path, ax):
     for circ in circulars:
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and circ._position.ndim>1:
-            rots = circ._orientation[::-show_path]
-            poss = circ._position[::-show_path]
-        else:
-            rots = [circ._orientation[-1]]
-            poss = [circ._position[-1]]
+        rots, poss = get_rot_pos_from_path(circ, show_path)
+
 
         # init orientation line positions
         radius = circ.diameter/2
@@ -274,12 +253,8 @@ def draw_line(lines, show_path, ax) -> list:
     for line in lines:
 
         # add src attributes position and orientation depending on show_path
-        if not isinstance(show_path, bool) and line._position.ndim>1:
-            rots = line._orientation[::-show_path]
-            poss = line._position[::-show_path]
-        else:
-            rots = [line._orientation[-1]]
-            poss = [line._position[-1]]
+        rots, poss = get_rot_pos_from_path(line, show_path)
+
 
         # init orientation line positions
         possis0 = line.vertices

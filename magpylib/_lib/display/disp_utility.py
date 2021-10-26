@@ -2,6 +2,29 @@
 
 import numpy as np
 
+def get_rot_pos_from_path(obj, show_path):
+    """
+    subsets orientations and positions depending on `show_path` value.
+    examples:
+    show_path = [1,2,8], path_len = 6 -> path_indices = [1,2,6]
+    returns rots[[1,2,6]], poss[[1,2,6]]
+    """
+    # pylint: disable=protected-access
+    path_len = obj.position.shape[0]
+    if show_path is True or show_path is False:
+        inds = np.array([-1])
+    elif isinstance(show_path, int):
+        inds = np.arange(path_len, dtype=int)[::-show_path]
+    elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
+        inds = np.array(show_path)
+    inds[inds > path_len] = path_len
+    inds = np.unique(inds)
+    if inds.size == 0:
+        inds = np.array([path_len - 1])
+    rots = obj._orientation[inds]
+    poss = obj._position[inds]
+    return rots, poss
+
 def faces_cuboid(src, show_path):
     """
     compute vertices and faces of Cuboid input for plotting
@@ -15,12 +38,7 @@ def faces_cuboid(src, show_path):
                      (a,b,0),(a,0,c),(0,b,c),(a,b,c)))
     vert0 = vert0 - src.dimension/2
 
-    if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._orientation[::-show_path]
-        poss = src._position[::-show_path]
-    else:
-        rots = [src._orientation[-1]]
-        poss = [src._position[-1]]
+    rots, poss = get_rot_pos_from_path(src, show_path)
 
     faces = []
     for rot,pos in zip(rots,poss):
@@ -132,12 +150,7 @@ def faces_cylinder_section(src, show_path):
         + [(r2*np.cos(p), r2*np.sin(p), -h/2) for p in phis[::-1]])]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._orientation[::-show_path]
-        poss = src._position[::-show_path]
-    else:
-        rots = [src._orientation[-1]]
-        poss = [src._position[-1]]
+    rots, poss = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -180,12 +193,7 @@ def faces_sphere(src, show_path):
             for p in phis]) for th in [ths[1],ths[-2]]]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._position.ndim>1:
-        rots = src._orientation[::-show_path]
-        poss = src._position[::-show_path]
-    else:
-        rots = [src._orientation[-1]]
-        poss = [src._position[-1]]
+    rots, poss = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []

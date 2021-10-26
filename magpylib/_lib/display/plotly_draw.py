@@ -935,7 +935,7 @@ def get_plotly_traces(
     **kwargs,
 ) -> list:
     """
-    This is a helper function providing the plotly traces for any object of the magpylib library. In
+    This is a helper function providing the plotly traces for any object of the magpylib library. If
     the object is not supported, the trace representation will fall back to a single scatter point
     with the object name marked above it.
 
@@ -1084,7 +1084,8 @@ def get_plotly_traces(
                 inds = np.arange(path_len, dtype=int)[::-show_path]
             elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
                 inds = np.array(show_path)
-            inds = inds[inds < path_len]
+            inds[inds > path_len] = path_len
+            inds = np.unique(inds)
             if inds.size == 0:
                 inds = np.array([path_len - 1])
             path_traces = []

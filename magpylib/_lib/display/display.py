@@ -36,7 +36,7 @@ def display(
     size_direction=None,
     size_dipoles=None,
     zoom=1,
-    plotting_backend=None,
+    plotting_backend=Config.PLOTTING_BACKEND,
     canvas=None,
     renderer=None,
     animate_time=5,
