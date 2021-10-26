@@ -31,7 +31,7 @@ def magic_to_dict(kwargs):
             new_kwargs[keys[0]] = v
         else:
             val = {"_".join(keys[1:]): v}
-            if keys[0] in new_kwargs:
+            if keys[0] in new_kwargs and isinstance(new_kwargs[keys[0]], dict):
                 new_kwargs[keys[0]].update(val)
             else:
                 new_kwargs[keys[0]] = val
