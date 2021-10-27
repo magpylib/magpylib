@@ -3,15 +3,20 @@ import collections.abc
 from magpylib._lib.config import Config
 
 
-def update_nested_dict(d, u, same_keys_only=False):
+def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False):
     """updates recursively 'd' from 'u'"""
     for k, v in u.items():
         if k in d or not same_keys_only:
             if isinstance(d, collections.abc.Mapping):
                 if isinstance(v, collections.abc.Mapping):
-                    r = update_nested_dict(d.get(k, {}), v)
+                    r = update_nested_dict(
+                        d.get(k, {}),
+                        v,
+                        same_keys_only=same_keys_only,
+                        replace_None_only=replace_None_only,
+                    )
                     d[k] = r
-                else:
+                elif d[k] is None or not replace_None_only:
                     d[k] = u[k]
             else:
                 d = {k: u[k]}
@@ -126,7 +131,9 @@ class BaseStyleProperties:
                 dict_[k] = val
         return dict_
 
-    def update(self, arg=None, _match_properties=False, **kwargs):
+    def update(
+        self, arg=None, _match_properties=False, _replace_None_only=True, **kwargs
+    ):
         """
         updates the class properties with provided arguments, supports magic underscore
         returns self
@@ -137,7 +144,10 @@ class BaseStyleProperties:
             arg.update(magic_to_dict(kwargs))
         current_dict = self.get_properties_dict()
         new_dict = update_nested_dict(
-            current_dict, arg, same_keys_only=_match_properties
+            current_dict,
+            arg,
+            same_keys_only=_match_properties,
+            replace_None_only=_replace_None_only,
         )
         for k, v in new_dict.items():
             setattr(self, k, v)
@@ -203,8 +213,6 @@ class BaseStyle(BaseStyleProperties):
 
     @description.setter
     def description(self, val):
-        if val is None:
-            val = Config.AUTO_DESCRIPTION
         self._description = val if isinstance(val, bool) or val is None else str(val)
 
     @property
@@ -322,8 +330,6 @@ class MagColor(BaseStyleProperties):
 
     @north.setter
     def north(self, val):
-        if val is None:
-            val = Config.MAGNETIZATION_COLOR_NORTH
         self._north = color_validator(val)
 
     @property
@@ -333,8 +339,6 @@ class MagColor(BaseStyleProperties):
 
     @south.setter
     def south(self, val):
-        if val is None:
-            val = Config.MAGNETIZATION_COLOR_SOUTH
         self._south = color_validator(val)
 
     @property
@@ -344,8 +348,6 @@ class MagColor(BaseStyleProperties):
 
     @middle.setter
     def middle(self, val):
-        if val is None:
-            val = Config.MAGNETIZATION_COLOR_MIDDLE
         if val != "auto" and not val is False:
             val = color_validator(val)
         self._middle = val
@@ -357,8 +359,6 @@ class MagColor(BaseStyleProperties):
 
     @transition.setter
     def transition(self, val):
-        if val is None:
-            val = Config.MAGNETIZATION_COLOR_TRANSITION
         assert (
             isinstance(val, (float, int)) and val >= 0 and val <= 1
         ), "color transition must be a value betwen 0 and 1"
@@ -477,8 +477,8 @@ class CurrentStyle(BaseStyle):
     - size: defines the size of the arrows
     """
 
-    def __init__(self, show=True, **kwargs):
-        super().__init__(show=show, **kwargs)
+    def __init__(self, show=None, size=None, **kwargs):
+        super().__init__(show=show, size=size, **kwargs)
 
     @property
     def show(self):
