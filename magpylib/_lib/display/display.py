@@ -29,19 +29,12 @@ from magpylib._lib.config import Config
 # ON INTERFACE
 def display(
     *objects,
-    markers=None,
-    show_path=True,
-    show_direction=None,
-    size_sensors=None,
-    size_direction=None,
-    size_dipoles=None,
+    path=True,  # bool, int, index list, 'animate'
     zoom=1,
-    plotting_backend=Config.PLOTTING_BACKEND,
-    canvas=None,
-    renderer=None,
     animate_time=5,
-    animate_fps=30,
-    color_discrete_sequence=None,
+    markers=None,
+    backend=None,
+    canvas=None,
     **kwargs,
 ):
     """
@@ -52,40 +45,26 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    markers: array_like, None, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
-
-    show_path: bool or int or array_like, default=True
+    path: bool or int or array_like, default=True
         Options True, False, positive int or iterable. By default object paths are shown. If
-        show_path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of show_path. If show_path is an iterable
+        path is a positive integer, objects will be displayed at multiple path
+        positions along the path, in steps of path. If path is an iterable
         of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `animate_time`
+        If path='animate, the plot will be animated according to the `animate_time`
         and 'animate_fps' parameters.
-
-    show_direction: bool, default=True
-        Set True to show magnetization and current directions. The `matplotlib`
-        backend uses arrows and the plotly backend displays direction with a color
-        gradient for magnets/dipoles and arrows for currents.
-
-    size_sensors: float, default=None
-        Adjust automatic display size of sensors. If not set, value
-        defaults back to `Config.SENSOR_SIZE`
-
-    size_direction: float, default=None
-        Adjust automatic display size of direction arrows. If not set, value
-        defaults back to `Config.DIRECTION_SIZE`
-
-    size_dipoles: float, default=None
-        Adjust automatic display size of dipoles. If not set, value
-        defaults back to `Config.DIPOLE_SIZE`
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
 
-    plotting_backend: default=None
+    animate_time: float, default = 3
+        Sets the animation duration
+
+    markers: array_like, None, shape (N,3), default=None
+        Display position markers in the global CS. By default no marker is displayed.
+
+    backend: default=None
         One of 'matplotlib', 'plolty'. If not set, parameter will default to
-        Config.PLOTTING_BACKEND
+        Config.BACKEND
 
     canvas: pyplot Axis or plotly Figure, default=None
         Display graphical output in a given canvas:
@@ -93,41 +72,6 @@ def display(
         - with plotly: plotly.graph_objects.Figure
             or plotly.graph_objects.FigureWidget
         By default a new canvas is created and displayed.
-
-    renderer: str. default=None,
-        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
-        of contexts.
-        Available renderers are:
-        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
-         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
-         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
-         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
-         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
-
-    animate_time: float, default = 3
-        Sets the animation duration
-
-    animate_fps: float, default = 30
-        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
-        50 by default to avoid hanging the animation process.
-
-    animate_slider: bool, default = False
-        if True, an interactive slider will be displayed and stay in sync with the animation
-
-    color_discrete_sequence: list or array_like, iterable, default=
-            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
-            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
-            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
-            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
 
     Returns
     -------
@@ -167,58 +111,49 @@ def display(
 
     # test if all source dimensions and excitations (if sho_direc=True) have been initialized
     check_dimensions(obj_list)
-    if show_direction:
-        check_excitations(obj_list)
+
+    # TODO check_excitations(obj_list)
 
     # test if every individual obj_path is good
     test_path_format(obj_list)
     check_show_path = (
-        isinstance(show_path, (int, bool))
-        or show_path == "animate"
-        or (hasattr(show_path, "__iter__") and not isinstance(show_path, str))
+        isinstance(path, (int, bool))
+        or path == "animate"
+        or (hasattr(path, "__iter__") and not isinstance(path, str))
     )
     assert check_show_path, (
-        f"`show_path` argument of type {type(show_path)} is invalid, \n"
+        f"`path` argument of type {type(path)} is invalid, \n"
         "it must be one of (True, False, 'animate'), a positive path index "
         "or an Iterable of path indices."
     )
 
-    if plotting_backend is None:
-        plotting_backend = Config.PLOTTING_BACKEND
+    if backend is None:
+        backend = Config.BACKEND
 
-    if plotting_backend == "matplotlib":
-        if show_path == "animate":
+    if backend == "matplotlib":
+        if path == "animate":
             warnings.warn(
-                "The matplotlib backend does not support animation, falling back to show_path=True"
+                "The matplotlib backend does not support animation, falling back to path=True"
             )
-            show_path = True
+            path = True
         display_matplotlib(
             *obj_list,
             markers=markers,
-            show_path=show_path,
-            show_direction=show_direction,
-            size_sensors=size_sensors,
-            size_direction=size_direction,
-            size_dipoles=size_dipoles,
+            show_path=path,
             zoom=zoom,
             axis=canvas,
         )
-    elif plotting_backend == "plotly":
+    elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
         from magpylib._lib.display.plotly_draw import display_plotly
+
         display_plotly(
             *obj_list,
             markers=markers,
-            show_path=show_path,
-            show_direction=show_direction,
-            size_sensors=size_sensors,
-            size_dipoles=size_dipoles,
+            show_path=path,
             zoom=zoom,
             fig=canvas,
-            renderer=renderer,
             animate_time=animate_time,
-            animate_fps=animate_fps,
-            color_discrete_sequence=color_discrete_sequence,
             **kwargs,
         )
 
@@ -265,7 +200,7 @@ def display_matplotlib(
 
     size_direction: float, default=None
         Adjust automatic display size of direction arrows. If not set, value
-        defaults back to `Config.DIRECTION_SIZE`
+        defaults back to `Config.MAGNETIZATION_SIZE`
 
     size_dipoles: float, default=None
         Adjust automatic display size of dipoles. If not set, value
@@ -312,9 +247,9 @@ def display_matplotlib(
 
     # apply config default values if None
     if show_direction is None:
-        show_direction = Config.SHOW_DIRECTION
+        show_direction = True
     if size_direction is None:
-        size_direction = Config.DIRECTION_SIZE
+        size_direction = Config.MAGNETIZATION_SIZE
     if size_sensors is None:
         size_sensors = Config.SENSOR_SIZE
     if size_dipoles is None:

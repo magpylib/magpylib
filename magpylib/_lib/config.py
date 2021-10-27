@@ -9,21 +9,31 @@ _DEFAULTS = dict(
     CHECK_INPUTS=True,
     EDGESIZE=1e-8,
     ITER_CYLINDER=50,
-    SHOW_DIRECTION=True,
-    AUTO_DESCRIPTION=True,
-    SENSOR_SIZE=1,
+    SENSOR_SIZE=1,  # coordinate cross size
+    SENSOR_PIXEL_SIZE=1,
+    SENSOR_PIXEL_COLOR="grey",
     DIPOLE_SIZE=1,
-    DIRECTION_SIZE=1,
+    MAGNETIZATION_SHOW=True,
+    MAGNETIZATION_SIZE=1,
+    MAGNETIZATION_COLOR_NORTH="#E71111",  # 'red'
+    MAGNETIZATION_COLOR_MIDDLE="#DDDDDD",  # 'grey', alternative 'auto'
+    MAGNETIZATION_COLOR_SOUTH="#00B050",  # 'green'
+    MAGNETIZATION_COLOR_TRANSITION=0.2,
+    MARKER_SIZE=2,
+    MARKER_COLOR="grey",
+    MARKER_SYMBOL="x",
+    PATH_LINE_WIDTH=1,
+    PATH_LINE_TYPE="solid",
+    PATH_MARKER_SIZE=1,
+    PATH_MARKER_SYMBOL="o",
     AUTOSIZE_FACTOR=10,
+    AUTO_DESCRIPTION=True,
+    CURRENT_SHOW=True,
+    CURRENT_SIZE=1,
+    ANIMATE_FPS=30,
     ANIMATE_MAX_FRAMES=200,
-    PLOTTING_BACKEND="matplotlib",
-    COLOR_NORTH="#E71111",  # 'red'
-    COLOR_MIDDLE="#DDDDDD",  # 'grey'
-    COLOR_SOUTH="#00B050",  # 'green'
-    COLOR_TRANSITION=0.2,
-    PIXEL_COLOR="grey",
-    PIXEL_SIZE=1.,
-    COLOR_DISCRETE_SEQUENCE=(
+    BACKEND="matplotlib",
+    COLOR_SEQUENCE=(
         "#2E91E5",
         "#E15F99",
         "#1CA71C",
@@ -51,7 +61,6 @@ _DEFAULTS = dict(
     ),
 )
 
-
 # ON INTERFACE
 class Config:
     """Library default settings
@@ -72,11 +81,6 @@ class Config:
         to compute the integral. More iterations increase precision but slow
         down the computation.
 
-    SHOW_DIRECTION: bool, default=True
-        Set True to show magnetization and current directions. The `matplotlib`
-        backend uses arrows and the plotly backend displays direction with a color
-        gradient for magnets/dipoles and arrows for currents.
-
     AUTO_DESCRIPTION: bool or str default=True
         adds legend entry suffix based on value:
         - True: base object dimension are shown
@@ -89,25 +93,25 @@ class Config:
     DIPOLE_SIZE: float, default=1
         Adjust automatic display size of dipoles. See also `AUTOSIZE_FACTOR`
 
-    DIRECTION_SIZE: float, default=1
+    MAGNETIZATION_SIZE: float, default=1
         Adjust automatic display size of direction arrows.
 
     AUTOSIZE_FACTOR: int, default=15
         Defines at which scale objects like sensors and dipoles are displayed.
         -> object_size = canvas_size / AUTOSIZE_FACTOR
 
-    PLOTTING_BACKEND: str, default=True
+    BACKEND: str, default=True
         One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not
         set explicitly in the display function.
 
-    COLOR_TRANSITION, float, default=0
+    MAGNETIZATION_COLOR_TRANSITION, float, default=0
         A value between 0 and 1. Sets the smoothness of the color transitions from north
         to south pole visualization.
 
     ANIMATE_MAX_FRAMES, int, default=200
         Maximum total number of frames to be displayed before downsampling kicks in
 
-    COLOR_SOUTH, str, default=rgb(0,176,80)
+    MAGNETIZATION_COLOR_SOUTH, str, default=rgb(0,176,80)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -115,7 +119,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    COLOR_MIDDLE, str, default=rgb(221,221,221)
+    MAGNETIZATION_COLOR_MIDDLE, str, default=rgb(221,221,221)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -123,7 +127,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    COLOR_NORTH, str, default=rgb(231,17,17)
+    MAGNETIZATION_COLOR_NORTH, str, default=rgb(231,17,17)
         The property is a color and may be specified as:
       - A hex string (e.g. '#ff0000')
       - An rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -139,7 +143,7 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    COLOR_DISCRETE_SEQUENCE, iterable, default=
+    COLOR_SEQUENCE, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',

@@ -6,10 +6,10 @@ from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.config import Config
 from magpylib._lib.input_checks import check_vector_format, check_vector_type
-from magpylib._lib.display.style import MagnetStyle
+from magpylib._lib.display.style import DipoleStyle
 
 # init for tool tips
-mx=my=mz=None
+mx = my = mz = None
 
 # ON INTERFACE
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
@@ -79,40 +79,37 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
 
     def __init__(
-            self,
-            moment = (mx,my,mz),
-            position = (0,0,0),
-            orientation = None,
-            style = None):
+        self, moment=(mx, my, mz), position=(0, 0, 0), orientation=None, style=None
+    ):
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, style_class=MagnetStyle)
+        BaseGeo.__init__(
+            self, position, orientation, style=style, style_class=DipoleStyle
+        )
         BaseDisplayRepr.__init__(self)
 
         # instance attributes
         self.moment = moment
-        self._object_type = 'Dipole'
+        self._object_type = "Dipole"
 
     # property getters and setters
     @property
     def moment(self):
-        """ Object moment attributes getter and setter.
-        """
+        """Object moment attributes getter and setter."""
         return self._moment
 
     @moment.setter
     def moment(self, mom):
-        """ Set dipole moment vector, shape (3,), unit [mT*mm^3].
-        """
+        """Set dipole moment vector, shape (3,), unit [mT*mm^3]."""
         # input type check
         if Config.CHECK_INPUTS:
-            check_vector_type(mom, 'moment')
+            check_vector_type(mom, "moment")
 
         # secure type
         mom = np.array(mom, dtype=float)
 
         # input format check
         if Config.CHECK_INPUTS:
-            check_vector_format(mom, (3,), 'moment')
+            check_vector_format(mom, (3,), "moment")
 
         self._moment = mom

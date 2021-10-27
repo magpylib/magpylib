@@ -35,7 +35,7 @@ def magic_to_dict(kwargs):
                 new_kwargs[keys[0]].update(val)
             else:
                 new_kwargs[keys[0]] = val
-    for k,v in new_kwargs.items():
+    for k, v in new_kwargs.items():
         if isinstance(v, dict):
             new_kwargs[k] = magic_to_dict(v)
     return new_kwargs
@@ -45,7 +45,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs, allows `None` by default"""
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
-        if Config.PLOTTING_BACKEND == "plotly":
+        if Config.BACKEND == "plotly":
             from _plotly_utils.basevalidators import ColorValidator
 
             cv = ColorValidator(plotly_name="color", parent_name=parent_name)
@@ -250,8 +250,20 @@ class MagStyle(BaseStyleProperties):
     - color: magnetization colors of the poles
     """
 
-    def __init__(self, size=None, color=None, **kwargs):
-        super().__init__(size=size, color=color, **kwargs)
+    def __init__(self, show=None, size=None, color=None, **kwargs):
+        super().__init__(show=show, size=size, color=color, **kwargs)
+
+    @property
+    def show(self):
+        """show magnetization direction through poles colors"""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(
+            val, bool
+        ), "show must be either `True` or `False`"
+        self._show = val
 
     @property
     def size(self):
@@ -294,15 +306,12 @@ class MagColor(BaseStyleProperties):
         - transition
     """
 
-    def __init__(
-        self, north=None, south=None, middle=None, transition=None, show=None, **kwargs
-    ):
+    def __init__(self, north=None, south=None, middle=None, transition=None, **kwargs):
         super().__init__(
             north=north,
             middle=middle,
             south=south,
             transition=transition,
-            show=show,
             **kwargs,
         )
 
@@ -314,7 +323,7 @@ class MagColor(BaseStyleProperties):
     @north.setter
     def north(self, val):
         if val is None:
-            val = Config.COLOR_NORTH
+            val = Config.MAGNETIZATION_COLOR_NORTH
         self._north = color_validator(val)
 
     @property
@@ -325,7 +334,7 @@ class MagColor(BaseStyleProperties):
     @south.setter
     def south(self, val):
         if val is None:
-            val = Config.COLOR_SOUTH
+            val = Config.MAGNETIZATION_COLOR_SOUTH
         self._south = color_validator(val)
 
     @property
@@ -336,22 +345,10 @@ class MagColor(BaseStyleProperties):
     @middle.setter
     def middle(self, val):
         if val is None:
-            val = Config.COLOR_MIDDLE
+            val = Config.MAGNETIZATION_COLOR_MIDDLE
         if val != "auto" and not val is False:
             val = color_validator(val)
         self._middle = val
-
-    @property
-    def show(self):
-        """show magnetization direction through poles colors"""
-        return self._show
-
-    @show.setter
-    def show(self, val):
-        assert val is None or isinstance(
-            val, bool
-        ), "show must be either `True` or `False`"
-        self._show = val
 
     @property
     def transition(self):
@@ -361,7 +358,7 @@ class MagColor(BaseStyleProperties):
     @transition.setter
     def transition(self, val):
         if val is None:
-            val = Config.COLOR_TRANSITION
+            val = Config.MAGNETIZATION_COLOR_TRANSITION
         assert (
             isinstance(val, (float, int)) and val >= 0 and val <= 1
         ), "color transition must be a value betwen 0 and 1"
@@ -476,24 +473,36 @@ class PixelStyle(BaseStyleProperties):
 class CurrentStyle(BaseStyle):
     """
     This class holds styling properties for Line and Circular currents
-    - direction: if True current directin is shown with an arrow
+    - show: if True current directin is shown with an arrow
+    - size: defines the size of the arrows
     """
 
-    def __init__(self, direction=True, **kwargs):
-        super().__init__(direction=direction, **kwargs)
+    def __init__(self, show=True, **kwargs):
+        super().__init__(show=show, **kwargs)
 
     @property
-    def direction(self):
-        """show/hide current direction arrow"""
-        return self._direction
+    def show(self):
+        """show/hide current show arrow"""
+        return self._show
 
-    @direction.setter
-    def direction(self, val):
+    @show.setter
+    def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `direction` property of {type(self).__name__} must be either `True` or `False`"
+            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
             f" but received {val} instead"
         )
-        self._direction = val
+        self._show = val
+
+    @property
+    def size(self):
+        """positive float for relative arrow size"""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._size = val
 
 
 class MarkerStyle(BaseStyleProperties):
@@ -504,7 +513,7 @@ class MarkerStyle(BaseStyleProperties):
     - symbol: marker symbol
     """
 
-    def __init__(self, size=2, color=None, symbol="x", **kwargs):
+    def __init__(self, size=None, color=None, symbol=None, **kwargs):
         super().__init__(size=size, color=color, symbol=symbol, **kwargs)
 
     @property
@@ -568,3 +577,24 @@ class MarkerTraceStyle(BaseStyleProperties):
                 "the marker property must be an instance"
                 "of MarkerStyle or a dictionary with equivalent key/value pairs"
             )
+
+
+class DipoleStyle(MagnetStyle):
+    """
+    This class holds Dipole styling properties
+    - size:  size relative to canvas
+    """
+
+    def __init__(self, size=None, **kwargs):
+        super().__init__(size=size, **kwargs)
+
+    @property
+    def size(self):
+        """positive float for relative sensor to size to canvas size"""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._size = val

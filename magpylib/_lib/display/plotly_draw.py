@@ -19,6 +19,7 @@ from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 from magpylib._lib.display.style import BaseStyle, MarkerTraceStyle
+from magpylib._lib.display.disp_utility import get_rot_pos_from_path
 
 # Defaults
 
@@ -40,6 +41,17 @@ _UNIT_PREFIX = {
     18: "E",  # exa
     21: "Z",  # zetta
     24: "Y",  # yotta
+}
+
+
+_SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
+    ".": "circle",
+    "o": "circle-open",
+    "+": "cross",
+    "D": "diamond",
+    "d": "diamond-open",
+    "s": "square",
+    "x": "x",
 }
 
 
@@ -114,7 +126,7 @@ def _getIntensity(vertices, axis) -> np.ndarray:
 
 
 def _getColorscale(
-    color_transition=0.1,
+    color_transition=None,
     color_north=None,
     color_middle=None,
     color_south=None,
@@ -145,13 +157,14 @@ def _getColorscale(
     list
         returns colorscale as list of tuples
     """
-
+    if color_transition is None:
+        color_transition = Config.MAGNETIZATION_COLOR_TRANSITION
     if color_north is None:
-        color_north = Config.COLOR_NORTH
+        color_north = Config.MAGNETIZATION_COLOR_NORTH
     if color_south is None:
-        color_south = Config.COLOR_SOUTH
+        color_south = Config.MAGNETIZATION_COLOR_SOUTH
     if color_middle is None:
-        color_middle = Config.COLOR_MIDDLE
+        color_middle = Config.MAGNETIZATION_COLOR_MIDDLE
     if color_middle is False:
         colorscale = [
             [0.0, color_south],
@@ -359,14 +372,14 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1) -> dict:
     return arrow
 
 
-def draw_arrow(vec, pos, sign=1) -> Tuple:
+def draw_arrow(vec, pos, sign=1, arrow_size=1) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
     centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
     moved to position `pos`.
     """
-    hy = sign * 0.1
-    hx = 0.06
+    hy = sign * 0.1 * arrow_size
+    hx = 0.06 * arrow_size
     norm = np.linalg.norm(vec)
     arrow = (
         np.array(
@@ -399,7 +412,6 @@ def make_Line(
     current=0.0,
     vertices=((-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
     pos=(0.0, 0.0, 0.0),
-    show_arrows=True,
     orientation=None,
     color=None,
     style=None,
@@ -418,12 +430,14 @@ def make_Line(
         name_suffix = ""
     else:
         name_suffix = f" ({name_suffix})"
+    show_arrows = style.show if style.show is not None else Config.CURRENT_SHOW
+    arrow_size = style.size if style.size is not None else Config.CURRENT_SIZE
     if show_arrows:
         vectors = np.diff(vertices, axis=0)
         positions = vertices[:-1] + vectors / 2
         vertices = np.concatenate(
             [
-                draw_arrow(vec, pos, np.sign(current))
+                draw_arrow(vec, pos, np.sign(current), arrow_size=arrow_size)
                 for vec, pos in zip(vectors, positions)
             ],
             axis=1,
@@ -451,7 +465,6 @@ def make_Circular(
     diameter=1.0,
     pos=(0.0, 0.0, 0.0),
     Nvert=50,
-    show_arrows=True,
     orientation=None,
     color=None,
     style=None,
@@ -473,9 +486,12 @@ def make_Circular(
     t = np.linspace(0, 2 * np.pi, Nvert)
     x = np.cos(t)
     y = np.sin(t)
+    show_arrows = style.show
+    show_arrows = style.show if style.show is not None else Config.CURRENT_SHOW
+    arrow_size = style.size if style.size is not None else Config.CURRENT_SIZE
     if show_arrows:
-        hy = 0.2 * np.sign(current)
-        hx = 0.15
+        hy = 0.2 * np.sign(current) * arrow_size
+        hx = 0.15 * arrow_size
         x = np.hstack([x, [1 + hx, 1, 1 - hx]])
         y = np.hstack([y, [-hy, 0, -hy]])
     x = x * diameter / 2
@@ -542,9 +558,9 @@ def make_UnsupportedObject(
 def make_Dipole(
     moment=(0.0, 0.0, 1.0),
     pos=(0.0, 0.0, 0.0),
-    size=1.0,
     orientation=None,
     style=None,
+    autosize=None,
     **kwargs,
 ) -> dict:
     """
@@ -561,6 +577,11 @@ def make_Dipole(
         name_suffix = ""
     else:
         name_suffix = f" ({name_suffix})"
+    size = style.size
+    if size is None:
+        size = Config.DIPOLE_SIZE
+    if autosize is not None:
+        size *= autosize
     dipole = make_BaseArrow(base_vertices=10, diameter=0.3 * size, height=size)
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
@@ -760,6 +781,7 @@ def make_Sensor(
     orientation=None,
     color=None,
     style=None,
+    autosize=None,
     **kwargs,
 ):
     """
@@ -790,7 +812,9 @@ def make_Sensor(
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
-    dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3])
+    dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3], dtype=float)
+    if autosize is not None:
+        dim *= autosize
     if pixel.ndim == 1:
         dim_ext = dim
     else:
@@ -806,10 +830,10 @@ def make_Sensor(
     if pixel.ndim != 1:
         pixel_color = style.pixel.color
         if pixel_color is None:
-            pixel_color = Config.PIXEL_COLOR
+            pixel_color = Config.SENSOR_PIXEL_COLOR
         pixel_size = style.pixel.size
         if pixel_size is None:
-            pixel_size = Config.PIXEL_SIZE
+            pixel_size = Config.SENSOR_PIXEL_SIZE
         if pixel_size > 0:
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
@@ -846,9 +870,9 @@ def _update_mag_mesh(
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if hasattr(style, "magnetization"):
         color = style.magnetization.color
-        if color.show is None:
-            color.show = Config.SHOW_DIRECTION
-        if magnetization is not None and color.show:
+        if style.magnetization.show is None:
+            style.magnetization.show = Config.MAGNETIZATION_SHOW
+        if magnetization is not None and style.magnetization.show:
             color_middle = (
                 kwargs.get("color", None) if color.middle == "auto" else color.middle
             )
@@ -916,22 +940,23 @@ def merge_traces(*traces):
     All traces have be of the same type when merging. Keys are taken from the first object, other
     keys from further objects are ignored.
     """
-    if traces[0]["type"] == "mesh3d":
-        trace = merge_mesh3d(*traces)
-    elif traces[0]["type"] == "scatter3d":
-        trace = merge_scatter3d(*traces)
+    if len(traces) > 1:
+        if traces[0]["type"] == "mesh3d":
+            trace = merge_mesh3d(*traces)
+        elif traces[0]["type"] == "scatter3d":
+            trace = merge_scatter3d(*traces)
+    else:
+        trace = traces[0]
     return trace
 
 
 def get_plotly_traces(
     input_obj,
     show_path=False,
-    show_direction=None,
-    size_dipoles=None,
-    size_sensors=None,
     path_numbering=False,
     color=None,
     opacity=None,
+    autosize=None,
     **kwargs,
 ) -> list:
     """
@@ -983,28 +1008,28 @@ def get_plotly_traces(
         if val is not None:
             kwargs[param] = val
 
-    if show_direction is not None:
-        if hasattr(style, "magnetization"):
-            style.magnetization.color.show = show_direction
-        if hasattr(style, "direction"):
-            style.direction = show_direction
-
-    show_arrows = Config.SHOW_DIRECTION if show_direction is None else show_direction
-
     kwargs["style"] = style
 
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
-        marker_dict = style.get_properties_dict()
-        if kwargs['color'] is None:
-            marker_dict['marker']['color'] = kwargs['color'] 
+        default_marker = {
+            "size": Config.MARKER_SIZE,
+            "symbol": Config.MARKER_SYMBOL,
+            "color": Config.MARKER_COLOR,
+        }
+        marker = style.get_properties_dict()["marker"]
+        marker = {k: (default_marker[k] if v is None else v) for k, v in marker.items()}
+        symb = marker["symbol"]
+        marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+        if kwargs["color"] is None:
+            marker["color"] = kwargs["color"]
         trace = go.Scatter3d(
             name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
             x=x,
             y=y,
             z=z,
-            **marker_dict,
+            marker=marker,
             mode="markers",
             opacity=kwargs["opacity"],
         )
@@ -1012,10 +1037,11 @@ def get_plotly_traces(
     else:
         if isinstance(input_obj, Sensor):
             if style.size is None:
-                style.size = size_sensors
+                style.size = Config.SENSOR_SIZE
             kwargs.update(
                 dim=getattr(input_obj, "dimension", style.size),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
+                autosize=autosize,
             )
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
@@ -1054,53 +1080,33 @@ def get_plotly_traces(
         elif isinstance(input_obj, Dipole):
             kwargs.update(
                 moment=input_obj.moment,
-                size=size_dipoles,
+                autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
                 vertices=input_obj.vertices,
                 current=input_obj.current,
-                show_arrows=show_arrows,
             )
             make_func = make_Line
         elif isinstance(input_obj, Circular):
             kwargs.update(
                 diameter=input_obj.diameter,
                 current=input_obj.current,
-                show_arrows=show_arrows,
             )
             make_func = make_Circular
         else:
             kwargs.update(name=type(input_obj).__name__)
             make_func = make_UnsupportedObject
 
-        haspath = input_obj.position.ndim > 1
-        if haspath:
-            path_len = input_obj.position.shape[0]
-            if show_path is True or show_path is False:
-                inds = np.array([-1])
-            elif isinstance(show_path, int):
-                inds = np.arange(path_len, dtype=int)[::-show_path]
-            elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
-                inds = np.array(show_path)
-            inds[inds > path_len] = path_len
-            inds = np.unique(inds)
-            if inds.size == 0:
-                inds = np.array([path_len - 1])
-            path_traces = []
-            for pos, orient in zip(
-                input_obj.position[inds], input_obj.orientation[inds]
-            ):
-                path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
-            trace = merge_traces(*path_traces)
-        else:
-            trace = make_func(
-                pos=input_obj.position, orientation=input_obj.orientation, **kwargs
-            )
+        path_traces = []
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
+            path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+        trace = merge_traces(*path_traces)
         trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
         traces.append(trace)
-        if haspath and show_path is not False:
+
+        if input_obj.position.ndim > 1 and show_path is not False:
             x, y, z = input_obj.position.T
             txt_kwargs = (
                 {"mode": "markers+text+lines", "text": list(range(len(x)))}
@@ -1115,13 +1121,18 @@ def get_plotly_traces(
                 name=f"Path: {input_obj}",
                 showlegend=False,
                 legendgroup=f"{input_obj}",
-                marker_size=1,
+                marker_size=Config.PATH_MARKER_SIZE,
                 marker_color=kwargs["color"],
+                marker_symbol=_SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(
+                    Config.PATH_MARKER_SYMBOL, Config.PATH_MARKER_SYMBOL
+                ),
                 line_color=kwargs["color"],
-                line_width=1,
+                line_width=Config.PATH_LINE_WIDTH,
+                line_dash=Config.PATH_LINE_TYPE,
                 **txt_kwargs,
             )
             traces.append(scatter_path)
+
     return traces
 
 
@@ -1135,7 +1146,7 @@ def display_plotly(
     animate_time=5,
     animate_fps=30,
     animate_slider=True,
-    color_discrete_sequence=None,
+    color_sequence=None,
     **kwargs,
 ):
 
@@ -1191,7 +1202,7 @@ def display_plotly(
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
 
-    color_discrete_sequence: list or array_like, iterable, default=
+    color_sequence: list or array_like, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
@@ -1219,8 +1230,8 @@ def display_plotly(
     if markers is not None and markers:
         obj_list = list(obj_list) + [Markers(*markers)]
 
-    if color_discrete_sequence is None:
-        color_discrete_sequence = Config.COLOR_DISCRETE_SEQUENCE
+    if color_sequence is None:
+        color_sequence = Config.COLOR_SEQUENCE
 
     with fig.batch_update():
         if (
@@ -1235,7 +1246,7 @@ def display_plotly(
             animate_path(
                 fig=fig,
                 objs=obj_list,
-                color_discrete_sequence=color_discrete_sequence,
+                color_sequence=color_sequence,
                 zoom=zoom,
                 title=title,
                 animate_time=animate_time,
@@ -1244,8 +1255,8 @@ def display_plotly(
                 **kwargs,
             )
         else:
-            traces_dicts, kwargs = draw_frame(
-                obj_list, color_discrete_sequence, zoom, show_path, **kwargs
+            traces_dicts = draw_frame(
+                obj_list, color_sequence, zoom, show_path, **kwargs
             )
             traces = [t for obj in obj_list for t in traces_dicts[obj]]
             fig.add_traces(traces)
@@ -1256,7 +1267,9 @@ def display_plotly(
         fig.show(renderer=renderer)
 
 
-def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tuple:
+def draw_frame(
+    objs, color_sequence, zoom, show_path, return_autosize=False, **kwargs
+) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -1270,7 +1283,7 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     Dipole = _lib.obj_classes.Dipole
     traces_dicts = {}
     traces_colors = {}
-    for obj, color in zip(objs, cycle(color_discrete_sequence)):
+    for obj, color in zip(objs, cycle(color_sequence)):
         if not isinstance(obj, (Dipole, Sensor)):
             traces_dicts[obj] = get_plotly_traces(
                 obj, show_path=show_path, color=color, **kwargs
@@ -1283,17 +1296,15 @@ def draw_frame(objs, color_discrete_sequence, zoom, show_path, **kwargs) -> Tupl
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     autosize = np.mean(np.diff(ranges)) / Config.AUTOSIZE_FACTOR
-    if kwargs["size_sensors"] is None:
-        kwargs["size_sensors"] = Config.SENSOR_SIZE
-    if kwargs["size_dipoles"] is None:
-        kwargs["size_dipoles"] = Config.DIPOLE_SIZE
-    kwargs["size_sensors"] *= autosize
-    kwargs["size_dipoles"] *= autosize
     for obj, color in traces_colors.items():
         traces_dicts[obj] = get_plotly_traces(
-            obj, show_path=show_path, color=color, **kwargs
+            obj, show_path=show_path, color=color, autosize=autosize, **kwargs
         )
-    return traces_dicts, kwargs
+    if return_autosize:
+        res = traces_dicts, autosize
+    else:
+        res = traces_dicts
+    return res
 
 
 def apply_fig_ranges(fig, ranges=None, zoom=None):
@@ -1335,8 +1346,8 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     ranges = {k: [] for k in ("xyz")}
     for t in traces:
         for k, v in ranges.items():
-            v.extend([np.min(t[k]), np.max(t[k])])
-    r = np.array([[np.min(v), np.max(v)] for v in ranges.values()])
+            v.extend([np.nanmin(t[k]), np.nanmax(t[k])])
+    r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
     size = np.diff(r, axis=1)
     size[size == 0] = 1
     m = size.max() / 2
@@ -1348,7 +1359,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
 def animate_path(
     fig,
     objs,
-    color_discrete_sequence=None,
+    color_sequence=None,
     zoom=1,
     title="3D-Paths Animation",
     animate_time=3,
@@ -1377,7 +1388,7 @@ def animate_path(
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
 
-    color_discrete_sequence: list or array_like, iterable, default=
+    color_sequence: list or array_like, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
@@ -1469,16 +1480,22 @@ def animate_path(
     frames = []
     for i, ind in enumerate(path_indices):
         if i == 0:  # calculate the dipoles and sensors autosize from first frame
-            traces_dicts, kwargs = draw_frame(
-                objs, color_discrete_sequence, zoom, show_path=[ind], **kwargs
+            traces_dicts, autosize = draw_frame(
+                objs,
+                color_sequence,
+                zoom,
+                show_path=[ind],
+                return_autosize=True,
+                **kwargs,
             )
-            traces = [t for obj in objs for t in traces_dicts[obj]]
         else:
             traces_dicts = {
-                obj: get_plotly_traces(obj, show_path=[ind], color=color, **kwargs)
-                for obj, color in zip(objs, cycle(color_discrete_sequence))
+                obj: get_plotly_traces(
+                    obj, show_path=[ind], color=color, autosize=autosize, **kwargs
+                )
+                for obj, color in zip(objs, cycle(color_sequence))
             }
-            traces = [t for tr in traces_dicts.values() for t in tr]
+        traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(
             go.Frame(
                 data=traces,
