@@ -3,36 +3,39 @@
 
 from typing import Any
 import warnings
+from copy import deepcopy
 
-_DEFAULTS = dict(
-    _SUPPORTED_PLOTTING_BACKENDS=("matplotlib", "plotly"),
-    CHECK_INPUTS=True,
-    EDGESIZE=1e-8,
-    ITER_CYLINDER=50,
-    SENSOR_SIZE=1,  # coordinate cross size
-    SENSOR_PIXEL_SIZE=1,
-    SENSOR_PIXEL_COLOR="grey",
-    DIPOLE_SIZE=1,
-    MAGNETIZATION_SHOW=True,
-    MAGNETIZATION_SIZE=1,
-    MAGNETIZATION_COLOR_NORTH="#E71111",  # 'red'
-    MAGNETIZATION_COLOR_MIDDLE="#DDDDDD",  # 'grey', alternative 'auto'
-    MAGNETIZATION_COLOR_SOUTH="#00B050",  # 'green'
-    MAGNETIZATION_COLOR_TRANSITION=0.2,
-    MARKER_SIZE=2,
-    MARKER_COLOR="grey",
-    MARKER_SYMBOL="x",
-    PATH_LINE_WIDTH=1,
-    PATH_LINE_TYPE="solid",
-    PATH_MARKER_SIZE=1,
-    PATH_MARKER_SYMBOL="o",
-    AUTOSIZE_FACTOR=10,
-    AUTO_DESCRIPTION=True,
-    CURRENT_SHOW=True,
-    CURRENT_SIZE=1,
-    ANIMATE_FPS=30,
-    ANIMATE_MAX_FRAMES=200,
-    BACKEND="matplotlib",
+
+class DefaultConfig:
+    """Package level default values, SHOULD NOT BE MODIFIABLE BY USER"""
+    _SUPPORTED_PLOTTING_BACKENDS=("matplotlib", "plotly")
+    CHECK_INPUTS=True
+    EDGESIZE=1e-8
+    ITER_CYLINDER=50
+    SENSOR_SIZE=1 # coordinate cross size
+    SENSOR_PIXEL_SIZE=1
+    SENSOR_PIXEL_COLOR="grey"
+    DIPOLE_SIZE=1
+    MAGNETIZATION_SHOW=True
+    MAGNETIZATION_SIZE=1
+    MAGNETIZATION_COLOR_NORTH="#E71111"  # 'red'
+    MAGNETIZATION_COLOR_MIDDLE="#DDDDDD"  # 'grey', alternative 'auto'
+    MAGNETIZATION_COLOR_SOUTH="#00B050" # 'green'
+    MAGNETIZATION_COLOR_TRANSITION=0.2
+    MARKER_SIZE=2
+    MARKER_COLOR="grey"
+    MARKER_SYMBOL="x"
+    PATH_LINE_WIDTH=1
+    PATH_LINE_STYLE="solid"
+    PATH_MARKER_SIZE=1
+    PATH_MARKER_SYMBOL="o"
+    AUTOSIZE_FACTOR=10
+    AUTO_DESCRIPTION=True
+    CURRENT_SHOW=True
+    CURRENT_SIZE=1
+    ANIMATE_FPS=30
+    ANIMATE_MAX_FRAMES=200
+    BACKEND="matplotlib"
     COLOR_SEQUENCE=(
         "#2E91E5",
         "#E15F99",
@@ -58,8 +61,9 @@ _DEFAULTS = dict(
         "#6C4516",
         "#0D2A63",
         "#AF0038",
-    ),
-)
+    )
+    OPACITY = 1
+
 
 # ON INTERFACE
 class Config:
@@ -186,7 +190,7 @@ class Config:
 
     def __setattr__(self, name: str, value: Any) -> None:
         if name == "PLOTTING_BACKEND":
-            backends = _DEFAULTS["_SUPPORTED_PLOTTING_BACKENDS"]
+            backends = DefaultConfig._SUPPORTED_PLOTTING_BACKENDS
             assert (
                 value in backends
             ), f"`{value}` is not a valid plotting backend, \n supported backends: {backends}"
@@ -209,9 +213,12 @@ class Config:
         None: NoneType
         """
         if args is None:
-            args = _DEFAULTS.keys()
+            args = (attr for attr in dir(DefaultConfig) if not attr.startswith("__"))
         for k in args:
-            setattr(cls, k, _DEFAULTS[k])
+            val = getattr(DefaultConfig, k)
+            if isinstance(val, (list, dict)):
+                val = deepcopy(val)
+            setattr(cls, k, val)
 
 
 Config.reset()
