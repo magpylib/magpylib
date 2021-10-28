@@ -10,14 +10,14 @@ def get_rot_pos_from_path(obj, show_path):
     returns rots[[1,2,6]], poss[[1,2,6]]
     """
     # pylint: disable=protected-access
-    path_len = obj.position.shape[0]
+    path_len = obj._position.shape[0]
     if show_path is True or show_path is False:
         inds = np.array([-1])
     elif isinstance(show_path, int):
         inds = np.arange(path_len, dtype=int)[::-show_path]
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
-    inds[inds > path_len] = path_len
+    inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:
         inds = np.array([path_len - 1])
