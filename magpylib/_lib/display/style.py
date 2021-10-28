@@ -77,6 +77,82 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     return color_input
 
 
+def get_style(obj, **style_kwargs):
+    """
+    returns default style object based on increasing priority:
+    - style from Config
+    - style from object
+    - style from style_kwargs
+    """
+    c = Config
+    styles_by_familly = {
+        "sensor": {
+            "size": c.SENSOR_SIZE,
+            "pixel": {"size": c.SENSOR_PIXEL_SIZE, "color": c.SENSOR_PIXEL_COLOR},
+        },
+        "dipole": {"size": c.DIPOLE_SIZE},
+        "current": {"current": {"show": c.CURRENT_SHOW, "size": c.CURRENT_SIZE}},
+        "markers": {
+            "marker": {
+                "size": c.MARKER_SIZE,
+                "color": c.MARKER_COLOR,
+                "symbol": c.MARKER_SYMBOL,
+            },
+        },
+        "magnet": {
+            "magnetization": {
+                "show": c.MAGNETIZATION_SHOW,
+                "size": c.MAGNETIZATION_SIZE,
+                "color": {
+                    "north": c.MAGNETIZATION_COLOR_NORTH,
+                    "middle": c.MAGNETIZATION_COLOR_MIDDLE,
+                    "south": c.MAGNETIZATION_COLOR_SOUTH,
+                    "transition": c.MAGNETIZATION_COLOR_TRANSITION,
+                },
+            },
+        },
+        "all": {
+            "path": {
+                "line": {"width": c.PATH_LINE_WIDTH, "style": c.PATH_LINE_STYLE},
+                "marker": {"size": c.PATH_MARKER_SIZE, "symbol": c.PATH_MARKER_SYMBOL},
+            },
+            "description": c.AUTO_DESCRIPTION,
+            "opacity": c.OPACITY,
+        },
+    }
+    objects_families = {
+        "Line": ("current",),
+        "Circular": ("current",),
+        "Cuboid": ("magnet",),
+        "Cylinder": ("magnet",),
+        "Sphere": ("magnet",),
+        "CylinderSegment": ("magnet",),
+        "Sensor": ("sensor",),
+        "Dipole": ("dipole", "magnet"),
+        "Marker": ("markers",),
+    }
+
+    obj_type = getattr(obj, "_object_type", None)
+    obj_families = objects_families.get(obj_type, [])
+
+    obj_style_dict = {
+        **styles_by_familly["all"],
+        **{k: v for fam in obj_families for k, v in styles_by_familly.get(fam, {}).items()},
+    }
+
+    obj_style = getattr(obj, "style", None)
+
+    style = obj_style.copy() if obj_style is not None else BaseStyle()
+
+    style.update(
+        **obj_style_dict, _match_properties=False, _replace_None_only=True
+    )
+
+    style.update(**style_kwargs, _match_properties=False)
+
+    return style
+
+
 class BaseStyleProperties:
     """Base Class to represent only the property attributes"""
 
@@ -119,20 +195,20 @@ class BaseStyleProperties:
         dict_str = ", ".join(f"{k}={repr(getattr(self,k))}" for k in params)
         return f"{type(self).__name__}({dict_str})"
 
-    def get_properties_dict(self):
+    def as_dict(self):
         """returns recursively a nested dictionary with all properties objects of the class"""
         params = self._property_names_generator()
         dict_ = {}
         for k in params:
             val = getattr(self, k)
-            if hasattr(val, "get_properties_dict"):
-                dict_[k] = val.get_properties_dict()
+            if hasattr(val, "as_dict"):
+                dict_[k] = val.as_dict()
             else:
                 dict_[k] = val
         return dict_
 
     def update(
-        self, arg=None, _match_properties=False, _replace_None_only=True, **kwargs
+        self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
     ):
         """
         updates the class properties with provided arguments, supports magic underscore
@@ -142,11 +218,11 @@ class BaseStyleProperties:
             arg = {}
         if kwargs:
             arg.update(magic_to_dict(kwargs))
-        current_dict = self.get_properties_dict()
+        current_dict = self.as_dict()
         new_dict = update_nested_dict(
             current_dict,
             arg,
-            same_keys_only=_match_properties,
+            same_keys_only=not _match_properties,
             replace_None_only=_replace_None_only,
         )
         for k, v in new_dict.items():
@@ -155,7 +231,7 @@ class BaseStyleProperties:
 
     def copy(self):
         """returns a copy of the current class instance"""
-        return type(self)(**self.get_properties_dict())
+        return type(self)(**self.as_dict())
 
 
 class BaseStyle(BaseStyleProperties):
@@ -237,6 +313,25 @@ class BaseStyle(BaseStyleProperties):
         self._opacity = val
 
     @property
+    def path(self):
+        """MagColor class with 'north', 'south', 'middle' and 'transition' values"""
+        return self._path
+
+    @path.setter
+    def path(self, val):
+        if isinstance(val, dict):
+            val = PathTraceStyle(**val)
+        if isinstance(val, PathTraceStyle):
+            self._path = val
+        elif val is None:
+            self._path = PathTraceStyle()
+        else:
+            raise ValueError(
+                "the path property must be an instance "
+                "of PathTraceStyle or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
     def mesh3d(self):
         """plotly.graph_objects.Mesh3d instance"""
         return self._mesh3d
@@ -252,7 +347,7 @@ class BaseStyle(BaseStyleProperties):
             self._mesh3d = go.Mesh3d(**val)
 
 
-class MagStyle(BaseStyleProperties):
+class MagnetizationStyle(BaseStyleProperties):
     """This class holds magnetization styling properties
     - size: arrow size for matplotlib backend
     - color: magnetization colors of the poles
@@ -381,11 +476,11 @@ class MagnetStyle(BaseStyle):
     @magnetization.setter
     def magnetization(self, val):
         if isinstance(val, dict):
-            val = MagStyle(**val)
-        if isinstance(val, MagStyle):
+            val = MagnetizationStyle(**val)
+        if isinstance(val, MagnetizationStyle):
             self._magnetization = val
         elif val is None:
-            self._magnetization = MagStyle()
+            self._magnetization = MagnetizationStyle()
         else:
             raise ValueError(
                 "the magnetic color property must be an instance "
@@ -471,6 +566,36 @@ class PixelStyle(BaseStyleProperties):
 
 
 class CurrentStyle(BaseStyle):
+    """
+    This class holds styling properties for Line and Circular currents
+    - show: if True current directin is shown with an arrow
+    - size: defines the size of the arrows
+    """
+
+    def __init__(self, current=None, **kwargs):
+        super().__init__(current=current, **kwargs)
+
+    @property
+    def current(self):
+        """ArrowStyle class with 'show', 'size' properties"""
+        return self._current
+
+    @current.setter
+    def current(self, val):
+        if isinstance(val, dict):
+            val = ArrowStyle(**val)
+        if isinstance(val, ArrowStyle):
+            self._current = val
+        elif val is None:
+            self._current = ArrowStyle()
+        else:
+            raise ValueError(
+                "the current property must be an instance"
+                "of ArrowStyle or a dictionary with equivalent key/value pairs"
+            )
+
+
+class ArrowStyle(BaseStyleProperties):
     """
     This class holds styling properties for Line and Circular currents
     - show: if True current directin is shown with an arrow
@@ -598,3 +723,96 @@ class DipoleStyle(MagnetStyle):
         # wrong value will be handeled by the respective libraries since
         # value only gets created at plot creation.
         self._size = val
+
+
+class PathTraceStyle(BaseStyleProperties):
+    """
+    This class holds marker styling properties
+    - marker: MarkerStyle class
+    """
+
+    def __init__(self, marker=None, line=None, **kwargs):
+        super().__init__(marker=marker, line=line, **kwargs)
+
+    @property
+    def marker(self):
+        """MarkerStyle class with 'color', 'symbol', 'size' properties"""
+        return self._marker
+
+    @marker.setter
+    def marker(self, val):
+        if isinstance(val, dict):
+            val = MarkerStyle(**val)
+        if isinstance(val, MarkerStyle):
+            self._marker = val
+        elif val is None:
+            self._marker = MarkerStyle()
+        else:
+            raise ValueError(
+                "the marker property must be an instance"
+                "of MarkerStyle or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def line(self):
+        """LineStyle class with 'color', 'type', 'width' properties"""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        if isinstance(val, dict):
+            val = LineStyle(**val)
+        if isinstance(val, LineStyle):
+            self._line = val
+        elif val is None:
+            self._line = LineStyle()
+        else:
+            raise ValueError(
+                "the line property must be an instance"
+                "of LineStyle or a dictionary with equivalent key/value pairs"
+            )
+
+
+class LineStyle(BaseStyleProperties):
+    """
+    This class holds Line styling properties
+    - style: line style (linestyle in matplotlib and line_dash in plotly)
+    - color: line color
+    - width: line width
+    """
+
+    def __init__(self, style=None, color=None, width=None, **kwargs):
+        super().__init__(style=style, color=color, width=width, **kwargs)
+
+    @property
+    def style(self):
+        """marker style"""
+        return self._style
+
+    @style.setter
+    def style(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._style = val
+
+    @property
+    def color(self):
+        """css color"""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._color = val
+
+    @property
+    def width(self):
+        """compatible symbol string for matplotlib or plotly"""
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        # wrong value will be handeled by the respective libraries since
+        # value only gets created at plot creation.
+        self._width = val

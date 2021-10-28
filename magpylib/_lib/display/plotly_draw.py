@@ -18,7 +18,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
-from magpylib._lib.display.style import BaseStyle, MarkerTraceStyle
+from magpylib._lib.display.style import MarkerTraceStyle, get_style
 from magpylib._lib.display.disp_utility import get_rot_pos_from_path
 
 # Defaults
@@ -90,6 +90,8 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
 class Markers:
     """A class that stores markers 3D-coordinates"""
 
+    _object_type = "Marker"
+
     def __init__(self, *markers):
         self.style = MarkerTraceStyle()
         self.markers = np.array(markers)
@@ -126,10 +128,10 @@ def _getIntensity(vertices, axis) -> np.ndarray:
 
 
 def _getColorscale(
-    color_transition=None,
-    color_north=None,
-    color_middle=None,
-    color_south=None,
+    color_transition=0,
+    color_north="#E71111",  # 'red'
+    color_middle="#DDDDDD",  # 'grey'
+    color_south="#00B050",  # 'green'
 ) -> list:
     """
     Provides the colorscale for a plotly mesh3d trace.
@@ -138,7 +140,6 @@ def _getColorscale(
     values are required. For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`.
     In this case the colorscale is created depending on the north/middle/south poles colors. If the
     middle color is `None` the colorscale will only have north and south pole colors.
-    By default colors as set from the global magpylib Config class.
 
     Parameters
     ----------
@@ -157,14 +158,6 @@ def _getColorscale(
     list
         returns colorscale as list of tuples
     """
-    if color_transition is None:
-        color_transition = Config.MAGNETIZATION_COLOR_TRANSITION
-    if color_north is None:
-        color_north = Config.MAGNETIZATION_COLOR_NORTH
-    if color_south is None:
-        color_south = Config.MAGNETIZATION_COLOR_SOUTH
-    if color_middle is None:
-        color_middle = Config.MAGNETIZATION_COLOR_MIDDLE
     if color_middle is False:
         colorscale = [
             [0.0, color_south],
@@ -430,8 +423,8 @@ def make_Line(
         name_suffix = ""
     else:
         name_suffix = f" ({name_suffix})"
-    show_arrows = style.show if style.show is not None else Config.CURRENT_SHOW
-    arrow_size = style.size if style.size is not None else Config.CURRENT_SIZE
+    show_arrows = style.current.show
+    arrow_size = style.current.size
     if show_arrows:
         vectors = np.diff(vertices, axis=0)
         positions = vertices[:-1] + vectors / 2
@@ -486,9 +479,8 @@ def make_Circular(
     t = np.linspace(0, 2 * np.pi, Nvert)
     x = np.cos(t)
     y = np.sin(t)
-    show_arrows = style.show
-    show_arrows = style.show if style.show is not None else Config.CURRENT_SHOW
-    arrow_size = style.size if style.size is not None else Config.CURRENT_SIZE
+    show_arrows = style.current.show
+    arrow_size = style.current.size
     if show_arrows:
         hy = 0.2 * np.sign(current) * arrow_size
         hx = 0.15 * arrow_size
@@ -578,8 +570,6 @@ def make_Dipole(
     else:
         name_suffix = f" ({name_suffix})"
     size = style.size
-    if size is None:
-        size = Config.DIPOLE_SIZE
     if autosize is not None:
         size *= autosize
     dipole = make_BaseArrow(base_vertices=10, diameter=0.3 * size, height=size)
@@ -829,11 +819,7 @@ def make_Sensor(
     meshes_to_merge = [sensor]
     if pixel.ndim != 1:
         pixel_color = style.pixel.color
-        if pixel_color is None:
-            pixel_color = Config.SENSOR_PIXEL_COLOR
         pixel_size = style.pixel.size
-        if pixel_size is None:
-            pixel_size = Config.SENSOR_PIXEL_SIZE
         if pixel_size > 0:
             combs = np.array(list(combinations(pixel, 2)))
             vecs = np.diff(combs, axis=1)
@@ -870,8 +856,6 @@ def _update_mag_mesh(
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if hasattr(style, "magnetization"):
         color = style.magnetization.color
-        if style.magnetization.show is None:
-            style.magnetization.show = Config.MAGNETIZATION_SHOW
         if magnetization is not None and style.magnetization.show:
             color_middle = (
                 kwargs.get("color", None) if color.middle == "auto" else color.middle
@@ -993,18 +977,12 @@ def get_plotly_traces(
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
 
     # create empty style depending on input object
-    obj_style = getattr(input_obj, "style", None)
-    if obj_style is not None:
-        style = obj_style.copy().update(**style_kwargs, _match_properties=True)
-    else:
-        style = BaseStyle()
-
-    style.update(**style_kwargs, _match_properties=True)
+    style = get_style(input_obj, **style_kwargs)
 
     kwargs["color"] = color
     kwargs["opacity"] = opacity
     for param in ("opacity", "color"):
-        val = getattr(obj_style, param, None)
+        val = getattr(style, param, None)
         if val is not None:
             kwargs[param] = val
 
@@ -1013,13 +991,7 @@ def get_plotly_traces(
     traces = []
     if isinstance(input_obj, Markers):
         x, y, z = input_obj.markers.T
-        default_marker = {
-            "size": Config.MARKER_SIZE,
-            "symbol": Config.MARKER_SYMBOL,
-            "color": Config.MARKER_COLOR,
-        }
-        marker = style.get_properties_dict()["marker"]
-        marker = {k: (default_marker[k] if v is None else v) for k, v in marker.items()}
+        marker = style.as_dict()["marker"]
         symb = marker["symbol"]
         marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
         if kwargs["color"] is None:
@@ -1036,8 +1008,6 @@ def get_plotly_traces(
         traces.append(trace)
     else:
         if isinstance(input_obj, Sensor):
-            if style.size is None:
-                style.size = Config.SENSOR_SIZE
             kwargs.update(
                 dim=getattr(input_obj, "dimension", style.size),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
@@ -1113,6 +1083,15 @@ def get_plotly_traces(
                 if path_numbering
                 else {"mode": "markers+lines"}
             )
+            marker = style.path.marker.as_dict()
+            symb = marker["symbol"]
+            marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+            marker["color"] = (
+                kwargs["color"] if marker["color"] is None else marker["color"]
+            )
+            line = style.path.line.as_dict()
+            line["dash"] = line["style"]
+            line = {k: v for k, v in line.items() if k != "style"}
             scatter_path = dict(
                 type="scatter3d",
                 x=x,
@@ -1121,14 +1100,8 @@ def get_plotly_traces(
                 name=f"Path: {input_obj}",
                 showlegend=False,
                 legendgroup=f"{input_obj}",
-                marker_size=Config.PATH_MARKER_SIZE,
-                marker_color=kwargs["color"],
-                marker_symbol=_SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(
-                    Config.PATH_MARKER_SYMBOL, Config.PATH_MARKER_SYMBOL
-                ),
-                line_color=kwargs["color"],
-                line_width=Config.PATH_LINE_WIDTH,
-                line_dash=Config.PATH_LINE_TYPE,
+                marker=marker,
+                line=line,
                 **txt_kwargs,
             )
             traces.append(scatter_path)
