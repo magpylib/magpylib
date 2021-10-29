@@ -77,13 +77,19 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     return color_input
 
 
-def get_style(obj, **style_kwargs):
+def get_style(obj, **kwargs):
     """
     returns default style object based on increasing priority:
     - style from Config
     - style from object
     - style from style_kwargs
     """
+
+    style_kwargs = kwargs.get("style", {})
+    style_kwargs.update(
+        {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
+    )
+
     c = Config
     styles_by_familly = {
         "sensor": {
@@ -143,12 +149,10 @@ def get_style(obj, **style_kwargs):
     obj_style = getattr(obj, "style", None)
 
     style = obj_style.copy() if obj_style is not None else BaseStyle()
-
+    style.update(**style_kwargs, _match_properties=False)
     style.update(
         **obj_style_dict, _match_properties=False, _replace_None_only=True
     )
-
-    style.update(**style_kwargs, _match_properties=False)
 
     return style
 
@@ -679,10 +683,11 @@ class MarkerTraceStyle(BaseStyleProperties):
     """
     This class holds marker styling properties
     - marker: MarkerStyle class
+    - opacity: trace opacity
     """
 
-    def __init__(self, marker=None, **kwargs):
-        super().__init__(marker=marker, **kwargs)
+    def __init__(self, marker=None, opacity=None, **kwargs):
+        super().__init__(marker=marker, opacity=opacity, **kwargs)
 
     @property
     def marker(self):
@@ -703,6 +708,17 @@ class MarkerTraceStyle(BaseStyleProperties):
                 "of MarkerStyle or a dictionary with equivalent key/value pairs"
             )
 
+    @property
+    def opacity(self):
+        """opacity float between 0 and 1"""
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, val):
+        assert val is None or (
+            isinstance(val, (float, int)) and val >= 0 and val <= 1
+        ), "opacity must be a value betwen 0 and 1"
+        self._opacity = val
 
 class DipoleStyle(MagnetStyle):
     """

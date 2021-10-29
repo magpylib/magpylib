@@ -18,8 +18,13 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
-from magpylib._lib.display.style import MarkerTraceStyle, get_style
-from magpylib._lib.display.disp_utility import get_rot_pos_from_path
+from magpylib._lib.display.style import get_style
+from magpylib._lib.display.disp_utility import (
+    get_rot_pos_from_path,
+    Markers,
+    draw_arrow_from_vertices,
+    draw_arrowed_circle,
+)
 
 # Defaults
 
@@ -85,16 +90,6 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     else:
         new_number_str = "{:.{}g}".format(number, precision)
     return f"{new_number_str}{char_between}{prefix}{unit}"
-
-
-class Markers:
-    """A class that stores markers 3D-coordinates"""
-
-    _object_type = "Marker"
-
-    def __init__(self, *markers):
-        self.style = MarkerTraceStyle()
-        self.markers = np.array(markers)
 
 
 def _getIntensity(vertices, axis) -> np.ndarray:
@@ -365,42 +360,6 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1) -> dict:
     return arrow
 
 
-def draw_arrow(vec, pos, sign=1, arrow_size=1) -> Tuple:
-    """
-    Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
-    centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
-    moved to position `pos`.
-    """
-    hy = sign * 0.1 * arrow_size
-    hx = 0.06 * arrow_size
-    norm = np.linalg.norm(vec)
-    arrow = (
-        np.array(
-            [
-                [0, -0.5, 0],
-                [0, 0, 0],
-                [-hx, 0 - hy, 0],
-                [0, 0, 0],
-                [hx, 0 - hy, 0],
-                [0, 0, 0],
-                [0, 0.5, 0],
-            ]
-        )
-        * norm
-    )
-    nvec = np.array(vec) / norm
-    yaxis = np.array([0, 1, 0])
-    cross = np.cross(nvec, yaxis)
-    dot = np.dot(nvec, yaxis)
-    n = np.linalg.norm(cross)
-    if n != 0:
-        t = np.arccos(dot)
-        R = RotScipy.from_rotvec(-t * cross / n)
-        arrow = R.apply(arrow)
-    x, y, z = (arrow + pos).T
-    return x, y, z
-
-
 def make_Line(
     current=0.0,
     vertices=((-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
@@ -426,15 +385,7 @@ def make_Line(
     show_arrows = style.current.show
     arrow_size = style.current.size
     if show_arrows:
-        vectors = np.diff(vertices, axis=0)
-        positions = vertices[:-1] + vectors / 2
-        vertices = np.concatenate(
-            [
-                draw_arrow(vec, pos, np.sign(current), arrow_size=arrow_size)
-                for vec, pos in zip(vectors, positions)
-            ],
-            axis=1,
-        )
+        vertices = draw_arrow_from_vertices(vertices, current, arrow_size)
     else:
         vertices = np.array(vertices).T
     if orientation is not None:
@@ -476,20 +427,8 @@ def make_Circular(
         name_suffix = ""
     else:
         name_suffix = f" ({name_suffix})"
-    t = np.linspace(0, 2 * np.pi, Nvert)
-    x = np.cos(t)
-    y = np.sin(t)
-    show_arrows = style.current.show
-    arrow_size = style.current.size
-    if show_arrows:
-        hy = 0.2 * np.sign(current) * arrow_size
-        hx = 0.15 * arrow_size
-        x = np.hstack([x, [1 + hx, 1, 1 - hx]])
-        y = np.hstack([y, [-hy, 0, -hy]])
-    x = x * diameter / 2
-    y = y * diameter / 2
-    z = np.zeros(x.shape)
-    vertices = np.array([x, y, z])
+    arrow_size = style.current.size if style.current.show else 0
+    vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
@@ -939,7 +878,6 @@ def get_plotly_traces(
     show_path=False,
     path_numbering=False,
     color=None,
-    opacity=None,
     autosize=None,
     **kwargs,
 ) -> list:
@@ -970,23 +908,11 @@ def get_plotly_traces(
     Line = _lib.obj_classes.Line
 
     # parse kwargs into style and non style args
-    style_kwargs = kwargs.get("style", {})
-    style_kwargs.update(
-        {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
-    )
+    style = get_style(input_obj, **kwargs)
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-
-    # create empty style depending on input object
-    style = get_style(input_obj, **style_kwargs)
-
-    kwargs["color"] = color
-    kwargs["opacity"] = opacity
-    for param in ("opacity", "color"):
-        val = getattr(style, param, None)
-        if val is not None:
-            kwargs[param] = val
-
     kwargs["style"] = style
+    style_color = getattr(style, "color", None)
+    kwargs["color"] = style_color if style_color is not None else color
 
     traces = []
     if isinstance(input_obj, Markers):
@@ -994,8 +920,6 @@ def get_plotly_traces(
         marker = style.as_dict()["marker"]
         symb = marker["symbol"]
         marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-        if kwargs["color"] is None:
-            marker["color"] = kwargs["color"]
         trace = go.Scatter3d(
             name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
             x=x,
@@ -1003,7 +927,7 @@ def get_plotly_traces(
             z=z,
             marker=marker,
             mode="markers",
-            opacity=kwargs["opacity"],
+            opacity=style.opacity,
         )
         traces.append(trace)
     else:
@@ -1316,7 +1240,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
     any plotly trace object or a dict, with x,y,z numbered parameters.
     """
-    ranges = {k: [] for k in ("xyz")}
+    ranges = {k: [] for k in "xyz"}
     for t in traces:
         for k, v in ranges.items():
             v.extend([np.nanmin(t[k]), np.nanmax(t[k])])

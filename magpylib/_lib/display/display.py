@@ -1,9 +1,13 @@
 """ Display function codes"""
 
 import warnings
+from itertools import cycle
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
+from magpylib._lib.display.style import get_style
+from magpylib._lib.display.disp_utility import Markers
+
 from magpylib._lib.display.mpl_draw import (
     draw_directs_faced,
     draw_faces,
@@ -112,8 +116,6 @@ def display(
     # test if all source dimensions and excitations (if sho_direc=True) have been initialized
     check_dimensions(obj_list)
 
-    # TODO check_excitations(obj_list)
-
     # test if every individual obj_path is good
     test_path_format(obj_list)
     check_show_path = (
@@ -142,6 +144,7 @@ def display(
             show_path=path,
             zoom=zoom,
             axis=canvas,
+            **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
@@ -163,11 +166,9 @@ def display_matplotlib(
     axis=None,
     markers=None,
     show_path=True,
-    show_direction=None,
-    size_sensors=None,
-    size_direction=None,
-    size_dipoles=None,
     zoom=1,
+    color_sequence=None,
+    **kwargs,
 ):
     """
     Display objects and paths graphically with the matplotlib backend.
@@ -184,27 +185,11 @@ def display_matplotlib(
     markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
 
-    show_direction: bool, default=None
-        Set True to show magnetization and current directions with quiver arrows. If not set, value
-        defaults back to `Config.SHOW_DIRECTION`
-
     show_path: bool or int or array_like, default=True
         Options True, False, positive int or iterable. By default object paths are shown. If
         show_path is a positive integer, objects will be displayed at multiple path
         positions along the path, in steps of show_path. If show_path is an iterable
         of integers, objects will be displayed for the provided indices.
-
-    size_sensors: float, default=None
-        Adjust automatic display size of sensors. If not set, value
-        defaults back to `Config.SENSOR_SIZE`
-
-    size_direction: float, default=None
-        Adjust automatic display size of direction arrows. If not set, value
-        defaults back to `Config.MAGNETIZATION_SIZE`
-
-    size_dipoles: float, default=None
-        Adjust automatic display size of dipoles. If not set, value
-        defaults back to `Config.DIPOLE_SIZE`
 
     zoom: float, default=1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -246,31 +231,8 @@ def display_matplotlib(
     # pylint: disable=too-many-statements
 
     # apply config default values if None
-    if show_direction is None:
-        show_direction = True
-    if size_direction is None:
-        size_direction = Config.MAGNETIZATION_SIZE
-    if size_sensors is None:
-        size_sensors = Config.SENSOR_SIZE
-    if size_dipoles is None:
-        size_dipoles = Config.DIPOLE_SIZE
-
-    # objects with faces
-    faced_objects = [
-        obj
-        for obj in obj_list
-        if obj._object_type in ("Cuboid", "Cylinder", "CylinderSegment", "Sphere")
-    ]
-
-    # sensors
-    sensors = [obj for obj in obj_list if obj._object_type == "Sensor"]
-
-    # dipoles
-    dipoles = [obj for obj in obj_list if obj._object_type == "Dipole"]
-
-    # currents
-    circulars = [obj for obj in obj_list if obj._object_type == "Circular"]
-    lines = [obj for obj in obj_list if obj._object_type == "Line"]
+    if color_sequence is None:
+        color_sequence = Config.COLOR_SEQUENCE
 
     # create or set plotting axis
     if axis is None:
@@ -282,88 +244,87 @@ def display_matplotlib(
         ax = axis
         generate_output = False
 
-    # load color map
-    cmap = plt.cm.get_cmap("hsv")
-
     # draw objects and evaluate system size --------------------------------------
 
     # draw faced objects and store vertices
-    face_points = []
-    for i, obj in enumerate(faced_objects):
-        col = cmap(i / len(faced_objects))
+    points = []
+    dipoles_color = []
+    sensors_color = []
+    faced_objects_color = []
 
+    for obj, color in zip(obj_list, cycle(color_sequence)):
+        style = get_style(obj, **kwargs)
+        color = style.color if style.color is not None else color
+        lw = 0.25
+        faces = None
         if obj._object_type == "Cuboid":
-            faces = faces_cuboid(obj, show_path)
             lw = 0.5
-            face_points += draw_faces(faces, col, lw, ax)
-
+            faces = faces_cuboid(obj, show_path)
         elif obj._object_type == "Cylinder":
             faces = faces_cylinder(obj, show_path)
-            lw = 0.25
-            face_points += draw_faces(faces, col, lw, ax)
-
         elif obj._object_type == "CylinderSegment":
             faces = faces_cylinder_section(obj, show_path)
-            lw = 0.25
-            face_points += draw_faces(faces, col, lw, ax)
-
         elif obj._object_type == "Sphere":
             faces = faces_sphere(obj, show_path)
-            lw = 0.25
-            face_points += draw_faces(faces, col, lw, ax)
-
-    # draw sensor pixel and get positions
-    sensor_points = draw_pixel(sensors, ax, show_path)
-
-    # get dipole positions
-    dipole_points = [dip.position for dip in dipoles]
-
-    # draw circulars and get line positions
-    current_points = draw_circular(circulars, show_path, ax)
-    current_points += draw_line(lines, show_path, ax)
-
-    # draw paths and get path points
-    path_points = []
-    if show_path:  # True or int>0
-        for i, obj in enumerate(faced_objects):
-            col = cmap(i / len(faced_objects))
-            path_points += draw_path(obj, col, ax)
-
-        for sens in sensors:
-            path_points += draw_path(sens, ".6", ax)
-
-        for dip in dipoles:
-            path_points += draw_path(dip, ".6", ax)
-
-        for circ in circulars:
-            path_points += draw_path(circ, ".6", ax)
-
-        for line in lines:
-            path_points += draw_path(line, ".6", ax)
+        elif obj._object_type == "Line":
+            size = style.current.size if style.current.show else 0
+            points += draw_line([obj], show_path, color, size, ax)
+        elif obj._object_type == "Circular":
+            size = style.current.size if style.current.show else 0
+            points += draw_circular([obj], show_path, color, size, ax)
+        elif obj._object_type == "Sensor":
+            sensors_color += [color]
+            points += draw_pixel(
+                [obj], ax, color, style.pixel.color, style.pixel.size * 4, show_path
+            )
+        elif obj._object_type == "Dipole":
+            dipoles_color += [color]
+            points += [obj.position]
+        if faces is not None:
+            faced_objects_color += [color]
+            pts = draw_faces(faces, color, lw, ax)
+            points += [np.vstack(pts).reshape(-1, 3)]
+            if style.magnetization.show:
+                check_excitations([obj])
+                draw_directs_faced(
+                    [obj], [color], ax, show_path, style.magnetization.size
+                )
+        if show_path:
+            points += draw_path(obj, color, ax)
 
     # markers -------------------------------------------------------
     if markers is not None and markers:
+        m = Markers()
+        style = get_style(m, **kwargs)
         markers = np.array(markers)
-        draw_markers(markers, ax)
-    else:
-        markers = []
+        draw_markers(markers, ax, style=style.marker)
+        points += [markers]
 
     # draw direction arrows (based on src size) -------------------------
-    if show_direction:
-        draw_directs_faced(faced_objects, cmap, ax, show_path, size_direction)
+    # objects with faces
 
     # determine system size -----------------------------------------
-    limx1, limx0, limy1, limy0, limz1, limz0 = system_size(
-        face_points, sensor_points, dipole_points, markers, path_points, current_points
-    )
+    limx1, limx0, limy1, limy0, limz1, limz0 = system_size(points)
+
     # make sure ranges are not null
     ranges = np.array([[limx0, limx1], [limy0, limy1], [limz0, limz1]])
     ranges[np.squeeze(np.diff(ranges)) == 0] += np.array([-1, 1])
     sys_size = np.max(np.diff(ranges))
 
     # draw all system sized based quantities -------------------------
-    draw_sensors(sensors, ax, sys_size, show_path, size_sensors)
-    draw_dipoles(dipoles, ax, sys_size, show_path, size_dipoles)
+    # sensors
+    sensors = [obj for obj in obj_list if obj._object_type == "Sensor"]
+
+    # dipoles
+    dipoles = [obj for obj in obj_list if obj._object_type == "Dipole"]
+
+    # not optimal for loop if many sensors/dipoles
+    for sensor in sensors:
+        style = get_style(sensor, **kwargs)
+        draw_sensors([sensor], ax, sys_size, show_path, style.size)
+    for dipole, color in zip(dipoles, dipoles_color):
+        style = get_style(dipole, **kwargs)
+        draw_dipoles([dipole], ax, sys_size, show_path, style.size, color)
 
     # plot styling --------------------------------------------------
     ax.set(
