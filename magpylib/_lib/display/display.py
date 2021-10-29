@@ -290,7 +290,8 @@ def display_matplotlib(
                     [obj], [color], ax, show_path, style.magnetization.size
                 )
         if show_path:
-            points += draw_path(obj, color, ax)
+            marker,line = style.path.marker, style.path.line
+            points += draw_path(obj, color, marker.symbol, marker.size, marker.color, line.style, line.width, ax)
 
     # markers -------------------------------------------------------
     if markers is not None and markers:

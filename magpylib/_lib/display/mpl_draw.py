@@ -84,7 +84,7 @@ def draw_markers(markers, ax, style):
     )
 
 
-def draw_path(obj, col, ax):
+def draw_path(obj, col, marker_symbol, marker_size, marker_color, line_style, line_width, ax):
     """draw path in given color and return list of path-points"""
     # pylint: disable=protected-access
     path = obj._position
@@ -93,13 +93,13 @@ def draw_path(obj, col, ax):
             path[:, 0],
             path[:, 1],
             path[:, 2],
-            ls="-",
-            lw=1,
+            ls=line_style,
+            lw=line_width/2,
             color=col,
-            marker=".",
-            mfc="k",
-            mec="k",
-            ms=2.5,
+            marker=marker_symbol,
+            mfc=marker_color,
+            mec=marker_color,
+            ms=marker_size*2,
         )
         ax.plot(
             [path[0, 0]], [path[0, 1]], [path[0, 2]], marker="o", ms=4, mfc=col, mec="k"
@@ -146,9 +146,9 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, show_path):
         pos_pixel[:, 1],
         pos_pixel[:, 2],
         marker="o",
-        mfc=col,
-        mew=pixel_size / 2,
-        mec=pixel_col,
+        mfc=pixel_col,
+        mew=pixel_size / 4,
+        mec=col,
         ms=pixel_size,
         ls="",
     )
