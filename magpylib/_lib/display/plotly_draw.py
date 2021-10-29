@@ -68,10 +68,11 @@ _LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
     "-.": "dashdot",
     "dotted": "dot",
     ".": "dot",
-    (0, (1, 1)):'dot',
+    (0, (1, 1)): "dot",
     "loosely dotted": "longdash",
     "loosely dashdotted": "longdashdot",
 }
+
 
 def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     """
@@ -1023,9 +1024,7 @@ def get_plotly_traces(
             marker = style.path.marker.as_dict()
             symb = marker["symbol"]
             marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-            marker["color"] = (
-                'black' if marker["color"] is None else marker["color"]
-            )
+            marker["color"] = "black" if marker["color"] is None else marker["color"]
             line = style.path.line.as_dict()
             dash = line["style"]
             line["dash"] = _LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
