@@ -773,11 +773,12 @@ def make_Sensor(
     if pixel.ndim != 1:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
+        combs = np.array(list(combinations(pixel, 2)))
+        vecs = np.diff(combs, axis=1)
+        dists = np.linalg.norm(vecs, axis=2)
+        pixel_dim = np.min(dists) / 2
         if pixel_size > 0:
-            combs = np.array(list(combinations(pixel, 2)))
-            vecs = np.diff(combs, axis=1)
-            dists = np.linalg.norm(vecs, axis=2)
-            pixel_dim = np.min(dists) * pixel_size / 2
+            pixel_dim *= pixel_size
             pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
