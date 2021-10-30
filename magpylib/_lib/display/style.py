@@ -143,16 +143,18 @@ def get_style(obj, **kwargs):
 
     obj_style_dict = {
         **styles_by_familly["all"],
-        **{k: v for fam in obj_families for k, v in styles_by_familly.get(fam, {}).items()},
+        **{
+            k: v
+            for fam in obj_families
+            for k, v in styles_by_familly.get(fam, {}).items()
+        },
     }
 
     obj_style = getattr(obj, "style", None)
 
     style = obj_style.copy() if obj_style is not None else BaseStyle()
     style.update(**style_kwargs, _match_properties=False)
-    style.update(
-        **obj_style_dict, _match_properties=False, _replace_None_only=True
-    )
+    style.update(**obj_style_dict, _match_properties=False, _replace_None_only=True)
 
     return style
 
@@ -337,18 +339,61 @@ class BaseStyle(BaseStyleProperties):
 
     @property
     def mesh3d(self):
-        """plotly.graph_objects.Mesh3d instance"""
+        """MagColor class with 'north', 'south', 'middle', 'transition' and 'show' values"""
         return self._mesh3d
 
     @mesh3d.setter
     def mesh3d(self, val):
-        # pylint: disable=import-outside-toplevel
-        if val is None:
+        if isinstance(val, dict):
+            val = Mesh3dStyle(**val)
+        if isinstance(val, Mesh3dStyle):
             self._mesh3d = val
+        elif val is None:
+            self._mesh3d = Mesh3dStyle()
         else:
-            import plotly.graph_objects as go
+            raise ValueError(
+                "the mesh3d property must be an instance "
+                "of Mesh3dStyle or a dictionary with equivalent key/value pairs"
+            )
 
-            self._mesh3d = go.Mesh3d(**val)
+
+class Mesh3dStyle(BaseStyleProperties):
+    """
+    Mesh3d styling properties
+    """
+
+    def __init__(self, **kwargs):
+        super().__init__(data=None, show=None, **kwargs)
+
+    @property
+    def show(self):
+        """
+        Shows/hides mesh3d object based on provided data:
+        - True: shows mesh
+        - False: hides mesh
+        - 'inplace': replace object representation
+        """
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert (
+            val is None or isinstance(val, bool) or val == "inplace"
+        ), "show must be one of [`True`, `False`, `'inplace'`]"
+        self._show = val
+
+    @property
+    def data(self):
+        """plotly.graph_objects.Mesh3d or equivalent dict"""
+        return self._data
+
+    @data.setter
+    def data(self, val):
+        # pylint: disable=import-outside-toplevel
+        assert val is None or all(
+            key in val for key in "xyzijk"
+        ), "data must be a dict-like object containing the `x,y,z,i,j,k` keys/values pairs"
+        self._data = val
 
 
 class MagnetizationStyle(BaseStyleProperties):
@@ -719,6 +764,7 @@ class MarkerTraceStyle(BaseStyleProperties):
             isinstance(val, (float, int)) and val >= 0 and val <= 1
         ), "opacity must be a value betwen 0 and 1"
         self._opacity = val
+
 
 class DipoleStyle(MagnetStyle):
     """
