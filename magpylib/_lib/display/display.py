@@ -317,9 +317,12 @@ def display_matplotlib(
     limx1, limx0, limy1, limy0, limz1, limz0 = system_size(points)
 
     # make sure ranges are not null
-    ranges = np.array([[limx0, limx1], [limy0, limy1], [limz0, limz1]])
-    ranges[np.squeeze(np.diff(ranges)) == 0] += np.array([-1, 1])
-    sys_size = np.max(np.diff(ranges))
+    limits = np.array([[limx0, limx1], [limy0, limy1], [limz0, limz1]])
+    limits[np.squeeze(np.diff(limits)) == 0] += np.array([-1, 1])
+    sys_size = np.max(np.diff(limits))
+    c = limits.mean(axis=1)
+    m = sys_size.max() / 2
+    ranges = np.array([c - m * (1 + zoom), c + m * (1 + zoom)]).T
 
     # draw all system sized based quantities -------------------------
     # sensors
@@ -339,10 +342,7 @@ def display_matplotlib(
     # plot styling --------------------------------------------------
     ax.set(
         **{f"{k}label": f"{k} [mm]" for k in "xyz"},
-        **{
-            f"{k}lim": (r[0] - abs(r[0]) * zoom, r[1] + abs(r[1]) * zoom)
-            for k, r in zip("xyz", ranges)
-        },
+        **{f"{k}lim": r for k, r in zip("xyz", ranges)},
     )
 
     # generate output ------------------------------------------------
