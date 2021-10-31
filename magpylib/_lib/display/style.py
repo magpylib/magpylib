@@ -807,7 +807,7 @@ class Dipoles(BaseStyleProperties):
     """
 
     def __init__(self, size=None, **kwargs):
-        self._allowed_pivots = ('tail', 'mid', 'middle', 'tip')
+        self._allowed_pivots = ('tail', 'middle', 'tip')
         super().__init__(size=size, **kwargs)
 
     @property
