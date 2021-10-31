@@ -458,9 +458,10 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         Returns
         -------
-        None
+        self
         """
         for src in self._sources:
             # match properties false will try to apply properties from kwargs only if it finds it
             # withoug throwing an error
             src.style.update(**kwargs, _match_properties=False)
+        return self
