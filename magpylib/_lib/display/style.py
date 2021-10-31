@@ -362,8 +362,8 @@ class Mesh3dStyle(BaseStyleProperties):
     Mesh3d styling properties
     """
 
-    def __init__(self, **kwargs):
-        super().__init__(data=None, show=None, **kwargs)
+    def __init__(self, data=None, show=None, **kwargs):
+        super().__init__(data=data, show=show, **kwargs)
 
     @property
     def show(self):
