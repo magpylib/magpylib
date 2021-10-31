@@ -245,7 +245,7 @@ def draw_circular(circulars, show_path, col, size, ax):
 
     # graphical settings
     discret = 72 + 1
-    lw = 1
+    lw = 2
 
     draw_pos = []  # line positions
     for circ in circulars:
@@ -269,7 +269,7 @@ def draw_line(lines, show_path, col, size, ax) -> list:
     # pylint: disable=protected-access
 
     # graphical settings
-    lw = 1
+    lw = 2
 
     draw_pos = []  # line positions
     for line in lines:
