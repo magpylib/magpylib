@@ -337,7 +337,7 @@ def display_matplotlib(
         draw_sensors([sensor], ax, sys_size, show_path, style.size)
     for dipole, color in zip(dipoles, dipoles_color):
         style = get_style(dipole, **kwargs)
-        draw_dipoles([dipole], ax, sys_size, show_path, style.size, color)
+        draw_dipoles([dipole], ax, sys_size, show_path, style.size, color, style.pivot)
 
     # plot styling --------------------------------------------------
     ax.set(

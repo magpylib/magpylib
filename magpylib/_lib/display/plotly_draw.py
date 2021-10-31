@@ -333,23 +333,29 @@ def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) ->
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseArrow(base_vertices=30, diameter=0.3, height=1) -> dict:
+def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot='middle') -> dict:
     """
     Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
     of the base, the diameter the height and position.
     The zero position is in the barycenter of the vertices.
     """
-    h, d = height, diameter
+
+    h, d, z = height, diameter, 0
+    if pivot=='tail':
+        z = h/2
+    elif pivot=='tip':
+        z = -h/2
     cone = make_BaseCone(
-        base_vertices=base_vertices, diameter=d, height=d, pos=(0.0, 0.0, (h - d) / 2)
+        base_vertices=base_vertices, diameter=d, height=d, pos=(0.0, 0.0, z + h/2 - d/2)
     )
     prism = make_BasePrism(
         base_vertices=base_vertices,
         diameter=d / 2,
         height=h - d,
-        pos=(0.0, 0.0, -d / 2),
+        pos=(0.0, 0.0, z + -d / 2),
     )
     arrow = merge_mesh3d(cone, prism)
+
     return arrow
 
 
@@ -504,7 +510,7 @@ def make_Dipole(
     size = style.size
     if autosize is not None:
         size *= autosize
-    dipole = make_BaseArrow(base_vertices=10, diameter=0.3 * size, height=size)
+    dipole = make_BaseArrow(base_vertices=10, diameter=0.3 * size, height=size, pivot=style.pivot)
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)

@@ -200,7 +200,7 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
     return
 
 
-def draw_dipoles(dipoles, ax, sys_size, show_path, size, color):
+def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     """draw dipoles"""
     # pylint: disable=protected-access
 
@@ -233,6 +233,7 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color):
         moms[:, 2],
         color=color,
         length=arrowlength,
+        pivot = pivot, # {'tail', 'middle', 'tip'},
     )
 
     return

@@ -30,7 +30,7 @@ _LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
 
 _DEFAULT_STYLES = {
     "sensors": {"size": 1, "pixel": {"size": 1, "color": "grey"}},
-    "dipoles": {"size": 1},
+    "dipoles": {"size": 1, "pivot": 'middle'},
     "currents": {"current": {"show": True, "size": 1}},
     "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
     "magnets": {
@@ -807,6 +807,7 @@ class Dipoles(BaseStyleProperties):
     """
 
     def __init__(self, size=None, **kwargs):
+        self._allowed_pivots = ('tail', 'mid', 'middle', 'tip')
         super().__init__(size=size, **kwargs)
 
     @property
@@ -821,6 +822,21 @@ class Dipoles(BaseStyleProperties):
             f" but received {repr(val)} instead"
         )
         self._size = val
+
+    @property
+    def pivot(self):
+        """The part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point"""
+        return self._pivot
+
+    @pivot.setter
+    def pivot(self, val):
+        assert val is None or val in (self._allowed_pivots), (
+            f"the `pivot` property of {type(self).__name__} must be one of "
+            f"{self._allowed_pivots}"
+            f" but received {repr(val)} instead"
+        )
+        self._pivot = val
 
 class DipoleStyle(BaseStyle, Dipoles):
     pass
