@@ -907,6 +907,7 @@ def get_plotly_traces(
     kwargs["style"] = style
     style_color = getattr(style, "color", None)
     kwargs["color"] = style_color if style_color is not None else color
+    kwargs["opacity"] = style.opacity
 
     traces = []
     if isinstance(input_obj, Markers):
@@ -1021,6 +1022,7 @@ def get_plotly_traces(
                 marker=marker,
                 line=line,
                 **txt_kwargs,
+                opacity = kwargs['opacity']
             )
             traces.append(scatter_path)
 
