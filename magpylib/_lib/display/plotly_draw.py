@@ -333,7 +333,7 @@ def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) ->
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot='middle') -> dict:
+def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot="middle") -> dict:
     """
     Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
     of the base, the diameter the height and position.
@@ -341,12 +341,15 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot='middle') -> 
     """
 
     h, d, z = height, diameter, 0
-    if pivot=='tail':
-        z = h/2
-    elif pivot=='tip':
-        z = -h/2
+    if pivot == "tail":
+        z = h / 2
+    elif pivot == "tip":
+        z = -h / 2
     cone = make_BaseCone(
-        base_vertices=base_vertices, diameter=d, height=d, pos=(0.0, 0.0, z + h/2 - d/2)
+        base_vertices=base_vertices,
+        diameter=d,
+        height=d,
+        pos=(0.0, 0.0, z + h / 2 - d / 2),
     )
     prism = make_BasePrism(
         base_vertices=base_vertices,
@@ -510,7 +513,9 @@ def make_Dipole(
     size = style.size
     if autosize is not None:
         size *= autosize
-    dipole = make_BaseArrow(base_vertices=10, diameter=0.3 * size, height=size, pivot=style.pivot)
+    dipole = make_BaseArrow(
+        base_vertices=10, diameter=0.3 * size, height=size, pivot=style.pivot
+    )
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
@@ -792,10 +797,10 @@ def _update_mag_mesh(
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments
     """
-    vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if hasattr(style, "magnetization"):
         color = style.magnetization.color
         if magnetization is not None and style.magnetization.show:
+            vertices = np.array([mesh_dict[k] for k in "xyz"]).T
             color_middle = (
                 kwargs.get("color", None) if color.middle == "auto" else color.middle
             )
@@ -809,13 +814,25 @@ def _update_mag_mesh(
                 vertices=vertices,
                 axis=magnetization,
             )
+    mesh_dict = place_and_orient_mesh3d(
+        mesh_dict,
+        orientation,
+        position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
+    )
+    return {**mesh_dict, **kwargs}
+
+
+def place_and_orient_mesh3d(
+    mesh_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
+):
+    position = np.array(position)
+    vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if orientation is not None:
         vertices = orientation.apply(vertices)
     x, y, z = (vertices + position).T
-    mesh_dict.update(
-        x=x, y=y, z=z, showscale=False, name=f"""{name}{name_suffix}""", **kwargs
-    )
-    return {**mesh_dict, **kwargs}
+    return {**mesh_dict, "x": x, "y": y, "z": z, **kwargs}
 
 
 def merge_mesh3d(*traces):
@@ -868,8 +885,10 @@ def merge_traces(*traces):
             trace = merge_mesh3d(*traces)
         elif traces[0]["type"] == "scatter3d":
             trace = merge_scatter3d(*traces)
-    else:
+    elif len(traces) == 1:
         trace = traces[0]
+    else:
+        trace = []
     return trace
 
 
@@ -995,11 +1014,27 @@ def get_plotly_traces(
             make_func = make_UnsupportedObject
 
         path_traces = []
+        path_traces_add_mesh3d = []
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
-            path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+            if style.mesh3d.data is None or (
+                style.mesh3d.data is not None and style.mesh3d.show != "inplace"
+            ):
+                path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+            if style.mesh3d.data is not None and style.mesh3d.show:
+                mesh3d = place_and_orient_mesh3d(
+                    style.mesh3d.data, orientation=orient, position=pos, showscale=False
+                )
+                path_traces_add_mesh3d.append(mesh3d)
         trace = merge_traces(*path_traces)
-        trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
-        traces.append(trace)
+        trace_add_mesh3d = merge_traces(*path_traces_add_mesh3d)
+        if trace_add_mesh3d:
+            trace_add_mesh3d.update(
+                {"legendgroup": f"{input_obj}", "showlegend": False}
+            )
+            traces.append(trace_add_mesh3d)
+        if trace:
+            trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
+            traces.append(trace)
 
         if input_obj.position.ndim > 1 and show_path is not False:
             x, y, z = input_obj.position.T
@@ -1028,7 +1063,7 @@ def get_plotly_traces(
                 marker=marker,
                 line=line,
                 **txt_kwargs,
-                opacity = kwargs['opacity']
+                opacity=kwargs["opacity"],
             )
             traces.append(scatter_path)
 
