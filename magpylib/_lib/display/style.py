@@ -1,6 +1,60 @@
 """Collection of class for display styles"""
+# pylint: disable=C0302
+
 import collections.abc
 from magpylib._lib.config import Config
+
+_SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
+    ".": "circle",
+    "o": "circle-open",
+    "+": "cross",
+    "D": "diamond",
+    "d": "diamond-open",
+    "s": "square",
+    "x": "x",
+}
+
+_LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
+    "solid": "solid",
+    "-": "solid",
+    "dashed": "dash",
+    "--": "dash",
+    "dashdot": "dashdot",
+    "-.": "dashdot",
+    "dotted": "dot",
+    ".": "dot",
+    (0, (1, 1)): "dot",
+    "loosely dotted": "longdash",
+    "loosely dashdotted": "longdashdot",
+}
+
+_DEFAULT_STYLES = {
+    "sensors": {"size": 1, "pixel": {"size": 1, "color": "grey"}},
+    "dipoles": {"size": 1},
+    "currents": {"current": {"show": True, "size": 1}},
+    "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
+    "magnets": {
+        "magnetization": {
+            "show": True,
+            "size": 1,
+            "color": {
+                "north": "#E71111",
+                "middle": "#DDDDDD",
+                "south": "#00B050",
+                "transition": 0.2,
+            },
+        }
+    },
+    "base": {
+        "path": {
+            "line": {"width": 1, "style": "solid"},
+            "marker": {"size": 1, "symbol": "o"},
+        },
+        "description": True,
+        "opacity": 1,
+        "mesh3d": None,
+    },
+}
 
 
 def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False):
@@ -90,51 +144,16 @@ def get_style(obj, **kwargs):
         {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
     )
 
-    c = Config
-    styles_by_familly = {
-        "sensor": {
-            "size": c.SENSOR_SIZE,
-            "pixel": {"size": c.SENSOR_PIXEL_SIZE, "color": c.SENSOR_PIXEL_COLOR},
-        },
-        "dipole": {"size": c.DIPOLE_SIZE},
-        "current": {"current": {"show": c.CURRENT_SHOW, "size": c.CURRENT_SIZE}},
-        "markers": {
-            "marker": {
-                "size": c.MARKER_SIZE,
-                "color": c.MARKER_COLOR,
-                "symbol": c.MARKER_SYMBOL,
-            },
-        },
-        "magnet": {
-            "magnetization": {
-                "show": c.MAGNETIZATION_SHOW,
-                "size": c.MAGNETIZATION_SIZE,
-                "color": {
-                    "north": c.MAGNETIZATION_COLOR_NORTH,
-                    "middle": c.MAGNETIZATION_COLOR_MIDDLE,
-                    "south": c.MAGNETIZATION_COLOR_SOUTH,
-                    "transition": c.MAGNETIZATION_COLOR_TRANSITION,
-                },
-            },
-        },
-        "all": {
-            "path": {
-                "line": {"width": c.PATH_LINE_WIDTH, "style": c.PATH_LINE_STYLE},
-                "marker": {"size": c.PATH_MARKER_SIZE, "symbol": c.PATH_MARKER_SYMBOL},
-            },
-            "description": c.AUTO_DESCRIPTION,
-            "opacity": c.OPACITY,
-        },
-    }
+    styles_by_familly = default_style.as_dict()
     objects_families = {
-        "Line": ("current",),
-        "Circular": ("current",),
-        "Cuboid": ("magnet",),
-        "Cylinder": ("magnet",),
-        "Sphere": ("magnet",),
-        "CylinderSegment": ("magnet",),
-        "Sensor": ("sensor",),
-        "Dipole": ("dipole", "magnet"),
+        "Line": ("currents",),
+        "Circular": ("currents",),
+        "Cuboid": ("magnets",),
+        "Cylinder": ("magnets",),
+        "Sphere": ("magnets",),
+        "CylinderSegment": ("magnets",),
+        "Sensor": ("sensors",),
+        "Dipole": ("dipoles",),
         "Marker": ("markers",),
     }
 
@@ -142,7 +161,7 @@ def get_style(obj, **kwargs):
     obj_families = objects_families.get(obj_type, [])
 
     obj_style_dict = {
-        **styles_by_familly["all"],
+        **styles_by_familly["base"],
         **{
             k: v
             for fam in obj_families
@@ -509,7 +528,7 @@ class MagColor(BaseStyleProperties):
         self._transition = val
 
 
-class MagnetStyle(BaseStyle):
+class Magnets(BaseStyleProperties):
     """
     Style class for display styling options of Magnet objects
     """
@@ -537,7 +556,11 @@ class MagnetStyle(BaseStyle):
             )
 
 
-class SensorStyle(BaseStyle):
+class MagnetStyle(BaseStyle, Magnets):
+    pass
+
+
+class Sensors(BaseStyleProperties):
     """
     This class holds Sensor styling properties
     - size:  size relative to canvas
@@ -550,14 +573,14 @@ class SensorStyle(BaseStyle):
 
     @property
     def size(self):
-        """positive float for relative sensor to size to canvas size"""
+        """positive float for relative sensor to canvas size"""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
             f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {val} instead"
+            f" but received {repr(val)} instead"
         )
         self._size = val
 
@@ -581,6 +604,8 @@ class SensorStyle(BaseStyle):
             )
 
 
+class SensorStyle(BaseStyle, Sensors):
+    pass
 class PixelStyle(BaseStyleProperties):
     """
     This class holds sensor pixel styling properties
@@ -600,7 +625,7 @@ class PixelStyle(BaseStyleProperties):
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
             f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {val} instead"
+            f" but received {repr(val)} instead"
         )
         self._size = val
 
@@ -613,8 +638,7 @@ class PixelStyle(BaseStyleProperties):
     def color(self, val):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
-
-class CurrentStyle(BaseStyle):
+class Currents(BaseStyleProperties):
     """
     This class holds styling properties for Line and Circular currents
     - show: if True current directin is shown with an arrow
@@ -640,9 +664,12 @@ class CurrentStyle(BaseStyle):
         else:
             raise ValueError(
                 "the current property must be an instance"
-                "of ArrowStyle or a dictionary with equivalent key/value pairs"
+                "of style.ArrowStyle or a dictionary with equivalent key/value pairs"
             )
 
+
+class CurrentStyle(BaseStyle, Currents):
+    pass
 
 class ArrowStyle(BaseStyleProperties):
     """
@@ -663,7 +690,7 @@ class ArrowStyle(BaseStyleProperties):
     def show(self, val):
         assert val is None or isinstance(val, bool), (
             f"the `show` property of {type(self).__name__} must be either `True` or `False`"
-            f" but received {val} instead"
+            f" but received {repr(val)} instead"
         )
         self._show = val
 
@@ -674,8 +701,10 @@ class ArrowStyle(BaseStyleProperties):
 
     @size.setter
     def size(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
         self._size = val
 
 
@@ -697,8 +726,10 @@ class MarkerStyle(BaseStyleProperties):
 
     @size.setter
     def size(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
         self._size = val
 
     @property
@@ -719,8 +750,11 @@ class MarkerStyle(BaseStyleProperties):
 
     @symbol.setter
     def symbol(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or val in _SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+            f"the `symbol` property of {type(self).__name__} must be one of"
+            f"{list(_SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())}"
+            f" but received {repr(val)} instead"
+        )
         self._symbol = val
 
 
@@ -750,7 +784,7 @@ class MarkerTraceStyle(BaseStyleProperties):
         else:
             raise ValueError(
                 "the marker property must be an instance"
-                "of MarkerStyle or a dictionary with equivalent key/value pairs"
+                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
             )
 
     @property
@@ -766,7 +800,7 @@ class MarkerTraceStyle(BaseStyleProperties):
         self._opacity = val
 
 
-class DipoleStyle(MagnetStyle):
+class Dipoles(BaseStyleProperties):
     """
     This class holds Dipole styling properties
     - size:  size relative to canvas
@@ -782,10 +816,14 @@ class DipoleStyle(MagnetStyle):
 
     @size.setter
     def size(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
         self._size = val
 
+class DipoleStyle(BaseStyle, Dipoles):
+    pass
 
 class PathTraceStyle(BaseStyleProperties):
     """
@@ -812,7 +850,7 @@ class PathTraceStyle(BaseStyleProperties):
         else:
             raise ValueError(
                 "the marker property must be an instance"
-                "of MarkerStyle or a dictionary with equivalent key/value pairs"
+                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
             )
 
     @property
@@ -831,7 +869,7 @@ class PathTraceStyle(BaseStyleProperties):
         else:
             raise ValueError(
                 "the line property must be an instance"
-                "of LineStyle or a dictionary with equivalent key/value pairs"
+                "of style.LineStyle or a dictionary with equivalent key/value pairs"
             )
 
 
@@ -853,8 +891,11 @@ class LineStyle(BaseStyleProperties):
 
     @style.setter
     def style(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or val in _LINESTYLES_MATPLOTLIB_TO_PLOTLY, (
+            f"the `style` property of {type(self).__name__} must be one of"
+            f"{list(_LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())}"
+            f" but received {repr(val)} instead"
+        )
         self._style = val
 
     @property
@@ -870,11 +911,158 @@ class LineStyle(BaseStyleProperties):
 
     @property
     def width(self):
-        """compatible symbol string for matplotlib or plotly"""
+        """compatible width string for matplotlib or plotly"""
         return self._width
 
     @width.setter
     def width(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `width` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
         self._width = val
+
+
+class MagpylibStyle(BaseStyleProperties):
+    """Base class containing style properties for all object famillies"""
+
+    def __init__(
+        self,
+        base=None,
+        magnets=None,
+        currents=None,
+        dipoles=None,
+        sensors=None,
+        markers=None,
+        **kwargs,
+    ):
+        super().__init__(
+            base=base,
+            magnets=magnets,
+            currents=currents,
+            dipoles=dipoles,
+            sensors=sensors,
+            markers=markers,
+            **kwargs,
+        )
+        self.reset()
+
+    def reset(self):
+        """Resets all nested properties to their default values"""
+        self.update(_DEFAULT_STYLES, _match_properties=False)
+
+    @property
+    def base(self):
+        """BaseStyle class with 'color', 'type', 'width' properties"""
+        return self._base
+
+    @base.setter
+    def base(self, val):
+        if isinstance(val, dict):
+            val = BaseStyle(**val)
+        if isinstance(val, BaseStyle):
+            self._base = val
+        elif val is None:
+            self._base = BaseStyle()
+        else:
+            raise ValueError(
+                "the base property must be an instance"
+                "of style.BaseStyle or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def magnets(self):
+        """MagnetStyle class with 'color', 'type', 'width' properties"""
+        return self._magnets
+
+    @magnets.setter
+    def magnets(self, val):
+        if isinstance(val, dict):
+            val = Magnets(**val)
+        if isinstance(val, Magnets):
+            self._magnets = val
+        elif val is None:
+            self._magnets = Magnets()
+        else:
+            raise ValueError(
+                "the magnets property must be an instance"
+                "of style.Magnets or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def currents(self):
+        """Currents class with 'color', 'type', 'width' properties"""
+        return self._currents
+
+    @currents.setter
+    def currents(self, val):
+        if isinstance(val, dict):
+            val = Currents(**val)
+        if isinstance(val, Currents):
+            self._currents = val
+        elif val is None:
+            self._currents = Currents()
+        else:
+            raise ValueError(
+                "the currents property must be an instance"
+                "of style.Currents or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def dipoles(self):
+        """Dipoles class with 'color', 'type', 'width' properties"""
+        return self._dipoles
+
+    @dipoles.setter
+    def dipoles(self, val):
+        if isinstance(val, dict):
+            val = Dipoles(**val)
+        if isinstance(val, Dipoles):
+            self._dipoles = val
+        elif val is None:
+            self._dipoles = Dipoles()
+        else:
+            raise ValueError(
+                "the dipoles property must be an instance"
+                "of style.Dipoles or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def sensors(self):
+        """Sensors class with 'color', 'type', 'width' properties"""
+        return self._sensors
+
+    @sensors.setter
+    def sensors(self, val):
+        if isinstance(val, dict):
+            val = Sensors(**val)
+        if isinstance(val, Sensors):
+            self._sensors = val
+        elif val is None:
+            self._sensors = Sensors()
+        else:
+            raise ValueError(
+                "the sensors property must be an instance"
+                "of style.Sensors or a dictionary with equivalent key/value pairs"
+            )
+
+    @property
+    def markers(self):
+        """MarkerStyle class with 'color', 'type', 'width' properties"""
+        return self._markers
+
+    @markers.setter
+    def markers(self, val):
+        if isinstance(val, dict):
+            val = MarkerStyle(**val)
+        if isinstance(val, MarkerStyle):
+            self._markers = val
+        elif val is None:
+            self._markers = MarkerStyle()
+        else:
+            raise ValueError(
+                "the markers property must be an instance"
+                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
+            )
+
+default_style = MagpylibStyle()

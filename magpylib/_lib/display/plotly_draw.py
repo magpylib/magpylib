@@ -18,7 +18,11 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
 from magpylib._lib.config import Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
-from magpylib._lib.display.style import get_style
+from magpylib._lib.display.style import (
+    get_style,
+    _LINESTYLES_MATPLOTLIB_TO_PLOTLY,
+    _SYMBOLS_MATPLOTLIB_TO_PLOTLY,
+)
 from magpylib._lib.display.disp_utility import (
     get_rot_pos_from_path,
     Markers,
@@ -46,31 +50,6 @@ _UNIT_PREFIX = {
     18: "E",  # exa
     21: "Z",  # zetta
     24: "Y",  # yotta
-}
-
-
-_SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
-    ".": "circle",
-    "o": "circle-open",
-    "+": "cross",
-    "D": "diamond",
-    "d": "diamond-open",
-    "s": "square",
-    "x": "x",
-}
-
-_LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
-    "solid": "solid",
-    "-": "solid",
-    "dashed": "dash",
-    "--": "dash",
-    "dashdot": "dashdot",
-    "-.": "dashdot",
-    "dotted": "dot",
-    ".": "dot",
-    (0, (1, 1)): "dot",
-    "loosely dotted": "longdash",
-    "loosely dashdotted": "longdashdot",
 }
 
 
