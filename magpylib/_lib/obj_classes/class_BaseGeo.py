@@ -64,8 +64,9 @@ class BaseGeo:
         if style_class is None:
             style_class = BaseGeoStyle
         self.style_class = style_class
-        self.style = style
-
+        if style is not None:
+            self.style = style
+            
     # properties ----------------------------------------------------
     @property
     def position(self):
@@ -131,18 +132,22 @@ class BaseGeo:
     @property
     def style(self):
         """instance of MagpyStyle for display styling options"""
+        if not hasattr(self,'_style') or self._style is None:
+            self._style = self._validate_style(val=None)
         return self._style
 
     @style.setter
     def style(self, val):
+        self._style = self._validate_style(val)
+
+    def _validate_style(self, val=None):
         if val is None:
             val = {}
         if isinstance(val, dict):
             val = self.style_class(**val)
-        if isinstance(val, self.style_class):
-            self._style = val
-        else:
+        if not isinstance(val, self.style_class):
             raise ValueError(f'style must be of type {self.style_class}')
+        return val
 
     # dunders -------------------------------------------------------
     def __add__(self, source):
