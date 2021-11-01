@@ -2,8 +2,18 @@
 # pylint: disable=C0302
 
 import collections.abc
-from magpylib._lib.config import Config
 
+_MAGPYLIB_FAMILIES = {
+    "Line": ("currents",),
+    "Circular": ("currents",),
+    "Cuboid": ("magnets",),
+    "Cylinder": ("magnets",),
+    "Sphere": ("magnets",),
+    "CylinderSegment": ("magnets",),
+    "Sensor": ("sensors",),
+    "Dipole": ("dipoles",),
+    "Marker": ("markers",),
+}
 _SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
     ".": "circle",
     "o": "circle-open",
@@ -40,7 +50,7 @@ _COLORS_MATPLOTLIB_TO_PLOTLY = {
 }
 
 _DEFAULT_STYLES = {
-    "sensors": {"size": 1, "pixel": {"size": 1, "color": "grey"}},
+    "sensors": {"size": 1, "pixel": {"size": 1, "color": None, "symbol": "o"}},
     "dipoles": {"size": 1, "pivot": "middle"},
     "currents": {"current": {"show": True, "size": 1}},
     "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
@@ -58,18 +68,38 @@ _DEFAULT_STYLES = {
     },
     "base": {
         "path": {
-            "line": {"width": 1, "style": "solid"},
-            "marker": {"size": 1, "symbol": "o"},
+            "line": {"width": 1, "style": "solid", "color": None},
+            "marker": {"size": 1, "symbol": "o", "color": None},
         },
-        "description": True,
+        "description": {"show": True, "text": ""},
         "opacity": 1,
-        "mesh3d": None,
+        "mesh3d": {"data": None, "show": True},
+        "color": None,
     },
 }
 
 
-def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False):
-    """updates recursively 'd' from 'u'"""
+def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> dict:
+    """updates recursively dictionary 'd' from  dictionary 'u'
+
+    Parameters
+    ----------
+    d : dict
+       dictionary to be updated
+    u : dict
+        dictionary to update with
+    same_keys_only : bool, optional
+        if `True`, only key found in `d` get updated and no new items are created,
+        by default False
+    replace_None_only : bool, optional
+        if `True`, only key/value pair from `d`where `value=None` get updated from `u`,
+        by default False
+
+    Returns
+    -------
+    dict
+        updated dictionary
+    """
     for k, v in u.items():
         if k in d or not same_keys_only:
             if isinstance(d, collections.abc.Mapping):
@@ -88,11 +118,20 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False):
     return d
 
 
-def magic_to_dict(kwargs):
-    """
-    decomposes recursively a dictionary with keys with underscores into a nested dictionary
+def magic_to_dict(kwargs) -> dict:
+    """decomposes recursively a dictionary with keys with underscores into a nested dictionary
     example : {'magnet_color':'blue'} -> {'magnet': {'color':'blue'}}
     see: https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation
+
+    Parameters
+    ----------
+    kwargs : dict
+        dictionary of keys to be decomposed into a nested dictionary
+
+    Returns
+    -------
+    dict
+        nested dictionary
     """
     new_kwargs = {}
     for k, v in kwargs.items():
@@ -111,17 +150,34 @@ def magic_to_dict(kwargs):
     return new_kwargs
 
 
-def color_validator(color_input, allow_None=True, parent_name=""):
-    """validates color inputs, allows `None` by default"""
+def color_validator(color_input, allow_None=True, parent_name="", backend="matplotlib"):
+    """validates color inputs based on chosen `backend', allows `None` by default.
+
+    Parameters
+    ----------
+    color_input : str
+        color input as string
+    allow_None : bool, optional
+        if `True` `color_input` can be `None`, by default True
+    parent_name : str, optional
+        name of the parent class of the validator, by default ""
+    backend: str, optional
+        plotting backend to validate with. One of `['matplotlib','plotly']`
+
+    Returns
+    -------
+    color_input
+        returns input if validation succeeds
+
+    Raises
+    ------
+    ValueError
+        raises ValueError inf validation fails
+    """
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
         color_input = _COLORS_MATPLOTLIB_TO_PLOTLY.get(color_input, color_input)
-        if Config.BACKEND == "plotly":
-            from _plotly_utils.basevalidators import ColorValidator
-
-            cv = ColorValidator(plotly_name="color", parent_name=parent_name)
-            color_input = cv.validate_coerce(color_input)
-        else:
+        if backend == "matplotlib":
             import re
 
             hex_fail = True
@@ -134,64 +190,68 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             if hex_fail and str(color_input) not in mcolors:
                 raise ValueError(
                     f"""\nInvalid value of type '{type(color_input)}' """
-                    f"""received for the color property of {parent_name})"""
+                    f"""received for the color property of {parent_name}"""
                     f"""\n   Received value: '{color_input}'"""
                     f"""\n\nThe 'color' property is a color and may be specified as:\n"""
                     """    - A hex string (e.g. '#ff0000')\n"""
                     f"""    - A named CSS color:\n{list(mcolors.keys())}"""
                 )
+        else:
+            from _plotly_utils.basevalidators import ColorValidator
+
+            cv = ColorValidator(plotly_name="color", parent_name=parent_name)
+            color_input = cv.validate_coerce(color_input)
     return color_input
 
 
 def get_style(obj, **kwargs):
     """
-    returns default style object based on increasing priority:
+    returns default style based on increasing priority:
     - style from Config
     - style from object
-    - style from style_kwargs
+    - style from kwargs arguments
     """
-
+    # parse kwargs into style an non-style arguments
     style_kwargs = kwargs.get("style", {})
     style_kwargs.update(
         {k[6:]: v for k, v in kwargs.items() if k.startswith("style") and k != "style"}
     )
 
-    styles_by_familly = default_style.as_dict()
-    objects_families = {
-        "Line": ("currents",),
-        "Circular": ("currents",),
-        "Cuboid": ("magnets",),
-        "Cylinder": ("magnets",),
-        "Sphere": ("magnets",),
-        "CylinderSegment": ("magnets",),
-        "Sensor": ("sensors",),
-        "Dipole": ("dipoles",),
-        "Marker": ("markers",),
-    }
+    # retrive default style dictionary,
+    styles_by_family = default_style.as_dict()
 
+    # construct object specific dictionary base on style family and default style
     obj_type = getattr(obj, "_object_type", None)
-    obj_families = objects_families.get(obj_type, [])
+    obj_families = _MAGPYLIB_FAMILIES.get(obj_type, [])
 
     obj_style_dict = {
-        **styles_by_familly["base"],
+        **styles_by_family["base"],
         **{
             k: v
             for fam in obj_families
-            for k, v in styles_by_familly.get(fam, {}).items()
+            for k, v in styles_by_family.get(fam, {}).items()
         },
     }
 
+    # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
-
-    style = obj_style.copy() if obj_style is not None else BaseStyle()
+    style = obj_style.copy() if obj_style is not None else BaseGeoStyle()
     style.update(**style_kwargs, _match_properties=False)
     style.update(**obj_style_dict, _match_properties=False, _replace_None_only=True)
 
     return style
 
 
-class BaseStyleProperties:
-    """Base Class to represent only the property attributes"""
+class BaseProperties:
+    """
+    Base Class to represent only the property attributes defined at initialization, after which the
+    class is frozen. This prevents user to create any attributes that are not defined as properties.
+
+    Raises
+    ------
+    AttributeError
+        raises AttributeError if the object is not a property
+    """ """"""
 
     __isfrozen = False
 
@@ -221,6 +281,7 @@ class BaseStyleProperties:
         self.__isfrozen = True
 
     def _property_names_generator(self):
+        """returns a generator with class properties only"""
         return (
             attr
             for attr in dir(self)
@@ -248,8 +309,11 @@ class BaseStyleProperties:
         self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
     ):
         """
-        updates the class properties with provided arguments, supports magic underscore
-        returns self
+        updates the class properties with provided arguments, supports magic underscore notation
+
+        Returns
+        -------
+        self
         """
         if arg is None:
             arg = {}
@@ -271,20 +335,33 @@ class BaseStyleProperties:
         return type(self)(**self.as_dict())
 
 
-class BaseStyle(BaseStyleProperties):
+class BaseGeoStyle(BaseProperties):
     """
-    Base class for display styling options of BaseGeo objects
+    Base class for display styling options of `BaseGeo` objects
 
     Properties
     ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description as string.
+
     color: str, default=None
-        css color
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
 
-    opacity: float, default=1
-        object opacity between 0 and 1
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    mesh3d: plotly.graph_objects.Mesh3d, default=None
-        can be set trough dict of compatible keys
+    path: dict or PathStyle, default=None
+        an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    mesh3d: dict or Mesh3d, default=None
+        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
+        an additional user-defined mesh3d object which is positioned relatively to the main object
+        to be displayed and moved automatically with it. This feature also allows the user to
+        replace the original 3d representation of the object.
     """
 
     def __init__(
@@ -293,6 +370,7 @@ class BaseStyle(BaseStyleProperties):
         description=None,
         color=None,
         opacity=None,
+        path=None,
         mesh3d=None,
         **kwargs,
     ):
@@ -301,13 +379,14 @@ class BaseStyle(BaseStyleProperties):
             description=description,
             color=color,
             opacity=opacity,
+            path=path,
             mesh3d=mesh3d,
             **kwargs,
         )
 
     @property
     def name(self):
-        """name of object"""
+        """name of the class instance, can be any string"""
         return self._name
 
     @name.setter
@@ -316,21 +395,27 @@ class BaseStyle(BaseStyleProperties):
 
     @property
     def description(self):
-        """
-        object description. Adds legend entry suffix based on value:
-        - True: base object dimension are shown
-        - False: no suffix is shown
-        - str: user string is shown
-        """
+        """Description class with 'text' and 'show' properties"""
         return self._description
 
     @description.setter
     def description(self, val):
-        self._description = val if isinstance(val, bool) or val is None else str(val)
+        if isinstance(val, dict):
+            val = Description(**val)
+        if isinstance(val, Description):
+            self._description = val
+        elif val is None:
+            self._description = Description()
+        else:
+            raise ValueError(
+                f"the `description` property of `{type(self).__name__}` must be an instance \n"
+                "of `Description` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
+            )
 
     @property
     def color(self):
-        """css color"""
+        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
         return self._color
 
     @color.setter
@@ -339,58 +424,124 @@ class BaseStyle(BaseStyleProperties):
 
     @property
     def opacity(self):
-        """opacity float between 0 and 1"""
+        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
         return self._opacity
 
     @opacity.setter
     def opacity(self, val):
         assert val is None or (
             isinstance(val, (float, int)) and val >= 0 and val <= 1
-        ), "opacity must be a value betwen 0 and 1"
+        ), (
+            "opacity must be a value betwen 0 and 1\n"
+            f"but received {repr(val)} instead"
+        )
         self._opacity = val
 
     @property
     def path(self):
-        """MagColor class with 'north', 'south', 'middle' and 'transition' values"""
+        """an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the
+        object path marker and path line properties"""
         return self._path
 
     @path.setter
     def path(self, val):
         if isinstance(val, dict):
-            val = PathTraceStyle(**val)
-        if isinstance(val, PathTraceStyle):
+            val = PathStyle(**val)
+        if isinstance(val, PathStyle):
             self._path = val
         elif val is None:
-            self._path = PathTraceStyle()
+            self._path = PathStyle()
         else:
             raise ValueError(
-                "the path property must be an instance "
-                "of PathTraceStyle or a dictionary with equivalent key/value pairs"
+                f"the `path` property of `{type(self).__name__}` must be an instance \n"
+                "of `PathStyle` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
     def mesh3d(self):
-        """MagColor class with 'north', 'south', 'middle', 'transition' and 'show' values"""
+        """
+        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
+        an additional user-defined mesh3d object which is positioned relatively to the main object
+        to be displayed and moved automatically with it. This feature also allows the user to
+        replace the original 3d representation of the object.
+        """
         return self._mesh3d
 
     @mesh3d.setter
     def mesh3d(self, val):
         if isinstance(val, dict):
-            val = Mesh3dStyle(**val)
-        if isinstance(val, Mesh3dStyle):
+            val = Mesh3d(**val)
+        if isinstance(val, Mesh3d):
             self._mesh3d = val
         elif val is None:
-            self._mesh3d = Mesh3dStyle()
+            self._mesh3d = Mesh3d()
         else:
             raise ValueError(
-                "the mesh3d property must be an instance "
-                "of Mesh3dStyle or a dictionary with equivalent key/value pairs"
+                f"the `mesh3d` property of `{type(self).__name__}` must be an instance \n"
+                "of `Mesh3d` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class Mesh3dStyle(BaseStyleProperties):
+class Description(BaseProperties):
     """
-    Mesh3d styling properties
+    Defines properties for a description object
+
+    Properties
+    ----------
+    text: str, default=None
+        Object description text
+
+    show: bool, default=None
+        if `True`, adds legend entry suffix based on value
+    """
+
+    @property
+    def text(self):
+        """
+        texts/hides mesh3d object based on provided data:
+        - True: texts mesh
+        - False: hides mesh
+        - 'inplace': replace object representation
+        """
+        return self._text
+
+    @text.setter
+    def text(self, val):
+        self._text = val if val is None else str(val)
+
+    @property
+    def show(self):
+        """if `True`, adds legend entry suffix based on value"""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `show` property of {type(self).__name__} must be either `True` or `False`\n"
+            f"but received {repr(val)} instead"
+        )
+        self._show = val
+
+
+class Mesh3d(BaseProperties):
+    """
+    Defines properties for an additional user-defined mesh3d object which is positioned relatively
+    to the main object to be displayed and moved automatically with it. This feature also allows
+    the user to replace the original 3d representation of the object
+
+    Properties
+    ----------
+    show : bool, default=None
+        shows/hides mesh3d object based on provided data:
+        - True: shows mesh
+        - False: hides mesh
+        - 'inplace': replace object representation
+
+    data: dict, default=None
+        dictionary containing the `x,y,z,i,j,k` keys/values pairs for a mesh3d object
+
     """
 
     def __init__(self, data=None, show=None, **kwargs):
@@ -399,7 +550,7 @@ class Mesh3dStyle(BaseStyleProperties):
     @property
     def show(self):
         """
-        Shows/hides mesh3d object based on provided data:
+        shows/hides mesh3d object based on provided data:
         - True: shows mesh
         - False: hides mesh
         - 'inplace': replace object representation
@@ -408,29 +559,46 @@ class Mesh3dStyle(BaseStyleProperties):
 
     @show.setter
     def show(self, val):
-        assert (
-            val is None or isinstance(val, bool) or val == "inplace"
-        ), "show must be one of [`True`, `False`, `'inplace'`]"
+        assert val is None or isinstance(val, bool) or val == "inplace", (
+            f"the `show` property of {type(self).__name__} must be "
+            f"one of `[True, False, 'inplace']`"
+            f" but received {repr(val)} instead"
+        )
         self._show = val
 
     @property
     def data(self):
-        """plotly.graph_objects.Mesh3d or equivalent dict"""
+        """dictionary containing the `x,y,z,i,j,k` keys/values pairs for a mesh3d object"""
         return self._data
 
     @data.setter
     def data(self, val):
         # pylint: disable=import-outside-toplevel
-        assert val is None or all(
-            key in val for key in "xyzijk"
-        ), "data must be a dict-like object containing the `x,y,z,i,j,k` keys/values pairs"
+        assert val is None or (
+            isinstance(val, dict) and all(key in val for key in "xyzijk")
+        ), (
+            "data must be a dict-like object containing the `x,y,z,i,j,k` keys/values pairs"
+            f" but received {repr(val)} instead"
+        )
         self._data = val
 
 
-class MagnetizationStyle(BaseStyleProperties):
-    """This class holds magnetization styling properties
-    - size: arrow size for matplotlib backend
-    - color: magnetization colors of the poles
+class Magnetization(BaseProperties):
+    """
+    Defines magnetization styling properties
+
+    Properties
+    ----------
+    show : bool, default=None
+        if `True` shows magnetization direction based on active plotting backend
+
+    size: float, default=None
+        arrow size of the magnetization direction (for the matplotlib backend)
+        only applies if `show=True`
+
+    color: dict, MagnetizationColor, default=None
+        color properties showing the magnetization direction (for the plotly backend)
+        only applies if `show=True`
     """
 
     def __init__(self, show=None, size=None, color=None, **kwargs):
@@ -438,14 +606,15 @@ class MagnetizationStyle(BaseStyleProperties):
 
     @property
     def show(self):
-        """show magnetization direction through poles colors"""
+        """if `True` shows magnetization direction based on active plotting backend"""
         return self._show
 
     @show.setter
     def show(self, val):
-        assert val is None or isinstance(
-            val, bool
-        ), "show must be either `True` or `False`"
+        assert val is None or isinstance(val, bool), (
+            "show must be either `True` or `False` \n"
+            f" but received {repr(val)} instead"
+        )
         self._show = val
 
     @property
@@ -455,38 +624,58 @@ class MagnetizationStyle(BaseStyleProperties):
 
     @size.setter
     def size(self, val):
-        assert (
-            val is None or isinstance(val, (int, float)) and val >= 0
-        ), "size must be a positive number"
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `size` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
         self._size = val
 
     @property
     def color(self):
-        """MagColor class with 'north', 'south', 'middle', 'transition' and 'show' values"""
+        """color properties showing the magnetization direction (for the plotly backend)
+        only applies if `show=True`"""
         return self._color
 
     @color.setter
     def color(self, val):
         if isinstance(val, dict):
-            val = MagColor(**val)
-        if isinstance(val, MagColor):
+            val = MagnetizationColor(**val)
+        if isinstance(val, MagnetizationColor):
             self._color = val
         elif val is None:
-            self._color = MagColor()
+            self._color = MagnetizationColor()
         else:
             raise ValueError(
-                "the magnetic color property must be an instance "
-                "of MagColor or a dictionary with equivalent key/value pairs"
+                f"the `color` property of `{type(self).__name__}` must be an instance \n"
+                "of `MagnetizationColor` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class MagColor(BaseStyleProperties):
+class MagnetizationColor(BaseProperties):
     """
-    This class defines the magnetization color styling:
-        - north
-        - south
-        - middle
-        - transition
+    Defines the magnetization direction color styling properties.
+
+    Note: This feature is only relevant for the plotly backend.
+
+    Properties
+    ----------
+    north: str, default=None
+        defines the color of the magnetic north pole
+
+    south: str, default=None
+        defines the color of the magnetic south pole
+
+    middle: str, default=None
+        defines the color between the magnetic poles
+        if set to `auto`, the middle color will get a color from the color sequence cylcing over
+        objects to be displayed
+
+    transition: float, default=None
+        sets the transition smoothness between poles colors.
+        - `transition=0`: discrete transition
+        - `transition=1`: smoothest transition
+        - can be any value in-between 0 and 1"
     """
 
     def __init__(self, north=None, south=None, middle=None, transition=None, **kwargs):
@@ -500,7 +689,7 @@ class MagColor(BaseStyleProperties):
 
     @property
     def north(self):
-        """css color"""
+        """the color of the magnetic north pole"""
         return self._north
 
     @north.setter
@@ -509,7 +698,7 @@ class MagColor(BaseStyleProperties):
 
     @property
     def south(self):
-        """css color"""
+        """the color of the magnetic south pole"""
         return self._south
 
     @south.setter
@@ -518,7 +707,9 @@ class MagColor(BaseStyleProperties):
 
     @property
     def middle(self):
-        """css color"""
+        """the color between the magnetic poles
+        if set to `auto`, the middle color will get a color from the color sequence cylcing over
+        objects to be displayed"""
         return self._middle
 
     @middle.setter
@@ -529,7 +720,10 @@ class MagColor(BaseStyleProperties):
 
     @property
     def transition(self):
-        """sets the transition smoothness between poles colors"""
+        """sets the transition smoothness between poles colors.
+        `transition=0`: discrete transition
+        `transition=1`: smoothest transition
+        can be any value in-between 0 and 1"""
         return self._transition
 
     @transition.setter
@@ -540,9 +734,14 @@ class MagColor(BaseStyleProperties):
         self._transition = val
 
 
-class Magnets(BaseStyleProperties):
+class Magnets(BaseProperties):
     """
-    Style class for display styling options of Magnet objects
+    Defines the specific styling properties of objects of the `magnets` family
+
+    Properties
+    ----------
+    magnetization: dict or Magnetization, default=None
+
     """
 
     def __init__(self, magnetization=None, **kwargs):
@@ -550,34 +749,41 @@ class Magnets(BaseStyleProperties):
 
     @property
     def magnetization(self):
-        """MagColor class with 'north', 'south', 'middle' and 'transition' values"""
+        """Magnetization class with 'north', 'south', 'middle' and 'transition' values
+        or a dictionary with equivalent key/value pairs"""
         return self._magnetization
 
     @magnetization.setter
     def magnetization(self, val):
         if isinstance(val, dict):
-            val = MagnetizationStyle(**val)
-        if isinstance(val, MagnetizationStyle):
+            val = Magnetization(**val)
+        if isinstance(val, Magnetization):
             self._magnetization = val
         elif val is None:
-            self._magnetization = MagnetizationStyle()
+            self._magnetization = Magnetization()
         else:
             raise ValueError(
-                "the magnetic color property must be an instance "
-                "of Mag or a dictionary with equivalent key/value pairs"
+                f"the `magnetization` property of `{type(self).__name__}` must be an instance \n"
+                "of `Magnetization` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class MagnetStyle(BaseStyle, Magnets):
-    """Magnet object styling properties"""
+class MagnetStyle(BaseGeoStyle, Magnets):
+    """Defines the styling properties of objects of the `magnets` family with base properties"""
 
 
-class Sensors(BaseStyleProperties):
+class Sensors(BaseProperties):
     """
-    This class holds Sensor styling properties
-    - size:  size relative to canvas
-    - color: sensor color
-    - pixel: pixel properties, see PixelStyle
+    Defines the specific styling properties of objects of the `sensors` family
+
+    Properties
+    ----------
+    size: float, default=None
+        positive float for relative sensor to canvas size
+
+    pixel: dict, Pixel, default=None
+        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
     """
 
     def __init__(self, size=None, pixel=None, **kwargs):
@@ -598,33 +804,42 @@ class Sensors(BaseStyleProperties):
 
     @property
     def pixel(self):
-        """MagColor class with 'north', 'south', 'middle' and 'transition' values"""
+        """`Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)"""
         return self._pixel
 
     @pixel.setter
     def pixel(self, val):
         if isinstance(val, dict):
-            val = PixelStyle(**val)
-        if isinstance(val, PixelStyle):
+            val = Pixel(**val)
+        if isinstance(val, Pixel):
             self._pixel = val
         elif val is None:
-            self._pixel = PixelStyle()
+            self._pixel = Pixel()
         else:
             raise ValueError(
-                "the pixel property must be an instance "
-                "of PixelStyle or a dictionary with equivalent key/value pairs"
+                f"the `pixel` property of `{type(self).__name__}` must be an instance \n"
+                "of `Pixel` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class SensorStyle(BaseStyle, Sensors):
-    """Sensor object styling properties"""
+class SensorStyle(BaseGeoStyle, Sensors):
+    """Defines the styling properties of objects of the `sensors` family with base properties"""
 
 
-class PixelStyle(BaseStyleProperties):
+class Pixel(BaseProperties):
     """
-    This class holds sensor pixel styling properties
-    - size: relative pixel size to the min distance between two pixels
-    - color: pixel color
+    Defines the styling properties of sensor pixels
+
+    Properties
+    ----------
+    size: float, default=None
+        defines the relative pixel size:
+        - matplotlib backend: pixel size is the marker size
+        - plotly backend:  relative size to the distance of nearest neighboring pixel
+
+    - color: str, default=None
+        defines the pixel color
     """
 
     def __init__(self, size=1, color=None, **kwargs):
@@ -632,7 +847,9 @@ class PixelStyle(BaseStyleProperties):
 
     @property
     def size(self):
-        """positive float, relative pixel size to the min distance between two pixels"""
+        """positive float, the relative pixel size:
+        - matplotlib backend: pixel size is the marker size
+        - plotly backend:  relative size to the distance of nearest neighboring pixel"""
         return self._size
 
     @size.setter
@@ -645,7 +862,7 @@ class PixelStyle(BaseStyleProperties):
 
     @property
     def color(self):
-        """css color"""
+        """the pixel color"""
         return self._color
 
     @color.setter
@@ -653,11 +870,15 @@ class PixelStyle(BaseStyleProperties):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
 
-class Currents(BaseStyleProperties):
+class Currents(BaseProperties):
     """
-    This class holds styling properties for Line and Circular currents
-    - show: if True current directin is shown with an arrow
-    - size: defines the size of the arrows
+    Defines the specific styling properties of objects of the `currents` family
+
+    Properties
+    ----------
+    show: bool, default=None
+        if `True` current direction is shown with an arrow
+    size: defines the size of the arrows
     """
 
     def __init__(self, current=None, **kwargs):
@@ -678,20 +899,27 @@ class Currents(BaseStyleProperties):
             self._current = ArrowStyle()
         else:
             raise ValueError(
-                "the current property must be an instance"
-                "of style.ArrowStyle or a dictionary with equivalent key/value pairs"
+                f"the `current` property of `{type(self).__name__}` must be an instance \n"
+                "of `ArrowStyle` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class CurrentStyle(BaseStyle, Currents):
-    """Current object styling properties"""
+class CurrentStyle(BaseGeoStyle, Currents):
+    """Defines the styling properties of objects of the `currents` family and base properties"""
 
 
-class ArrowStyle(BaseStyleProperties):
+class ArrowStyle(BaseProperties):
     """
-    This class holds styling properties for Line and Circular currents
-    - show: if True current directin is shown with an arrow
-    - size: defines the size of the arrows
+    Defines the styling properties of current arrows
+
+    Properties
+    ----------
+    show: bool, default=None
+        if `True` current direction is shown with an arrow
+
+    size: float
+        positive number defining the size of the arrows
     """
 
     def __init__(self, show=None, size=None, **kwargs):
@@ -699,7 +927,7 @@ class ArrowStyle(BaseStyleProperties):
 
     @property
     def show(self):
-        """show/hide current show arrow"""
+        """show/hide arrow showing current direction"""
         return self._show
 
     @show.setter
@@ -712,7 +940,7 @@ class ArrowStyle(BaseStyleProperties):
 
     @property
     def size(self):
-        """positive float for relative arrow size"""
+        """positive number defining the size of the arrows"""
         return self._size
 
     @size.setter
@@ -724,12 +952,19 @@ class ArrowStyle(BaseStyleProperties):
         self._size = val
 
 
-class MarkerStyle(BaseStyleProperties):
+class Markers(BaseProperties):
     """
-    This class holds marker styling properties
-    - size: marker size
-    - color: marker color
-    - symbol: marker symbol
+    Defines the styling properties of plot markers
+
+    Properties
+    ----------
+    size: float, default=None
+        marker size
+    color: str, default=None
+        marker color
+    symbol: str, default=None
+        marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`
+
     """
 
     def __init__(self, size=None, color=None, symbol=None, **kwargs):
@@ -750,18 +985,16 @@ class MarkerStyle(BaseStyleProperties):
 
     @property
     def color(self):
-        """css color"""
+        """marker color"""
         return self._color
 
     @color.setter
     def color(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
-        self._color = val
+        self._color = color_validator(val)
 
     @property
     def symbol(self):
-        """compatible symbol string for matplotlib or plotly"""
+        """marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`"""
         return self._symbol
 
     @symbol.setter
@@ -774,11 +1007,17 @@ class MarkerStyle(BaseStyleProperties):
         self._symbol = val
 
 
-class MarkerTraceStyle(BaseStyleProperties):
+class MarkerTraceStyle(BaseProperties):
     """
-    This class holds marker styling properties
-    - marker: MarkerStyle class
-    - opacity: trace opacity
+    Defines the styling properties of the markers trace
+
+    Properties
+    ----------
+    marker: dict, Markers, default=None
+        Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent
     """
 
     def __init__(self, marker=None, opacity=None, **kwargs):
@@ -786,49 +1025,61 @@ class MarkerTraceStyle(BaseStyleProperties):
 
     @property
     def marker(self):
-        """MarkerStyle class with 'color', 'symbol', 'size' values"""
+        """Markers class with 'color', 'symbol', 'size' properties"""
         return self._marker
 
     @marker.setter
     def marker(self, val):
         if isinstance(val, dict):
-            val = MarkerStyle(**val)
-        if isinstance(val, MarkerStyle):
+            val = Markers(**val)
+        if isinstance(val, Markers):
             self._marker = val
         elif val is None:
-            self._marker = MarkerStyle()
+            self._marker = Markers()
         else:
             raise ValueError(
-                "the marker property must be an instance"
-                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
+                f"the `marker` property of `{type(self).__name__}` must be an instance \n"
+                "of `Markers` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
     def opacity(self):
-        """opacity float between 0 and 1"""
+        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
         return self._opacity
 
     @opacity.setter
     def opacity(self, val):
         assert val is None or (
             isinstance(val, (float, int)) and val >= 0 and val <= 1
-        ), "opacity must be a value betwen 0 and 1"
+        ), (
+            "opacity must be a value betwen 0 and 1\n"
+            f"but received {repr(val)} instead"
+        )
         self._opacity = val
 
 
-class Dipoles(BaseStyleProperties):
+class Dipoles(BaseProperties):
     """
-    This class holds Dipole styling properties
-    - size:  size relative to canvas
+    Defines the specific styling properties of the objects of the `dipoles` family
+
+    Properties
+    ----------
+    size: float, default=None
+        positive float for relative dipole to size to canvas size
+
+    pivot: str, default=None
+        the part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
     """
 
-    def __init__(self, size=None, **kwargs):
+    def __init__(self, size=None, pivot=None, **kwargs):
         self._allowed_pivots = ("tail", "middle", "tip")
-        super().__init__(size=size, **kwargs)
+        super().__init__(size=size, pivot=pivot, **kwargs)
 
     @property
     def size(self):
-        """positive float for relative sensor to size to canvas size"""
+        """positive float for relative dipole to size to canvas size"""
         return self._size
 
     @size.setter
@@ -842,27 +1093,37 @@ class Dipoles(BaseStyleProperties):
     @property
     def pivot(self):
         """The part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point"""
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`"""
         return self._pivot
 
     @pivot.setter
     def pivot(self, val):
         assert val is None or val in (self._allowed_pivots), (
             f"the `pivot` property of {type(self).__name__} must be one of "
-            f"{self._allowed_pivots}"
+            f"{self._allowed_pivots}\n"
             f" but received {repr(val)} instead"
         )
         self._pivot = val
 
 
-class DipoleStyle(BaseStyle, Dipoles):
-    """Dipole object styling properties"""
+class DipoleStyle(BaseGeoStyle, Dipoles):
+    """Defines the styling properties of the objects of the `dipoles` family and base properties"""
 
 
-class PathTraceStyle(BaseStyleProperties):
+class PathStyle(BaseProperties):
     """
-    This class holds marker styling properties
-    - marker: MarkerStyle class
+    Defines the styling properties of an object's path
+
+    Properties
+    ----------
+    marker: dict, Markers, default=None
+        Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs
+
+    line: dict, LineStyle, default=None
+        LineStyle class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs
+
     """
 
     def __init__(self, marker=None, line=None, **kwargs):
@@ -870,21 +1131,22 @@ class PathTraceStyle(BaseStyleProperties):
 
     @property
     def marker(self):
-        """MarkerStyle class with 'color', 'symbol', 'size' properties"""
+        """Markers class with 'color', 'type', 'width' properties"""
         return self._marker
 
     @marker.setter
     def marker(self, val):
         if isinstance(val, dict):
-            val = MarkerStyle(**val)
-        if isinstance(val, MarkerStyle):
+            val = Markers(**val)
+        if isinstance(val, Markers):
             self._marker = val
         elif val is None:
-            self._marker = MarkerStyle()
+            self._marker = Markers()
         else:
             raise ValueError(
-                "the marker property must be an instance"
-                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
+                f"the `marker` property of `{type(self).__name__}` must be an instance \n"
+                "of `Markers` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
@@ -902,17 +1164,29 @@ class PathTraceStyle(BaseStyleProperties):
             self._line = LineStyle()
         else:
             raise ValueError(
-                "the line property must be an instance"
-                "of style.LineStyle or a dictionary with equivalent key/value pairs"
+                f"the `line` property of `{type(self).__name__}` must be an instance \n"
+                "of `LineStyle` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 
-class LineStyle(BaseStyleProperties):
+class LineStyle(BaseProperties):
     """
-    This class holds Line styling properties
-    - style: line style (linestyle in matplotlib and line_dash in plotly)
-    - color: line color
-    - width: line width
+    Defines Line styling properties
+
+    Properties
+    ----------
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        line color
+
+    width: float, default=None
+        positive number that defines the line width
+
     """
 
     def __init__(self, style=None, color=None, width=None, **kwargs):
@@ -920,7 +1194,7 @@ class LineStyle(BaseStyleProperties):
 
     @property
     def style(self):
-        """marker style"""
+        """line style"""
         return self._style
 
     @style.setter
@@ -934,18 +1208,16 @@ class LineStyle(BaseStyleProperties):
 
     @property
     def color(self):
-        """css color"""
+        """line color"""
         return self._color
 
     @color.setter
     def color(self, val):
-        # wrong value will be handeled by the respective libraries since
-        # value only gets created at plot creation.
-        self._color = val
+        self._color = color_validator(val)
 
     @property
     def width(self):
-        """compatible width string for matplotlib or plotly"""
+        """positive number that defines the line width"""
         return self._width
 
     @width.setter
@@ -957,8 +1229,31 @@ class LineStyle(BaseStyleProperties):
         self._width = val
 
 
-class MagpylibStyle(BaseStyleProperties):
-    """Base class containing style properties for all object famillies"""
+class MagpylibStyle(BaseProperties):
+    """
+    Base class containing styling properties for all object families. The properties of the
+    sub-classes get set to hard coded defaults at class instantiation
+
+    Properties
+    ----------
+    base: dict, BaseGeoStyle, default=None
+        base properties common to all families
+
+    magnets: dict, Magnets, default=None
+        magnets properties
+
+    currents: dict, Currents, default=None
+        currents properties
+
+    dipoles: dict, Dipoles, default=None
+        dipoles properties
+
+    sensors: dict, Sensors, default=None
+        sensors properties
+
+    markers: dict, Markers, default=None
+        markers properties
+    """
 
     def __init__(
         self,
@@ -982,7 +1277,7 @@ class MagpylibStyle(BaseStyleProperties):
         self.reset()
 
     def reset(self):
-        """Resets all nested properties to their default values"""
+        """Resets all nested properties to their hard coded default values"""
         self.update(_DEFAULT_STYLES, _match_properties=False)
 
     @property
@@ -993,15 +1288,16 @@ class MagpylibStyle(BaseStyleProperties):
     @base.setter
     def base(self, val):
         if isinstance(val, dict):
-            val = BaseStyle(**val)
-        if isinstance(val, BaseStyle):
+            val = BaseGeoStyle(**val)
+        if isinstance(val, BaseGeoStyle):
             self._base = val
         elif val is None:
-            self._base = BaseStyle()
+            self._base = BaseGeoStyle()
         else:
             raise ValueError(
-                "the base property must be an instance"
-                "of style.BaseStyle or a dictionary with equivalent key/value pairs"
+                f"the `base` property of `{type(self).__name__}` must be an instance \n"
+                "of `BaseGeoStyle` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
@@ -1019,8 +1315,9 @@ class MagpylibStyle(BaseStyleProperties):
             self._magnets = Magnets()
         else:
             raise ValueError(
-                "the magnets property must be an instance"
-                "of style.Magnets or a dictionary with equivalent key/value pairs"
+                f"the `magnets` property of `{type(self).__name__}` must be an instance \n"
+                "of `Magnets` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
@@ -1038,8 +1335,9 @@ class MagpylibStyle(BaseStyleProperties):
             self._currents = Currents()
         else:
             raise ValueError(
-                "the currents property must be an instance"
-                "of style.Currents or a dictionary with equivalent key/value pairs"
+                f"the `currents` property of `{type(self).__name__}` must be an instance \n"
+                "of `Currents` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
@@ -1057,8 +1355,9 @@ class MagpylibStyle(BaseStyleProperties):
             self._dipoles = Dipoles()
         else:
             raise ValueError(
-                "the dipoles property must be an instance"
-                "of style.Dipoles or a dictionary with equivalent key/value pairs"
+                f"the `dipoles` property of `{type(self).__name__}` must be an instance \n"
+                "of `Dipoles` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
@@ -1076,27 +1375,29 @@ class MagpylibStyle(BaseStyleProperties):
             self._sensors = Sensors()
         else:
             raise ValueError(
-                "the sensors property must be an instance"
-                "of style.Sensors or a dictionary with equivalent key/value pairs"
+                f"the `sensors` property of `{type(self).__name__}` must be an instance \n"
+                "of `Sensors` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
     @property
     def markers(self):
-        """MarkerStyle class with 'color', 'type', 'width' properties"""
+        """Markers class with 'color', 'type', 'width' properties"""
         return self._markers
 
     @markers.setter
     def markers(self, val):
         if isinstance(val, dict):
-            val = MarkerStyle(**val)
-        if isinstance(val, MarkerStyle):
+            val = Markers(**val)
+        if isinstance(val, Markers):
             self._markers = val
         elif val is None:
-            self._markers = MarkerStyle()
+            self._markers = Markers()
         else:
             raise ValueError(
-                "the markers property must be an instance"
-                "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
+                f"the `markers` property of `{type(self).__name__}` must be an instance \n"
+                "of `Markers` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
             )
 
 

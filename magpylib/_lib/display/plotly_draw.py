@@ -134,11 +134,11 @@ def _getColorscale(
     color_transition : float, optional
         A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
         visualization., by default 0.1
-    color_north : [type], optional
+    color_north : str, optional
         magnetic north pole color , by default None
-    color_middle : [type], optional
+    color_middle : str, optional
         middle between south and north pole color, by default None
-    color_south : [type], optional
+    color_south : str, optional
         magnetic north pole color , by default None
 
     Returns
@@ -827,6 +827,7 @@ def _update_mag_mesh(
 def place_and_orient_mesh3d(
     mesh_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
 ):
+    """places and orients mesh3d dict"""
     position = np.array(position)
     vertices = np.array([mesh_dict[k] for k in "xyz"]).T
     if orientation is not None:

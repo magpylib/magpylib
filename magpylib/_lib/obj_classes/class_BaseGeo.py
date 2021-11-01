@@ -5,7 +5,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import Config
-from magpylib._lib.display.style import BaseStyle
+from magpylib._lib.display.style import BaseGeoStyle
 from magpylib._lib.input_checks import (
     check_vector_type,
     check_path_format,
@@ -62,7 +62,7 @@ class BaseGeo:
         self.position = position
         self.orientation = orientation
         if style_class is None:
-            style_class = BaseStyle
+            style_class = BaseGeoStyle
         self.style_class = style_class
         self.style = style
 
