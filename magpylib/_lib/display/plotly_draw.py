@@ -1349,6 +1349,13 @@ def animate_path(
     ]
 
     N = max(path_lengths)
+    if animate_fps > Config.ANIMATE_MAX_FPS:
+        warnings.warn(
+            "The set `animate_fps` is greater than the max allowed "
+            f"of {Config.ANIMATE_MAX_FPS}, animate_fps will be set to "
+            f"{Config.ANIMATE_MAX_FPS}"
+        )
+        animate_fps = Config.ANIMATE_MAX_FPS
     maxpos = min(animate_time * animate_fps, Config.ANIMATE_MAX_FRAMES)
     if N <= maxpos:
         path_indices = np.arange(N)
