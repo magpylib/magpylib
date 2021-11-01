@@ -28,9 +28,20 @@ _LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
     "loosely dashdotted": "longdashdot",
 }
 
+_COLORS_MATPLOTLIB_TO_PLOTLY = {
+    "r": "red",
+    "g": "green",
+    "b": "blue",
+    "y": "yellow",
+    "m": "magenta",
+    "c": "cyan",
+    "k": "black",
+    "w": "white",
+}
+
 _DEFAULT_STYLES = {
     "sensors": {"size": 1, "pixel": {"size": 1, "color": "grey"}},
-    "dipoles": {"size": 1, "pivot": 'middle'},
+    "dipoles": {"size": 1, "pivot": "middle"},
     "currents": {"current": {"show": True, "size": 1}},
     "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
     "magnets": {
@@ -104,6 +115,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs, allows `None` by default"""
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
+        color_input = _COLORS_MATPLOTLIB_TO_PLOTLY.get(color_input, color_input)
         if Config.BACKEND == "plotly":
             from _plotly_utils.basevalidators import ColorValidator
 
@@ -557,7 +569,7 @@ class Magnets(BaseStyleProperties):
 
 
 class MagnetStyle(BaseStyle, Magnets):
-    pass
+    """Magnet object styling properties"""
 
 
 class Sensors(BaseStyleProperties):
@@ -605,7 +617,9 @@ class Sensors(BaseStyleProperties):
 
 
 class SensorStyle(BaseStyle, Sensors):
-    pass
+    """Sensor object styling properties"""
+
+
 class PixelStyle(BaseStyleProperties):
     """
     This class holds sensor pixel styling properties
@@ -638,6 +652,7 @@ class PixelStyle(BaseStyleProperties):
     def color(self, val):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
+
 class Currents(BaseStyleProperties):
     """
     This class holds styling properties for Line and Circular currents
@@ -669,7 +684,8 @@ class Currents(BaseStyleProperties):
 
 
 class CurrentStyle(BaseStyle, Currents):
-    pass
+    """Current object styling properties"""
+
 
 class ArrowStyle(BaseStyleProperties):
     """
@@ -807,7 +823,7 @@ class Dipoles(BaseStyleProperties):
     """
 
     def __init__(self, size=None, **kwargs):
-        self._allowed_pivots = ('tail', 'middle', 'tip')
+        self._allowed_pivots = ("tail", "middle", "tip")
         super().__init__(size=size, **kwargs)
 
     @property
@@ -838,8 +854,10 @@ class Dipoles(BaseStyleProperties):
         )
         self._pivot = val
 
+
 class DipoleStyle(BaseStyle, Dipoles):
-    pass
+    """Dipole object styling properties"""
+
 
 class PathTraceStyle(BaseStyleProperties):
     """
@@ -1080,5 +1098,6 @@ class MagpylibStyle(BaseStyleProperties):
                 "the markers property must be an instance"
                 "of style.MarkerStyle or a dictionary with equivalent key/value pairs"
             )
+
 
 default_style = MagpylibStyle()
