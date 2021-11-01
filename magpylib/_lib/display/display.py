@@ -257,6 +257,9 @@ def display_matplotlib(
         color = style.color if style.color is not None else color
         lw = 0.25
         faces = None
+        if style.mesh3d.data is not None and style.mesh3d.show is True:
+            warnings.warn(f"{obj} has a mesh3d attached, which cannot be plotted with"
+            " the matplotlib backend at the moment")
         if obj._object_type == "Cuboid":
             lw = 0.5
             faces = faces_cuboid(obj, show_path)
