@@ -1046,11 +1046,11 @@ def get_plotly_traces(
             marker = style.path.marker.as_dict()
             symb = marker["symbol"]
             marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-            marker["color"] = "black" if marker["color"] is None else marker["color"]
+            marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
             line = style.path.line.as_dict()
             dash = line["style"]
             line["dash"] = _LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
-            line["color"] = kwargs["color"]
+            line["color"] = kwargs["color"] if line["color"] is None else line["color"]
             line = {k: v for k, v in line.items() if k != "style"}
             scatter_path = dict(
                 type="scatter3d",
