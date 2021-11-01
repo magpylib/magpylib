@@ -50,10 +50,16 @@ _COLORS_MATPLOTLIB_TO_PLOTLY = {
 }
 
 _DEFAULT_STYLES = {
-    "sensors": {"size": 1, "pixel": {"size": 1, "color": None, "symbol": "o"}},
-    "dipoles": {"size": 1, "pivot": "middle"},
-    "currents": {"current": {"show": True, "size": 1}},
-    "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
+    "base": {
+        "path": {
+            "line": {"width": 1, "style": "solid", "color": None},
+            "marker": {"size": 1, "symbol": "o", "color": None},
+        },
+        "description": {"show": True, "text": None},
+        "opacity": 1,
+        "mesh3d": {"show": True, "data": None},
+        "color": None,
+    },
     "magnets": {
         "magnetization": {
             "show": True,
@@ -66,16 +72,10 @@ _DEFAULT_STYLES = {
             },
         }
     },
-    "base": {
-        "path": {
-            "line": {"width": 1, "style": "solid", "color": None},
-            "marker": {"size": 1, "symbol": "o", "color": None},
-        },
-        "description": {"show": True, "text": ""},
-        "opacity": 1,
-        "mesh3d": {"data": None, "show": True},
-        "color": None,
-    },
+    "currents": {"current": {"show": True, "size": 1}},
+    "sensors": {"size": 1, "pixel": {"size": 1, "color": None, "symbol": "o"}},
+    "dipoles": {"size": 1, "pivot": "middle"},
+    "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
 }
 
 
@@ -335,9 +335,9 @@ class BaseProperties:
         return type(self)(**self.as_dict())
 
 
-class BaseGeoStyle(BaseProperties):
+class BaseStyle(BaseProperties):
     """
-    Base class for display styling options of `BaseGeo` objects
+    Base class for display styling options of all objects to be displayed
 
     Properties
     ----------
@@ -345,23 +345,13 @@ class BaseGeoStyle(BaseProperties):
         name of the class instance, can be any string.
 
     description: dict or Description, default=None
-        object description as string.
+        object description properties
 
     color: str, default=None
         a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
 
     opacity: float, default=None
         object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
-    path: dict or PathStyle, default=None
-        an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the object
-        path marker and path line properties.
-
-    mesh3d: dict or Mesh3d, default=None
-        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
-        an additional user-defined mesh3d object which is positioned relatively to the main object
-        to be displayed and moved automatically with it. This feature also allows the user to
-        replace the original 3d representation of the object.
     """
 
     def __init__(
@@ -370,8 +360,6 @@ class BaseGeoStyle(BaseProperties):
         description=None,
         color=None,
         opacity=None,
-        path=None,
-        mesh3d=None,
         **kwargs,
     ):
         super().__init__(
@@ -379,8 +367,6 @@ class BaseGeoStyle(BaseProperties):
             description=description,
             color=color,
             opacity=opacity,
-            path=path,
-            mesh3d=mesh3d,
             **kwargs,
         )
 
@@ -436,6 +422,56 @@ class BaseGeoStyle(BaseProperties):
             f"but received {repr(val)} instead"
         )
         self._opacity = val
+
+
+class BaseGeoStyle(BaseStyle):
+    """
+    Base class for display styling options of `BaseGeo` objects
+
+    Properties
+    ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description properties
+
+    color: str, default=None
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or PathStyle, default=None
+        an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    mesh3d: dict or Mesh3d, default=None
+        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
+        an additional user-defined mesh3d object which is positioned relatively to the main object
+        to be displayed and moved automatically with it. This feature also allows the user to
+        replace the original 3d representation of the object.
+    """
+
+    def __init__(
+        self,
+        name=None,
+        description=None,
+        color=None,
+        opacity=None,
+        path=None,
+        mesh3d=None,
+        **kwargs,
+    ):
+        super().__init__(
+            name=name,
+            description=description,
+            color=color,
+            opacity=opacity,
+            path=path,
+            mesh3d=mesh3d,
+            **kwargs,
+        )
 
     @property
     def path(self):
@@ -496,6 +532,9 @@ class Description(BaseProperties):
     show: bool, default=None
         if `True`, adds legend entry suffix based on value
     """
+
+    def __init__(self, text=None, show=None, **kwargs):
+        super().__init__(text=text, show=show, **kwargs)
 
     @property
     def text(self):
@@ -1007,7 +1046,7 @@ class Markers(BaseProperties):
         self._symbol = val
 
 
-class MarkerTraceStyle(BaseProperties):
+class MarkersStyle(BaseStyle):
     """
     Defines the styling properties of the markers trace
 
@@ -1016,12 +1055,10 @@ class MarkerTraceStyle(BaseProperties):
     marker: dict, Markers, default=None
         Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs
-    opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent
     """
 
-    def __init__(self, marker=None, opacity=None, **kwargs):
-        super().__init__(marker=marker, opacity=opacity, **kwargs)
+    def __init__(self, marker=None, **kwargs):
+        super().__init__(marker=marker, **kwargs)
 
     @property
     def marker(self):
@@ -1042,21 +1079,6 @@ class MarkerTraceStyle(BaseProperties):
                 "of `Markers` or a dictionary with equivalent key/value pairs \n"
                 f"but received {repr(val)} instead"
             )
-
-    @property
-    def opacity(self):
-        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
-        return self._opacity
-
-    @opacity.setter
-    def opacity(self, val):
-        assert val is None or (
-            isinstance(val, (float, int)) and val >= 0 and val <= 1
-        ), (
-            "opacity must be a value betwen 0 and 1\n"
-            f"but received {repr(val)} instead"
-        )
-        self._opacity = val
 
 
 class Dipoles(BaseProperties):

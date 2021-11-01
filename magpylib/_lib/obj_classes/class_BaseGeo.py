@@ -66,7 +66,7 @@ class BaseGeo:
         self.style_class = style_class
         if style is not None:
             self.style = style
-            
+
     # properties ----------------------------------------------------
     @property
     def position(self):

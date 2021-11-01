@@ -375,15 +375,13 @@ def make_Line(
     Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Line Curent" if name is None else name
-    if name_suffix is True or name_suffix is None:
+    name = "Line Curent" if style.name is None else style.name
+    if style.description.show and style.description.text is None:
         name_suffix = f" ({unit_prefix(current)}A)"
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     show_arrows = style.current.show
     arrow_size = style.current.size
     if show_arrows:
@@ -420,15 +418,13 @@ def make_Circular(
     Creates the plotly scatter3d parameters for a Circular current in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Circular Curent" if name is None else name
-    if name_suffix is True or name_suffix is None:
+    name = "Circular Curent" if style.name is None else style.name
+    if style.description.show and style.description.text is None:
         name_suffix = f" ({unit_prefix(current)}A)"
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     arrow_size = style.current.size if style.current.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
@@ -460,15 +456,13 @@ def make_UnsupportedObject(
     name.
     """
 
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Unkwnon obj" if name is None else name
-    if name_suffix is True or name_suffix is None:
+    name = "Unkwnon obj" if style.name is None else style.name
+    if style.description.show and style.description.text is None:
         name_suffix = " (Unsupported visualisation)"
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     vertices = np.array([pos])
     if orientation is not None:
         vertices = orientation.apply(vertices).T
@@ -501,15 +495,13 @@ def make_Dipole(
     provided arguments
     """
     moment_mag = np.linalg.norm(moment)
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Dipole" if name is None else name
-    if name_suffix is True or name_suffix is None:
+    name = "Dipole" if style.name is None else style.name
+    if style.description.show and style.description.text is None:
         name_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)".format()
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     size = style.size
     if autosize is not None:
         size *= autosize
@@ -553,16 +545,14 @@ def make_Cuboid(
     Creates the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Cuboid" if name is None else name
+    name = "Cuboid" if style.name is None else style.name
     # pylint: disable=consider-using-f-string
-    if name_suffix is True or name_suffix is None:
+    if style.description.show and style.description.text is None:
         name_suffix = " ({}mx{}mx{}m)".format(*(unit_prefix(d / 1000) for d in dim))
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
         cuboid,
@@ -590,18 +580,16 @@ def make_Cylinder(
     Creates the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Cylinder" if name is None else name
+    name = "Cylinder" if style.name is None else style.name
     # pylint: disable=consider-using-f-string
-    if name_suffix is True or name_suffix is None:
+    if style.description.show and style.description.text is None:
         name_suffix = " (D={}m, H={}m)".format(
             *(unit_prefix(d / 1000) for d in (diameter, height))
         )
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     cylinder = make_BasePrism(
         base_vertices=base_vertices,
         diameter=diameter,
@@ -633,18 +621,16 @@ def make_CylinderSegment(
     Creates the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "CylinderSegment" if name is None else name
+    name = "CylinderSegment" if style.name is None else style.name
     # pylint: disable=consider-using-f-string
-    if name_suffix is True or name_suffix is None:
+    if style.description.show and style.description.text is None:
         name_suffix = " (d1={}m, d2={}m, h={}m, phi1={}°, phi2={}°)".format(
             *(unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension))
         )
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
         cylinder_segment,
@@ -671,15 +657,13 @@ def make_Sphere(
     Creates the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Sphere" if name is None else name
-    if name_suffix is True or name_suffix is None:
+    name = "Sphere" if style.name is None else style.name
+    if style.description.show and style.description.text is None:
         name_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
         sphere,
@@ -726,21 +710,19 @@ def make_Sensor(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
-    name = getattr(style, "name", None)
-    name_suffix = getattr(style, "description", None)
-    name = "Sensor" if name is None else name
+    name = "Sensor" if style.name is None else style.name
     pixel = np.array(pixel)
     pixel_str = (
         f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
         if pixel.ndim != 1
         else ""
     )
-    if name_suffix is True or name_suffix is None:
+    if style.description.show and style.description.text is None:
         name_suffix = pixel_str
-    elif name_suffix is False:
+    elif not style.description.show:
         name_suffix = ""
     else:
-        name_suffix = f" ({name_suffix})"
+        name_suffix = f" ({style.description.text})"
     sensor = get_sensor_mesh()
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
@@ -941,8 +923,15 @@ def get_plotly_traces(
         marker = style.as_dict()["marker"]
         symb = marker["symbol"]
         marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+        if style.description.show and style.description.text is None:
+            name_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
+        elif not style.description.show:
+            name_suffix = ""
+        else:
+            name_suffix = f" ({style.description.text})"
+        name = ("Marker" if len(x) == 1 else "Markers") if style.name is None else style.name
         trace = go.Scatter3d(
-            name="Marker" if len(x) == 1 else f"Markers ({len(x)} points)",
+            name=f"{name}{name_suffix}",
             x=x,
             y=y,
             z=z,
