@@ -19,7 +19,6 @@ from magpylib import _lib
 from magpylib._lib.config import default_settings as Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 from magpylib._lib.style import (
-    SensorStyle,
     get_style,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
