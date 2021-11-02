@@ -4,9 +4,9 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 from magpylib._lib.input_checks import check_scalar_type
-from magpylib._lib.display.style import CurrentStyle
+from magpylib._lib.style import CurrentStyle
 
 # init for tool tips
 i0=None
@@ -109,7 +109,7 @@ class Circular(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         """ Set Circular loop diameter, float, [mm].
         """
         # input type check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_scalar_type(dia, 'diameter')
 
         # secure type

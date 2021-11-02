@@ -3,8 +3,7 @@
 from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
-from magpylib._lib.display.style import MarkersStyle
-
+from magpylib._lib.style import MarkersTrace
 
 class Markers:
     """A class that stores markers 3D-coordinates"""
@@ -12,8 +11,7 @@ class Markers:
     _object_type = "Marker"
 
     def __init__(self, *markers):
-
-        self.style = MarkersStyle()
+        self.style = MarkersTrace()
         self.markers = np.array(markers)
 
 

@@ -4,8 +4,8 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
-from magpylib._lib.config import Config
-from magpylib._lib.display.style import BaseGeoStyle
+from magpylib._lib.config import default_settings as Config
+from magpylib._lib.style import BaseGeoStyle
 from magpylib._lib.input_checks import (
     check_vector_type,
     check_path_format,
@@ -82,14 +82,14 @@ class BaseGeo:
         """
 
         # check input type
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(pos, "position")
 
         # path vector -> ndarray
         pos = np.array(pos, dtype=float)
 
         # check input format
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_path_format(pos, "position")
 
         # expand if input is shape (3,)
@@ -114,7 +114,7 @@ class BaseGeo:
             for every path step.
         """
         # check input type
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_rot_type(rot)
 
         # None input generates unit rotation
@@ -270,7 +270,7 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(displacement, "displacement")
             check_start_type(start)
             check_increment_type(increment)
@@ -279,7 +279,7 @@ class BaseGeo:
         inpath = np.array(displacement, dtype=float)
 
         # check input format
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_path_format(inpath, "displacement")
 
         # expand if input is shape (3,)
@@ -445,7 +445,7 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_rot_type(rotation)
             check_anchor_type(anchor)
             check_start_type(start)
@@ -456,7 +456,7 @@ class BaseGeo:
             anchor = np.array(anchor, dtype=float)
 
         # check format
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_anchor_format(anchor)
             # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
 
@@ -644,7 +644,7 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_angle_type(angle)
             check_axis_type(axis)
             check_anchor_type(anchor)
@@ -671,12 +671,12 @@ class BaseGeo:
         axis = np.array(axis, dtype=float)
 
         # format checks
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_angle_format(angle)
             check_axis_format(axis)
             # anchor check in .rotate()
 
-        # Config.CHECK_INPUTS format checks (after type secure)
+        # Config.checkinputs format checks (after type secure)
         # axis.shape != (3,)
         # axis must not be (0,0,0)
 
@@ -706,11 +706,11 @@ def adjust_start(start, lenop):
     # fix out-of-bounds start values
     if start < 0:
         start = 0
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             print("Warning: start out of path bounds. Setting start=0.")
     elif start > lenop:
         start = lenop
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             print(f"Warning: start out of path bounds. Setting start={lenop}.")
 
     return start

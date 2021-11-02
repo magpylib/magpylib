@@ -5,7 +5,7 @@ from itertools import cycle
 import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
-from magpylib._lib.display.style import get_style
+from magpylib._lib.style import get_style
 from magpylib._lib.display.disp_utility import Markers
 
 from magpylib._lib.display.mpl_draw import (
@@ -27,7 +27,7 @@ from magpylib._lib.display.disp_utility import (
     faces_cylinder_section,
 )
 from magpylib._lib.input_checks import check_excitations, check_dimensions
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 
 
 # ON INTERFACE
@@ -68,7 +68,7 @@ def display(
 
     backend: default=None
         One of 'matplotlib', 'plolty'. If not set, parameter will default to
-        Config.BACKEND
+        defaults.display.backend
 
     canvas: pyplot Axis or plotly Figure, default=None
         Display graphical output in a given canvas:
@@ -130,7 +130,7 @@ def display(
     )
 
     if backend is None:
-        backend = Config.BACKEND
+        backend = Config.display.backend
 
     if backend == "matplotlib":
         if path == "animate":
@@ -232,7 +232,7 @@ def display_matplotlib(
 
     # apply config default values if None
     if color_sequence is None:
-        color_sequence = Config.COLOR_SEQUENCE
+        color_sequence = Config.display.colorsequence
 
     # create or set plotting axis
     if axis is None:
@@ -258,8 +258,10 @@ def display_matplotlib(
         lw = 0.25
         faces = None
         if style.mesh3d.data is not None and style.mesh3d.show is True:
-            text = (f"{obj} has a mesh3d attached, which cannot be plotted with the matplotlib "
-            "backend at the moment")
+            text = (
+                f"{obj} has a mesh3d attached, which cannot be plotted with the matplotlib "
+                "backend at the moment"
+            )
             warnings.warn(text)
         if obj._object_type == "Cuboid":
             lw = 0.5
@@ -279,7 +281,7 @@ def display_matplotlib(
         elif obj._object_type == "Sensor":
             sensors_color += [color]
             points += draw_pixel(
-                [obj], ax, color, style.pixel.color, style.pixel.size * 4, show_path
+                [obj], ax, color, style.pixel.color, style.pixel.size, show_path
             )
         elif obj._object_type == "Dipole":
             dipoles_color += [color]

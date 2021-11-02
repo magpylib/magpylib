@@ -5,9 +5,9 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 from magpylib._lib.input_checks import check_vector_type, check_vector_format
-from magpylib._lib.display.style import MagnetStyle
+from magpylib._lib.style import MagnetStyle
 
 # init for tool tips
 d=h=None
@@ -112,14 +112,14 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """ Set Cylinder dimension (d,h) in units of [mm].
         """
         # input type check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(dim, 'dimension')
 
         # input type -> ndarray
         dim = np.array(dim,dtype=float)
 
         # input format check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_format(dim, (2,), 'Cylinder')
 
         self._dimension = dim

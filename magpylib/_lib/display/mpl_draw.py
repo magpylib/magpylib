@@ -2,7 +2,7 @@
 
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 from magpylib._lib.display.disp_utility import (
     get_rot_pos_from_path,
     draw_arrow_from_vertices,
@@ -80,7 +80,7 @@ def draw_markers(markers, ax, style):
         color=style.color,
         ls="",
         marker=style.symbol,
-        ms=style.size * 4,
+        ms=style.size,
     )
 
 
@@ -96,12 +96,12 @@ def draw_path(
             path[:, 1],
             path[:, 2],
             ls=line_style,
-            lw=line_width / 2,
+            lw=line_width,
             color=col,
             marker=marker_symbol,
             mfc=marker_color,
             mec=marker_color,
-            ms=marker_size * 2,
+            ms=marker_size,
         )
         ax.plot(
             [path[0, 0]], [path[0, 1]], [path[0, 2]], marker="o", ms=4, mfc=col, mec="k"
@@ -149,9 +149,9 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, show_path):
         pos_pixel[:, 2],
         marker="o",
         mfc=pixel_col,
-        mew=pixel_size / 4,
+        mew=pixel_size,
         mec=col,
-        ms=pixel_size,
+        ms=pixel_size * 4,
         ls="",
     )
 
@@ -184,7 +184,7 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
     ezs = np.array(ezs)
 
     # quiver plot of basis vectors
-    arrowlength = sys_size * size / Config.AUTOSIZE_FACTOR
+    arrowlength = sys_size * size / Config.display.autosizefactor
     for col, es in zip(["r", "g", "b"], [exs, eys, ezs]):
         ax.quiver(
             possis[:, 0],
@@ -223,7 +223,7 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     moms = np.array(moms)
 
     # quiver plot of basis vectors
-    arrowlength = sys_size * size / Config.AUTOSIZE_FACTOR
+    arrowlength = sys_size * size / Config.display.autosizefactor
     ax.quiver(
         possis[:, 0],
         possis[:, 1],
@@ -233,7 +233,7 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
         moms[:, 2],
         color=color,
         length=arrowlength,
-        pivot = pivot, # {'tail', 'middle', 'tip'},
+        pivot=pivot,  # {'tail', 'middle', 'tip'},
     )
 
     return

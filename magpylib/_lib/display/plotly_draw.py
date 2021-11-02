@@ -16,12 +16,12 @@ except ImportError as missing_module:
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
-from magpylib._lib.display.style import (
+from magpylib._lib.style import (
     get_style,
-    _LINESTYLES_MATPLOTLIB_TO_PLOTLY,
-    _SYMBOLS_MATPLOTLIB_TO_PLOTLY,
+    LINESTYLES_MATPLOTLIB_TO_PLOTLY,
+    SYMBOLS_MATPLOTLIB_TO_PLOTLY,
 )
 from magpylib._lib.display.disp_utility import (
     get_rot_pos_from_path,
@@ -29,6 +29,7 @@ from magpylib._lib.display.disp_utility import (
     draw_arrow_from_vertices,
     draw_arrowed_circle,
 )
+from magpylib._lib.default_utils import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
 
 # Defaults
 
@@ -922,14 +923,19 @@ def get_plotly_traces(
         x, y, z = input_obj.markers.T
         marker = style.as_dict()["marker"]
         symb = marker["symbol"]
-        marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+        marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+        marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
         if style.description.show and style.description.text is None:
             name_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
         elif not style.description.show:
             name_suffix = ""
         else:
             name_suffix = f" ({style.description.text})"
-        name = ("Marker" if len(x) == 1 else "Markers") if style.name is None else style.name
+        name = (
+            ("Marker" if len(x) == 1 else "Markers")
+            if style.name is None
+            else style.name
+        )
         trace = go.Scatter3d(
             name=f"{name}{name_suffix}",
             x=x,
@@ -956,7 +962,7 @@ def get_plotly_traces(
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
             base_vertices = min(
-                50, Config.ITER_CYLINDER
+                50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
                 mag=input_obj.magnetization,
@@ -967,7 +973,7 @@ def get_plotly_traces(
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
             Nvert = min(
-                50, Config.ITER_CYLINDER
+                50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
                 mag=input_obj.magnetization,
@@ -1035,12 +1041,16 @@ def get_plotly_traces(
             )
             marker = style.path.marker.as_dict()
             symb = marker["symbol"]
-            marker["symbol"] = _SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-            marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
+            marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+            marker["color"] = (
+                kwargs["color"] if marker["color"] is None else marker["color"]
+            )
+            marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
             line = style.path.line.as_dict()
             dash = line["style"]
-            line["dash"] = _LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+            line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
             line["color"] = kwargs["color"] if line["color"] is None else line["color"]
+            line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
             line = {k: v for k, v in line.items() if k != "style"}
             scatter_path = dict(
                 type="scatter3d",
@@ -1155,7 +1165,7 @@ def display_plotly(
         obj_list = list(obj_list) + [Markers(*markers)]
 
     if color_sequence is None:
-        color_sequence = Config.COLOR_SEQUENCE
+        color_sequence = Config.display.colorsequence
 
     with fig.batch_update():
         if (
@@ -1219,7 +1229,7 @@ def draw_frame(
             traces_dicts[obj] = [dict(x=x, y=y, z=z)]
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
-    autosize = np.mean(np.diff(ranges)) / Config.AUTOSIZE_FACTOR
+    autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, color in traces_colors.items():
         traces_dicts[obj] = get_plotly_traces(
             obj, show_path=show_path, color=color, autosize=autosize, **kwargs
@@ -1339,14 +1349,14 @@ def animate_path(
     ]
 
     N = max(path_lengths)
-    if animate_fps > Config.ANIMATE_MAX_FPS:
+    if animate_fps > Config.display.animation.maxfps:
         warnings.warn(
             "The set `animate_fps` is greater than the max allowed "
-            f"of {Config.ANIMATE_MAX_FPS}, animate_fps will be set to "
-            f"{Config.ANIMATE_MAX_FPS}"
+            f"of {Config.display.animation.maxfps}, animate_fps will be set to "
+            f"{Config.display.animation.maxfps}"
         )
-        animate_fps = Config.ANIMATE_MAX_FPS
-    maxpos = min(animate_time * animate_fps, Config.ANIMATE_MAX_FRAMES)
+        animate_fps = Config.display.animation.maxfps
+    maxpos = min(animate_time * animate_fps, Config.display.animation.maxframes)
     if N <= maxpos:
         path_indices = np.arange(N)
     else:

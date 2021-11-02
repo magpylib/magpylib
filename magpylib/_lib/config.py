@@ -1,133 +1,135 @@
-"""Config class code"""
+from magpylib._lib.default_utils import (
+    BaseProperties,
+    color_validator,
+    get_defaults_dict,
+)
+from magpylib._lib.style import MagpylibStyle
 
-
-from typing import Any
-import warnings
-from copy import deepcopy
-
-
-class DefaultConfig:
-    """Package level default values, SHOULD NOT BE MODIFIABLE BY USER"""
-    _SUPPORTED_PLOTTING_BACKENDS=("matplotlib", "plotly")
-    CHECK_INPUTS=True
-    EDGESIZE=1e-8
-    ITER_CYLINDER=50
-    AUTOSIZE_FACTOR=10
-    ANIMATE_MAX_FPS=30
-    ANIMATE_MAX_FRAMES=200
-    BACKEND="matplotlib"
-    COLOR_SEQUENCE=(
-        "#2E91E5",
-        "#E15F99",
-        "#1CA71C",
-        "#FB0D0D",
-        "#DA16FF",
-        "#222A2A",
-        "#B68100",
-        "#750D86",
-        "#EB663B",
-        "#511CFB",
-        "#00A08B",
-        "#FB00D1",
-        "#FC0080",
-        "#B2828D",
-        "#6C7C32",
-        "#778AAE",
-        "#862A16",
-        "#A777F1",
-        "#620042",
-        "#1616A7",
-        "#DA60CA",
-        "#6C4516",
-        "#0D2A63",
-        "#AF0038",
-    )
-    OPACITY = 1
-
+SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
 
 # ON INTERFACE
-class Config:
-    """Library default settings
+class DefaultConfig(BaseProperties):
+    """Library default settings. All default values get set at class instantiation.
 
     Parameters
     ----------
-    CHECK_INPUTS: bool, default=True
+    checkinputs: bool, default=True
         Check user input types, shapes at various stages and raise errors
         when they are not within designated parameters.
 
-    EDGESIZE: float, default=True
-        getBand getH return 0 on edge, formulas often show singularities there and undefined forms.
+    edgesize: float, default=1e-8
+        getB and getH return 0 on edge, formulas often show singularities there and undefined forms.
         EDGESIZE defines how close to the edge 0 will be returned to avoid running into numerical
         instabilities.
 
-    ITER_CYLINDER: int, default=True
+    itercylinder: int, default=50
         Cylinder with diametral magnetization uses Simpsons iterative formula
         to compute the integral. More iterations increase precision but slow
         down the computation.
 
-    AUTO_DESCRIPTION: bool or str default=True
-        adds legend entry suffix based on value:
-        - True: base object dimension are shown
-        - False: no suffix is shown
-        - str: user string is shown
+    display: dict or Display
+        `Display` class containing display settings. `('backend', 'animation', 'colorsequence' ...)`
+    """
 
-    SENSOR_SIZE: float, default=1
-        Adjust automatic display size of sensors. See also `AUTOSIZE_FACTOR`
+    def __init__(
+        self,
+        checkinputs=None,
+        edgesize=None,
+        itercylinder=None,
+        display=None,
+        **kwargs,
+    ):
+        super().__init__(
+            checkinputs=checkinputs,
+            edgesize=edgesize,
+            itercylinder=itercylinder,
+            display=display,
+            **kwargs,
+        )
+        self.reset()
 
-    DIPOLE_SIZE: float, default=1
-        Adjust automatic display size of dipoles. See also `AUTOSIZE_FACTOR`
+    def reset(self):
+        """Resets all nested properties to their hard coded default values"""
+        self.update(get_defaults_dict(), _match_properties=False)
+        return self
 
-    MAGNETIZATION_SIZE: float, default=1
-        Adjust automatic display size of direction arrows.
+    @property
+    def checkinputs(self):
+        """Check user input types, shapes at various stages and raise errors
+        when they are not within designated parameters."""
+        return self._checkinputs
 
-    AUTOSIZE_FACTOR: int, default=15
-        Defines at which scale objects like sensors and dipoles are displayed.
-        -> object_size = canvas_size / AUTOSIZE_FACTOR
+    @checkinputs.setter
+    def checkinputs(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `checkinputs` property of {type(self).__name__} must be either `True` or `False`"
+            f" but received {repr(val)} instead"
+        )
+        self._checkinputs = val
 
-    BACKEND: str, default=True
-        One of 'matplotlib', 'plotly'. Defines the default plotting backend to fall to when not
-        set explicitly in the display function.
+    @property
+    def edgesize(self):
+        """getB and getH return 0 on edge, formulas often show singularities there and undefined
+        forms. EDGESIZE defines how close to the edge 0 will be returned to avoid running into
+        numerical instabilities."""
+        return self._edgesize
 
-    MAGNETIZATION_COLOR_TRANSITION, float, default=0
-        A value between 0 and 1. Sets the smoothness of the color transitions from north
-        to south pole visualization.
+    @edgesize.setter
+    def edgesize(self, val):
+        assert val is None or isinstance(val, (int, float)) and val > 0, (
+            f"the `edgesize` property of {type(self).__name__} must be a strictly positive number"
+            f" but received {repr(val)} instead"
+        )
+        self._edgesize = val
 
-    ANIMATE_MAX_FRAMES, int, default=200
-        Maximum total number of frames to be displayed before downsampling kicks in
+    @property
+    def itercylinder(self):
+        """Cylinder with diametral magnetization uses Simpsons iterative formula
+        to compute the integral. More iterations increase precision but slow
+        down the computation."""
+        return self._itercylinder
 
-    MAGNETIZATION_COLOR_SOUTH, str, default=rgb(0,176,80)
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
+    @itercylinder.setter
+    def itercylinder(self, val):
+        assert val is None or isinstance(val, int) and val > 0, (
+            f"the `itercylinder` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead"
+        )
+        self._itercylinder = val
 
-    MAGNETIZATION_COLOR_MIDDLE, str, default=rgb(221,221,221)
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
+    @property
+    def display(self):
+        """`Display` class containing display settings.
+        `('backend', 'animation', 'colorsequence')`"""
+        return self._display
 
-    MAGNETIZATION_COLOR_NORTH, str, default=rgb(231,17,17)
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
+    @display.setter
+    def display(self, val):
+        if isinstance(val, dict):
+            val = Display(**val)
+        if isinstance(val, Display):
+            self._display = val
+        elif val is None:
+            self._display = Display()
+        else:
+            raise ValueError(
+                f"the `display` property of `{type(self).__name__}` must be an instance \n"
+                "of `Display` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
+            )
 
-    PIXEL_COLOR, str, default=rgb(231,17,17)
-        The property is a color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
 
-    COLOR_SEQUENCE, iterable, default=
+class Display(BaseProperties):
+    """
+    Defines the display properties for the plotting features
+
+    Properties
+    ----------
+    backend: str, default='matplotlib'
+        defines the plotting backend to be used by default, if not explicitly set in the `display`
+        function. Can be one of `['matplotlib', 'plotly']`
+
+    colorsequence:, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
@@ -140,65 +142,165 @@ class Config:
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    Examples
-    --------
-    Compute the field very close to a line current:
+    opacity: float, default=1
+        object default opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    >>> import magpylib as magpy
-    >>> current = magpy.current.Line(current=1, vertices=[(-.1,0,0),(.1,0,0)])
-    >>> B_close = current.getB((0,0,1e-11))
-    >>> print(B_close)
-    [ 0.e+00 -2.e+10  0.e+00]
+    animation: dict or Animation
+        defines the animation properties used by the `plotly` plotting backend when `path='animate'`
+        in the `display` function.
 
-    Change the edgesize setting so that the position is now inside of the cut-off region
+    autosizefactor: int, default=10
+        Defines at which scale objects like sensors and dipoles are displayed.
+        -> object_size = canvas_size / AUTOSIZE_FACTOR
 
-    >>> magpy.Config.EDGESIZE=1e-10
-    >>> B_close = current.getB((0,0,1e-11))
-    >>> print(B_close)
-    [0. 0. 0.]
-
-    Reset the Config to original values:
-
-    >>> magpy.Config.reset()
-    >>> B_close = current.getB((0,0,1e-11))
-    >>> print(B_close)
-    [ 0.e+00 -2.e+10  0.e+00]
+    styles: dict or MagpylibStyle
+        Base class containing display styling properties for all object families.
     """
 
-    def __init__(self):
-        self.reset()
+    @property
+    def backend(self):
+        """plotting backend to be used by default, if not explicitly set in the `display`
+        function. Can be one of `['matplotlib', 'plotly']`"""
+        return self._backend
 
-    def __setattr__(self, name: str, value: Any) -> None:
-        if name == "PLOTTING_BACKEND":
-            backends = DefaultConfig._SUPPORTED_PLOTTING_BACKENDS
-            assert (
-                value in backends
-            ), f"`{value}` is not a valid plotting backend, \n supported backends: {backends}"
-        super().__setattr__(name, value)
+    @backend.setter
+    def backend(self, val):
+        assert val is None or val in SUPPORTED_PLOTTING_BACKENDS, (
+            f"the `backend` property of {type(self).__name__} must be one of"
+            f"{SUPPORTED_PLOTTING_BACKENDS}"
+            f" but received {repr(val)} instead"
+        )
+        self._backend = val
 
-    def __getattr__(self, name):
-        """will only get called for undefined attributes"""
-        warnings.warn(f'No member "{name}" contained in settings config.')
+    @property
+    def colorsequence(self):
+        """An iterable of color values used to cycle trough for every object displayed.
+            A color and may be specified as:
+        - A hex string (e.g. '#ff0000')
+        - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+        - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+        - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - A named CSS color"""
+        return self._colorsequence
 
-    @classmethod
-    def reset(cls, args=None):
-        """
-        Reset Config to default values.
-        Parameters
-        ----------
-        args: iterable of strings. If not set, all defaults will be reset.
+    @colorsequence.setter
+    def colorsequence(self, val):
+        assert val is None or all(color_validator(c, allow_None=False) for c in val), (
+            f"the `colorsequence` property of {type(self).__name__} must be one an iterable of"
+            f"color sequences"
+            f" but received {repr(val)} instead"
+        )
+        self._colorsequence = val
 
-        Returns
-        -------
-        None: NoneType
-        """
-        if args is None:
-            args = (attr for attr in dir(DefaultConfig) if not attr.startswith("__"))
-        for k in args:
-            val = getattr(DefaultConfig, k)
-            if isinstance(val, (list, dict)):
-                val = deepcopy(val)
-            setattr(cls, k, val)
+    @property
+    def opacity(self):
+        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, val):
+        assert val is None or isinstance(val, (float, int)) and val >= 0 and val <= 1, (
+            "opacity must be a value betwen 0 and 1\n"
+            f"but received {repr(val)} instead"
+        )
+        self._opacity = val
+
+    @property
+    def animation(self):
+        """animation properties used by the `plotly` plotting backend when `path='animate'`
+        in the `display` function."""
+        return self._animation
+
+    @animation.setter
+    def animation(self, val):
+        if isinstance(val, dict):
+            val = Animation(**val)
+        if isinstance(val, Animation):
+            self._animation = val
+        elif val is None:
+            self._animation = Animation()
+        else:
+            raise ValueError(
+                f"the `animation` property of `{type(self).__name__}` must be an instance \n"
+                "of `Animation` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
+            )
+
+    @property
+    def autosizefactor(self):
+        """Defines at which scale objects like sensors and dipoles are displayed.
+        -> object_size = canvas_size / AUTOSIZE_FACTOR"""
+        return self._autosizefactor
+
+    @autosizefactor.setter
+    def autosizefactor(self, val):
+        assert val is None or isinstance(val, (int, float)) and val > 0, (
+            f"the `autosizefactor` property of {type(self).__name__} must be a strictly positive"
+            f" number but received {repr(val)} instead"
+        )
+        self._autosizefactor = val
+
+    @property
+    def styles(self):
+        """Base class containing display styling properties for all object families."""
+        return self._styles
+
+    @styles.setter
+    def styles(self, val):
+        if isinstance(val, dict):
+            val = MagpylibStyle(**val)
+        if isinstance(val, MagpylibStyle):
+            self._styles = val
+        elif val is None:
+            self._styles = MagpylibStyle()
+        else:
+            raise ValueError(
+                f"the `styles` property of `{type(self).__name__}` must be an instance \n"
+                "of `MagpylibStyle` or a dictionary with equivalent key/value pairs \n"
+                f"but received {repr(val)} instead"
+            )
 
 
-Config.reset()
+class Animation(BaseProperties):
+    """
+    Defines the animation properties used by the `plotly` plotting backend when `path='animate'`
+    in the `display` function.
+
+    Properties
+    ----------
+    maxfps: str, default='matplotlib'
+        Maximum number of frames to be displayed per second before downsampling kicks in.
+
+    maxframes: int, default=200
+        Maximum total number of frames to be displayed before downsampling kicks in.
+
+    """
+
+    @property
+    def maxfps(self):
+        """Maximum number of frames to be displayed per second before downsampling kicks in."""
+        return self._maxfps
+
+    @maxfps.setter
+    def maxfps(self, val):
+        assert val is None or isinstance(val, int) and val > 0, (
+            f"the `maxfps` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead"
+        )
+        self._maxfps = val
+
+    @property
+    def maxframes(self):
+        """Maximum total number of frames to be displayed before downsampling kicks in."""
+        return self._maxframes
+
+    @maxframes.setter
+    def maxframes(self, val):
+        assert val is None or isinstance(val, int) and val > 0, (
+            f"the `maxframes` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead"
+        )
+        self._maxframes = val
+
+
+default_settings = DefaultConfig()

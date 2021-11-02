@@ -4,7 +4,7 @@ import numpy as np
 #from scipy.spatial.transform import Rotation as R
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
-from magpylib._lib.config import Config
+from magpylib._lib.config import default_settings as Config
 from magpylib._lib.input_checks import check_position_format
 
 
@@ -14,7 +14,7 @@ def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
     input: ndarray, shape (n,) or numpy-interpretable scalar
     output: ndarray, dtype=bool
     """
-    EDGESIZE = Config.EDGESIZE
+    EDGESIZE = Config.edgesize
     return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
 
 
@@ -132,7 +132,7 @@ def format_obs_inputs(observers) -> list:
 
     # case 2: ndarray of possitions
     if isinstance(observers, np.ndarray):
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_position_format(observers, 'observer position')
         return [Sensor(pixel=observers)]
 
@@ -146,7 +146,7 @@ def format_obs_inputs(observers) -> list:
                 if isinstance(obs, Sensor):
                     sensors += [obs]
                 elif isinstance(obs, (list, tuple, np.ndarray)):
-                    if Config.CHECK_INPUTS:
+                    if Config.checkinputs:
                         check_position_format(np.array(obs), 'observer position')
                     sensors += [Sensor(pixel=obs)]
                 else:
@@ -154,7 +154,7 @@ def format_obs_inputs(observers) -> list:
 
         # case 3b: list/tuple of positions
         else:
-            if Config.CHECK_INPUTS:
+            if Config.checkinputs:
                 check_position_format(np.array(observers), 'observer position')
             sensors = [Sensor(pixel=observers)]
     else:
@@ -242,6 +242,6 @@ def only_allowed_src_types(src_list):
         if src._object_type in src_class_types:
             new_list += [src]
         else:
-            if Config.CHECK_INPUTS:
+            if Config.checkinputs:
                 print(f'Warning, cannot add {src.__repr__()} to Collection.')
     return new_list
