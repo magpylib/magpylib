@@ -527,6 +527,9 @@ class Magnets(BaseProperties):
 class MagnetStyle(BaseGeoStyle, Magnets):
     """Defines the styling properties of objects of the `magnets` family with base properties"""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class Sensors(BaseProperties):
     """
@@ -580,6 +583,9 @@ class Sensors(BaseProperties):
 
 class SensorStyle(BaseGeoStyle, Sensors):
     """Defines the styling properties of objects of the `sensors` family with base properties"""
+
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
 
 
 class Pixel(BaseProperties):
@@ -663,6 +669,9 @@ class Currents(BaseProperties):
 class CurrentStyle(BaseGeoStyle, Currents):
     """Defines the styling properties of objects of the `currents` family and base properties"""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class ArrowStyle(BaseProperties):
     """
@@ -675,6 +684,9 @@ class ArrowStyle(BaseProperties):
 
     size: float
         positive number defining the size of the arrows
+
+    width: float, default=None
+        positive number that defines the arrow line width
     """
 
     def __init__(self, show=None, size=None, **kwargs):
@@ -704,7 +716,20 @@ class ArrowStyle(BaseProperties):
             f"the `size` property of {type(self).__name__} must be a positive number"
             f" but received {repr(val)} instead"
         )
-        self._size = val
+        self._size = val 
+
+    @property
+    def width(self):
+        """positive number that defines the arrow line width"""
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"the `width` property of {type(self).__name__} must be a positive number"
+            f" but received {repr(val)} instead"
+        )
+        self._width = val
 
 
 class Markers(BaseProperties):
@@ -847,6 +872,9 @@ class Dipoles(BaseProperties):
 class DipoleStyle(BaseGeoStyle, Dipoles):
     """Defines the styling properties of the objects of the `dipoles` family and base properties"""
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+
 
 class PathStyle(BaseProperties):
     """
@@ -869,7 +897,7 @@ class PathStyle(BaseProperties):
 
     @property
     def marker(self):
-        """Markers class with 'color', 'type', 'width' properties"""
+        """Markers class with 'color', 'symbol', 'size' properties"""
         return self._marker
 
     @marker.setter

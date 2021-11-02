@@ -239,13 +239,13 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     return
 
 
-def draw_circular(circulars, show_path, col, size, ax):
+def draw_circular(circulars, show_path, col, size, width, ax):
     """draw circulars and return a list of positions"""
     # pylint: disable=protected-access
 
     # graphical settings
     discret = 72 + 1
-    lw = 2
+    lw = width
 
     draw_pos = []  # line positions
     for circ in circulars:
@@ -264,12 +264,12 @@ def draw_circular(circulars, show_path, col, size, ax):
     return draw_pos
 
 
-def draw_line(lines, show_path, col, size, ax) -> list:
+def draw_line(lines, show_path, col, size, width, ax) -> list:
     """draw lines and return a list of positions"""
     # pylint: disable=protected-access
 
     # graphical settings
-    lw = 2
+    lw = width
 
     draw_pos = []  # line positions
     for line in lines:

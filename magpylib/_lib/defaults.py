@@ -58,7 +58,7 @@ DEFAULTS = {
                     },
                 }
             },
-            "currents": {"current": {"show": True, "size": 1}},
+            "currents": {"current": {"show": True, "size": 1, 'width': 2}},
             "sensors": {"size": 1, "pixel": {"size": 1, "color": None, "symbol": "o"}},
             "dipoles": {"size": 1, "pivot": "middle"},
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},

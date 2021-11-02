@@ -19,6 +19,7 @@ from magpylib import _lib
 from magpylib._lib.config import default_settings as Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 from magpylib._lib.style import (
+    SensorStyle,
     get_style,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
@@ -392,6 +393,7 @@ def make_Line(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
+    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY['line_width']
     line = dict(
         type="scatter3d",
         x=x,
@@ -399,7 +401,7 @@ def make_Line(
         z=z,
         name=f"""{name}{name_suffix}""",
         mode="lines",
-        line_width=5,
+        line_width=line_width,
         line_color=color,
     )
     return {**line, **kwargs}
@@ -431,6 +433,7 @@ def make_Circular(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
+    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY['line_width']
     circular = dict(
         type="scatter3d",
         x=x,
@@ -438,7 +441,7 @@ def make_Circular(
         z=z,
         name=f"""{name}{name_suffix}""",
         mode="lines",
-        line_width=5,
+        line_width=line_width,
         line_color=color,
     )
     return {**circular, **kwargs}
