@@ -279,6 +279,7 @@ def display_matplotlib(
         elif obj._object_type == "Circular":
             width = style.current.width
             size = style.current.size if style.current.show else 0
+            print(size)
             points += draw_circular([obj], show_path, color, size, width, ax)
         elif obj._object_type == "Sensor":
             sensors_color += [color]
