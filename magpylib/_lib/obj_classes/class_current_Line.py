@@ -7,7 +7,6 @@ from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._lib.config import default_settings as Config
 from magpylib._lib.input_checks import check_vertex_format, check_vector_type
-from magpylib._lib.style import CurrentStyle
 
 # init for tool tips
 i0=None
@@ -91,14 +90,14 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             orientation = None,
             style = None):
 
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, style_class=CurrentStyle)
-        BaseDisplayRepr.__init__(self)
-        BaseCurrent.__init__(self, current)
-
         # instance attributes
         self.vertices = vertices
         self._object_type = 'Line'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+        BaseCurrent.__init__(self, current)
 
     # property getters and setters
     @property

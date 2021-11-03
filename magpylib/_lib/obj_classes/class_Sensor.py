@@ -1,6 +1,5 @@
 """Sensor class code"""
 import numpy as np
-from magpylib._lib.style import SensorStyle
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.utility import format_star_input
@@ -107,13 +106,14 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             orientation = None,
             style = None):
 
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, style_class=SensorStyle)
-        BaseDisplayRepr.__init__(self)
-
         # instance attributes
         self.pixel = pixel
         self._object_type = 'Sensor'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+
 
 
     # property getters and setters

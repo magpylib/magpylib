@@ -7,7 +7,6 @@ from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._lib.config import default_settings as Config
 from magpylib._lib.input_checks import check_vector_type, check_vector_format
-from magpylib._lib.style import MagnetStyle
 
 # init for tool tips
 d=h=None
@@ -91,14 +90,14 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             orientation = None,
             style = None):
 
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, style_class=MagnetStyle)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
-
         # instance attributes
         self.dimension = dimension
         self._object_type = 'Cylinder'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+        BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property

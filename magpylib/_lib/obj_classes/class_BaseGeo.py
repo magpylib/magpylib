@@ -5,7 +5,6 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib._lib.config import default_settings as Config
-from magpylib._lib.style import BaseGeoStyle
 from magpylib._lib.input_checks import (
     check_vector_type,
     check_path_format,
@@ -20,7 +19,6 @@ from magpylib._lib.input_checks import (
     check_angle_format,
     check_axis_format,
 )
-
 
 # ALL METHODS ON INTERFACE
 class BaseGeo:
@@ -57,15 +55,20 @@ class BaseGeo:
 
     """
 
-    def __init__(self, position, orientation, style_class=None, style=None):
+    def __init__(self, position, orientation, style=None):
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
-        if style_class is None:
-            style_class = BaseGeoStyle
-        self.style_class = style_class
+        self.style_class = self._get_style_class()
         if style is not None:
             self.style = style
+
+    def _get_style_class(self):
+        """returns style class based on object type. If class has no attribute `_object_type` or is
+        not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+        # pylint: disable=import-outside-toplevel
+        from magpylib._lib.style import get_style_class
+        return get_style_class(self)
 
     # properties ----------------------------------------------------
     @property
@@ -132,7 +135,7 @@ class BaseGeo:
     @property
     def style(self):
         """instance of MagpyStyle for display styling options"""
-        if not hasattr(self,'_style') or self._style is None:
+        if not hasattr(self, "_style") or self._style is None:
             self._style = self._validate_style(val=None)
         return self._style
 
@@ -146,7 +149,7 @@ class BaseGeo:
         if isinstance(val, dict):
             val = self.style_class(**val)
         if not isinstance(val, self.style_class):
-            raise ValueError(f'style must be of type {self.style_class}')
+            raise ValueError(f"style must be of type {self.style_class}")
         return val
 
     # dunders -------------------------------------------------------
