@@ -133,7 +133,7 @@ class BaseStyle(BaseProperties):
     @opacity.setter
     def opacity(self, val):
         assert val is None or (
-            isinstance(val, (float, int)) and val >= 0 and val <= 1
+            isinstance(val, (float, int)) and 0 <= val <= 1
         ), (
             "opacity must be a value betwen 0 and 1\n"
             f"but received {repr(val)} instead"
@@ -484,7 +484,7 @@ class MagnetizationColor(BaseProperties):
     @transition.setter
     def transition(self, val):
         assert (
-            val is None or isinstance(val, (float, int)) and val >= 0 and val <= 1
+            val is None or isinstance(val, (float, int)) and 0 <= val <= 1
         ), "color transition must be a value betwen 0 and 1"
         self._transition = val
 
