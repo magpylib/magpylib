@@ -190,7 +190,7 @@ def linearize_dict(kwargs, separator=".") -> dict:
     return dict_
 
 
-def color_validator(color_input, allow_None=True, parent_name="", backend="matplotlib"):
+def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs based on chosen `backend', allows `None` by default.
 
     Parameters
