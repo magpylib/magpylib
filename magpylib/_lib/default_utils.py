@@ -217,30 +217,24 @@ def color_validator(color_input, allow_None=True, parent_name="", backend="matpl
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
         color_input = COLORS_MATPLOTLIB_TO_PLOTLY.get(color_input, color_input)
-        if backend == "matplotlib":
-            import re
+        import re
 
-            hex_fail = True
-            if isinstance(color_input, str):
-                color_input = color_input.replace(" ", "").lower()
-                re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
-                hex_fail = not re_hex.fullmatch(color_input)
-            from matplotlib.colors import CSS4_COLORS as mcolors
+        hex_fail = True
+        if isinstance(color_input, str):
+            color_input = color_input.replace(" ", "").lower()
+            re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
+            hex_fail = not re_hex.fullmatch(color_input)
+        from matplotlib.colors import CSS4_COLORS as mcolors
 
-            if hex_fail and str(color_input) not in mcolors:
-                raise ValueError(
-                    f"""\nInvalid value of type '{type(color_input)}' """
-                    f"""received for the color property of {parent_name}"""
-                    f"""\n   Received value: '{color_input}'"""
-                    f"""\n\nThe 'color' property is a color and may be specified as:\n"""
-                    """    - A hex string (e.g. '#ff0000')\n"""
-                    f"""    - A named CSS color:\n{list(mcolors.keys())}"""
-                )
-        else:
-            from _plotly_utils.basevalidators import ColorValidator
-
-            cv = ColorValidator(plotly_name="color", parent_name=parent_name)
-            color_input = cv.validate_coerce(color_input)
+        if hex_fail and str(color_input) not in mcolors:
+            raise ValueError(
+                f"""\nInvalid value of type '{type(color_input)}' """
+                f"""received for the color property of {parent_name}"""
+                f"""\n   Received value: '{color_input}'"""
+                f"""\n\nThe 'color' property is a color and may be specified as:\n"""
+                """    - A hex string (e.g. '#ff0000')\n"""
+                f"""    - A named CSS color:\n{list(mcolors.keys())}"""
+            )
     return color_input
 
 
