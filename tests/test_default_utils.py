@@ -1,6 +1,10 @@
 from copy import deepcopy
 import pytest
-from magpylib._lib.default_utils import update_nested_dict, magic_to_dict
+from magpylib._lib.default_utils import (
+    update_nested_dict,
+    magic_to_dict,
+    linearize_dict,
+)
 
 
 def test_update_nested_dict():
@@ -59,3 +63,23 @@ def test_magic_to_dict():
     with pytest.raises(AssertionError):
         magic_to_dict(0, separator=".")
         magic_to_dict(d, separator=0)
+
+
+def test_linearize_dict():
+    """test all argument combinations of `magic_to_dict`"""
+    mydict = {
+        "line": {"width": 1, "style": "solid", "color": None},
+        "marker": {"size": 1, "symbol": "o", "color": None},
+    }
+    res = linearize_dict(mydict, separator=".")
+    assert res == {
+        "line.width": 1,
+        "line.style": "solid",
+        "line.color": None,
+        "marker.size": 1,
+        "marker.symbol": "o",
+        "marker.color": None,
+    }, "linearization of dict failed"
+    with pytest.raises(AssertionError):
+        magic_to_dict(0, separator=".")
+        magic_to_dict(mydict, separator=0)

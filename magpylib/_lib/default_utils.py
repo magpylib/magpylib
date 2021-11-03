@@ -109,10 +109,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
                         replace_None_only=replace_None_only,
                     )
                     d[k] = r
-                elif d.get(k,None) is None or not replace_None_only:
+                elif d.get(k, None) is None or not replace_None_only:
                     if not same_keys_only or k in d:
                         d[k] = u[k]
-                elif d.get(k,None) is not None and not replace_None_only:
+                elif d.get(k, None) is not None and not replace_None_only:
                     if not same_keys_only or k in d:
                         d[k] = u[k]
             else:
@@ -185,6 +185,8 @@ def linearize_dict(kwargs, separator=".") -> dict:
      'marker.symbol': 'o',
      'marker.color': None}
     """
+    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
+    assert isinstance(separator, str), "separator must be a string"
     dict_ = {}
     for k, v in kwargs.items():
         if isinstance(v, dict):
