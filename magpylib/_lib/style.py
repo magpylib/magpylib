@@ -716,7 +716,7 @@ class ArrowStyle(BaseProperties):
             f"the `size` property of {type(self).__name__} must be a positive number"
             f" but received {repr(val)} instead"
         )
-        self._size = val 
+        self._size = val
 
     @property
     def width(self):

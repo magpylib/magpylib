@@ -392,7 +392,7 @@ def make_Line(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
-    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY['line_width']
+    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = dict(
         type="scatter3d",
         x=x,
@@ -432,7 +432,7 @@ def make_Circular(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
-    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY['line_width']
+    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     circular = dict(
         type="scatter3d",
         x=x,
