@@ -137,6 +137,8 @@ def magic_to_dict(kwargs, separator="_") -> dict:
     dict
         nested dictionary
     """
+    assert isinstance(kwargs, dict), "kwargs must be a dictionary"
+    assert isinstance(separator, str), "separator must be a string"
     new_kwargs = {}
     for k, v in kwargs.items():
         keys = k.split(separator)
