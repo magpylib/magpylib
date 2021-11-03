@@ -1,9 +1,11 @@
 from copy import deepcopy
 import pytest
 from magpylib._lib.default_utils import (
+    color_validator,
     update_nested_dict,
     magic_to_dict,
     linearize_dict,
+    COLORS_MATPLOTLIB_TO_PLOTLY,
 )
 
 
@@ -83,3 +85,18 @@ def test_linearize_dict():
     with pytest.raises(AssertionError):
         magic_to_dict(0, separator=".")
         magic_to_dict(mydict, separator=0)
+
+
+def test_color_validator():
+    """test color validator based on matploblib validation"""
+
+    assert color_validator("blue") == "blue", "should return `'blue'`"
+    assert color_validator("r") == "red", "should return `'r'`"
+    for shortC, longC in COLORS_MATPLOTLIB_TO_PLOTLY.items():
+        assert color_validator(shortC) == longC, f"should return `'{longC}'`"
+    assert color_validator(None) is None, "should return `'None'`"
+    with pytest.raises(ValueError):
+        color_validator(None, allow_None=False)
+        color_validator("asdf")
+        # does not support rgb values at the moment
+        color_validator("rgb(255,255,255)")
