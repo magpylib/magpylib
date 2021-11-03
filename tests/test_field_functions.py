@@ -7,11 +7,11 @@ from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
 from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
-from magpylib import Config
+from magpylib._lib.config import default_settings as Config
 
 # # GENERATE TEST DATA
 # n = 500
-# magpy.Config.EDGESIZE = 1e-14
+# magpy.defaults.edgesize = 1e-14
 
 # # dim general
 # dim_gen = np.random.rand(n,3)
@@ -49,7 +49,7 @@ from magpylib import Config
 def test_field_BH_cuboid():
     """ test cuboid field
     """
-    Config.EDGESIZE=1e-14
+    Config.edgesize=1e-14
     mag, dims, poss, B = pickle.load(open(
         os.path.abspath('tests/testdata/testdata_field_BH_cuboid.p') ,'rb'))
     Btest = []
