@@ -322,7 +322,7 @@ from magpylib._lib.config import default_settings as defaults
 from magpylib import magnet
 from magpylib import current
 from magpylib import misc
-from magpylib import _lib
+from magpylib import lib
 from magpylib._lib.fields import getB, getH, getB_dict, getH_dict
 from magpylib._lib.obj_classes import Collection, Sensor
 from magpylib._lib.display import display
