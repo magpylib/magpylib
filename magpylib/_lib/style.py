@@ -11,6 +11,16 @@ from magpylib._lib.default_utils import (
 )
 
 
+def get_style_class(obj):
+    """returns style class based on object type. If class has no attribute `_object_type` or is
+    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+    obj_type = getattr(obj, "_object_type", None)
+    style_fam = MAGPYLIB_FAMILIES.get(obj_type, None)
+    if isinstance(style_fam, (list, tuple)):
+        style_fam = style_fam[0]
+    return STYLE_CLASSES.get(style_fam, BaseStyle)
+
+
 def get_style(obj, **kwargs):
     """
     returns default style based on increasing priority:
@@ -132,9 +142,7 @@ class BaseStyle(BaseProperties):
 
     @opacity.setter
     def opacity(self, val):
-        assert val is None or (
-            isinstance(val, (float, int)) and 0 <= val <= 1
-        ), (
+        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
             "opacity must be a value betwen 0 and 1\n"
             f"but received {repr(val)} instead"
         )
@@ -1166,3 +1174,11 @@ class MagpylibStyle(BaseProperties):
                 "of `MarkersTrace` or a dictionary with equivalent key/value pairs \n"
                 f"but received {repr(val)} instead"
             )
+
+
+STYLE_CLASSES = {
+    "magnets": MagnetStyle,
+    "currents": CurrentStyle,
+    "dipoles": DipoleStyle,
+    "sensors": SensorStyle,
+}
