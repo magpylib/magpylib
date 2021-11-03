@@ -1,6 +1,7 @@
 from copy import deepcopy
 import pytest
 from magpylib._lib.default_utils import (
+    BaseProperties,
     color_validator,
     update_nested_dict,
     magic_to_dict,
@@ -100,3 +101,69 @@ def test_color_validator():
         color_validator("asdf")
         # does not support rgb values at the moment
         color_validator("rgb(255,255,255)")
+
+
+def test_BaseProperties():
+    """test BaseProperties class"""
+
+    class BPsub1(BaseProperties):
+        "BaseProperties class"
+
+        @property
+        def prop1(self):
+            """prop1"""
+            return self._prop1
+
+        @prop1.setter
+        def prop1(self, val):
+            self._prop1 = val
+
+    class BPsub2(BaseProperties):
+        "BaseProperties class"
+
+        @property
+        def prop2(self):
+            """prop2"""
+            return self._prop2
+
+        @prop2.setter
+        def prop2(self, val):
+            self._prop2 = val
+
+    bp1 = BPsub1(prop1=1)
+
+    # check setting attribute/property
+    assert bp1.prop1 == 1, "`bp1.prop1` should be `1`"
+    with pytest.raises(AttributeError):
+        getattr(bp1, "prop1e")  # only properties are allowed to be set
+
+    assert bp1.as_dict() == {"prop1": 1}, "`as_dict` method failed"
+
+    bp2 = BPsub2(prop2=2)
+    bp1.prop1 = bp2  # assigning class to subproperty
+
+    # check as_dict method
+    assert bp1.as_dict() == {"prop1": {"prop2": 2}}, "`as_dict` method failed"
+
+    # check update method with different parameters
+    assert bp1.update(prop1_prop2=10).as_dict() == {
+        "prop1": {"prop2": 10}
+    }, "magic property setting failed"
+
+    with pytest.raises(AttributeError):
+        bp1.update(prop1_prop2=10, prop3=4)
+    assert bp1.update(prop1_prop2=10, prop3=4, _match_properties=False).as_dict() == {
+        "prop1": {"prop2": 10}
+    }, "magic property setting failed, should ignore `'prop3'`"
+
+    assert bp1.update(prop1_prop2=20, _replace_None_only=True).as_dict() == {
+        "prop1": {"prop2": 10}
+    }, "magic property setting failed, `prop2` should be remained unchanged `10`"
+
+    # check copy method
+
+    bp3 = bp2.copy()
+    assert bp3 is not bp2, "failed copying, should return a different id"
+    assert (
+        bp3.as_dict() == bp2.as_dict()
+    ), "failed copying, should return the same property values"
