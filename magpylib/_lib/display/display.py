@@ -253,7 +253,7 @@ def display_matplotlib(
     faced_objects_color = []
 
     for obj, color in zip(obj_list, cycle(color_sequence)):
-        style = get_style(obj, **kwargs)
+        style = get_style(obj, Config,**kwargs)
         color = style.color if style.color is not None else color
         lw = 0.25
         faces = None
@@ -317,7 +317,7 @@ def display_matplotlib(
     # markers -------------------------------------------------------
     if markers is not None and markers:
         m = Markers()
-        style = get_style(m, **kwargs)
+        style = get_style(m, Config, **kwargs)
         markers = np.array(markers)
         draw_markers(markers, ax, style=style.marker)
         points += [markers]
@@ -345,10 +345,10 @@ def display_matplotlib(
 
     # not optimal for loop if many sensors/dipoles
     for sensor in sensors:
-        style = get_style(sensor, **kwargs)
+        style = get_style(sensor, Config, **kwargs)
         draw_sensors([sensor], ax, sys_size, show_path, style.size)
     for dipole, color in zip(dipoles, dipoles_color):
-        style = get_style(dipole, **kwargs)
+        style = get_style(dipole, Config, **kwargs)
         draw_dipoles([dipole], ax, sys_size, show_path, style.size, color, style.pivot)
 
     # plot styling --------------------------------------------------

@@ -21,7 +21,7 @@ def get_style_class(obj):
     return STYLE_CLASSES.get(style_fam, BaseStyle)
 
 
-def get_style(obj, **kwargs):
+def get_style(obj, default_settings, **kwargs):
     """
     returns default style based on increasing priority:
     - style from Config
@@ -36,7 +36,6 @@ def get_style(obj, **kwargs):
 
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
-    from magpylib._lib.config import default_settings
 
     styles_by_family = default_settings.display.styles.as_dict()
 
