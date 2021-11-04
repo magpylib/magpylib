@@ -536,6 +536,7 @@ class MagnetStyle(BaseGeoStyle, Magnets):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        Magnets.__init__(self,**kwargs)
 
 
 class Sensors(BaseProperties):
@@ -593,6 +594,7 @@ class SensorStyle(BaseGeoStyle, Sensors):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        Sensors.__init__(self,**kwargs)
 
 
 class Pixel(BaseProperties):
@@ -697,6 +699,7 @@ class CurrentStyle(BaseGeoStyle, Currents):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        Currents.__init__(self,**kwargs)
 
 
 class ArrowStyle(BaseProperties):
@@ -900,6 +903,7 @@ class DipoleStyle(BaseGeoStyle, Dipoles):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+        Dipoles.__init__(self,**kwargs)
 
 
 class PathStyle(BaseProperties):
