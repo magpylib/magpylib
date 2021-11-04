@@ -1282,7 +1282,12 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     ranges = {k: [] for k in "xyz"}
     for t in traces:
         for k, v in ranges.items():
-            v.extend([np.nanmin(t[k]), np.nanmax(t[k])])
+            v.extend(
+                [
+                    np.nanmin(np.array(t[k], dtype=float)),
+                    np.nanmax(np.array(t[k], dtype=float)),
+                ]
+            )
     r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
     size = np.diff(r, axis=1)
     size[size == 0] = 1
