@@ -12,6 +12,7 @@ clean:
 
 dev:
 	pip install twine
+	pip intall plotly
 	pip install .[testing]
 
 package:
