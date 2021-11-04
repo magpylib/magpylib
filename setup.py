@@ -71,7 +71,7 @@ setuptools.setup(
         "scipy>=1.6",
         "matplotlib>=3.3",
     ],
-    extras_require={"plotly": ["plotly>=5.3.1"]},
+    extras_require={"testing": ["plotly>=5.3.1"]},
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3.7",

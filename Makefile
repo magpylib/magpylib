@@ -12,7 +12,7 @@ clean:
 
 dev:
 	pip install twine
-	pip install .
+	pip install .[testing]
 
 package:
 	python setup.py sdist
