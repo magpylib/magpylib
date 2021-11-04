@@ -118,7 +118,7 @@ def draw_faces(faces, col, lw, ax):
     return faces
 
 
-def draw_pixel(sensors, ax, col, pixel_col, pixel_size, show_path):
+def draw_pixel(sensors, ax, col, pixel_col, pixel_size, pixel_symb, show_path):
     """draw pixels and return a list of pixel-points in gloabl CS"""
     # pylint: disable=protected-access
 
@@ -147,7 +147,7 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, show_path):
         pos_pixel[:, 0],
         pos_pixel[:, 1],
         pos_pixel[:, 2],
-        marker="o",
+        marker=pixel_symb,
         mfc=pixel_col,
         mew=pixel_size,
         mec=col,

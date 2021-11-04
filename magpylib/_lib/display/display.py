@@ -253,7 +253,7 @@ def display_matplotlib(
     faced_objects_color = []
 
     for obj, color in zip(obj_list, cycle(color_sequence)):
-        style = get_style(obj, Config,**kwargs)
+        style = get_style(obj, Config, **kwargs)
         color = style.color if style.color is not None else color
         lw = 0.25
         faces = None
@@ -287,7 +287,13 @@ def display_matplotlib(
         elif obj._object_type == "Sensor":
             sensors_color += [color]
             points += draw_pixel(
-                [obj], ax, color, style.pixel.color, style.pixel.size, show_path
+                [obj],
+                ax,
+                color,
+                style.pixel.color,
+                style.pixel.size,
+                style.pixel.symbol,
+                show_path,
             )
         elif obj._object_type == "Dipole":
             dipoles_color += [color]

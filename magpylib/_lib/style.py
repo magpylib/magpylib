@@ -606,12 +606,17 @@ class Pixel(BaseProperties):
         - matplotlib backend: pixel size is the marker size
         - plotly backend:  relative size to the distance of nearest neighboring pixel
 
-    - color: str, default=None
-        defines the pixel color
+    color: str, default=None
+        defines the pixel color@property
+
+    symbol: str, default=None
+        pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`
+        Only applies for matplotlib.
+
     """
 
-    def __init__(self, size=1, color=None, **kwargs):
-        super().__init__(size=size, color=color, **kwargs)
+    def __init__(self, size=1, color=None, symbol=None, **kwargs):
+        super().__init__(size=size, color=color, symbol=symbol, **kwargs)
 
     @property
     def size(self):
@@ -636,6 +641,20 @@ class Pixel(BaseProperties):
     @color.setter
     def color(self, val):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+    @property
+    def symbol(self):
+        """pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`"""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, val):
+        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+            f"the `symbol` property of {type(self).__name__} must be one of"
+            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())}"
+            f" but received {repr(val)} instead"
+        )
+        self._symbol = val
 
 
 class Currents(BaseProperties):
