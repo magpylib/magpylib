@@ -99,7 +99,10 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
         updated dictionary
     """
     for k, v in u.items():
-        if k in d or not same_keys_only:
+        if not isinstance(d, collections.abc.Mapping):
+            if d is None or not replace_None_only:
+                d = u
+        elif k in d or not same_keys_only:
             if isinstance(d, collections.abc.Mapping):
                 if isinstance(v, collections.abc.Mapping):
                     r = update_nested_dict(
