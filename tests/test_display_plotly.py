@@ -3,11 +3,11 @@ import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
 
 # pylint: disable=assignment-from-no-return
-magpy.defaults.display.backend = 'plotly'
 
 def test_Cylinder_display():
     """ testing display
     """
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     src = Cylinder((1,2,3),(1,2))
     x = src.display(canvas=fig, path=15)
@@ -21,6 +21,7 @@ def test_Cylinder_display():
 def test_CylinderSegment_display():
     """ testing display
     """
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     src = CylinderSegment((1,2,3),(2,4,5,30,40))
     x = src.display(canvas=fig, path=15)
@@ -35,6 +36,7 @@ def test_CylinderSegment_display():
 def test_Sphere_display():
     """ testing display
     """
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     src = Sphere((1,2,3),2)
     x = src.display(canvas=fig, path=15)
@@ -53,6 +55,7 @@ def test_Cuboid_display():
     x = src.display(path=5, style_magnetization_show=True)
     assert x is None, 'display test fail'
 
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     x = src.display(canvas=fig, path=False, style_magnetization_show=True)
     assert x is None, 'display test fail'
@@ -61,6 +64,7 @@ def test_Cuboid_display():
 def test_Sensor_display():
     """ testing display
     """
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     sens = magpy.Sensor(pixel=[(1,2,3),(2,3,4)])
     sens.move([(.4,.4,.4)]*33, increment=True)
@@ -74,6 +78,7 @@ def test_Sensor_display():
 def test_Circular_display():
     """ testing display for Circular source
     """
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     src = magpy.current.Circular(current=1, diameter=1)
     x = src.display(canvas=fig)
@@ -88,6 +93,7 @@ def test_col_display():
     """ testing display
     """
     # pylint: disable=assignment-from-no-return
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
@@ -100,6 +106,7 @@ def test_dipole_display():
     """ testing display
     """
     # pylint: disable=assignment-from-no-return
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     dip = magpy.misc.Dipole(moment=(1,2,3), position=(2,2,2))
     dip2 = magpy.misc.Dipole(moment=(1,2,3), position=(2,2,2))
@@ -114,6 +121,7 @@ def test_circular_line_display():
     """ testing display
     """
     # pylint: disable=assignment-from-no-return
+    magpy.defaults.display.backend = 'plotly'
     fig = go.Figure()
     src1 = magpy.current.Circular(1,2)
     src2 = magpy.current.Circular(1,2)
