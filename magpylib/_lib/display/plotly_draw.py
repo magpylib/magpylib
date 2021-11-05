@@ -378,7 +378,11 @@ def make_Line(
     """
     name = "Line Curent" if style.name is None else style.name
     if style.description.show and style.description.text is None:
-        name_suffix = f" ({unit_prefix(current)}A)"
+        name_suffix = (
+            f" ({unit_prefix(current)}A)"
+            if current is not None
+            else "Current not initialized"
+        )
     elif not style.description.show:
         name_suffix = ""
     else:
@@ -422,7 +426,11 @@ def make_Circular(
     """
     name = "Circular Curent" if style.name is None else style.name
     if style.description.show and style.description.text is None:
-        name_suffix = f" ({unit_prefix(current)}A)"
+        name_suffix = (
+            f" ({unit_prefix(current)}A)"
+            if current is not None
+            else "Current not initialized"
+        )
     elif not style.description.show:
         name_suffix = ""
     else:
