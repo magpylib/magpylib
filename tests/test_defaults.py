@@ -15,7 +15,6 @@ bad_inputs = {
     "display_animation_maxframes": 0,  # int>0
     "display_backend": "plotty",  # str typo
     "display_colorsequence": ["#2E91E5", "wrongcolor"],  # iterable of colors
-    "display_opacity": 2,  # 0<=float<=1
     "display_styles_base_path_line_width": -1,  # float>=0
     "display_styles_base_path_line_style": "wrongstyle",
     "display_styles_base_path_line_color": "wrongcolor",  # color
@@ -63,11 +62,10 @@ good_inputs = {
         ["#2E91E5", "#0D2A63"],
         ["blue", "red"],
     ),  # ]),  # iterable of colors
-    "display_opacity": (0, 0.5, 1),  # 0<=float<=1
     "display_styles_base_path_line_width": (0, 1),  # float>=0
     "display_styles_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_styles_base_path_line_color": ("blue", "#2E91E5"),  # color
-    "display_styles_base_path_marker_size": (0,1),  # float>=0
+    "display_styles_base_path_marker_size": (0, 1),  # float>=0
     "display_styles_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_styles_base_path_marker_color": ("blue", "#2E91E5"),  # color
     "display_styles_base_description_show": (True, False),  # bool
@@ -121,7 +119,7 @@ def test_defaults_bad_inputs():
     for k, v in bad_inputs.items():
         if "description_text" not in k:
             if "color" in k and "transition" not in k:
-                #color attributes use a the color validator, which raises a ValueError
+                # color attributes use a the color validator, which raises a ValueError
                 errortype = ValueError
             else:
                 # all other parameters raise AssertionError
@@ -137,10 +135,20 @@ def test_defaults_good_inputs():
         for v1 in tup:
             c.update(**{k: v1})
             v0 = c
-            for v in k.split('_'):
+            for v in k.split("_"):
                 v0 = getattr(v0, v)
-            if 'color' in k and isinstance(v1,str):
-                v1 = v1.lower() # hex color gets lowered
-            elif 'description_text' in k:
-                v1 = str(v1) # for a desc text, any object is valid and is transformed into a string
+            if "color" in k and isinstance(v1, str):
+                v1 = v1.lower()  # hex color gets lowered
+            elif "description_text" in k:
+                v1 = str(
+                    v1
+                )  # for a desc text, any object is valid and is transformed into a string
             assert v0 == v1, f"{k} should be {v1}, but received {v0} instead"
+
+
+def test_bad_input_classes():
+    """testing properties which take classes as properties"""
+    with pytest.raises(ValueError):
+        magpy.defaults.display = "wrong input"
+        magpy.defaults.display.animation = "wrong input"
+        magpy.defaults.display.styles = "wrong input"

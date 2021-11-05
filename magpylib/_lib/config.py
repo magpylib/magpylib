@@ -142,9 +142,6 @@ class Display(BaseProperties):
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
 
-    opacity: float, default=1
-        object default opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-
     animation: dict or Animation
         defines the animation properties used by the `plotly` plotting backend when `path='animate'`
         in the `display` function.
@@ -191,19 +188,6 @@ class Display(BaseProperties):
             f" but received {repr(val)} instead"
         )
         self._colorsequence = val
-
-    @property
-    def opacity(self):
-        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
-        return self._opacity
-
-    @opacity.setter
-    def opacity(self, val):
-        assert val is None or isinstance(val, (float, int)) and 0 <= val <= 1, (
-            "opacity must be a value betwen 0 and 1\n"
-            f"but received {repr(val)} instead"
-        )
-        self._opacity = val
 
     @property
     def animation(self):

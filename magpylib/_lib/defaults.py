@@ -34,7 +34,6 @@ DEFAULTS = {
             "#0D2A63",
             "#AF0038",
         ),
-        "opacity": 1,
         "styles": {
             "base": {
                 "path": {
