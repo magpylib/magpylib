@@ -23,7 +23,7 @@ jobs:
       - checkout
       - run: 
           name: Install local magpylib
-          command: pip install -e .[testing]
+          command: pip install .
       - run: 
           name: Set up testing tools and environment
           command: mkdir test-results && pip install tox && pip install pylint
