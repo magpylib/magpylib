@@ -26,7 +26,7 @@ jobs:
           command: pip install .[testing]
       - run: 
           name: Set up testing tools and environment
-          command: mkdir test-results && pip install tox && pip install pylint && pip install .[testing]
+          command: mkdir test-results && pip install tox && pip install pylint && pip plotly
       - run:
           name: Run pylint test
           command: pylint --rcfile='./.pylintrc' magpylib
