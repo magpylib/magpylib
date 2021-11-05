@@ -34,8 +34,8 @@ from magpylib._lib.config import default_settings as Config
 def display(
     *objects,
     path=True,  # bool, int, index list, 'animate'
-    zoom=1,
-    animate_time=5,
+    zoom=0,
+    animate_time=3,
     markers=None,
     backend=None,
     canvas=None,
@@ -166,7 +166,7 @@ def display_matplotlib(
     axis=None,
     markers=None,
     show_path=True,
-    zoom=1,
+    zoom=0,
     color_sequence=None,
     **kwargs,
 ):
