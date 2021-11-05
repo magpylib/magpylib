@@ -40,7 +40,7 @@ def init_exite_display1():
     """throw excitation init error from display"""
     src1 = magpy.current.Circular(diameter=1)
     src2 = magpy.magnet.Sphere(diameter=2)
-    magpy.display(src1, src2, show_direction=True)
+    magpy.display(src1, src2, style_magnetization_show=True, style_current_show=True)
 
 def init_exite_getBH1():
     """throw excitation init error from getB"""
