@@ -30,6 +30,7 @@ from magpylib._lib.display.disp_utility import (
     draw_arrowed_circle,
 )
 from magpylib._lib.default_utils import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._lib.input_checks import check_excitations
 
 # Defaults
 
@@ -381,7 +382,7 @@ def make_Line(
         name_suffix = (
             f" ({unit_prefix(current)}A)"
             if current is not None
-            else "Current not initialized"
+            else " (Current not initialized)"
         )
     elif not style.description.show:
         name_suffix = ""
@@ -429,7 +430,7 @@ def make_Circular(
         name_suffix = (
             f" ({unit_prefix(current)}A)"
             if current is not None
-            else "Current not initialized"
+            else " (Current not initialized)"
         )
     elif not style.description.show:
         name_suffix = ""
@@ -927,6 +928,14 @@ def get_plotly_traces(
     style_color = getattr(style, "color", None)
     kwargs["color"] = style_color if style_color is not None else color
     kwargs["opacity"] = style.opacity
+
+    if hasattr(style, "magnetization"):
+        if style.magnetization.show:
+            check_excitations([input_obj])
+
+    if hasattr(style, "current"):
+        if style.current.show:
+            check_excitations([input_obj])
 
     traces = []
     if isinstance(input_obj, Markers):
