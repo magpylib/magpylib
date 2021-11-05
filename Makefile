@@ -12,8 +12,7 @@ clean:
 
 dev:
 	pip install twine
-	pip intall plotly
-	pip install .[testing]
+	pip install .
 
 package:
 	python setup.py sdist
