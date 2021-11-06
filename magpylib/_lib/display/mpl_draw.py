@@ -122,10 +122,6 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, pixel_symb, show_path):
     """draw pixels and return a list of pixel-points in gloabl CS"""
     # pylint: disable=protected-access
 
-    # no sensors given
-    if not sensors:
-        return []
-
     # collect sensor and pixel positions in global CS
     pos_sens, pos_pixel = [], []
     for sens in sensors:
@@ -163,10 +159,6 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
     """draw sensor cross"""
     # pylint: disable=protected-access
 
-    # no sensors in display
-    if not sensors:
-        return
-
     # collect plot data
     possis, exs, eys, ezs = [], [], [], []
     for sens in sensors:
@@ -203,10 +195,6 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
 def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     """draw dipoles"""
     # pylint: disable=protected-access
-
-    # no sensors in display
-    if not dipoles:
-        return
 
     # collect plot data
     possis, moms = [], []

@@ -257,7 +257,9 @@ def display_matplotlib(
         color = style.color if style.color is not None else color
         lw = 0.25
         faces = None
-        if style.mesh3d.data is not None and style.mesh3d.show is True:
+        if style.mesh3d.data is not None and (
+            style.mesh3d.show is True or style.mesh3d.show == "inplace"
+        ):
             text = (
                 f"{obj} has a mesh3d attached, which cannot be plotted with the matplotlib "
                 "backend at the moment"

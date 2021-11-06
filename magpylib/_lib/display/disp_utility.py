@@ -71,8 +71,6 @@ def draw_arrowed_circle(current, diameter, arrow_size, Nvert):
     t = np.linspace(0, 2 * np.pi, Nvert)
     x = np.cos(t)
     y = np.sin(t)
-    if current is None:
-        current=0
     if arrow_size != 0:
         hy = 0.2 * np.sign(current) * arrow_size
         hx = 0.15 * arrow_size

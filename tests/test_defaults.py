@@ -1,6 +1,7 @@
 import pytest
 import magpylib as magpy
 from magpylib._lib.config import DefaultConfig
+from magpylib._lib.style import MagpylibStyle
 from magpylib._lib.default_utils import (
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
@@ -115,7 +116,7 @@ def test_defaults():
 
 def test_defaults_bad_inputs():
     """testing defaults setting on bad inputs"""
-    c = DefaultConfig()
+    c = DefaultConfig().reset()
     for k, v in bad_inputs.items():
         if "description_text" not in k:
             if "color" in k and "transition" not in k:
@@ -150,5 +151,29 @@ def test_bad_input_classes():
     """testing properties which take classes as properties"""
     with pytest.raises(ValueError):
         magpy.defaults.display = "wrong input"
+    with pytest.raises(ValueError):
         magpy.defaults.display.animation = "wrong input"
+    with pytest.raises(ValueError):
         magpy.defaults.display.styles = "wrong input"
+    c = MagpylibStyle().reset()
+    style_classes = {
+        "base",
+        "base_description",
+        "base_mesh3d",
+        "base_path",
+        "base_path_line",
+        "base_path_marker",
+        "currents",
+        "currents_current",
+        "dipoles",
+        "magnets",
+        "magnets_magnetization",
+        "magnets_magnetization_color",
+        "markers",
+        "markers_marker",
+        "sensors",
+        "sensors_pixel",
+    }
+    for s in style_classes:
+        with pytest.raises(ValueError):
+            c.update(**{s: "bad class"})

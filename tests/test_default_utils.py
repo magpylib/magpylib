@@ -3,6 +3,7 @@ import pytest
 from magpylib._lib.default_utils import (
     BaseProperties,
     color_validator,
+    get_defaults_dict,
     update_nested_dict,
     magic_to_dict,
     linearize_dict,
@@ -13,8 +14,8 @@ from magpylib._lib.default_utils import (
 def test_update_nested_dict():
     """test all argument combinations of `update_nested_dicts`"""
     # `d` gets updated, that's why we deepcopy it
-    d = {"a": 1, "b": {"c": 2, "d": None}, "f": None, "g": {"c": None, "d": 2}, "h":1}
-    u = {"a": 2, "b": 3, "e": 5, "g": {"c": 7, "d": 5}, "h":{"i":3}}
+    d = {"a": 1, "b": {"c": 2, "d": None}, "f": None, "g": {"c": None, "d": 2}, "h": 1}
+    u = {"a": 2, "b": 3, "e": 5, "g": {"c": 7, "d": 5}, "h": {"i": 3}}
     res = update_nested_dict(
         deepcopy(d), u, same_keys_only=False, replace_None_only=False
     )
@@ -24,7 +25,7 @@ def test_update_nested_dict():
         "e": 5,
         "f": None,
         "g": {"c": 7, "d": 5},
-        "h":{"i":3}
+        "h": {"i": 3},
     }, "failed updating nested dict"
     res = update_nested_dict(
         deepcopy(d), u, same_keys_only=True, replace_None_only=False
@@ -34,7 +35,7 @@ def test_update_nested_dict():
         "b": 3,
         "f": None,
         "g": {"c": 7, "d": 5},
-        "h":{"i":3}
+        "h": {"i": 3},
     }, "failed updating nested dict"
     res = update_nested_dict(
         deepcopy(d), u, same_keys_only=True, replace_None_only=True
@@ -44,7 +45,7 @@ def test_update_nested_dict():
         "b": {"c": 2, "d": None},
         "f": None,
         "g": {"c": 7, "d": 2},
-        "h":1
+        "h": 1,
     }, "failed updating nested dict"
     res = update_nested_dict(
         deepcopy(d), u, same_keys_only=False, replace_None_only=True
@@ -55,7 +56,7 @@ def test_update_nested_dict():
         "f": None,
         "g": {"c": 7, "d": 2},
         "e": 5,
-        "h":1
+        "h": 1,
     }, "failed updating nested dict"
 
 
@@ -102,7 +103,9 @@ def test_color_validator():
     assert color_validator(None) is None, "should return `'None'`"
     with pytest.raises(ValueError):
         color_validator(None, allow_None=False)
+    with pytest.raises(ValueError):
         color_validator("asdf")
+    with pytest.raises(ValueError):
         # does not support rgb values at the moment
         color_validator("rgb(255,255,255)")
 
@@ -171,3 +174,17 @@ def test_BaseProperties():
     assert (
         bp3.as_dict() == bp2.as_dict()
     ), "failed copying, should return the same property values"
+
+    # check failing init
+    with pytest.raises(AttributeError):
+        BPsub1(a=0)  # `a` is not a property in the class
+
+    # check repr
+    assert repr(BaseProperties()) == "BaseProperties()", "repr failed"
+
+
+def test_get_defaults_dict():
+    """test get_defaults_dict"""
+    s0 = get_defaults_dict("display.styles")
+    s1 = get_defaults_dict()["display"]["styles"]
+    assert s0 == s1, "dicts don't match"

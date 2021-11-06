@@ -319,7 +319,8 @@ class BaseProperties:
         if arg is None:
             arg = {}
         if kwargs:
-            arg.update(magic_to_dict(kwargs))
+            arg.update(kwargs)
+        arg = magic_to_dict(arg)
         current_dict = self.as_dict()
         new_dict = update_nested_dict(
             current_dict,
