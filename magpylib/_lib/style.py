@@ -59,7 +59,7 @@ def get_style(obj, default_settings, **kwargs):
         raise ValueError(
             f"Following arguments are invalid style properties: {invalid_keys}\n"
             f"\n Available style properties start with `style_` + `{valid_keys}`"
-            
+
         )
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
