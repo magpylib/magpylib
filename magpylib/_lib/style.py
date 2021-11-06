@@ -43,7 +43,7 @@ def get_style(obj, default_settings, **kwargs):
     obj_type = getattr(obj, "_object_type", None)
     obj_families = MAGPYLIB_FAMILIES.get(obj_type, [])
 
-    obj_style_dict = {
+    obj_style_default_dict = {
         **styles_by_family["base"],
         **{
             k: v
@@ -51,12 +51,28 @@ def get_style(obj, default_settings, **kwargs):
             for k, v in styles_by_family.get(fam, {}).items()
         },
     }
-
+    valid_keys = {key for k, v in styles_by_family.items() for key in v}
+    level0_style_keys = {k.split("_")[0]: k for k in style_kwargs}
+    kwargs_diff = set(level0_style_keys).difference(valid_keys)
+    invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
+    if invalid_keys:
+        raise ValueError(
+            f"Following arguments are invalid style properties: {invalid_keys}\n"
+            f"\n Available style properties start with `style_` + `{valid_keys}`"
+            
+        )
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
     style = obj_style.copy() if obj_style is not None else BaseGeoStyle()
-    style.update(**style_kwargs, _match_properties=False)
-    style.update(**obj_style_dict, _match_properties=False, _replace_None_only=True)
+    style_kwargs_specific = {
+        k: v
+        for k, v in style_kwargs.items()
+        if k.split("_")[0] in obj_style_default_dict
+    }
+    style.update(**style_kwargs_specific, _match_properties=True)
+    style.update(
+        **obj_style_default_dict, _match_properties=False, _replace_None_only=True
+    )
 
     return style
 
@@ -536,7 +552,7 @@ class MagnetStyle(BaseGeoStyle, Magnets):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Magnets.__init__(self,**kwargs)
+        Magnets.__init__(self, **kwargs)
 
 
 class Sensors(BaseProperties):
@@ -594,7 +610,7 @@ class SensorStyle(BaseGeoStyle, Sensors):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Sensors.__init__(self,**kwargs)
+        Sensors.__init__(self, **kwargs)
 
 
 class Pixel(BaseProperties):
@@ -699,7 +715,7 @@ class CurrentStyle(BaseGeoStyle, Currents):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Currents.__init__(self,**kwargs)
+        Currents.__init__(self, **kwargs)
 
 
 class ArrowStyle(BaseProperties):
@@ -903,7 +919,7 @@ class DipoleStyle(BaseGeoStyle, Dipoles):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        Dipoles.__init__(self,**kwargs)
+        Dipoles.__init__(self, **kwargs)
 
 
 class PathStyle(BaseProperties):

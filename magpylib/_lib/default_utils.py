@@ -263,7 +263,8 @@ class BaseProperties:
             diff = set(magic_kwargs.keys()).difference(set(input_dict.keys()))
             for attr in diff:
                 raise AttributeError(
-                    f"""{type(self).__name__} has no attribute '{attr}'"""
+                    f"{type(self).__name__} has no property '{attr}'"
+                    f"\n Available properties are: {list(self._property_names_generator())}"
                 )
             input_dict.update(magic_kwargs)
         for k, v in input_dict.items():
