@@ -49,26 +49,26 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    path: bool or int or array_like, default=True
-        Options True, False, positive int or iterable. By default object paths are shown. If
-        path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of path. If path is an iterable
-        of integers, objects will be displayed for the provided indices.
-        If path='animate, the plot will be animated according to the `animate_time`
-        and 'animate_fps' parameters.
+    path: bool or int i or array_like shape (n,) or 'animate', default = True
+        Option False shows objects at final path position and hides paths.
+        Option True shows objects at final path position and shows object paths.
+        Option int i displays the objects at every i'th path position.
+        Option array_like shape (n,) discribes certain path indices. The objects
+        displays are displayed at every given path index.
+        Option 'animate' (Plotly backend only) shows an animation of objectes moving along their paths.
 
-    zoom: float, default = 1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+    zoom: float, default = 0
+        Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
 
     animate_time: float, default = 3
-        Sets the animation duration
+        Sets the animation duration.
 
-    markers: array_like, None, shape (N,3), default=None
+    markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
 
-    backend: default=None
-        One of 'matplotlib', 'plolty'. If not set, parameter will default to
-        defaults.display.backend
+    backend: string, default=None
+        One of 'matplotlib' or 'plotly'. If not set, parameter will default to
+        magpylib.defaults.display.backend which comes as 'matplotlib' with installation.
 
     canvas: pyplot Axis or plotly Figure, default=None
         Display graphical output in a given canvas:
@@ -84,30 +84,39 @@ def display(
     Examples
     --------
 
-    Display multiple objects, object paths, markers in 3D using Matplotlib:
+    Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
 
     >>> import magpylib as magpy
-    >>> col = magpy.Collection(
-        [magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1) for _ in range(3)])
-    >>> for displ,src in zip([(.1414,0,0),(-.1,-.1,0),(-.1,.1,0)], col):
-    >>>     src.move([displ]*50, increment=True)
-    >>>     src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
-    >>> ts = [-.6,-.4,-.2,0,.2,.4,.6]
+    >>> src = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
+    >>> src.move([(.1,0,0)]*50, increment=True)
+    >>> src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
+    >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> magpy.display(col, sens)
+    >>> magpy.display(src, sens)
+    >>> magpy.display(src, sens, backend='plotly')
     --> graphic output
 
-    Display figure on your own 3D Matplotlib axis:
+    Display figure on your own canvas (here Matplotlib 3D axis):
 
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as magpy
     >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
+    >>> magnet = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,2,3))
     >>> sens = magpy.Sensor(position=(0,0,3))
-    >>> magpy.display(magnet, sens, axis=my_axis)
+    >>> magpy.display(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show()
     --> graphic output
 
+    Use sophisticated figure styling options accessable from defaults, as individual object styles
+    or as global style arguments in display.
+
+    >>> import magpylib as magpy
+    >>> src1 = magpy.magnet.Sphere((1,1,1), 1)
+    >>> src2 = magpy.magnet.Sphere((1,1,1), 1, (1,0,0))
+    >>> magpy.defaults.display.styles.magnets.magnetization.size = 2
+    >>> src1.style.magnetization.size = 1
+    >>> magpy.display(src1, src2, style_color='r', zoom=3)
+    --> graphic output
     """
 
     # flatten input
@@ -173,58 +182,11 @@ def display_matplotlib(
     """
     Display objects and paths graphically with the matplotlib backend.
 
-    Parameters
-    ----------
-    objects: sources, collections or sensors
-        Objects to be displayed.
-
-    axis: pyplot.axis, default=None
-        Display graphical output in a given pyplot axis (must be 3D). By default a new
-        pyplot figure is created and displayed.
-
-    markers: array_like, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
-
-    show_path: bool or int or array_like, default=True
-        Options True, False, positive int or iterable. By default object paths are shown. If
-        show_path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of show_path. If show_path is an iterable
-        of integers, objects will be displayed for the provided indices.
-
-    zoom: float, default=1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
-
-    Returns
-    -------
-    None: NoneType
-
-    Examples
-    --------
-
-    Display multiple objects, object paths, markers in 3D using Matplotlib:
-
-    >>> import magpylib as magpy
-    >>> col = magpy.Collection(
-        [magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1) for _ in range(3)])
-    >>> for displ,src in zip([(.1414,0,0),(-.1,-.1,0),(-.1,.1,0)], col):
-    >>>     src.move([displ]*50, increment=True)
-    >>>     src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
-    >>> ts = [-.6,-.4,-.2,0,.2,.4,.6]
-    >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> magpy.display(col, sens)
-    --> graphic output
-
-    Display figure on your own 3D Matplotlib axis:
-
-    >>> import matplotlib.pyplot as plt
-    >>> import magpylib as magpy
-    >>> my_axis = plt.axes(projection='3d')
-    >>> magnet = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(1,2,3))
-    >>> sens = magpy.Sensor(position=(0,0,3))
-    >>> magpy.display(magnet, sens, axis=my_axis)
-    >>> plt.show()
-    --> graphic output
-
+    - axis: matplotlib axis3d object
+    - markers: list of marker positions
+    - show_path: bool / int / list of ints
+    - zoom: zoom level, 0=tight boundaries
+    - color_sequence: list of colors for object coloring
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
