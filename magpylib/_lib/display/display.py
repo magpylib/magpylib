@@ -55,7 +55,8 @@ def display(
         Option int i displays the objects at every i'th path position.
         Option array_like shape (n,) discribes certain path indices. The objects
         displays are displayed at every given path index.
-        Option 'animate' (Plotly backend only) shows an animation of objectes moving along their paths.
+        Option 'animate' (Plotly backend only) shows an animation of objectes moving
+        along their paths.
 
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
