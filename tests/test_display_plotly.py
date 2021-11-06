@@ -1,6 +1,7 @@
 import plotly.graph_objects as go
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
+import pytest
 
 # pylint: disable=assignment-from-no-return
 
@@ -137,3 +138,10 @@ def test_circular_line_display():
     assert x is None, 'display test fail'
     x = src4.display(canvas=fig, path=2)
     assert x is None, 'display test fail'
+
+def test_display_bad_style_kwargs():
+    """test if some magic kwargs are invalid"""
+    magpy.defaults.display.backend = 'plotly'
+    fig = go.Figure()
+    with pytest.raises(ValueError):
+        magpy.display(canvas=fig, markers=[(1,2,3)], style_bad_style_kwarg=None)
