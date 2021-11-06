@@ -79,7 +79,7 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     """
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
-    # pylint: disable=consider-using-f-string
+
     if prefix != "":
         new_number_str = "{:.{}g}".format(number / 10 ** digits, precision)
     else:
@@ -556,7 +556,7 @@ def make_Cuboid(
     provided arguments
     """
     name = "Cuboid" if style.name is None else style.name
-    # pylint: disable=consider-using-f-string
+
     if style.description.show and style.description.text is None:
         name_suffix = " ({}mx{}mx{}m)".format(*(unit_prefix(d / 1000) for d in dim))
     elif not style.description.show:
@@ -591,7 +591,7 @@ def make_Cylinder(
     provided arguments
     """
     name = "Cylinder" if style.name is None else style.name
-    # pylint: disable=consider-using-f-string
+
     if style.description.show and style.description.text is None:
         name_suffix = " (D={}m, H={}m)".format(
             *(unit_prefix(d / 1000) for d in (diameter, height))
@@ -632,7 +632,7 @@ def make_CylinderSegment(
     provided arguments
     """
     name = "CylinderSegment" if style.name is None else style.name
-    # pylint: disable=consider-using-f-string
+
     if style.description.show and style.description.text is None:
         name_suffix = " (d1={}m, d2={}m, h={}m, phi1={}°, phi2={}°)".format(
             *(unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension))
