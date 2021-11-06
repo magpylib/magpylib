@@ -185,12 +185,7 @@ def faces_cylinder(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    if not isinstance(show_path, bool) and src._position.ndim > 1:
-        rots = src._orientation[::-show_path]
-        poss = src._position[::-show_path]
-    else:
-        rots = [src._orientation[-1]]
-        poss = [src._position[-1]]
+    rots, poss = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
