@@ -189,8 +189,6 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
             length=arrowlength,
         )
 
-    return
-
 
 def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     """draw dipoles"""
@@ -223,8 +221,6 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
         length=arrowlength,
         pivot=pivot,  # {'tail', 'middle', 'tip'},
     )
-
-    return
 
 
 def draw_circular(circulars, show_path, col, size, width, ax):
