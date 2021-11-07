@@ -1,9 +1,10 @@
 from magpylib._lib.default_utils import (
     MagicProperties,
+    validate_property_class,
     color_validator,
     get_defaults_dict,
 )
-from magpylib._lib.style import MagpylibStyle
+from magpylib._lib.style import DisplayStyle
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
 
@@ -105,18 +106,7 @@ class DefaultConfig(MagicProperties):
 
     @display.setter
     def display(self, val):
-        if isinstance(val, dict):
-            val = Display(**val)
-        if isinstance(val, Display):
-            self._display = val
-        elif val is None:
-            self._display = Display()
-        else:
-            raise ValueError(
-                f"the `display` property of `{type(self).__name__}` must be an instance \n"
-                "of `Display` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._display = validate_property_class(val, "display", Display, self)
 
 
 class Display(MagicProperties):
@@ -150,7 +140,7 @@ class Display(MagicProperties):
         Defines at which scale objects like sensors and dipoles are displayed.
         -> object_size = canvas_size / AUTOSIZE_FACTOR
 
-    styles: dict or MagpylibStyle
+    styles: dict or DisplayStyle
         Base class containing display styling properties for all object families.
     """
 
@@ -197,18 +187,7 @@ class Display(MagicProperties):
 
     @animation.setter
     def animation(self, val):
-        if isinstance(val, dict):
-            val = Animation(**val)
-        if isinstance(val, Animation):
-            self._animation = val
-        elif val is None:
-            self._animation = Animation()
-        else:
-            raise ValueError(
-                f"the `animation` property of `{type(self).__name__}` must be an instance \n"
-                "of `Animation` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._animation = validate_property_class(val, "animation", Animation, self)
 
     @property
     def autosizefactor(self):
@@ -225,24 +204,13 @@ class Display(MagicProperties):
         self._autosizefactor = val
 
     @property
-    def styles(self):
+    def style(self):
         """Base class containing display styling properties for all object families."""
-        return self._styles
+        return self._style
 
-    @styles.setter
-    def styles(self, val):
-        if isinstance(val, dict):
-            val = MagpylibStyle(**val)
-        if isinstance(val, MagpylibStyle):
-            self._styles = val
-        elif val is None:
-            self._styles = MagpylibStyle()
-        else:
-            raise ValueError(
-                f"the `styles` property of `{type(self).__name__}` must be an instance \n"
-                "of `MagpylibStyle` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+    @style.setter
+    def style(self, val):
+        self._style = validate_property_class(val, "style", DisplayStyle, self)
 
 
 class Animation(MagicProperties):

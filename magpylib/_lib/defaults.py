@@ -34,7 +34,7 @@ DEFAULTS = {
             "#0D2A63",
             "#AF0038",
         ),
-        "styles": {
+        "style": {
             "base": {
                 "path": {
                     "line": {"width": 1, "style": "solid", "color": None},

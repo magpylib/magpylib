@@ -1,8 +1,9 @@
-"""Collection of class for display styles"""
+"""Collection of classes for display styling"""
 # pylint: disable=C0302
 
 from magpylib._lib.default_utils import (
     MagicProperties,
+    validate_property_class,
     color_validator,
     get_defaults_dict,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
@@ -37,7 +38,7 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.styles.as_dict()
+    styles_by_family = default_settings.display.style.as_dict()
 
     # construct object specific dictionary base on style family and default style
     obj_type = getattr(obj, "_object_type", None)
@@ -72,21 +73,6 @@ def get_style(obj, default_settings, **kwargs):
     )
 
     return style
-
-
-def validate_property_class(val, name, class_, parent):
-    """validator for sub property"""
-    if isinstance(val, dict):
-        val = class_(**val)
-    elif val is None:
-        val = class_()
-    if not isinstance(val, class_):
-        raise ValueError(
-            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
-            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
-            f"but received {repr(val)} instead"
-        )
-    return val
 
 
 class BaseStyle(MagicProperties):
@@ -505,7 +491,7 @@ class MagnetProperties:
         )
 
 
-class Magnets(MagicProperties, MagnetProperties):
+class Magnet(MagicProperties, MagnetProperties):
     """
     Defines the specific styling properties of objects of the `magnets` family
 
@@ -562,7 +548,7 @@ class SensorProperties:
         self._pixel = validate_property_class(val, "pixel", Pixel, self)
 
 
-class Sensors(MagicProperties, SensorProperties):
+class Sensor(MagicProperties, SensorProperties):
     """
     Defines the specific styling properties of objects of the `sensors` family
 
@@ -669,7 +655,7 @@ class CurrentProperties:
         self._current = validate_property_class(val, "current", Arrow, self)
 
 
-class Currents(MagicProperties, CurrentProperties):
+class Current(MagicProperties, CurrentProperties):
     """
     Defines the specific styling properties of objects of the `currents` family
 
@@ -883,7 +869,7 @@ class DipoleProperties:
         self._pivot = val
 
 
-class Dipoles(MagicProperties, DipoleProperties):
+class Dipole(MagicProperties, DipoleProperties):
     """
     Defines the specific styling properties of the objects of the `dipoles` family
 
@@ -1006,7 +992,7 @@ class Line(MagicProperties):
         self._width = val
 
 
-class MagpylibStyle(MagicProperties):
+class DisplayStyle(MagicProperties):
     """
     Base class containing styling properties for all object families. The properties of the
     sub-classes get set to hard coded defaults at class instantiation
@@ -1016,16 +1002,16 @@ class MagpylibStyle(MagicProperties):
     base: dict, Base, default=None
         base properties common to all families
 
-    magnets: dict, Magnets, default=None
+    magnets: dict, Magnet, default=None
         magnets properties
 
-    currents: dict, Currents, default=None
+    currents: dict, Current, default=None
         currents properties
 
-    dipoles: dict, Dipoles, default=None
+    dipoles: dict, Dipole, default=None
         dipoles properties
 
-    sensors: dict, Sensors, default=None
+    sensors: dict, Sensor, default=None
         sensors properties
 
     markers: dict, Markers, default=None
@@ -1055,7 +1041,7 @@ class MagpylibStyle(MagicProperties):
 
     def reset(self):
         """Resets all nested properties to their hard coded default values"""
-        self.update(get_defaults_dict("display.styles"), _match_properties=False)
+        self.update(get_defaults_dict("display.style"), _match_properties=False)
         return self
 
     @property
@@ -1069,39 +1055,39 @@ class MagpylibStyle(MagicProperties):
 
     @property
     def magnets(self):
-        """MagnetStyle class"""
+        """Magnet class"""
         return self._magnets
 
     @magnets.setter
     def magnets(self, val):
-        self._magnets = validate_property_class(val, "magnets", Magnets, self)
+        self._magnets = validate_property_class(val, "magnets", Magnet, self)
 
     @property
     def currents(self):
-        """Currents class"""
+        """Current class"""
         return self._currents
 
     @currents.setter
     def currents(self, val):
-        self._currents = validate_property_class(val, "currents", Currents, self)
+        self._currents = validate_property_class(val, "currents", Current, self)
 
     @property
     def dipoles(self):
-        """Dipoles class"""
+        """Dipole class"""
         return self._dipoles
 
     @dipoles.setter
     def dipoles(self, val):
-        self._dipoles = validate_property_class(val, "dipoles", Dipoles, self)
+        self._dipoles = validate_property_class(val, "dipoles", Dipole, self)
 
     @property
     def sensors(self):
-        """Sensors"""
+        """Sensor"""
         return self._sensors
 
     @sensors.setter
     def sensors(self, val):
-        self._sensors = validate_property_class(val, "sensors", Sensors, self)
+        self._sensors = validate_property_class(val, "sensors", Sensor, self)
 
     @property
     def markers(self):

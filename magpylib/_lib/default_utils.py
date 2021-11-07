@@ -67,7 +67,7 @@ def get_defaults_dict(arg=None) -> dict:
 
     Examples
     --------
-    >>> get_default_dict('display.styles')
+    >>> get_default_dict('display.style')
     """
 
     dict_ = deepcopy(DEFAULTS)
@@ -241,6 +241,21 @@ def color_validator(color_input, allow_None=True, parent_name=""):
                 f"""    - A named CSS color:\n{list(mcolors.keys())}"""
             )
     return color_input
+
+
+def validate_property_class(val, name, class_, parent):
+    """validator for sub property"""
+    if isinstance(val, dict):
+        val = class_(**val)
+    elif val is None:
+        val = class_()
+    if not isinstance(val, class_):
+        raise ValueError(
+            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
+            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
+            f"but received {repr(val)} instead"
+        )
+    return val
 
 
 class MagicProperties:

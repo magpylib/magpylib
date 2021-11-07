@@ -1,7 +1,7 @@
 import pytest
 import magpylib as magpy
 from magpylib._lib.config import DefaultConfig
-from magpylib._lib.style import MagpylibStyle
+from magpylib._lib.style import DisplayStyle
 from magpylib._lib.default_utils import (
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
@@ -16,36 +16,36 @@ bad_inputs = {
     "display_animation_maxframes": 0,  # int>0
     "display_backend": "plotty",  # str typo
     "display_colorsequence": ["#2E91E5", "wrongcolor"],  # iterable of colors
-    "display_styles_base_path_line_width": -1,  # float>=0
-    "display_styles_base_path_line_style": "wrongstyle",
-    "display_styles_base_path_line_color": "wrongcolor",  # color
-    "display_styles_base_path_marker_size": -1,  # float>=0
-    "display_styles_base_path_marker_symbol": "wrongsymbol",
-    "display_styles_base_path_marker_color": "wrongcolor",  # color
-    "display_styles_base_description_show": "notbool",  # bool
-    "display_styles_base_description_text": False,  # DOES NOT RAISE, transforms everything into str
-    "display_styles_base_opacity": -1,  # 0<=float<=1
-    "display_styles_base_mesh3d_show": "notbool",
-    "display_styles_base_mesh3d_data": dict(x=1, y=1),  # dict with x,y,z,i,j,k
-    "display_styles_base_color": "wrongcolor",  # color
-    "display_styles_magnets_magnetization_show": "notbool",
-    "display_styles_magnets_magnetization_size": -1,  # float>=0
-    "display_styles_magnets_magnetization_color_north": "#wrongcolor",
-    "display_styles_magnets_magnetization_color_middle": "#wrongcolor",
-    "display_styles_magnets_magnetization_color_south": "#wrongcolor",
-    "display_styles_magnets_magnetization_color_transition": -0.2,  # 0<=float<=1
-    "display_styles_currents_current_show": "notbool",
-    "display_styles_currents_current_size": -1,  # float>=0
-    "display_styles_currents_current_width": -1,  # float>=0
-    "display_styles_sensors_size": -1,  # float>=0
-    "display_styles_sensors_pixel_size": -1,  # float>=0
-    "display_styles_sensors_pixel_color": "notbool",
-    "display_styles_sensors_pixel_symbol": "wrongsymbol",
-    "display_styles_dipoles_size": -1,  # float>=0
-    "display_styles_dipoles_pivot": "wrongpivot",  # pivot middle, tail, tip
-    "display_styles_markers_marker_size": -1,  # float>=0
-    "display_styles_markers_marker_color": "wrongcolor",
-    "display_styles_markers_marker_symbol": "wrongsymbol",
+    "display_style_base_path_line_width": -1,  # float>=0
+    "display_style_base_path_line_style": "wrongstyle",
+    "display_style_base_path_line_color": "wrongcolor",  # color
+    "display_style_base_path_marker_size": -1,  # float>=0
+    "display_style_base_path_marker_symbol": "wrongsymbol",
+    "display_style_base_path_marker_color": "wrongcolor",  # color
+    "display_style_base_description_show": "notbool",  # bool
+    "display_style_base_description_text": False,  # DOES NOT RAISE, transforms everything into str
+    "display_style_base_opacity": -1,  # 0<=float<=1
+    "display_style_base_mesh3d_show": "notbool",
+    "display_style_base_mesh3d_data": dict(x=1, y=1),  # dict with x,y,z,i,j,k
+    "display_style_base_color": "wrongcolor",  # color
+    "display_style_magnets_magnetization_show": "notbool",
+    "display_style_magnets_magnetization_size": -1,  # float>=0
+    "display_style_magnets_magnetization_color_north": "#wrongcolor",
+    "display_style_magnets_magnetization_color_middle": "#wrongcolor",
+    "display_style_magnets_magnetization_color_south": "#wrongcolor",
+    "display_style_magnets_magnetization_color_transition": -0.2,  # 0<=float<=1
+    "display_style_currents_current_show": "notbool",
+    "display_style_currents_current_size": -1,  # float>=0
+    "display_style_currents_current_width": -1,  # float>=0
+    "display_style_sensors_size": -1,  # float>=0
+    "display_style_sensors_pixel_size": -1,  # float>=0
+    "display_style_sensors_pixel_color": "notbool",
+    "display_style_sensors_pixel_symbol": "wrongsymbol",
+    "display_style_dipoles_size": -1,  # float>=0
+    "display_style_dipoles_pivot": "wrongpivot",  # pivot middle, tail, tip
+    "display_style_markers_marker_size": -1,  # float>=0
+    "display_style_markers_marker_color": "wrongcolor",
+    "display_style_markers_marker_symbol": "wrongsymbol",
 }
 
 # dict of good input.
@@ -63,46 +63,46 @@ good_inputs = {
         ["#2E91E5", "#0D2A63"],
         ["blue", "red"],
     ),  # ]),  # iterable of colors
-    "display_styles_base_path_line_width": (0, 1),  # float>=0
-    "display_styles_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),
-    "display_styles_base_path_line_color": ("blue", "#2E91E5"),  # color
-    "display_styles_base_path_marker_size": (0, 1),  # float>=0
-    "display_styles_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
-    "display_styles_base_path_marker_color": ("blue", "#2E91E5"),  # color
-    "display_styles_base_description_show": (True, False),  # bool
-    "display_styles_base_description_text": (
+    "display_style_base_path_line_width": (0, 1),  # float>=0
+    "display_style_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_line_color": ("blue", "#2E91E5"),  # color
+    "display_style_base_path_marker_size": (0, 1),  # float>=0
+    "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
+    "display_style_base_description_show": (True, False),  # bool
+    "display_style_base_description_text": (
         True,
         object,
         "a string",
     ),  # DOES NOT RAISE, transforms everything into str
-    "display_styles_base_opacity": (0, 0.5, 1),  # 0<=float<=1
-    "display_styles_base_mesh3d_show": (True, False),
-    "display_styles_base_mesh3d_data": (
+    "display_style_base_opacity": (0, 0.5, 1),  # 0<=float<=1
+    "display_style_base_mesh3d_show": (True, False),
+    "display_style_base_mesh3d_data": (
         dict(x=[1], y=[1], z=[1], i=[1], j=[1], k=[1]),
     ),  # dict with x,y,z,i,j,k
-    "display_styles_base_color": ("blue", "#2E91E5"),  # color
-    "display_styles_magnets_magnetization_show": (True, False),
-    "display_styles_magnets_magnetization_size": (0, 1),  # float>=0
-    "display_styles_magnets_magnetization_color_north": ("blue", "#2E91E5"),
-    "display_styles_magnets_magnetization_color_middle": ("blue", "#2E91E5"),
-    "display_styles_magnets_magnetization_color_south": ("blue", "#2E91E5"),
-    "display_styles_magnets_magnetization_color_transition": (0, 0.5, 1),  # 0<=float<=1
-    "display_styles_currents_current_show": (True, False),
-    "display_styles_currents_current_size": (0, 1),  # float>=0
-    "display_styles_currents_current_width": (0, 1),  # float>=0
-    "display_styles_sensors_size": (0, 1),  # float>=0
-    "display_styles_sensors_pixel_size": (0, 1),  # float>=0
-    "display_styles_sensors_pixel_color": ("blue", "#2E91E5"),
-    "display_styles_sensors_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
-    "display_styles_dipoles_size": (0, 1),  # float>=0
-    "display_styles_dipoles_pivot": (
+    "display_style_base_color": ("blue", "#2E91E5"),  # color
+    "display_style_magnets_magnetization_show": (True, False),
+    "display_style_magnets_magnetization_size": (0, 1),  # float>=0
+    "display_style_magnets_magnetization_color_north": ("blue", "#2E91E5"),
+    "display_style_magnets_magnetization_color_middle": ("blue", "#2E91E5"),
+    "display_style_magnets_magnetization_color_south": ("blue", "#2E91E5"),
+    "display_style_magnets_magnetization_color_transition": (0, 0.5, 1),  # 0<=float<=1
+    "display_style_currents_current_show": (True, False),
+    "display_style_currents_current_size": (0, 1),  # float>=0
+    "display_style_currents_current_width": (0, 1),  # float>=0
+    "display_style_sensors_size": (0, 1),  # float>=0
+    "display_style_sensors_pixel_size": (0, 1),  # float>=0
+    "display_style_sensors_pixel_color": ("blue", "#2E91E5"),
+    "display_style_sensors_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_dipoles_size": (0, 1),  # float>=0
+    "display_style_dipoles_pivot": (
         "middle",
         "tail",
         "tip",
     ),  # pivot middle, tail, tip
-    "display_styles_markers_marker_size": (0, 1),  # float>=0
-    "display_styles_markers_marker_color": ("blue", "#2E91E5"),
-    "display_styles_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_markers_marker_size": (0, 1),  # float>=0
+    "display_style_markers_marker_color": ("blue", "#2E91E5"),
+    "display_style_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
 }
 
 
@@ -154,8 +154,8 @@ def test_bad_input_classes():
     with pytest.raises(ValueError):
         magpy.defaults.display.animation = "wrong input"
     with pytest.raises(ValueError):
-        magpy.defaults.display.styles = "wrong input"
-    c = MagpylibStyle().reset()
+        magpy.defaults.display.style = "wrong input"
+    c = DisplayStyle().reset()
     style_classes = {
         "base",
         "base_description",

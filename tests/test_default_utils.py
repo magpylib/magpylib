@@ -185,6 +185,6 @@ def test_MagicProperties():
 
 def test_get_defaults_dict():
     """test get_defaults_dict"""
-    s0 = get_defaults_dict("display.styles")
-    s1 = get_defaults_dict()["display"]["styles"]
+    s0 = get_defaults_dict("display.style")
+    s1 = get_defaults_dict()["display"]["style"]
     assert s0 == s1, "dicts don't match"
