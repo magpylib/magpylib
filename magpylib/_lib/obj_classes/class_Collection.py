@@ -452,7 +452,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             obj.reset_path()
         return self
 
-    def update_styles(self, **kwargs):
+    def set_styles(self, **kwargs):
         """
         Update display style of all sources. Only matching properties will be applied
 
