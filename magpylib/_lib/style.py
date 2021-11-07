@@ -59,15 +59,12 @@ def get_style(obj, default_settings, **kwargs):
         raise ValueError(
             f"Following arguments are invalid style properties: {invalid_keys}\n"
             f"\n Available style properties start with `style_` + `{valid_keys}`"
-
         )
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
     style = obj_style.copy() if obj_style is not None else Base()
     style_kwargs_specific = {
-        k: v
-        for k, v in style_kwargs.items()
-        if k.split("_")[0] in style.as_dict()
+        k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
     style.update(
@@ -76,8 +73,9 @@ def get_style(obj, default_settings, **kwargs):
 
     return style
 
+
 def validate_property_class(val, name, class_, parent):
-    '''validator for sub property'''
+    """validator for sub property"""
     if isinstance(val, dict):
         val = class_(**val)
     elif val is None:
@@ -89,6 +87,7 @@ def validate_property_class(val, name, class_, parent):
             f"but received {repr(val)} instead"
         )
     return val
+
 
 class BaseStyle(MagicProperties):
     """
@@ -141,7 +140,9 @@ class BaseStyle(MagicProperties):
 
     @description.setter
     def description(self, val):
-        self._description = validate_property_class(val, 'description', Description, self)
+        self._description = validate_property_class(
+            val, "description", Description, self
+        )
 
     @property
     def color(self):
@@ -223,7 +224,7 @@ class Base(BaseStyle):
 
     @path.setter
     def path(self, val):
-        self._path = validate_property_class(val, 'path', Path, self)
+        self._path = validate_property_class(val, "path", Path, self)
 
     @property
     def mesh3d(self):
@@ -237,7 +238,7 @@ class Base(BaseStyle):
 
     @mesh3d.setter
     def mesh3d(self, val):
-        self._mesh3d = validate_property_class(val, 'mesh3d', Mesh3d, self)
+        self._mesh3d = validate_property_class(val, "mesh3d", Mesh3d, self)
 
 
 class Description(MagicProperties):
@@ -396,7 +397,7 @@ class Magnetization(MagicProperties):
 
     @color.setter
     def color(self, val):
-        self._color = validate_property_class(val, 'color', MagnetizationColor, self)
+        self._color = validate_property_class(val, "color", MagnetizationColor, self)
 
 
 class MagnetizationColor(MagicProperties):
@@ -481,7 +482,30 @@ class MagnetizationColor(MagicProperties):
         self._transition = val
 
 
-class Magnets(MagicProperties):
+class MagnetProperties:
+    """
+    Defines the specific styling properties of objects of the `magnets` family
+
+    Properties
+    ----------
+    magnetization: dict or Magnetization, default=None
+
+    """
+
+    @property
+    def magnetization(self):
+        """Magnetization class with 'north', 'south', 'middle' and 'transition' values
+        or a dictionary with equivalent key/value pairs"""
+        return self._magnetization
+
+    @magnetization.setter
+    def magnetization(self, val):
+        self._magnetization = validate_property_class(
+            val, "magnetization", Magnetization, self
+        )
+
+
+class Magnets(MagicProperties, MagnetProperties):
     """
     Defines the specific styling properties of objects of the `magnets` family
 
@@ -494,22 +518,13 @@ class Magnets(MagicProperties):
     def __init__(self, magnetization=None, **kwargs):
         super().__init__(magnetization=magnetization, **kwargs)
 
-    @property
-    def magnetization(self):
-        """Magnetization class with 'north', 'south', 'middle' and 'transition' values
-        or a dictionary with equivalent key/value pairs"""
-        return self._magnetization
 
-    @magnetization.setter
-    def magnetization(self, val):
-        self._magnetization = validate_property_class(val, 'magnetization', Magnetization, self)
-
-
-class MagnetStyle(Base, Magnets):
+class MagnetStyle(Base, MagnetProperties):
     """Defines the styling properties of objects of the `magnets` family with base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
 
 class Sensors(MagicProperties):
     """
@@ -547,8 +562,7 @@ class Sensors(MagicProperties):
 
     @pixel.setter
     def pixel(self, val):
-        self._pixel = validate_property_class(val, 'pixel', Pixel, self)
-
+        self._pixel = validate_property_class(val, "pixel", Pixel, self)
 
 
 class SensorStyle(Base, Sensors):
@@ -641,7 +655,7 @@ class Currents(MagicProperties):
 
     @current.setter
     def current(self, val):
-        self._current = validate_property_class(val, 'current', Arrow, self)
+        self._current = validate_property_class(val, "current", Arrow, self)
 
 
 class CurrentStyle(Base, Currents):
@@ -786,7 +800,7 @@ class Markers(BaseStyle):
 
     @marker.setter
     def marker(self, val):
-        self._marker = validate_property_class(val, 'marker', Marker, self)
+        self._marker = validate_property_class(val, "marker", Marker, self)
 
 
 class Dipoles(MagicProperties):
@@ -869,7 +883,7 @@ class Path(MagicProperties):
 
     @marker.setter
     def marker(self, val):
-        self._marker = validate_property_class(val, 'marker', Marker, self)
+        self._marker = validate_property_class(val, "marker", Marker, self)
 
     @property
     def line(self):
@@ -878,7 +892,7 @@ class Path(MagicProperties):
 
     @line.setter
     def line(self, val):
-        self._line = validate_property_class(val, 'line', Line, self)
+        self._line = validate_property_class(val, "line", Line, self)
 
 
 class Line(MagicProperties):
@@ -999,7 +1013,7 @@ class MagpylibStyle(MagicProperties):
 
     @base.setter
     def base(self, val):
-        self._base = validate_property_class(val, 'base', Base, self)
+        self._base = validate_property_class(val, "base", Base, self)
 
     @property
     def magnets(self):
@@ -1008,7 +1022,7 @@ class MagpylibStyle(MagicProperties):
 
     @magnets.setter
     def magnets(self, val):
-        self._magnets = validate_property_class(val, 'magnets', Magnets, self)
+        self._magnets = validate_property_class(val, "magnets", Magnets, self)
 
     @property
     def currents(self):
@@ -1017,7 +1031,7 @@ class MagpylibStyle(MagicProperties):
 
     @currents.setter
     def currents(self, val):
-        self._currents = validate_property_class(val, 'currents', Currents, self)
+        self._currents = validate_property_class(val, "currents", Currents, self)
 
     @property
     def dipoles(self):
@@ -1026,7 +1040,7 @@ class MagpylibStyle(MagicProperties):
 
     @dipoles.setter
     def dipoles(self, val):
-        self._dipoles = validate_property_class(val, 'dipoles', Dipoles, self)
+        self._dipoles = validate_property_class(val, "dipoles", Dipoles, self)
 
     @property
     def sensors(self):
@@ -1035,7 +1049,7 @@ class MagpylibStyle(MagicProperties):
 
     @sensors.setter
     def sensors(self, val):
-        self._sensors = validate_property_class(val, 'sensors', Sensors, self)
+        self._sensors = validate_property_class(val, "sensors", Sensors, self)
 
     @property
     def markers(self):
@@ -1044,7 +1058,7 @@ class MagpylibStyle(MagicProperties):
 
     @markers.setter
     def markers(self, val):
-        self._markers = validate_property_class(val, 'markers', Markers, self)
+        self._markers = validate_property_class(val, "markers", Markers, self)
 
 
 STYLE_CLASSES = {
