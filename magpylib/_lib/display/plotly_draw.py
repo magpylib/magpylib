@@ -80,10 +80,9 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
     prefix = _UNIT_PREFIX.get(digits, "")
 
-    if prefix != "":
-        new_number_str = "{:.{}g}".format(number / 10 ** digits, precision)
-    else:
-        new_number_str = "{:.{}g}".format(number, precision)
+    if prefix == "":
+        digits = 0
+    new_number_str = f"{number / 10 ** digits:.{precision}g}"
     return f"{new_number_str}{char_between}{prefix}{unit}"
 
 
@@ -509,7 +508,7 @@ def make_Dipole(
     moment_mag = np.linalg.norm(moment)
     name = "Dipole" if style.name is None else style.name
     if style.description.show and style.description.text is None:
-        name_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)".format()
+        name_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)"
     elif not style.description.show:
         name_suffix = ""
     else:
@@ -560,7 +559,8 @@ def make_Cuboid(
     name = "Cuboid" if style.name is None else style.name
 
     if style.description.show and style.description.text is None:
-        name_suffix = " ({}mx{}mx{}m)".format(*(unit_prefix(d / 1000) for d in dim))
+        d = [unit_prefix(d / 1000) for d in dim]
+        name_suffix = f" ({d[0]}mx{d[1]}mx{d[2]}m)"
     elif not style.description.show:
         name_suffix = ""
     else:
@@ -595,9 +595,9 @@ def make_Cylinder(
     name = "Cylinder" if style.name is None else style.name
 
     if style.description.show and style.description.text is None:
-        name_suffix = " (D={}m, H={}m)".format(
-            *(unit_prefix(d / 1000) for d in (diameter, height))
-        )
+
+        d = [unit_prefix(d / 1000) for d in (diameter, height)]
+        name_suffix = f" (D={d[0]}m, H={d[1]}m)"
     elif not style.description.show:
         name_suffix = ""
     else:
@@ -636,9 +636,8 @@ def make_CylinderSegment(
     name = "CylinderSegment" if style.name is None else style.name
 
     if style.description.show and style.description.text is None:
-        name_suffix = " (d1={}m, d2={}m, h={}m, phi1={}°, phi2={}°)".format(
-            *(unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension))
-        )
+        d=[unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
+        name_suffix = f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
     elif not style.description.show:
         name_suffix = ""
     else:
