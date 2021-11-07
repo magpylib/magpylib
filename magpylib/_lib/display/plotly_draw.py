@@ -25,7 +25,7 @@ from magpylib._lib.style import (
 )
 from magpylib._lib.display.disp_utility import (
     get_rot_pos_from_path,
-    Markers,
+    MagpyMarkers,
     draw_arrow_from_vertices,
     draw_arrowed_circle,
 )
@@ -937,7 +937,7 @@ def get_plotly_traces(
             check_excitations([input_obj])
 
     traces = []
-    if isinstance(input_obj, Markers):
+    if isinstance(input_obj, MagpyMarkers):
         x, y, z = input_obj.markers.T
         marker = style.as_dict()["marker"]
         symb = marker["symbol"]
@@ -1180,7 +1180,7 @@ def display_plotly(
     title = getattr(obj_list[0], "name", None) if len(obj_list) == 1 else None
 
     if markers is not None and markers:
-        obj_list = list(obj_list) + [Markers(*markers)]
+        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
 
     if color_sequence is None:
         color_sequence = Config.display.colorsequence

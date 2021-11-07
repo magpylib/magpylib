@@ -63,11 +63,11 @@ def get_style(obj, default_settings, **kwargs):
         )
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
-    style = obj_style.copy() if obj_style is not None else BaseGeoStyle()
+    style = obj_style.copy() if obj_style is not None else Base()
     style_kwargs_specific = {
         k: v
         for k, v in style_kwargs.items()
-        if k.split("_")[0] in obj_style_default_dict
+        if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
     style.update(
@@ -76,6 +76,19 @@ def get_style(obj, default_settings, **kwargs):
 
     return style
 
+def validate_property_class(val, name, class_, parent):
+    '''validator for sub property'''
+    if isinstance(val, dict):
+        val = class_(**val)
+    elif val is None:
+        val = class_()
+    if not isinstance(val, class_):
+        raise ValueError(
+            f"the `{name}` property of `{type(parent).__name__}` must be an instance \n"
+            f"of `{class_}` or a dictionary with equivalent key/value pairs \n"
+            f"but received {repr(val)} instead"
+        )
+    return val
 
 class BaseStyle(BaseProperties):
     """
@@ -128,18 +141,7 @@ class BaseStyle(BaseProperties):
 
     @description.setter
     def description(self, val):
-        if isinstance(val, dict):
-            val = Description(**val)
-        if isinstance(val, Description):
-            self._description = val
-        elif val is None:
-            self._description = Description()
-        else:
-            raise ValueError(
-                f"the `description` property of `{type(self).__name__}` must be an instance \n"
-                "of `Description` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._description = validate_property_class(val, 'description', Description, self)
 
     @property
     def color(self):
@@ -164,7 +166,7 @@ class BaseStyle(BaseProperties):
         self._opacity = val
 
 
-class BaseGeoStyle(BaseStyle):
+class Base(BaseStyle):
     """
     Base class for display styling options of `BaseGeo` objects
 
@@ -182,8 +184,8 @@ class BaseGeoStyle(BaseStyle):
     opacity: float, default=None
         object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or PathStyle, default=None
-        an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or Path, default=None
+        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
     mesh3d: dict or Mesh3d, default=None
@@ -215,24 +217,13 @@ class BaseGeoStyle(BaseStyle):
 
     @property
     def path(self):
-        """an instance of `PathStyle` or dictionary of equivalent key/value pairs, defining the
+        """an instance of `Path` or dictionary of equivalent key/value pairs, defining the
         object path marker and path line properties"""
         return self._path
 
     @path.setter
     def path(self, val):
-        if isinstance(val, dict):
-            val = PathStyle(**val)
-        if isinstance(val, PathStyle):
-            self._path = val
-        elif val is None:
-            self._path = PathStyle()
-        else:
-            raise ValueError(
-                f"the `path` property of `{type(self).__name__}` must be an instance \n"
-                "of `PathStyle` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._path = validate_property_class(val, 'path', Path, self)
 
     @property
     def mesh3d(self):
@@ -246,18 +237,7 @@ class BaseGeoStyle(BaseStyle):
 
     @mesh3d.setter
     def mesh3d(self, val):
-        if isinstance(val, dict):
-            val = Mesh3d(**val)
-        if isinstance(val, Mesh3d):
-            self._mesh3d = val
-        elif val is None:
-            self._mesh3d = Mesh3d()
-        else:
-            raise ValueError(
-                f"the `mesh3d` property of `{type(self).__name__}` must be an instance \n"
-                "of `Mesh3d` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._mesh3d = validate_property_class(val, 'mesh3d', Mesh3d, self)
 
 
 class Description(BaseProperties):
@@ -416,18 +396,7 @@ class Magnetization(BaseProperties):
 
     @color.setter
     def color(self, val):
-        if isinstance(val, dict):
-            val = MagnetizationColor(**val)
-        if isinstance(val, MagnetizationColor):
-            self._color = val
-        elif val is None:
-            self._color = MagnetizationColor()
-        else:
-            raise ValueError(
-                f"the `color` property of `{type(self).__name__}` must be an instance \n"
-                "of `MagnetizationColor` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._color = validate_property_class(val, 'color', MagnetizationColor, self)
 
 
 class MagnetizationColor(BaseProperties):
@@ -533,21 +502,10 @@ class Magnets(BaseProperties):
 
     @magnetization.setter
     def magnetization(self, val):
-        if isinstance(val, dict):
-            val = Magnetization(**val)
-        if isinstance(val, Magnetization):
-            self._magnetization = val
-        elif val is None:
-            self._magnetization = Magnetization()
-        else:
-            raise ValueError(
-                f"the `magnetization` property of `{type(self).__name__}` must be an instance \n"
-                "of `Magnetization` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._magnetization = validate_property_class(val, 'magnetization', Magnetization, self)
 
 
-class MagnetStyle(BaseGeoStyle, Magnets):
+class MagnetStyle(Base, Magnets):
     """Defines the styling properties of objects of the `magnets` family with base properties"""
 
     def __init__(self, **kwargs):
@@ -589,21 +547,11 @@ class Sensors(BaseProperties):
 
     @pixel.setter
     def pixel(self, val):
-        if isinstance(val, dict):
-            val = Pixel(**val)
-        if isinstance(val, Pixel):
-            self._pixel = val
-        elif val is None:
-            self._pixel = Pixel()
-        else:
-            raise ValueError(
-                f"the `pixel` property of `{type(self).__name__}` must be an instance \n"
-                "of `Pixel` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._pixel = validate_property_class(val, 'pixel', Pixel, self)
 
 
-class SensorStyle(BaseGeoStyle, Sensors):
+
+class SensorStyle(Base, Sensors):
     """Defines the styling properties of objects of the `sensors` family with base properties"""
 
     def __init__(self, **kwargs):
@@ -688,33 +636,22 @@ class Currents(BaseProperties):
 
     @property
     def current(self):
-        """ArrowStyle class with 'show', 'size' properties"""
+        """Arrow class with 'show', 'size' properties"""
         return self._current
 
     @current.setter
     def current(self, val):
-        if isinstance(val, dict):
-            val = ArrowStyle(**val)
-        if isinstance(val, ArrowStyle):
-            self._current = val
-        elif val is None:
-            self._current = ArrowStyle()
-        else:
-            raise ValueError(
-                f"the `current` property of `{type(self).__name__}` must be an instance \n"
-                "of `ArrowStyle` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._current = validate_property_class(val, 'current', Arrow, self)
 
 
-class CurrentStyle(BaseGeoStyle, Currents):
+class CurrentStyle(Base, Currents):
     """Defines the styling properties of objects of the `currents` family and base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-class ArrowStyle(BaseProperties):
+class Arrow(BaseProperties):
     """
     Defines the styling properties of current arrows
 
@@ -773,7 +710,7 @@ class ArrowStyle(BaseProperties):
         self._width = val
 
 
-class Markers(BaseProperties):
+class Marker(BaseProperties):
     """
     Defines the styling properties of plot markers
 
@@ -828,7 +765,7 @@ class Markers(BaseProperties):
         self._symbol = val
 
 
-class MarkersTrace(BaseStyle):
+class Markers(BaseStyle):
     """
     Defines the styling properties of the markers trace
 
@@ -849,18 +786,7 @@ class MarkersTrace(BaseStyle):
 
     @marker.setter
     def marker(self, val):
-        if isinstance(val, dict):
-            val = Markers(**val)
-        if isinstance(val, Markers):
-            self._marker = val
-        elif val is None:
-            self._marker = Markers()
-        else:
-            raise ValueError(
-                f"the `marker` property of `{type(self).__name__}` must be an instance \n"
-                "of `Markers` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._marker = validate_property_class(val, 'marker', Marker, self)
 
 
 class Dipoles(BaseProperties):
@@ -910,14 +836,14 @@ class Dipoles(BaseProperties):
         self._pivot = val
 
 
-class DipoleStyle(BaseGeoStyle, Dipoles):
+class DipoleStyle(Base, Dipoles):
     """Defines the styling properties of the objects of the `dipoles` family and base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
 
-class PathStyle(BaseProperties):
+class Path(BaseProperties):
     """
     Defines the styling properties of an object's path
 
@@ -927,8 +853,8 @@ class PathStyle(BaseProperties):
         Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs
 
-    line: dict, LineStyle, default=None
-        LineStyle class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+    line: dict, Line, default=None
+        Line class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs
 
     """
@@ -943,41 +869,19 @@ class PathStyle(BaseProperties):
 
     @marker.setter
     def marker(self, val):
-        if isinstance(val, dict):
-            val = Markers(**val)
-        if isinstance(val, Markers):
-            self._marker = val
-        elif val is None:
-            self._marker = Markers()
-        else:
-            raise ValueError(
-                f"the `marker` property of `{type(self).__name__}` must be an instance \n"
-                "of `Markers` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._marker = validate_property_class(val, 'marker', Marker, self)
 
     @property
     def line(self):
-        """LineStyle class with 'color', 'type', 'width' properties"""
+        """Line class with 'color', 'type', 'width' properties"""
         return self._line
 
     @line.setter
     def line(self, val):
-        if isinstance(val, dict):
-            val = LineStyle(**val)
-        if isinstance(val, LineStyle):
-            self._line = val
-        elif val is None:
-            self._line = LineStyle()
-        else:
-            raise ValueError(
-                f"the `line` property of `{type(self).__name__}` must be an instance \n"
-                "of `LineStyle` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._line = validate_property_class(val, 'line', Line, self)
 
 
-class LineStyle(BaseProperties):
+class Line(BaseProperties):
     """
     Defines Line styling properties
 
@@ -1043,7 +947,7 @@ class MagpylibStyle(BaseProperties):
 
     Properties
     ----------
-    base: dict, BaseGeoStyle, default=None
+    base: dict, Base, default=None
         base properties common to all families
 
     magnets: dict, Magnets, default=None
@@ -1095,18 +999,7 @@ class MagpylibStyle(BaseProperties):
 
     @base.setter
     def base(self, val):
-        if isinstance(val, dict):
-            val = BaseGeoStyle(**val)
-        if isinstance(val, BaseGeoStyle):
-            self._base = val
-        elif val is None:
-            self._base = BaseGeoStyle()
-        else:
-            raise ValueError(
-                f"the `base` property of `{type(self).__name__}` must be an instance \n"
-                "of `BaseGeoStyle` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._base = validate_property_class(val, 'base', Base, self)
 
     @property
     def magnets(self):
@@ -1115,18 +1008,7 @@ class MagpylibStyle(BaseProperties):
 
     @magnets.setter
     def magnets(self, val):
-        if isinstance(val, dict):
-            val = Magnets(**val)
-        if isinstance(val, Magnets):
-            self._magnets = val
-        elif val is None:
-            self._magnets = Magnets()
-        else:
-            raise ValueError(
-                f"the `magnets` property of `{type(self).__name__}` must be an instance \n"
-                "of `Magnets` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._magnets = validate_property_class(val, 'magnets', Magnets, self)
 
     @property
     def currents(self):
@@ -1135,18 +1017,7 @@ class MagpylibStyle(BaseProperties):
 
     @currents.setter
     def currents(self, val):
-        if isinstance(val, dict):
-            val = Currents(**val)
-        if isinstance(val, Currents):
-            self._currents = val
-        elif val is None:
-            self._currents = Currents()
-        else:
-            raise ValueError(
-                f"the `currents` property of `{type(self).__name__}` must be an instance \n"
-                "of `Currents` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._currents = validate_property_class(val, 'currents', Currents, self)
 
     @property
     def dipoles(self):
@@ -1155,18 +1026,7 @@ class MagpylibStyle(BaseProperties):
 
     @dipoles.setter
     def dipoles(self, val):
-        if isinstance(val, dict):
-            val = Dipoles(**val)
-        if isinstance(val, Dipoles):
-            self._dipoles = val
-        elif val is None:
-            self._dipoles = Dipoles()
-        else:
-            raise ValueError(
-                f"the `dipoles` property of `{type(self).__name__}` must be an instance \n"
-                "of `Dipoles` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._dipoles = validate_property_class(val, 'dipoles', Dipoles, self)
 
     @property
     def sensors(self):
@@ -1175,18 +1035,7 @@ class MagpylibStyle(BaseProperties):
 
     @sensors.setter
     def sensors(self, val):
-        if isinstance(val, dict):
-            val = Sensors(**val)
-        if isinstance(val, Sensors):
-            self._sensors = val
-        elif val is None:
-            self._sensors = Sensors()
-        else:
-            raise ValueError(
-                f"the `sensors` property of `{type(self).__name__}` must be an instance \n"
-                "of `Sensors` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._sensors = validate_property_class(val, 'sensors', Sensors, self)
 
     @property
     def markers(self):
@@ -1195,18 +1044,7 @@ class MagpylibStyle(BaseProperties):
 
     @markers.setter
     def markers(self, val):
-        if isinstance(val, dict):
-            val = MarkersTrace(**val)
-        if isinstance(val, MarkersTrace):
-            self._markers = val
-        elif val is None:
-            self._markers = MarkersTrace()
-        else:
-            raise ValueError(
-                f"the `markers` property of `{type(self).__name__}` must be an instance \n"
-                "of `MarkersTrace` or a dictionary with equivalent key/value pairs \n"
-                f"but received {repr(val)} instead"
-            )
+        self._markers = validate_property_class(val, 'markers', Markers, self)
 
 
 STYLE_CLASSES = {

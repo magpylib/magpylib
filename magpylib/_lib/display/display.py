@@ -6,7 +6,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._lib.utility import format_obj_input, test_path_format
 from magpylib._lib.style import get_style
-from magpylib._lib.display.disp_utility import Markers
+from magpylib._lib.display.disp_utility import MagpyMarkers
 
 from magpylib._lib.display.mpl_draw import (
     draw_directs_faced,
@@ -287,7 +287,7 @@ def display_matplotlib(
 
     # markers -------------------------------------------------------
     if markers is not None and markers:
-        m = Markers()
+        m = MagpyMarkers()
         style = get_style(m, Config, **kwargs)
         markers = np.array(markers)
         draw_markers(markers, ax, style=style.marker)
