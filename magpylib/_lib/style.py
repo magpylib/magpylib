@@ -2,7 +2,7 @@
 # pylint: disable=C0302
 
 from magpylib._lib.default_utils import (
-    BaseProperties,
+    MagicProperties,
     color_validator,
     get_defaults_dict,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
@@ -90,7 +90,7 @@ def validate_property_class(val, name, class_, parent):
         )
     return val
 
-class BaseStyle(BaseProperties):
+class BaseStyle(MagicProperties):
     """
     Base class for display styling options of all objects to be displayed
 
@@ -240,7 +240,7 @@ class Base(BaseStyle):
         self._mesh3d = validate_property_class(val, 'mesh3d', Mesh3d, self)
 
 
-class Description(BaseProperties):
+class Description(MagicProperties):
     """
     Defines properties for a description object
 
@@ -284,7 +284,7 @@ class Description(BaseProperties):
         self._show = val
 
 
-class Mesh3d(BaseProperties):
+class Mesh3d(MagicProperties):
     """
     Defines properties for an additional user-defined mesh3d object which is positioned relatively
     to the main object to be displayed and moved automatically with it. This feature also allows
@@ -341,7 +341,7 @@ class Mesh3d(BaseProperties):
         self._data = val
 
 
-class Magnetization(BaseProperties):
+class Magnetization(MagicProperties):
     """
     Defines magnetization styling properties
 
@@ -399,7 +399,7 @@ class Magnetization(BaseProperties):
         self._color = validate_property_class(val, 'color', MagnetizationColor, self)
 
 
-class MagnetizationColor(BaseProperties):
+class MagnetizationColor(MagicProperties):
     """
     Defines the magnetization direction color styling properties.
 
@@ -481,7 +481,7 @@ class MagnetizationColor(BaseProperties):
         self._transition = val
 
 
-class Magnets(BaseProperties):
+class Magnets(MagicProperties):
     """
     Defines the specific styling properties of objects of the `magnets` family
 
@@ -511,7 +511,7 @@ class MagnetStyle(Base, Magnets):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
 
-class Sensors(BaseProperties):
+class Sensors(MagicProperties):
     """
     Defines the specific styling properties of objects of the `sensors` family
 
@@ -558,7 +558,7 @@ class SensorStyle(Base, Sensors):
         super().__init__(**kwargs)
 
 
-class Pixel(BaseProperties):
+class Pixel(MagicProperties):
     """
     Defines the styling properties of sensor pixels
 
@@ -620,7 +620,7 @@ class Pixel(BaseProperties):
         self._symbol = val
 
 
-class Currents(BaseProperties):
+class Currents(MagicProperties):
     """
     Defines the specific styling properties of objects of the `currents` family
 
@@ -651,7 +651,7 @@ class CurrentStyle(Base, Currents):
         super().__init__(**kwargs)
 
 
-class Arrow(BaseProperties):
+class Arrow(MagicProperties):
     """
     Defines the styling properties of current arrows
 
@@ -710,7 +710,7 @@ class Arrow(BaseProperties):
         self._width = val
 
 
-class Marker(BaseProperties):
+class Marker(MagicProperties):
     """
     Defines the styling properties of plot markers
 
@@ -789,7 +789,7 @@ class Markers(BaseStyle):
         self._marker = validate_property_class(val, 'marker', Marker, self)
 
 
-class Dipoles(BaseProperties):
+class Dipoles(MagicProperties):
     """
     Defines the specific styling properties of the objects of the `dipoles` family
 
@@ -843,7 +843,7 @@ class DipoleStyle(Base, Dipoles):
         super().__init__(**kwargs)
 
 
-class Path(BaseProperties):
+class Path(MagicProperties):
     """
     Defines the styling properties of an object's path
 
@@ -881,7 +881,7 @@ class Path(BaseProperties):
         self._line = validate_property_class(val, 'line', Line, self)
 
 
-class Line(BaseProperties):
+class Line(MagicProperties):
     """
     Defines Line styling properties
 
@@ -940,7 +940,7 @@ class Line(BaseProperties):
         self._width = val
 
 
-class MagpylibStyle(BaseProperties):
+class MagpylibStyle(MagicProperties):
     """
     Base class containing styling properties for all object families. The properties of the
     sub-classes get set to hard coded defaults at class instantiation
