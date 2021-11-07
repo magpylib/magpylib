@@ -178,12 +178,12 @@ def test_adding_sources():
     assert strs == "CubCylSphCirLinDip"
 
 
-def test_update_styles():
+def test_set_styles():
     """test if styles get applied"""
     src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     col = src1 + src2
-    col.update_styles(magnetization_show=False)
+    col.set_styles(magnetization_show=False)
     assert (
         src1.style.magnetization.show is False and src1.style.magnetization.show is False
     ), """failed updating styles to children"""
