@@ -1,7 +1,7 @@
 from copy import deepcopy
 import pytest
 from magpylib._lib.default_utils import (
-    BaseProperties,
+    MagicProperties,
     color_validator,
     get_defaults_dict,
     update_nested_dict,
@@ -113,7 +113,7 @@ def test_color_validator():
 def test_BaseProperties():
     """test BaseProperties class"""
 
-    class BPsub1(BaseProperties):
+    class BPsub1(MagicProperties):
         "BaseProperties class"
 
         @property
@@ -125,7 +125,7 @@ def test_BaseProperties():
         def prop1(self, val):
             self._prop1 = val
 
-    class BPsub2(BaseProperties):
+    class BPsub2(MagicProperties):
         "BaseProperties class"
 
         @property
@@ -180,7 +180,7 @@ def test_BaseProperties():
         BPsub1(a=0)  # `a` is not a property in the class
 
     # check repr
-    assert repr(BaseProperties()) == "BaseProperties()", "repr failed"
+    assert repr(MagicProperties()) == "BaseProperties()", "repr failed"
 
 
 def test_get_defaults_dict():

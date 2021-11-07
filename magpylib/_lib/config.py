@@ -1,5 +1,5 @@
 from magpylib._lib.default_utils import (
-    BaseProperties,
+    MagicProperties,
     color_validator,
     get_defaults_dict,
 )
@@ -8,7 +8,7 @@ from magpylib._lib.style import MagpylibStyle
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
 
 # ON INTERFACE
-class DefaultConfig(BaseProperties):
+class DefaultConfig(MagicProperties):
     """Library default settings. All default values get set at class instantiation.
 
     Parameters
@@ -119,7 +119,7 @@ class DefaultConfig(BaseProperties):
             )
 
 
-class Display(BaseProperties):
+class Display(MagicProperties):
     """
     Defines the display properties for the plotting features
 
@@ -245,7 +245,7 @@ class Display(BaseProperties):
             )
 
 
-class Animation(BaseProperties):
+class Animation(MagicProperties):
     """
     Defines the animation properties used by the `plotly` plotting backend when `path='animate'`
     in the `display` function.

@@ -243,7 +243,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     return color_input
 
 
-class BaseProperties:
+class MagicProperties:
     """
     Base Class to represent only the property attributes defined at initialization, after which the
     class is frozen. This prevents user to create any attributes that are not defined as properties.
