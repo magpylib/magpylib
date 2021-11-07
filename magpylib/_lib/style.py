@@ -526,7 +526,7 @@ class MagnetStyle(Base, MagnetProperties):
         super().__init__(**kwargs)
 
 
-class Sensors(MagicProperties):
+class SensorProperties:
     """
     Defines the specific styling properties of objects of the `sensors` family
 
@@ -538,9 +538,6 @@ class Sensors(MagicProperties):
     pixel: dict, Pixel, default=None
         `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
     """
-
-    def __init__(self, size=None, pixel=None, **kwargs):
-        super().__init__(size=size, pixel=pixel, **kwargs)
 
     @property
     def size(self):
@@ -565,7 +562,24 @@ class Sensors(MagicProperties):
         self._pixel = validate_property_class(val, "pixel", Pixel, self)
 
 
-class SensorStyle(Base, Sensors):
+class Sensors(MagicProperties, SensorProperties):
+    """
+    Defines the specific styling properties of objects of the `sensors` family
+
+    Properties
+    ----------
+    size: float, default=None
+        positive float for relative sensor to canvas size
+
+    pixel: dict, Pixel, default=None
+        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+    """
+
+    def __init__(self, size=None, pixel=None, **kwargs):
+        super().__init__(size=size, pixel=pixel, **kwargs)
+
+
+class SensorStyle(Base, SensorProperties):
     """Defines the styling properties of objects of the `sensors` family with base properties"""
 
     def __init__(self, **kwargs):
@@ -634,7 +648,28 @@ class Pixel(MagicProperties):
         self._symbol = val
 
 
-class Currents(MagicProperties):
+class CurrentProperties:
+    """
+    Defines the specific styling properties of objects of the `currents` family
+
+    Properties
+    ----------
+    show: bool, default=None
+        if `True` current direction is shown with an arrow
+    size: defines the size of the arrows
+    """
+
+    @property
+    def current(self):
+        """Arrow class with 'show', 'size' properties"""
+        return self._current
+
+    @current.setter
+    def current(self, val):
+        self._current = validate_property_class(val, "current", Arrow, self)
+
+
+class Currents(MagicProperties, CurrentProperties):
     """
     Defines the specific styling properties of objects of the `currents` family
 
@@ -658,7 +693,7 @@ class Currents(MagicProperties):
         self._current = validate_property_class(val, "current", Arrow, self)
 
 
-class CurrentStyle(Base, Currents):
+class CurrentStyle(Base, CurrentProperties):
     """Defines the styling properties of objects of the `currents` family and base properties"""
 
     def __init__(self, **kwargs):
@@ -803,7 +838,7 @@ class Markers(BaseStyle):
         self._marker = validate_property_class(val, "marker", Marker, self)
 
 
-class Dipoles(MagicProperties):
+class DipoleProperties:
     """
     Defines the specific styling properties of the objects of the `dipoles` family
 
@@ -817,9 +852,7 @@ class Dipoles(MagicProperties):
         The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
     """
 
-    def __init__(self, size=None, pivot=None, **kwargs):
-        self._allowed_pivots = ("tail", "middle", "tip")
-        super().__init__(size=size, pivot=pivot, **kwargs)
+    _allowed_pivots = ("tail", "middle", "tip")
 
     @property
     def size(self):
@@ -850,7 +883,26 @@ class Dipoles(MagicProperties):
         self._pivot = val
 
 
-class DipoleStyle(Base, Dipoles):
+class Dipoles(MagicProperties, DipoleProperties):
+    """
+    Defines the specific styling properties of the objects of the `dipoles` family
+
+    Properties
+    ----------
+    size: float, default=None
+        positive float for relative dipole to size to canvas size
+
+    pivot: str, default=None
+        the part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
+    """
+
+    def __init__(self, size=None, pivot=None, **kwargs):
+        self._allowed_pivots = ("tail", "middle", "tip")
+        super().__init__(size=size, pivot=pivot, **kwargs)
+
+
+class DipoleStyle(Base, DipoleProperties):
     """Defines the styling properties of the objects of the `dipoles` family and base properties"""
 
     def __init__(self, **kwargs):
