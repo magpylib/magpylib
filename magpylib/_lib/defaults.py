@@ -54,6 +54,7 @@ DEFAULTS = {
                         "middle": "#DDDDDD",
                         "south": "#00B050",
                         "transition": 0.2,
+                        "mode": "tricolor",
                     },
                 }
             },

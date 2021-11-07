@@ -636,8 +636,10 @@ def make_CylinderSegment(
     name = "CylinderSegment" if style.name is None else style.name
 
     if style.description.show and style.description.text is None:
-        d=[unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-        name_suffix = f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
+        d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
+        name_suffix = (
+            f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
+        )
     elif not style.description.show:
         name_suffix = ""
     else:
@@ -794,9 +796,11 @@ def _update_mag_mesh(
         color = style.magnetization.color
         if magnetization is not None and style.magnetization.show:
             vertices = np.array([mesh_dict[k] for k in "xyz"]).T
-            color_middle = (
-                kwargs.get("color", None) if color.middle == "auto" else color.middle
-            )
+            color_middle = color.middle
+            if color.mode == "tricycle":
+                color_middle = kwargs.get("color", None)
+            elif color.mode == "bicolor":
+                color_middle = False
             mesh_dict["colorscale"] = _getColorscale(
                 color_transition=color.transition,
                 color_north=color.north,

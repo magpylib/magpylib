@@ -402,22 +402,32 @@ class MagnetizationColor(MagicProperties):
 
     middle: str, default=None
         defines the color between the magnetic poles
-        if set to `auto`, the middle color will get a color from the color sequence cylcing over
-        objects to be displayed
 
     transition: float, default=None
         sets the transition smoothness between poles colors.
         - `transition=0`: discrete transition
         - `transition=1`: smoothest transition
         - can be any value in-between 0 and 1"
+
+    mode: str, default=None
+        sets the coloring mode for the magnetization.
+        - `'bicolor'`: only north and south poles are shown, middle color is hidden.
+        - `'tricolor'`: both pole colors and middle color are shown.
+        - `'tricycle'`: both pole colors are shown and middle color is replaced by a color cycling
+            through the color sequence.
     """
 
-    def __init__(self, north=None, south=None, middle=None, transition=None, **kwargs):
+    _allowed_modes = ("bicolor", "tricolor", "tricycle")
+
+    def __init__(
+        self, north=None, south=None, middle=None, transition=None, mode=None, **kwargs
+    ):
         super().__init__(
             north=north,
             middle=middle,
             south=south,
             transition=transition,
+            mode=mode,
             **kwargs,
         )
 
@@ -441,16 +451,12 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def middle(self):
-        """the color between the magnetic poles
-        if set to `auto`, the middle color will get a color from the color sequence cylcing over
-        objects to be displayed"""
+        """the color between the magnetic poles"""
         return self._middle
 
     @middle.setter
     def middle(self, val):
-        if val != "auto" and not val is False:
-            val = color_validator(val)
-        self._middle = val
+        self._middle = color_validator(val)
 
     @property
     def transition(self):
@@ -466,6 +472,25 @@ class MagnetizationColor(MagicProperties):
             val is None or isinstance(val, (float, int)) and 0 <= val <= 1
         ), "color transition must be a value betwen 0 and 1"
         self._transition = val
+
+    @property
+    def mode(self):
+        """sets the coloring mode for the magnetization.
+        - `'bicolor'`: only north and south poles are shown, middle color is hidden.
+        - `'tricolor'`: both pole colors and middle color are shown.
+        - `'tricycle'`: both pole colors are shown and middle color is replaced by a color cycling
+            through the color sequence.
+        """
+        return self._mode
+
+    @mode.setter
+    def mode(self, val):
+        assert val is None or val in self._allowed_modes, (
+            f"the `mode` property of {type(self).__name__} must be one of"
+            f"{list(self._allowed_modes)}"
+            f" but received {repr(val)} instead"
+        )
+        self._mode = val
 
 
 class MagnetProperties:
