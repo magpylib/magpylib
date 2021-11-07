@@ -110,11 +110,11 @@ def test_color_validator():
         color_validator("rgb(255,255,255)")
 
 
-def test_BaseProperties():
-    """test BaseProperties class"""
+def test_MagicProperties():
+    """test MagicProperties class"""
 
     class BPsub1(MagicProperties):
-        "BaseProperties class"
+        "MagicProperties class"
 
         @property
         def prop1(self):
@@ -126,7 +126,7 @@ def test_BaseProperties():
             self._prop1 = val
 
     class BPsub2(MagicProperties):
-        "BaseProperties class"
+        "MagicProperties class"
 
         @property
         def prop2(self):
@@ -180,7 +180,7 @@ def test_BaseProperties():
         BPsub1(a=0)  # `a` is not a property in the class
 
     # check repr
-    assert repr(MagicProperties()) == "BaseProperties()", "repr failed"
+    assert repr(MagicProperties()) == "MagicProperties()", "repr failed"
 
 
 def test_get_defaults_dict():
