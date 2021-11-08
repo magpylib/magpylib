@@ -91,7 +91,17 @@ def get_rot_pos_from_path(obj, show_path):
     returns rots[[1,2,6]], poss[[1,2,6]]
     """
     # pylint: disable=protected-access
-    path_len = obj._position.shape[0]
+    pos = getattr(obj, '_position', None)
+    if pos is None:
+        pos = obj.position
+    pos = np.array(pos)
+    orient = getattr(obj, '_orientation', None)
+    if orient is None:
+        orient = getattr(obj, 'orientation', None)
+    if orient is None:
+        orient = RotScipy.from_rotvec([[0,0,1]])
+    pos = np.array([pos]) if pos.ndim==1 else pos
+    path_len = pos.shape[0]
     if show_path is True or show_path is False:
         inds = np.array([-1])
     elif isinstance(show_path, int):
@@ -102,8 +112,8 @@ def get_rot_pos_from_path(obj, show_path):
     inds = np.unique(inds)
     if inds.size == 0:
         inds = np.array([path_len - 1])
-    rots = obj._orientation[inds]
-    poss = obj._position[inds]
+    rots = orient[inds]
+    poss = pos[inds]
     return rots, poss
 
 

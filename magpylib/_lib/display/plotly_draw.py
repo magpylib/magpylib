@@ -104,15 +104,10 @@ def _getIntensity(vertices, axis) -> np.ndarray:
     ndarray N
         returns 1D array of length N
     """
-    if all(m == 0 for m in axis):
-        intensity = np.array(vertices).T[0] * 0
-    else:
-        p = np.array(vertices).T
-        pos = np.mean(p, axis=1)
-        m = np.array(axis) / np.linalg.norm(axis)
-        intensity = (
-            (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
-        )
+    p = np.array(vertices).T
+    pos = np.mean(p, axis=1)
+    m = np.array(axis) / np.linalg.norm(axis)
+    intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
     return intensity
 
 
@@ -376,17 +371,12 @@ def make_Line(
     Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
     provided arguments
     """
-    name = "Line Curent" if style.name is None else style.name
-    if style.description.show and style.description.text is None:
-        name_suffix = (
-            f" ({unit_prefix(current)}A)"
-            if current is not None
-            else " (Current not initialized)"
-        )
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    default_suffix = (
+        f" ({unit_prefix(current)}A)"
+        if current is not None
+        else " (Current not initialized)"
+    )
+    name, name_suffix = get_name_and_suffix("Line", default_suffix, style)
     show_arrows = style.arrow.show
     arrow_size = style.arrow.size
     if show_arrows:
@@ -424,17 +414,12 @@ def make_Circular(
     Creates the plotly scatter3d parameters for a Circular current in a dictionary based on the
     provided arguments
     """
-    name = "Circular Curent" if style.name is None else style.name
-    if style.description.show and style.description.text is None:
-        name_suffix = (
-            f" ({unit_prefix(current)}A)"
-            if current is not None
-            else " (Current not initialized)"
-        )
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    default_suffix = (
+        f" ({unit_prefix(current)}A)"
+        if current is not None
+        else " (Current not initialized)"
+    )
+    name, name_suffix = get_name_and_suffix("Circular", default_suffix, style)
     arrow_size = style.arrow.size if style.arrow.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
@@ -455,21 +440,20 @@ def make_Circular(
 
 
 def make_UnsupportedObject(
-    pos=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+    pos=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
     representation. The object will be reprensented by a scatter point and text above with object
     name.
     """
-
-    name = "Unkwnon obj" if style.name is None else style.name
-    if style.description.show and style.description.text is None:
-        name_suffix = " (Unsupported visualisation)"
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    name, name_suffix = get_name_and_suffix(
+        "Unknown object", " (Unsupported visualisation)", style
+    )
     vertices = np.array([pos])
     if orientation is not None:
         vertices = orientation.apply(vertices).T
@@ -502,13 +486,8 @@ def make_Dipole(
     provided arguments
     """
     moment_mag = np.linalg.norm(moment)
-    name = "Dipole" if style.name is None else style.name
-    if style.description.show and style.description.text is None:
-        name_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)"
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    default_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)"
+    name, name_suffix = get_name_and_suffix("Dipole", default_suffix, style)
     size = style.size
     if autosize is not None:
         size *= autosize
@@ -523,13 +502,17 @@ def make_Dipole(
     t = np.arccos(dot)
     vec = -t * cross / n if n != 0 else (0, 0, 0)
     mag_orient = RotScipy.from_rotvec(vec)
-    if orientation is not None:
-        orientation = orientation * mag_orient
-    else:
-        orientation = mag_orient
+    orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        dipole,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -545,18 +528,19 @@ def make_Cuboid(
     Creates the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments
     """
-    name = "Cuboid" if style.name is None else style.name
-
-    if style.description.show and style.description.text is None:
-        d = [unit_prefix(d / 1000) for d in dim]
-        name_suffix = f" ({d[0]}mx{d[1]}mx{d[2]}m)"
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    d = [unit_prefix(d / 1000) for d in dim]
+    default_suffix = f" ({d[0]}mx{d[1]}mx{d[2]}m)"
+    name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cuboid,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -574,16 +558,9 @@ def make_Cylinder(
     Creates the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments
     """
-    name = "Cylinder" if style.name is None else style.name
-
-    if style.description.show and style.description.text is None:
-
-        d = [unit_prefix(d / 1000) for d in (diameter, height)]
-        name_suffix = f" (D={d[0]}m, H={d[1]}m)"
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    d = [unit_prefix(d / 1000) for d in (diameter, height)]
+    default_suffix = f" (D={d[0]}m, H={d[1]}m)"
+    name, name_suffix = get_name_and_suffix("Cylinder", default_suffix, style)
     cylinder = make_BasePrism(
         base_vertices=base_vertices,
         diameter=diameter,
@@ -591,7 +568,14 @@ def make_Cylinder(
         pos=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -608,20 +592,19 @@ def make_CylinderSegment(
     Creates the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments
     """
-    name = "CylinderSegment" if style.name is None else style.name
-
-    if style.description.show and style.description.text is None:
-        d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-        name_suffix = (
-            f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
-        )
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
+    default_suffix = f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
+    name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
-        cylinder_segment, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder_segment,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -638,30 +621,27 @@ def make_Sphere(
     Creates the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments
     """
-    name = "Sphere" if style.name is None else style.name
-    if style.description.show and style.description.text is None:
-        name_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
+    name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
-def make_Pixels(positions, size=1, shape="cube") -> dict:
+def make_Pixels(positions, size=1) -> dict:
     """
     Creates the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    if shape == "cube":
-        pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
-    else:
-        raise NotImplementedError(
-            "pixel shape parameter only supports `cube` at the moment"
-        )
+    pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
     return merge_mesh3d(*pixels)
 
 
@@ -686,17 +666,12 @@ def make_Sensor(
     """
     name = "Sensor" if style.name is None else style.name
     pixel = np.array(pixel)
-    pixel_str = (
+    default_suffix = (
         f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
         if pixel.ndim != 1
         else ""
     )
-    if style.description.show and style.description.text is None:
-        name_suffix = pixel_str
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
+    name, name_suffix = get_name_and_suffix("Sensor", default_suffix, style)
     sensor = get_sensor_mesh()
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
@@ -769,10 +744,15 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = _getIntensity(
-                vertices=vertices, axis=magnetization,
+                vertices=vertices,
+                axis=magnetization,
             )
     mesh_dict = place_and_orient_mesh3d(
-        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
+        mesh_dict,
+        orientation,
+        position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -846,6 +826,18 @@ def merge_traces(*traces):
     return trace
 
 
+def get_name_and_suffix(default_name, default_suffix, style):
+    """provides legend entry based on name and suffix"""
+    name = default_name if style.name is None else style.name
+    if style.description.show and style.description.text is None:
+        name_suffix = default_suffix
+    elif not style.description.show:
+        name_suffix = ""
+    else:
+        name_suffix = f" ({style.description.text})"
+    return name, name_suffix
+
+
 def get_plotly_traces(
     input_obj,
     show_path=False,
@@ -903,17 +895,9 @@ def get_plotly_traces(
         symb = marker["symbol"]
         marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
         marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
-        if style.description.show and style.description.text is None:
-            name_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
-        elif not style.description.show:
-            name_suffix = ""
-        else:
-            name_suffix = f" ({style.description.text})"
-        name = (
-            ("Marker" if len(x) == 1 else "Markers")
-            if style.name is None
-            else style.name
-        )
+        default_name = "Marker" if len(x) == 1 else "Markers"
+        default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
+        name, name_suffix = get_name_and_suffix(default_name, default_suffix, style)
         trace = go.Scatter3d(
             name=f"{name}{name_suffix}",
             x=x,
@@ -934,7 +918,8 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dim=input_obj.dimension,
+                mag=input_obj.magnetization,
+                dim=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -953,27 +938,33 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
+                Nvert=Nvert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization, diameter=input_obj.diameter,
+                mag=input_obj.magnetization,
+                diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment, autosize=autosize,
+                moment=input_obj.moment,
+                autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices, current=input_obj.current,
+                vertices=input_obj.vertices,
+                current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Circular):
             kwargs.update(
-                diameter=input_obj.diameter, current=input_obj.current,
+                diameter=input_obj.diameter,
+                current=input_obj.current,
             )
             make_func = make_Circular
         else:
@@ -1003,7 +994,7 @@ def get_plotly_traces(
             trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
             traces.append(trace)
 
-        if input_obj.position.ndim > 1 and show_path is not False:
+        if np.array(input_obj.position).ndim > 1 and show_path is not False:
             x, y, z = input_obj.position.T
             txt_kwargs = (
                 {"mode": "markers+text+lines", "text": list(range(len(x)))}
@@ -1132,7 +1123,10 @@ def display_plotly(
     if animate_slider is None:
         animate_slider = Config.display.animation.slider
 
-    title = getattr(obj_list[0], "name", None) if len(obj_list) == 1 else None
+    if obj_list:
+        style = getattr(obj_list[0], "style", None)
+        name = getattr(style, "name", None)
+        title = name if len(obj_list) == 1 else None
 
     if markers is not None and markers:
         obj_list = list(obj_list) + [MagpyMarkers(*markers)]
@@ -1361,7 +1355,7 @@ def animate_path(
     )
 
     frame_duration = int(animate_time * 1000 / path_indices.shape[0])
-    new_fps = int(1000/frame_duration)
+    new_fps = int(1000 / frame_duration)
     if max_pl > maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
@@ -1445,7 +1439,10 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
+                    {
+                        "frame": {"duration": 0, "redraw": True},
+                        "mode": "immediate",
+                    },
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
