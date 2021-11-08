@@ -258,6 +258,22 @@ def validate_property_class(val, name, class_, parent):
     return val
 
 
+def validate_style_keys(style_kwargs):
+    """validates style kwargs based on key up to first underscore.
+    checks in the defaults structures the generally available style keys"""
+    styles_by_family = get_defaults_dict("display.style")
+    valid_keys = {key for v in styles_by_family.values() for key in v}
+    level0_style_keys = {k.split("_")[0]: k for k in style_kwargs}
+    kwargs_diff = set(level0_style_keys).difference(valid_keys)
+    invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
+    if invalid_keys:
+        raise ValueError(
+            f"Following arguments are invalid style properties: `{invalid_keys}`\n"
+            f"\n Available style properties are: `{valid_keys}`"
+        )
+    return style_kwargs
+
+
 class MagicProperties:
     """
     Base Class to represent only the property attributes defined at initialization, after which the

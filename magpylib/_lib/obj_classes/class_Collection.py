@@ -8,7 +8,7 @@ from magpylib._lib.utility import (
 )
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
-
+from magpylib._lib.default_utils import validate_style_keys
 
 # ON INTERFACE
 class Collection(BaseDisplayRepr, BaseGetBH):
@@ -444,7 +444,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             obj.reset_path()
         return self
 
-    def set_styles(self, **kwargs):
+    def set_styles(self, arg=None, **kwargs):
         """
         Set display style of all sources in the Collection. Only matching properties
         will be applied. Input can be a **style-dict or style-underscore_magic.
@@ -468,8 +468,19 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         >>> magpy.display(col, src)
         ---> graphic output
         """
+
+        if arg is None:
+            arg = {}
+        if kwargs:
+            arg.update(kwargs)
+        style_kwargs = validate_style_keys(arg)
         for src in self._sources:
             # match properties false will try to apply properties from kwargs only if it finds it
             # withoug throwing an error
-            src.style.update(**kwargs, _match_properties=False)
+            style_kwargs_specific = {
+                k: v
+                for k, v in style_kwargs.items()
+                if k.split("_")[0] in src.style.as_dict()
+            }
+            src.style.update(**style_kwargs_specific, _match_properties=True)
         return self

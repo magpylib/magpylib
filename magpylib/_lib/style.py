@@ -6,6 +6,7 @@ from magpylib._lib.default_utils import (
     validate_property_class,
     color_validator,
     get_defaults_dict,
+    validate_style_keys,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     MAGPYLIB_FAMILIES,
@@ -25,7 +26,7 @@ def get_style_class(obj):
 def get_style(obj, default_settings, **kwargs):
     """
     returns default style based on increasing priority:
-    - style from Config
+    - style from defaults
     - style from object
     - style from kwargs arguments
     """
@@ -52,15 +53,7 @@ def get_style(obj, default_settings, **kwargs):
             for k, v in styles_by_family.get(fam, {}).items()
         },
     }
-    valid_keys = {key for k, v in styles_by_family.items() for key in v}
-    level0_style_keys = {k.split("_")[0]: k for k in style_kwargs}
-    kwargs_diff = set(level0_style_keys).difference(valid_keys)
-    invalid_keys = {level0_style_keys[k] for k in kwargs_diff}
-    if invalid_keys:
-        raise ValueError(
-            f"Following arguments are invalid style properties: {invalid_keys}\n"
-            f"\n Available style properties start with `style_` + `{valid_keys}`"
-        )
+    style_kwargs = validate_style_keys(style_kwargs)
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
     style = obj_style.copy() if obj_style is not None else Base()

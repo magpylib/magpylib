@@ -2,6 +2,7 @@ import pickle
 import os
 import numpy as np
 from scipy.spatial.transform import Rotation as R
+import pytest
 import magpylib as magpy
 
 # # GENERATE TESTDATA
@@ -185,5 +186,8 @@ def test_set_styles():
     col = src1 + src2
     col.set_styles(magnetization_show=False)
     assert (
-        src1.style.magnetization.show is False and src1.style.magnetization.show is False
+        src1.style.magnetization.show is False
+        and src1.style.magnetization.show is False
     ), """failed updating styles to children"""
+    with pytest.raises(ValueError):
+        col.set_styles(bad_input="somevalue")
