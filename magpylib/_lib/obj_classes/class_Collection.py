@@ -446,11 +446,27 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def set_styles(self, **kwargs):
         """
-        Update display style of all sources. Only matching properties will be applied
+        Set display style of all sources in the Collection. Only matching properties
+        will be applied. Input can be a **style-dict or style-underscore_magic.
 
         Returns
         -------
         self
+
+        Examples
+        --------
+        Apply a style to all objects inside a Collection using style-underscore_magic.
+
+        >>> import magpylib as magpy
+        >>>
+        >>> col = magpy.Collection()
+        >>> for i in range(3):
+        >>>     col + magpy.magnet.Sphere((1,1,1), 1, (i,0,0))
+        >>> src = magpy.magnet.Sphere((1,1,1), 1, (3,0,0))
+        >>>
+        >>> col.set_styles(color='g', magnetization_size=0)
+        >>> magpy.display(col, src)
+        ---> graphic output
         """
         for src in self._sources:
             # match properties false will try to apply properties from kwargs only if it finds it

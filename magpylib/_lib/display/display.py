@@ -42,7 +42,8 @@ def display(
     **kwargs,
 ):
     """
-    Display objects and paths graphically.
+    Display objects and paths graphically. Style input can be a **style-dict or
+    style-underscore_magic.
 
     Parameters
     ----------
@@ -108,13 +109,13 @@ def display(
     >>> plt.show()
     --> graphic output
 
-    Use sophisticated figure styling options accessable from defaults, as individual object styles
+    Use sophisticated figure styling options accessible from defaults, as individual object styles
     or as global style arguments in display.
 
     >>> import magpylib as magpy
     >>> src1 = magpy.magnet.Sphere((1,1,1), 1)
     >>> src2 = magpy.magnet.Sphere((1,1,1), 1, (1,0,0))
-    >>> magpy.defaults.display.styles.magnets.magnetization.size = 2
+    >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
     >>> magpy.display(src1, src2, style_color='r', zoom=3)
     --> graphic output
