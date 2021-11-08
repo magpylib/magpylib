@@ -70,6 +70,7 @@ def test_magic_to_dict():
     assert res == {"a": 3, "c": {"d": {"e": 6}}}
     with pytest.raises(AssertionError):
         magic_to_dict(0, separator=".")
+    with pytest.raises(AssertionError):
         magic_to_dict(d, separator=0)
 
 
@@ -90,6 +91,7 @@ def test_linearize_dict():
     }, "linearization of dict failed"
     with pytest.raises(AssertionError):
         magic_to_dict(0, separator=".")
+    with pytest.raises(AssertionError):
         magic_to_dict(mydict, separator=0)
 
 
