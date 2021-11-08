@@ -455,11 +455,7 @@ def make_Circular(
 
 
 def make_UnsupportedObject(
-    pos=(0.0, 0.0, 0.0),
-    orientation=None,
-    color=None,
-    style=None,
-    **kwargs,
+    pos=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -533,14 +529,7 @@ def make_Dipole(
         orientation = mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        pos,
-        style,
-        **kwargs,
+        dipole, name, name_suffix, mag, orientation, pos, style, **kwargs,
     )
 
 
@@ -567,14 +556,7 @@ def make_Cuboid(
         name_suffix = f" ({style.description.text})"
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        pos,
-        style,
-        **kwargs,
+        cuboid, name, name_suffix, mag, orientation, pos, style, **kwargs,
     )
 
 
@@ -609,14 +591,7 @@ def make_Cylinder(
         pos=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        pos,
-        style,
-        **kwargs,
+        cylinder, name, name_suffix, mag, orientation, pos, style, **kwargs,
     )
 
 
@@ -646,14 +621,7 @@ def make_CylinderSegment(
         name_suffix = f" ({style.description.text})"
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
-        cylinder_segment,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        pos,
-        style,
-        **kwargs,
+        cylinder_segment, name, name_suffix, mag, orientation, pos, style, **kwargs,
     )
 
 
@@ -679,14 +647,7 @@ def make_Sphere(
         name_suffix = f" ({style.description.text})"
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        sphere,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        pos,
-        style,
-        **kwargs,
+        sphere, name, name_suffix, mag, orientation, pos, style, **kwargs,
     )
 
 
@@ -808,15 +769,10 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = _getIntensity(
-                vertices=vertices,
-                axis=magnetization,
+                vertices=vertices, axis=magnetization,
             )
     mesh_dict = place_and_orient_mesh3d(
-        mesh_dict,
-        orientation,
-        position,
-        showscale=False,
-        name=f"{name}{name_suffix}",
+        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -978,8 +934,7 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization,
-                dim=input_obj.dimension,
+                mag=input_obj.magnetization, dim=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -998,33 +953,27 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization,
-                dimension=input_obj.dimension,
-                Nvert=Nvert,
+                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization,
-                diameter=input_obj.diameter,
+                mag=input_obj.magnetization, diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment,
-                autosize=autosize,
+                moment=input_obj.moment, autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices,
-                current=input_obj.current,
+                vertices=input_obj.vertices, current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Circular):
             kwargs.update(
-                diameter=input_obj.diameter,
-                current=input_obj.current,
+                diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Circular
         else:
@@ -1293,7 +1242,7 @@ def apply_fig_ranges(fig, ranges=None, zoom=None):
         },
         aspectratio={k: 1 for k in "xyz"},
         aspectmode="manual",
-        camera_eye={'x': 1, 'y': -1.5, 'z': 1.4},
+        camera_eye={"x": 1, "y": -1.5, "z": 1.4},
     )
 
 
@@ -1380,7 +1329,6 @@ def animate_path(
     max_pl = max(path_lengths)
     maxfps = Config.display.animation.maxfps
     maxframes = Config.display.animation.maxframes
-    framenum = animate_time * animate_fps
     if animate_fps > maxfps:
         warnings.warn(
             f"The set `animate_fps` at {animate_fps} is greater than the max allowed of {maxfps}. "
@@ -1388,11 +1336,9 @@ def animate_path(
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxfps`"
         )
-        fps = maxfps
-    else:
-        fps = animate_fps
+        animate_fps = maxfps
 
-    maxpos = min(animate_time * fps, maxframes)
+    maxpos = min(animate_time * animate_fps, maxframes)
 
     if max_pl <= maxpos:
         path_indices = np.arange(max_pl)
@@ -1402,7 +1348,9 @@ def animate_path(
         path_indices = np.unique(np.floor(ar / round_step) * round_step).astype(
             int
         )  # downsampled indices
-        path_indices[-1] = max_pl - 1  # make sure the last frame is the last path position
+        path_indices[-1] = (
+            max_pl - 1
+        )  # make sure the last frame is the last path position
 
     # calculate exponent of last frame index to avoid digit shift in
     # frame number display during animation
@@ -1413,11 +1361,11 @@ def animate_path(
     )
 
     frame_duration = int(animate_time * 1000 / path_indices.shape[0])
-    print('fps: ', int(1000/frame_duration))
-    if framenum > maxframes:
+    new_fps = int(1000/frame_duration)
+    if max_pl > maxframes:
         warnings.warn(
-            f"The number of frames ({framenum}) is greater than the max allowed of {maxframes}. "
-            f"The `animate_fps` will be set to {int(1000/frame_duration)}. "
+            f"The number of frames ({max_pl}) is greater than the max allowed "
+            f"of {maxframes}. The `animate_fps` will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxframes`"
         )
@@ -1428,7 +1376,11 @@ def animate_path(
             "yanchor": "top",
             "font": {"size": 10},
             "xanchor": "left",
-            "currentvalue": {"prefix": "Frame:", "visible": True, "xanchor": "right"},
+            "currentvalue": {
+                "prefix": f"Fps={new_fps}, Path index: ",
+                "visible": True,
+                "xanchor": "right",
+            },
             "pad": {"b": 10, "t": 10},
             "len": 0.9,
             "x": 0.1,
@@ -1486,17 +1438,14 @@ def animate_path(
             go.Frame(
                 data=traces,
                 name=str(ind + 1),
-                layout=dict(title=f"""{title} - frame: {ind+1:0{exp}d}"""),
+                layout=dict(title=f"""{title} - path index: {ind+1:0{exp}d}"""),
             )
         )
         if animate_slider:
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {
-                        "frame": {"duration": 0, "redraw": True},
-                        "mode": "immediate",
-                    },
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
