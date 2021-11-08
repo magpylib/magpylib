@@ -1,8 +1,11 @@
 """Collection class code"""
 
 import copy
-from magpylib._lib.utility import (format_obj_input, check_duplicates,
-    only_allowed_src_types)
+from magpylib._lib.utility import (
+    format_obj_input,
+    check_duplicates,
+    only_allowed_src_types,
+)
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 
@@ -88,19 +91,17 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         # instance attributes
         self.sources = sources
-        self._object_type = 'Collection'
+        self._object_type = "Collection"
 
     # property getters and setters
     @property
     def sources(self):
-        """ Collection sources attribute getter and setter.
-        """
+        """Collection sources attribute getter and setter."""
         return self._sources
 
     @sources.setter
     def sources(self, sources):
-        """ Set Collection sources.
-        """
+        """Set Collection sources."""
         # format input
         src_list = format_obj_input(sources)
         # check and eliminate duplicates
@@ -110,28 +111,23 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         # set attributes
         self._sources = src_list
 
-
     # dunders
     def __add__(self, source):
         self.add(source)
         return self
 
-
     def __sub__(self, source):
         self.remove(source)
         return self
 
-
     def __iter__(self):
         yield from self._sources
 
-
-    def __getitem__(self,i):
+    def __getitem__(self, i):
         return self._sources[i]
 
-
     # methods -------------------------------------------------------
-    def add(self,*sources):
+    def add(self, *sources):
         """
         Add arbitrary sources or Collections.
 
@@ -169,8 +165,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         self._sources = src_list
         return self
 
-
-    def remove(self,source):
+    def remove(self, source):
         """
         Remove a specific source from the Collection.
 
@@ -200,7 +195,6 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         """
         self._sources.remove(source)
         return self
-
 
     def move(self, displacement, start=-1, increment=False):
         """
@@ -260,7 +254,6 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         for s in self:
             s.move(displacement, start, increment)
         return self
-
 
     def rotate(self, rot, anchor=None, start=-1, increment=False):
         """
@@ -324,8 +317,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             s.rotate(rot, anchor, start, increment)
         return self
 
-
-    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
+    def rotate_from_angax(
+        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
+    ):
         """
         Rotates each object in the Collection individually from angle-axis input.
 
@@ -397,7 +391,6 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             s.rotate_from_angax(angle, axis, anchor, start, increment, degrees)
         return self
 
-
     def copy(self):
         """
         Returns a copy of the Collection.
@@ -420,7 +413,6 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         """
         return copy.copy(self)
-
 
     def reset_path(self):
         """
