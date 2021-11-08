@@ -1101,7 +1101,7 @@ def display_plotly(
     renderer=None,
     animate_time=5,
     animate_fps=30,
-    animate_slider=True,
+    animate_slider=None,
     color_sequence=None,
     **kwargs,
 ):
@@ -1180,6 +1180,8 @@ def display_plotly(
     if fig is None:
         show_fig = True
         fig = go.Figure()
+    if animate_slider is None:
+        animate_slider = Config.display.animation.slider
 
     title = getattr(obj_list[0], "name", None) if len(obj_list) == 1 else None
 

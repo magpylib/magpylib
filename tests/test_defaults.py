@@ -14,6 +14,7 @@ bad_inputs = {
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
+    "display_animation_slider":  ('notbool'),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"],),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
@@ -63,6 +64,7 @@ good_inputs = {
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
+    "display_animation_slider":  (True, False),  # bool
     "display_backend": ("matplotlib", "plotly"),  # str typo
     "display_colorsequence": (
         ["#2E91E5", "#0D2A63"],

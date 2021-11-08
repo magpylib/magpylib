@@ -226,6 +226,9 @@ class Animation(MagicProperties):
     maxframes: int, default=200
         Maximum total number of frames to be displayed before downsampling kicks in.
 
+    slider: bool, default = True
+        if True, an interactive slider will be displayed and stay in sync with the animation, will
+        be hidden otherwise.
     """
 
     @property
@@ -253,6 +256,19 @@ class Animation(MagicProperties):
             f" integer but received {repr(val)} instead"
         )
         self._maxframes = val
+
+    @property
+    def slider(self):
+        """show/hide slider"""
+        return self._slider
+
+    @slider.setter
+    def slider(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `slider` property of {type(self).__name__} must be a either `True` or `False`"
+            f" but received {repr(val)} instead"
+        )
+        self._slider = val
 
 
 default_settings = DefaultConfig()

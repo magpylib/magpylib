@@ -6,7 +6,7 @@ DEFAULTS = {
     "itercylinder": 50,
     "display": {
         "autosizefactor": 10,
-        "animation": {"maxfps": 30, "maxframes": 200},
+        "animation": {"maxfps": 30, "maxframes": 200, "slider":True},
         "backend": "matplotlib",
         "colorsequence": (
             "#2E91E5",
