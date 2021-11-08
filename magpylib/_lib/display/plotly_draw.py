@@ -1293,6 +1293,7 @@ def apply_fig_ranges(fig, ranges=None, zoom=None):
         },
         aspectratio={k: 1 for k in "xyz"},
         aspectmode="manual",
+        camera_eye={'x': 1, 'y': -1.5, 'z': 1.4},
     )
 
 
