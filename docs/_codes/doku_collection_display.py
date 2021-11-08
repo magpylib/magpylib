@@ -11,4 +11,4 @@ s2.move([(-.2,0,0)]*100, increment=True)
 col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 
 # display
-col.display(zoom=-.3, show_path=10)
+col.display(zoom=-.3, path=10)
