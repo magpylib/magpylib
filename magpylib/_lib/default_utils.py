@@ -5,14 +5,14 @@ import collections.abc
 from magpylib._lib.defaults import DEFAULTS
 
 MAGPYLIB_FAMILIES = {
-    "Line": ("currents",),
-    "Circular": ("currents",),
-    "Cuboid": ("magnets",),
-    "Cylinder": ("magnets",),
-    "Sphere": ("magnets",),
-    "CylinderSegment": ("magnets",),
-    "Sensor": ("sensors",),
-    "Dipole": ("dipoles",),
+    "Line": ("current",),
+    "Circular": ("current",),
+    "Cuboid": ("magnet",),
+    "Cylinder": ("magnet",),
+    "Sphere": ("magnet",),
+    "CylinderSegment": ("magnet",),
+    "Sensor": ("sensor",),
+    "Dipole": ("dipole",),
     "Marker": ("markers",),
 }
 
