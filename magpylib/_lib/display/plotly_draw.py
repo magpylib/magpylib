@@ -1374,25 +1374,32 @@ def animate_path(
         else 0
         for obj in objs
     ]
-
-    N = max(path_lengths)
-    if animate_fps > Config.display.animation.maxfps:
+    max_pl = max(path_lengths)
+    maxfps = Config.display.animation.maxfps
+    maxframes = Config.display.animation.maxframes
+    framenum = animate_time * animate_fps
+    if animate_fps > maxfps:
         warnings.warn(
-            "The set `animate_fps` is greater than the max allowed "
-            f"of {Config.display.animation.maxfps}, animate_fps will be set to "
-            f"{Config.display.animation.maxfps}"
+            f"The set `animate_fps` at {animate_fps} is greater than the max allowed of {maxfps}. "
+            f"`animate_fps` will be set to {maxfps}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxfps`"
         )
-        animate_fps = Config.display.animation.maxfps
-    maxpos = min(animate_time * animate_fps, Config.display.animation.maxframes)
-    if N <= maxpos:
-        path_indices = np.arange(N)
+        fps = maxfps
     else:
-        round_step = N / (maxpos - 1)
-        ar = np.linspace(0, N, N, endpoint=False)
+        fps = animate_fps
+
+    maxpos = min(animate_time * fps, maxframes)
+
+    if max_pl <= maxpos:
+        path_indices = np.arange(max_pl)
+    else:
+        round_step = max_pl / (maxpos - 1)
+        ar = np.linspace(0, max_pl, max_pl, endpoint=False)
         path_indices = np.unique(np.floor(ar / round_step) * round_step).astype(
             int
         )  # downsampled indices
-        path_indices[-1] = N - 1  # make sure the last frame is the last path position
+        path_indices[-1] = max_pl - 1  # make sure the last frame is the last path position
 
     # calculate exponent of last frame index to avoid digit shift in
     # frame number display during animation
@@ -1403,6 +1410,14 @@ def animate_path(
     )
 
     frame_duration = int(animate_time * 1000 / path_indices.shape[0])
+    print('fps: ', int(1000/frame_duration))
+    if framenum > maxframes:
+        warnings.warn(
+            f"The number of frames ({framenum}) is greater than the max allowed of {maxframes}. "
+            f"The `animate_fps` will be set to {int(1000/frame_duration)}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxframes`"
+        )
 
     if animate_slider:
         sliders_dict = {
