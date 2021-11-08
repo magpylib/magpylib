@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._lib.fields.special_el3 import el3_angle
 from magpylib._lib.utility import close
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 
 
 def arctan_k_tan_2(k, phi):

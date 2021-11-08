@@ -1,7 +1,7 @@
 """BaseHomMag class code"""
 
 import numpy as np
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import (check_vector_type, check_vector_format, check_scalar_type)
 
 

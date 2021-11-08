@@ -318,7 +318,7 @@ __all__ = ['magnet', 'current', 'misc', 'lib', 'getB', 'getH', 'getB_dict', 'get
     '__author__', '__credits__']
 
 # create interface to outside of package
-from magpylib._lib.config import default_settings as defaults
+from magpylib._lib.default_classes import default_settings as defaults
 from magpylib import magnet
 from magpylib import current
 from magpylib import misc

@@ -7,7 +7,7 @@ from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
 from magpylib._lib.fields.field_BH_circular import field_BH_circular
 from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 
 # # GENERATE TEST DATA
 # n = 500

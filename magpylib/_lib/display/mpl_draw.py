@@ -2,7 +2,7 @@
 
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.display.disp_utility import (
     get_rot_pos_from_path,
     draw_arrow_from_vertices,

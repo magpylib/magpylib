@@ -16,7 +16,7 @@ except ImportError as missing_module:
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.display.sensor_plotly_mesh import get_sensor_mesh
 from magpylib._lib.style import (
     get_style,

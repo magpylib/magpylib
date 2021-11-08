@@ -4,7 +4,7 @@ import numpy as np
 #from scipy.spatial.transform import Rotation as R
 from magpylib._lib.exceptions import MagpylibBadUserInput
 from magpylib import _lib
-from magpylib._lib.config import default_settings as Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import check_position_format
 
 
