@@ -495,7 +495,7 @@ class MagnetizationColor(MagicProperties):
 
 class MagnetProperties:
     """
-    Defines the specific styling properties of objects of the `magnets` family
+    Defines the specific styling properties of objects of the `magnet` family
 
     Properties
     ----------
@@ -518,7 +518,7 @@ class MagnetProperties:
 
 class Magnet(MagicProperties, MagnetProperties):
     """
-    Defines the specific styling properties of objects of the `magnets` family
+    Defines the specific styling properties of objects of the `magnet` family
 
     Properties
     ----------
@@ -531,7 +531,7 @@ class Magnet(MagicProperties, MagnetProperties):
 
 
 class MagnetStyle(Base, MagnetProperties):
-    """Defines the styling properties of objects of the `magnets` family with base properties"""
+    """Defines the styling properties of objects of the `magnet` family with base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -539,7 +539,7 @@ class MagnetStyle(Base, MagnetProperties):
 
 class SensorProperties:
     """
-    Defines the specific styling properties of objects of the `sensors` family
+    Defines the specific styling properties of objects of the `sensor` family
 
     Properties
     ----------
@@ -575,7 +575,7 @@ class SensorProperties:
 
 class Sensor(MagicProperties, SensorProperties):
     """
-    Defines the specific styling properties of objects of the `sensors` family
+    Defines the specific styling properties of objects of the `sensor` family
 
     Properties
     ----------
@@ -591,7 +591,7 @@ class Sensor(MagicProperties, SensorProperties):
 
 
 class SensorStyle(Base, SensorProperties):
-    """Defines the styling properties of objects of the `sensors` family with base properties"""
+    """Defines the styling properties of objects of the `sensor` family with base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -661,51 +661,40 @@ class Pixel(MagicProperties):
 
 class CurrentProperties:
     """
-    Defines the specific styling properties of objects of the `currents` family
+    Defines the specific styling properties of objects of the `current` family
 
     Properties
     ----------
-    show: bool, default=None
-        if `True` current direction is shown with an arrow
-    size: defines the size of the arrows
+    arrow: dict or Arrow, default=None
+        Arrow class or dict with 'show', 'size' properties/keys
     """
 
     @property
-    def current(self):
+    def arrow(self):
         """Arrow class with 'show', 'size' properties"""
-        return self._current
+        return self._arrow
 
-    @current.setter
-    def current(self, val):
-        self._current = validate_property_class(val, "current", Arrow, self)
+    @arrow.setter
+    def arrow(self, val):
+        self._arrow = validate_property_class(val, "current", Arrow, self)
 
 
 class Current(MagicProperties, CurrentProperties):
     """
-    Defines the specific styling properties of objects of the `currents` family
+    Defines the specific styling properties of objects of the `current` family
 
     Properties
     ----------
-    show: bool, default=None
-        if `True` current direction is shown with an arrow
-    size: defines the size of the arrows
+    arrow: dict or Arrow, default=None
+        Arrow class or dict with 'show', 'size' properties/keys
     """
 
-    def __init__(self, current=None, **kwargs):
-        super().__init__(current=current, **kwargs)
-
-    @property
-    def current(self):
-        """Arrow class with 'show', 'size' properties"""
-        return self._current
-
-    @current.setter
-    def current(self, val):
-        self._current = validate_property_class(val, "current", Arrow, self)
+    def __init__(self, arrow=None, **kwargs):
+        super().__init__(arrow=arrow, **kwargs)
 
 
 class CurrentStyle(Base, CurrentProperties):
-    """Defines the styling properties of objects of the `currents` family and base properties"""
+    """Defines the styling properties of objects of the `current` family and base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -851,7 +840,7 @@ class Markers(BaseStyle):
 
 class DipoleProperties:
     """
-    Defines the specific styling properties of the objects of the `dipoles` family
+    Defines the specific styling properties of the objects of the `dipole` family
 
     Properties
     ----------
@@ -896,7 +885,7 @@ class DipoleProperties:
 
 class Dipole(MagicProperties, DipoleProperties):
     """
-    Defines the specific styling properties of the objects of the `dipoles` family
+    Defines the specific styling properties of the objects of the `dipole` family
 
     Properties
     ----------
@@ -909,12 +898,11 @@ class Dipole(MagicProperties, DipoleProperties):
     """
 
     def __init__(self, size=None, pivot=None, **kwargs):
-        self._allowed_pivots = ("tail", "middle", "tip")
         super().__init__(size=size, pivot=pivot, **kwargs)
 
 
 class DipoleStyle(Base, DipoleProperties):
-    """Defines the styling properties of the objects of the `dipoles` family and base properties"""
+    """Defines the styling properties of the objects of the `dipole` family and base properties"""
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1027,17 +1015,17 @@ class DisplayStyle(MagicProperties):
     base: dict, Base, default=None
         base properties common to all families
 
-    magnets: dict, Magnet, default=None
-        magnets properties
+    magnet: dict, Magnet, default=None
+        magnet properties
 
-    currents: dict, Current, default=None
-        currents properties
+    current: dict, Current, default=None
+        current properties
 
-    dipoles: dict, Dipole, default=None
-        dipoles properties
+    dipole: dict, Dipole, default=None
+        dipole properties
 
-    sensors: dict, Sensor, default=None
-        sensors properties
+    sensor: dict, Sensor, default=None
+        sensor properties
 
     markers: dict, Markers, default=None
         markers properties
@@ -1046,19 +1034,19 @@ class DisplayStyle(MagicProperties):
     def __init__(
         self,
         base=None,
-        magnets=None,
-        currents=None,
-        dipoles=None,
-        sensors=None,
+        magnet=None,
+        current=None,
+        dipole=None,
+        sensor=None,
         markers=None,
         **kwargs,
     ):
         super().__init__(
             base=base,
-            magnets=magnets,
-            currents=currents,
-            dipoles=dipoles,
-            sensors=sensors,
+            magnet=magnet,
+            current=current,
+            dipole=dipole,
+            sensor=sensor,
             markers=markers,
             **kwargs,
         )
@@ -1079,40 +1067,40 @@ class DisplayStyle(MagicProperties):
         self._base = validate_property_class(val, "base", Base, self)
 
     @property
-    def magnets(self):
+    def magnet(self):
         """Magnet class"""
-        return self._magnets
+        return self._magnet
 
-    @magnets.setter
-    def magnets(self, val):
-        self._magnets = validate_property_class(val, "magnets", Magnet, self)
+    @magnet.setter
+    def magnet(self, val):
+        self._magnet = validate_property_class(val, "magnet", Magnet, self)
 
     @property
-    def currents(self):
+    def current(self):
         """Current class"""
-        return self._currents
+        return self._current
 
-    @currents.setter
-    def currents(self, val):
-        self._currents = validate_property_class(val, "currents", Current, self)
+    @current.setter
+    def current(self, val):
+        self._current = validate_property_class(val, "current", Current, self)
 
     @property
-    def dipoles(self):
+    def dipole(self):
         """Dipole class"""
-        return self._dipoles
+        return self._dipole
 
-    @dipoles.setter
-    def dipoles(self, val):
-        self._dipoles = validate_property_class(val, "dipoles", Dipole, self)
+    @dipole.setter
+    def dipole(self, val):
+        self._dipole = validate_property_class(val, "dipole", Dipole, self)
 
     @property
-    def sensors(self):
+    def sensor(self):
         """Sensor"""
-        return self._sensors
+        return self._sensor
 
-    @sensors.setter
-    def sensors(self, val):
-        self._sensors = validate_property_class(val, "sensors", Sensor, self)
+    @sensor.setter
+    def sensor(self, val):
+        self._sensor = validate_property_class(val, "sensor", Sensor, self)
 
     @property
     def markers(self):
@@ -1125,8 +1113,8 @@ class DisplayStyle(MagicProperties):
 
 
 STYLE_CLASSES = {
-    "magnets": MagnetStyle,
-    "currents": CurrentStyle,
-    "dipoles": DipoleStyle,
-    "sensors": SensorStyle,
+    "magnet": MagnetStyle,
+    "current": CurrentStyle,
+    "dipole": DipoleStyle,
+    "sensor": SensorStyle,
 }

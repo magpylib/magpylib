@@ -387,8 +387,8 @@ def make_Line(
         name_suffix = ""
     else:
         name_suffix = f" ({style.description.text})"
-    show_arrows = style.current.show
-    arrow_size = style.current.size
+    show_arrows = style.arrow.show
+    arrow_size = style.arrow.size
     if show_arrows:
         vertices = draw_arrow_from_vertices(vertices, current, arrow_size)
     else:
@@ -396,7 +396,7 @@ def make_Line(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
-    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = dict(
         type="scatter3d",
         x=x,
@@ -435,12 +435,12 @@ def make_Circular(
         name_suffix = ""
     else:
         name_suffix = f" ({style.description.text})"
-    arrow_size = style.current.size if style.current.show else 0
+    arrow_size = style.arrow.size if style.arrow.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + pos).T
-    line_width = style.current.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     circular = dict(
         type="scatter3d",
         x=x,
@@ -936,8 +936,8 @@ def get_plotly_traces(
         if style.magnetization.show:
             check_excitations([input_obj])
 
-    if hasattr(style, "current"):
-        if style.current.show:
+    if hasattr(style, "arrow"):
+        if style.arrow.show:
             check_excitations([input_obj])
 
     traces = []

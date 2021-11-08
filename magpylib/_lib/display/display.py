@@ -238,17 +238,19 @@ def display_matplotlib(
         elif obj._object_type == "Sphere":
             faces = faces_sphere(obj, show_path)
         elif obj._object_type == "Line":
-            if style.current.show:
+            if style.arrow.show:
                 check_excitations([obj])
-            size = style.current.size if style.current.show else 0
-            width = style.current.width
-            points += draw_line([obj], show_path, color, size, width, ax)
+            arrow_size = style.arrow.size if style.arrow.show else 0
+            arrow_width = style.arrow.width
+            points += draw_line([obj], show_path, color, arrow_size, arrow_width, ax)
         elif obj._object_type == "Circular":
-            if style.current.show:
+            if style.arrow.show:
                 check_excitations([obj])
-            width = style.current.width
-            size = style.current.size if style.current.show else 0
-            points += draw_circular([obj], show_path, color, size, width, ax)
+            arrow_width = style.arrow.width
+            arrow_size = style.arrow.size if style.arrow.show else 0
+            points += draw_circular(
+                [obj], show_path, color, arrow_size, arrow_width, ax
+            )
         elif obj._object_type == "Sensor":
             sensors_color += [color]
             points += draw_pixel(

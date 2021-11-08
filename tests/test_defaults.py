@@ -30,24 +30,24 @@ bad_inputs = {
     "display_style_base_mesh3d_show": ("notbool",),
     "display_style_base_mesh3d_data": (dict(x=1, y=1),),  # dict with x,y,z,i,j,k
     "display_style_base_color": ("wrongcolor",),  # color
-    "display_style_magnets_magnetization_show": ("notbool",),
-    "display_style_magnets_magnetization_size": (-1,),  # float>=0
-    "display_style_magnets_magnetization_color_north": ("wrongcolor",),
-    "display_style_magnets_magnetization_color_middle": ("wrongcolor",),
-    "display_style_magnets_magnetization_color_south": ("wrongcolor",),
-    "display_style_magnets_magnetization_color_transition": (-0.2,),  # 0<=float<=1
-    "display_style_magnets_magnetization_color_mode": (
+    "display_style_magnet_magnetization_show": ("notbool",),
+    "display_style_magnet_magnetization_size": (-1,),  # float>=0
+    "display_style_magnet_magnetization_color_north": ("wrongcolor",),
+    "display_style_magnet_magnetization_color_middle": ("wrongcolor",),
+    "display_style_magnet_magnetization_color_south": ("wrongcolor",),
+    "display_style_magnet_magnetization_color_transition": (-0.2,),  # 0<=float<=1
+    "display_style_magnet_magnetization_color_mode": (
         "wrongmode",
     ),  # bicolor, tricolor, tricycle
-    "display_style_currents_current_show": ("notbool",),
-    "display_style_currents_current_size": (-1,),  # float>=0
-    "display_style_currents_current_width": (-1,),  # float>=0
-    "display_style_sensors_size": (-1,),  # float>=0
-    "display_style_sensors_pixel_size": (-1,),  # float>=0
-    "display_style_sensors_pixel_color": ("notbool",),
-    "display_style_sensors_pixel_symbol": ("wrongsymbol",),
-    "display_style_dipoles_size": (-1,),  # float>=0
-    "display_style_dipoles_pivot": ("wrongpivot",),  # middle, tail, tip
+    "display_style_current_arrow_show": ("notbool",),
+    "display_style_current_arrow_size": (-1,),  # float>=0
+    "display_style_current_arrow_width": (-1,),  # float>=0
+    "display_style_sensor_size": (-1,),  # float>=0
+    "display_style_sensor_pixel_size": (-1,),  # float>=0
+    "display_style_sensor_pixel_color": ("notbool",),
+    "display_style_sensor_pixel_symbol": ("wrongsymbol",),
+    "display_style_dipole_size": (-1,),  # float>=0
+    "display_style_dipole_pivot": ("wrongpivot",),  # middle, tail, tip
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
     "display_style_markers_marker_symbol": ("wrongsymbol",),
@@ -86,26 +86,26 @@ good_inputs = {
         dict(x=[1], y=[1], z=[1], i=[1], j=[1], k=[1]),
     ),  # dict with x,y,z,i,j,k
     "display_style_base_color": ("blue", "#2E91E5"),  # color
-    "display_style_magnets_magnetization_show": (True, False),
-    "display_style_magnets_magnetization_size": (0, 1),  # float>=0
-    "display_style_magnets_magnetization_color_north": ("blue", "#2E91E5"),
-    "display_style_magnets_magnetization_color_middle": ("blue", "#2E91E5"),
-    "display_style_magnets_magnetization_color_south": ("blue", "#2E91E5"),
-    "display_style_magnets_magnetization_color_transition": (0, 0.5, 1),  # 0<=float<=1
-    "display_style_magnets_magnetization_color_mode": (
+    "display_style_magnet_magnetization_show": (True, False),
+    "display_style_magnet_magnetization_size": (0, 1),  # float>=0
+    "display_style_magnet_magnetization_color_north": ("blue", "#2E91E5"),
+    "display_style_magnet_magnetization_color_middle": ("blue", "#2E91E5"),
+    "display_style_magnet_magnetization_color_south": ("blue", "#2E91E5"),
+    "display_style_magnet_magnetization_color_transition": (0, 0.5, 1),  # 0<=float<=1
+    "display_style_magnet_magnetization_color_mode": (
         "bicolor",
         "tricolor",
         "tricycle",
     ),
-    "display_style_currents_current_show": (True, False),
-    "display_style_currents_current_size": (0, 1),  # float>=0
-    "display_style_currents_current_width": (0, 1),  # float>=0
-    "display_style_sensors_size": (0, 1),  # float>=0
-    "display_style_sensors_pixel_size": (0, 1),  # float>=0
-    "display_style_sensors_pixel_color": ("blue", "#2E91E5"),
-    "display_style_sensors_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
-    "display_style_dipoles_size": (0, 1),  # float>=0
-    "display_style_dipoles_pivot": (
+    "display_style_current_arrow_show": (True, False),
+    "display_style_current_arrow_size": (0, 1),  # float>=0
+    "display_style_current_arrow_width": (0, 1),  # float>=0
+    "display_style_sensor_size": (0, 1),  # float>=0
+    "display_style_sensor_pixel_size": (0, 1),  # float>=0
+    "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
+    "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_dipole_size": (0, 1),  # float>=0
+    "display_style_dipole_pivot": (
         "middle",
         "tail",
         "tip",
@@ -173,16 +173,16 @@ def test_bad_input_classes():
         "base_path",
         "base_path_line",
         "base_path_marker",
-        "currents",
-        "currents_current",
-        "dipoles",
-        "magnets",
-        "magnets_magnetization",
-        "magnets_magnetization_color",
+        "current",
+        "current_arrow",
+        "dipole",
+        "magnet",
+        "magnet_magnetization",
+        "magnet_magnetization_color",
         "markers",
         "markers_marker",
-        "sensors",
-        "sensors_pixel",
+        "sensor",
+        "sensor_pixel",
     }
     for s in style_classes:
         with pytest.raises(ValueError):

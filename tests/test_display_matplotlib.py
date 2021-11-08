@@ -121,11 +121,11 @@ def test_circular_line_display():
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, increment=False)
-    x = src1.display(canvas=ax2, path=2, style_current_size=0)
+    x = src1.display(canvas=ax2, path=2, style_arrow_size=0)
     assert x is None, "display test fail"
     x = src2.display(canvas=ax2)
     assert x is None, "display test fail"
-    x = src3.display(canvas=ax2, style_current_size=0)
+    x = src3.display(canvas=ax2, style_arrow_size=0)
     assert x is None, "display test fail"
     x = src4.display(canvas=ax2, path=2)
     assert x is None, "display test fail"
