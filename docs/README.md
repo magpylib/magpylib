@@ -1,6 +1,6 @@
 ## About magPyLib Documentation
 
-- Documentation is done with [Sphinx](http://www.sphinx-doc.org/en/master/) v1.8.2.
+- Documentation is done with [Sphinx](http://www.sphinx-doc.org/en/master/) v4.2.0.
 - Sphinx configuration is [conf.py](./conf.py);
 - Docstring format is under the [Numpy Convention](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html).
 - Sphinx is configured to read Docstring information from the codebase and convert it into pages utilizing the [autodoc extension](http://www.sphinx-doc.org/en/master/usage/extensions/autodoc.html). 
