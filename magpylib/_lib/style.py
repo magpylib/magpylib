@@ -239,10 +239,7 @@ class Description(MagicProperties):
     @property
     def text(self):
         """
-        texts/hides mesh3d object based on provided data:
-        - True: texts mesh
-        - False: hides mesh
-        - 'inplace': replace object representation
+        texts/hides mesh3d object based on provided data
         """
         return self._text
 
