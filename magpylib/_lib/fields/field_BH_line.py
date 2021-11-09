@@ -4,7 +4,7 @@ Implementations of analytical expressions of line current segments
 
 import numpy as np
 from numpy.linalg import norm
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 
 
 def field_BH_line_from_vert(
@@ -84,7 +84,7 @@ def field_BH_line(
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
 
     ### Numerical instabilities:
-        - singularity at r=0, B set to 0 within Config.EDGESIZE
+        - singularity at r=0, B set to 0 within Config.edgesize
     """
     # pylint: disable=too-many-statements
 
@@ -118,7 +118,7 @@ def field_BH_line(
     norm_o4 = norm(po - p4, axis=1)
 
     # on-line cases (set B=0)
-    mask1 = norm_o4 < Config.EDGESIZE
+    mask1 = norm_o4 < Config.edgesize
     if np.all(mask1):
         n0 = len(pos_obs)
         return np.zeros((n0,3))

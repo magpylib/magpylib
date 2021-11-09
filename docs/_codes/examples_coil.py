@@ -17,7 +17,7 @@ for z in np.linspace(-2,2,20):
     coil += winding
 
 # display the coil on ax1
-coil.display(axis=ax1)
+coil.display(canvas=ax1)
 
 # create a grid
 ts = np.linspace(-6,6,30)

@@ -5,7 +5,7 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import check_vector_format, check_vector_type
 
 # init for tool tips
@@ -87,16 +87,17 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             magnetization = (mx,my,mz),
             dimension = (a,b,c),
             position = (0,0,0),
-            orientation = None):
-
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+            orientation = None,
+            style=None):
 
         # instance attributes
         self.dimension = dimension
         self._object_type = 'Cuboid'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+        BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property
@@ -110,14 +111,14 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """ Set Cuboid dimension (a,b,c), shape (3,), [mm].
         """
         # input type check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(dim, 'dimension')
 
         # input type -> ndarray
         dim = np.array(dim,dtype=float)
 
         # input format check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_format(dim, (3,), 'dimension')
 
         self._dimension = dim

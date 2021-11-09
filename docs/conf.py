@@ -21,7 +21,7 @@ import sys
 #Location of Sphinx files
 sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above 
 os.environ["SPHINX_APIDOC_OPTIONS"] = "members,show-inheritance" ## Hide undocumented members
-import sphinx.apidoc
+import sphinx.ext.apidoc
 
 
 autodoc_default_options = {
@@ -34,17 +34,17 @@ from recommonmark.transform import AutoStructify
 github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/' 
 
 def setup(app):
-    app.add_stylesheet('css/stylesheet.css')
+    app.add_css_file('css/stylesheet.css')
     app.add_config_value('recommonmark_config', {
             'url_resolver': lambda url: github_doc_root + url,
             'auto_toc_tree_section': 'Contents',
             'enable_eval_rst': True
             }, True)
     app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
-    app.add_javascript('webcode/summaryOpen.js')
-    app.add_javascript('webcode/copybutton.js') # Add the button for 
+    app.add_js_file('webcode/summaryOpen.js')
+    app.add_js_file('webcode/copybutton.js') # Add the button for 
                                         # hiding ">>>" in examples
-    sphinx.apidoc.main(['-f', #Overwrite existing files
+    sphinx.ext.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
                         #'-e', #Give modules their own pages
                         '-E', #user docstring headers

@@ -5,7 +5,7 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import check_input_cyl_sect, check_vector_type
 
 # init for tool tips
@@ -93,16 +93,17 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             magnetization = (mx,my,mz),
             dimension = (d1,d2,h,phi1,phi2),
             position = (0,0,0),
-            orientation = None):
-
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+            orientation = None,
+            style = None):
 
         # instance attributes
         self.dimension = dimension
         self._object_type = 'CylinderSegment'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+        BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property
@@ -116,14 +117,14 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """ Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg].
         """
         # input type check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(dim, 'dimension')
 
         # input type -> ndarray
         dim = np.array(dim,dtype=float)
 
         # input format check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_input_cyl_sect(dim)
 
         self._dimension = dim

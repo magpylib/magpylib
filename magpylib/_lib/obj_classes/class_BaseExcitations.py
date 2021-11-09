@@ -1,7 +1,7 @@
 """BaseHomMag class code"""
 
 import numpy as np
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import (check_vector_type, check_vector_format, check_scalar_type)
 
 
@@ -31,7 +31,7 @@ class BaseHomMag:
         """ Set magnetization vector, shape (3,), unit [mT].
         """
         # input type and init check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(mag, 'magnetization')
             #check_vector_init(mag, 'magnetization')
 
@@ -39,7 +39,7 @@ class BaseHomMag:
         mag = np.array(mag, dtype=float)
 
         # input format check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_format(mag, (3,),'magnetization')
 
         self._magnetization = mag
@@ -71,7 +71,7 @@ class BaseCurrent:
         """ Set Current value, unit [A].
         """
         # input type and init check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             #check_scalar_init(current, 'current')
             check_scalar_type(current, 'current')
 

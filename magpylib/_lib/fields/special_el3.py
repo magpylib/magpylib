@@ -14,7 +14,7 @@ def el30(x, kc, p):
     if x==0:
         return 0.
 
-    am=ap=c=d=de=fa=g=p1=pz=q=u=v=w=y=ye=zd=.0
+    ye=.0
     k=km2=l=m=n=0
     bo=bk=False
 

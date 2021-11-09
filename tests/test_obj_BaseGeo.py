@@ -1,6 +1,7 @@
 #import os
 #import pickle
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 
@@ -244,3 +245,9 @@ def test_path_functionality3():
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
     assert np.allclose(pos1, pos2)
     assert np.allclose(ori1, ori2)
+
+def test_style():
+    """test when setting wrong style class"""
+    bg = BaseGeo((0,0,0),None)
+    with pytest.raises(ValueError):
+        bg.style = "wrong class"

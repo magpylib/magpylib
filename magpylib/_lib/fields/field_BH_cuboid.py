@@ -4,7 +4,7 @@ magnetized Cuboids. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 
 
 def field_BH_cuboid(
@@ -30,7 +30,7 @@ def field_BH_cuboid(
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
 
-    edgesize = Config.EDGESIZE
+    edgesize = Config.edgesize
 
     # allocate field vectors ----------------------
     B = np.zeros((len(mag),3))

@@ -6,7 +6,7 @@ import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._lib.fields.special_el3 import el3_angle
 from magpylib._lib.utility import close
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 
 
 def arctan_k_tan_2(k, phi):
@@ -1385,9 +1385,9 @@ def field_BH_cylinder_tile(
     mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
 
     # r, phi ,z lies in-between
-    mask_r_in = (r1-Config.EDGESIZE<r) & (r<r2+Config.EDGESIZE)
+    mask_r_in = (r1-Config.edgesize<r) & (r<r2+Config.edgesize)
     mask_phi_in = (np.sign(phio1-phi1)!=np.sign(phio1-phi2)) | (np.sign(phio2-phi1)!=np.sign(phio2-phi2))
-    mask_z_in = (z1-Config.EDGESIZE<z) & (z<z2+Config.EDGESIZE)
+    mask_z_in = (z1-Config.edgesize<z) & (z<z2+Config.edgesize)
 
     # on surface
     mask_surf_z = (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in # top / bottom

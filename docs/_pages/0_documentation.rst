@@ -223,11 +223,11 @@ When all source and sensor objects are created and all paths are defined ``displ
     col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 
     # display
-    col.display(zoom=-.3, show_path=10)
+    col.display(zoom=-.3, path=10)
 
 .. plot:: _codes/doku_collection_display.py
 
-Various arguments like `axis, show_direction, show_path, size_sensors, size_direction, size_dipoles` and `zoom` can be used to customize the output and are described in the docstring in detail.
+Various arguments like `path, markers, canvas, zoom, backend` and `style` can be used to customize the output and are described in the docstring in detail.
 
 .. _docu-API-field-computation:
 

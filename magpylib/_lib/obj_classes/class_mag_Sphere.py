@@ -4,7 +4,7 @@ from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._lib.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import check_scalar_type
 
 # init for tool tips
@@ -84,16 +84,17 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             magnetization = (mx,my,mz),
             diameter = d,
             position = (0,0,0),
-            orientation = None):
-
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+            orientation = None,
+            style = None):
 
         # instance attributes
         self.diameter = diameter
         self._object_type = 'Sphere'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+        BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property
@@ -107,7 +108,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """ Set Sphere diameter, float, [mm].
         """
         # input type check
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_scalar_type(dia, 'diameter')
 
         # secure type

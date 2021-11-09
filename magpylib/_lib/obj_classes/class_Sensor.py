@@ -3,7 +3,7 @@ import numpy as np
 from magpylib._lib.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._lib.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._lib.utility import format_star_input
-from magpylib._lib.config import Config
+from magpylib._lib.default_classes import default_settings as Config
 from magpylib._lib.input_checks import check_vector_type, check_position_format
 from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
 
@@ -103,15 +103,17 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             self,
             position = (0,0,0),
             pixel=(0,0,0),
-            orientation = None):
-
-        # init inheritance
-        BaseGeo.__init__(self, position, orientation)
-        BaseDisplayRepr.__init__(self)
+            orientation = None,
+            style = None):
 
         # instance attributes
         self.pixel = pixel
         self._object_type = 'Sensor'
+
+        # init inheritance
+        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseDisplayRepr.__init__(self)
+
 
 
     # property getters and setters
@@ -127,14 +129,14 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Set Sensor pixel positions in Sensor CS, array_like, shape (...,3,)
         """
         # check input type
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_vector_type(pix, 'pixel_position')
 
         # input type -> ndarray
         pix = np.array(pix, dtype=float)
 
         # check input format
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_position_format(pix, 'pixel_position')
 
         self._pixel = pix

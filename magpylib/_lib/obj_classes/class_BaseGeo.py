@@ -4,15 +4,25 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._lib.obj_classes.class_Collection import Collection
 from magpylib._lib.exceptions import MagpylibBadUserInput
-from magpylib._lib.config import Config
-from magpylib._lib.input_checks import (check_vector_type, check_path_format,
-    check_start_type, check_increment_type, check_rot_type, check_anchor_type,
-    check_anchor_format, check_angle_type, check_axis_type, check_degree_type,
-    check_angle_format, check_axis_format)
+from magpylib._lib.default_classes import default_settings as Config
+from magpylib._lib.input_checks import (
+    check_vector_type,
+    check_path_format,
+    check_start_type,
+    check_increment_type,
+    check_rot_type,
+    check_anchor_type,
+    check_anchor_format,
+    check_angle_type,
+    check_axis_type,
+    check_degree_type,
+    check_angle_format,
+    check_axis_format,
+)
 
 # ALL METHODS ON INTERFACE
 class BaseGeo:
-    """ Initializes position and rotation (=orientation) properties
+    """Initializes position and rotation (=orientation) properties
     of an object in a global CS.
 
     Position is a ndarray with shape (3,).
@@ -45,37 +55,45 @@ class BaseGeo:
 
     """
 
-    def __init__(self, position, orientation):
+    def __init__(self, position, orientation, style=None):
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
+        self.style_class = self._get_style_class()
+        if style is not None:
+            self.style = style
+
+    def _get_style_class(self):
+        """returns style class based on object type. If class has no attribute `_object_type` or is
+        not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+        # pylint: disable=import-outside-toplevel
+        from magpylib._lib.style import get_style_class
+        return get_style_class(self)
 
     # properties ----------------------------------------------------
     @property
     def position(self):
-        """ Object position attribute getter and setter.
-        """
+        """Object position attribute getter and setter."""
         return np.squeeze(self._position)
-
 
     @position.setter
     def position(self, pos):
-        """ Set object position-path.
+        """Set object position-path.
 
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
 
         # check input type
-        if Config.CHECK_INPUTS:
-            check_vector_type(pos, 'position')
+        if Config.checkinputs:
+            check_vector_type(pos, "position")
 
         # path vector -> ndarray
         pos = np.array(pos, dtype=float)
 
         # check input format
-        if Config.CHECK_INPUTS:
-            check_path_format(pos, 'position')
+        if Config.checkinputs:
+            check_path_format(pos, "position")
 
         # expand if input is shape (3,)
         if pos.ndim == 1:
@@ -84,29 +102,27 @@ class BaseGeo:
 
     @property
     def orientation(self):
-        """ Object orientation attribute getter and setter.
-        """
+        """Object orientation attribute getter and setter."""
         # cannot squeeze (its a Rotation object)
-        if len(self._orientation)==1:      # single path orientation - reduce dimension
+        if len(self._orientation) == 1:  # single path orientation - reduce dimension
             return self._orientation[0]
-        return self._orientation           # return full path
-
+        return self._orientation  # return full path
 
     @orientation.setter
     def orientation(self, rot):
-        """ Set object orientation-path.
+        """Set object orientation-path.
 
         rot: None or scipy Rotation, shape (1,) or (N,), default=None
             Set orientation-path of object. None generates a unit orientation
             for every path step.
         """
         # check input type
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_rot_type(rot)
 
         # None input generates unit rotation
         if rot is None:
-            self._orientation = R.from_quat([(0,0,0,1)]*len(self._position))
+            self._orientation = R.from_quat([(0, 0, 0, 1)] * len(self._position))
 
         # expand rot.as_quat() to shape (1,4)
         else:
@@ -116,6 +132,25 @@ class BaseGeo:
             else:
                 self._orientation = rot
 
+    @property
+    def style(self):
+        """instance of MagpyStyle for display styling options"""
+        if not hasattr(self, "_style") or self._style is None:
+            self._style = self._validate_style(val=None)
+        return self._style
+
+    @style.setter
+    def style(self, val):
+        self._style = self._validate_style(val)
+
+    def _validate_style(self, val=None):
+        if val is None:
+            val = {}
+        if isinstance(val, dict):
+            val = self.style_class(**val)
+        if not isinstance(val, self.style_class):
+            raise ValueError(f"style must be of type {self.style_class}")
+        return val
 
     # dunders -------------------------------------------------------
     def __add__(self, source):
@@ -126,8 +161,7 @@ class BaseGeo:
         -------
         Collection: Collection
         """
-        return Collection(self,source)
-
+        return Collection(self, source)
 
     # methods -------------------------------------------------------
     def reset_path(self):
@@ -151,9 +185,8 @@ class BaseGeo:
         [0. 0. 0.]
 
         """
-        self.position = (0,0,0)
-        self.orientation = R.from_quat((0,0,0,1))
-
+        self.position = (0, 0, 0)
+        self.orientation = R.from_quat((0, 0, 0, 1))
 
     def move(self, displacement, start=-1, increment=False):
         """
@@ -240,8 +273,8 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
-            check_vector_type(displacement, 'displacement')
+        if Config.checkinputs:
+            check_vector_type(displacement, "displacement")
             check_start_type(start)
             check_increment_type(increment)
 
@@ -249,8 +282,8 @@ class BaseGeo:
         inpath = np.array(displacement, dtype=float)
 
         # check input format
-        if Config.CHECK_INPUTS:
-            check_path_format(inpath, 'displacement')
+        if Config.checkinputs:
+            check_path_format(inpath, "displacement")
 
         # expand if input is shape (3,)
         if inpath.ndim == 1:
@@ -267,15 +300,15 @@ class BaseGeo:
 
         # incremental input -> absolute input
         if increment:
-            for i,d in enumerate(inpath[:-1]):
-                inpath[i+1] = inpath[i+1] + d
+            for i, d in enumerate(inpath[:-1]):
+                inpath[i + 1] = inpath[i + 1] + d
 
-        end = start + lenin # end position of new_path
+        end = start + lenin  # end position of new_path
 
         til = end - lenop
-        if til > 0: # case inpos extends beyond old_path -> tile up old_path
-            old_ppath = np.pad(old_ppath, ((0,til),(0,0)), 'edge')
-            old_opath = np.pad(old_opath, ((0,til),(0,0)), 'edge')
+        if til > 0:  # case inpos extends beyond old_path -> tile up old_path
+            old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
+            old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
             self.orientation = R.from_quat(old_opath)
 
         # add new_ppath to old_ppath
@@ -283,7 +316,6 @@ class BaseGeo:
         self.position = old_ppath
 
         return self
-
 
     def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
@@ -416,7 +448,7 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_rot_type(rotation)
             check_anchor_type(anchor)
             check_start_type(start)
@@ -427,14 +459,14 @@ class BaseGeo:
             anchor = np.array(anchor, dtype=float)
 
         # check format
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_anchor_format(anchor)
             # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
 
         # expand rot.as_quat() to shape (1,4)
         rot = rotation
         inrotQ = rot.as_quat()
-        if inrotQ.ndim==1:
+        if inrotQ.ndim == 1:
             inrotQ = np.expand_dims(inrotQ, 0)
             rot = R.from_quat(inrotQ)
 
@@ -452,21 +484,21 @@ class BaseGeo:
         #   missing Rotation object item assign to improve this code
         if increment:
             rot1 = rot[0]
-            for i,r in enumerate(rot[1:]):
-                rot1 = r*rot1
-                inrotQ[i+1] = rot1.as_quat()
+            for i, r in enumerate(rot[1:]):
+                rot1 = r * rot1
+                inrotQ[i + 1] = rot1.as_quat()
             rot = R.from_quat(inrotQ)
 
         end = start + lenin  # end position of new_path
 
         # allocate new paths
         til = end - lenop
-        if til <= 0: # case inpos completely inside of existing path
+        if til <= 0:  # case inpos completely inside of existing path
             new_ppath = old_ppath
             new_opath = old_opath
-        else: # case inpos extends beyond old_path -> tile up old_path
-            new_ppath = np.pad(old_ppath, ((0,til),(0,0)), 'edge')
-            new_opath = np.pad(old_opath, ((0,til),(0,0)), 'edge')
+        else:  # case inpos extends beyond old_path -> tile up old_path
+            new_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
+            new_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
 
         # position change when there is an anchor
         if anchor is not None:
@@ -476,7 +508,7 @@ class BaseGeo:
 
         # set new rotation
         oldrot = R.from_quat(new_opath[start:end])
-        new_opath[start:end] = (rot*oldrot).as_quat()
+        new_opath[start:end] = (rot * oldrot).as_quat()
 
         # store new position and orientation
         self.orientation = R.from_quat(new_opath)
@@ -484,8 +516,9 @@ class BaseGeo:
 
         return self
 
-
-    def rotate_from_angax(self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
+    def rotate_from_angax(
+        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
+    ):
         """
         Object rotation in the global coordinate system from angle-axis input.
 
@@ -614,7 +647,7 @@ class BaseGeo:
         """
 
         # check input types
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_angle_type(angle)
             check_axis_type(axis)
             check_anchor_type(anchor)
@@ -624,10 +657,15 @@ class BaseGeo:
 
         # generate axis from string
         if isinstance(axis, str):
-            axis = (1,0,0) if axis=='x'\
-                else (0,1,0) if axis=='y'\
-                else (0,0,1) if axis=='z' \
-                else MagpylibBadUserInput(f'Bad axis string input \"{axis}\"')
+            axis = (
+                (1, 0, 0)
+                if axis == "x"
+                else (0, 1, 0)
+                if axis == "y"
+                else (0, 0, 1)
+                if axis == "z"
+                else MagpylibBadUserInput(f'Bad axis string input "{axis}"')
+            )
 
         # input expand and ->ndarray
         if isinstance(angle, (int, float)):
@@ -636,23 +674,23 @@ class BaseGeo:
         axis = np.array(axis, dtype=float)
 
         # format checks
-        if Config.CHECK_INPUTS:
+        if Config.checkinputs:
             check_angle_format(angle)
             check_axis_format(axis)
             # anchor check in .rotate()
 
-        # Config.CHECK_INPUTS format checks (after type secure)
-            # axis.shape != (3,)
-            # axis must not be (0,0,0)
+        # Config.checkinputs format checks (after type secure)
+        # axis.shape != (3,)
+        # axis must not be (0,0,0)
 
         # degree to rad
         if degrees:
-            angle = angle/180*np.pi
+            angle = angle / 180 * np.pi
 
         # apply rotation
-        angle = np.tile(angle, (3,1)).T
-        axis = axis/np.linalg.norm(axis)
-        rot = R.from_rotvec(axis*angle)
+        angle = np.tile(angle, (3, 1)).T
+        axis = axis / np.linalg.norm(axis)
+        rot = R.from_rotvec(axis * angle)
         self.rotate(rot, anchor, start, increment)
 
         return self
@@ -663,19 +701,19 @@ def adjust_start(start, lenop):
     change start to a value inside of [0,lenop], i.e. inside of the
     old path.
     """
-    if start=='append':
+    if start == "append":
         start = lenop
-    elif start<0:
+    elif start < 0:
         start += lenop
 
     # fix out-of-bounds start values
-    if start<0:
+    if start < 0:
         start = 0
-        if Config.CHECK_INPUTS:
-            print('Warning: start out of path bounds. Setting start=0.')
-    elif start>lenop:
+        if Config.checkinputs:
+            print("Warning: start out of path bounds. Setting start=0.")
+    elif start > lenop:
         start = lenop
-        if Config.CHECK_INPUTS:
-            print(f'Warning: start out of path bounds. Setting start={lenop}.')
+        if Config.checkinputs:
+            print(f"Warning: start out of path bounds. Setting start={lenop}.")
 
     return start
