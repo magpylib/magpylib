@@ -664,7 +664,6 @@ def make_Sensor(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
-    name = "Sensor" if style.name is None else style.name
     pixel = np.array(pixel)
     default_suffix = (
         f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
