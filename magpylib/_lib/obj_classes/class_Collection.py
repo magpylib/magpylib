@@ -459,22 +459,22 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         style-underscore_magic.
 
         >>> import magpylib as magpy
-        >>> 
+        >>>
         >>> # create collection
         >>> col = magpy.Collection()
         >>> for i in range(3):
         >>>     col + magpy.magnet.Sphere((1,1,1), 1, (i,0,0))
-        >>> 
+        >>>
         >>> # separate source
         >>> src = magpy.magnet.Sphere((1,1,1), 1, (3,0,0))
-        >>> 
+        >>>
         >>> # set collection style
         >>> col.set_styles(color='g')
-        >>> 
+        >>>
         >>> # set collection style with style-dict
         >>> style_dict = {'magnetization_size':0.5}
         >>> col.set_styles(style_dict)
-        >>> 
+        >>>
         >>> magpy.display(col, src)
         ---> graphic output
         """
