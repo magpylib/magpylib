@@ -53,7 +53,7 @@ COLORS_MATPLOTLIB_TO_PLOTLY = {
 
 SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY = {
     "line_width": 2.2,
-    "marker_size": 0.35,
+    "marker_size": 0.7,
 }
 
 

@@ -38,7 +38,7 @@ DEFAULTS = {
             "base": {
                 "path": {
                     "line": {"width": 1, "style": "solid", "color": None},
-                    "marker": {"size": 1, "symbol": "o", "color": None},
+                    "marker": {"size": 2, "symbol": "o", "color": None},
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,
