@@ -13,6 +13,7 @@ except ImportError as missing_module:
         """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
+
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _lib

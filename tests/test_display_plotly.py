@@ -61,7 +61,7 @@ def test_Cuboid_display():
     magpy.defaults.display.backend = "plotly"
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move([(0.1, 0.1, 0.1)] * 20, increment=True)
-    x = src.display(path=5, style_magnetization_show=True)
+    x = src.display(path=5, style_magnetization_show=True, renderer="png")
     assert x is None, "display test fail"
 
     fig = go.Figure()

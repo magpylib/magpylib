@@ -65,13 +65,12 @@ setuptools.setup(
     license=_license,
     packages=setuptools.find_packages(),
     zip_safe=False,  ## Gives the environment files so we can access docs,
-                     ## enables tooltips but may decrease performance
-    install_requires=[
-        "numpy>=1.20",
-        "scipy>=1.6",
-        "matplotlib>=3.3",
-    ],
-    extras_require={"testing": ["plotly>=5.3.1"]},
+    ## enables tooltips but may decrease performance
+    install_requires=["numpy>=1.20", "scipy>=1.6", "matplotlib>=3.3",],
+    # kaleido is needed for testing with display(renderer='png', backend='plotly')
+    extras_require={
+        "testing": ["plotly>=5.3", "kaleido", "pytest", "coverage", "pylint"]
+    },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3.7",
@@ -93,7 +92,5 @@ setuptools.setup(
             "source_dir": ("setup.py", "./docs"),
         }
     },
-    cmdclass={
-        "verify": VerifyVersionCommand,
-    },
+    cmdclass={"verify": VerifyVersionCommand,},
 )
