@@ -7,7 +7,7 @@ import magpylib as magpy
 
 def test_with_plotly_present():
     src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
-    x = src.display(renderer="png", backend="plotly")
+    x = src.display(renderer="json", backend="plotly")
     assert x is None, "display with plotly backend failed"
 
 
