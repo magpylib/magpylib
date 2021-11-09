@@ -88,19 +88,10 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self,
-        name=None,
-        description=None,
-        color=None,
-        opacity=None,
-        **kwargs,
+        self, name=None, description=None, color=None, opacity=None, **kwargs,
     ):
         super().__init__(
-            name=name,
-            description=description,
-            color=color,
-            opacity=opacity,
-            **kwargs,
+            name=name, description=description, color=color, opacity=opacity, **kwargs,
         )
 
     @property
@@ -273,7 +264,7 @@ class Mesh3d(MagicProperties):
         shows/hides mesh3d object based on provided data:
         - True: shows mesh
         - False: hides mesh
-        
+
     show : bool, default=None
         if `True`, replaces the object representation with the user mesh3d
 
@@ -300,7 +291,7 @@ class Mesh3d(MagicProperties):
             f" but received {repr(val)} instead"
         )
         self._show = val
-    
+
     @property
     def replace(self):
         """if `True`, replaces the object representation with the user mesh3d"""
