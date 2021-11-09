@@ -8,7 +8,7 @@ import warnings
 
 try:
     import plotly.graph_objects as go
-except ImportError as missing_module:
+except ImportError as missing_module: # pragma: no cover
     raise ModuleNotFoundError(
         """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
