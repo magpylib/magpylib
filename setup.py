@@ -67,9 +67,9 @@ setuptools.setup(
     zip_safe=False,  ## Gives the environment files so we can access docs,
     ## enables tooltips but may decrease performance
     install_requires=["numpy>=1.20", "scipy>=1.6", "matplotlib>=3.3",],
-    # kaleido is needed for testing with display(renderer='png', backend='plotly')
+    # kaleido, ipython are needed for testing with display(renderer='json', backend='plotly')
     extras_require={
-        "testing": ["plotly>=5.3", "kaleido", "pytest", "coverage", "pylint"]
+        "testing": ["plotly>=5.3", "kaleido", "pytest", "coverage", "pylint", "ipython"]
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
