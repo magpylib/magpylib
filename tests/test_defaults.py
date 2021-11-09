@@ -29,6 +29,7 @@ bad_inputs = {
     ),  # DOES NOT RAISE, transforms everything into str
     "display_style_base_opacity": (-1,),  # 0<=float<=1
     "display_style_base_mesh3d_show": ("notbool",),
+    "display_style_base_mesh3d_replace": ("notbool",),
     "display_style_base_mesh3d_data": (dict(x=1, y=1),),  # dict with x,y,z,i,j,k
     "display_style_base_color": ("wrongcolor",),  # color
     "display_style_magnet_magnetization_show": ("notbool",),
@@ -84,6 +85,7 @@ good_inputs = {
     ),  # DOES NOT RAISE, transforms everything into str
     "display_style_base_opacity": (0, 0.5, 1),  # 0<=float<=1
     "display_style_base_mesh3d_show": (True, False),
+    "display_style_base_mesh3d_replace": (True, False),
     "display_style_base_mesh3d_data": (
         dict(x=[1], y=[1], z=[1], i=[1], j=[1], k=[1]),
     ),  # dict with x,y,z,i,j,k

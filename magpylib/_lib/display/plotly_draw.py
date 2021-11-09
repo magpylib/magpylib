@@ -975,7 +975,7 @@ def get_plotly_traces(
         path_traces_add_mesh3d = []
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
             if style.mesh3d.data is None or (
-                style.mesh3d.data is not None and style.mesh3d.show != "inplace"
+                style.mesh3d.data is not None and not style.mesh3d.replace
             ):
                 path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
             if style.mesh3d.data is not None and style.mesh3d.show:
@@ -1245,21 +1245,24 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
     any plotly trace object or a dict, with x,y,z numbered parameters.
     """
-    ranges = {k: [] for k in "xyz"}
-    for t in traces:
-        for k, v in ranges.items():
-            v.extend(
-                [
-                    np.nanmin(np.array(t[k], dtype=float)),
-                    np.nanmax(np.array(t[k], dtype=float)),
-                ]
-            )
-    r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
-    size = np.diff(r, axis=1)
-    size[size == 0] = 1
-    m = size.max() / 2
-    center = r.mean(axis=1)
-    ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    if traces:
+        ranges = {k: [] for k in "xyz"}
+        for t in traces:
+            for k, v in ranges.items():
+                v.extend(
+                    [
+                        np.nanmin(np.array(t[k], dtype=float)),
+                        np.nanmax(np.array(t[k], dtype=float)),
+                    ]
+                )
+        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
+        size = np.diff(r, axis=1)
+        size[size == 0] = 1
+        m = size.max() / 2
+        center = r.mean(axis=1)
+        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    else:
+        ranges = np.array([[-1.,1.]]*3)
     return ranges
 
 

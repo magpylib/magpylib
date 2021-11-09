@@ -273,7 +273,9 @@ class Mesh3d(MagicProperties):
         shows/hides mesh3d object based on provided data:
         - True: shows mesh
         - False: hides mesh
-        - 'inplace': replace object representation
+        
+    show : bool, default=None
+        if `True`, replaces the object representation with the user mesh3d
 
     data: dict, default=None
         dictionary containing the `x,y,z,i,j,k` keys/values pairs for a mesh3d object
@@ -286,21 +288,32 @@ class Mesh3d(MagicProperties):
     @property
     def show(self):
         """
-        shows/hides mesh3d object based on provided data:
-        - True: shows mesh
-        - False: hides mesh
-        - 'inplace': replace object representation
+        shows/hides mesh3d object based on provided data
         """
         return self._show
 
     @show.setter
     def show(self, val):
-        assert val is None or isinstance(val, bool) or val == "inplace", (
+        assert val is None or isinstance(val, bool), (
             f"the `show` property of {type(self).__name__} must be "
-            f"one of `[True, False, 'inplace']`"
+            f"one of `[True, False]`"
             f" but received {repr(val)} instead"
         )
         self._show = val
+    
+    @property
+    def replace(self):
+        """if `True`, replaces the object representation with the user mesh3d"""
+        return self._replace
+
+    @replace.setter
+    def replace(self, val):
+        assert val is None or isinstance(val, bool) or val == "inplace", (
+            f"the `replace` property of {type(self).__name__} must be "
+            f"one of `[True, False]`"
+            f" but received {repr(val)} instead"
+        )
+        self._replace = val
 
     @property
     def data(self):

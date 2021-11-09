@@ -42,7 +42,7 @@ DEFAULTS = {
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,
-                "mesh3d": {"show": True, "data": None},
+                "mesh3d": {"show": True, "replace":False, "data": None},
                 "color": None,
             },
             "magnet": {

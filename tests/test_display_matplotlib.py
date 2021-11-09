@@ -146,7 +146,7 @@ def test_matplotlib_mesh3d_warning():
     ax = plt.subplot(projection="3d")
     sens = magpy.Sensor(
         pixel=[(1, 2, 3), (2, 3, 4)],
-        style=dict(mesh3d_data=data, mesh3d_show="inplace"),
+        style=dict(mesh3d_data=data, mesh3d_replace=True),
     )
     sens.move([(0.4, 0.4, 0.4)] * 33, increment=True)
     with pytest.warns(UserWarning):

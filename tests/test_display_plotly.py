@@ -194,7 +194,15 @@ def test_extra_mesh3d():
     x = src.display(canvas=fig, style=dict(mesh3d_data=data, mesh3d_show=False))
     assert x is None, "display test fail"
     x = src.display(
-        canvas=fig, path="animate", style=dict(mesh3d_data=data, mesh3d_show="inplace")
+        canvas=fig,
+        path="animate",
+        style=dict(mesh3d_data=data, mesh3d_show=True, mesh3d_replace=True),
+    )
+    assert x is None, "display test fail"
+    x = src.display(
+        canvas=fig,
+        path="animate",
+        style=dict(mesh3d_data=data, mesh3d_show=False, mesh3d_replace=True),
     )
     assert x is None, "display test fail"
 
