@@ -77,10 +77,10 @@ extensions = [
     'sphinx.ext.imgmath',
     'sphinx.ext.autosummary',
     'sphinx.ext.ifconfig',
-    'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'matplotlib.sphinxext.plot_directive',
     'sphinx_gallery.gen_gallery',
+    'sphinx_copybutton',
 ]
 
 sphinx_gallery_conf = {
