@@ -56,7 +56,7 @@ A cylinder shaped permanent magnet with diameter and height of 4 and 5 millimete
    :maxdepth: 2
    :caption: Example galleries
 
-   auto_examples/index
+   _auto_examples/index
 
 Index
 #####
