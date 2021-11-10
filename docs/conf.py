@@ -19,30 +19,21 @@
 import os
 import sys
 #Location of Sphinx files
-sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above 
+sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above
 os.environ["SPHINX_APIDOC_OPTIONS"] = "members,show-inheritance" ## Hide undocumented members
 import sphinx.ext.apidoc
-
+import plotly.io as pio
+pio.renderers.default = 'sphinx_gallery'
 
 autodoc_default_options = {
     'private-members':True,
     'inherited-members':True,
 }
 
-# Recommon Mark Configuration
-from recommonmark.transform import AutoStructify
-github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/' 
-
 def setup(app):
     app.add_css_file('css/stylesheet.css')
-    app.add_config_value('recommonmark_config', {
-            'url_resolver': lambda url: github_doc_root + url,
-            'auto_toc_tree_section': 'Contents',
-            'enable_eval_rst': True
-            }, True)
-    app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
     app.add_js_file('webcode/summaryOpen.js')
-    app.add_js_file('webcode/copybutton.js') # Add the button for 
+    app.add_js_file('webcode/copybutton.js') # Add the button for
                                         # hiding ">>>" in examples
     sphinx.ext.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
@@ -89,7 +80,13 @@ extensions = [
     'sphinx.ext.viewcode',
     'sphinx.ext.napoleon',
     'matplotlib.sphinxext.plot_directive',
+    'sphinx_gallery.gen_gallery',
 ]
+
+sphinx_gallery_conf = {
+     'examples_dirs': '../examples',   # path to your example scripts
+     'gallery_dirs': 'auto_examples',  # path to where to save gallery generated output
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -227,11 +224,5 @@ epub_exclude_files = ['search.html']
 # -- Extension configuration -------------------------------------------------
 
 # -- Markdown enable
-
-from recommonmark.parser import CommonMarkParser
-
-source_parsers = {
-    '.md': CommonMarkParser,
-}
 
 source_suffix = ['.rst', '.md']
