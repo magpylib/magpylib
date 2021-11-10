@@ -24,7 +24,7 @@ magpy.display(src, sens)
 # The same objects can also be displayed using the `plotly` plotting backend
 import plotly.graph_objects as go
 fig  = go.Figure()
-magpy.display(src, sens, canvas=fig, backend='plotly')
+magpy.display(src, sens, canvas=fig, path='animate', backend='plotly')
 fig
 
 #%%
