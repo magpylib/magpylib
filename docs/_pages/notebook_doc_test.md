@@ -42,16 +42,37 @@ magpy.display(
 )
 ```
 
-```{note}
-MyST markdown is a mixture of two flavors of markdown
+```{warning}
+Even if all objects can be represented both by the `matplotlib` and `plotly` plotting backends, there is no 100% feature parity bewteen them.
 ```
 
-## Write your first markdown document
+````{tabbed} Matplotlib
+```{code-cell} ipython3
+import magpylib as magpy
 
-Now that you've enabled the `myst-parser` in Sphinx, you can write MyST markdown in a file that ends with `.md` extension for your pages.
+src = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
+src.move([(0.1, 0, 0)] * 50, increment=True)
+src.rotate_from_angax(angle=[10] * 50, axis="z", anchor=0, start=0, increment=True)
+ts = [-0.4, 0, 0.4]
+sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
 
-It supports all the syntax of **[CommonMark Markdown](https://commonmark.org/)** at its
-base. This is a community standard flavor of markdown used across many projects.
+magpy.display(src, sens)
+```
+````
 
-In addition, it includes **[several extensions](../syntax/syntax.md) to CommonMark**.
-These add extra syntax features for technical writing, such as the roles and directives used by Sphinx.
+````{tabbed} Plotly
+# The same objects can also be displayed using the `plotly` plotting backend
+import plotly.graph_objects as go
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+src = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
+src.move([(0.1, 0, 0)] * 50, increment=True)
+src.rotate_from_angax(angle=[10] * 50, axis="z", anchor=0, start=0, increment=True)
+ts = [-0.4, 0, 0.4]
+sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
+
+magpy.display(src, sens, path="animate", backend="plotly")
+```
+````
