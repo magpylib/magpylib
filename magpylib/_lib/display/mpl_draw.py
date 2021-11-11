@@ -49,6 +49,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
                 phi_mid = (phi1 + phi2) / 2 * np.pi / 180
                 r_mid = (r2 + r1) / 2
                 shift = r_mid * np.array([np.cos(phi_mid), np.sin(phi_mid), 0])
+                shift = rot.apply(shift)
                 draw_pos += [pos + shift]
             else:
                 draw_pos += [pos]
