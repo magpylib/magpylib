@@ -5,7 +5,8 @@ a circular current loop. Computation details in function docstrings.
 # pylint: disable=no-name-in-module
 
 import numpy as np
-from scipy.special import ellipe, ellipk
+from scipy.special import ellipe
+from magpylib._lib.fields.special_cel import cel_loop_stable
 
 
 def field_BH_circular(
@@ -38,7 +39,7 @@ def field_BH_circular(
     mask0 = (r==r0)*(z==0)
 
     # forward only non-singularity observer positions for computation--------
-    Br, Bz = current_loop_B_Smythe1950(r0[~mask0], pos_obs_cy[~mask0]).T
+    Br, Bz = current_loop_B_Leitner2021(r0[~mask0], pos_obs_cy[~mask0]).T
 
     # insert non-singular computations into total vectors----------------------
     Br_all[~mask0] = Br
@@ -58,15 +59,15 @@ def field_BH_circular(
 
 
 # ON INTERFACE
-def current_loop_B_Smythe1950(
+def current_loop_B_Leitner2021(
     radius: np.ndarray,
     pos_obs: np.ndarray
     ) -> np.ndarray:
     """
-    B-field in cylindrical CS of circular line-current loop.
-    The current loop lies in the z=0 plane with the origin at its center.
-
-    Implementation from [Smythe1950], [Simpson2001], [Ortner2017].
+    B-field in cylindrical CS of circular line-current loop. The
+    current loop lies in the z=0 plane with the origin at its center.
+    The field is computed with 12-14 digits precision. Implementation
+    from [Leitner2021].
 
     Parameters
     ----------
@@ -110,7 +111,7 @@ def current_loop_B_Smythe1950(
     Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
     IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
 
-    Numerical instabilities: see discussion on GitHub
+    Leitner, "work in progress"
     """
 
     # inputs   -----------------------------------------------------------
@@ -118,24 +119,26 @@ def current_loop_B_Smythe1950(
     r, z = pos_obs.T
     n = len(r0)
 
-    # pre compute small quantities that might not get stored in the cache otherwise
-    r2 = r**2
-    r02 = r0**2
-    z2 = z**2
-    brack = (z2 + (r0+r)**2)
-    k2 = 4*r*r0/brack
-    k_over_sq_rr0 = 2/np.sqrt(brack)
+    # make dimensionless
+    rb = r/r0
+    zb = z/r0
 
-    # evaluate complete elliptic integrals ------------------------------------
-    ellip_e = ellipe(k2)
-    ellip_k = ellipk(k2)
+    # pre-compute small quantities that mighjt not be cached
+    z2 = zb**2
+    brack = (z2+(rb+1)**2)
+    k2 = 4*rb/brack
+    pf = 1/np.sqrt(brack)/(1-k2)
+    xi = cel_loop_stable(k2)
 
-    # compute fields from formulas [Ortner2017] -----------------------------
-    mask1 = r==0
+    # rb=0 requires special treatment
+    mask1 = rb==0
     z_over_r = np.zeros(n)
-    z_over_r[~mask1] = z[~mask1]/r[~mask1] # will be zero when r=0 -> Br=0
+    k2_over_rb = np.ones(n)*4/(z2+1)
+    z_over_r[~mask1] = z[~mask1]/rb[~mask1]    # will be zero when r=0
+    k2_over_rb[~mask1] = k2[~mask1]/rb[~mask1] # will be zero when r=0
 
-    Br = .5*k_over_sq_rr0 * z_over_r * ((2-k2)/(1-k2)*ellip_e - 2*ellip_k)
-    Bz = k_over_sq_rr0 * (ellip_k - (r2-r02+z2)/((r0-r)**2+z2)*ellip_e)
+    # field components
+    Br = pf * z_over_r * xi
+    Bz = pf * (k2_over_rb*ellipe(k2) - xi)
 
     return np.array([Br, Bz]).T
