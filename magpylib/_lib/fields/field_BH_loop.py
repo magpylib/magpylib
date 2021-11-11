@@ -9,7 +9,7 @@ from scipy.special import ellipe
 from magpylib._lib.fields.special_cel import cel_loop_stable
 
 
-def field_BH_circular(
+def field_BH_loop(
     bh: bool,
     current: np.ndarray,
     dia: np.ndarray,

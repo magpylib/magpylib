@@ -4,7 +4,7 @@ from magpylib._lib.fields.field_BH_cylinder import field_BH_cylinder
 from magpylib._lib.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
 from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
-from magpylib._lib.fields.field_BH_circular import field_BH_circular
+from magpylib._lib.fields.field_BH_loop import field_BH_loop
 from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
 from magpylib._lib.exceptions import MagpylibInternalError
 
@@ -71,7 +71,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'Loop':
         current = kwargs['current']
         dia = kwargs['diameter']
-        B = field_BH_circular(bh, current, dia, pos_rel_rot)
+        B = field_BH_loop(bh, current, dia, pos_rel_rot)
 
     elif src_type =='Line':
         current = kwargs['current']
