@@ -75,10 +75,10 @@ def test_Sensor_display():
     assert x is None, "display test fail"
 
 
-def test_Circular_display():
-    """testing display for Circular source"""
+def test_Loop_display():
+    """testing display for Loop source"""
     ax = plt.subplot(projection="3d")
-    src = magpy.current.Circular(current=1, diameter=1)
+    src = magpy.current.Loop(current=1, diameter=1)
     x = src.display(canvas=ax)
     assert x is None, "display test fail"
 
@@ -115,8 +115,8 @@ def test_circular_line_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection="3d")
-    src1 = magpy.current.Circular(1, 2)
-    src2 = magpy.current.Circular(1, 2)
+    src1 = magpy.current.Loop(1, 2)
+    src2 = magpy.current.Loop(1, 2)
     src1.move([(0.4, 0.4, 0.4)] * 5, increment=True)
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])

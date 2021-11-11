@@ -13,7 +13,7 @@ def check_dimensions(sources):
         if s._object_type in ('Cuboid', 'Cylinder'):
             if np.isnan(s.dimension).any():
                 raise MagpylibMissingInput(f'{s} dimension must be initialized.')
-        elif s._object_type in ('Sphere', 'Circular'):
+        elif s._object_type in ('Sphere', 'Loop'):
             if s.diameter is None:
                 raise MagpylibMissingInput(f'{s} diameter must be initialized.')
         elif s._object_type == 'Line':
@@ -29,7 +29,7 @@ def check_excitations(sources):
         if s._object_type in ('Cuboid', 'Cylinder', 'Sphere'):
             if np.isnan(s.magnetization).any():
                 raise MagpylibMissingInput(f'{s} magnetization must be initialized.')
-        elif s._object_type in ('Circular', 'Line'):
+        elif s._object_type in ('Loop', 'Line'):
             if s.current is None:
                 raise MagpylibMissingInput(f'{s} current must be initialized.')
         elif s._object_type == 'Dipole':

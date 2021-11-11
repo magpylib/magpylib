@@ -82,7 +82,7 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
             moment = np.array(kwargs['moment'], dtype=float)
             tile_params['moment'] = (moment,2)
 
-        elif src_type == 'Circular':
+        elif src_type == 'Loop':
             current = np.array(kwargs['current'], dtype=float)
             tile_params['current'] = (current,1)
             dia = np.array(kwargs['diameter'], dtype=float)
@@ -153,7 +153,7 @@ def getB_dict(**kwargs):
     ----------
     source_type: string
         Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old', 'Sphere',
-        'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
+        'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -176,13 +176,13 @@ def getB_dict(**kwargs):
         homogeneous magnets the relation is moment = magnetization*volume.
 
     current: array_like, shape (N,)
-        Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
+        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
     dimension: array_like
         Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
 
     diameter: array_like, shape (N)
-        Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
+        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
 
     segment_start: array_like, shape (N,3)
         Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
@@ -254,7 +254,7 @@ def getH_dict(**kwargs):
     ----------
     source_type: string
         Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old', 'Sphere',
-        'Dipole', 'Circular' or 'Line'. Expected input parameters depend on source_type.
+        'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
     position: array_like, shape (3,) or (N,3), default=(0,0,0)
         Source positions in units of [mm].
@@ -277,13 +277,13 @@ def getH_dict(**kwargs):
         homogeneous magnets the relation is moment = magnetization*volume.
 
     current: array_like, shape (N,)
-        Only `source_type in ('Line', 'Circular')`! Current flowing in loop in units of [A].
+        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
     dimension: array_like
         Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
 
     diameter: array_like, shape (N)
-        Only `source_type in (Sphere, Circular)`! Diameter of source in units of [mm].
+        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
 
     segment_start: array_like, shape (N,3)
         Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].

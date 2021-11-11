@@ -114,7 +114,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         return {'source_type':src_type, 'moment':momv, 'position':posv,
             'observer': posov, 'orientation':rotobj}
 
-    if src_type == 'Circular':
+    if src_type == 'Loop':
         currv = tile_current(group, n_pp)
         diav = tile_dia(group, n_pp)
         return {'source_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
@@ -261,7 +261,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         elif src._object_type == 'Dipole':
             src_sorted[4] += [src]
             order[4] += [i]
-        elif src._object_type == 'Circular':
+        elif src._object_type == 'Loop':
             src_sorted[5] += [src]
             order[5] += [i]
         elif src._object_type == 'Line':

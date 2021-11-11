@@ -57,7 +57,7 @@ def format_obj_input(objects: Sequence) -> list:
                     'Sphere',
                     'Sensor',
                     'Dipole',
-                    'Circular',
+                    'Loop',
                     'Line'):
                     obj_list += [obj]
             except Exception as error:
@@ -84,7 +84,7 @@ def format_src_inputs(sources) -> list:
     # pylint: disable=protected-access
 
     src_class_types = (
-        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Circular', 'Line')
+        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line')
 
     # if bare source make into list
     if not isinstance(sources, (list,tuple)):
@@ -236,7 +236,7 @@ def only_allowed_src_types(src_list):
     # pylint: disable=protected-access
 
     src_class_types = ('Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole',
-        'Circular', 'Line')
+        'Loop', 'Line')
     new_list = []
     for src in src_list:
         if src._object_type in src_class_types:

@@ -68,7 +68,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
         moment = kwargs['moment']
         B = field_BH_dipole(bh, moment, pos_rel_rot)
 
-    elif src_type == 'Circular':
+    elif src_type == 'Loop':
         current = kwargs['current']
         dia = kwargs['diameter']
         B = field_BH_circular(bh, current, dia, pos_rel_rot)

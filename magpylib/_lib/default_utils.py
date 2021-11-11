@@ -6,7 +6,7 @@ from magpylib._lib.defaults import DEFAULTS
 
 MAGPYLIB_FAMILIES = {
     "Line": ("current",),
-    "Circular": ("current",),
+    "Loop": ("current",),
     "Cuboid": ("magnet",),
     "Cylinder": ("magnet",),
     "Sphere": ("magnet",),

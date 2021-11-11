@@ -75,7 +75,7 @@ class BaseGetBH:
         Compute the B-field [mT] of a source at two sensors:
 
         >>> import magpylib as magpy
-        >>> source = magpy.current.Circular(current=15, diameter=1)
+        >>> source = magpy.current.Loop(current=15, diameter=1)
         >>> sens1 = magpy.Sensor(position=(1,2,3))
         >>> sens2 = magpy.Sensor(position=(2,3,4))
         >>> B = source.getB(sens1, sens2)
@@ -145,7 +145,7 @@ class BaseGetBH:
         Compute the H-field [kA/m] of a source at two sensors:
 
         >>> import magpylib as magpy
-        >>> source = magpy.current.Circular(current=15, diameter=1)
+        >>> source = magpy.current.Loop(current=15, diameter=1)
         >>> sens1 = magpy.Sensor(position=(1,2,3))
         >>> sens2 = magpy.Sensor(position=(2,3,4))
         >>> H = source.getH(sens1, sens2)

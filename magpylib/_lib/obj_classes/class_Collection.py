@@ -39,39 +39,39 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     >>> import magpylib as magpy
     >>> sphere = magpy.magnet.Sphere((1,2,3),1)
-    >>> loop = magpy.current.Circular(1,1)
+    >>> loop = magpy.current.Loop(1,1)
     >>> dipole = magpy.misc.Dipole((1,2,3))
     >>> col = magpy.Collection(sphere, loop, dipole)
     >>> print(col.sources)
-    [Sphere(id=1879891544384), Circular(id=1879891543040), Dipole(id=1879892157152)]
+    [Sphere(id=1879891544384), Loop(id=1879891543040), Dipole(id=1879892157152)]
 
     Cycle directly through the Collection ``sources`` attribute
 
     >>> for src in col:
     >>>    print(src)
     Sphere(id=1879891544384)
-    Circular(id=1879891543040)
+    Loop(id=1879891543040)
     Dipole(id=1879892157152)
 
     and directly access objects from the Collection
 
     >>> print(col[1])
-    Circular(id=1879891543040)
+    Loop(id=1879891543040)
 
     Add and subtract sources to form a Collection and to remove sources from a Collection.
 
     >>> col = sphere + loop
     >>> print(col.sources)
-    [Sphere(id=1879891544384), Circular(id=1879891543040)]
+    [Sphere(id=1879891544384), Loop(id=1879891543040)]
     >>> col - sphere
     >>> print(col.sources)
-    [Circular(id=1879891543040)]
+    [Loop(id=1879891543040)]
 
     Manipulate all objects in a Collection directly using ``move`` and ``rotate`` methods
 
     >>> import magpylib as magpy
     >>> sphere = magpy.magnet.Sphere((1,2,3),1)
-    >>> loop = magpy.current.Circular(1,1)
+    >>> loop = magpy.current.Loop(1,1)
     >>> col = sphere + loop
     >>> col.move((1,1,1))
     >>> print(sphere.position)
@@ -148,11 +148,11 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         Add sources to a Collection:
 
         >>> import magpylib as magpy
-        >>> src = magpy.current.Circular(1,1)
+        >>> src = magpy.current.Loop(1,1)
         >>> col = magpy.Collection()
         >>> col.add(src)
         >>> print(col.sources)
-        [Circular(id=2519738714432)]
+        [Loop(id=2519738714432)]
 
         """
         # format input
@@ -183,14 +183,14 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         Remove a specific source from a Collection:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.current.Circular(1,1)
-        >>> src2 = magpy.current.Circular(1,1)
+        >>> src1 = magpy.current.Loop(1,1)
+        >>> src2 = magpy.current.Loop(1,1)
         >>> col = src1 + src2
         >>> print(col.sources)
-        [Circular(id=2405009623360), Circular(id=2405010235504)]
+        [Loop(id=2405009623360), Loop(id=2405010235504)]
         >>> col.remove(src1)
         >>> print(col.sources)
-        [Circular(id=2405010235504)]
+        [Loop(id=2405010235504)]
 
         """
         self._sources.remove(source)
@@ -234,7 +234,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         >>> import magpylib as magpy
         >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Circular(1,1)
+        >>> loop = magpy.current.Loop(1,1)
         >>> col = loop + dipole
         >>> col.move([(1,1,1), (2,2,2)])
         >>> for src in col:
@@ -296,7 +296,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         >>> from scipy.spatial.transform import Rotation as R
         >>> import magpylib as magpy
         >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Circular(1,1)
+        >>> loop = magpy.current.Loop(1,1)
         >>> col = loop + dipole
         >>> col.rotate(R.from_euler('x', [45,90], degrees=True))
         >>> for src in col:
@@ -370,7 +370,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         >>> import magpylib as magpy
         >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Circular(1,1)
+        >>> loop = magpy.current.Loop(1,1)
         >>> col = loop + dipole
         >>> col.rotate_from_angax([45,90], 'x')
         >>> for src in col:
@@ -428,7 +428,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         >>> import magpylib as magpy
         >>> dipole = magpy.misc.Dipole((1,2,3), position=(1,2,3))
-        >>> loop = magpy.current.Circular(1,1, position=[(1,1,1)]*2)
+        >>> loop = magpy.current.Loop(1,1, position=[(1,1,1)]*2)
         >>> col = loop + dipole
         >>> for src in col:
         >>>     print(src.position)

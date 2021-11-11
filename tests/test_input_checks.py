@@ -14,55 +14,55 @@ r0 = R.from_quat((0,0,0,1))
 # Check error throwing when dimension or excitation is not initialized
 def init_dim_display1():
     """throw dimension init error from display"""
-    src1 = magpy.current.Circular(current=1)
+    src1 = magpy.current.Loop(current=1)
     src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
     magpy.display(src1, src2)
 
 def init_dim_display2():
     """throw dimension init error from display"""
-    src1 = magpy.current.Circular(current=1, diameter=2)
+    src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.magnet.Cuboid(magnetization=(1,2,3))
     magpy.display(src1, src2)
 
 def init_dim_display3():
     """throw dimension init error from display"""
-    src1 = magpy.current.Circular(current=1, diameter=2)
+    src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.current.Line(current=1)
     magpy.display(src1, src2)
 
 def init_dim_getBH1():
     """throw dimension init error from getB"""
-    src1 = magpy.current.Circular(current=1)
+    src1 = magpy.current.Loop(current=1)
     src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
     magpy.getB([src1,src2], (1,2,3))
 
 def init_exite_display1():
     """throw excitation init error from display"""
-    src1 = magpy.current.Circular(diameter=1)
+    src1 = magpy.current.Loop(diameter=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.display(src1, src2, style_magnetization_show=True, style_arrow_show=True)
 
 def init_exite_getBH1():
     """throw excitation init error from getB"""
-    src1 = magpy.current.Circular(diameter=1, current=1)
+    src1 = magpy.current.Loop(diameter=1, current=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH2():
     """throw excitation init error from getB"""
-    src1 = magpy.current.Circular(current=1, diameter=2)
+    src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.magnet.Cuboid(dimension=(1,2,3))
     magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH3():
     """throw excitation init error from getB"""
-    src1 = magpy.current.Circular(current=1, diameter=2)
+    src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.current.Line(vertices=[(1,2,3),(2,3,4)])
     magpy.getB([src1, src2], (1,2,3))
 
 def init_exite_getBH4():
     """throw excitation init error from getB"""
-    src1 = magpy.current.Circular(current=1, diameter=2)
+    src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.misc.Dipole()
     magpy.getB([src1, src2], (1,2,3))
 
@@ -197,7 +197,7 @@ def badMag_input2():
 
 def badCurrent_input1():
     """bad current input type"""
-    magpy.current.Circular(current='1', diameter=1)
+    magpy.current.Loop(current='1', diameter=1)
 
 # DIMENSIONS --------------------------------------------
 
@@ -221,8 +221,8 @@ def bad_dim_input7():
     magpy.magnet.Sphere(magnetization=a3, diameter=(1,1))
 
 def bad_dim_input9():
-    """Circular dim type"""
-    magpy.current.Circular(current=1, diameter=(1,1))
+    """Loop dim type"""
+    magpy.current.Loop(current=1, diameter=(1,1))
 
 def bad_dim_input10():
     """cylinder section bad dim shape"""
@@ -263,7 +263,7 @@ def bad_misc_input6():
 
 # OBSERVER ------------------------------------------------------------
 
-src = magpy.current.Circular(current=1, diameter=1)
+src = magpy.current.Loop(current=1, diameter=1)
 sens = magpy.Sensor()
 def bad_observer_input1():
     """getBH observer format"""

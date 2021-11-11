@@ -58,7 +58,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     >>> import magpylib as magpy
     >>> sensor = magpy.Sensor()
-    >>> loop = magpy.current.Circular(current=1, diameter=1)
+    >>> loop = magpy.current.Loop(current=1, diameter=1)
     >>> H = sensor.getH(loop)
     >>> print(H)
     [0. 0. 1.]
@@ -68,7 +68,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     >>> import magpylib as magpy
     >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-    >>> loop = magpy.current.Circular(current=1, diameter=1)
+    >>> loop = magpy.current.Loop(current=1, diameter=1)
     >>> H = sensor.getH(loop)
     >>> print(H.shape)
     (2, 2, 3)
@@ -82,7 +82,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     they coincide with the pixel positions of the previous example:
 
     >>> import magpylib as magpy
-    >>> loop = magpy.current.Circular(current=1, diameter=1)
+    >>> loop = magpy.current.Loop(current=1, diameter=1)
     >>> sensor = magpy.Sensor()
     >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
     >>> print(sensor.position)
@@ -174,7 +174,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> B = sensor.getB(loop)
         >>> print(B)
         [0.         0.         1.25663706]
@@ -184,7 +184,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> B = sensor.getB(loop)
         >>> print(B.shape)
         (2, 2, 3)
@@ -198,7 +198,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         they coincide with the pixel positions in the previous example.
 
         >>> import magpylib as magpy
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> sensor = magpy.Sensor()
         >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
         >>> print(sensor.position)
@@ -249,7 +249,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> H = sensor.getH(loop)
         >>> print(H)
         [0. 0. 1.]
@@ -259,7 +259,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor(pixel=[[(0,0,0), (0,0,1)],[(0,0,2), (0,0,3)]])
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> H = sensor.getH(loop)
         >>> print(H.shape)
         (2, 2, 3)
@@ -273,7 +273,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         they coincide with the pixel positions in the previous example.
 
         >>> import magpylib as magpy
-        >>> loop = magpy.current.Circular(current=1, diameter=1)
+        >>> loop = magpy.current.Loop(current=1, diameter=1)
         >>> sensor = magpy.Sensor()
         >>> sensor.move([(0,0,1)]*3, start=1, increment=True)
         >>> print(sensor.position)

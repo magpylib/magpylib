@@ -401,7 +401,7 @@ def make_Line(
     return {**line, **kwargs}
 
 
-def make_Circular(
+def make_Loop(
     current=0.0,
     diameter=1.0,
     pos=(0.0, 0.0, 0.0),
@@ -412,7 +412,7 @@ def make_Circular(
     **kwargs,
 ):
     """
-    Creates the plotly scatter3d parameters for a Circular current in a dictionary based on the
+    Creates the plotly scatter3d parameters for a Loop current in a dictionary based on the
     provided arguments
     """
     default_suffix = (
@@ -420,7 +420,7 @@ def make_Circular(
         if current is not None
         else " (Current not initialized)"
     )
-    name, name_suffix = get_name_and_suffix("Circular", default_suffix, style)
+    name, name_suffix = get_name_and_suffix("Loop", default_suffix, style)
     arrow_size = style.arrow.size if style.arrow.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
@@ -483,7 +483,7 @@ def make_Dipole(
     **kwargs,
 ) -> dict:
     """
-    Creates the plotly mesh3d parameters for a Circular current in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Loop current in a dictionary based on the
     provided arguments
     """
     moment_mag = np.linalg.norm(moment)
@@ -869,7 +869,7 @@ def get_plotly_traces(
     CylinderSegment = _lib.obj_classes.CylinderSegment
     Sphere = _lib.obj_classes.Sphere
     Dipole = _lib.obj_classes.Dipole
-    Circular = _lib.obj_classes.Circular
+    Loop = _lib.obj_classes.Loop
     Line = _lib.obj_classes.Line
 
     # parse kwargs into style and non style args
@@ -961,12 +961,12 @@ def get_plotly_traces(
                 current=input_obj.current,
             )
             make_func = make_Line
-        elif isinstance(input_obj, Circular):
+        elif isinstance(input_obj, Loop):
             kwargs.update(
                 diameter=input_obj.diameter,
                 current=input_obj.current,
             )
-            make_func = make_Circular
+            make_func = make_Loop
         else:
             kwargs.update(name=type(input_obj).__name__)
             make_func = make_UnsupportedObject

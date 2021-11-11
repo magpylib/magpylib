@@ -69,7 +69,7 @@ def getB(sources, observers, sumup=False, squeeze=True):
     sumup:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Circular(current=15, diameter=2)
+    >>> src1 = magpy.current.Loop(current=15, diameter=2)
     >>> src2 = magpy.misc.Dipole(moment=(100,100,100))
     >>> obs_pos = [(1,1,1), (1,2,3)]
     >>> B = magpy.getB([src1,src2], obs_pos)
@@ -154,7 +154,7 @@ def getH(sources, observers, sumup=False, squeeze=True):
     sumup:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Circular(current=15, diameter=2)
+    >>> src1 = magpy.current.Loop(current=15, diameter=2)
     >>> src2 = magpy.misc.Dipole(moment=(100,100,100))
     >>> obs_pos = [(1,1,1), (1,2,3)]
     >>> H = magpy.getH([src1,src2], obs_pos)

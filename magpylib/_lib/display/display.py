@@ -244,7 +244,7 @@ def display_matplotlib(
             arrow_size = style.arrow.size if style.arrow.show else 0
             arrow_width = style.arrow.width
             points += draw_line([obj], show_path, color, arrow_size, arrow_width, ax)
-        elif obj._object_type == "Circular":
+        elif obj._object_type == "Loop":
             if style.arrow.show:
                 check_excitations([obj])
             arrow_width = style.arrow.width
