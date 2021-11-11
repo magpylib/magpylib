@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pytest
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib._lib.display.plotly_draw import get_plotly_traces, make_BaseCuboid
+from magpylib._src.display.plotly_draw import get_plotly_traces, make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 

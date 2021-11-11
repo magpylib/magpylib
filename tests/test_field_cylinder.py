@@ -3,7 +3,7 @@ Testing all cases against a large set of pre-computed values
 """
 
 import numpy as np
-from magpylib._lib.fields.field_BH_cylinder_tile import (magnet_cyl_tile_H_Slanovc2021,
+from magpylib._src.fields.field_BH_cylinder_tile import (magnet_cyl_tile_H_Slanovc2021,
     field_BH_cylinder_tile)
 import magpylib as magpy
 
@@ -317,7 +317,7 @@ def test_cases9():
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H0))
 
 
-# from magpylib._lib.fields.field_BH_cylinder_old import field_BH_cylinder
+# from magpylib._src.fields.field_BH_cylinder_old import field_BH_cylinder
 # import magpylib as magpy
 # magpy.Config.ITER_CYLINDER = 10000
 # N = 100

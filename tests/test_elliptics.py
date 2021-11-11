@@ -1,7 +1,7 @@
 import unittest
 import numpy as np
-from magpylib._lib.fields.special_el3 import el30, el3v, el3, el3_angle
-from magpylib._lib.fields.special_cel import cel0, celv, cel
+from magpylib._src.fields.special_el3 import el30, el3v, el3, el3_angle
+from magpylib._src.fields.special_cel import cel0, celv, cel
 
 
 class TestEllExceptions(unittest.TestCase):

@@ -1,6 +1,6 @@
 import numpy as np
 import magpylib as magpy
-from magpylib._lib.utility import (check_duplicates,
+from magpylib._src.utility import (check_duplicates,
     only_allowed_src_types)
 
 

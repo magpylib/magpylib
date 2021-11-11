@@ -6,4 +6,4 @@ Biot-Savardt.
 
 __all__ = ['Loop', 'Line']
 
-from magpylib._lib.obj_classes import Loop, Line
+from magpylib._src.obj_classes import Loop, Line
