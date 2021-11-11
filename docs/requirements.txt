@@ -5,3 +5,4 @@ sphinx-gallery==0.10
 plotly>=5.3
 sphinx-copybutton
 sphinx-book-theme
+myst-nb
