@@ -42,23 +42,16 @@ magpy.display(
 )
 ```
 
-+++ {"tags": []}
+```{note}
+MyST markdown is a mixture of two flavors of markdown
+```
 
-:::
 ## Write your first markdown document
 
 Now that you've enabled the `myst-parser` in Sphinx, you can write MyST markdown in a file that ends with `.md` extension for your pages.
-
-:::{note}
-MyST markdown is a mixture of two flavors of markdown:
 
 It supports all the syntax of **[CommonMark Markdown](https://commonmark.org/)** at its
 base. This is a community standard flavor of markdown used across many projects.
 
 In addition, it includes **[several extensions](../syntax/syntax.md) to CommonMark**.
 These add extra syntax features for technical writing, such as the roles and directives used by Sphinx.
-:::
-
-```{code-cell} ipython3
-
-```
