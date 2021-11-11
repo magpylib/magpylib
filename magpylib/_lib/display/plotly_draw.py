@@ -530,7 +530,7 @@ def make_Cuboid(
     provided arguments
     """
     d = [unit_prefix(d / 1000) for d in dim]
-    default_suffix = f" ({d[0]}mx{d[1]}mx{d[2]}m)"
+    default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
@@ -594,7 +594,7 @@ def make_CylinderSegment(
     provided arguments
     """
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-    default_suffix = f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
+    default_suffix = f" (d={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
