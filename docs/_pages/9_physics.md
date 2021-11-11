@@ -77,7 +77,7 @@ An example would be the magnetization of a soft-magnetic metal piece in the eart
 The diametral Cylinder solution is based on a convering series. 50 iterations are probaby ok and also set as standard. If you want to be precise increase iterations and observer the convergence behavior. Change the setting to {code}`x` with
 
 ```python
-magpylib.Config.ITER_CYLINDER = x
+magpylib.defaults.itercylinder = x
 ```
 
 **References**

@@ -392,4 +392,4 @@ In addition, `getB` returns the unit of the input magnetization. The Magpylib ch
 
 Evaluation of analytical solutions are often limited by numerical precision when approaching singularities or indeterminate forms on magnet surfaces, edges or corners. 64-bit precision limits evaluation to 16 significant digits, but unfortunately many solutions include higher powers of the distances so that the precision limit is quickly approached.
 
-As a result, Magpylib automatically sets solution that lie closer than `magpylib.Config.EDGESIZE` to problematic surfaces, edges or corners to 0. The default value is `1e-8`. The user can adjust this value simply with the command `magpylib.Config.EDGESIZE=x`.
+As a result, Magpylib automatically sets solution that lie closer than `magpylib.defaults.edgesize` to problematic surfaces, edges or corners to 0. The default value is `1e-8`. The user can adjust this value simply with the command `magpylib.defaults.edgesize=x`.
