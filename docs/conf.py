@@ -76,7 +76,6 @@ needs_sphinx = "4.2.0"
 extensions = [
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
-    "sphinx.ext.imgmath",
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "sphinx.ext.napoleon",
