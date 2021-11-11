@@ -8,7 +8,7 @@ import warnings
 
 try:
     import plotly.graph_objects as go
-except ImportError as missing_module: # pragma: no cover
+except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(
         """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
@@ -1262,7 +1262,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
         center = r.mean(axis=1)
         ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
     else:
-        ranges = np.array([[-1.,1.]]*3)
+        ranges = np.array([[-1.0, 1.0]] * 3)
     return ranges
 
 
@@ -1390,7 +1390,11 @@ def animate_path(
             {
                 "args": [
                     None,
-                    {"frame": {"duration": frame_duration}, "fromcurrent": True},
+                    {
+                        "frame": {"duration": frame_duration},
+                        "transition": {"duration": 0},
+                        "fromcurrent": True,
+                    },
                 ],
                 "label": "Play",
                 "method": "animate",
