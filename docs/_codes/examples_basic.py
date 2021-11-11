@@ -11,12 +11,12 @@ ax3 = fig.add_subplot(133)                   # 2D-axis
 # define two sources and display in figure
 src1 = magpy.magnet.CylinderSegment(magnetization=(0,0,1000), dimension=(2,3,1,-45,45))
 src2 = magpy.current.Circular(current=500, diameter=1)
-magpy.display(src1, src2, canvas=ax1)
+magpy.display(src1, src2, canvas=ax1, style_magnetization_size=0.3)
 
 # manipulate source position and orientation and display
 src2.move((0,0,1))
 src1.rotate_from_angax(90, 'y', anchor=0)
-magpy.display(src1, src2, canvas=ax2)
+magpy.display(src1, src2, canvas=ax2, style_magnetization_size=0.3)
 
 # create a grid
 ts = np.linspace(-4,4,30)

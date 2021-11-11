@@ -27,7 +27,7 @@ os.environ[
 import sphinx.ext.apidoc
 import plotly.io as pio
 
-pio.renderers.default = "sphinx_gallery"
+#pio.renderers.default = "sphinx_gallery"
 
 autodoc_default_options = {
     "private-members": True,
