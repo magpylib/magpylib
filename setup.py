@@ -69,7 +69,15 @@ setuptools.setup(
     install_requires=["numpy>=1.20", "scipy>=1.6", "matplotlib>=3.3",],
     # kaleido, jupyterlab are needed for testing with display(renderer='json', backend='plotly')
     extras_require={
-        "testing": ["plotly>=5.3", "kaleido", "pytest", "coverage", "pylint", "jupyterlab>=3.2"]
+        "testing": [
+            "plotly>=5.3",
+            "kaleido",
+            "pytest",
+            "coverage",
+            "pylint",
+            "jupyterlab>=3.2",
+            "sphinx==4.2.0",
+        ]
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
