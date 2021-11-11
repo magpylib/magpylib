@@ -38,8 +38,6 @@ autodoc_default_options = {
 def setup(app):
     app.add_css_file("css/stylesheet.css")
     app.add_js_file("webcode/summaryOpen.js")
-    app.add_js_file("webcode/copybutton.js")  # Add the button for
-    # hiding ">>>" in examples
     sphinx.ext.apidoc.main(
         [
             "-f",  # Overwrite existing files
@@ -100,7 +98,6 @@ templates_path = ["_templates"]
 # You can specify multiple suffix as a list of string:
 #
 # source_suffix = ['.rst', '.md']
-source_suffix = ".rst"
 
 # The master toctree document.
 master_doc = "index"
