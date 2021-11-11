@@ -313,7 +313,7 @@ As all input checks, coordinate transformations and position/orientation impleme
 __version__ = '4.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-__all__ = ['magnet', 'current', 'misc', 'lib', 'getB', 'getH', 'getB_dict', 'getH_dict',
+__all__ = ['magnet', 'current', 'misc', 'getB', 'getH', 'getB_dict', 'getH_dict',
     'Sensor', 'Collection', 'display', 'defaults', '__version__',
     '__author__', '__credits__']
 
@@ -322,7 +322,6 @@ from magpylib._src.default_classes import default_settings as defaults
 from magpylib import magnet
 from magpylib import current
 from magpylib import misc
-from magpylib import lib
 from magpylib._src.fields import getB, getH, getB_dict, getH_dict
 from magpylib._src.obj_classes import Collection, Sensor
 from magpylib._src.display import display
