@@ -235,3 +235,4 @@ epub_exclude_files = ["search.html"]
 
 source_suffix = [".rst", ".md"]
 
+html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]
