@@ -132,3 +132,5 @@ dmypy.json
 
 ### Python Patch ###
 .venv/
+
+.DS_Store
