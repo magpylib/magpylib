@@ -5,6 +5,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib._src.style import Markers
 
+
 class MagpyMarkers:
     """A class that stores markers 3D-coordinates"""
 
@@ -91,16 +92,16 @@ def get_rot_pos_from_path(obj, show_path):
     returns rots[[1,2,6]], poss[[1,2,6]]
     """
     # pylint: disable=protected-access
-    pos = getattr(obj, '_position', None)
+    pos = getattr(obj, "_position", None)
     if pos is None:
         pos = obj.position
     pos = np.array(pos)
-    orient = getattr(obj, '_orientation', None)
+    orient = getattr(obj, "_orientation", None)
     if orient is None:
-        orient = getattr(obj, 'orientation', None)
+        orient = getattr(obj, "orientation", None)
     if orient is None:
-        orient = RotScipy.from_rotvec([[0,0,1]])
-    pos = np.array([pos]) if pos.ndim==1 else pos
+        orient = RotScipy.from_rotvec([[0, 0, 1]])
+    pos = np.array([pos]) if pos.ndim == 1 else pos
     path_len = pos.shape[0]
     if show_path is True or show_path is False:
         inds = np.array([-1])
@@ -343,26 +344,28 @@ def faces_sphere(src, show_path):
 def system_size(points):
     """compute system size for display"""
     # determine min/max from all to generate aspect=1 plot
-    pts = np.vstack(points)
-    xs = [np.amin(pts[:, 0]), np.amax(pts[:, 0])]
-    ys = [np.amin(pts[:, 1]), np.amax(pts[:, 1])]
-    zs = [np.amin(pts[:, 2]), np.amax(pts[:, 2])]
+    if points:
+        pts = np.vstack(points)
+        xs = [np.amin(pts[:, 0]), np.amax(pts[:, 0])]
+        ys = [np.amin(pts[:, 1]), np.amax(pts[:, 1])]
+        zs = [np.amin(pts[:, 2]), np.amax(pts[:, 2])]
 
-    xsize = xs[1] - xs[0]
-    ysize = ys[1] - ys[0]
-    zsize = zs[1] - zs[0]
+        xsize = xs[1] - xs[0]
+        ysize = ys[1] - ys[0]
+        zsize = zs[1] - zs[0]
 
-    xcenter = (xs[1] + xs[0]) / 2
-    ycenter = (ys[1] + ys[0]) / 2
-    zcenter = (zs[1] + zs[0]) / 2
+        xcenter = (xs[1] + xs[0]) / 2
+        ycenter = (ys[1] + ys[0]) / 2
+        zcenter = (zs[1] + zs[0]) / 2
 
-    size = max([xsize, ysize, zsize])
+        size = max([xsize, ysize, zsize])
 
-    limx0 = xcenter + size / 2
-    limx1 = xcenter - size / 2
-    limy0 = ycenter + size / 2
-    limy1 = ycenter - size / 2
-    limz0 = zcenter + size / 2
-    limz1 = zcenter - size / 2
-
+        limx0 = xcenter + size / 2
+        limx1 = xcenter - size / 2
+        limy0 = ycenter + size / 2
+        limy1 = ycenter - size / 2
+        limz0 = zcenter + size / 2
+        limz1 = zcenter - size / 2
+    else:
+        limx0, limx1, limy0, limy1, limz0, limz1 = -1, 1, -1, 1, -1, 1
     return limx0, limx1, limy0, limy1, limz0, limz1

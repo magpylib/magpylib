@@ -151,3 +151,8 @@ def test_matplotlib_mesh3d_warning():
     sens.move([(0.4, 0.4, 0.4)] * 33, increment=True)
     with pytest.warns(UserWarning):
         sens.display(canvas=ax)
+
+def test_empty_display():
+    ax = plt.subplot(projection="3d")
+    x = magpy.display(canvas=ax, backend='matplotlib')
+    assert x is None, "empty display matplotlib test fail"
