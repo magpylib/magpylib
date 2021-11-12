@@ -66,7 +66,7 @@ The most convenient way to compute magnetic fields is through the object oriente
     src4 = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
 
     # currents
-    src5 = magpy.current.Circular(current=15, diameter=3)
+    src5 = magpy.current.Loop(current=15, diameter=3)
     src6 = magpy.current.Line(current=15, vertices=[(0,0,0), (1,2,3)])
 
     # misc
@@ -83,7 +83,7 @@ The most convenient way to compute magnetic fields is through the object oriente
     # out: Cylinder(id=1331541148672)
     # out: CylinderSegment(id=1331541762784)
     # out: Sphere(id=1331541762448)
-    # out: Circular(id=1331543166304)
+    # out: Loop(id=1331543166304)
     # out: Line(id=1331543188720)
     # out: Dipole(id=1331543189632)
     # out: Sensor(id=1331642701760)
@@ -181,7 +181,7 @@ Magpylib sources have addition and subtraction methods defined, adding up to a C
     import magpylib as magpy
 
     src1 = magpy.misc.Dipole(moment=(1,2,3))
-    src2 = magpy.current.Circular(current=1, diameter=2)
+    src2 = magpy.current.Loop(current=1, diameter=2)
     src3 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1)
 
     col = src1 + src2 + src3
@@ -190,7 +190,7 @@ Magpylib sources have addition and subtraction methods defined, adding up to a C
         print(src)
 
     # out: Dipole(id=2158565624128)
-    # out: Circular(id=2158565622784)
+    # out: Loop(id=2158565622784)
     # out: Sphere(id=2158566236896)
 
     col - src1
@@ -198,7 +198,7 @@ Magpylib sources have addition and subtraction methods defined, adding up to a C
     for src in col:
         print(src)
 
-    # out: Circular(id=2158565622784)
+    # out: Loop(id=2158565622784)
     # out: Sphere(id=2158566236896)
 
 .. _docu-API-graphic-output:
@@ -296,7 +296,7 @@ The output of the most general field computation through the top level function 
 
     # three sources
     s1 = magpy.misc.Dipole(moment=(0,0,100))
-    s2 = magpy.current.Circular(current=1, diameter=3)
+    s2 = magpy.current.Loop(current=1, diameter=3)
     col = s1 + s2
 
     # two observers with 4x5 pixel

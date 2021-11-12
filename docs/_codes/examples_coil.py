@@ -7,10 +7,10 @@ fig = plt.figure(figsize=(8,4))
 ax1 = fig.add_subplot(121, projection='3d')  # 3D-axis
 ax2 = fig.add_subplot(122,)                  # 2D-axis
 
-# create a Magpylib collection of Circular Sources that form a coil
+# create a Magpylib collection of Loop Sources that form a coil
 coil = magpy.Collection()
 for z in np.linspace(-2,2,20):
-    winding = magpy.current.Circular(
+    winding = magpy.current.Loop(
         current = 1,
         diameter = 5,
         position = (0,0,z))

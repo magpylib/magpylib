@@ -1,6 +1,6 @@
 from copy import deepcopy
 import pytest
-from magpylib._lib.default_utils import (
+from magpylib._src.default_utils import (
     MagicProperties,
     color_validator,
     get_defaults_dict,
