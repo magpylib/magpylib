@@ -10,7 +10,7 @@ graphical representation. To date the library includes two possible backends:
 """
 
 #%%
-# Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
+# Display multiple objects, object paths, markers in 3D using Matplotlib:
 
 import magpylib as magpy
 
