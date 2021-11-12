@@ -32,7 +32,7 @@ Magpylib uses units of
     - [deg]: for angle inputs by default.
     - [A]: for current inputs.
 
-API: Magpylib objects
+Magpylib objects
 ---------------------
 
 The most convenient way to compute magnetic fields is through the object oriented interface. Magpylib objects represent magnetic field sources and sensors with various defining attributes.
@@ -67,7 +67,7 @@ Line(id=1331543188720)
 Dipole(id=1331543189632)
 Sensor(id=1331642701760)
 
-API: Position and orientation
+Position and orientation
 -----------------------------
 
 All Magpylib objects are endowed with ``position`` `(ndarray, shape (m,3))` and ``orientation`` `(scipy Rotation object, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective docstrings.
@@ -116,7 +116,7 @@ Source position and orientation attributes can also represent complete source pa
 
 Details on rotation arguments, and how to conveniently generate complex paths are found in the docstings and some examples below.
 
-API: Grouping objects with `Collection`
+Grouping objects with `Collection`
 ---------------------------------------
 
 The top level class ``magpylib.Collection`` allows a user to group sources for common manipulation. A Collection functions like a list of source objects extended by Magpylib source methods: all operations applied to a Collection are applied to each source individually. Specific sources in the Collection can still be accessed and manipulated individually.
@@ -160,7 +160,7 @@ Sphere(id=2158566236896)
 Loop(id=2158565622784)
 Sphere(id=2158566236896)
 
-API: Graphic output with `display`
+Graphic output with `display`
 ----------------------------------
 
 When all source and sensor objects are created and all paths are defined ``display`` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
@@ -183,7 +183,7 @@ When all source and sensor objects are created and all paths are defined ``displ
 
 Various arguments like `axis, show_direction, show_path, size_sensors, size_direction, size_dipoles` and `zoom` can be used to customize the output and are described in the docstring in detail.
 
-API: Field computation
+Field computation
 ----------------------
 
 Field computation is done through the ``getB`` and ``getH`` function/methods. They always require `sources` and `observers` inputs. Sources are single Magpylib source objects, Collections or lists thereof.  Observers are arbitrary tensors of position vectors `(shape (n1,n2,n3,...,3))`, sensors or lists thereof. A most fundamental field computation example is
@@ -257,7 +257,7 @@ The output of the most general field computation through the top level function 
 
 The object-oriented interface automatically vectorizes the computation for the user. Similar source types of multiple input-objects are automatically tiled up.
 
-API: getB_dict and getH_dict
+getB_dict and getH_dict
 ----------------------------
 
 The ``magpylib.getB_dict`` and ``magpylib.getH_dict`` top-level functions avoid the object oriented interface, yet enable usage of the position/orientation implementations. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the `source_type`, different input arguments are expected (see docstring for details).
@@ -285,7 +285,7 @@ The ``magpylib.getB_dict`` and ``magpylib.getH_dict`` top-level functions avoid 
 
 The ``getBH_dict`` functions can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
 
-API: Direct access to field implementations
+Direct access to field implementations
 -------------------------------------------
 
 For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the ``magpylib.lib`` subpackage. Details on the implementations can be found in the respective function docstrings.

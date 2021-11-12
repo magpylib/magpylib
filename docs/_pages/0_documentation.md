@@ -8,13 +8,13 @@ Brief overview and some critical information.
 
 - {ref}`docu-idea`
 - {ref}`docu-when-to-use`
-- {ref}`docu-API-magpylib-objects`
-- {ref}`docu-API-position-and-orientation`
-- {ref}`docu-API-grouping-objects`
-- {ref}`docu-API-graphic-output`
-- {ref}`docu-API-field-computation`
-- {ref}`docu-API-getB_dict-getH_dict`
-- {ref}`docu-API-direct-access`
+- {ref}`docu-magpylib-objects`
+- {ref}`docu-position-and-orientation`
+- {ref}`docu-grouping-objects`
+- {ref}`docu-graphic-output`
+- {ref}`docu-field-computation`
+- {ref}`docu-getB_dict-getH_dict`
+- {ref}`docu-direct-access`
 - {ref}`docu-performance`
 - {ref}`docu-units-scaling`
 - {ref}`docu-close-to-surface`
@@ -43,7 +43,7 @@ Magpylib only provides solutions for simple forms. However, in Magnetostatics th
 
 (docu-api-magpylib-objects)=
 
-## API: Magpylib objects
+## Magpylib objects
 
 The most convenient way to compute magnetic fields is through the object oriented interface. Magpylib objects represent magnetic field sources and sensors with various defining attributes.
 
@@ -82,7 +82,7 @@ for obj in [src1, src2, src3, src4, src5, src6, src7, sens]:
 
 (docu-api-position-and-orientation)=
 
-## API: Position and orientation
+## Position and orientation
 
 All Magpylib objects are endowed with `position` `(ndarray, shape (m,3))` and `orientation` `(` [scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) `, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective docstrings.
 
@@ -141,7 +141,7 @@ Details on rotation arguments, and how to conveniently generate complex paths ar
 
 (docu-api-grouping-objects)=
 
-## API: Grouping objects with `Collection`
+## Grouping objects with `Collection`
 
 The top level class `magpylib.Collection` allows a user to group sources for common manipulation. A Collection functions like a list of source objects extended by Magpylib source methods: all operations applied to a Collection are applied to each source individually. Specific sources in the Collection can still be accessed and manipulated individually.
 
@@ -193,7 +193,7 @@ for src in col:
 
 (docu-api-graphic-output)=
 
-## API: Graphic output with `display`
+## Graphic output with `display`
 
 When all source and sensor objects are created and all paths are defined `display` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
 
@@ -222,7 +222,7 @@ Various arguments like `path, markers, canvas, zoom, backend` and `style` can be
 
 (docu-api-field-computation)=
 
-## API: Field computation
+## Field computation
 
 Field computation is done through the `getB` and `getH` function/methods. They always require `sources` and `observers` inputs. Sources are single Magpylib source objects, Collections or lists thereof.  Observers are arbitrary tensors of position vectors `(shape (n1,n2,n3,...,3))`, sensors or lists thereof. A most fundamental field computation example is
 
@@ -306,9 +306,9 @@ print(B.shape)
 
 The object-oriented interface automatically vectorizes the computation for the user. Similar source types of multiple input-objects are automatically tiled up.
 
-(docu-API-getB_dict-getH_dict)=
+(docu-getB_dict-getH_dict)=
 
-## API: getB_dict and getH_dict
+## getB_dict and getH_dict
 
 The `magpylib.getB_dict` and `magpylib.getH_dict` top-level functions avoid the object oriented interface, yet enable usage of the position/orientation implementations. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the `source_type`, different input arguments are expected (see docstring for details).
 
@@ -340,7 +340,7 @@ The `getBH_dict` functions can be up to 2 times faster than the object oriented 
 
 (docu-api-direct-access)=
 
-## API: Direct access to field implementations
+## Direct access to field implementations
 
 For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the `magpylib.lib` subpackage. Details on the implementations can be found in the respective function docstrings.
 
