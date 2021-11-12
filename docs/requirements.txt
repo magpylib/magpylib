@@ -5,3 +5,4 @@ plotly>=5.3
 sphinx-copybutton
 sphinx-book-theme
 myst-nb
+sphinx-panels
