@@ -103,6 +103,7 @@ def test_col_get_item():
 
     col = magpy.Collection(pm1, pm2, pm3)
     assert col[1] == pm2, "get_item failed"
+    assert len(col) == 3, "__len__ failed"
 
 
 def test_col_getH():
