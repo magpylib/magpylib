@@ -46,7 +46,7 @@ The most convenient way to compute magnetic fields is through the object oriente
 >>> src4 = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
 >>>
 >>> # currents
->>> src5 = magpy.current.Circular(current=15, diameter=3)
+>>> src5 = magpy.current.Loop(current=15, diameter=3)
 >>> src6 = magpy.current.Line(current=15, vertices=[(0,0,0), (1,2,3)])
 >>>
 >>> # misc
@@ -62,7 +62,7 @@ Cuboid(id=1331541150016)
 Cylinder(id=1331541148672)
 CylinderSegment(id=1331541762784)
 Sphere(id=1331541762448)
-Circular(id=1331543166304)
+Loop(id=1331543166304)
 Line(id=1331543188720)
 Dipole(id=1331543189632)
 Sensor(id=1331642701760)
@@ -142,7 +142,7 @@ Magpylib sources have addition and subtraction methods defined, adding up to a C
 >>> import magpylib as magpy
 >>>
 >>> src1 = magpy.misc.Dipole(moment=(1,2,3))
->>> src2 = magpy.current.Circular(current=1, diameter=2)
+>>> src2 = magpy.current.Loop(current=1, diameter=2)
 >>> src3 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1)
 >>>
 >>> col = src1 + src2 + src3
@@ -150,14 +150,14 @@ Magpylib sources have addition and subtraction methods defined, adding up to a C
 >>> for src in col:
 >>>     print(src)
 Dipole(id=2158565624128)
-Circular(id=2158565622784)
+Loop(id=2158565622784)
 Sphere(id=2158566236896)
 
 >>> col - src1
 >>>
 >>> for src in col:
 >>>     print(src)
-Circular(id=2158565622784)
+Loop(id=2158565622784)
 Sphere(id=2158566236896)
 
 API: Graphic output with `display`
@@ -240,7 +240,7 @@ The output of the most general field computation through the top level function 
 >>>
 >>> # three sources
 >>> s1 = magpy.misc.Dipole(moment=(0,0,100))
->>> s2 = magpy.current.Circular(current=1, diameter=3)
+>>> s2 = magpy.current.Loop(current=1, diameter=3)
 >>> col = s1 + s2
 >>>
 >>> # two observers with 4x5 pixel
@@ -313,16 +313,15 @@ As all input checks, coordinate transformations and position/orientation impleme
 __version__ = '4.0.0'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
-__all__ = ['magnet', 'current', 'misc', 'lib', 'getB', 'getH', 'getB_dict', 'getH_dict',
+__all__ = ['magnet', 'current', 'misc', 'getB', 'getH', 'getB_dict', 'getH_dict',
     'Sensor', 'Collection', 'display', 'defaults', '__version__',
     '__author__', '__credits__']
 
 # create interface to outside of package
-from magpylib._lib.default_classes import default_settings as defaults
+from magpylib._src.default_classes import default_settings as defaults
 from magpylib import magnet
 from magpylib import current
 from magpylib import misc
-from magpylib import lib
-from magpylib._lib.fields import getB, getH, getB_dict, getH_dict
-from magpylib._lib.obj_classes import Collection, Sensor
-from magpylib._lib.display import display
+from magpylib._src.fields import getB, getH, getB_dict, getH_dict
+from magpylib._src.obj_classes import Collection, Sensor
+from magpylib._src.display import display

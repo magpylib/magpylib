@@ -1,13 +1,13 @@
 import pickle
 import os
 import numpy as np
-from magpylib._lib.fields.field_BH_cuboid import field_BH_cuboid
-from magpylib._lib.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
-from magpylib._lib.fields.field_BH_sphere import field_BH_sphere
-from magpylib._lib.fields.field_BH_dipole import field_BH_dipole
-from magpylib._lib.fields.field_BH_circular import field_BH_circular
-from magpylib._lib.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
-from magpylib._lib.default_classes import default_settings as Config
+from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid
+from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
+from magpylib._src.fields.field_BH_sphere import field_BH_sphere
+from magpylib._src.fields.field_BH_dipole import field_BH_dipole
+from magpylib._src.fields.field_BH_loop import field_BH_loop
+from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
+from magpylib._src.default_classes import default_settings as Config
 
 # # GENERATE TEST DATA
 # n = 500
@@ -172,12 +172,12 @@ def test_field_circular():
     current = np.array([1,1] + [123]*8 + [123])
     dim = np.array([2,2] + [2]*8 + [2])
 
-    B = field_BH_circular(True, current, dim, pos_test)
+    B = field_BH_loop(True, current, dim, pos_test)
 
     assert np.allclose(B, Btest)
 
     Htest = Btest*10/4/np.pi
-    H = field_BH_circular(False, current, dim, pos_test)
+    H = field_BH_loop(False, current, dim, pos_test)
     assert np.allclose(H, Htest)
 
 
@@ -187,12 +187,12 @@ def test_field_circular2():
     curr = np.array([1])
     dim = np.array([2])
     poso = np.array([[0,0,0]])
-    B = field_BH_circular(True, curr, dim, poso)
+    B = field_BH_loop(True, curr, dim, poso)
 
     curr = np.array([1]*2)
     dim = np.array([2]*2)
     poso = np.array([[0,0,0]]*2)
-    B2 = field_BH_circular(True, curr, dim, poso)
+    B2 = field_BH_loop(True, curr, dim, poso)
 
     assert np.allclose(B,B2[0])
     assert np.allclose(B,B2[1])

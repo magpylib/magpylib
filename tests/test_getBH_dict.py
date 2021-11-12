@@ -173,13 +173,13 @@ def test_geBHv_dipole():
 
 
 def test_geBHv_circular():
-    """ test if Circular implementation gives correct output
+    """ test if Loop implementation gives correct output
     """
-    B = getB_dict(source_type='Circular', current=1, diameter=2, observer=(0,0,0))
+    B = getB_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
     Btest = np.array([0,0,0.6283185307179586])
     assert np.allclose(B,Btest)
 
-    H = getH_dict(source_type='Circular', current=1, diameter=2, observer=(0,0,0))
+    H = getH_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
 
@@ -187,10 +187,10 @@ def test_geBHv_circular():
 def test_getBHv_squeeze():
     """ test if squeeze works
     """
-    B1 = getB_dict(source_type='Circular', current=1, diameter=2, observer=(0,0,0))
-    B2 = getB_dict(source_type='Circular', current=1, diameter=2, observer=[(0,0,0)])
-    B3 = getB_dict(source_type='Circular', current=1, diameter=2, observer=[(0,0,0)], squeeze=False)
-    B4 = getB_dict(source_type='Circular', current=1, diameter=2, observer=[(0,0,0)]*2)
+    B1 = getB_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
+    B2 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)])
+    B3 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)], squeeze=False)
+    B4 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)]*2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1

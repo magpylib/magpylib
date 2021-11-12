@@ -238,7 +238,7 @@ def test_sensor_rotation3():
 def test_object_tiling():
     """ test if object tiling works when input paths are of various lengths
     """
-    src1 = magpy.current.Circular(current=1, diameter=1)
+    src1 = magpy.current.Loop(current=1, diameter=1)
     src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
 
     src2 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))

@@ -167,7 +167,7 @@ def test_adding_sources():
     src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     src3 = magpy.magnet.Sphere((1, 2, 3), 1)
-    src4 = magpy.current.Circular(1, 1)
+    src4 = magpy.current.Loop(1, 1)
     src5 = magpy.current.Line(1, [(1, 2, 3), (2, 3, 4)])
     src6 = magpy.misc.Dipole((1, 2, 3))
     col = src1 + src2 + src3 + src4 + src5 + src6
@@ -176,7 +176,7 @@ def test_adding_sources():
     for src in col:
         strs += str(src)[:3]
 
-    assert strs == "CubCylSphCirLinDip"
+    assert strs == "CubCylSphLooLinDip"
 
 
 def test_set_styles():

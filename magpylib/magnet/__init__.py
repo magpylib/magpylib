@@ -6,4 +6,4 @@ for details on field computations.
 
 __all__ = ['Cuboid', 'Cylinder', 'Sphere', 'CylinderSegment']
 
-from magpylib._lib.obj_classes import Cuboid, Cylinder, Sphere, CylinderSegment
+from magpylib._src.obj_classes import Cuboid, Cylinder, Sphere, CylinderSegment
