@@ -206,6 +206,10 @@ def test_extra_mesh3d():
     )
     assert x is None, "display test fail"
 
+def test_empty_display():
+    fig  = go.Figure()
+    x = magpy.display(canvas=fig, backend='plotly')
+    assert x is None, "empty display plotly test fail"
 
 def test_display_warnings():
     magpy.defaults.display.backend = "plotly"

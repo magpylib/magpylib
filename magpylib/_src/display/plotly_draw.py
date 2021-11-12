@@ -1127,6 +1127,8 @@ def display_plotly(
         style = getattr(obj_list[0], "style", None)
         name = getattr(style, "name", None)
         title = name if len(obj_list) == 1 else None
+    else:
+        title = 'No objects to be displayed'
 
     if markers is not None and markers:
         obj_list = list(obj_list) + [MagpyMarkers(*markers)]
