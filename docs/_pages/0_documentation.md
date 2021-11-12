@@ -384,7 +384,7 @@ Magpylib uses the following physical units:
 
 However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of \[mm\] is a result of history and practical considerations when working with position and orientation systems).
 
-In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of `10/4pi`. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
+In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
 
 (docu-close-to-surface)=
 
@@ -392,4 +392,4 @@ In addition, `getB` returns the unit of the input magnetization. The Magpylib ch
 
 Evaluation of analytical solutions are often limited by numerical precision when approaching singularities or indeterminate forms on magnet surfaces, edges or corners. 64-bit precision limits evaluation to 16 significant digits, but unfortunately many solutions include higher powers of the distances so that the precision limit is quickly approached.
 
-As a result, Magpylib automatically sets solution that lie closer than `magpylib.defaults.edgesize` to problematic surfaces, edges or corners to 0. The default value is `1e-8`. The user can adjust this value simply with the command `magpylib.defaults.edgesize=x`.
+As a result, Magpylib automatically sets solution that lie closer than **1e-8** to problematic surfaces, edges or corners to **0**. The user can adjust this default value simply with the command `magpylib.defaults.edgesize=x`.
