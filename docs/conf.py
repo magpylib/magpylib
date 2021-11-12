@@ -27,7 +27,7 @@ os.environ[
 import sphinx.ext.apidoc
 import plotly.io as pio
 
-#pio.renderers.default = "sphinx_gallery"
+pio.renderers.default = "sphinx_gallery"
 
 autodoc_default_options = {
     "private-members": True,
@@ -83,6 +83,7 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_copybutton",
     "myst_nb",
+    #"sphinx_panels",
 ]
 
 sphinx_gallery_conf = {
@@ -231,7 +232,9 @@ epub_exclude_files = ["search.html"]
 
 source_suffix = [".rst", ".md"]
 
-html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]
+html_js_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
+]
 
 myst_enable_extensions = [
     "amsmath",
@@ -240,7 +243,7 @@ myst_enable_extensions = [
     "dollarmath",
     "html_admonition",
     "html_image",
-    #"linkify",
+    # "linkify",
     "replacements",
     "smartquotes",
     "substitution",
