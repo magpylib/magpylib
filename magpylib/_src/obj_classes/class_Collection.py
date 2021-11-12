@@ -126,6 +126,9 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     def __getitem__(self, i):
         return self._sources[i]
 
+    def __len__(self):
+        return len(self._sources)
+
     # methods -------------------------------------------------------
     def add(self, *sources):
         """

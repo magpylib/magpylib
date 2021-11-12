@@ -8,7 +8,7 @@ import warnings
 
 try:
     import plotly.graph_objects as go
-except ImportError as missing_module: # pragma: no cover
+except ImportError as missing_module:  # pragma: no cover
     raise ModuleNotFoundError(
         """In order to use the plotly plotting backend, you need to install plotly via pip or conda,
         see https://github.com/plotly/plotly.py"""
@@ -171,8 +171,8 @@ def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)) -> dict:
     return dict(
         type="mesh3d",
         i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        j=np.array([3, 4, 1, 2, 5, 6, 5, 5, 0, 1, 2, 2]),
-        k=np.array([0, 7, 2, 3, 6, 7, 1, 2, 5, 5, 7, 6]),
+        j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
+        k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
         x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dim[0] + pos[0],
         y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dim[1] + pos[1],
         z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dim[2] + pos[2],
@@ -530,7 +530,7 @@ def make_Cuboid(
     provided arguments
     """
     d = [unit_prefix(d / 1000) for d in dim]
-    default_suffix = f" ({d[0]}mx{d[1]}mx{d[2]}m)"
+    default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
@@ -594,7 +594,7 @@ def make_CylinderSegment(
     provided arguments
     """
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-    default_suffix = f" (d1={d[0]}m, d2={d[1]}m, h={d[2]}m, phi1={d[3]}°, phi2={d[4]}°)"
+    default_suffix = f" (d={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
@@ -1262,7 +1262,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
         center = r.mean(axis=1)
         ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
     else:
-        ranges = np.array([[-1.,1.]]*3)
+        ranges = np.array([[-1.0, 1.0]] * 3)
     return ranges
 
 
@@ -1390,7 +1390,11 @@ def animate_path(
             {
                 "args": [
                     None,
-                    {"frame": {"duration": frame_duration}, "fromcurrent": True},
+                    {
+                        "frame": {"duration": frame_duration},
+                        "transition": {"duration": 0},
+                        "fromcurrent": True,
+                    },
                 ],
                 "label": "Play",
                 "method": "animate",
