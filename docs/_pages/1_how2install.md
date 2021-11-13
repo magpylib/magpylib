@@ -4,7 +4,7 @@
 
 ## Dependencies
 
-Magpylib works with Python 3.7 or later ! The following packeges will be automatically installed, or updated. See [Git Hub](https://github.com/magpylib/magpylib) for respective versions. Packages will never be downgraded.
+Magpylib works with Python 3.7 or later ! The following packages will be automatically installed, or updated. See [Git Hub](https://github.com/magpylib/magpylib) for respective versions. Packages will never be downgraded.
 
 - numpy
 - matplotlib
