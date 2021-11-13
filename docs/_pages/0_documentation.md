@@ -1,6 +1,6 @@
 (docu)=
 
-# Documentation v4.0.0
+# Documentation
 
 Brief overview and some critical information.
 
