@@ -1,15 +1,16 @@
 """
-===========================================
-Examples of the use of the display function
-===========================================
-
-The `magpylib` library integrates a `display` function attached to every object, which allows its
-graphical representation. To date the library includes two possible backends:
-- matplotlib (by default)
-- plotly
+=================
+Display backends
+=================
 """
 
 #%%
+# The `magpylib` library integrates a `display` function attached to every object, which allows its
+# graphical representation. To date the library includes two possible backends:
+# - matplotlib (by default)
+# - plotly
+
+# %%
 # Display multiple objects, object paths, markers in 3D using Matplotlib:
 
 import magpylib as magpy
