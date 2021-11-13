@@ -43,7 +43,7 @@ This is a major update that includes
 All parameters are now in explicit format following the Zen of Python and cannot be initialized in their short forms anymore.
 
 - `angle` and `axis` are replaced by `orientation`
-- `dimension` is replaced by `diameter` for Circular and Sphere classes.
+- `dimension` is replaced by `diameter` for Loop and Sphere classes.
 
 ### The new orientation attribute (CORE FEATURE OF v3)
 
@@ -133,7 +133,7 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 - - getB(pos) now takes single AND vector position arguments. If a vector is handed to getB it will automatically execute vectorized code from the vector module.
 
 ### Added
-- completed the library vector functionality adding magnet Cylinder, moment Dipole, current Circular and Line. This includes adding several private vectorized functions (e.g. ellipticV) to mathLib_vector, adding respective tests and docu examples.
+- completed the library vector functionality adding magnet Cylinder, moment Dipole, current Loop and Line. This includes adding several private vectorized functions (e.g. ellipticV) to mathLib_vector, adding respective tests and docu examples.
 
 ---
 
@@ -274,7 +274,7 @@ The first official release of the magpylib library.
    - Box
    - Cylinder
    - Sphere
-   - Circular Current
+   - Loop Current
    - Current Line
    - Dipole
 - Collection class
