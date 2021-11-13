@@ -41,7 +41,7 @@ Magpylib is at its best when dealing with air-coils (no eddy currents) and high 
 
 Magpylib only provides solutions for simple forms. However, in Magnetostatics the superposition principle holds: the total magnetic field is given by the (vector-)sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one.
 
-(docu-api-magpylib-objects)=
+(docu-magpylib-objects)=
 
 ## Magpylib objects
 
@@ -80,7 +80,7 @@ for obj in [src1, src2, src3, src4, src5, src6, src7, sens]:
 # out: Sensor(id=1331642701760)
 ```
 
-(docu-api-position-and-orientation)=
+(docu-position-and-orientation)=
 
 ## Position and orientation
 
@@ -139,7 +139,7 @@ print(src.position)
 
 Details on rotation arguments, and how to conveniently generate complex paths are found in the docstings and some examples below.
 
-(docu-api-grouping-objects)=
+(docu-grouping-objects)=
 
 ## Grouping objects with `Collection`
 
@@ -191,7 +191,7 @@ for src in col:
 # out: Sphere(id=2158566236896)
 ```
 
-(docu-api-graphic-output)=
+(docu-graphic-output)=
 
 ## Graphic output with `display`
 
@@ -220,7 +220,7 @@ col.display(path=10)
 
 Various arguments like `path, markers, canvas, zoom, backend` and `style` can be used to customize the output and are described in the docstring in detail.
 
-(docu-api-field-computation)=
+(docu-field-computation)=
 
 ## Field computation
 
@@ -338,7 +338,7 @@ print(B)
 
 The `getBH_dict` functions can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
 
-(docu-api-direct-access)=
+(docu-direct-access)=
 
 ## Direct access to field implementations
 
