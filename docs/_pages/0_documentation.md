@@ -215,7 +215,7 @@ col.display(path=10)
 ```
 
 ```{eval-rst}
-.. plot:: _codes/doku_collection_display.py
+.. plot:: _codes/doc_collection_display.py
 ```
 
 Various arguments like `path, markers, canvas, zoom, backend` and `style` can be used to customize the output and are described in the docstring in detail.
@@ -277,7 +277,7 @@ plt.show()
 ```
 
 ```{eval-rst}
-.. plot:: _codes/doku_fieldBH.py
+.. plot:: _codes/doc_fieldBH.py
 ```
 
 The output of the most general field computation through the top level function `magpylib.getB(sources, observers)` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the pathlength, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or shape of position vector and `3` the three magnetic field components `(Bx,By,Bz)`.
