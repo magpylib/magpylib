@@ -1,3 +1,28 @@
+"""
+===================
+Basic functionality
+===================
+"""
+
+# %%
+# Just compute the field
+# ----------------------
+# The most fundamental functionality of the library - compute the field (B in \[mT\], H in \[kA/m\]) of a 
+# source (here Cylinder magnet) at the observer position (1,2,3).
+
+
+from magpylib.magnet import Cylinder
+src = Cylinder(magnetization=(222,333,444), dimension=(2,2))
+B = src.getB((1,2,3))
+print(B)
+
+# %%
+# Basic functionality
+# ----------------------
+# In this general example two source objects (magnet and current) are created, moved and rotated. 
+# The system geometry before and after move/rotate is displayed together with the magnetic field in the xz-plane. 
+# Notice that xz is a symmetry plane where the field has no y-component.
+
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
