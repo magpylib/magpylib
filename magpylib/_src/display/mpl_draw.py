@@ -44,8 +44,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
                 obj._object_type == "CylinderSegment"
             ):  # change cylinder_tile draw_pos to geo center
                 odim = obj.dimension
-                d1, d2, _, phi1, phi2 = odim
-                r1, r2 = d1 / 2, d2 / 2
+                r1, r2, _, phi1, phi2 = odim
                 phi_mid = (phi1 + phi2) / 2 * np.pi / 180
                 r_mid = (r2 + r1) / 2
                 shift = r_mid * np.array([np.cos(phi_mid), np.sin(phi_mid), 0])
