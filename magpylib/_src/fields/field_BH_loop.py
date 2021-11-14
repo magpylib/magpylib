@@ -22,6 +22,8 @@ def field_BH_loop(
     - sets singularity at wire to 0
     - Cylinder CS <-> Cartesian CS
     """
+    # pylint: disable=too-many-locals
+
     x, y, z = pos_obs.T
     r0 = dia/2
     n = len(x)
@@ -123,11 +125,11 @@ def current_loop_B_Leitner2021(
     rb = r/r0
     zb = z/r0
 
-    # pre-compute small quantities that mighjt not be cached
+    # pre-compute small quantities that might not be cached
     z2 = zb**2
     brack = (z2+(rb+1)**2)
     k2 = 4*rb/brack
-    pf = 1/np.sqrt(brack)/(1-k2)
+    pf = 1/np.sqrt(brack)/(1-k2)/r0
     xi = cel_loop_stable(k2)
 
     # rb=0 requires special treatment

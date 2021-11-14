@@ -13,6 +13,29 @@ def test_Loop_basic_B():
     assert np.allclose(B, Btest)
 
 
+def test_current_loop_field():
+    """ test explicit field output values
+    """
+    s = magpy.current.Loop(current=1, diameter=1)
+
+    B_c1d1z0 = 1.2566370614359172
+    B_test = s.getB([0,0,0])
+    assert abs(B_c1d1z0 - B_test[2])<1e-14
+
+    B_c1d1z1 = 0.11239703569665165
+    B_test = s.getB([0,0,1])
+    assert abs(B_c1d1z1 - B_test[2])<1e-14
+
+    s = magpy.current.Loop(current=1, diameter=2)
+    B_c1d2z0 = 0.6283185307179586
+    B_test = s.getB([0,0,0])
+    assert abs(B_c1d2z0 - B_test[2])<1e-14
+
+    B_c1d2z1 = 0.22214414690791835
+    B_test = s.getB([0,0,1])
+    assert abs(B_c1d2z1 - B_test[2])<1e-14
+
+
 def test_Loop_basic_H():
     """ Basic Loop class test
     """
