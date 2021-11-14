@@ -259,7 +259,7 @@ def make_Ellipsoid(
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseCylinderSegment(d1=1, d2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict:
+def make_BaseCylinderSegment(r1=1, r2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict:
     """
     Provides the base plotly CylinderSegment mesh3d parameters in a dictionary based on inner
     and outer diameters, height, start angle and end angles in degrees.
@@ -270,10 +270,10 @@ def make_BaseCylinderSegment(d1=1, d2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict
     x = np.cos(np.deg2rad(phi))
     y = np.sin(np.deg2rad(phi))
     z = np.zeros(N)
-    c1 = np.array([d1 / 2 * x, d1 / 2 * y, z + h / 2])
-    c2 = np.array([d2 / 2 * x, d2 / 2 * y, z + h / 2])
-    c3 = np.array([d1 / 2 * x, d1 / 2 * y, z - h / 2])
-    c4 = np.array([d2 / 2 * x, d2 / 2 * y, z - h / 2])
+    c1 = np.array([r1 * x, r1 * y, z + h / 2])
+    c2 = np.array([r2 * x, r2 * y, z + h / 2])
+    c3 = np.array([r1 * x, r1 * y, z - h / 2])
+    c4 = np.array([r2 * x, r2 * y, z - h / 2])
     x, y, z = np.concatenate([c1, c2, c3, c4], axis=1)
 
     i1 = np.arange(N - 1)
@@ -594,7 +594,7 @@ def make_CylinderSegment(
     provided arguments
     """
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-    default_suffix = f" (d={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
+    default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
