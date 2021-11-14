@@ -222,8 +222,7 @@ def faces_cylinder_section(src, show_path):
     res = 15  # surface discretization
 
     # generate cylinder section faces
-    di, d, h, phi1, phi2 = src.dimension
-    r1, r2 = di / 2, d / 2
+    r1, r2, h, phi1, phi2 = src.dimension
     res_tile = (
         int((phi2 - phi1) / 360 * 2 * res) + 2
     )  # resolution used for tile curved surface

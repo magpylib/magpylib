@@ -29,8 +29,8 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         the local CS of the Cylinder object.
 
     dimension: array_like, shape (5,)
-        Dimension/Size of a Cylinder-Section (d1,d2,h,phi1,phi2) where d1 < d2 denote inner
-        and outer diameter in units of [mm], phi1 < phi2 denote the Cylinder section angles
+        Dimension/Size of a Cylinder-Section (r1,r2,h,phi1,phi2) where r1 < r2 denote inner
+        and outer radius in units of [mm], phi1 < phi2 denote the Cylinder section angles
         in units of [deg] and h the Cylinder height in units of [mm].
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
@@ -56,7 +56,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Cylinder, with unit rotation:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.CylinderSegment(magnetization=(100,100,100), dimension=(1,2,2,0,90))
+    >>> magnet = magpy.magnet.CylinderSegment(magnetization=(100,100,100), dimension=(0.5,1,2,0,90))
     >>> print(magnet.position)
     [0. 0. 0.]
     >>> print(magnet.orientation.as_quat())
