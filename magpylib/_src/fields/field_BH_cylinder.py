@@ -198,107 +198,106 @@ def magnet_cyl_dia_H_Rauber2021(
     return np.array([Hr, Hphi, Hz]).T
 
 
-# ON INTERFACE
-def magnet_cyl_dia_H_Furlani1994(
-        tetta: np.ndarray,
-        dim: np.ndarray,
-        pos_obs: np.ndarray,
-        niter: int,
-        ) -> np.ndarray:
-    """
-    H-field in Cylindrical CS of Cylinder magnet with homogenous
-    diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
-    CS. The geometric center of the Cylinder is in the origin.
+# def magnet_cyl_dia_H_Furlani1994(
+#         tetta: np.ndarray,
+#         dim: np.ndarray,
+#         pos_obs: np.ndarray,
+#         niter: int,
+#         ) -> np.ndarray:
+#     """
+#     H-field in Cylindrical CS of Cylinder magnet with homogenous
+#     diametral unit magnetization. The Cylinder axis coincides with the z-axis of the
+#     CS. The geometric center of the Cylinder is in the origin.
 
-    Implementation from [Furlani1994].
+#     Implementation from [Furlani1994].
 
-    Parameters
-    ----------
-    dim: ndarray, shape (n,2)
-        dimension of cylinder (d, h), diameter and height, in units of [mm]
-    tetta: ndarray, shape (n,)
-        angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
-    obs_pos: ndarray, shape (n,3)
-        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
-    niter: int
-        Iterations for Simpsons approximation of the final integral
+#     Parameters
+#     ----------
+#     dim: ndarray, shape (n,2)
+#         dimension of cylinder (d, h), diameter and height, in units of [mm]
+#     tetta: ndarray, shape (n,)
+#         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
+#     obs_pos: ndarray, shape (n,3)
+#         position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+#     niter: int
+#         Iterations for Simpsons approximation of the final integral
 
-    Returns
-    -------
-    H-field: ndarray
-        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+#     Returns
+#     -------
+#     H-field: ndarray
+#         H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
 
-    Examples
-    --------
-    Compute field at three instances.
+#     Examples
+#     --------
+#     Compute field at three instances.
 
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> tetta = np.zeros(3)
-    >>> dim = np.array([(2,2), (2,3), (3,4)])
-    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
-    >>> B = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
-    >>> print(B)
-    [[-5.99240321e-02  1.41132875e-19  8.02440419e-03]
-     [ 1.93282782e-03  2.19048077e-03  2.60408201e-02]
-     [ 5.27008607e-02  6.06112282e-03  1.54692676e-02]]
+#     >>> import numpy as np
+#     >>> import magpylib as magpy
+#     >>> tetta = np.zeros(3)
+#     >>> dim = np.array([(2,2), (2,3), (3,4)])
+#     >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
+#     >>> B = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
+#     >>> print(B)
+#     [[-5.99240321e-02  1.41132875e-19  8.02440419e-03]
+#      [ 1.93282782e-03  2.19048077e-03  2.60408201e-02]
+#      [ 5.27008607e-02  6.06112282e-03  1.54692676e-02]]
 
-    Notes
-    -----
-    H-Field computed from the charge picture, Simpsons approximation used
-    to approximate the intergral.
-    """
+#     Notes
+#     -----
+#     H-Field computed from the charge picture, Simpsons approximation used
+#     to approximate the intergral.
+#     """
 
-    r0, z0 = dim.T/2
-    r, phi, z = pos_obs.T
-    n = len(r0)
+#     r0, z0 = dim.T/2
+#     r, phi, z = pos_obs.T
+#     n = len(r0)
 
-    # phi is now relative between mag and pos_obs
-    phi = phi-tetta
+#     # phi is now relative between mag and pos_obs
+#     phi = phi-tetta
 
-    #implementation of Furlani1993
-    # generating the iterative summand basics for simpsons approximation
-    phi0 = 2*np.pi/niter       # discretization
-    sphi = np.arange(niter+1)
-    sphi[sphi%2==0] = 2.
-    sphi[sphi%2==1] = 4.
-    sphi[0] = 1.
-    sphi[-1] = 1.
+#     #implementation of Furlani1993
+#     # generating the iterative summand basics for simpsons approximation
+#     phi0 = 2*np.pi/niter       # discretization
+#     sphi = np.arange(niter+1)
+#     sphi[sphi%2==0] = 2.
+#     sphi[sphi%2==1] = 4.
+#     sphi[0] = 1.
+#     sphi[-1] = 1.
 
-    sphiex = np.outer(sphi, np.ones(n))
-    phi0ex = np.outer(np.arange(niter+1), np.ones(n))*phi0
-    zex    = np.outer(np.ones(niter+1), z)
-    hex   = np.outer(np.ones(niter+1), z0)       # pylint: disable=redefined-builtin
-    phiex  = np.outer(np.ones(niter+1), phi)
-    dr2ex  = np.outer(np.ones(niter+1), 2*r0*r)
-    r2d2ex = np.outer(np.ones(niter+1), r**2+r0**2)
+#     sphiex = np.outer(sphi, np.ones(n))
+#     phi0ex = np.outer(np.arange(niter+1), np.ones(n))*phi0
+#     zex    = np.outer(np.ones(niter+1), z)
+#     hex   = np.outer(np.ones(niter+1), z0)       # pylint: disable=redefined-builtin
+#     phiex  = np.outer(np.ones(niter+1), phi)
+#     dr2ex  = np.outer(np.ones(niter+1), 2*r0*r)
+#     r2d2ex = np.outer(np.ones(niter+1), r**2+r0**2)
 
-    # repetitives
-    cos_phi0ex = np.cos(phi0ex)
-    cos_phi = np.cos(phiex-phi0ex)
+#     # repetitives
+#     cos_phi0ex = np.cos(phi0ex)
+#     cos_phi = np.cos(phiex-phi0ex)
 
-    # compute r-phi components
-    mask = (r2d2ex-dr2ex*cos_phi == 0) # special case r = d/2 and cos_phi=1
-    unite  = np.ones([niter+1,n])
-    unite[mask] = - (1/2)/(zex[mask]+hex[mask])**2 + (1/2)/(zex[mask]-hex[mask])**2
+#     # compute r-phi components
+#     mask = (r2d2ex-dr2ex*cos_phi == 0) # special case r = d/2 and cos_phi=1
+#     unite  = np.ones([niter+1,n])
+#     unite[mask] = - (1/2)/(zex[mask]+hex[mask])**2 + (1/2)/(zex[mask]-hex[mask])**2
 
-    rrc = r2d2ex[~mask] - dr2ex[~mask]*cos_phi[~mask]
-    g_m = 1/np.sqrt(rrc + (zex[~mask] + hex[~mask])**2)
-    g_p = 1/np.sqrt(rrc + (zex[~mask] - hex[~mask])**2)
-    unite[~mask] = ((zex+hex)[~mask]*g_m - (zex-hex)[~mask]*g_p)/rrc
+#     rrc = r2d2ex[~mask] - dr2ex[~mask]*cos_phi[~mask]
+#     g_m = 1/np.sqrt(rrc + (zex[~mask] + hex[~mask])**2)
+#     g_p = 1/np.sqrt(rrc + (zex[~mask] - hex[~mask])**2)
+#     unite[~mask] = ((zex+hex)[~mask]*g_m - (zex-hex)[~mask]*g_p)/rrc
 
-    summand = sphiex/3*cos_phi0ex*unite
+#     summand = sphiex/3*cos_phi0ex*unite
 
-    Br   = r0/2/niter*np.sum(summand*(r-r0*cos_phi), axis=0)
-    Bphi = r0**2/2/niter*np.sum(summand*np.sin(phiex-phi0ex), axis=0)
+#     Br   = r0/2/niter*np.sum(summand*(r-r0*cos_phi), axis=0)
+#     Bphi = r0**2/2/niter*np.sum(summand*np.sin(phiex-phi0ex), axis=0)
 
-    # compute z-component
-    gz_m = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex+z0)**2)
-    gz_p = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex-z0)**2)
-    summandz = sphiex/3*cos_phi0ex*(gz_p - gz_m)
-    Bz = r0/2/niter*np.sum(summandz, axis=0)
+#     # compute z-component
+#     gz_m = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex+z0)**2)
+#     gz_p = 1/np.sqrt(r**2 + r0**2 - 2*r0*r*cos_phi + (zex-z0)**2)
+#     summandz = sphiex/3*cos_phi0ex*(gz_p - gz_m)
+#     Bz = r0/2/niter*np.sum(summandz, axis=0)
 
-    return np.array([Br, Bphi, Bz]).T
+#     return np.array([Br, Bphi, Bz]).T
 
 
 

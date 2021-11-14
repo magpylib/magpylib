@@ -345,7 +345,7 @@ def test_cylinder_field1():
 
 def test_cylinder_slanovc_field2():
     """ testing B for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
+    src = magpy.magnet.CylinderSegment((22,33,44), (.5,1,2,0,90))
 
     binn = ( 5.52525937, 13.04561569, 40.11111556)
     bout = (0.0177018,  0.1277188,  0.27323195)
@@ -389,7 +389,7 @@ def test_cylinder_slanovc_field2():
 
 def test_cylinder_slanovc_field3():
     """ testing H for all input combinations in/out/surface of Tile solution"""
-    src = magpy.magnet.CylinderSegment((22,33,44), (1,2,2,0,90))
+    src = magpy.magnet.CylinderSegment((22,33,44), (.5,1,2,0,90))
 
     hinn = (-13.11018204, -15.87919449,  -3.09467591)
     hout = (0.01408664, 0.1016354,  0.21743108)
@@ -465,9 +465,9 @@ def test_cylinder_tile_vs_fem():
     mag3 = np.array((0,1,-1))/np.sqrt(2)*1000
 
     # Magpylib magnet collection
-    m1 = magpy.magnet.CylinderSegment(mag1, (2,4,1,-90,0))
-    m2 = magpy.magnet.CylinderSegment(mag2, (2,5,1.5,200,250))
-    m3 = magpy.magnet.CylinderSegment(mag3, (1.5,6,0.5,70,180))
+    m1 = magpy.magnet.CylinderSegment(mag1, (1,2,1,-90,0))
+    m2 = magpy.magnet.CylinderSegment(mag2, (1,2.5,1.5,200,250))
+    m3 = magpy.magnet.CylinderSegment(mag3, (.75,3,0.5,70,180))
     col = m1+m2+m3
 
     # create observer circles (see FEM screen shot)
