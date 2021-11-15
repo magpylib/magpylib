@@ -26,6 +26,7 @@ os.environ[
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
 import plotly.io as pio
+from sphinx_gallery.sorting import FileNameSortKey
 
 pio.renderers.default = "sphinx_gallery"
 
@@ -42,7 +43,7 @@ def setup(app):
         [
             "-f",  # Overwrite existing files
             "-T",  # Create table of contents
-            '-e', #Give modules their own pages
+            "-e",  # Give modules their own pages
             "-E",  # user docstring headers
             "-M",  # Modules first
             "-o",  # Output the files to:
@@ -83,12 +84,13 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_copybutton",
     "myst_nb",
-    #"sphinx_panels",
+    # "sphinx_panels",
 ]
 
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "_auto_examples",  # path to where to save gallery generated output
+    "within_subsection_order": FileNameSortKey,
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -232,9 +234,9 @@ epub_exclude_files = ["search.html"]
 
 source_suffix = [".rst", ".md"]
 
-#html_js_files = [
+# html_js_files = [
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
-#]
+# ]
 
 myst_enable_extensions = [
     "amsmath",
