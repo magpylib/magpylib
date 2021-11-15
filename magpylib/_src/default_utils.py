@@ -326,8 +326,20 @@ class MagicProperties:
         dict_str = ", ".join(f"{k}={repr(getattr(self,k))}" for k in params)
         return f"{type(self).__name__}({dict_str})"
 
-    def as_dict(self):
-        """returns recursively a nested dictionary with all properties objects of the class"""
+    def as_dict(self, flatten=False, separator="."):
+        """
+        returns recursively a nested dictionary with all properties objects of the class
+
+        Parameters
+        ----------
+        flatten: bool
+            If `True`, the nested dictionary gets flatten out with provided separator for the
+            dictionary keys
+
+        separator: str
+            the separator to be used when flattening the dictionary. Only applies if
+            `flatten=True`
+        """
         params = self._property_names_generator()
         dict_ = {}
         for k in params:
@@ -336,6 +348,8 @@ class MagicProperties:
                 dict_[k] = val.as_dict()
             else:
                 dict_[k] = val
+        if flatten:
+            dict_ = linearize_dict(dict_, separator=separator)
         return dict_
 
     def update(

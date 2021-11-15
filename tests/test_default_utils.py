@@ -177,6 +177,11 @@ def test_MagicProperties():
         bp3.as_dict() == bp2.as_dict()
     ), "failed copying, should return the same property values"
 
+    # check flatten dict
+    assert bp3.as_dict(flatten=True) == bp2.as_dict(
+        flatten=True
+    ), "failed copying, should return the same property values"
+
     # check failing init
     with pytest.raises(AttributeError):
         BPsub1(a=0)  # `a` is not a property in the class
