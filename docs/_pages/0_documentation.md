@@ -15,8 +15,6 @@ Brief overview and some critical information.
 - {ref}`docu-field-computation`
 - {ref}`docu-getB_dict-getH_dict`
 - {ref}`docu-direct-access`
-- {ref}`docu-performance`
-- {ref}`docu-units-scaling`
 - {ref}`docu-close-to-surface`
 
 (docu-idea)=
@@ -363,33 +361,3 @@ print(B)
 ```
 
 As all input checks, coordinate transformations and position/orientation implementation are avoided, this is the fastest way to compute fields in Magpylib.
-
-(docu-performance)=
-
-## Performance
-
-The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
-
-(docu-units-scaling)=
-
-## Units and scaling property
-
-Magpylib uses the following physical units:
-
-- \[mT\]: for the B-field and the magnetization (µ0\*M).
-- \[kA/m\]: for the H-field.
-- \[mm\]: for position and length inputs.
-- \[deg\]: for angle inputs by default.
-- \[A\]: for current inputs.
-
-However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of \[mm\] is a result of history and practical considerations when working with position and orientation systems).
-
-In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
-
-(docu-close-to-surface)=
-
-## Close to surfaces, edges and corners
-
-Evaluation of analytical solutions are often limited by numerical precision when approaching singularities or indeterminate forms on magnet surfaces, edges or corners. 64-bit precision limits evaluation to 16 significant digits, but unfortunately many solutions include higher powers of the distances so that the precision limit is quickly approached.
-
-As a result, Magpylib automatically sets solution that lie closer than **1e-8** to problematic surfaces, edges or corners to **0**. The user can adjust this default value simply with the command `magpylib.defaults.edgesize=x`.
