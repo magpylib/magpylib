@@ -25,9 +25,15 @@ os.environ[
     "SPHINX_APIDOC_OPTIONS"
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
-import plotly.io as pio
+from sphinx_gallery.sorting import FileNameSortKey
+from plotly.io._sg_scraper import plotly_sg_scraper
 
-pio.renderers.default = "sphinx_gallery"
+image_scrapers = (
+    "matplotlib",
+    plotly_sg_scraper,
+)
+
+# pio.renderers.default = "sphinx_gallery"
 
 autodoc_default_options = {
     "private-members": True,
@@ -42,7 +48,7 @@ def setup(app):
         [
             "-f",  # Overwrite existing files
             "-T",  # Create table of contents
-            '-e', #Give modules their own pages
+            "-e",  # Give modules their own pages
             "-E",  # user docstring headers
             "-M",  # Modules first
             "-o",  # Output the files to:
@@ -83,12 +89,14 @@ extensions = [
     "sphinx_gallery.gen_gallery",
     "sphinx_copybutton",
     "myst_nb",
-    #"sphinx_panels",
+    # "sphinx_panels",
 ]
 
 sphinx_gallery_conf = {
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "_auto_examples",  # path to where to save gallery generated output
+    "within_subsection_order": FileNameSortKey,
+    "image_scrapers": image_scrapers,
 }
 
 # Add any paths that contain templates here, relative to this directory.
@@ -115,7 +123,7 @@ language = None
 exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "README*"]
 
 # The name of the Pygments (syntax highlighting) style to use.
-pygments_style = None
+pygments_style = "sphinx"
 
 
 # -- Options for HTML output -------------------------------------------------
@@ -232,9 +240,9 @@ epub_exclude_files = ["search.html"]
 
 source_suffix = [".rst", ".md"]
 
-html_js_files = [
-    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
-]
+# html_js_files = [
+#    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
+# ]
 
 myst_enable_extensions = [
     "amsmath",
@@ -249,3 +257,6 @@ myst_enable_extensions = [
     "substitution",
     "tasklist",
 ]
+
+copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
+copybutton_prompt_is_regexp = True

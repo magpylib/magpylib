@@ -179,7 +179,9 @@ def getB_dict(**kwargs):
         Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
     dimension: array_like
-        Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
+        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+        input in units of [mm]. Dimension format of sources similar as in object oriented
+        interface.
 
     diameter: array_like, shape (N)
         Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
@@ -280,7 +282,9 @@ def getH_dict(**kwargs):
         Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
     dimension: array_like
-        Only `source_type in ('Cuboid', 'Cylinder')`! Magnet dimension input in units of [mm].
+        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+        input in units of [mm]. Dimension format of sources similar as in object oriented
+        interface.
 
     diameter: array_like, shape (N)
         Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].

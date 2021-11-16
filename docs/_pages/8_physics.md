@@ -38,22 +38,6 @@ $$
 
 In some special cases (simple shapes, homogeneous magnetizations and current distributions) the above integrals can be worked out directly to give analytical formulas (or simple, fast converging series). The derivations can be found in the respective references. A noteworthy comparison between the Coulombian approach and the Amperian current model is given in \[2009Ravaud\].
 
-**References**
-
-- \[1999Yang\] Z. J. Yang et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-d superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1999
-- \[2005 Engel-Herbert\] R. Engel-Herbert et al., Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
-- \[2013 Camacho\] J.M. Camacho and V. Sosa, "Alternative method to calculate the magnetic field of permanent magnets with azimuthal symmetry", Revista Mexicana de Fisica E 59 8–17, 2013
-- \[1994Furlani\] E. P. Furlani, S. Reanik and W. Janson, "A Three-Dimensional Field Solution for Bipolar Cylinders", IEEE Transaction on Magnetics, VOL. 30, NO. 5, 1994
-- \[2009Derby\] N. Derby, "Cylindrical Magnets and Ideal Solenoids", arXiv:0909.3880v1, 2009
-- \[1950Smythe\] W.B. Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
-- \[2001Simpson\] J. Simplson et al., "Simple analytic expressions for the magnetic field of a circular current loop," 2001.
-- \[2017Ortner\] M. Ortner et al., "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing", IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
-- \[2009Janssen\] J.L.G. Janssen, J.J.H. Paulides and E.A. Lomonova, "3D ANALYTICAL FIELD CALCULATION USING TRIANGULAR MAGNET SEGMENTS APPLIED TO A SKEWED LINEAR PERMANENT MAGNET ACTUATOR", ISEF 2009 - XIV International Symposium on Electromagnetic Fields in Mechatronics, Electrical and Electronic Engineering Arras, France, September 10-12, 2009
-- \[2013Rubeck\] C. Rubeck et al., "Analytical Calculation of Magnet Systems: Magnetic Field Created by Charged Triangles and Polyhedra", IEEE Transactions on Magnetics, VOL. 49, NO. 1, 2013
-- \[1999Jackson\] J. D. Jackson, "Classical Electrodynamics", 1999 Wiley, New York
-- \[2009Ravaud\] R. Ravaud and G. Lamarquand, "Comparison of the coulombian and amperian current models for calculating the magnetic field produced by radially magnetized arc-shaped permanent magnets", HAL Id: hal-00412346
-- \[2021Slanovc\] F. Slanovc et al., "Full Analytical Solution for the Magnetic field of Uniformly Magnetized Cylinder Tiles", in preparation
-
 ## Accuracy of the Solutions and Demagnetization
 
 **Line currents:**
@@ -74,22 +58,67 @@ An example would be the magnetization of a soft-magnetic metal piece in the eart
 
 **Convergence of the diametral Cylinder solution**
 
-The diametral Cylinder solution is based on a convering series. 50 iterations are probaby ok and also set as standard. If you want to be precise increase iterations and observer the convergence behavior. Change the setting to {code}`x` with
+The diametral Cylinder solution is based on a converging series and is set to 50 iterations by default, which should be sufficient in most cases. If you want to be more precise, you can change the convergence behavior by setting a new default value `x` with
 
 ```python
 magpylib.defaults.itercylinder = x
 ```
 
-**References**
+(docu-units-scaling)=
 
-\[2020Malago\] P. Malagò et al., Magnetic Position System Design Method Applied to Three-Axis Joystick Motion Tracking. Sensors, 2020, 20. Jg., Nr. 23, S. 6873.
+## Units and scaling property
 
+Magpylib uses the following physical units:
+
+- \[mT\]: for the B-field and the magnetization (µ0\*M).
+- \[kA/m\]: for the H-field.
+- \[mm\]: for position and length inputs.
+- \[deg\]: for angle inputs by default.
+- \[A\]: for current inputs.
+
+However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of \[mm\] is a result of history and practical considerations when working with position and orientation systems).
+
+In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
 ## Computation
 
 Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programming), written almost completly in numpy native. Magpylib automatically vectorizes the computation with complex inputs (many sources, many observers, paths) and never falls back on using loops.
 
 ```{note}
-Maximal performance is achieved when {code}`.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
+Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 ```
 
-Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function {code}`magpylib.getB_dict`.
+Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function `magpylib.getB_dict` (see {ref}`docu-getB_dict-getH_dict`)
+
+
+
+(docu-performance)=
+
+## Performance
+
+The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
+
+
+(docu-close-to-surface)=
+
+## Close to surfaces, edges and corners
+
+Evaluation of analytical solutions are often limited by numerical precision when approaching singularities or indeterminate forms on magnet surfaces, edges or corners. 64-bit precision limits evaluation to 16 significant digits, but unfortunately many solutions include higher powers of the distances so that the precision limit is quickly approached.
+
+As a result, Magpylib automatically sets solution that lie closer than **1e-8** to problematic surfaces, edges or corners to **0**. The user can adjust this default value simply with the command `magpylib.defaults.edgesize=x`.
+
+**References**
+
+- \[1999Yang\] Z. J. Yang et al., "Potential and force between a magnet and a bulk Y1Ba2Cu3O7-d superconductor studied by a mechanical pendulum", Superconductor Science and Technology 3(12):591, 1999
+- \[2005 Engel-Herbert\] R. Engel-Herbert et al., Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
+- \[2013 Camacho\] J.M. Camacho and V. Sosa, "Alternative method to calculate the magnetic field of permanent magnets with azimuthal symmetry", Revista Mexicana de Fisica E 59 8–17, 2013
+- \[1994Furlani\] E. P. Furlani, S. Reanik and W. Janson, "A Three-Dimensional Field Solution for Bipolar Cylinders", IEEE Transaction on Magnetics, VOL. 30, NO. 5, 1994
+- \[2009Derby\] N. Derby, "Cylindrical Magnets and Ideal Solenoids", arXiv:0909.3880v1, 2009
+- \[1950Smythe\] W.B. Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
+- \[2001Simpson\] J. Simplson et al., "Simple analytic expressions for the magnetic field of a circular current loop," 2001.
+- \[2017Ortner\] M. Ortner et al., "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing", IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
+- \[2009Janssen\] J.L.G. Janssen, J.J.H. Paulides and E.A. Lomonova, "3D ANALYTICAL FIELD CALCULATION USING TRIANGULAR MAGNET SEGMENTS APPLIED TO A SKEWED LINEAR PERMANENT MAGNET ACTUATOR", ISEF 2009 - XIV International Symposium on Electromagnetic Fields in Mechatronics, Electrical and Electronic Engineering Arras, France, September 10-12, 2009
+- \[2013Rubeck\] C. Rubeck et al., "Analytical Calculation of Magnet Systems: Magnetic Field Created by Charged Triangles and Polyhedra", IEEE Transactions on Magnetics, VOL. 49, NO. 1, 2013
+- \[1999Jackson\] J. D. Jackson, "Classical Electrodynamics", 1999 Wiley, New York
+- \[2009Ravaud\] R. Ravaud and G. Lamarquand, "Comparison of the coulombian and amperian current models for calculating the magnetic field produced by radially magnetized arc-shaped permanent magnets", HAL Id: hal-00412346
+- \[2020Malago\] P. Malagò et al., Magnetic Position System Design Method Applied to Three-Axis Joystick Motion Tracking. Sensors, 2020, 20. Jg., Nr. 23, S. 6873.
+- \[2021Slanovc\] F. Slanovc et al., "Full Analytical Solution for the Magnetic field of Uniformly Magnetized Cylinder Tiles", in preparation

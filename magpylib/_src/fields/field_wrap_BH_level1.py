@@ -53,8 +53,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'CylinderSegment':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
-        d1,d2,h,phi1,phi2 = dim.T
-        r1, r2 = d1/2, d2/2
+        r1,r2,h,phi1,phi2 = dim.T
         z1, z2 = -h/2, h/2
         dim = np.array([r1,r2,phi1,phi2,z1,z2]).T
         B = field_BH_cylinder_tile(bh, mag, dim, pos_rel_rot)
