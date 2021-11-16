@@ -4,8 +4,8 @@ Modelling a Coil
 ================
 """
 # %%
-# A coil consists of large number of windings that can be modeled using `Loop` sources. 
-# The total coil is then a `Collection` of windings. One must be careful to take the line-current 
+# A coil consists of large number of windings that can be modeled using ``Loop`` sources. 
+# The total coil is then a `Collection`` of windings. One must be careful to take the line-current 
 # approximation into consideration. This means that the field diverges when approaching the current, 
 # while the field is correct outside a hypothetical wire with homogeneous current distribution.
 

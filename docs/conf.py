@@ -33,7 +33,7 @@ image_scrapers = (
     plotly_sg_scraper,
 )
 
-#pio.renderers.default = "sphinx_gallery"
+# pio.renderers.default = "sphinx_gallery"
 
 autodoc_default_options = {
     "private-members": True,
