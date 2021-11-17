@@ -65,7 +65,9 @@ magnet_style.magnetization.color.middle = "grey"
 magnet_style.magnetization.color.mode = "tricolor"
 
 # %%
-magnet_style = {"show": True, "color": {"middle": "grey", "mode": "tricolor"}}
+magnet_style = {
+    "magnetization": {"show": True, "color": {"middle": "grey", "mode": "tricolor"}}
+}
 
 # %%
 # To make it easier to work with nested properties, style constructors and object style method
@@ -74,12 +76,20 @@ magnet_style = {"show": True, "color": {"middle": "grey", "mode": "tricolor"}}
 # verbosity and is heavily inspired by the ``plotly`` implementation
 # (see https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation). The
 # previous examples can also be written as:
-magnet_style = {"show": True, "color_middle": "grey", "color_mode": "tricolor"}
+magnet_style = {
+    "magnetization_show": True,
+    "magnetization_color_middle": "grey",
+    "magnetization_color_mode": "tricolor",
+}
 
 # %%
 # Additionally, instead of overriding the whole style constructor, style properties can be updated.
 # The underscore notation is also supported here:
-magnet_style.update(show=True, color_middle="grey", color_mode="tricolor")
+magnet_style.update(
+    magnetization_show=True,
+    magnetization_color_middle="grey",
+    magnetization_color_mode="tricolor",
+)
 
 # %%
 # a practical example:
@@ -104,7 +114,7 @@ fig
 #
 # .. note::
 #   The ``Collection`` object does not hold any ``style`` attribute on its own but the helper method
-#   ``set_styles`` allows setting the styles of all its children where the set arguments match
+#   ``set_styles`` allows setting the style of all its children where the set arguments match
 #   existing child style attributes.
 
 col.set_styles(magnetization_color_south="blue")
