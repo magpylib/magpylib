@@ -1,11 +1,8 @@
 """Custom class code"""
 
-import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.default_classes import default_settings as Config
-from magpylib._src.input_checks import check_vector_format, check_vector_type
 
 
 # ON INTERFACE
@@ -17,11 +14,11 @@ class Custom(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ----------
     field_B_lambda: function
         field function for B-field, should accept (n,3) position array and return
-        B-field array of same shape. 
+        B-field array of same shape in the global coordinate system.
 
     field_H_lambda: function
         field function for H-field, should accept (n,3) position array and return
-        H-field array of same shape. 
+        H-field array of same shape in the global coordinate system.
 
     position: array_like, shape (3,) or (M,3), default=(0,0,0)
         Object position (local CS origin) in the global CS in units of [mm].
@@ -59,4 +56,3 @@ class Custom(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style)
         BaseDisplayRepr.__init__(self)
-
