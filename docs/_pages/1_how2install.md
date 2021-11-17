@@ -28,7 +28,7 @@ conda install magpylib
 
 ## Using Anaconda
 
-Or if you have little experience with Python we recommand using [Anaconda](https://www.anaconda.com).
+Or if you have little experience with Python we recommend using [Anaconda](https://www.anaconda.com).
 
 1. Download & install Anaconda3
 
@@ -50,7 +50,7 @@ Or if you have little experience with Python we recommand using [Anaconda](https
    > conda install -c conda-forge magpylib
    > ```
 
-6. Dont forget to select the proper environment in your IDE.
+6. Don't forget to select the proper environment in your IDE.
 
    > ```{image} ../_static/images/install_guide/anaconda2.png
    > ```

@@ -81,7 +81,7 @@ However, the analytical solutions scale in such a way that the magnetic field is
 In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
 ## Computation
 
-Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programming), written almost completly in numpy native. Magpylib automatically vectorizes the computation with complex inputs (many sources, many observers, paths) and never falls back on using loops.
+Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programming), written almost completely in numpy native. Magpylib automatically vectorizes the computation with complex inputs (many sources, many observers, paths) and never falls back on using loops.
 
 ```{note}
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.

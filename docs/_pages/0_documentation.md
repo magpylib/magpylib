@@ -15,7 +15,6 @@ Brief overview and some critical information.
 - {ref}`docu-field-computation`
 - {ref}`docu-getB_dict-getH_dict`
 - {ref}`docu-direct-access`
-- {ref}`docu-close-to-surface`
 
 (docu-idea)=
 
@@ -31,7 +30,7 @@ The core API of Magpylib is object oriented and couples the field computation to
 
 The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed.
 
-For permanent magnets, when (remanent) permeabilities are below $\mu_r < 1.1$ the error is typically below 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. With these factors the precision can be incresed to below 1 % error. Error estimation as a result of the materal response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873).
+For permanent magnets, when (remanent) permeabilities are below $\mu_r < 1.1$ the error is typically below 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. With these factors the precision can be increased to below 1 % error. Error estimation as a result of the material response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873).
 
 The line-current solutions give the exact same field as outside of a wire which carries a homogenous current.
 

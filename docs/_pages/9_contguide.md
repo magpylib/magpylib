@@ -13,7 +13,7 @@
 
 **Jaka Pribosek** - Concepts.
 
-**Alexandre Boisselet** - Python code layout.
+**Alexandre Boisselet** - Python code layout, plotting backends.
 
 ## Credits
 
