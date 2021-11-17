@@ -84,7 +84,7 @@ def format_src_inputs(sources) -> list:
     # pylint: disable=protected-access
 
     src_class_types = (
-        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line')
+        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line', 'Custom')
 
     # if bare source make into list
     if not isinstance(sources, (list,tuple)):
