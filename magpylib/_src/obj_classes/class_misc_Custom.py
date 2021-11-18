@@ -6,7 +6,7 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 
 
 # ON INTERFACE
-class Custom(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
     Custom Source class
 
@@ -32,7 +32,7 @@ class Custom(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     Returns
     -------
-    Custom object: Custom
+    CustomSource object: CustomSource
 
     Examples
     --------
@@ -51,7 +51,7 @@ class Custom(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # instance attributes
         self.field_B_lambda = field_B_lambda
         self.field_H_lambda = field_H_lambda
-        self._object_type = "Custom"
+        self._object_type = "CustomSource"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style)
