@@ -85,50 +85,53 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # determine which group we are dealing with and tile up dim and exitation
     src_type = group[0]._object_type
 
+    kwargs = {'source_type': src_type, 'position': posv, 'observer': posov, 'orientation': rotobj}
+
     if src_type == 'Sphere':
         magv = tile_mag(group, n_pp)
         diav = tile_dia(group, n_pp)
-        return {'source_type':src_type, 'magnetization':magv, 'diameter':diav, 'position':posv,
-            'observer': posov, 'orientation':rotobj}
+        kwargs.update({'magnetization':magv, 'diameter':diav})
 
-    if src_type == 'Cuboid':
+    elif src_type == 'Cuboid':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim_cuboid(group, n_pp)
-        return {'source_type':src_type, 'magnetization':magv, 'dimension':dimv, 'position':posv,
-            'observer': posov, 'orientation':rotobj}
+        kwargs.update({'magnetization':magv,  'dimension':dimv})
 
-    if src_type == 'Cylinder':
+    elif src_type == 'Cylinder':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim_cylinder(group, n_pp)
-        return {'source_type':'Cylinder', 'magnetization':magv, 'dimension':dimv,
-            'position':posv, 'observer': posov, 'orientation':rotobj}
+        kwargs.update({'magnetization':magv,  'dimension':dimv})
 
-    if src_type == 'CylinderSegment':
+    elif src_type == 'CylinderSegment':
         magv = tile_mag(group, n_pp)
         dimv = tile_dim_cylinder_section(group, n_pp)
-        return {'source_type':'CylinderSegment', 'magnetization':magv, 'dimension':dimv,
-            'position':posv, 'observer': posov, 'orientation':rotobj}
+        kwargs.update({'magnetization':magv,  'dimension':dimv})
 
-    if src_type == 'Dipole':
+    elif src_type == 'Dipole':
         momv = tile_moment(group, n_pp)
-        return {'source_type':src_type, 'moment':momv, 'position':posv,
-            'observer': posov, 'orientation':rotobj}
+        kwargs.update({'moment':momv})
 
-    if src_type == 'Loop':
+    elif src_type == 'Loop':
         currv = tile_current(group, n_pp)
         diav = tile_dia(group, n_pp)
-        return {'source_type':src_type, 'current':currv, 'diameter':diav, 'position':posv,
-            'observer': posov, 'orientation':rotobj}
+        kwargs.update({'current':currv, 'diameter':diav})
 
-    if src_type == 'Line':
+    elif src_type == 'Line':
         # get_BH_line_from_vert function tiles internally !
         #currv = tile_current(group, n_pp)
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
-        return {'source_type':src_type, 'current':currv, 'vertices':vert_list,
-            'position':posv, 'observer': posov, 'orientation':rotobj}
+        kwargs.update({'current':currv, 'vertices':vert_list})
 
-    raise MagpylibInternalError('Bad source_type in get_src_dict')
+    elif src_type == 'CustomSource':
+        kwargs.update({
+            'field_B_lambda': group[0].field_B_lambda, 
+            'field_H_lambda': group[0].field_H_lambda})
+
+    else:
+        raise MagpylibInternalError('Bad source_type in get_src_dict')
+    
+    return kwargs
 
 
 def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
@@ -243,41 +246,26 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     n_pix = int(n_pp/m)
 
     # group similar source types----------------------------------------------
-    src_sorted = [[],[],[],[],[],[],[]]   # store groups here
-    order = [[],[],[],[],[],[],[]]        # keep track of the source order
-    for i,src in enumerate(src_list):
-        if src._object_type == 'Cuboid':
-            src_sorted[0] += [src]
-            order[0] += [i]
-        elif src._object_type == 'Cylinder':
-            src_sorted[1] += [src]
-            order[1] += [i]
-        elif src._object_type == 'CylinderSegment':
-            src_sorted[2] += [src]
-            order[2] += [i]
-        elif src._object_type == 'Sphere':
-            src_sorted[3] += [src]
-            order[3] += [i]
-        elif src._object_type == 'Dipole':
-            src_sorted[4] += [src]
-            order[4] += [i]
-        elif src._object_type == 'Loop':
-            src_sorted[5] += [src]
-            order[5] += [i]
-        elif src._object_type == 'Line':
-            src_sorted[6] += [src]
-            order[6] += [i]
+    groups = {}
+    for ind,src in enumerate(src_list):
+        if src._object_type=='CustomSource':
+            group_key = (src.field_B_lambda, src.field_H_lambda)
+        else:
+            group_key = src._object_type
+        if group_key not in groups:
+            groups[group_key] = {'sources':[], 'order':[], 'source_type': src._object_type}
+        groups[group_key]['sources'].append(src)
+        groups[group_key]['order'].append(ind)
 
     # evaluate each group in one vectorized step -------------------------------
     B = np.empty((l,m,n_pix,3))                               # allocate B
-    for iii, group in enumerate(src_sorted):
-        if group:                                             # is group empty ?
-            lg = len(group)
-            src_dict = get_src_dict(group, n_pix, n_pp, poso) # compute array dict for level1
-            B_group = getBH_level1(bh=bh, **src_dict)         # compute field
-            B_group = B_group.reshape((lg,m,n_pix,3))         # reshape (2% slower for large arrays)
-            for i in range(lg):                               # put into dedicated positions in B
-                B[order[iii][i]] = B_group[i]
+    for group in groups.values():
+        lg = len(group['sources'])
+        src_dict = get_src_dict(group['sources'], n_pix, n_pp, poso)     # compute array dict for level1
+        B_group = getBH_level1(bh=bh, **src_dict)             # compute field
+        B_group = B_group.reshape((lg,m,n_pix,3))             # reshape (2% slower for large arrays)
+        for i in range(lg):                                   # put into dedicated positions in B
+            B[group['order'][i]] = B_group[i]
 
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
