@@ -37,7 +37,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     Examples
     --------
-    By default a Dipole is initialized at position (0,0,0), with unit rotation:
+    By default the CustomSource is initialized at position (0,0,0), with unit rotation:
 
     """
 
@@ -60,6 +60,8 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_B_lambda(self):
+        """field function for B-field, should accept (n,3) position array and return
+        B-field array of same shape in the global coordinate system."""
         return self._field_B_lambda
 
     @field_B_lambda.setter
@@ -68,6 +70,8 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_H_lambda(self):
+        """field function for H-field, should accept (n,3) position array and return
+        H-field array of same shape in the global coordinate system."""
         return self._field_H_lambda
 
     @field_H_lambda.setter
@@ -87,7 +91,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         return val
 
 
-"""
+example = """
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import magpylib as magpy
@@ -105,7 +109,7 @@ magpy.display(cube, sens, backend='plotly')
 
 def interpolate_field(data, field_type='B', bounds_error=False, fill_value=np.nan):
     '''data: x,y,z,Bx,By,Bz numpy array sorted by (x,y,z)
-    returns: 
+    returns:
         interpolating function for B field values'''
     x,y,z,Bx,By,Bz = data.T
     nx,ny,nz = len(np.unique(x)), len(np.unique(y)), len(np.unique(z))
