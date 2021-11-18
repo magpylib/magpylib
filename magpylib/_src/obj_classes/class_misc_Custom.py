@@ -1,5 +1,6 @@
 """Custom class code"""
 
+import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
@@ -56,3 +57,31 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style)
         BaseDisplayRepr.__init__(self)
+
+    @property
+    def field_B_lambda(self):
+        return self._field_B_lambda
+
+    @field_B_lambda.setter
+    def field_B_lambda(self, val):
+        self._field_B_lambda = self._validate_field_lambda(val, "B")
+
+    @property
+    def field_H_lambda(self):
+        return self._field_H_lambda
+
+    @field_H_lambda.setter
+    def field_H_lambda(self, val):
+        self._field_H_lambda = self._validate_field_lambda(val, "H")
+
+    def _validate_field_lambda(self, val, bh):
+        if val is not None:
+            assert callable(val), f"field_{bh}_lambda must be a callable"
+            out = val(np.array([[1, 2, 3], [4, 5, 6]]))
+            out_shape = np.array(out).shape
+            assert out_shape == (2, 3), (
+                f"field_{bh}_lambda input shape and output "
+                "shape must match and be of dimension (n,3)\n"
+                f"received shape={out_shape} instead"
+            )
+        return val
