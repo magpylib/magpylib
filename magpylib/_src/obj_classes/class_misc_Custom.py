@@ -78,7 +78,8 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     def field_H_lambda(self, val):
         self._field_H_lambda = self._validate_field_lambda(val, "H")
 
-    def _validate_field_lambda(self, val, bh):
+    @staticmethod
+    def _validate_field_lambda(val, bh):
         if val is not None:
             assert callable(val), f"field_{bh}_lambda must be a callable"
             out = val(np.array([[1, 2, 3], [4, 5, 6]]))
