@@ -249,7 +249,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     groups = {}
     for ind,src in enumerate(src_list):
         if src._object_type=='CustomSource':
-            group_key = (src.field_B_lambda, src.field_H_lambda)
+            group_key = src.field_B_lambda if bh else src.field_H_lambda
         else:
             group_key = src._object_type
         if group_key not in groups:
