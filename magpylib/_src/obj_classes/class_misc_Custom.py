@@ -85,3 +85,67 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
                 f"received shape={out_shape} instead"
             )
         return val
+
+
+"""
+import numpy as np
+from scipy.interpolate import RegularGridInterpolator
+import magpylib as magpy
+# create virtual measured data
+
+dim = [1,1,1]
+Nelem = [2,2,2]
+slices = [slice(-d/2,d/2,N*1j) for d,N in zip(dim,Nelem)]
+positions = np.mgrid[slices].reshape(len(slices),-1).T
+
+cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
+sens = magpy.Sensor(pixel=positions)
+
+magpy.display(cube, sens, backend='plotly')
+
+def interpolate_field(data, field_type='B', bounds_error=False, fill_value=np.nan):
+    '''data: x,y,z,Bx,By,Bz numpy array sorted by (x,y,z)
+    returns: 
+        interpolating function for B field values'''
+    x,y,z,Bx,By,Bz = data.T
+    nx,ny,nz = len(np.unique(x)), len(np.unique(y)), len(np.unique(z))
+    X = np.linspace(np.min(x), np.max(x), nx)
+    Y = np.linspace(np.min(y), np.max(y), ny)
+    Z = np.linspace(np.min(z), np.max(z), nz)
+    BX_interp = RegularGridInterpolator((X,Y,Z), Bx.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
+    BY_interp = RegularGridInterpolator((X,Y,Z), By.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
+    BZ_interp = RegularGridInterpolator((X,Y,Z), Bz.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
+    return lambda x: np.array([BX_interp(x),BY_interp(x),BZ_interp(x)]).T
+
+B = sens.getB(cube)
+#B *= 1 + np.random.random_sample(B.shape)*0.01 # add 1% white noise
+data = np.hstack([positions,B])
+field_B_lambda = interpolate_field(data, field_type='B')
+display(B, field_B_lambda(positions))
+
+exp_data = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
+cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
+sens = magpy.Sensor(pixel=positions)
+
+display(sens.getB(exp_data), sens.getB(cube))
+
+rotation = dict(angle=35, axis=(2,5,0.3), anchor=(-4, 2.5, 0)) # random rotation parameters
+exp_data.rotate_from_angax(**rotation)
+sens.rotate_from_angax(**rotation)
+cube.rotate_from_angax(**rotation)
+
+display(sens.getB(exp_data), sens.getB(cube))
+
+exp_data = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
+cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
+sens = magpy.Sensor(pixel=positions)
+
+display(sens.getB(exp_data), sens.getB(cube))
+
+displ = (4,6,5)
+exp_data.move(displ)
+sens.move(displ)
+cube.move(displ)
+
+display(sens.getB(exp_data), sens.getB(cube))
+"""
