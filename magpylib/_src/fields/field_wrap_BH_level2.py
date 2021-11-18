@@ -125,12 +125,12 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     elif src_type == 'CustomSource':
         kwargs.update({
-            'field_B_lambda': group[0].field_B_lambda, 
+            'field_B_lambda': group[0].field_B_lambda,
             'field_H_lambda': group[0].field_H_lambda})
 
     else:
         raise MagpylibInternalError('Bad source_type in get_src_dict')
-    
+
     return kwargs
 
 
@@ -258,13 +258,14 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
         groups[group_key]['order'].append(ind)
 
     # evaluate each group in one vectorized step -------------------------------
-    B = np.empty((l,m,n_pix,3))                               # allocate B
+    B = np.empty((l,m,n_pix,3))                         # allocate B
     for group in groups.values():
         lg = len(group['sources'])
-        src_dict = get_src_dict(group['sources'], n_pix, n_pp, poso)     # compute array dict for level1
-        B_group = getBH_level1(bh=bh, **src_dict)             # compute field
-        B_group = B_group.reshape((lg,m,n_pix,3))             # reshape (2% slower for large arrays)
-        for i in range(lg):                                   # put into dedicated positions in B
+        gr = group['sources']
+        src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
+        B_group = getBH_level1(bh=bh, **src_dict)       # compute field
+        B_group = B_group.reshape((lg,m,n_pix,3))       # reshape (2% slower for large arrays)
+        for i in range(lg):                             # put into dedicated positions in B
             B[group['order'][i]] = B_group[i]
 
     # reshape output ----------------------------------------------------------------
