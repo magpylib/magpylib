@@ -95,61 +95,72 @@ example = """
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator
 import magpylib as magpy
+
+magpy.defaults.display.backend='plotly'
+
+def interpolate_field(data, method='linear', bounds_error=False, fill_value=np.nan):
+    ''' Creates a 3d-vector field interpolation of a rasterized data from a regular grid
+
+    Parameters
+    ----------
+    data: numpy.ndarray or array-like
+        `numpy.ndarray` of shape (n,6). In order to be a regular grid, the first dimension n
+        corresponds to the product of the unique values in x,y,z-directions. The second dimension
+        should have following ordering:
+         x, y, z, field_x, field_y, field_z
+
+    see `scipy.interpolate.RegularGridInterpolator` for the other parameters
+
+    Returns
+    -------
+        callable: interpolating function for field values
+    '''
+    data = np.array(data)
+    idx = np.lexsort((data[:,2], data[:,1], data[:,0])) # sort data by x,y,z
+    x,y,z, *field_vec = data[idx].T
+    X,Y,Z = np.unique(x), np.unique(y), np.unique(z)
+    nx,ny,nz = len(X), len(Y), len(Z)
+    kwargs = dict(bounds_error=bounds_error, fill_value=fill_value, method=method)
+    field_interp = []
+    for k, kn in zip((X,Y,Z), 'xyz'):
+        assert np.unique(np.diff(k)).shape[0]==1, f"not a regular grid in {kn}-direction"
+    for field in field_vec:
+        rgi = RegularGridInterpolator((X,Y,Z), field.reshape(nx,ny,nz), **kwargs)
+        field_interp.append(rgi)
+    return lambda x: np.array([field(x) for field in field_interp]).T
+
 # create virtual measured data
 
-dim = [1,1,1]
+dim = [2,2,2]
 Nelem = [2,2,2]
 slices = [slice(-d/2,d/2,N*1j) for d,N in zip(dim,Nelem)]
 positions = np.mgrid[slices].reshape(len(slices),-1).T
 
 cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
-sens = magpy.Sensor(pixel=positions)
-
-magpy.display(cube, sens, backend='plotly')
-
-def interpolate_field(data, field_type='B', bounds_error=False, fill_value=np.nan):
-    '''data: x,y,z,Bx,By,Bz numpy array sorted by (x,y,z)
-    returns:
-        interpolating function for B field values'''
-    x,y,z,Bx,By,Bz = data.T
-    nx,ny,nz = len(np.unique(x)), len(np.unique(y)), len(np.unique(z))
-    X = np.linspace(np.min(x), np.max(x), nx)
-    Y = np.linspace(np.min(y), np.max(y), ny)
-    Z = np.linspace(np.min(z), np.max(z), nz)
-    BX_interp = RegularGridInterpolator((X,Y,Z), Bx.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
-    BY_interp = RegularGridInterpolator((X,Y,Z), By.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
-    BZ_interp = RegularGridInterpolator((X,Y,Z), Bz.reshape(nx,ny,nz), bounds_error=bounds_error, fill_value=fill_value)
-    return lambda x: np.array([BX_interp(x),BY_interp(x),BZ_interp(x)]).T
-
-B = sens.getB(cube)
+B = cube.getB(positions)
 #B *= 1 + np.random.random_sample(B.shape)*0.01 # add 1% white noise
-data = np.hstack([positions,B])
-field_B_lambda = interpolate_field(data, field_type='B')
-display(B, field_B_lambda(positions))
+Bdata = np.hstack([positions,B])
+#Bdata[-1,2] = 0.6
+field_B_lambda = interpolate_field(Bdata)
+display('Check field function vs magpylib Cuboid', field_B_lambda(positions))
 
-exp_data = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
+xp = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
 cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
-sens = magpy.Sensor(pixel=positions)
+# avoid edge of domain which may yield `np.nan` because of floating pt err
+sens = magpy.Sensor(pixel=positions*0.9)
 
-display(sens.getB(exp_data), sens.getB(cube))
+magpy.display(cube, sens)
+display('Before rotation %err vs magpylib Cuboid',
+        ((sens.getB(xp) -sens.getB(cube))/sens.getB(xp)*100).round(3)
+)
 
-rotation = dict(angle=35, axis=(2,5,0.3), anchor=(-4, 2.5, 0)) # random rotation parameters
-exp_data.rotate_from_angax(**rotation)
+rotation = dict(angle=35, axis=(1,5,.4), anchor=(1, 80, -4)) # random rotation parameters
+xp.rotate_from_angax(**rotation)
 sens.rotate_from_angax(**rotation)
 cube.rotate_from_angax(**rotation)
 
-display(sens.getB(exp_data), sens.getB(cube))
-
-exp_data = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
-cube  = magpy.magnet.Cuboid(magnetization=(0,0,1000), position=(0,0,-20), dimension=(10,10,10))
-sens = magpy.Sensor(pixel=positions)
-
-display(sens.getB(exp_data), sens.getB(cube))
-
-displ = (4,6,5)
-exp_data.move(displ)
-sens.move(displ)
-cube.move(displ)
-
-display(sens.getB(exp_data), sens.getB(cube))
+magpy.display(cube, sens)
+display('After rotation %err vs magpylib Cuboid',
+        ((sens.getB(xp) -sens.getB(cube))/sens.getB(xp)*100).round(3)
+)
 """
