@@ -206,6 +206,13 @@ def test_extra_mesh3d():
     )
     assert x is None, "display test fail"
 
+def test_CustomSource_display():
+    """testing display"""
+    fig  = go.Figure()
+    cs = magpy.misc.CustomSource()
+    x = cs.display(canvas=fig, backend='plotly')
+    assert x is None, "display test fail"
+
 def test_empty_display():
     fig  = go.Figure()
     x = magpy.display(canvas=fig, backend='plotly')
