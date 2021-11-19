@@ -987,7 +987,11 @@ def get_plotly_traces(
         trace_add_mesh3d = merge_traces(*path_traces_add_mesh3d)
         if trace_add_mesh3d:
             trace_add_mesh3d.update(
-                {"legendgroup": f"{input_obj}", "showlegend": style.mesh3d.replace, "name": style.mesh3d.data.get('name', type(input_obj).__name__)}
+                {
+                    "legendgroup": f"{input_obj}",
+                    "showlegend": style.mesh3d.replace,
+                    "name": style.mesh3d.data.get("name", type(input_obj).__name__),
+                }
             )
             traces.append(trace_add_mesh3d)
         if trace:
@@ -1128,7 +1132,7 @@ def display_plotly(
         name = getattr(style, "name", None)
         title = name if len(obj_list) == 1 else None
     else:
-        title = 'No objects to be displayed'
+        title = "No objects to be displayed"
 
     if markers is not None and markers:
         obj_list = list(obj_list) + [MagpyMarkers(*markers)]
