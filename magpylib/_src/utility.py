@@ -58,7 +58,8 @@ def format_obj_input(objects: Sequence) -> list:
                     'Sensor',
                     'Dipole',
                     'Loop',
-                    'Line'):
+                    'Line',
+                    'CustomSource'):
                     obj_list += [obj]
             except Exception as error:
                 raise MagpylibBadUserInput('Unknown input object type.') from error
