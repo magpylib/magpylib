@@ -43,7 +43,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     Define a external B-field function which returns constant vector in x-direction
     >>> def constant_Bfield(position=((0,0,0))):
-    ...    return np.tile([1,0,0], (len(position),1))
+    ...    return np.array([[1,0,0]]*len(position))
 
     Construct a ``CustomSource`` from the field function
     >>> external_field = magpy.misc.CustomSource(field_B_lambda=constant_Bfield)
@@ -127,7 +127,7 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
     ----------
     data: numpy.ndarray or array-like
         array of shape (n,6). In order to be a regular grid, the first dimension n
-        corresponds to the product of the unique values in x,y,z-directions. 
+        corresponds to the product of the unique values in x,y,z-directions.
         The second dimension must have the following ordering on the second axis:
             ``x, y, z, field_x, field_y, field_z``
 
