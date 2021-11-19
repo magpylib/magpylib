@@ -987,7 +987,7 @@ def get_plotly_traces(
         trace_add_mesh3d = merge_traces(*path_traces_add_mesh3d)
         if trace_add_mesh3d:
             trace_add_mesh3d.update(
-                {"legendgroup": f"{input_obj}", "showlegend": False}
+                {"legendgroup": f"{input_obj}", "showlegend": style.mesh3d.replace, "name": style.mesh3d.data.get('name', type(input_obj).__name__)}
             )
             traces.append(trace_add_mesh3d)
         if trace:
