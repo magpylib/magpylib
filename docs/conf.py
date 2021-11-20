@@ -26,12 +26,7 @@ os.environ[
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
 from sphinx_gallery.sorting import FileNameSortKey
-from plotly.io._sg_scraper import plotly_sg_scraper
 
-image_scrapers = (
-    "matplotlib",
-    plotly_sg_scraper,
-)
 
 # pio.renderers.default = "sphinx_gallery"
 
@@ -96,7 +91,6 @@ sphinx_gallery_conf = {
     "examples_dirs": "../examples",  # path to your example scripts
     "gallery_dirs": "_auto_examples",  # path to where to save gallery generated output
     "within_subsection_order": FileNameSortKey,
-    "image_scrapers": image_scrapers,
 }
 
 # Add any paths that contain templates here, relative to this directory.
