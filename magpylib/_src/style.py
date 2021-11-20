@@ -15,12 +15,12 @@ from magpylib._src.default_utils import (
 
 def get_style_class(obj):
     """returns style class based on object type. If class has no attribute `_object_type` or is
-    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+    not found in `MAGPYLIB_FAMILIES` returns `Base` class."""
     obj_type = getattr(obj, "_object_type", None)
     style_fam = MAGPYLIB_FAMILIES.get(obj_type, None)
     if isinstance(style_fam, (list, tuple)):
         style_fam = style_fam[0]
-    return STYLE_CLASSES.get(style_fam, BaseStyle)
+    return STYLE_CLASSES.get(style_fam, Base)
 
 
 def get_style(obj, default_settings, **kwargs):

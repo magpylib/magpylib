@@ -82,6 +82,15 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
             pos_end = kwargs['segment_end']
             B = field_BH_line(bh, current, pos_start, pos_end, pos_rel_rot)
 
+    elif src_type == 'CustomSource':
+        bh_key = 'B' if bh else 'H'
+        if kwargs[f'field_{bh_key}_lambda'] is not None:
+            B = kwargs[f'field_{bh_key}_lambda'](pos_rel_rot)
+        else:
+            raise MagpylibInternalError(
+                f'{bh_key}-field calculation not implemented for CustomSource class'
+            )
+
     else:
         raise MagpylibInternalError(f'Bad src input type "{src_type}" in level1')
 

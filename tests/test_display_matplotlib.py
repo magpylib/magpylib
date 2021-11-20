@@ -74,6 +74,13 @@ def test_Sensor_display():
     x = sens.display(canvas=ax, markers=[(100, 100, 100)], path=False)
     assert x is None, "display test fail"
 
+def test_CustomSource_display():
+    """testing display"""
+    ax = plt.subplot(projection="3d")
+    cs = magpy.misc.CustomSource()
+    x = cs.display(canvas=ax)
+    assert x is None, "display test fail"
+
 
 def test_Loop_display():
     """testing display for Loop source"""
