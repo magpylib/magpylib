@@ -58,7 +58,8 @@ def format_obj_input(objects: Sequence) -> list:
                     'Sensor',
                     'Dipole',
                     'Loop',
-                    'Line'):
+                    'Line',
+                    'CustomSource'):
                     obj_list += [obj]
             except Exception as error:
                 raise MagpylibBadUserInput('Unknown input object type.') from error
@@ -84,7 +85,7 @@ def format_src_inputs(sources) -> list:
     # pylint: disable=protected-access
 
     src_class_types = (
-        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line')
+        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line', 'CustomSource')
 
     # if bare source make into list
     if not isinstance(sources, (list,tuple)):

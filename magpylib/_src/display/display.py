@@ -266,6 +266,11 @@ def display_matplotlib(
         elif obj._object_type == "Dipole":
             dipoles_color += [color]
             points += [obj.position]
+        elif obj._object_type == 'CustomSource':
+            draw_markers(np.array([obj.position]), ax, color, symbol='*', size=10)
+            name = obj.style.name if obj.style.name is not None else str(type(obj).__name__)
+            ax.text(*obj.position, name, horizontalalignment='center')
+            points += [obj.position]
         if faces is not None:
             faced_objects_color += [color]
             pts = draw_faces(faces, color, lw, ax)
@@ -293,7 +298,8 @@ def display_matplotlib(
         m = MagpyMarkers()
         style = get_style(m, Config, **kwargs)
         markers = np.array(markers)
-        draw_markers(markers, ax, style=style.marker)
+        s = style.marker
+        draw_markers(markers, ax, s.color, s.symbol, s.size)
         points += [markers]
 
     # draw direction arrows (based on src size) -------------------------

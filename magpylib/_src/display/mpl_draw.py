@@ -71,16 +71,16 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
         )
 
 
-def draw_markers(markers, ax, style):
+def draw_markers(markers, ax, color, symbol, size):
     """name = programm"""
     ax.plot(
         markers[:, 0],
         markers[:, 1],
         markers[:, 2],
-        color=style.color,
+        color=color,
         ls="",
-        marker=style.symbol,
-        ms=style.size,
+        marker=symbol,
+        ms=size,
     )
 
 
