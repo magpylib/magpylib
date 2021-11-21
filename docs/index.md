@@ -60,7 +60,10 @@ _autogen/magpylib
 :glob: true
 :maxdepth: 2
 
-examples/gallery.md
+examples/01_core_functionality.md
+examples/02_display_features.md
+examples/03_advanced_examples.md
+
 ```
 
 # Index
