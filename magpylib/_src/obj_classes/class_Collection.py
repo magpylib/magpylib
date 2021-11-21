@@ -450,7 +450,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     def set_styles(self, arg=None, **kwargs):
         """
         Set display style of all sources in the Collection. Only matching properties
-        will be applied. Input can be a **style-dict or style-underscore_magic.
+        will be applied. Input can be a style-dict or style-underscore_magic.
 
         Returns
         -------

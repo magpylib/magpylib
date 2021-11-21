@@ -1,31 +1,43 @@
-"""
-=============
-Custom Source
-=============
-"""
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.13.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+---
 
-# %%
-# The magpylib library provides a custom class which enables the user to define its own source with
-# an arbitrary field function. The user field function must return a position-dependent value in
-# the local coordinate system of the source. The custom source instance is then treated the same as
-# any other built-in source and can be moved or rotated. Coordinate transformations are taken care
-# of by the library. The field values in the global coordinate system can be obtained with ``getB``
-# or ``getH`` as long as a respective field function has been provided.
-#
-# The custom source class can for example be used to manipulate data originating from a 3d-vector
-# field from measured or exported FEM data. In this case, the field function must be an
-# interpolation function of the data. In this example, the source data comes directly from the field
-# calculation provided by magpylib itself, but the same procedure can be applied to aforementioned
-# dataset types.
+# Custom Source
 
++++
 
+The magpylib library provides a custom class which enables the user to define its own source with
+an arbitrary field function. The user field function must return a position-dependent value in
+the local coordinate system of the source. The custom source instance is then treated the same as
+any other built-in source and can be moved or rotated. Coordinate transformations are taken care
+of by the library. The field values in the global coordinate system can be obtained with `getB`
+or `getH` as long as a respective field function has been provided.
+
+The custom source class can for example be used to manipulate data originating from a 3d-vector
+field from measured or exported FEM data. In this case, the field function must be an
+interpolation function of the data. In this example, the source data comes directly from the field
+calculation provided by magpylib itself, but the same procedure can be applied to aforementioned
+dataset types.
+
+```{code-cell} ipython3
 import numpy as np
 import plotly.graph_objects as go
 from scipy.interpolate import RegularGridInterpolator
 import magpylib as magpy
-# %%
-# Define interpolating function
-# -----------------------------
+```
+
+## Define interpolating function
+
+```{code-cell} ipython3
 def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.nan):
     """ Creates a 3d-vector field interpolation of a rasterized data from a regular grid
 
@@ -35,12 +47,12 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
         array of shape (n,6). In order to be a regular grid, the first dimension n
         corresponds to the product of the unique values in x,y,z-directions.
         The second dimension must have the following ordering on the second axis:
-            ``x, y, z, field_x, field_y, field_z``
+            `x, y, z, field_x, field_y, field_z`
 
     method : str, optional
         The method of interpolation to perform. Supported are "linear" and
         "nearest". This parameter will become the default for the object's
-        ``__call__`` method. Default is "linear".
+        `__call__` method. Default is "linear".
 
     bounds_error : bool, optional
         If True, when interpolated values are requested outside of the
@@ -71,14 +83,15 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
         rgi = RegularGridInterpolator((X, Y, Z), field.reshape(nx, ny, nz), **kwargs)
         field_interp.append(rgi)
     return lambda x: np.array([field(x) for field in field_interp]).T
+```
 
+## Create virtual measured data
 
-# %%
-# Create virtual measured data
-# ----------------------------
++++
 
-# %%
-# create a source
+create a source
+
+```{code-cell} ipython3
 cube = magpy.magnet.Cuboid(
     magnetization=(0, 0, 1000), position=(-10, 0, 0), dimension=(10, 10, 10)
 )
@@ -86,27 +99,35 @@ dim = [4, 4, 4]
 Nelem = [2, 2, 2]
 slices = [slice(-d / 2, d / 2, N * 1j) for d, N in zip(dim, Nelem)]
 positions = np.mgrid[slices].reshape(len(slices), -1).T
+```
 
-# %%
-# get data from a regular grid of positions
+get data from a regular grid of positions
+
+```{code-cell} ipython3
 Bcube = cube.getB(positions)
-# Bcube *= 1 + np.random.random_sample(B.shape)*0.01 # add 1% white noise
 Bdata = np.hstack([positions, Bcube])
+```
 
-# %%
-# Check field function values vs magpylib Cuboid field values
+Check field function values vs magpylib Cuboid field values
+
+```{code-cell} ipython3
 field_B_lambda = interpolate_field(Bdata)
 print(Bcube)
+```
 
-# %%
+```{code-cell} ipython3
 print(field_B_lambda(positions))
+```
 
-# %%
-# create custom source with interpolation field
+create custom source with interpolation field
+
+```{code-cell} ipython3
 interp_cube = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
+```
 
-# %%
-# add a graphical representation to the custom object, in this case a transparent cube
+add a graphical representation to the custom object, in this case a transparent cube
+
+```{code-cell} ipython3
 mesh_data = {
     "type": "mesh3d",
     "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
@@ -119,42 +140,51 @@ mesh_data = {
 }
 interp_cube.style.mesh3d = dict(data=mesh_data, show=True, replace=True)
 interp_cube.style.name = 'Interpolated cuboid field'
+```
 
-# %%
-# Testing the accuracy of the interpolation
-# -----------------------------------------
-# .. warning::
-#    if ``getB`` gets called for positions outside the interpolated field boudaries, the
-#    interpolation function will return ``np.nan``. Note that the edges of the domain are
-#    susceptible to floating point errors when manipulating an object by rotation and calling
-#    positions exactly on the interpolation boundaries may yield ``np.nan`` values.
+## Testing the accuracy of the interpolation
 
-# %%
-# define a sensor inside the interpolation boundaries
++++
+
+```{warning}
+    if `getB` gets called for positions outside the interpolated field boudaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
+```
+
++++
+
+define a sensor inside the interpolation boundaries
+
+```{code-cell} ipython3
 sens = magpy.Sensor(pixel=positions * 0.5, style=dict(pixel_size=0.5))
+```
 
-# %%
-# rotate all object by a common random rotation with common anchor
+rotate all object by a common random rotation with common anchor
+
+```{code-cell} ipython3
 rotation = dict(
     angle=-35, axis=(-1, 5, 0.8), anchor=(1, 80, -4)
 )  # random rotation parameters
 interp_cube.rotate_from_angax(**rotation)
 sens.rotate_from_angax(**rotation)
 cube.rotate_from_angax(**rotation)
+```
 
-# %%
-# display system
+display system
+
+```{code-cell} ipython3
 fig = go.Figure()
 magpy.display(cube, sens, interp_cube, canvas=fig, backend='plotly')
 fig
+```
 
-# %%
-# compare the interpolated field with the original source
+compare the interpolated field with the original source
+
+```{code-cell} ipython3
 Bcube = sens.getB(cube)
 Binterp = sens.getB(interp_cube)
 print("Field interpolation error [%]:\n", ((Bcube - Binterp) / Bcube * 100).round(3))
+```
 
-# %%
-# .. note::
-#    The interpolation performance can be in fact arbitrary precise and in this example only 2
-#    points per dimension, so that print outputs can be shown entirely.
+```{note}
+    The interpolation performance can be in fact arbitrary precise and in this example only 2 points per dimension, so that print outputs can be shown entirely.
+```

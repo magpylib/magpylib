@@ -215,8 +215,8 @@ col.display(path=10)
 .. plot:: _codes/doc_collection_display.py
 ```
 
-```{seealso} Various 
-    arguments like `path, markers, canvas, zoom, backend` and `style` can be used to customize the output and are described in the docstrings. More detail is also available in the examples gallery {ref}`sphx_glr__auto_examples_plot_03_display_styling.py`
+```{seealso} Various
+    arguments like `path, markers, canvas, zoom, backend` and `style` can be used to customize the output and are described in the docstrings. More detail is also available in the examples gallery {ref}`display_styling_example`
 ```
 
 (docu-field-computation)=

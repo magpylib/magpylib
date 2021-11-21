@@ -1,17 +1,29 @@
-"""
-===============================
-Streamlines in a symmetry plane
-===============================
-"""
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.13.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+---
 
-# %%
-#  In this general example two source objects (magnet and current) are created, moved and rotated. 
-# The system geometry before and after move/rotate is displayed together with the magnetic field in 
-# the xz-plane. 
-# 
-# .. note::
-#   xz is a symmetry plane where the field has no y-component.
+# Streamlines in a symmetry plane
 
++++
+
+In this general example two source objects, a magnet and a current, are created, moved and rotated. The system geometry is displayed before and after rotation/displacement, together with the magnetic field in the xz-plane.
+
++++
+
+```{note}
+  xz is a symmetry plane where the field has no y-component.
+```
+
+```{code-cell} ipython3
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
@@ -46,3 +58,4 @@ ax3.streamplot(grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2],
 
 plt.tight_layout()
 plt.show()
+```

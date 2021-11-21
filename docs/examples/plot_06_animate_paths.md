@@ -1,20 +1,35 @@
-"""
-=============
-Animate paths
-=============
-"""
-# %%
-# For objects for which a path has been constructed using the path-API, the ``magpylib`` library
-# enables, users to animate the object movements, in addition to displaying them statically.
-# 
-# .. note::
-#   This feature is only available for the ``plotly`` backend at the moment.
-# 
-# While the orientation is static while the animation is running, it can be dynamically set when the
-# the animation is on pause.
+---
+jupytext:
+  text_representation:
+    extension: .md
+    format_name: myst
+    format_version: 0.13
+    jupytext_version: 1.13.1
+kernelspec:
+  display_name: Python 3
+  language: python
+  name: python3
+---
 
+# Animate paths
 
++++
 
+For objects for which a path has been constructed using the path-API, the ``magpylib`` library
+enables, users to animate the object movements, in addition to displaying them statically.
+
++++
+
+```{note}
+  This feature is only available for the ``plotly`` backend at the moment.
+```
+
++++
+
+While the orientation is static while the animation is running, it can be dynamically set when the
+the animation is on pause.
+
+```{code-cell} ipython3
 import numpy as np
 import plotly.graph_objects as go
 import magpylib as magpy
@@ -55,10 +70,10 @@ magpy.display(
     backend="plotly",
 )
 fig.update_layout(height=800)
+```
 
-
-# %%
-# .. warning::
-#   Even if some failsafes are implemented such as a maximum frame rate and frame count. There is no
-#   guarantee that the animation will be able to be rendered. This is particularly relevant if the
-#   user tries to animate many objects at the same time.
+```{warning}
+    Even if some failsafes are implemented such as a maximum frame rate and frame count. There is no
+    guarantee that the animation will be able to be rendered. This is particularly relevant if the
+    user tries to animate many objects at the same time.
+```

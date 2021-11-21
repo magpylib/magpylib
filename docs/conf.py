@@ -26,12 +26,6 @@ os.environ[
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
 from sphinx_gallery.sorting import FileNameSortKey
-from plotly.io._sg_scraper import plotly_sg_scraper
-
-image_scrapers = (
-    "matplotlib",
-    plotly_sg_scraper,
-)
 
 # pio.renderers.default = "sphinx_gallery"
 
@@ -86,18 +80,13 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.napoleon",
     "matplotlib.sphinxext.plot_directive",
-    "sphinx_gallery.gen_gallery",
+    #"nbsphinx",
+    #"sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
+    #"myst_parser",
     # "sphinx_panels",
 ]
-
-sphinx_gallery_conf = {
-    "examples_dirs": "../examples",  # path to your example scripts
-    "gallery_dirs": "_auto_examples",  # path to where to save gallery generated output
-    "within_subsection_order": FileNameSortKey,
-    "image_scrapers": image_scrapers,
-}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -251,7 +240,7 @@ myst_enable_extensions = [
     "dollarmath",
     "html_admonition",
     "html_image",
-    # "linkify",
+    #"linkify",
     "replacements",
     "smartquotes",
     "substitution",
@@ -260,3 +249,5 @@ myst_enable_extensions = [
 
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
+
+html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]

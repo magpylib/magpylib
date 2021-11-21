@@ -20,7 +20,7 @@
 ```bash
 pip install magpylib .
 ```
-or 
+or
 
 ```bash
 conda install magpylib .
@@ -57,9 +57,10 @@ _autogen/magpylib
 
 ```{toctree}
 :caption: Example galleries
+:glob: true
 :maxdepth: 2
 
-_auto_examples/index
+examples/gallery.md
 ```
 
 # Index

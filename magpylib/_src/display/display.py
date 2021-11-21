@@ -42,7 +42,7 @@ def display(
     **kwargs,
 ):
     """
-    Display objects and paths graphically. Style input can be a **style-dict or
+    Display objects and paths graphically. Style input can be a style-dict or
     style-underscore_magic.
 
     Parameters
@@ -50,13 +50,13 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    path: bool or int i or array_like shape (n,) or 'animate', default = True
+    path: bool or int i or array_like shape (n,) or `'animate'`, default = True
         Option False shows objects at final path position and hides paths.
         Option True shows objects at final path position and shows object paths.
         Option int i displays the objects at every i'th path position.
         Option array_like shape (n,) discribes certain path indices. The objects
         displays are displayed at every given path index.
-        Option 'animate' (Plotly backend only) shows an animation of objectes moving
+        Option `'animate'` (Plotly backend only) shows an animation of objectes moving
         along their paths.
 
     zoom: float, default = 0
@@ -69,14 +69,13 @@ def display(
         Display position markers in the global CS. By default no marker is displayed.
 
     backend: string, default=None
-        One of 'matplotlib' or 'plotly'. If not set, parameter will default to
+        One of `'matplotlib'` or `'plotly'`. If not set, parameter will default to
         magpylib.defaults.display.backend which comes as 'matplotlib' with installation.
 
     canvas: pyplot Axis or plotly Figure, default=None
         Display graphical output in a given canvas:
         - with matplotlib: pyplot axis (must be 3D).
-        - with plotly: plotly.graph_objects.Figure
-            or plotly.graph_objects.FigureWidget
+        - with plotly: plotly.graph_objects.Figure or plotly.graph_objects.FigureWidget
         By default a new canvas is created and displayed.
 
     Returns
