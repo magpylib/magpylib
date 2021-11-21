@@ -18,12 +18,12 @@
 **Install Magpylib** with pip or conda:
 
 ```bash
-pip install magpylib .
+pip install magpylib
 ```
 or
 
 ```bash
-conda install magpylib .
+conda install magpylib
 ```
 
 This **Example code** calculates the magnetic field of a cylindrical magnet.
