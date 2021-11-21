@@ -25,7 +25,7 @@ os.environ[
     "SPHINX_APIDOC_OPTIONS"
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
-from sphinx_gallery.sorting import FileNameSortKey
+#from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
 
