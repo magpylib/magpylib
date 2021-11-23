@@ -85,6 +85,7 @@ extensions = [
     # "sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
+    "sphinx_thebe",
     # "myst_parser",
     # "sphinx_panels",
 ]
@@ -134,7 +135,7 @@ html_theme_options = {
     "repository_branch": "docs_v4",
     "use_repository_button": True,
     "use_download_button": True,
-    "launch_buttons": {"binderhub_url": "https://mybinder.org"},
+    "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,

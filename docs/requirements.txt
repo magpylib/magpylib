@@ -5,4 +5,5 @@ sphinx-copybutton
 sphinx-book-theme
 myst-nb
 sphinx-panels
+sphinx-thebe
 jupytext
