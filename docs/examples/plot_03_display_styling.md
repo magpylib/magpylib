@@ -138,9 +138,9 @@ magpy.display(col, backend="plotly")
 +++
 
 ```{note}
-    The `Collection` object does not hold any `style` attribute on its own but the helper method
-    `set_styles` allows setting the style of all its children where the set arguments match
-    existing child style attributes.
+The `Collection` object does not hold any `style` attribute on its own but the helper method
+`set_styles` allows setting the style of all its children where the set arguments match
+existing child style attributes.
 ```
 
 ```{code-cell} ipython3
@@ -165,8 +165,8 @@ magpy.display(col, backend="plotly")
 +++
 
 ```{note}
-  Setting style parameters in the `display` function does not change the default styles nor the
-  set object style. It only affects the current representation to be displayed.
+Setting style parameters in the `display` function does not change the default styles nor the
+set object style. It only affects the current representation to be displayed.
 ```
 
 +++
@@ -210,9 +210,9 @@ print("\n".join(f"{k!r}: {v!r}" for k, v in style.items()))
 ```
 
 ```{warning}
-    Even if both `matplotlib` and `plotly` backends can display all object of the library, there
-    is no 100% feature parity between them. Some of the differences include (non-exhaustive list):
+Even if both `matplotlib` and `plotly` backends can display all object of the library, there
+is no 100% feature parity between them. Some of the differences include (non-exhaustive list):
 
-    - `magnetization.size` -> `matplotlib` only
-    - `magnetization.color` -> `plotly` only
+- `magnetization.size` -> `matplotlib` only
+- `magnetization.color` -> `plotly` only
 ```

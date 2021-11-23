@@ -21,7 +21,7 @@ enables, users to animate the object movements, in addition to displaying them s
 +++
 
 ```{note}
-  This feature is only available for the ``plotly`` backend at the moment.
+This feature is only available for the ``plotly`` backend at the moment.
 ```
 
 +++
@@ -73,7 +73,7 @@ fig.update_layout(height=800)
 ```
 
 ```{warning}
-    Even if some failsafes are implemented such as a maximum frame rate and frame count. There is no
-    guarantee that the animation will be able to be rendered. This is particularly relevant if the
-    user tries to animate many objects at the same time.
+Even if some failsafes are implemented such as a maximum frame rate and frame count. There is no
+guarantee that the animation will be able to be rendered. This is particularly relevant if the
+user tries to animate many objects at the same time.
 ```

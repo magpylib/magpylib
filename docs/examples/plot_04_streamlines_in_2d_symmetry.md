@@ -20,7 +20,7 @@ In this general example two source objects, a magnet and a current, are created,
 +++
 
 ```{note}
-  xz is a symmetry plane where the field has no y-component.
+xz is a symmetry plane where the field has no y-component.
 ```
 
 ```{code-cell} ipython3

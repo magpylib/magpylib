@@ -147,7 +147,7 @@ interp_cube.style.name = 'Interpolated cuboid field'
 +++
 
 ```{warning}
-    if `getB` gets called for positions outside the interpolated field boudaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
+if `getB` gets called for positions outside the interpolated field boudaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
 ```
 
 +++
@@ -186,5 +186,5 @@ print("Field interpolation error [%]:\n", ((Bcube - Binterp) / Bcube * 100).roun
 ```
 
 ```{note}
-    The interpolation performance can be in fact arbitrary precise and in this example only 2 points per dimension, so that print outputs can be shown entirely.
+The interpolation performance can be in fact arbitrary precise and in this example only 2 points per dimension, so that print outputs can be shown entirely.
 ```
