@@ -25,7 +25,8 @@ os.environ[
     "SPHINX_APIDOC_OPTIONS"
 ] = "members,show-inheritance"  ## Hide undocumented members
 import sphinx.ext.apidoc
-#from sphinx_gallery.sorting import FileNameSortKey
+
+# from sphinx_gallery.sorting import FileNameSortKey
 
 # pio.renderers.default = "sphinx_gallery"
 
@@ -80,11 +81,11 @@ extensions = [
     "sphinx.ext.ifconfig",
     "sphinx.ext.napoleon",
     "matplotlib.sphinxext.plot_directive",
-    #"nbsphinx",
-    #"sphinx_gallery.load_style",
+    # "nbsphinx",
+    # "sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
-    #"myst_parser",
+    # "myst_parser",
     # "sphinx_panels",
 ]
 
@@ -128,12 +129,12 @@ html_logo = "./_static/images/magpylib_logo.png"
 # documentation.
 #
 html_theme_options = {
-    "repository_url": "https://github.com/magpylib/magpylib/tree/master/docs",
+    "repository_url": "https://github.com/magpylib/magpylib",
+    "path_to_docs": "docs/",
+    "repository_branch": "docs_v4",
     "use_repository_button": True,
     "use_download_button": True,
-    "launch_buttons": {
-        "binderhub_url": "https://github.com/magpylib/magpylib/tree/docs_v4"
-    }
+    "launch_buttons": {"binderhub_url": "https://mybinder.org"},
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
@@ -243,7 +244,7 @@ myst_enable_extensions = [
     "dollarmath",
     "html_admonition",
     "html_image",
-    #"linkify",
+    # "linkify",
     "replacements",
     "smartquotes",
     "substitution",
@@ -253,4 +254,7 @@ myst_enable_extensions = [
 copybutton_prompt_text = r">>> |\.\.\. |\$ |In \[\d*\]: | {2,5}\.\.\.: | {5,8}: "
 copybutton_prompt_is_regexp = True
 
-html_js_files = ["https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"]
+html_js_files = [
+    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
+]
+
