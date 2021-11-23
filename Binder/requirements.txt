@@ -1,4 +1,0 @@
-# For application deployments, like Binder
-git+https://github.com/magpylib/magpylib.git#egg=magpylib
-jupytext
-plotly>=5.3

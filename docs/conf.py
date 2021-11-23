@@ -132,7 +132,7 @@ html_theme_options = {
     "use_repository_button": True,
     "use_download_button": True,
     "launch_buttons": {
-        "binderhub_url": "https://github.com/magpylib/magpylib/tree/master/docs/examples"
+        "binderhub_url": "https://github.com/magpylib/magpylib/tree/docs_v4"
     }
 }
 # Add any paths that contain custom static files (such as style sheets) here,
