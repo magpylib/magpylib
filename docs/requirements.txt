@@ -1,4 +1,4 @@
-git+https://github.com/magpylib/magpylib.git@docs_v4#egg=poliastro
+git+https://github.com/magpylib/magpylib.git@docs_v4#egg=magpylib
 sphinx==4.2.0
 plotly>=5.3
 sphinx-copybutton
