@@ -3,10 +3,10 @@ from magpylib._src.default_utils import (
     validate_property_class,
     color_validator,
     get_defaults_dict,
+    SUPPORTED_PLOTTING_BACKENDS
 )
 from magpylib._src.style import DisplayStyle
 
-SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
 
 # ON INTERFACE
 class DefaultConfig(MagicProperties):

@@ -4,6 +4,9 @@ from copy import deepcopy
 import collections.abc
 from magpylib._src.defaults import DEFAULTS
 
+
+SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
+
 MAGPYLIB_FAMILIES = {
     "Line": ("current",),
     "Loop": ("current",),

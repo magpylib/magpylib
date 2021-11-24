@@ -10,6 +10,7 @@ from magpylib._src.default_utils import (
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     MAGPYLIB_FAMILIES,
+    SUPPORTED_PLOTTING_BACKENDS,
 )
 
 
@@ -88,10 +89,19 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self, name=None, description=None, color=None, opacity=None, **kwargs,
+        self,
+        name=None,
+        description=None,
+        color=None,
+        opacity=None,
+        **kwargs,
     ):
         super().__init__(
-            name=name, description=description, color=color, opacity=opacity, **kwargs,
+            name=name,
+            description=description,
+            color=color,
+            opacity=opacity,
+            **kwargs,
         )
 
     @property
@@ -159,11 +169,11 @@ class Base(BaseStyle):
         an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    mesh3d: dict or Mesh3d, default=None
-        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
-        an additional user-defined mesh3d object which is positioned relatively to the main object
-        to be displayed and moved automatically with it. This feature also allows the user to
-        replace the original 3d representation of the object.
+    model3d: list of Trace3d objects, default=None
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
     """
 
     def __init__(
@@ -173,7 +183,7 @@ class Base(BaseStyle):
         color=None,
         opacity=None,
         path=None,
-        mesh3d=None,
+        model3d=None,
         **kwargs,
     ):
         super().__init__(
@@ -182,7 +192,7 @@ class Base(BaseStyle):
             color=color,
             opacity=opacity,
             path=path,
-            mesh3d=mesh3d,
+            model3d=model3d,
             **kwargs,
         )
 
@@ -197,18 +207,24 @@ class Base(BaseStyle):
         self._path = validate_property_class(val, "path", Path, self)
 
     @property
-    def mesh3d(self):
+    def model3d(self):
         """
-        an instance of `Mesh3d` or dictionary of equivalent key/value pairs. Defines properties for
-        an additional user-defined mesh3d object which is positioned relatively to the main object
-        to be displayed and moved automatically with it. This feature also allows the user to
-        replace the original 3d representation of the object.
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
         """
-        return self._mesh3d
+        return self._model3d
 
-    @mesh3d.setter
-    def mesh3d(self, val):
-        self._mesh3d = validate_property_class(val, "mesh3d", Mesh3d, self)
+    @model3d.setter
+    def model3d(self, val):
+        if val is None:
+            val = []
+        m3 = []
+        for v in val:
+            v = validate_property_class(v, "model3d", Trace3d, self)
+            m3.append(v)
+        self._model3d = m3
 
 
 class Description(MagicProperties):
@@ -229,9 +245,7 @@ class Description(MagicProperties):
 
     @property
     def text(self):
-        """
-        texts/hides mesh3d object based on provided data
-        """
+        """description text"""
         return self._text
 
     @text.setter
@@ -252,34 +266,40 @@ class Description(MagicProperties):
         self._show = val
 
 
-class Mesh3d(MagicProperties):
+class Trace3d(MagicProperties):
     """
-    Defines properties for an additional user-defined mesh3d object which is positioned relatively
+    Defines properties for an additional user-defined 3d model object which is positioned relatively
     to the main object to be displayed and moved automatically with it. This feature also allows
     the user to replace the original 3d representation of the object
 
     Properties
     ----------
     show : bool, default=None
-        shows/hides mesh3d object based on provided data:
+        shows/hides model3d object based on provided trace:
         - True: shows mesh
         - False: hides mesh
 
-    show : bool, default=None
-        if `True`, replaces the object representation with the user mesh3d
+    replace : bool, default=None
+        if `True`, replaces the object representation with the user model3d
 
-    data: dict, default=None
-        dictionary containing the `x,y,z,i,j,k` keys/values pairs for a mesh3d object
+    trace: dict, default=None
+        dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object
+
+    backend:
+        plotting backend corresponding to the trace.
+        Can be one of `['matplotlib', 'plotly']`
 
     """
 
-    def __init__(self, data=None, show=None, **kwargs):
-        super().__init__(data=data, show=show, **kwargs)
+    def __init__(self, trace=None, show=None, replace=None, backend=None, **kwargs):
+        super().__init__(
+            trace=trace, show=show, replace=replace, backend=backend, **kwargs
+        )
 
     @property
     def show(self):
         """
-        shows/hides mesh3d object based on provided data
+        shows/hides model3d object based on provided trace
         """
         return self._show
 
@@ -294,7 +314,7 @@ class Mesh3d(MagicProperties):
 
     @property
     def replace(self):
-        """if `True`, replaces the object representation with the user mesh3d"""
+        """if `True`, replaces the object representation with the user model3d"""
         return self._replace
 
     @replace.setter
@@ -307,19 +327,37 @@ class Mesh3d(MagicProperties):
         self._replace = val
 
     @property
-    def data(self):
-        """dictionary containing the `x,y,z,i,j,k` keys/values pairs for a mesh3d object"""
-        return self._data
+    def trace(self):
+        """dictionary keys/values pairs for a model3d object"""
+        return self._trace
 
-    @data.setter
-    def data(self, val):
-        assert val is None or (
-            isinstance(val, dict) and all(key in val for key in "xyzijk")
-        ), (
-            "data must be a dict-like object containing the `x,y,z,i,j,k` keys/values pairs"
+    @trace.setter
+    def trace(self, val):
+        if val is not None:
+            assert isinstance(val, dict), (
+                "trace must be a dictionary"
+                f" but received {type(val).__name__} instead"
+            )
+            assert "type" in val, "explicit trace `type` must be defined"
+            assert all(
+                key in val for key in "xyz"
+            ), "trace must contain the `x,y,z` keys/values pairs"
+        self._trace = val
+
+    @property
+    def backend(self):
+        """plotting backend corresponding to the trace.
+        Can be one of `['matplotlib', 'plotly']`"""
+        return self._backend
+
+    @backend.setter
+    def backend(self, val):
+        assert val is None or val in SUPPORTED_PLOTTING_BACKENDS, (
+            f"the `backend` property of {type(self).__name__} must be one of"
+            f"{SUPPORTED_PLOTTING_BACKENDS}"
             f" but received {repr(val)} instead"
         )
-        self._data = val
+        self._backend = val
 
 
 class Magnetization(MagicProperties):
