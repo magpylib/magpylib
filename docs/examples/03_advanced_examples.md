@@ -23,8 +23,7 @@ Advanced examples
 :caption: Advanced examples
 :maxdepth: 2
 
-plot_04_streamlines_in_2d_symmetry.md
-plot_05_modeling_a_coil.md
-plot_06_animate_paths.md
+plot_05_streamlines_in_2d_symmetry.md
+plot_06_modeling_a_coil.md
 plot_07_custom_source.md
 ```

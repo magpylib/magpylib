@@ -147,7 +147,7 @@ interp_cube.style.name = 'Interpolated cuboid field'
 +++
 
 ```{warning}
-if `getB` gets called for positions outside the interpolated field boudaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
+If `getB` gets called for positions outside the interpolated field boudaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
 ```
 
 +++

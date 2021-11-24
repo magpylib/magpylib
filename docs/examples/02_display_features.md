@@ -25,4 +25,5 @@ Display features
 
 plot_02_display_backends.md
 plot_03_display_styling.md
+plot_04_animate_paths.md
 ```
