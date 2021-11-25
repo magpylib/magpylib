@@ -320,7 +320,7 @@ class Trace3d(MagicProperties):
 
     """
 
-    def __init__(self, trace=None, show=True, backend='matplotlib', **kwargs):
+    def __init__(self, trace=None, show=True, backend="matplotlib", **kwargs):
         super().__init__(trace=trace, show=show, backend=backend, **kwargs)
 
     @property
@@ -352,9 +352,9 @@ class Trace3d(MagicProperties):
                 f" but received {type(val).__name__} instead"
             )
             assert "type" in val, "explicit trace `type` must be defined"
-            assert all(
-                key in val for key in "xyz"
-            ), "trace must contain the `x,y,z` keys/values pairs"
+            assert all(key in val for key in "xyz") or all(
+                key in val for key in ("xs", "ys", "zs")
+            ), "trace must contain the `x,y,z` or `xs,ys,zs` keys/values pairs"
         self._trace = val
 
     @property

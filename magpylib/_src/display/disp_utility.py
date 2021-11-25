@@ -16,6 +16,21 @@ class MagpyMarkers:
         self.markers = np.array(markers)
 
 
+def place_and_orient_model3d(
+    model_dict, orientation=None, position=(0.0, 0.0, 0.0), backend="plotly", **kwargs
+):
+    """places and orients mesh3d dict"""
+    position = np.array(position)
+    xyz = ["x", "y", "z"]
+    if all(key in model_dict for key in ["xs", "ys", "zs"]):
+        xyz = ["xs", "ys", "zs"]
+    vertices = np.array([model_dict[k] for k in xyz]).T
+    if orientation is not None:
+        vertices = orientation.apply(vertices)
+    x, y, z = (vertices + position).T
+    return {**model_dict, xyz[0]: x, xyz[1]: y, xyz[2]: z, **kwargs}
+
+
 def draw_arrow(vec, pos, sign=1, arrow_size=1) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
