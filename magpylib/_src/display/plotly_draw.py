@@ -747,7 +747,7 @@ def _update_mag_mesh(
                 vertices=vertices,
                 axis=magnetization,
             )
-    mesh_dict = place_and_orient_mesh3d(
+    mesh_dict = place_and_orient_model3d(
         mesh_dict,
         orientation,
         position,
@@ -757,16 +757,16 @@ def _update_mag_mesh(
     return {**mesh_dict, **kwargs}
 
 
-def place_and_orient_mesh3d(
-    mesh_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
+def place_and_orient_model3d(
+    model_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
 ):
     """places and orients mesh3d dict"""
     position = np.array(position)
-    vertices = np.array([mesh_dict[k] for k in "xyz"]).T
+    vertices = np.array([model_dict[k] for k in "xyz"]).T
     if orientation is not None:
         vertices = orientation.apply(vertices)
     x, y, z = (vertices + position).T
-    return {**mesh_dict, "x": x, "y": y, "z": z, **kwargs}
+    return {**model_dict, "x": x, "y": y, "z": z, **kwargs}
 
 
 def merge_mesh3d(*traces):
@@ -972,33 +972,40 @@ def get_plotly_traces(
             make_func = make_UnsupportedObject
 
         path_traces = []
-        path_traces_add_mesh3d = []
+        path_traces_extra = {}
+        extra_model3d_traces = style.model3d.extra if style.model3d.extra is not None else []
+        extra_model3d_traces = [t for t in extra_model3d_traces if t.backend=='plotly']
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
-            if style.mesh3d.data is None or (
-                style.mesh3d.data is not None and not style.mesh3d.replace
-            ):
+            if style.model3d.show:
                 path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
-            if style.mesh3d.data is not None and style.mesh3d.show:
-                mesh3d = place_and_orient_mesh3d(
-                    style.mesh3d.data, orientation=orient, position=pos, showscale=False
-                )
-                path_traces_add_mesh3d.append(mesh3d)
+            for extr in extra_model3d_traces:
+                if extr.show:
+                    trace3d = place_and_orient_model3d(
+                        extr.trace, orientation=orient, position=pos, 
+                    )
+                    ttype = extr.trace['type']
+                    if ttype=='mesh3d':
+                        trace3d['showscale'] = False
+                    if ttype not in path_traces_extra:
+                        path_traces_extra[ttype] = []
+                    path_traces_extra[ttype].append(trace3d)
         trace = merge_traces(*path_traces)
-        trace_add_mesh3d = merge_traces(*path_traces_add_mesh3d)
-        if trace_add_mesh3d:
+        for ind, traces_extra in enumerate(path_traces_extra.values()):
+            extra_model3d_trace = merge_traces(*traces_extra)
             name = (
                 input_obj.style.name
                 if input_obj.style.name is not None
                 else str(type(input_obj).__name__)
             )
-            trace_add_mesh3d.update(
+            extra_model3d_trace.update(
                 {
                     "legendgroup": f"{input_obj}",
-                    "showlegend": style.mesh3d.replace,
+                    "showlegend": not style.model3d.show and ind==0,
                     "name": name,
                 }
             )
-            traces.append(trace_add_mesh3d)
+            traces.append(extra_model3d_trace)
+
         if trace:
             trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
             traces.append(trace)

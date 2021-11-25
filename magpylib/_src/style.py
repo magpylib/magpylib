@@ -89,19 +89,10 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self,
-        name=None,
-        description=None,
-        color=None,
-        opacity=None,
-        **kwargs,
+        self, name=None, description=None, color=None, opacity=None, **kwargs,
     ):
         super().__init__(
-            name=name,
-            description=description,
-            color=color,
-            opacity=opacity,
-            **kwargs,
+            name=name, description=description, color=color, opacity=opacity, **kwargs,
         )
 
     @property
@@ -208,23 +199,12 @@ class Base(BaseStyle):
 
     @property
     def model3d(self):
-        """
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
-        key/value pairs. Defines properties for an additional user-defined model3d object which is
-        positioned relatively to the main object to be displayed and moved automatically with it.
-        This feature also allows the user to replace the original 3d representation of the object.
-        """
+        """ 3d object reprensation properties"""
         return self._model3d
 
     @model3d.setter
     def model3d(self, val):
-        if val is None:
-            val = []
-        m3 = []
-        for v in val:
-            v = validate_property_class(v, "model3d", Trace3d, self)
-            m3.append(v)
-        self._model3d = m3
+        self._model3d = validate_property_class(val, "model3d", Model3d, self)
 
 
 class Description(MagicProperties):
@@ -266,6 +246,58 @@ class Description(MagicProperties):
         self._show = val
 
 
+class Model3d(MagicProperties):
+    """
+    Defines properties for the 3d model representation of the magpylib objects
+
+    Properties
+    ----------
+    show : bool, default=None
+        shows/hides model3d object based on provided trace:
+        - True: shows mesh
+        - False: hides mesh
+
+    extra: 
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    """
+
+    def __init__(self, show=True, extra=None, **kwargs):
+        super().__init__(show=show, extra=extra, **kwargs)
+
+    @property
+    def show(self):
+        """ shows/hides main model3d object representation """
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert isinstance(val, bool), (
+            f"the `show` property of {type(self).__name__} must be "
+            f"one of `[True, False]`"
+            f" but received {repr(val)} instead"
+        )
+        self._show = val
+
+    @property
+    def extra(self):
+        """ 3d object reprensation properties"""
+        return self._extra
+
+    @extra.setter
+    def extra(self, val):
+        if val is None:
+            val = []
+        m3 = []
+        for v in val:
+            v = validate_property_class(v, "extra", Trace3d, self)
+            m3.append(v)
+        self._extra = m3
+
+
 class Trace3d(MagicProperties):
     """
     Defines properties for an additional user-defined 3d model object which is positioned relatively
@@ -279,9 +311,6 @@ class Trace3d(MagicProperties):
         - True: shows mesh
         - False: hides mesh
 
-    replace : bool, default=None
-        if `True`, replaces the object representation with the user model3d
-
     trace: dict, default=None
         dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object
 
@@ -291,10 +320,8 @@ class Trace3d(MagicProperties):
 
     """
 
-    def __init__(self, trace=None, show=None, replace=None, backend=None, **kwargs):
-        super().__init__(
-            trace=trace, show=show, replace=replace, backend=backend, **kwargs
-        )
+    def __init__(self, trace=None, show=True, backend='matplotlib', **kwargs):
+        super().__init__(trace=trace, show=show, backend=backend, **kwargs)
 
     @property
     def show(self):
@@ -311,20 +338,6 @@ class Trace3d(MagicProperties):
             f" but received {repr(val)} instead"
         )
         self._show = val
-
-    @property
-    def replace(self):
-        """if `True`, replaces the object representation with the user model3d"""
-        return self._replace
-
-    @replace.setter
-    def replace(self, val):
-        assert val is None or isinstance(val, bool) or val == "inplace", (
-            f"the `replace` property of {type(self).__name__} must be "
-            f"one of `[True, False]`"
-            f" but received {repr(val)} instead"
-        )
-        self._replace = val
 
     @property
     def trace(self):
