@@ -2,7 +2,7 @@ import plotly.graph_objects as go
 import pytest
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib._src.display.plotly_draw import get_plotly_traces, make_BaseCuboid
+from magpylib._src.display.plotly_draw import get_plotly_traces
 
 # pylint: disable=assignment-from-no-return
 
@@ -160,12 +160,16 @@ def test_draw_unsupported_obj():
     magpy.defaults.display.backend = "plotly"
 
     class UnkwnownNoPosition:
-        pass
+        """Dummy Class"""
 
     class Unkwnown1DPosition:
+        """Dummy Class"""
+
         position = [0, 0, 0]
 
     class Unkwnown2DPosition:
+        """Dummy Class"""
+
         position = [[0, 0, 0]]
         orientation = None
 
@@ -183,42 +187,74 @@ def test_draw_unsupported_obj():
     ), "make trace has failed, should be 'scatter3d'"
 
 
-def test_extra_mesh3d():
+def test_extra_model3d():
     """test diplay when object has an extra mesh3d object attached"""
     magpy.defaults.display.backend = "plotly"
-    src = Cuboid((1, 2, 3), (1, 2, 3)).move([(0.4, 0.4, 0.4)] * 33, increment=True)
-    data = make_BaseCuboid(pos=(4, 0, 0), dim=(2, 2, 2))
+    cuboid = Cuboid((1, 2, 3), (1, 2, 3)).move([(0.4, 0.4, 0.4)] * 33, increment=True)
+    cuboid.style.model3d.extra = [
+        {
+            "backend": "plotly",
+            "trace": {
+                "type": "scatter3d",
+                "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+                "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+                "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+                "mode": "lines",
+            },
+            "show": True,
+        },
+        {
+            "backend": "plotly",
+            "trace": {
+                "type": "mesh3d",
+                "i": [7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7],
+                "j": [0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2],
+                "k": [3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6],
+                "x": [-1, -1, 1, 1, -1, -1, 1, 1],
+                "y": [-1, 1, 1, -1, -1, 1, 1, -1],
+                "z": [-1, -1, -1, -1, 1, 1, 1, 1],
+            },
+            "show": True,
+        },
+    ]
     fig = go.Figure()
-    x = src.display(canvas=fig, style=dict(mesh3d_data=data, mesh3d_show=True))
+    x = cuboid.display(canvas=fig, style=dict(model3d_show=True))
     assert x is None, "display test fail"
-    x = src.display(canvas=fig, style=dict(mesh3d_data=data, mesh3d_show=False))
+    cuboid.style.model3d.extra[0].show = False
+    x = cuboid.display(canvas=fig)
     assert x is None, "display test fail"
-    x = src.display(
+    x = cuboid.display(
         canvas=fig,
         path="animate",
-        style=dict(mesh3d_data=data, mesh3d_show=True, mesh3d_replace=True),
+        style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
-    x = src.display(
+    cuboid.style.model3d.extra[1].show = False
+    x = cuboid.display(
         canvas=fig,
         path=False,
-        style=dict(mesh3d_data=data, mesh3d_show=False, mesh3d_replace=True),
+        style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
+
 
 def test_CustomSource_display():
     """testing display"""
-    fig  = go.Figure()
-    cs = magpy.misc.CustomSource()
-    x = cs.display(canvas=fig, backend='plotly')
+    fig = go.Figure()
+    cs = magpy.misc.CustomSource(style=dict(color='blue'))
+    x = cs.display(canvas=fig, backend="plotly")
     assert x is None, "display test fail"
 
+
 def test_empty_display():
-    fig  = go.Figure()
-    x = magpy.display(canvas=fig, backend='plotly')
+    """should not fail if nothing to display"""
+    fig = go.Figure()
+    x = magpy.display(canvas=fig, backend="plotly")
     assert x is None, "empty display plotly test fail"
 
+
 def test_display_warnings():
+    """should display some animation warnings"""
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
