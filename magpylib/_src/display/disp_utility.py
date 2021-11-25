@@ -17,7 +17,7 @@ class MagpyMarkers:
 
 
 def place_and_orient_model3d(
-    model_dict, orientation=None, position=(0.0, 0.0, 0.0), backend="plotly", **kwargs
+    model_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
 ):
     """places and orients mesh3d dict"""
     position = np.array(position)

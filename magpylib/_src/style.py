@@ -89,10 +89,19 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self, name=None, description=None, color=None, opacity=None, **kwargs,
+        self,
+        name=None,
+        description=None,
+        color=None,
+        opacity=None,
+        **kwargs,
     ):
         super().__init__(
-            name=name, description=description, color=color, opacity=opacity, **kwargs,
+            name=name,
+            description=description,
+            color=color,
+            opacity=opacity,
+            **kwargs,
         )
 
     @property
@@ -199,7 +208,7 @@ class Base(BaseStyle):
 
     @property
     def model3d(self):
-        """ 3d object reprensation properties"""
+        """3d object reprensation properties"""
         return self._model3d
 
     @model3d.setter
@@ -252,12 +261,12 @@ class Model3d(MagicProperties):
 
     Properties
     ----------
-    show : bool, default=None
+    show: bool, default=None
         shows/hides model3d object based on provided trace:
         - True: shows mesh
         - False: hides mesh
 
-    extra: 
+    extra: list, default=None
         a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
@@ -270,7 +279,7 @@ class Model3d(MagicProperties):
 
     @property
     def show(self):
-        """ shows/hides main model3d object representation """
+        """shows/hides main model3d object representation"""
         return self._show
 
     @show.setter
@@ -284,7 +293,7 @@ class Model3d(MagicProperties):
 
     @property
     def extra(self):
-        """ 3d object reprensation properties"""
+        """3d object reprensation properties"""
         return self._extra
 
     @extra.setter

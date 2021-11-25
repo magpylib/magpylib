@@ -277,6 +277,7 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
 
 
 def draw_model3d_extra(obj, style, show_path, ax, color):
+    """positions, orients and draws extra 3d model including path positions"""
     extra_model3d_traces = (
         style.model3d.extra if style.model3d.extra is not None else []
     )
@@ -288,7 +289,9 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
         for extr in extra_model3d_traces:
             if extr.show:
                 trace3d = place_and_orient_model3d(
-                    extr.trace, orientation=orient, position=pos,
+                    extr.trace,
+                    orientation=orient,
+                    position=pos,
                 )
                 ttype = extr.trace["type"]
                 if ttype not in path_traces_extra:
@@ -300,4 +303,3 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
             kwargs = {"color": color}
             kwargs.update({k: v for k, v in tr.items() if k != "type"})
             getattr(ax, tr["type"])(**kwargs)
-
