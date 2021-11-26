@@ -4,27 +4,28 @@ import copy
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
-    only_allowed_src_types,
+    LIBRARY_SENSORS,
+    LIBRARY_SOURCES,
 )
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.default_utils import validate_style_keys
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 # ON INTERFACE
-class Collection(BaseDisplayRepr, BaseGetBH):
+class Collection:
     """
-    Group multiple sources in one Collection for common manipulation.
+    Group multiple objects in one Collection for common manipulation.
 
-    Operations applied to a Collection are sequentially applied to all sources in the Collection.
-    Collections do not allow duplicate sources (will be eliminated automatically).
+    Operations applied to a Collection are sequentially applied to all objects in the Collection.
+    Collections do not allow duplicate objects (will be eliminated automatically).
 
     Collections have the following dunders defined: __add__, __sub__, __iter__, __getitem__,
     __repr__
 
     Parameters
     ----------
-    sources: source objects, Collections or arbitrary lists thereof
-        Ordered list of sources in the Collection.
+    objects: object objects, Collections or arbitrary lists thereof
+        Ordered list of objects in the Collection.
 
     Returns
     -------
@@ -33,8 +34,8 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     Examples
     --------
 
-    Create Collections for common manipulation. All sources added to a Collection
-    are stored in the ``sources`` attribute, which is an ordered set (list with
+    Create Collections for common manipulation. All objects added to a Collection
+    are stored in the ``objects`` attribute, which is an ordered set (list with
     unique elements only)
 
     >>> import magpylib as magpy
@@ -42,10 +43,10 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     >>> loop = magpy.current.Loop(1,1)
     >>> dipole = magpy.misc.Dipole((1,2,3))
     >>> col = magpy.Collection(sphere, loop, dipole)
-    >>> print(col.sources)
+    >>> print(col.objects)
     [Sphere(id=1879891544384), Loop(id=1879891543040), Dipole(id=1879892157152)]
 
-    Cycle directly through the Collection ``sources`` attribute
+    Cycle directly through the Collection ``objects`` attribute
 
     >>> for src in col:
     >>>    print(src)
@@ -58,13 +59,13 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     >>> print(col[1])
     Loop(id=1879891543040)
 
-    Add and subtract sources to form a Collection and to remove sources from a Collection.
+    Add and subtract objects to form a Collection and to remove objects from a Collection.
 
     >>> col = sphere + loop
-    >>> print(col.sources)
+    >>> print(col.objects)
     [Sphere(id=1879891544384), Loop(id=1879891543040)]
     >>> col - sphere
-    >>> print(col.sources)
+    >>> print(col.objects)
     [Loop(id=1879891543040)]
 
     Manipulate all objects in a Collection directly using ``move`` and ``rotate`` methods
@@ -84,16 +85,27 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     [-0.00372678  0.01820438  0.03423079]
     """
 
-    def __init__(self, *sources):
+    def __init__(self, *objects):
 
-        # init inheritance
-        BaseDisplayRepr.__init__(self)
-
-        # instance attributes
-        self.sources = sources
         self._object_type = "Collection"
 
+        # instance attributes
+        self._objects = []
+        self._sources = []
+        self._sensors = []
+        self.objects = objects
+
     # property getters and setters
+    @property
+    def objects(self):
+        """Collection objects attribute getter and setter."""
+        return self._objects
+
+    @objects.setter
+    def objects(self, objects):
+        """Set Collection objects."""
+        self.add(objects)
+
     @property
     def sources(self):
         """Collection sources attribute getter and setter."""
@@ -102,43 +114,57 @@ class Collection(BaseDisplayRepr, BaseGetBH):
     @sources.setter
     def sources(self, sources):
         """Set Collection sources."""
-        # format input
-        src_list = format_obj_input(sources)
-        # check and eliminate duplicates
-        src_list = check_duplicates(src_list)
-        # allow only designated source types in Collection
-        src_list = only_allowed_src_types(src_list)
-        # set attributes
-        self._sources = src_list
+        self.add(sources)
+
+    @property
+    def sensors(self):
+        """Collection sensors attribute getter and setter."""
+        return self._sensors
+
+    @sensors.setter
+    def sensors(self, sensors):
+        """Set Collection sensors."""
+        self.add(sensors)
 
     # dunders
-    def __add__(self, source):
-        self.add(source)
-        return self
+    def __add__(self, obj):
+        if obj._object_type == 'Collection':
+            return Collection(self, obj)
+        else:
+            return self.add(obj)
 
-    def __sub__(self, source):
-        self.remove(source)
-        return self
+    def __sub__(self, obj):
+        return self.remove(obj)
 
     def __iter__(self):
-        yield from self._sources
+        yield from self._objects
 
     def __getitem__(self, i):
-        return self._sources[i]
+        return self._objects[i]
 
     def __len__(self):
-        return len(self._sources)
+        return len(self._objects)
+
+    def __repr__(self) -> str:
+        # pylint: disable=protected-access
+        if not self._sources:
+            pref = "Sensor"
+        elif not self._sensors:
+            pref = "Sources"
+        else:
+            pref = "Mixed"
+        return f"{pref}{self._object_type}(id={str(id(self))})"
 
     # methods -------------------------------------------------------
-    def add(self, *sources):
+    def add(self, *objects):
         """
-        Add arbitrary sources or Collections.
+        Add arbitrary objects or Collections.
 
         Parameters
         ----------
-        sources: src objects, Collections or arbitrary lists thereof
-            Add arbitrary sequences of sources and Collections to the Collection.
-            The new sources will be added at the end of self.sources. Duplicates
+        objects: src objects, Collections or arbitrary lists thereof
+            Add arbitrary sequences of objects and Collections to the Collection.
+            The new objects will be added at the end of self.objects. Duplicates
             will be eliminated.
 
         Returns
@@ -148,34 +174,45 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         Examples
         --------
 
-        Add sources to a Collection:
+        Add objects to a Collection:
 
         >>> import magpylib as magpy
         >>> src = magpy.current.Loop(1,1)
         >>> col = magpy.Collection()
         >>> col.add(src)
-        >>> print(col.sources)
+        >>> print(col.objects)
         [Loop(id=2519738714432)]
 
         """
         # format input
-        src_list = format_obj_input(sources)
-        # combine with original src_list
-        src_list = self._sources + src_list
+        obj_list = format_obj_input(objects)
+        # combine with original obj_list
+        obj_list = self._objects + obj_list
         # check and eliminate duplicates
-        src_list = check_duplicates(src_list)
+        obj_list = check_duplicates(obj_list)
         # set attributes
-        self._sources = src_list
+        self._objects = obj_list
+        self._update_src_and_sens()
         return self
 
-    def remove(self, source):
+    def _update_src_and_sens(self):
+        # pylint: disable=protected-access
+        """updates source and sensor list when an object is added or removed"""
+        self._sources = [
+            obj for obj in self._objects if obj._object_type in LIBRARY_SOURCES
+        ]
+        self._sensors = [
+            obj for obj in self._objects if obj._object_type in LIBRARY_SENSORS
+        ]
+
+    def remove(self, obj):
         """
-        Remove a specific source from the Collection.
+        Remove a specific object from the Collection.
 
         Parameters
         ----------
-        source: source object
-            Remove the given source from the Collection.
+        object: object object
+            Remove the given object from the Collection.
 
         Returns
         -------
@@ -183,20 +220,21 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
         Examples
         --------
-        Remove a specific source from a Collection:
+        Remove a specific object from a Collection:
 
         >>> import magpylib as magpy
         >>> src1 = magpy.current.Loop(1,1)
         >>> src2 = magpy.current.Loop(1,1)
         >>> col = src1 + src2
-        >>> print(col.sources)
+        >>> print(col.objects)
         [Loop(id=2405009623360), Loop(id=2405010235504)]
         >>> col.remove(src1)
-        >>> print(col.sources)
+        >>> print(col.objects)
         [Loop(id=2405010235504)]
 
         """
-        self._sources.remove(source)
+        self._objects.remove(obj)
+        self._update_src_and_sens()
         return self
 
     def move(self, displacement, start=-1, increment=False):
@@ -449,7 +487,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     def set_styles(self, arg=None, **kwargs):
         """
-        Set display style of all sources in the Collection. Only matching properties
+        Set display style of all objects in the Collection. Only matching properties
         will be applied. Input can be a **style-dict or style-underscore_magic.
 
         Returns
@@ -468,7 +506,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         >>> for i in range(3):
         >>>     col + magpy.magnet.Sphere((1,1,1), 1, (i,0,0))
         >>>
-        >>> # separate source
+        >>> # separate object
         >>> src = magpy.magnet.Sphere((1,1,1), 1, (3,0,0))
         >>>
         >>> # set collection style
@@ -487,7 +525,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
         if kwargs:
             arg.update(kwargs)
         style_kwargs = validate_style_keys(arg)
-        for src in self._sources:
+        for src in self._objects:
             # match properties false will try to apply properties from kwargs only if it finds it
             # withoug throwing an error
             style_kwargs_specific = {
@@ -497,3 +535,98 @@ class Collection(BaseDisplayRepr, BaseGetBH):
             }
             src.style.update(**style_kwargs_specific, _match_properties=True)
         return self
+
+    def _validate_getBH_inputs(self, *objects):
+        """validate Collection.getBH inputs"""
+        # pylint: disable=protected-access
+        objects = format_obj_input(objects)
+        sources, sensors = self._sources, self._sensors
+        if self._sensors and self._sources:
+            if objects:
+                raise MagpylibBadUserInput(
+                    "No inputs allowed for a Mixed Collection, "
+                    "since it already has Sensors and Sources"
+                )
+        elif not self._sources:
+            if not objects:
+                raise MagpylibBadUserInput(
+                    "At least one Source must be specified"
+                )
+            elif not all(obj._object_type in LIBRARY_SOURCES for obj in objects):
+                raise MagpylibBadUserInput(
+                    "This is a SensorCollection, only sources are accepted"
+                )
+            sources = objects
+        elif not self._sensors:
+            if not objects:
+                raise MagpylibBadUserInput(
+                    "At least one Sensor must be specified"
+                )
+            if not all(obj._object_type in LIBRARY_SENSORS for obj in objects):
+                raise MagpylibBadUserInput(
+                    "This is a SourceCollection, only sensors are accepted"
+                )
+            sensors = objects
+        return sources, sensors
+
+    def getB(self, *objects, sumup=False, squeeze=True):
+        """
+        Compute B-field in [mT] for given sources and sensors.
+
+        Parameters
+        ----------
+        sources: source objects or Collections
+            Sources can be a mixture of L source objects or Collections.
+
+        sumup: bool, default=False
+            If True, the fields of all sources are summed up.
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
+        Returns
+        -------
+        B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
+            B-field of each source (L) at each path position (M) and each sensor pixel
+            position (N1,N2,...) in units of [mT]. Paths of objects that are shorter than
+            M will be considered as static beyond their end.
+
+        Examples
+        --------
+        """
+
+        sources, sensors = self._validate_getBH_inputs(*objects)
+
+        return getBH_level2(True, sources, sensors, sumup, squeeze)
+
+    def getH(self, *objects, sumup=False, squeeze=True):
+        """
+        Compute H-field in [kA/m] for given sources and sensors.
+
+        Parameters
+        ----------
+        sources: source objects or Collections
+            Sources can be a mixture of L source objects or Collections.
+
+        sumup: bool, default=False
+            If True, the fields of all sources are summed up.
+
+        squeeze: bool, default=True
+            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
+            a single sensor or only a single source) are eliminated.
+
+        Returns
+        -------
+        H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
+            H-field of each source (L) at each path position (M) and each sensor pixel
+            position (N1,N2,...) in units of [kA/m]. Paths of objects that are shorter than
+            M will be considered as static beyond their end.
+
+        Examples
+        --------
+        """
+
+        sources, sensors = self._validate_getBH_inputs(*objects)
+
+        return getBH_level2(False, sources, sensors, sumup, squeeze)
