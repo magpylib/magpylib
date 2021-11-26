@@ -136,7 +136,7 @@ def current_loop_B_Leitner2021(
     mask1 = rb==0
     z_over_r = np.zeros(n)
     k2_over_rb = np.ones(n)*4/(z2+1)
-    z_over_r[~mask1] = z[~mask1]/rb[~mask1]    # will be zero when r=0
+    z_over_r[~mask1] = zb[~mask1]/rb[~mask1]    # will be zero when r=0
     k2_over_rb[~mask1] = k2[~mask1]/rb[~mask1] # will be zero when r=0
 
     # field components
@@ -144,3 +144,6 @@ def current_loop_B_Leitner2021(
     Bz = pf * (k2_over_rb*ellipe(k2) - xi)
 
     return np.array([Br, Bz]).T
+
+
+
