@@ -237,7 +237,7 @@ def only_allowed_src_types(src_list):
     # pylint: disable=protected-access
 
     src_class_types = ('Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole',
-        'Loop', 'Line')
+        'Loop', 'Line', 'CustomSource')
     new_list = []
     for src in src_list:
         if src._object_type in src_class_types:
