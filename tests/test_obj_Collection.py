@@ -68,9 +68,9 @@ def test_Collection_basics():
         pm6 = magpy.magnet.Cylinder(mag[5], dim2[2])
 
         col1 = magpy.Collection(pm1, [pm2, pm3])
-        col1 + pm4
+        col1 += pm4
         col2 = magpy.Collection(pm5, pm6)
-        col1 + col2
+        col1 += col2
         col1 - pm5 - pm4
         col1.remove(pm1)
         col3 = col1.copy() + pm5 + pm4 + pm1
@@ -160,7 +160,7 @@ def test_repr_collection():
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
     col = magpy.Collection(pm1, pm2)
-    assert col.__repr__()[:10] == "Collection", "Collection repr failed"
+    assert "Collection" in col.__repr__(), "Collection repr failed"
 
 
 def test_adding_sources():
