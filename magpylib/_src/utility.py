@@ -1,26 +1,26 @@
 """ some utility functions"""
 from typing import Sequence
 import numpy as np
-#from scipy.spatial.transform import Rotation as R
+
+# from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_position_format
 
 LIBRARY_SOURCES = {
-    'Cuboid',
-    'Cylinder',
-    'CylinderSegment',
-    'Sphere',
-    'Dipole',
-    'Loop',
-    'Line',
-    'CustomSource'
+    "Cuboid",
+    "Cylinder",
+    "CylinderSegment",
+    "Sphere",
+    "Dipole",
+    "Loop",
+    "Line",
+    "CustomSource",
 }
 
-LIBRARY_SENSORS = {
-    'Sensor'
-}
+LIBRARY_SENSORS = {"Sensor"}
+
 
 def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
     """
@@ -37,13 +37,13 @@ def format_star_input(inp):
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
     but also "[src, src]" or ""(src,src") so that 1D lists/tuples come out.
     """
-    if len(inp)==1:
+    if len(inp) == 1:
         return inp[0]
     return list(inp)
 
 
 def format_obj_input(objects: Sequence) -> list:
-    """ tests and flattens potential input sources (sources, Collections, sequences)
+    """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
     - sources (sequence): input sources
@@ -59,15 +59,15 @@ def format_obj_input(objects: Sequence) -> list:
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
-            obj_list += format_obj_input(obj) # recursive flattening
+            obj_list += format_obj_input(obj)  # recursive flattening
         else:
             try:
-                if obj._object_type == 'Collection':
+                if obj._object_type == "Collection":
                     obj_list += obj.objects
                 elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
                     obj_list += [obj]
             except Exception as error:
-                raise MagpylibBadUserInput('Unknown input object type.') from error
+                raise MagpylibBadUserInput("Unknown input object type.") from error
 
     return obj_list
 
@@ -90,21 +90,21 @@ def format_src_inputs(sources) -> list:
     # pylint: disable=protected-access
 
     # if bare source make into list
-    if not isinstance(sources, (list,tuple)):
+    if not isinstance(sources, (list, tuple)):
         sources = [sources]
 
     # flatten collections
     src_list = []
     try:
         for src in sources:
-            if src._object_type == 'Collection':
+            if src._object_type == "Collection":
                 src_list += src.sources
             elif src._object_type in LIBRARY_SOURCES:
                 src_list += [src]
             else:
                 raise MagpylibBadUserInput
     except Exception as error:
-        raise MagpylibBadUserInput('Unknown source type of input.') from error
+        raise MagpylibBadUserInput("Unknown source type of input.") from error
 
     return list(sources), src_list
 
@@ -125,9 +125,10 @@ def format_obs_inputs(observers) -> list:
     # import type, avoid circular imports
     Sensor = _src.obj_classes.Sensor
 
-    msg = 'Unknown observer input type. Must be Sensor, list, tuple or ndarray'
-
-    if not isinstance(observers, (list, tuple)):
+    msg = "Unknown observer input type. Must be Sensor, list, tuple or ndarray"
+    if not isinstance(observers, (list, tuple, np.ndarray)):
+        observers = (observers,)
+    elif np.isscalar(observers[0]):
         observers = (observers,)
 
     sensors = []
@@ -140,9 +141,9 @@ def format_obs_inputs(observers) -> list:
         # case 2: ndarray of positions
         elif isinstance(obs, (list, tuple, np.ndarray)):
             if Config.checkinputs:
-                check_position_format(obs, 'observer position')
+                check_position_format(np.array(obs), "observer position")
             sensors.append(Sensor(pixel=obs))
-        elif obs._object_type=='Collection':
+        elif getattr(obs, '_object_type', '') == "Collection":
             sensors.extend(obs.sensors)
         else:
             raise MagpylibBadUserInput(msg)
@@ -151,25 +152,23 @@ def format_obs_inputs(observers) -> list:
 
 
 def check_static_sensor_orient(sensors):
-    """ test which sensors have a static orientation
-    """
-    #pylint: disable=protected-access
+    """test which sensors have a static orientation"""
+    # pylint: disable=protected-access
     static_sensor_rot = []
     for sens in sensors:
-        if len(sens._position)==1:           # no sensor path (sensor is static)
+        if len(sens._position) == 1:  # no sensor path (sensor is static)
             static_sensor_rot += [True]
-        else:                           # there is a sensor path
+        else:  # there is a sensor path
             rot = sens.orientation.as_quat()
-            if np.all(rot == rot[0]):          # path with static orient (e.g. translation)
+            if np.all(rot == rot[0]):  # path with static orient (e.g. translation)
                 static_sensor_rot += [True]
-            else:                              # sensor rotation changes along path
+            else:  # sensor rotation changes along path
                 static_sensor_rot += [False]
     return static_sensor_rot
 
 
-
 def check_duplicates(obj_list: Sequence) -> list:
-    """ checks for and eliminates source duplicates in a list of sources
+    """checks for and eliminates source duplicates in a list of sources
 
     ### Args:
     - obj_list (list): list with source objects
@@ -183,13 +182,13 @@ def check_duplicates(obj_list: Sequence) -> list:
             obj_list_new += [src]
 
     if len(obj_list_new) != len(obj_list):
-        print('WARNING: Eliminating duplicate sources')
+        print("WARNING: Eliminating duplicate sources")
 
     return obj_list_new
 
 
 def test_path_format(inp):
-    """ check if each object path has same length
+    """check if each object path has same length
     of obj.pos and obj.rot
 
     Parameters
@@ -201,19 +200,18 @@ def test_path_format(inp):
     no return
     """
     # pylint: disable=protected-access
-    if not isinstance(inp,list):
+    if not isinstance(inp, list):
         inp = [inp]
     result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
-        msg = 'Bad path format (rot-pos with different lengths)'
+        msg = "Bad path format (rot-pos with different lengths)"
         raise MagpylibBadUserInput(msg)
 
 
-def all_same(lst:list)->bool:
-    """ test if all list entries are the same
-    """
-    return lst[1:]==lst[:-1]
+def all_same(lst: list) -> bool:
+    """test if all list entries are the same"""
+    return lst[1:] == lst[:-1]
 
 
 def only_allowed_src_types(src_list):
@@ -228,5 +226,5 @@ def only_allowed_src_types(src_list):
             new_list += [src]
         else:
             if Config.checkinputs:
-                print(f'Warning, cannot add {src.__repr__()} to Collection.')
+                print(f"Warning, cannot add {src.__repr__()} to Collection.")
     return new_list
