@@ -140,9 +140,10 @@ class Collection(BaseDisplayRepr):
     # dunders
     def __add__(self, obj):
         if obj._object_type == "Collection":
-            return Collection(self, obj)
+            new_obj = Collection(self, obj)
         else:
-            return self.add(obj)
+            new_obj = self.add(obj)
+        return new_obj
 
     def __sub__(self, obj):
         return self.remove(obj)
@@ -548,6 +549,7 @@ class Collection(BaseDisplayRepr):
         return self
 
     def _validate_getBH_inputs(self, *objects):
+        # pylint: disable=too-many-branches
         """validate Collection.getBH inputs"""
         # pylint: disable=protected-access
         sources, sensors = list(self._sources), list(self._sensors)
@@ -561,31 +563,29 @@ class Collection(BaseDisplayRepr):
         elif not sources:
             if not objects:
                 raise MagpylibBadUserInput("At least one Source must be specified")
-            else:
-                sources, sensors = [], self
-                for obj in objects:
-                    if obj._object_type in list(LIBRARY_SOURCES) + ["Collection"]:
-                        sources.append(obj)
-                    else:
-                        raise MagpylibBadUserInput(
-                            "This is a SensorCollection, only sources are accepted"
-                        )
+            sources, sensors = [], self
+            for obj in objects:
+                if obj._object_type in list(LIBRARY_SOURCES) + ["Collection"]:
+                    sources.append(obj)
+                else:
+                    raise MagpylibBadUserInput(
+                        "This is a SensorCollection, only sources are accepted"
+                    )
         elif not sensors:
             if not objects:
                 raise MagpylibBadUserInput("At least one Sensor must be specified")
-            else:
-                sources, sensors = self, []
-                for obj in objects:
-                    if isinstance(
-                        obj, (list, tuple, np.ndarray)
-                    ) or obj._object_type in list(LIBRARY_SENSORS):
-                        sensors.append(obj)
-                    elif obj._object_type == "Collection":
-                        sensors.extend(obj.sensors)
-                    else:
-                        raise MagpylibBadUserInput(
-                            "This is a SensorCollection, only sources are accepted"
-                        )
+            sources, sensors = self, []
+            for obj in objects:
+                if isinstance(
+                    obj, (list, tuple, np.ndarray)
+                ) or obj._object_type in list(LIBRARY_SENSORS):
+                    sensors.append(obj)
+                elif obj._object_type == "Collection":
+                    sensors.extend(obj.sensors)
+                else:
+                    raise MagpylibBadUserInput(
+                        "This is a SensorCollection, only sources are accepted"
+                    )
         return sources, sensors
 
     def getB(self, *objects, sumup=False, squeeze=True):

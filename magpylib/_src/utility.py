@@ -220,10 +220,10 @@ def filter_objects(obj_list, allow='sources+sensors', warn=True):
     """
     # pylint: disable=protected-access
     allowed_list = []
-    for allow in allow.split('+'):
-        if allow=='sources':
+    for allowed in allow.split('+'):
+        if allowed=='sources':
             allowed_list.extend(LIBRARY_SOURCES)
-        elif allow=='sensors':
+        elif allowed=='sensors':
             allowed_list.extend(LIBRARY_SENSORS)
     new_list = []
     for obj in obj_list:
