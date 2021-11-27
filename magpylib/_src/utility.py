@@ -42,7 +42,7 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(objects: Sequence) -> list:
+def format_obj_input(objects: Sequence, allow='sensors+sources', warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -59,7 +59,7 @@ def format_obj_input(objects: Sequence) -> list:
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
-            obj_list += format_obj_input(obj)  # recursive flattening
+            obj_list += format_obj_input(obj, allow=allow, warn=warn)  # recursive flattening
         else:
             try:
                 if obj._object_type == "Collection":
@@ -68,7 +68,7 @@ def format_obj_input(objects: Sequence) -> list:
                     obj_list += [obj]
             except Exception as error:
                 raise MagpylibBadUserInput("Unknown input object type.") from error
-
+    obj_list = filter_objects(obj_list, allow=allow, warn=warn)
     return obj_list
 
 
@@ -214,17 +214,22 @@ def all_same(lst: list) -> bool:
     return lst[1:] == lst[:-1]
 
 
-def only_allowed_src_types(src_list):
+def filter_objects(obj_list, allow='sources+sensors', warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
     # pylint: disable=protected-access
-
+    allowed_list = []
+    for allow in allow.split('+'):
+        if allow=='sources':
+            allowed_list.extend(LIBRARY_SOURCES)
+        elif allow=='sensors':
+            allowed_list.extend(LIBRARY_SENSORS)
     new_list = []
-    for src in src_list:
-        if src._object_type in LIBRARY_SOURCES:
-            new_list += [src]
+    for obj in obj_list:
+        if obj._object_type in allowed_list:
+            new_list += [obj]
         else:
-            if Config.checkinputs:
-                print(f"Warning, cannot add {src.__repr__()} to Collection.")
+            if Config.checkinputs and warn:
+                print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list

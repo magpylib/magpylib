@@ -89,10 +89,10 @@ class Collection(BaseDisplayRepr):
 
     def __init__(self, *objects):
 
-        self._object_type = "Collection"
-
         # init inheritance
         BaseDisplayRepr.__init__(self)
+
+        self._object_type = "Collection"
 
         # instance attributes
         self._objects = []
@@ -109,7 +109,9 @@ class Collection(BaseDisplayRepr):
     @objects.setter
     def objects(self, objects):
         """Set Collection objects."""
-        self.add(objects)
+        obj_list = format_obj_input(objects, allow="sources+sensors")
+        self._objects = []
+        self.add(obj_list)
 
     @property
     def sources(self):
@@ -119,7 +121,9 @@ class Collection(BaseDisplayRepr):
     @sources.setter
     def sources(self, sources):
         """Set Collection sources."""
-        self.add(sources)
+        src_list = format_obj_input(sources, allow="sources")
+        self._objects = [o for o in self._objects if o not in self._sources]
+        self.add(src_list)
 
     @property
     def sensors(self):
@@ -129,7 +133,9 @@ class Collection(BaseDisplayRepr):
     @sensors.setter
     def sensors(self, sensors):
         """Set Collection sensors."""
-        self.add(sensors)
+        sens_list = format_obj_input(sensors, allow="sensors")
+        self._objects = [o for o in self._objects if o not in self._sensors]
+        self.add(sens_list)
 
     # dunders
     def __add__(self, obj):
