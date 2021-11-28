@@ -42,7 +42,7 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(objects: Sequence, allow='sensors+sources', warn=True) -> list:
+def format_obj_input(objects: Sequence, allow="sensors+sources", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -59,7 +59,9 @@ def format_obj_input(objects: Sequence, allow='sensors+sources', warn=True) -> l
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
-            obj_list += format_obj_input(obj, allow=allow, warn=warn)  # recursive flattening
+            obj_list += format_obj_input(
+                obj, allow=allow, warn=warn
+            )  # recursive flattening
         else:
             try:
                 if obj._object_type == "Collection":
@@ -92,19 +94,23 @@ def format_src_inputs(sources) -> list:
     # if bare source make into list
     if not isinstance(sources, (list, tuple)):
         sources = [sources]
-
     # flatten collections
     src_list = []
-    try:
-        for src in sources:
-            if src._object_type == "Collection":
-                src_list += src.sources
-            elif src._object_type in LIBRARY_SOURCES:
-                src_list += [src]
-            else:
-                raise MagpylibBadUserInput
-    except Exception as error:
-        raise MagpylibBadUserInput("Unknown source type of input.") from error
+    for src in sources:
+        obj_type = getattr(src, "_object_type", None)
+        if obj_type == "Collection":
+            if not src.sources:
+                raise MagpylibBadUserInput(f"{src!r} has no sources")
+            src_list += src.sources
+        elif obj_type in LIBRARY_SOURCES:
+            src_list += [src]
+        else:
+            raise MagpylibBadUserInput(
+                f"Wrong source type provided, must be either\n"
+                f"- one of {LIBRARY_SOURCES}\n"
+                "- a Collection with at least one of the above\n"
+                f"\nbut received {src!r} of type {type(src).__name__!r} instead."
+            )
 
     return list(sources), src_list
 
@@ -125,9 +131,15 @@ def format_obs_inputs(observers) -> list:
     # import type, avoid circular imports
     Sensor = _src.obj_classes.Sensor
 
-    msg = "Unknown observer input type. Must be Sensor, list, tuple or ndarray"
+    msg = """Observer must be array_like, Sensor or 1D list thereof
+Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
+should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
+a 1D list of K Sensor objects with similar pixel shape. All positions are given
+in units of [mm]."""
     if not isinstance(observers, (list, tuple, np.ndarray)):
         observers = (observers,)
+    elif len(observers) == 0:
+        raise MagpylibBadUserInput("No observer provided\n" + msg)
     elif np.isscalar(observers[0]):
         observers = (observers,)
 
@@ -143,10 +155,15 @@ def format_obs_inputs(observers) -> list:
             if Config.checkinputs:
                 check_position_format(np.array(obs), "observer position")
             sensors.append(Sensor(pixel=obs))
-        elif getattr(obs, '_object_type', '') == "Collection":
+        elif getattr(obs, "_object_type", "") == "Collection":
+            if not obs.sensors:
+                raise MagpylibBadUserInput(f"{obs!r} has no sensors")
             sensors.extend(obs.sensors)
         else:
-            raise MagpylibBadUserInput(msg)
+            raise MagpylibBadUserInput(
+                "Wrong observer type provided, "
+                f"received {obs!r} of type {type(obs).__name__!r}.\n\n" + msg
+            )
 
     return sensors
 
@@ -214,16 +231,16 @@ def all_same(lst: list) -> bool:
     return lst[1:] == lst[:-1]
 
 
-def filter_objects(obj_list, allow='sources+sensors', warn=True):
+def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
     # pylint: disable=protected-access
     allowed_list = []
-    for allowed in allow.split('+'):
-        if allowed=='sources':
+    for allowed in allow.split("+"):
+        if allowed == "sources":
             allowed_list.extend(LIBRARY_SOURCES)
-        elif allowed=='sensors':
+        elif allowed == "sensors":
             allowed_list.extend(LIBRARY_SENSORS)
     new_list = []
     for obj in obj_list:

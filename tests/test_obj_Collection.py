@@ -142,15 +142,29 @@ def test_bad_col_getB_inputs():
     src_col = src1 + src2
     mixed_col = sens_col + src_col
     with pytest.raises(MagpylibBadUserInput):
+        mixed_col.getB(src1)
+    with pytest.raises(MagpylibBadUserInput):
         mixed_col.getB(sens1)
     with pytest.raises(MagpylibBadUserInput):
         sens_col.getB()
     with pytest.raises(MagpylibBadUserInput):
         sens_col.getB(sens1)
     with pytest.raises(MagpylibBadUserInput):
+        sens_col.getB(sens_col)
+    with pytest.raises(MagpylibBadUserInput):
         src_col.getB()
     with pytest.raises(MagpylibBadUserInput):
         src_col.getB(src1)
+    with pytest.raises(MagpylibBadUserInput):
+        src_col.getB(src_col)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(sens_col,sens_col)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(src_col,src_col)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(src_col,1)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(1,sens_col)
 
 def test_col_get_item():
     """test get_item with collections"""
