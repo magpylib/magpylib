@@ -266,8 +266,8 @@ class Model3d(MagicProperties):
         - True: shows mesh
         - False: hides mesh
 
-    extra: list, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    extra: dict or list of dicts, default=None
+        a trace or list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
@@ -293,13 +293,15 @@ class Model3d(MagicProperties):
 
     @property
     def extra(self):
-        """3d object reprensation properties"""
+        """extra 3d object reprensation (trace or list of traces)"""
         return self._extra
 
     @extra.setter
     def extra(self, val):
         if val is None:
             val = []
+        elif isinstance(val, dict):
+            val = [val]
         m3 = []
         for v in val:
             v = validate_property_class(v, "extra", Trace3d, self)

@@ -188,7 +188,7 @@ def test_draw_unsupported_obj():
 
 
 def test_extra_model3d():
-    """test diplay when object has an extra mesh3d object attached"""
+    """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
     cuboid = Cuboid((1, 2, 3), (1, 2, 3)).move([(0.4, 0.4, 0.4)] * 33, increment=True)
     cuboid.style.model3d.extra = [
@@ -229,7 +229,18 @@ def test_extra_model3d():
         style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
-    cuboid.style.model3d.extra[1].show = False
+    cuboid.style.model3d.extra = {
+            "backend": "plotly",
+            "trace": {
+                "type": "scatter3d",
+                "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+                "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+                "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+                "mode": "lines",
+            },
+            "show": True,
+    }
+    cuboid.style.model3d.extra[0].show = False
     x = cuboid.display(
         canvas=fig,
         path=False,
