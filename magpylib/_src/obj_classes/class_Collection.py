@@ -22,11 +22,17 @@ class Collection(BaseDisplayRepr):
     Collections do not allow duplicate objects (will be eliminated automatically).
 
     Collections have the following dunders defined: __add__, __sub__, __iter__, __getitem__,
-    __repr__
+    __repr__.
+
+    Depending on the input, Collection objects can be sources, observers or both. A Collection
+    with only source objects will become either a SourceCollection, one with only Sensors a
+    SensorCollection, and one with sources and sensors a MixedCollection
+    A SourceCollection functions like any SINGLE source. A SensorCollection functions like a
+    list of observer inputs. A MixedCollection will function as source or as observer.
 
     Parameters
     ----------
-    objects: object objects, Collections or arbitrary lists thereof
+    objects: sources, sensors, collections or arbitrary lists thereof
         Ordered list of objects in the Collection.
 
     Returns
@@ -37,7 +43,8 @@ class Collection(BaseDisplayRepr):
     --------
 
     Create Collections for common manipulation. All objects added to a Collection
-    are stored in the ``objects`` attribute, which is an ordered set (list with
+    are stored in the ``objects`` attribute, and additionally in the ``sensors``
+    and ``sources`` attributes. These three return ordered sets (lists with
     unique elements only)
 
     >>> import magpylib as magpy
@@ -85,6 +92,35 @@ class Collection(BaseDisplayRepr):
     >>> B = col.getB((1,2,3))
     >>> print(B)
     [-0.00372678  0.01820438  0.03423079]
+
+    Consider three collections, a SourceCollection sCol a SensorCollection xCol and a
+    MixedCollection mCol, all made up from the same objects.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+
+    >>> s1=magpy.magnet.Sphere((1,2,3), 1)
+    >>> s2=magpy.magnet.Cylinder((1,2,3), (1,1), (3,0,0))
+    >>> s3=magpy.magnet.Cuboid((1,2,3), (1,1,1), (6,0,0))
+
+    >>> x1=magpy.Sensor((1,0,3))
+    >>> x2=magpy.Sensor((4,0,3))
+    >>> x3=magpy.Sensor((7,0,3))
+
+    >>> sCol = magpy.Collection(s1, s2, s3)
+    >>> xCol = magpy.Collection(x1, x2, x3)
+    >>> mCol = magpy.Collection(sCol, xCol)
+
+    All the following lines will all give the same output
+
+    >>> magpy.getB([s1,s2,s3], [x1,x2,x3], sumup=True)
+    >>> magpy.getB(sCol, xCol)
+    >>> magpy.getB(mCol, mCol)
+    >>> sCol.getB(xCol)
+    >>> xCol.getB(sCol)
+    >>> sCol.getB(mCol)
+    >>> xCol.getB(mCol)
+    >>> mCol.getB()
     """
 
     def __init__(self, *objects):
@@ -162,7 +198,7 @@ class Collection(BaseDisplayRepr):
         if not self._sources:
             pref = "Sensor"
         elif not self._sensors:
-            pref = "Sources"
+            pref = "Source"
         else:
             pref = "Mixed"
         return f"{pref}{self._object_type}(id={str(id(self))})"
@@ -170,11 +206,11 @@ class Collection(BaseDisplayRepr):
     # methods -------------------------------------------------------
     def add(self, *objects):
         """
-        Add arbitrary objects or Collections.
+        Add arbitrary Magpylib objects or Collections.
 
         Parameters
         ----------
-        objects: src objects, Collections or arbitrary lists thereof
+        objects: sources, Sensors, Collections or arbitrary lists thereof
             Add arbitrary sequences of objects and Collections to the Collection.
             The new objects will be added at the end of self.objects. Duplicates
             will be eliminated.
@@ -590,12 +626,13 @@ class Collection(BaseDisplayRepr):
 
     def getB(self, *objects, sumup=False, squeeze=True):
         """
-        Compute B-field in [mT] for given sources and sensors.
+        Compute B-field in [mT] for given sources and observers.
 
         Parameters
         ----------
-        sources: source objects or Collections
-            Sources can be a mixture of L source objects or Collections.
+        objects: source or observer objects
+            If parent is a SourceCollection, input can only be M observers.
+            If parent is a SensorCollection, input can only be L sources.
 
         sumup: bool, default=False
             If True, the fields of all sources are summed up.
@@ -621,12 +658,13 @@ class Collection(BaseDisplayRepr):
 
     def getH(self, *objects, sumup=False, squeeze=True):
         """
-        Compute H-field in [kA/m] for given sources and sensors.
+        Compute H-field in [kA/m] for given sources and observers.
 
         Parameters
         ----------
-        sources: source objects or Collections
-            Sources can be a mixture of L source objects or Collections.
+        objects: source or observer objects
+            If parent is a SourceCollection, input can only be M observers.
+            If parent is a SensorCollection, input can only be L sources.
 
         sumup: bool, default=False
             If True, the fields of all sources are summed up.
