@@ -31,7 +31,10 @@ from magpylib._src.display.disp_utility import (
     draw_arrowed_circle,
     place_and_orient_model3d,
 )
-from magpylib._src.default_utils import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.default_utils import (
+    SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY,
+    linearize_dict,
+)
 from magpylib._src.input_checks import check_excitations
 
 # Defaults
@@ -922,12 +925,23 @@ def get_plotly_traces(
                 path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
             for extr in extra_model3d_traces:
                 if extr.show:
-                    trace3d = place_and_orient_model3d(
-                        extr.trace, orientation=orient, position=pos,
-                    )
+                    trace3d = {}
                     ttype = extr.trace["type"]
                     if ttype == "mesh3d":
                         trace3d["showscale"] = False
+                    if ttype == "scatter3d":
+                        trace3d["marker_color"] = kwargs["color"]
+                        trace3d["line_color"] = kwargs["color"]
+                    else:
+                        trace3d["color"] = kwargs["color"]
+                    trace3d.update(
+                        linearize_dict(
+                            place_and_orient_model3d(
+                                extr.trace, orientation=orient, position=pos
+                            ),
+                            separator="_",
+                        )
+                    )
                     if ttype not in path_traces_extra:
                         path_traces_extra[ttype] = []
                     path_traces_extra[ttype].append(trace3d)
