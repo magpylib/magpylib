@@ -89,11 +89,11 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
 
 +++
 
-create a source
+* create a source
 
 ```{code-cell} ipython3
 cube = magpy.magnet.Cuboid(
-    magnetization=(0, 0, 1000), position=(-10, 0, 0), dimension=(10, 10, 10)
+    magnetization=(0, 0, 1000), position=(-20, 0, 0), dimension=(10, 10, 10)
 )
 dim = [4, 4, 4]
 Nelem = [2, 2, 2]
@@ -101,14 +101,14 @@ slices = [slice(-d / 2, d / 2, N * 1j) for d, N in zip(dim, Nelem)]
 positions = np.mgrid[slices].reshape(len(slices), -1).T
 ```
 
-get data from a regular grid of positions
+* get data from a regular grid of positions
 
 ```{code-cell} ipython3
 Bcube = cube.getB(positions)
 Bdata = np.hstack([positions, Bcube])
 ```
 
-Check field function values vs magpylib Cuboid field values
+* check field function values vs magpylib Cuboid field values
 
 ```{code-cell} ipython3
 field_B_lambda = interpolate_field(Bdata)
@@ -119,26 +119,39 @@ print(Bcube)
 print(field_B_lambda(positions))
 ```
 
-create custom source with interpolation field
+* create custom source with interpolation field
 
 ```{code-cell} ipython3
 interp_cube = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
 ```
 
-add a graphical representation to the custom object, in this case a transparent cube
+* add a graphical representation to the custom object, in this case a transparent cube
 
 ```{code-cell} ipython3
-mesh_data = {
+matplotlib_trace = {
+    'type':'plot',
+    'xs': np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])* 0.5 * dim[0], 
+    'ys': np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])* 0.5 * dim[0], 
+    'zs': np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])* 0.5 * dim[0],
+    'ls': '-',
+}
+plotly_trace = {
     "type": "mesh3d",
     "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
     "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
     "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-    "x": np.array([-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0]) * 0.5 * dim[0],
-    "y": np.array([-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0]) * 0.5 * dim[1],
-    "z": np.array([-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0]) * 0.5 * dim[2],
+    "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dim[0],
+    "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dim[1],
+    "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dim[2],
     "opacity": 0.2,
 }
-interp_cube.style.mesh3d = dict(data=mesh_data, show=True, replace=True)
+
+# define user defined 3d representation for each plotting backend
+interp_cube.style.model3d.extra = [
+    dict(backend='matplotlib', trace=matplotlib_trace, show=True),
+    dict(backend='plotly', trace=plotly_trace, show=True),
+]
+interp_cube.style.model3d.show = False # hide default 3d-model
 interp_cube.style.name = 'Interpolated cuboid field'
 ```
 
@@ -152,13 +165,13 @@ If `getB` gets called for positions outside the interpolated field boudaries, th
 
 +++
 
-define a sensor inside the interpolation boundaries
+* define a sensor inside the interpolation boundaries
 
 ```{code-cell} ipython3
 sens = magpy.Sensor(pixel=positions * 0.5, style=dict(pixel_size=0.5))
 ```
 
-rotate all object by a common random rotation with common anchor
+* rotate all object by a common random rotation with common anchor
 
 ```{code-cell} ipython3
 rotation = dict(
@@ -169,12 +182,14 @@ sens.rotate_from_angax(**rotation)
 cube.rotate_from_angax(**rotation)
 ```
 
-display system
+* display system
 
 ```{code-cell} ipython3
-fig = go.Figure()
-magpy.display(cube, sens, interp_cube, canvas=fig, backend='plotly')
-fig
+magpy.display(cube, sens, interp_cube, backend='matplotlib')
+```
+
+```{code-cell} ipython3
+magpy.display(cube, sens, interp_cube, backend='plotly')
 ```
 
 compare the interpolated field with the original source
