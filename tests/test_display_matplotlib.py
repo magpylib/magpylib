@@ -2,7 +2,6 @@ import pytest
 import matplotlib.pyplot as plt
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib._src.display.plotly_draw import make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 
@@ -73,6 +72,7 @@ def test_Sensor_display():
 
     x = sens.display(canvas=ax, markers=[(100, 100, 100)], path=False)
     assert x is None, "display test fail"
+
 
 def test_CustomSource_display():
     """testing display"""
@@ -147,19 +147,32 @@ def test_matplotlib_animation_warning():
         sens.display(canvas=ax, path="animate")
 
 
-def test_matplotlib_mesh3d_warning():
-    """if obj has mesh3d with matplotlib should raise UserWarning"""
-    data = make_BaseCuboid(pos=(4, 0, 0), dim=(2, 2, 2))
+def test_matplotlib_model3d_extra():
+    """test display extra model3d"""
+    cuboid = magpy.magnet.Cuboid(
+        magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
+    ).rotate_from_angax([72] * 5, "z", anchor=(0, 0, 0), start=0, increment=True)
+    cuboid.style.model3d.show = False
+    cuboid.style.model3d.extra = [
+        {
+            "backend": "matplotlib",
+            "trace": {
+                "type": "plot",
+                "xs": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+                "ys": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+                "zs": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+                "ls": "-",
+            },
+            "show": True,
+        }
+    ]
     ax = plt.subplot(projection="3d")
-    sens = magpy.Sensor(
-        pixel=[(1, 2, 3), (2, 3, 4)],
-        style=dict(mesh3d_data=data, mesh3d_replace=True),
-    )
-    sens.move([(0.4, 0.4, 0.4)] * 33, increment=True)
-    with pytest.warns(UserWarning):
-        sens.display(canvas=ax)
+    x = cuboid.display(canvas=ax, path=1)
+    assert x is None, "display test fail"
+
 
 def test_empty_display():
+    """should not fail if nothing to display"""
     ax = plt.subplot(projection="3d")
-    x = magpy.display(canvas=ax, backend='matplotlib')
+    x = magpy.display(canvas=ax, backend="matplotlib")
     assert x is None, "empty display matplotlib test fail"

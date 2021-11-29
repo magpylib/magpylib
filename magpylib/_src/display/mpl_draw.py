@@ -7,6 +7,7 @@ from magpylib._src.display.disp_utility import (
     get_rot_pos_from_path,
     draw_arrow_from_vertices,
     draw_arrowed_circle,
+    place_and_orient_model3d,
 )
 
 
@@ -273,3 +274,32 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
             draw_pos += list(possis1)
 
     return draw_pos
+
+
+def draw_model3d_extra(obj, style, show_path, ax, color):
+    """positions, orients and draws extra 3d model including path positions"""
+    extra_model3d_traces = (
+        style.model3d.extra if style.model3d.extra is not None else []
+    )
+    extra_model3d_traces = [
+        t for t in extra_model3d_traces if t.backend == "matplotlib"
+    ]
+    path_traces_extra = {}
+    for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
+        for extr in extra_model3d_traces:
+            if extr.show:
+                trace3d = place_and_orient_model3d(
+                    extr.trace,
+                    orientation=orient,
+                    position=pos,
+                )
+                ttype = extr.trace["type"]
+                if ttype not in path_traces_extra:
+                    path_traces_extra[ttype] = []
+                path_traces_extra[ttype].append(trace3d)
+
+    for traces_extra in path_traces_extra.values():
+        for tr in traces_extra:
+            kwargs = {"color": color}
+            kwargs.update({k: v for k, v in tr.items() if k != "type"})
+            getattr(ax, tr["type"])(**kwargs)

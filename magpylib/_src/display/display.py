@@ -18,6 +18,7 @@ from magpylib._src.display.mpl_draw import (
     draw_dipoles,
     draw_circular,
     draw_line,
+    draw_model3d_extra,
 )
 from magpylib._src.display.disp_utility import (
     faces_cuboid,
@@ -220,65 +221,66 @@ def display_matplotlib(
         color = style.color if style.color is not None else color
         lw = 0.25
         faces = None
-        if style.mesh3d.data is not None and (
-            style.mesh3d.show is True or style.mesh3d.show == "inplace"
-        ):
-            text = (
-                f"{obj} has a mesh3d attached, which cannot be plotted with the matplotlib "
-                "backend at the moment"
-            )
-            warnings.warn(text)
-        if obj._object_type == "Cuboid":
-            lw = 0.5
-            faces = faces_cuboid(obj, show_path)
-        elif obj._object_type == "Cylinder":
-            faces = faces_cylinder(obj, show_path)
-        elif obj._object_type == "CylinderSegment":
-            faces = faces_cylinder_section(obj, show_path)
-        elif obj._object_type == "Sphere":
-            faces = faces_sphere(obj, show_path)
-        elif obj._object_type == "Line":
-            if style.arrow.show:
-                check_excitations([obj])
-            arrow_size = style.arrow.size if style.arrow.show else 0
-            arrow_width = style.arrow.width
-            points += draw_line([obj], show_path, color, arrow_size, arrow_width, ax)
-        elif obj._object_type == "Loop":
-            if style.arrow.show:
-                check_excitations([obj])
-            arrow_width = style.arrow.width
-            arrow_size = style.arrow.size if style.arrow.show else 0
-            points += draw_circular(
-                [obj], show_path, color, arrow_size, arrow_width, ax
-            )
-        elif obj._object_type == "Sensor":
-            sensors_color += [color]
-            points += draw_pixel(
-                [obj],
-                ax,
-                color,
-                style.pixel.color,
-                style.pixel.size,
-                style.pixel.symbol,
-                show_path,
-            )
-        elif obj._object_type == "Dipole":
-            dipoles_color += [color]
-            points += [obj.position]
-        elif obj._object_type == 'CustomSource':
-            draw_markers(np.array([obj.position]), ax, color, symbol='*', size=10)
-            name = obj.style.name if obj.style.name is not None else str(type(obj).__name__)
-            ax.text(*obj.position, name, horizontalalignment='center')
-            points += [obj.position]
-        if faces is not None:
-            faced_objects_color += [color]
-            pts = draw_faces(faces, color, lw, ax)
-            points += [np.vstack(pts).reshape(-1, 3)]
-            if style.magnetization.show:
-                check_excitations([obj])
-                draw_directs_faced(
-                    [obj], [color], ax, show_path, style.magnetization.size
+        if obj.style.model3d.extra:
+            draw_model3d_extra(obj, style, show_path, ax, color)
+        if obj.style.model3d.show:
+            if obj._object_type == "Cuboid":
+                lw = 0.5
+                faces = faces_cuboid(obj, show_path)
+            elif obj._object_type == "Cylinder":
+                faces = faces_cylinder(obj, show_path)
+            elif obj._object_type == "CylinderSegment":
+                faces = faces_cylinder_section(obj, show_path)
+            elif obj._object_type == "Sphere":
+                faces = faces_sphere(obj, show_path)
+            elif obj._object_type == "Line":
+                if style.arrow.show:
+                    check_excitations([obj])
+                arrow_size = style.arrow.size if style.arrow.show else 0
+                arrow_width = style.arrow.width
+                points += draw_line(
+                    [obj], show_path, color, arrow_size, arrow_width, ax
                 )
+            elif obj._object_type == "Loop":
+                if style.arrow.show:
+                    check_excitations([obj])
+                arrow_width = style.arrow.width
+                arrow_size = style.arrow.size if style.arrow.show else 0
+                points += draw_circular(
+                    [obj], show_path, color, arrow_size, arrow_width, ax
+                )
+            elif obj._object_type == "Sensor":
+                sensors_color += [color]
+                points += draw_pixel(
+                    [obj],
+                    ax,
+                    color,
+                    style.pixel.color,
+                    style.pixel.size,
+                    style.pixel.symbol,
+                    show_path,
+                )
+            elif obj._object_type == "Dipole":
+                dipoles_color += [color]
+                points += [obj.position]
+            elif obj._object_type == "CustomSource":
+                draw_markers(np.array([obj.position]), ax, color, symbol="*", size=10)
+                name = (
+                    obj.style.name
+                    if obj.style.name is not None
+                    else str(type(obj).__name__)
+                )
+                ax.text(*obj.position, name, horizontalalignment="center")
+                points += [obj.position]
+            if faces is not None:
+                faced_objects_color += [color]
+                pts = draw_faces(faces, color, lw, ax)
+                points += [np.vstack(pts).reshape(-1, 3)]
+                if style.magnetization.show:
+                    check_excitations([obj])
+                    draw_directs_faced(
+                        [obj], [color], ax, show_path, style.magnetization.size
+                    )
         if show_path:
             marker, line = style.path.marker, style.path.line
             points += draw_path(
