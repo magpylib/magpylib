@@ -1,7 +1,6 @@
 """Collection class code"""
 
 import copy
-import numpy as np
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
@@ -597,31 +596,9 @@ class Collection(BaseDisplayRepr):
                     "since it already has Sensors and Sources"
                 )
         elif not sources:
-            if not objects:
-                raise MagpylibBadUserInput("At least one Source must be specified")
-            sources, sensors = [], self
-            for obj in objects:
-                if obj._object_type in list(LIBRARY_SOURCES) + ["Collection"]:
-                    sources.append(obj)
-                else:
-                    raise MagpylibBadUserInput(
-                        "This is a SensorCollection, only sources are accepted"
-                    )
+            sources, sensors = objects, self
         elif not sensors:
-            if not objects:
-                raise MagpylibBadUserInput("At least one Sensor must be specified")
-            sources, sensors = self, []
-            for obj in objects:
-                if isinstance(
-                    obj, (list, tuple, np.ndarray)
-                ) or obj._object_type in list(LIBRARY_SENSORS):
-                    sensors.append(obj)
-                elif obj._object_type == "Collection":
-                    sensors.extend(obj.sensors)
-                else:
-                    raise MagpylibBadUserInput(
-                        "This is a SensorCollection, only sources are accepted"
-                    )
+            sources, sensors = self, objects
         return sources, sensors
 
     def getB(self, *objects, sumup=False, squeeze=True):

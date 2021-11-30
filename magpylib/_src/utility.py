@@ -8,7 +8,7 @@ from magpylib import _src
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_position_format
 
-LIBRARY_SOURCES = {
+LIBRARY_SOURCES = (
     "Cuboid",
     "Cylinder",
     "CylinderSegment",
@@ -17,9 +17,43 @@ LIBRARY_SOURCES = {
     "Loop",
     "Line",
     "CustomSource",
-}
+)
 
-LIBRARY_SENSORS = {"Sensor"}
+LIBRARY_SENSORS = ("Sensor",)
+
+ALLOWED_SOURCE_MSG = f"""Sources must be either
+- one of {LIBRARY_SOURCES}
+- Collection with at least one of the above
+- 1D list thereof"""
+
+ALLOWED_OBSERVER_MSG = """Observers must be either
+- array_like positions of shape (N1, N2, ..., 3)
+- Sensor object
+- Collection with at least one Sensor
+- 1D list thereof"""
+
+ALLOWED_SENSORS_MSG = """Sensors must be either
+- Sensor object
+- Collection with at least one Sensor
+- 1D list thereof"""
+
+
+def wrong_obj_msg(*objs, allow="sources"):
+    """return error message for wrong object type provided"""
+    assert len(objs) <= 1, "only max one obj allowed"
+    allowed = allow.split("+")
+    prefix = "No" if len(allowed) == 1 else "Bad"
+    msg = f"{prefix} {'/'.join(allowed)} provided"
+    if "sources" in allowed:
+        msg += "\n" + ALLOWED_SOURCE_MSG
+    if "observers" in allowed:
+        msg += "\n" + ALLOWED_OBSERVER_MSG
+    if "sensors" in allowed:
+        msg += "\n" + ALLOWED_SENSORS_MSG
+    if objs:
+        obj = objs[0]
+        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead." ""
+    return msg
 
 
 def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
@@ -42,7 +76,7 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(objects: Sequence, allow="sensors+sources", warn=True) -> list:
+def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -69,7 +103,7 @@ def format_obj_input(objects: Sequence, allow="sensors+sources", warn=True) -> l
                 elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
                     obj_list += [obj]
             except Exception as error:
-                raise MagpylibBadUserInput("Unknown input object type.") from error
+                raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
     obj_list = filter_objects(obj_list, allow=allow, warn=warn)
     return obj_list
 
@@ -96,22 +130,18 @@ def format_src_inputs(sources) -> list:
         sources = [sources]
     # flatten collections
     src_list = []
+    if not sources:
+        raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
     for src in sources:
         obj_type = getattr(src, "_object_type", None)
         if obj_type == "Collection":
             if not src.sources:
-                raise MagpylibBadUserInput(f"{src!r} has no sources")
+                raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
             src_list += src.sources
         elif obj_type in LIBRARY_SOURCES:
             src_list += [src]
         else:
-            raise MagpylibBadUserInput(
-                f"Wrong source type provided, must be either\n"
-                f"- one of {LIBRARY_SOURCES}\n"
-                "- a Collection with at least one of the above\n"
-                f"\nbut received {src!r} of type {type(src).__name__!r} instead."
-            )
-
+            raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
     return list(sources), src_list
 
 
@@ -131,15 +161,10 @@ def format_obs_inputs(observers) -> list:
     # import type, avoid circular imports
     Sensor = _src.obj_classes.Sensor
 
-    msg = """Observer must be array_like, Sensor or 1D list thereof
-Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
-should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
-a 1D list of K Sensor objects with similar pixel shape. All positions are given
-in units of [mm]."""
     if not isinstance(observers, (list, tuple, np.ndarray)):
         observers = (observers,)
     elif len(observers) == 0:
-        raise MagpylibBadUserInput("No observer provided\n" + msg)
+        raise MagpylibBadUserInput(wrong_obj_msg(allow="observers"))
     elif np.isscalar(observers[0]):
         observers = (observers,)
 
@@ -157,13 +182,10 @@ in units of [mm]."""
             sensors.append(Sensor(pixel=obs))
         elif getattr(obs, "_object_type", "") == "Collection":
             if not obs.sensors:
-                raise MagpylibBadUserInput(f"{obs!r} has no sensors")
+                raise MagpylibBadUserInput(wrong_obj_msg(obs, allow="observers"))
             sensors.extend(obs.sensors)
         else:
-            raise MagpylibBadUserInput(
-                "Wrong observer type provided, "
-                f"received {obs!r} of type {type(obs).__name__!r}.\n\n" + msg
-            )
+            raise MagpylibBadUserInput(wrong_obj_msg(obs, allow="observers"))
 
     return sensors
 
