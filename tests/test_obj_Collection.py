@@ -4,6 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import pytest
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 # # GENERATE TESTDATA
 # N = 5
@@ -68,9 +69,9 @@ def test_Collection_basics():
         pm6 = magpy.magnet.Cylinder(mag[5], dim2[2])
 
         col1 = magpy.Collection(pm1, [pm2, pm3])
-        col1 + pm4
+        col1 += pm4
         col2 = magpy.Collection(pm5, pm6)
-        col1 + col2
+        col1 += col2
         col1 - pm5 - pm4
         col1.remove(pm1)
         col3 = col1.copy() + pm5 + pm4 + pm1
@@ -93,6 +94,103 @@ def test_Collection_basics():
 
     assert np.allclose(B1, B2), "Collection testfail1"
     assert np.allclose(B1, B3), "Collection testfail2"
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ("sens_col.getB(src_col).shape", (4, 3)),
+        ("src_col.getB(sens_col).shape", (4, 3)),
+        ("mixed_col.getB().shape", (4, 3)),
+        ("sens_col.getB(src1, src2).shape", (2, 4, 3)),
+        ("src_col.getB(sens1,sens2,sens3,sens4).shape", (4, 3)),
+        ("src1.getB(sens_col).shape", (4, 3)),
+        ("sens1.getB(src_col).shape", (3,)),
+        ("sens1.getB(mixed_col).shape", (3,)),
+        ("src1.getB(mixed_col).shape", (4, 3)),
+        ("src_col.getB(mixed_col).shape", (4, 3)),
+        ("sens_col.getB(mixed_col).shape", (4, 3)),
+        ("magpy.getB([src1, src2], [sens1,sens2,sens3,sens4]).shape", (2, 4, 3)),
+        ("magpy.getB(mixed_col,mixed_col).shape", (4, 3)),
+        ("magpy.getB([src1, src2], [[1,2,3],(2,3,4)]).shape", (2, 2, 3)),
+        ("src_col.getB([[1,2,3],(2,3,4)]).shape", (2, 3)),
+        ("src_col.getB([1,2,3]).shape", (3,)),
+        ("src1.getB(np.array([1,2,3])).shape", (3,)),
+    ],
+)
+def test_col_getB(test_input, expected):
+    src1 = magpy.magnet.Cuboid(
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+    )
+    src2 = magpy.magnet.Cylinder(
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+    )
+    sens1 = magpy.Sensor(position=(0, 0, 6))
+    sens2 = magpy.Sensor(position=(0, 0, 6))
+    sens3 = magpy.Sensor(position=(0, 0, 6))
+    sens4 = magpy.Sensor(position=(0, 0, 6))
+
+    sens_col = sens1 + sens2 + sens3 + sens4
+    src_col = src1 + src2
+    mixed_col = sens_col + src_col
+    assert eval(test_input) == expected
+
+
+@pytest.mark.parametrize(
+    "test_input,expected",
+    [
+        ('src1.getB()', pytest.raises(MagpylibBadUserInput)),
+        ('src1.getB(src1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(src1,src1)', pytest.raises(MagpylibBadUserInput)),
+        ('src1.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(src1,src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('sens1.getB()', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens1,src1)', pytest.raises(MagpylibBadUserInput)),
+        ('sens1.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens1,sens1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens1,mixed_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens1,src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('sens1.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens1,sens_col)', pytest.raises(MagpylibBadUserInput)),
+        ('mixed_col.getB(src1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(mixed_col,src1)', pytest.raises(MagpylibBadUserInput)),
+        ('mixed_col.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
+        ('mixed_col.getB(mixed_col)', pytest.raises(MagpylibBadUserInput)),
+        ('mixed_col.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(mixed_col,src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('mixed_col.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
+        ('src_col.getB()', pytest.raises(MagpylibBadUserInput)),
+        ('src_col.getB(src1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(src_col,src1)', pytest.raises(MagpylibBadUserInput)),
+        ('src_col.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(src_col,src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('sens_col.getB()', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens_col,src1)', pytest.raises(MagpylibBadUserInput)),
+        ('sens_col.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens_col,sens1)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens_col,mixed_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens_col,src_col)', pytest.raises(MagpylibBadUserInput)),
+        ('sens_col.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
+        ('magpy.getB(sens_col,sens_col)', pytest.raises(MagpylibBadUserInput)),
+    ],
+)
+def test_bad_col_getB_inputs(test_input, expected):
+    src1 = magpy.magnet.Cuboid(
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+    )
+    src2 = magpy.magnet.Cylinder(
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+    )
+    sens1 = magpy.Sensor(position=(0, 0, 6))
+    sens2 = magpy.Sensor(position=(0, 0, 6))
+    sens3 = magpy.Sensor(position=(0, 0, 6))
+    sens4 = magpy.Sensor(position=(0, 0, 6))
+
+    sens_col = sens1 + sens2 + sens3 + sens4
+    src_col = src1 + src2
+    mixed_col = sens_col + src_col
+    with expected:
+        assert eval(test_input) is not None
 
 
 def test_col_get_item():
@@ -159,8 +257,14 @@ def test_repr_collection():
     """test __repr__"""
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
-    col = magpy.Collection(pm1, pm2)
-    assert col.__repr__()[:10] == "Collection", "Collection repr failed"
+    sens = magpy.Sensor()
+    col = magpy.Collection()
+    col.sources = pm1, pm2
+    assert "Source" in col.__repr__(), "Collection repr failed"
+    col.sensors = [sens]
+    assert "Mixed" in col.__repr__(), "Collection repr failed"
+    col.sources = []
+    assert "Sensor" in col.__repr__(), "Collection repr failed"
 
 
 def test_adding_sources():

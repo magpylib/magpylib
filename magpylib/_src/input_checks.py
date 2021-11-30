@@ -13,13 +13,14 @@ def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
     # pylint: disable=protected-access
     for s in sources:
-        if s._object_type in ("Cuboid", "Cylinder"):
+        obj_type = getattr(s, '_object_type', None)
+        if obj_type in ("Cuboid", "Cylinder"):
             if np.isnan(s.dimension).any():
                 raise MagpylibMissingInput(f"{s} dimension must be initialized.")
-        elif s._object_type in ("Sphere", "Loop"):
+        elif obj_type in ("Sphere", "Loop"):
             if s.diameter is None:
                 raise MagpylibMissingInput(f"{s} diameter must be initialized.")
-        elif s._object_type == "Line":
+        elif obj_type == "Line":
             if None in s.vertices[0]:
                 raise MagpylibMissingInput(f"{s} vertices must be initialized.")
 
@@ -28,13 +29,14 @@ def check_excitations(sources):
     """check if all sources have dimension (or similar) initialized"""
     # pylint: disable=protected-access
     for s in sources:
-        if s._object_type in ("Cuboid", "Cylinder", "Sphere"):
+        obj_type = getattr(s, '_object_type', None)
+        if obj_type in ("Cuboid", "Cylinder", "Sphere"):
             if np.isnan(s.magnetization).any():
                 raise MagpylibMissingInput(f"{s} magnetization must be initialized.")
-        elif s._object_type in ("Loop", "Line"):
+        elif obj_type in ("Loop", "Line"):
             if s.current is None:
                 raise MagpylibMissingInput(f"{s} current must be initialized.")
-        elif s._object_type == "Dipole":
+        elif obj_type == "Dipole":
             if np.isnan(s.moment).any():
                 raise MagpylibMissingInput(f"{s} moment must be initialized.")
 

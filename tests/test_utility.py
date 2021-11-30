@@ -1,7 +1,7 @@
 import numpy as np
 import magpylib as magpy
 from magpylib._src.utility import (check_duplicates,
-    only_allowed_src_types)
+    filter_objects)
 
 
 def test_duplicates():
@@ -13,14 +13,14 @@ def test_duplicates():
     src_list_new = check_duplicates(src_list)
     assert src_list_new == [pm1,pm2], 'duplicate elimination failed'
 
-def test_only_allowed_src_types():
+def test_filter_objects():
     """ tests elimination of unwanted types
     """
     pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     pm2 = magpy.magnet.Cylinder((1,2,3),(1,2))
     sens = magpy.Sensor()
     src_list = [pm1,pm2,sens]
-    list_new = only_allowed_src_types(src_list)
+    list_new = filter_objects(src_list, allow='sources')
     assert list_new == [pm1,pm2], 'Failed to eliminate sensor'
 
 
