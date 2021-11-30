@@ -1,11 +1,59 @@
 """ some utility functions"""
 from typing import Sequence
 import numpy as np
-#from scipy.spatial.transform import Rotation as R
+
+# from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_position_format
+
+LIBRARY_SOURCES = (
+    "Cuboid",
+    "Cylinder",
+    "CylinderSegment",
+    "Sphere",
+    "Dipole",
+    "Loop",
+    "Line",
+    "CustomSource",
+)
+
+LIBRARY_SENSORS = ("Sensor",)
+
+ALLOWED_SOURCE_MSG = f"""Sources must be either
+- one of {LIBRARY_SOURCES}
+- Collection with at least one of the above
+- 1D list thereof"""
+
+ALLOWED_OBSERVER_MSG = """Observers must be either
+- array_like positions of shape (N1, N2, ..., 3)
+- Sensor object
+- Collection with at least one Sensor
+- 1D list thereof"""
+
+ALLOWED_SENSORS_MSG = """Sensors must be either
+- Sensor object
+- Collection with at least one Sensor
+- 1D list thereof"""
+
+
+def wrong_obj_msg(*objs, allow="sources"):
+    """return error message for wrong object type provided"""
+    assert len(objs) <= 1, "only max one obj allowed"
+    allowed = allow.split("+")
+    prefix = "No" if len(allowed) == 1 else "Bad"
+    msg = f"{prefix} {'/'.join(allowed)} provided"
+    if "sources" in allowed:
+        msg += "\n" + ALLOWED_SOURCE_MSG
+    if "observers" in allowed:
+        msg += "\n" + ALLOWED_OBSERVER_MSG
+    if "sensors" in allowed:
+        msg += "\n" + ALLOWED_SENSORS_MSG
+    if objs:
+        obj = objs[0]
+        msg += f"\nreceived {obj!r} of type {type(obj).__name__!r} instead." ""
+    return msg
 
 
 def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
@@ -23,13 +71,13 @@ def format_star_input(inp):
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
     but also "[src, src]" or ""(src,src") so that 1D lists/tuples come out.
     """
-    if len(inp)==1:
+    if len(inp) == 1:
         return inp[0]
     return list(inp)
 
 
-def format_obj_input(objects: Sequence) -> list:
-    """ tests and flattens potential input sources (sources, Collections, sequences)
+def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> list:
+    """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
     - sources (sequence): input sources
@@ -45,25 +93,18 @@ def format_obj_input(objects: Sequence) -> list:
     obj_list = []
     for obj in objects:
         if isinstance(obj, (tuple, list)):
-            obj_list += format_obj_input(obj) # recursive flattening
+            obj_list += format_obj_input(
+                obj, allow=allow, warn=warn
+            )  # recursive flattening
         else:
             try:
-                if obj._object_type == 'Collection':
-                    obj_list += obj.sources
-                elif obj._object_type in (
-                    'Cuboid',
-                    'Cylinder',
-                    'CylinderSegment',
-                    'Sphere',
-                    'Sensor',
-                    'Dipole',
-                    'Loop',
-                    'Line',
-                    'CustomSource'):
+                if obj._object_type == "Collection":
+                    obj_list += obj.objects
+                elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
                     obj_list += [obj]
             except Exception as error:
-                raise MagpylibBadUserInput('Unknown input object type.') from error
-
+                raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
+    obj_list = filter_objects(obj_list, allow=allow, warn=warn)
     return obj_list
 
 
@@ -84,37 +125,32 @@ def format_src_inputs(sources) -> list:
     """
     # pylint: disable=protected-access
 
-    src_class_types = (
-        'Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole', 'Loop', 'Line', 'CustomSource')
-
     # if bare source make into list
-    if not isinstance(sources, (list,tuple)):
+    if not isinstance(sources, (list, tuple)):
         sources = [sources]
-
     # flatten collections
     src_list = []
-    try:
-        for src in sources:
-            if src._object_type == 'Collection':
-                src_list += src.sources
-            elif src._object_type in src_class_types:
-                src_list += [src]
-            else:
-                raise MagpylibBadUserInput
-    except Exception as error:
-        raise MagpylibBadUserInput('Unknown source type of input.') from error
-
+    if not sources:
+        raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
+    for src in sources:
+        obj_type = getattr(src, "_object_type", None)
+        if obj_type == "Collection":
+            if not src.sources:
+                raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
+            src_list += src.sources
+        elif obj_type in LIBRARY_SOURCES:
+            src_list += [src]
+        else:
+            raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
     return list(sources), src_list
 
 
 def format_obs_inputs(observers) -> list:
     """
     checks if observer input is one of the following:
-        - case1:  bare Sensor
+        - case1: bare Sensor
         - case2: ndarray (can only be possis)
-        - case3: list or tuple
-            - 3a: list/tuple of sensor, tuple, sensor, list, ...
-            - 3b: list of positions
+        - case3: Collection with sensors
 
     returns an ordered 1D list of sensors
 
@@ -125,85 +161,73 @@ def format_obs_inputs(observers) -> list:
     # import type, avoid circular imports
     Sensor = _src.obj_classes.Sensor
 
-    msg = 'Unknown observer input type. Must be Sensor, list, tuple or ndarray'
+    if not isinstance(observers, (list, tuple, np.ndarray)):
+        observers = (observers,)
+    elif len(observers) == 0:
+        raise MagpylibBadUserInput(wrong_obj_msg(allow="observers"))
+    elif np.isscalar(observers[0]):
+        observers = (observers,)
 
-    # case 1: sensor
-    if isinstance(observers, Sensor):
-        return [observers]
+    sensors = []
+    for obs in observers:
+        # pylint: disable=protected-access
+        # case 1: sensor
+        if isinstance(obs, Sensor):
+            sensors.append(obs)
 
-    # case 2: ndarray of possitions
-    if isinstance(observers, np.ndarray):
-        if Config.checkinputs:
-            check_position_format(observers, 'observer position')
-        return [Sensor(pixel=observers)]
-
-    #case 3: list or tuple
-    if isinstance(observers, (list, tuple)):
-
-        # case 3a: [sens, possis, sens, sens, ...]
-        if any(isinstance(obs, Sensor) for obs in observers):
-            sensors = []
-            for obs in observers:
-                if isinstance(obs, Sensor):
-                    sensors += [obs]
-                elif isinstance(obs, (list, tuple, np.ndarray)):
-                    if Config.checkinputs:
-                        check_position_format(np.array(obs), 'observer position')
-                    sensors += [Sensor(pixel=obs)]
-                else:
-                    raise MagpylibBadUserInput(msg)
-
-        # case 3b: list/tuple of positions
-        else:
+        # case 2: ndarray of positions
+        elif isinstance(obs, (list, tuple, np.ndarray)):
             if Config.checkinputs:
-                check_position_format(np.array(observers), 'observer position')
-            sensors = [Sensor(pixel=observers)]
-    else:
-        raise MagpylibBadUserInput(msg)
+                check_position_format(np.array(obs), "observer position")
+            sensors.append(Sensor(pixel=obs))
+        elif getattr(obs, "_object_type", "") == "Collection":
+            if not obs.sensors:
+                raise MagpylibBadUserInput(wrong_obj_msg(obs, allow="observers"))
+            sensors.extend(obs.sensors)
+        else:
+            raise MagpylibBadUserInput(wrong_obj_msg(obs, allow="observers"))
 
     return sensors
 
 
 def check_static_sensor_orient(sensors):
-    """ test which sensors have a static orientation
-    """
-    #pylint: disable=protected-access
+    """test which sensors have a static orientation"""
+    # pylint: disable=protected-access
     static_sensor_rot = []
     for sens in sensors:
-        if len(sens._position)==1:           # no sensor path (sensor is static)
+        if len(sens._position) == 1:  # no sensor path (sensor is static)
             static_sensor_rot += [True]
-        else:                           # there is a sensor path
+        else:  # there is a sensor path
             rot = sens.orientation.as_quat()
-            if np.all(rot == rot[0]):          # path with static orient (e.g. translation)
+            if np.all(rot == rot[0]):  # path with static orient (e.g. translation)
                 static_sensor_rot += [True]
-            else:                              # sensor rotation changes along path
+            else:  # sensor rotation changes along path
                 static_sensor_rot += [False]
     return static_sensor_rot
 
 
-
-def check_duplicates(src_list: Sequence) -> list:
-    """ checks for and eliminates source duplicates in a list of sources
+def check_duplicates(obj_list: Sequence) -> list:
+    """checks for and eliminates source duplicates in a list of sources
 
     ### Args:
-    - src_list (list): list with source objects
+    - obj_list (list): list with source objects
 
     ### Returns:
-    - list: src_list with duplicates removed
+    - list: obj_list with duplicates removed
     """
-    src_list_new = []
-    for src in src_list:
-        if src not in src_list_new:
-            src_list_new += [src]
+    obj_list_new = []
+    for src in obj_list:
+        if src not in obj_list_new:
+            obj_list_new += [src]
 
-    if len(src_list_new) != len(src_list):
-        print('WARNING: Eliminating duplicate sources')
+    if len(obj_list_new) != len(obj_list):
+        print("WARNING: Eliminating duplicates")
 
-    return src_list_new
+    return obj_list_new
 
 
 def test_path_format(inp):
-    """ check if each object path has same length
+    """check if each object path has same length
     of obj.pos and obj.rot
 
     Parameters
@@ -215,34 +239,36 @@ def test_path_format(inp):
     no return
     """
     # pylint: disable=protected-access
-    if not isinstance(inp,list):
+    if not isinstance(inp, list):
         inp = [inp]
     result = all(len(obj._position) == len(obj._orientation) for obj in inp)
 
     if not result:
-        msg = 'Bad path format (rot-pos with different lengths)'
+        msg = "Bad path format (rot-pos with different lengths)"
         raise MagpylibBadUserInput(msg)
 
 
-def all_same(lst:list)->bool:
-    """ test if all list entries are the same
-    """
-    return lst[1:]==lst[:-1]
+def all_same(lst: list) -> bool:
+    """test if all list entries are the same"""
+    return lst[1:] == lst[:-1]
 
 
-def only_allowed_src_types(src_list):
+def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
     # pylint: disable=protected-access
-
-    src_class_types = ('Cuboid', 'Cylinder', 'CylinderSegment', 'Sphere', 'Dipole',
-        'Loop', 'Line', 'CustomSource')
+    allowed_list = []
+    for allowed in allow.split("+"):
+        if allowed == "sources":
+            allowed_list.extend(LIBRARY_SOURCES)
+        elif allowed == "sensors":
+            allowed_list.extend(LIBRARY_SENSORS)
     new_list = []
-    for src in src_list:
-        if src._object_type in src_class_types:
-            new_list += [src]
+    for obj in obj_list:
+        if obj._object_type in allowed_list:
+            new_list += [obj]
         else:
-            if Config.checkinputs:
-                print(f'Warning, cannot add {src.__repr__()} to Collection.')
+            if Config.checkinputs and warn:
+                print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list

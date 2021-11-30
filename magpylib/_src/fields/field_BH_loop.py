@@ -144,6 +144,3 @@ def current_loop_B_Leitner2021(
     Bz = pf * (k2_over_rb*ellipe(k2) - xi)
 
     return np.array([Br, Bz]).T
-
-
-
