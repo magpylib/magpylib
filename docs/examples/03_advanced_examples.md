@@ -26,4 +26,5 @@ Advanced examples
 plot_05_streamlines_in_2d_symmetry.md
 plot_06_modeling_a_coil.md
 plot_07_custom_source.md
+plot_08_complex_extra_model3d.md
 ```
