@@ -6,6 +6,7 @@ All notable changes to magpylib are documented here.
 ## [Unreleased]
 ### Added
 - Documentation and Example codes now available on read the docs. [#389](https://github.com/magpylib/magpylib/issues/389)
+- `Collection` can now be composed of `sources`, `sensors` or botH. The `getB` and `getH` functions accommodate for all cases. [#410](https://github.com/magpylib/magpylib/issues/410) [#415](https://github.com/magpylib/magpylib/pull/415) [#297](https://github.com/magpylib/magpylib/issues/297)
 - New object classes:
   - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. [#386](https://github.com/magpylib/magpylib/issues/386) [#385](https://github.com/magpylib/magpylib/issues/385)
   - New `CustomSource`class for user defined field functions [#349](https://github.com/magpylib/magpylib/issues/349) [#409](https://github.com/magpylib/magpylib/issues/409) [#411](https://github.com/magpylib/magpylib/pull/411)
@@ -27,10 +28,9 @@ All notable changes to magpylib are documented here.
 - `Circular` class renamed to `Loop`. [#402](https://github.com/magpylib/magpylib/pull/402)
 - `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in `Cuboid` corners.
 - Magpylib objects can now be _initialized_ **without excitation** and **without dimension** attributes.
-- `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases. [#410](https://github.com/magpylib/magpylib/issues/410) [#415](https://github.com/magpylib/magpylib/pull/415) [#297](https://github.com/magpylib/magpylib/issues/297)
 - `magpylib.Config` parameters are now in `magpylib.defaults` [#387](https://github.com/magpylib/magpylib/issues/387)
 - `getBv` and `getHv` are renamed to `getB_dict` and `getH_dict` [#294](https://github.com/magpylib/magpylib/issues/294)
-- renamed `display` arguments
+- Renamed `display` arguments
   - `axis` ➡️ `canvas`
   - `show_direction` ➡️ `style_magnetization_show`
   - `show_path` ➡️ `path`
@@ -53,7 +53,7 @@ All notable changes to magpylib are documented here.
   - Fix empty display [#401](https://github.com/magpylib/magpylib/issues/401)
   - `Collection` of `Lines` return incorret field [#368](https://github.com/magpylib/magpylib/issues/368)
 - UI:
-  - Adding multiple `Collection` does not mutate the first element.
+  - Adding multiple `Collection` objects does not mutate the first element.
 
 ### Removed
 
