@@ -656,7 +656,7 @@ class BaseGeo:
          [30.  0. 20.]]
 
         """
-
+        # pylint: disable=too-many-branches
         if args:
             if len(args)==1:
                 if angle is None and axis is None:
@@ -666,7 +666,7 @@ class BaseGeo:
                     "rotation already defined by `rotation` object, "
                     "`angle` and `axis` must remain undefined with `None`"
                 )
-                elif angle is None:
+                if angle is None:
                     angle = args[0]
                 else:
                     axis = args[0]
