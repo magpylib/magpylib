@@ -4,17 +4,33 @@ All notable changes to magpylib are documented here.
 # Releases
 
 ## [Unreleased]
-
-### Core features
-- Cylinder segment computation. sector angles (r1,r2,h,phi1,phi2). The old computation is still accessible through getBHv. The new implementation is exact (closed form, no more iteration) and is implemented from a new paper from F.Slanovc(preprint, 2021). Computation times are around 50-100 µs.with some performance improvement planned in the future.
-
-### Other changes
+### Added
 - Documentation and Example codes now available on read the docs.
+- new `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`.
+- `matplotlib` plotting backend:
+  - zoom option in display function.
+  - display specific path positions.
+  - ability to define extra 3d-model for any object.
+
+### Changed
 - Box class renamed to Cuboid for obvious reasons.
 - `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in Cuboid corners.
-- zoom option in display function.
 - Magpylib objects can now be initialized without excitation and dimension attributes.
-- Improved performance of getBH functions and methods.
+- `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases.
+
+### Updated
+- Updated `Cylinder` computation with a new exact closed form (no more iteration) implementation from a new paper (F.Slanovc(preprint, 2021)). Computation times are around 50-100 µs.with some performance improvement planned in the future.
+- Improved performance of `getBH` functions and methods.
+
+### Fixed
+- Adding multiple `Collection` does not mutate the first element.
+
+### Removed
+
+
+### Deprecated
+- `.rotate_from_angax` method is replaced by more generic and unique `.rotate` method.
+
 
 ---
 ## [3.0.2] - 2021-06-27
