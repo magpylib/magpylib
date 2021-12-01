@@ -5,33 +5,60 @@ All notable changes to magpylib are documented here.
 
 ## [Unreleased]
 ### Added
-- Documentation and Example codes now available on read the docs.
-- new `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`.
-- `matplotlib` plotting backend:
-  - zoom option in display function.
-  - display specific path positions.
-  - ability to define extra 3d-model for any object.
+- Documentation and Example codes now available on read the docs. [#389](https://github.com/magpylib/magpylib/issues/389)
+- New object classes:
+  - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. [#386](https://github.com/magpylib/magpylib/issues/386) [#385](https://github.com/magpylib/magpylib/issues/385)
+  - New `CustomSource`class for user defined field functions [#349](https://github.com/magpylib/magpylib/issues/349) [#409](https://github.com/magpylib/magpylib/issues/409) [#411](https://github.com/magpylib/magpylib/pull/411)
+- New display features:
+  - Display defaults can be now set in `magpylib.defaults.display`[#291](https://github.com/magpylib/magpylib/issues/291)
+  - Ability to define extra 3d-model for any object. [#416](https://
+  github.com/magpylib/magpylib/pull/416)
+  - Zoom option in display function.
+  - Display specific path positions.
+  - `matplotlib` plotting backend:
+    - Added `matplotlib` pixel display [#279](https://github.com/magpylib/magpylib/issues/279)
+  - 🚀 New `plotly` plotting backend: [#396](https://github.com/magpylib/magpylib/pull/396) [#353](https://github.com/magpylib/magpylib/issues/353)
+    - `plotly` remains a optional dependency, needs extra installation [#395](https://github.com/magpylib/magpylib/issues/395)
+    - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
+
 
 ### Changed
-- `Box` class renamed to `Cuboid`.
+- `Box` class renamed to `Cuboid`. [#350](https://github.com/magpylib/magpylib/issues/350)
 - `Circular` class renamed to `Loop`. [#402](https://github.com/magpylib/magpylib/pull/402)
 - `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in `Cuboid` corners.
-- Magpylib objects can now be initialized without excitation and dimension attributes.
-- `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases.
+- Magpylib objects can now be _initialized_ **without excitation** and **without dimension** attributes.
+- `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases. [#410](https://github.com/magpylib/magpylib/issues/410) [#415](https://github.com/magpylib/magpylib/pull/415) [#297](https://github.com/magpylib/magpylib/issues/297)
+- `magpylib.Config` parameters are now in `magpylib.defaults` [#387](https://github.com/magpylib/magpylib/issues/387)
+- `getBv` and `getHv` are renamed to `getB_dict` and `getH_dict` [#294](https://github.com/magpylib/magpylib/issues/294)
+- renamed `display` arguments
+  - `axis` ➡️ `canvas`
+  - `show_direction` ➡️ `style_magnetization_show`
+  - `show_path` ➡️ `path`
+  - `size_sensors`&`size_dipoles` ➡️ `style_size`
+  - `size_direction` ➡️ `style_magnetization_size`
 
 ### Updated
-- Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs.with some performance improvement planned in the future.
-- Improved performance of `getB` and `getH` functions and methods.
+- Computation:
+  - Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs.with some performance improvement planned in the future.
+  - Added `__lend__` dunder for `Collection` [#383](https://github.com/magpylib/magpylib/issues/383)
+  - Improved performance of `getB` and `getH` functions and methods.
+  - Improve numerical stability [#374](https://github.com/magpylib/magpylib/issues/374)
+- Docs:
+  - General docs improvements [#399](https://github.com/magpylib/magpylib/issues/399) [#294](https://github.com/magpylib/magpylib/issues/294)
+  - [MATLAB example](https://magpylib.readthedocs.io/en/latest/_pages/3_MATLAB/#example) updated [#346](https://github.com/magpylib/magpylib/issues/346) [#366](https://github.com/magpylib/magpylib/pull/366)
 
 ### Fixed
-- Adding multiple `Collection` does not mutate the first element.
-- Diametral Solid Cylinder Field singularity at the axis. [#370](https://github.com/magpylib/magpylib/issues/370)
+- Computation:
+  - Diametral Solid Cylinder Field singularity at the axis. [#370](https://github.com/magpylib/magpylib/issues/370)
+  - Fix empty display [#401](https://github.com/magpylib/magpylib/issues/401)
+  - `Collection` of `Lines` return incorret field [#368](https://github.com/magpylib/magpylib/issues/368)
+- UI:
+  - Adding multiple `Collection` does not mutate the first element.
 
 ### Removed
 
-
 ### Deprecated
-- `.rotate_from_angax` method is replaced by more generic and single `.rotate` method.
+- (!!!not confirmed yet!!!) `.rotate_from_angax` method is replaced by the more generic and single `.rotate` method. [#420](https://github.com/magpylib/magpylib/issues/420)
 
 
 ---
@@ -169,8 +196,8 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 - Restructuring
   - displaySystem is now a top-level function, not a Collection method anymore.
   - getBsweep and multiprocessing options have been completely removed, this functionality
-    should be overtaken by the new vector functionality which uses the numpy native vectorized 
-    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
+    should be overtaken by the new vector functionality which uses the numpy native vectorized
+    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also
     automatically use multiprocessing. Code parallelization at magpylib level should be done
     by hand.
 - Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
@@ -194,8 +221,8 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 ## [1.2.0b0] - 2019-07-16
 ### Added
 - Sensor Class
-  - This allows users to create a coordinate system-enabled Sensor object, which can be placed, rotated, moved and oriented. 
-  - This object can take the B-Field of a system (be it single source or a Collection) with the added functionality of having its own reference in the coordinate space, allowing users to easily acquire relative B-Field measurements of a system from an arbitrarily placed sensor object. 
+  - This allows users to create a coordinate system-enabled Sensor object, which can be placed, rotated, moved and oriented.
+  - This object can take the B-Field of a system (be it single source or a Collection) with the added functionality of having its own reference in the coordinate space, allowing users to easily acquire relative B-Field measurements of a system from an arbitrarily placed sensor object.
   - Sensors in a list may be displayed in the `Collection.displaySystem()` by using the `sensors` keyword argument.
 - Added content to the `__repr__` builtin to all source classes for quick console evaluations, simply call a defined object in your Python shell to print out its attributes.
 ### Changed
@@ -206,11 +233,11 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 ---
 
 ## [1.1.1b0] - 2019-06-25
-### Added 
+### Added
 - Changelog
 ### Changed
 - Change `Collection.displaySystem()` not having the `block=False` setting for matplotlib's `pyplot.show()` by default, this meant that outside interactive mode calling this function would hang the script until the plot was closed.
-  - If for some reason you want to block the application, you may still use `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show() normally. 
+  - If for some reason you want to block the application, you may still use `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show() normally.
   - This should cause no API changes, if you have problems please notify us.
 
 ### Fixed
@@ -225,10 +252,10 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 
     > `subplotAx=None`
         Draw into a subplot axe that already exists. The subplot needs to be 3D projected
-        
+
   This allows for creating side-by-side plots using displaySystem.
   Figure information must be set manually in pyplot.figure() in order to not squash the plots upon subplotting.
-    
+
 
     <details>
     <summary> Click here for Example </summary>
@@ -239,7 +266,7 @@ All objects (Sensors, Sources, Collections) have additional direct access to
     ![image](https://user-images.githubusercontent.com/7332704/58973138-86b4a600-87bf-11e9-9e63-35892b7a6713.png)
 
     </details>
-    
+
 ### Changed
 
 - `getBsweep()` for Collections and Sources now always returns a numpy array
@@ -276,7 +303,7 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 
 ## [1.0.0b0] - 2019-05-21
 
-The first official release of the magpylib library. 
+The first official release of the magpylib library.
 
 ### Added
 
