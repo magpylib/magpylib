@@ -20,8 +20,9 @@ In order to use this functionality the `numpy-stl` package needs to be installed
 ```
 
 ```{code-cell} ipython3
+import os
 import requests
-import io
+import tempfile
 import numpy as np
 import magpylib as magpy
 import plotly.graph_objects as go
@@ -37,7 +38,7 @@ def stl2mesh3d(stl_file, recenter=False):
         color = f'rgb({r},{g},{b})'
         return color
     stl_mesh = mesh.Mesh.from_file(stl_file)
-    # stl_mesh is read by nympy-stl from a stl file; it is  an array of faces/triangles (i.e. three 3d points) 
+    # stl_mesh is read by nympy-stl from a stl file; it is  an array of faces/triangles
     # this function extracts the unique vertices and the lists I, J, K to define a Plotly mesh3d
     p, q, r = stl_mesh.vectors.shape #(p, 3, 3)
     # the array stl_mesh.vectors.reshape(p*q, r) can contain multiple copies of the same vertex;
@@ -55,13 +56,15 @@ def stl2mesh3d(stl_file, recenter=False):
 # import stl file
 url = 'https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl'
 file = url.split('/')[-1]
-with open(file, 'wb') as f:
-    response = requests.get(url)
-    f.write(response.content)
-
-# create mesh3d
-mesh3d = stl2mesh3d(file)
-mesh3d['opacity'] = 0.5
+with tempfile.TemporaryDirectory() as tmpdirname:
+    fn = os.path.join(tmpdirname,file)
+    with open(fn, 'wb') as f:
+        response = requests.get(url)
+        f.write(response.content)
+        
+    # create mesh3d
+    mesh3d = stl2mesh3d(fn)
+    mesh3d['opacity'] = 0.5
 
 # create sensor, add extra 3d-model, create path
 sensor = magpy.Sensor(position=(-15,0,-6))
