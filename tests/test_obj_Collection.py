@@ -80,9 +80,9 @@ def test_Collection_basics():
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
-                pm.move(mv).rotate(a, aa, aaa).rotate(rot, aaa)
+                pm.move(mv).rotate(a, aa, anchor=aaa).rotate(rot, anchor=aaa)
 
-            col1.move(mv).rotate(a, aa, aaa).rotate(rot, aaa)
+            col1.move(mv).rotate(a, aa, anchor=aaa).rotate(rot, anchor=aaa)
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]

@@ -33,7 +33,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((-.1,-.2,-.3))
-    bgeo.rotate(rotation=rot)
+    bgeo.rotate(rot)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -58,13 +58,13 @@ def test_BaseGeo_basics():
 
 
 def test_rotate_vs_rotate_from():
-    """ testing rotate vs rotate
+    """ testing rotate vs rotate from rotvec
     """
     roz = [(.1,.2,.3), (-.1,-.1,-.1),(.2,0,0),(.3,0,0),(0,0,.4),(0,-.2,0)]
     rroz = R.from_rotvec(roz)
 
     bg1 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
-    bg1.rotate(rotation=rroz, anchor=(-3,-2,1), start=1, increment=True)
+    bg1.rotate(rroz, anchor=(-3,-2,1), start=1, increment=True)
     pos1 = bg1.position
     ori1 = bg1.orientation.as_quat()
 

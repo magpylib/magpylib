@@ -47,7 +47,7 @@ def test_Cuboid_basics():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move(mv).rotate(a,aa,aaa)
+            pm.move(mv).rotate(a,aa,anchor=aaa)
 
         btest += [pm.getB(poso)]
     btest = np.array(btest)
