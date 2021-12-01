@@ -13,8 +13,9 @@ All notable changes to magpylib are documented here.
   - ability to define extra 3d-model for any object.
 
 ### Changed
-- Box class renamed to Cuboid for obvious reasons.
-- `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in Cuboid corners.
+- `Box` class renamed to `Cuboid`.
+- `Circular` class renamed to `Loop`. [#402](https://github.com/magpylib/magpylib/pull/402)
+- `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in `Cuboid` corners.
 - Magpylib objects can now be initialized without excitation and dimension attributes.
 - `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases.
 
@@ -24,6 +25,7 @@ All notable changes to magpylib are documented here.
 
 ### Fixed
 - Adding multiple `Collection` does not mutate the first element.
+- Diametral Solid Cylinder Field singularity at the axis. [#370](https://github.com/magpylib/magpylib/issues/370)
 
 ### Removed
 
