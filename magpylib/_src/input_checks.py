@@ -106,8 +106,7 @@ def check_angle_format(angle):
 def check_axis_type(ax):
     """axis input must be vector or str"""
     if not isinstance(ax, (list, tuple, np.ndarray, str)):
-        msg = "axis input must be a vector (list, tuple or ndarray) or a \
-            str ('x', 'y', 'z')."
+        msg = "axis input must be a vector (list, tuple or ndarray) or one of `('x', 'y', 'z')`."
         raise MagpylibBadUserInput(msg)
 
 

@@ -317,7 +317,7 @@ class BaseGeo:
 
         return self
 
-    def rotate(self, rotation, anchor=None, start=-1, increment=False):
+    def _rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
         Rotates the object in the global coordinate system by a given rotation input
         (can be a path).
@@ -516,8 +516,8 @@ class BaseGeo:
 
         return self
 
-    def rotate_from_angax(
-        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
+    def rotate(
+        self, *args, angle=None, axis=None, anchor=None, start=-1, increment=False, degrees=True
     ):
         """
         Object rotation in the global coordinate system from angle-axis input.
@@ -528,6 +528,11 @@ class BaseGeo:
 
         Parameters
         ----------
+        positional args:
+            can be either:
+            - single `scipy.spatial.transform.rotation.Rotation` object
+            - both `angle` and `axis` objects as defined below
+
         angle: int/float or array_like with shape (n,) unit [deg] (by default)
             Angle of rotation, or a vector of n angles defining a rotation path in units
             of [deg] (by default).
@@ -557,6 +562,10 @@ class BaseGeo:
         degrees: bool, default=True
             By default angle is given in units of [deg]. If degrees=False, angle is given
             in units of [rad].
+
+        Note
+            if any positional argument is defined, `angle` and `axis` named keyword arguments must
+            remain undefined. Setting either of those will raise an error
 
         Returns
         -------
@@ -646,6 +655,33 @@ class BaseGeo:
 
         """
 
+        if args:
+            if len(args)==1:
+                if angle is None and axis is None:
+                    return self._rotate(args[0], anchor, start, increment)
+                elif isinstance(args[0], R):
+                    raise MagpylibBadUserInput(
+                    "rotation already defined by `rotation` object, "
+                    "`angle` and `axis` must remain undefined with `None`"
+                )
+                elif angle is None:
+                    angle = args[0]
+                else:
+                    axis = args[0]
+            elif len(args)==2:
+                if angle is None and axis is None:
+                    angle, axis = args
+                else:
+                    raise MagpylibBadUserInput(
+                    "`angle` and `axis` already defined by positional arguments"
+                )
+            else:
+                raise MagpylibBadUserInput(
+                    "maximal two positional arguments allowed, either\n"
+                    "- single `scipy.spatial.transform.rotation.Rotation` object\n"
+                    "- both `angle` and `axis`"
+                )
+
         # check input types
         if Config.checkinputs:
             check_angle_type(angle)
@@ -691,7 +727,7 @@ class BaseGeo:
         angle = np.tile(angle, (3, 1)).T
         axis = axis / np.linalg.norm(axis)
         rot = R.from_rotvec(axis * angle)
-        self.rotate(rot, anchor, start, increment)
+        self._rotate(rot, anchor, start, increment)
 
         return self
 
