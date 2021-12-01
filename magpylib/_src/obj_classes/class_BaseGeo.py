@@ -530,7 +530,9 @@ class BaseGeo:
         ----------
         positional args:
             can be either:
-            - single `scipy.spatial.transform.rotation.Rotation` object
+            - single `scipy.spatial.transform.rotation.Rotation` object. The rotation object can
+              feature a single rotation of shape (3,) or a set of rotations of shape (N,3) that
+              correspond to a path.
             - both `angle` and `axis` objects as defined below
 
         angle: int/float or array_like with shape (n,) unit [deg] (by default)
