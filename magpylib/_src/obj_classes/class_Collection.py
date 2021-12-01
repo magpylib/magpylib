@@ -405,7 +405,7 @@ class Collection(BaseDisplayRepr):
             s.rotate(rot, anchor, start, increment)
         return self
 
-    def rotate_from_angax(
+    def rotate(
         self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
     ):
         """
@@ -453,14 +453,14 @@ class Collection(BaseDisplayRepr):
 
         Examples
         --------
-        This method will apply the ``rotate_from_angax`` operation to each Collection object
+        This method will apply the ``rotate`` operation to each Collection object
         individually.
 
         >>> import magpylib as magpy
         >>> dipole = magpy.misc.Dipole((1,2,3))
         >>> loop = magpy.current.Loop(1,1)
         >>> col = loop + dipole
-        >>> col.rotate_from_angax([45,90], 'x')
+        >>> col.rotate([45,90], 'x')
         >>> for src in col:
         >>>     print(src.orientation.as_euler('xyz', degrees=True))
         [[45.  0.  0.]  [90.  0.  0.]]
@@ -468,7 +468,7 @@ class Collection(BaseDisplayRepr):
 
         Manipulating individual objects keeps them in the Collection
 
-        >>> dipole.rotate_from_angax(45, 'x')
+        >>> dipole.rotate(45, 'x')
         >>> for src in col:
         >>>     print(src.orientation.as_euler('xyz', degrees=True))
         [[45.  0.  0.]  [ 90.  0.  0.]]
@@ -476,7 +476,7 @@ class Collection(BaseDisplayRepr):
 
         """
         for s in self:
-            s.rotate_from_angax(angle, axis, anchor, start, increment, degrees)
+            s.rotate(angle, axis, anchor, start, increment, degrees)
         return self
 
     def copy(self):

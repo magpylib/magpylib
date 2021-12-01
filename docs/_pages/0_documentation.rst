@@ -105,7 +105,7 @@ All Magpylib objects are endowed with ``position`` `(ndarray, shape (m,3))` and 
     # out: [0. 0. 0.]
     # out: [0. 0. 0.]
 
-Manipulate position and orientation attributes directly through source attributes, or by using built-in ``move``, ``rotate`` or ``rotate_from_angax`` methods.
+Manipulate position and orientation attributes directly through source attributes, or by using built-in ``move``, ``rotate`` or ``rotate`` methods.
 
 .. code-block:: python
 
@@ -127,7 +127,7 @@ Manipulate position and orientation attributes directly through source attribute
     sens.rotate(R.from_euler('x', 10, degrees=True)))
     print(sens.orientation.as_euler('xyz'))
     
-    sens.rotate_from_angax(angle=10, axis=(1,0,0))
+    sens.rotate(angle=10, axis=(1,0,0))
     print(sens.orientation.as_euler('xyz'))
     
     # out: [10 0. 0.]
@@ -220,7 +220,7 @@ When all source and sensor objects are created and all paths are defined ``displ
     # generate a spiral path
     s1.move([(.2,0,0)]*100, increment=True)
     s2.move([(-.2,0,0)]*100, increment=True)
-    col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
+    col.rotate([5]*100, 'z', anchor=0, increment=True, start=0)
 
     # display
     col.display(zoom=-.3, path=10)

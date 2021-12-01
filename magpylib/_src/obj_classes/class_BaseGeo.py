@@ -51,7 +51,7 @@ class BaseGeo:
     - move_by
     - move_to
     - rotate
-    - rotate_from_angax
+    - rotate
 
     """
 
@@ -573,7 +573,7 @@ class BaseGeo:
 
         Examples
         --------
-        With the ``rotate_from_angax`` method Magpylib objects can be rotated about their local
+        With the ``rotate`` method Magpylib objects can be rotated about their local
         coordinte system center:
 
         >>> import magpylib as magpy
@@ -582,7 +582,7 @@ class BaseGeo:
         [0. 0. 0.]
         >>> print(sensor.orientation.as_euler('xyz'))
         [0. 0. 0.]
-        >>> sensor.rotate_from_angax(angle=45, axis='x')
+        >>> sensor.rotate(angle=45, axis='x')
         >>> print(sensor.position)
         [0. 0. 0.]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
@@ -593,7 +593,7 @@ class BaseGeo:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax(angle=90, axis=(1,0,0), anchor=(0,1,0))
+        >>> sensor.rotate(angle=90, axis=(1,0,0), anchor=(0,1,0))
         >>> print(sensor.position)
         [ 0.  1. -1.]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
@@ -604,14 +604,14 @@ class BaseGeo:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax(angle=90, axis='x', anchor=(0,1,0), start='append')
+        >>> sensor.rotate(angle=90, axis='x', anchor=(0,1,0), start='append')
         >>> print(sensor.position)
         [[ 0.  0.  0.]
          [ 0.  1. -1.]]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
         [[ 0.  0.  0.]
          [90.  0.  0.]]
-        >>> sensor.rotate_from_angax(angle=[10,20,30], axis='x', anchor=(0,1,0), start='append')
+        >>> sensor.rotate(angle=[10,20,30], axis='x', anchor=(0,1,0), start='append')
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [ 0.          1.         -1.        ]
@@ -630,7 +630,7 @@ class BaseGeo:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax([10]*3, 'x', (0,1,0), start=1, increment=True)
+        >>> sensor.rotate([10]*3, 'x', (0,1,0), start=1, increment=True)
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [ 0.          0.01519225 -0.17364818]
@@ -641,7 +641,7 @@ class BaseGeo:
          [10.  0.  0.]
          [20.  0.  0.]
          [30.  0.  0.]]
-        >>> sensor.rotate_from_angax(angle=[5]*4, axis='z', anchor=0, start=0, increment=True)
+        >>> sensor.rotate(angle=[5]*4, axis='z', anchor=0, start=0, increment=True)
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [-0.00263811  0.01496144 -0.17364818]
@@ -659,7 +659,7 @@ class BaseGeo:
             if len(args)==1:
                 if angle is None and axis is None:
                     return self._rotate(args[0], anchor, start, increment)
-                elif isinstance(args[0], R):
+                if isinstance(args[0], R):
                     raise MagpylibBadUserInput(
                     "rotation already defined by `rotation` object, "
                     "`angle` and `axis` must remain undefined with `None`"

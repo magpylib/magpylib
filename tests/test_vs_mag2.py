@@ -57,7 +57,7 @@ def test_vs_mag2_spiral():
     pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3), position=(3,0,0))
 
     angs = np.linspace(0,297,100)
-    pm.rotate_from_angax(angs, 'z', anchor=0, start=0)
+    pm.rotate(angs, 'z', anchor=0, start=0)
     pm.move([(0,0,.1)]*99, start=1, increment=True)
     B = pm.getB((0,0,0))
     assert np.allclose(B, data), 'vs mag2 - rot'

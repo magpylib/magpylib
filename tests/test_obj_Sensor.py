@@ -10,8 +10,8 @@ def test_sensor1():
     possis = [(3*np.cos(t/180*np.pi),3*np.sin(t/180*np.pi),1) for t in angs]
     sens = magpy.Sensor()
     sens.move((3,0,1))
-    sens.rotate_from_angax(angs, 'z', start=0, anchor=0)
-    sens.rotate_from_angax(-angs, 'z', start=0)
+    sens.rotate(angs, 'z', start=0, anchor=0)
+    sens.rotate(-angs, 'z', start=0)
 
     B1 = pm.getB(possis)
     B2 = sens.getB(pm)
