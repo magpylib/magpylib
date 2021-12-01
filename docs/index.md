@@ -50,7 +50,7 @@ _pages/*
 ```{toctree}
 :caption: 'Changelog:'
 :glob: true
-:maxdepth: 1
+:maxdepth: 2
 
 changelog_link.md
 ```
