@@ -357,7 +357,7 @@ class Collection(BaseDisplayRepr):
         Rotates each object in the Collection individually from angle-axis input.
 
         This method applies given rotations to the original orientation. If the input path
-        extends beyond the existingp path, the oldpath will be padded by its last entry before paths
+        extends beyond the existing path, the oldpath will be padded by its last entry before paths
         are added up.
 
         Parameters
