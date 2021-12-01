@@ -343,70 +343,15 @@ class Collection(BaseDisplayRepr):
             s.move(displacement, start, increment)
         return self
 
-    def rotate(self, rot, anchor=None, start=-1, increment=False):
-        """
-        Rotates each object in the Collection individually.
-
-        This method applies given rotations to the original orientation. If the input path
-        extends beyond the existing path, the old path will be padded by its last entry before paths
-        are added up.
-
-        Parameters
-        ----------
-        rotation: scipy Rotation object
-            Rotation to be applied. The rotation object can feature a single rotation
-            of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
-
-        anchor: None, 0 or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point given in units of [mm].
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin (0,0,0).
-
-        start: int or str, default=-1
-            Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
-            the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        This method will apply the ``rotate`` operation to each Collection object individually.
-
-        >>> from scipy.spatial.transform import Rotation as R
-        >>> import magpylib as magpy
-        >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Loop(1,1)
-        >>> col = loop + dipole
-        >>> col.rotate(R.from_euler('x', [45,90], degrees=True))
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [90.  0.  0.]]
-        [[45.  0.  0.]  [90.  0.  0.]]
-
-        Manipulating individual objects keeps them in the Collection
-
-        >>> dipole.rotate(R.from_euler('x', [45], degrees=True))
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [ 90.  0.  0.]]
-        [[45.  0.  0.]  [135.  0.  0.]]
-
-        """
-        for s in self:
-            s.rotate(rot, anchor, start, increment)
-        return self
-
     def rotate(
-        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
+        self,
+        *args,
+        angle=None,
+        axis=None,
+        anchor=None,
+        start=-1,
+        increment=False,
+        degrees=True,
     ):
         """
         Rotates each object in the Collection individually from angle-axis input.
@@ -417,6 +362,13 @@ class Collection(BaseDisplayRepr):
 
         Parameters
         ----------
+        positional args:
+            can be either:
+            - single `scipy.spatial.transform.rotation.Rotation` object. The rotation object can
+              feature a single rotation of shape (3,) or a set of rotations of shape (N,3) that
+              correspond to a path.
+            - both `angle` and `axis` objects as defined below
+
         angle: int/float or array_like with shape (n,) unit [deg] (by default)
             Angle of rotation, or a vector of n angles defining a rotation path in units
             of [deg] (by default).
@@ -476,7 +428,15 @@ class Collection(BaseDisplayRepr):
 
         """
         for s in self:
-            s.rotate(angle, axis, anchor, start, increment, degrees)
+            s.rotate(
+                *args,
+                angle=angle,
+                axis=axis,
+                anchor=anchor,
+                start=start,
+                increment=increment,
+                degrees=degrees,
+            )
         return self
 
     def copy(self):
