@@ -48,6 +48,14 @@ _pages/*
 ```
 
 ```{toctree}
+:caption: 'Changelog:'
+:glob: true
+:maxdepth: 1
+
+changelog_link.md
+```
+
+```{toctree}
 :caption: 'Library Docstrings:'
 :glob: true
 :maxdepth: 1
