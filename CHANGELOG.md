@@ -19,8 +19,8 @@ All notable changes to magpylib are documented here.
 - `Collection` can contain `sources`, `sensors` or `both`. The `getB` and `getH` functions accommodate for all cases.
 
 ### Updated
-- Updated `Cylinder` computation with a new exact closed form (no more iteration) implementation from a new paper (F.Slanovc(preprint, 2021)). Computation times are around 50-100 µs.with some performance improvement planned in the future.
-- Improved performance of `getBH` functions and methods.
+- Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs.with some performance improvement planned in the future.
+- Improved performance of `getB` and `getH` functions and methods.
 
 ### Fixed
 - Adding multiple `Collection` does not mutate the first element.
@@ -29,7 +29,7 @@ All notable changes to magpylib are documented here.
 
 
 ### Deprecated
-- `.rotate_from_angax` method is replaced by more generic and unique `.rotate` method.
+- `.rotate_from_angax` method is replaced by more generic and single `.rotate` method.
 
 
 ---
