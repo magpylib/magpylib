@@ -399,6 +399,10 @@ class Collection(BaseDisplayRepr):
             By default angle is given in units of [deg]. If degrees=False, angle is given
             in units of [rad].
 
+        Note
+        ----
+            if any positional argument is defined, `angle` and `axis` named keyword arguments must
+            remain undefined. Setting either of those will raise an error
         Returns
         -------
         self: Collection
