@@ -52,7 +52,7 @@ _pages/*
 :glob: true
 :maxdepth: 2
 
-changelog_link.md
+_changelog.md
 ```
 
 ```{toctree}
