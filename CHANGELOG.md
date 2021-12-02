@@ -11,9 +11,8 @@ All notable changes to magpylib are documented here.
   - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. [#386](https://github.com/magpylib/magpylib/issues/386) [#385](https://github.com/magpylib/magpylib/issues/385)
   - New `CustomSource`class for user defined field functions [#349](https://github.com/magpylib/magpylib/issues/349) [#409](https://github.com/magpylib/magpylib/issues/409) [#411](https://github.com/magpylib/magpylib/pull/411)
 - New display features:
-  - Display defaults can be now set in `magpylib.defaults.display`[#291](https://github.com/magpylib/magpylib/issues/291)
-  - Ability to define extra 3d-model for any object. [#416](https://
-  github.com/magpylib/magpylib/pull/416)
+  - Display defaults can be now set in `magpylib.defaults.display` [#291](https://github.com/magpylib/magpylib/issues/291)
+  - Ability to define extra 3d-model for any object. [#416](https://github.com/magpylib/magpylib/pull/416)
   - Zoom option in display function.
   - Display specific path positions.
   - `matplotlib` plotting backend:
