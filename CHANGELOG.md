@@ -55,7 +55,7 @@ All notable changes to magpylib are documented here.
   - Adding multiple `Collection` objects does not mutate the first element.
 
 ### Removed
-
+- `config.ITERCYLINDER` is now obsolte. A new iterative solution replaced by an analytical expression.
 ### Deprecated
 - (!!!not confirmed yet!!!) `.rotate_from_angax` method is replaced by the more generic and single `.rotate` method. [#420](https://github.com/magpylib/magpylib/issues/420)
 
