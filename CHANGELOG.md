@@ -39,7 +39,7 @@ All notable changes to magpylib are documented here.
 
 ### Updated
 - Computation:
-  - Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs.with some performance improvement planned in the future.
+  - Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs, with some performance improvement planned in the future.
   - Added `__lend__` dunder for `Collection` [#383](https://github.com/magpylib/magpylib/issues/383)
   - Improved performance of `getB` and `getH` functions and methods.
   - Improve numerical stability [#374](https://github.com/magpylib/magpylib/issues/374)
