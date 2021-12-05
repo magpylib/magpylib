@@ -6,20 +6,21 @@ All notable changes to magpylib are documented here.
 ## [Unreleased]
 ### Added
 - Documentation and Example codes now available on read the docs. [#389](https://github.com/magpylib/magpylib/issues/389)
-- `Collection` can now be composed of `sources`, `sensors` or botH. The `getB` and `getH` functions accommodate for all cases. [#410](https://github.com/magpylib/magpylib/issues/410) [#415](https://github.com/magpylib/magpylib/pull/415) [#297](https://github.com/magpylib/magpylib/issues/297)
+- `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. [#410](https://github.com/magpylib/magpylib/issues/410) [#415](https://github.com/magpylib/magpylib/pull/415) [#297](https://github.com/magpylib/magpylib/issues/297)
 - New object classes:
   - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. [#386](https://github.com/magpylib/magpylib/issues/386) [#385](https://github.com/magpylib/magpylib/issues/385)
-  - New `CustomSource`class for user defined field functions [#349](https://github.com/magpylib/magpylib/issues/349) [#409](https://github.com/magpylib/magpylib/issues/409) [#411](https://github.com/magpylib/magpylib/pull/411)
+  - New `CustomSource` class for user defined field functions [#349](https://github.com/magpylib/magpylib/issues/349) [#409](https://github.com/magpylib/magpylib/issues/409) [#411](https://github.com/magpylib/magpylib/pull/411)
 - New display features:
+  - 🚀 New `plotly` plotting backend: [#396](https://github.com/magpylib/magpylib/pull/396) [#353](https://github.com/magpylib/magpylib/issues/353)
+    - `plotly` remains a optional dependency, needs extra installation [#395](https://github.com/magpylib/magpylib/issues/395)
+    - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
+
   - Display defaults can be now set in `magpylib.defaults.display` [#291](https://github.com/magpylib/magpylib/issues/291)
   - Ability to define extra 3d-model for any object. [#416](https://github.com/magpylib/magpylib/pull/416)
   - Zoom option in display function.
   - Display specific path positions.
   - `matplotlib` plotting backend:
     - Added `matplotlib` pixel display [#279](https://github.com/magpylib/magpylib/issues/279)
-  - 🚀 New `plotly` plotting backend: [#396](https://github.com/magpylib/magpylib/pull/396) [#353](https://github.com/magpylib/magpylib/issues/353)
-    - `plotly` remains a optional dependency, needs extra installation [#395](https://github.com/magpylib/magpylib/issues/395)
-    - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
 
 
 ### Changed
@@ -49,10 +50,10 @@ All notable changes to magpylib are documented here.
 ### Fixed
 - Computation:
   - Diametral Solid Cylinder Field singularity at the axis. [#370](https://github.com/magpylib/magpylib/issues/370)
-  - Fix empty display [#401](https://github.com/magpylib/magpylib/issues/401)
   - `Collection` of `Lines` return incorret field [#368](https://github.com/magpylib/magpylib/issues/368)
 - UI:
   - Adding multiple `Collection` objects does not mutate the first element.
+  - Fix empty display [#401](https://github.com/magpylib/magpylib/issues/401)
 
 ### Removed
 - `config.ITERCYLINDER` is now obsolte. A new iterative solution replaced by an analytical expression.
