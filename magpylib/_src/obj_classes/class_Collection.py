@@ -200,7 +200,8 @@ class Collection(BaseDisplayRepr):
             pref = "Source"
         else:
             pref = "Mixed"
-        return f"{pref}{self._object_type}(id={str(id(self))})"
+        s = super().__repr__()
+        return f"{pref}{s}"
 
     # methods -------------------------------------------------------
     def add(self, *objects):
