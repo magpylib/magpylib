@@ -68,6 +68,7 @@ class BaseGeo:
         not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
         # pylint: disable=import-outside-toplevel
         from magpylib._src.style import get_style_class
+
         return get_style_class(self)
 
     # properties ----------------------------------------------------

@@ -9,8 +9,8 @@ from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_input_cyl_sect, check_vector_type
 
 # init for tool tips
-d1=d2=h=phi1=phi2=None
-mx=my=mz=None
+d1 = d2 = h = phi1 = phi2 = None
+mx = my = mz = None
 
 # ON INTERFACE
 class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
@@ -89,16 +89,17 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
 
     def __init__(
-            self,
-            magnetization = (mx,my,mz),
-            dimension = (d1,d2,h,phi1,phi2),
-            position = (0,0,0),
-            orientation = None,
-            style = None):
+        self,
+        magnetization=(mx, my, mz),
+        dimension=(d1, d2, h, phi1, phi2),
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+    ):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'CylinderSegment'
+        self._object_type = "CylinderSegment"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style)
@@ -108,20 +109,18 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     # property getters and setters
     @property
     def dimension(self):
-        """ Object dimension attribute getter and setter.
-        """
+        """Object dimension attribute getter and setter."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """ Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg].
-        """
+        """Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg]."""
         # input type check
         if Config.checkinputs:
-            check_vector_type(dim, 'dimension')
+            check_vector_type(dim, "dimension")
 
         # input type -> ndarray
-        dim = np.array(dim,dtype=float)
+        dim = np.array(dim, dtype=float)
 
         # input format check
         if Config.checkinputs:
