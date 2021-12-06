@@ -80,7 +80,13 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """
 
     def __init__(
-        self, current=i0, diameter=d, position=(0, 0, 0), orientation=None, style=None
+        self,
+        current=i0,
+        diameter=d,
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
 
         # instance attributes
@@ -88,7 +94,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         self._object_type = "Loop"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 

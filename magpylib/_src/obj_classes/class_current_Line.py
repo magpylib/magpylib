@@ -90,6 +90,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         position=(0, 0, 0),
         orientation=None,
         style=None,
+        **kwargs,
     ):
 
         # instance attributes
@@ -97,7 +98,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         self._object_type = "Line"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 

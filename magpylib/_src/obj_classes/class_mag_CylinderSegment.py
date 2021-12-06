@@ -95,6 +95,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         position=(0, 0, 0),
         orientation=None,
         style=None,
+        **kwargs,
     ):
 
         # instance attributes
@@ -102,7 +103,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         self._object_type = "CylinderSegment"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 

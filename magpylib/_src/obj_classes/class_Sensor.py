@@ -100,7 +100,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     """
 
     def __init__(
-        self, position=(0, 0, 0), pixel=(0, 0, 0), orientation=None, style=None
+        self,
+        position=(0, 0, 0),
+        pixel=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
 
         # instance attributes
@@ -108,7 +113,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         self._object_type = "Sensor"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
 
     # property getters and setters
