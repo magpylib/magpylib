@@ -24,4 +24,8 @@ class BaseDisplayRepr:
     # ------------------------------------------------------------------
     # INTERFACE
     def __repr__(self) -> str:
-        return f"{self._object_type}(id={str(id(self))})"
+        name = getattr(self, "name", None)
+        if name is None and hasattr(self, "style"):
+            name = getattr(getattr(self, "style"), "name", None)
+        name_str = "" if name is None else f", name={name!r}"
+        return f"{self._object_type}(id={id(self)!r}{name_str})"
