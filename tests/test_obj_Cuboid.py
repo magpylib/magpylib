@@ -84,4 +84,6 @@ def test_repr_cuboid():
     """ test __repr__
     """
     pm1 = Cuboid((1,2,3),(1,2,3))
+    pm1.style.name = 'cuboid_01'
     assert pm1.__repr__()[:6] == 'Cuboid', 'Cuboid repr failed'
+    assert "name='cuboid_01'" in pm1.__repr__(), 'Cuboid repr failed'
