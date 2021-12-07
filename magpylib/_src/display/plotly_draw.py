@@ -656,7 +656,7 @@ def make_Sensor(
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
-    if pixel.ndim != 1:
+    if np.squeeze(pixel).ndim != 1:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
         combs = np.array(list(combinations(pixel, 2)))

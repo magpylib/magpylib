@@ -6,7 +6,7 @@ from magpylib._src.utility import format_star_input
 
 # ALL METHODS ON INTERFACE
 class BaseGetBH:
-    """ provides simple getB and getH methods
+    """provides simple getB and getH methods
 
     Properties
     ----------

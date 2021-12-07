@@ -71,6 +71,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         position=(0, 0, 0),
         orientation=None,
         style=None,
+        **kwargs,
     ):
         # instance attributes
         self.field_B_lambda = field_B_lambda
@@ -78,7 +79,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         self._object_type = "CustomSource"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
 
     @property
