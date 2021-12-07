@@ -24,7 +24,7 @@ def test_CustomSource_basicB():
     Btest = np.array([[1, 2, 3]] * 2)
     assert np.allclose(B, Btest)
 
-    external_field.rotate_from_angax(45, "z")
+    external_field.rotate.from_angax(45, "z")
     B = external_field.getB([[1, 2, 3], [4, 5, 6]])
     Btest = np.array([[-0.70710678, 2.12132034, 3.0]] * 2)
     assert np.allclose(B, Btest)
@@ -38,7 +38,7 @@ def test_CustomSource_basicH():
     Htest = np.array([[4, 5, 6]] * 2)
     assert np.allclose(H, Htest)
 
-    external_field.rotate_from_angax(35, "x")
+    external_field.rotate.from_angax(35, "x")
     H = external_field.getH([[1, 2, 3], [4, 5, 6]])
     Htest = np.array([[4.0, 0.6543016, 7.78279445]] * 2)
     assert np.allclose(H, Htest)

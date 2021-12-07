@@ -32,7 +32,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
 #         for pm in [pm1b,pm2b,pm3b,pm4b,pm5b,pm6b]:
-#             pm.move(mv).rotate_from_angax(a,aa,aaa).rotate(rot,aaa)
+#             pm.move(mv).rotate.from_angax(a,aa,aaa).rotate(rot,aaa)
 #     B += [magpy.getB([pm1b,pm2b,pm3b,pm4b,pm5b,pm6b], poso, sumup=True, niter=100)]
 # B = np.array(B)
 # inp = [mags,dims2,dims3,posos,angs,axs,anchs,movs,rvs,B]
@@ -80,9 +80,9 @@ def test_Collection_basics():
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
-                pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
+                pm.move(mv).rotate.from_angax(a, aa, aaa).rotate(rot, aaa)
 
-            col1.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
+            col1.move(mv).rotate.from_angax(a, aa, aaa).rotate(rot, aaa)
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]

@@ -37,16 +37,16 @@ def test_BaseGeo_basics():
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
-    bgeo.rotate_from_angax(angle=45, axis=(1,2,3))
+    bgeo.rotate.from_angax(angle=45, axis=(1,2,3))
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
-    bgeo.rotate_from_angax(-np.pi/4,(1,2,3),degrees=False)
+    bgeo.rotate.from_angax(-np.pi/4,(1,2,3),degrees=False)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((.1,.2,.3))
-    bgeo.rotate(rot, anchor=(3,2,1)).rotate_from_angax(33,(3,2,1),anchor=0)
+    bgeo.rotate(rot, anchor=(3,2,1)).rotate.from_angax(33,(3,2,1),anchor=0)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -58,7 +58,7 @@ def test_BaseGeo_basics():
 
 
 def test_rotate_vs_rotate_from():
-    """ testing rotate vs rotate_from_angax
+    """ testing rotate vs rotate.from_angax
     """
     roz = [(.1,.2,.3), (-.1,-.1,-.1),(.2,0,0),(.3,0,0),(0,0,.4),(0,-.2,0)]
     rroz = R.from_rotvec(roz)
@@ -71,7 +71,7 @@ def test_rotate_vs_rotate_from():
     bg2 = BaseGeo(position=(3,4,5), orientation=R.from_quat((0,0,0,1)))
     angs = np.linalg.norm(roz, axis=1)
     for ang,ax in zip(angs,roz):
-        bg2.rotate_from_angax(angle=ang, degrees=False, axis=ax, anchor=(-3,-2,1), start='append')
+        bg2.rotate.from_angax(angle=ang, degrees=False, axis=ax, anchor=(-3,-2,1), start='append')
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 

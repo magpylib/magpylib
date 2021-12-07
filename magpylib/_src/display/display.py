@@ -92,7 +92,7 @@ def display(
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
     >>> src.move([(.1,0,0)]*50, increment=True)
-    >>> src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
+    >>> src.rotate.from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
     >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
     >>> magpy.display(src, sens)

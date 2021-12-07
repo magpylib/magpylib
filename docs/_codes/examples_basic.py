@@ -15,7 +15,7 @@ magpy.display(src1, src2, canvas=ax1)
 
 # manipulate source position and orientation and display
 src2.move((0,0,1))
-src1.rotate_from_angax(90, 'y', anchor=0)
+src1.rotate.from_angax(90, 'y', anchor=0)
 magpy.display(src1, src2, canvas=ax2)
 
 # create a grid

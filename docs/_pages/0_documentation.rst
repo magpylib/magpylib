@@ -105,7 +105,7 @@ All Magpylib objects are endowed with ``position`` `(ndarray, shape (m,3))` and 
     # out: [0. 0. 0.]
     # out: [0. 0. 0.]
 
-Manipulate position and orientation attributes directly through source attributes, or by using built-in ``move``, ``rotate`` or ``rotate_from_angax`` methods.
+Manipulate position and orientation attributes directly through source attributes, or by using built-in ``move``, ``rotate`` or ``rotate.from_angax`` methods.
 
 .. code-block:: python
 
@@ -123,13 +123,13 @@ Manipulate position and orientation attributes directly through source attribute
 
     sens = magpy.Sensor(orientation=R.from_euler('x', 10, degrees=True))
     print(sens.orientation.as_euler('xyz'))
-    
+
     sens.rotate(R.from_euler('x', 10, degrees=True)))
     print(sens.orientation.as_euler('xyz'))
-    
-    sens.rotate_from_angax(angle=10, axis=(1,0,0))
+
+    sens.rotate.from_angax(angle=10, axis=(1,0,0))
     print(sens.orientation.as_euler('xyz'))
-    
+
     # out: [10 0. 0.]
     # out: [20 0. 0.]
     # out: [30 0. 0.]
@@ -139,7 +139,7 @@ Source position and orientation attributes can also represent complete source pa
 .. code-block:: python
 
     import magpylib as magpy
-    
+
     src = magpy.magnet.Cuboid(magnetization=(1,2,3), dimension=(1,2,3))
     src.move([(1,1,1),(2,2,2),(3,3,3),(4,4,4)], start='append')
     print(src.position)
@@ -220,7 +220,7 @@ When all source and sensor objects are created and all paths are defined ``displ
     # generate a spiral path
     s1.move([(.2,0,0)]*100, increment=True)
     s2.move([(-.2,0,0)]*100, increment=True)
-    col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
+    col.rotate.from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 
     # display
     col.display(zoom=-.3, path=10)
@@ -352,7 +352,7 @@ The ``getBH_dict`` functions can be up to 2 times faster than the object oriente
 API: Direct access to field implementations
 #####################################################
 
-For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the ``magpylib.lib`` subpackage. Details on the implementations can be found in the respective function docstrings. 
+For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the ``magpylib.lib`` subpackage. Details on the implementations can be found in the respective function docstrings.
 
 .. code-block:: python
 

@@ -15,7 +15,7 @@ def test_loop_field():
     anch = (0,0,1)
     B = []
     for _ in range(1000):
-        lop.rotate_from_angax(100, 'x', anchor=anch)
+        lop.rotate.from_angax(100, 'x', anchor=anch)
         B += [lop.getB(anch)]
 
     B = np.array(B)

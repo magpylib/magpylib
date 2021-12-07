@@ -276,7 +276,7 @@ class MagpylibRotation:
 
         Examples
         --------
-        With the ``rotate_from_angax`` method Magpylib objects can be rotated about their local
+        With the ``rotate.from_angax`` method Magpylib objects can be rotated about their local
         coordinte system center:
 
         >>> import magpylib as magpy
@@ -285,7 +285,7 @@ class MagpylibRotation:
         [0. 0. 0.]
         >>> print(sensor.orientation.as_euler('xyz'))
         [0. 0. 0.]
-        >>> sensor.rotate_from_angax(angle=45, axis='x')
+        >>> sensor.rotate.from_angax(angle=45, axis='x')
         >>> print(sensor.position)
         [0. 0. 0.]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
@@ -296,7 +296,7 @@ class MagpylibRotation:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax(angle=90, axis=(1,0,0), anchor=(0,1,0))
+        >>> sensor.rotate.from_angax(angle=90, axis=(1,0,0), anchor=(0,1,0))
         >>> print(sensor.position)
         [ 0.  1. -1.]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
@@ -307,14 +307,14 @@ class MagpylibRotation:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax(angle=90, axis='x', anchor=(0,1,0), start='append')
+        >>> sensor.rotate.from_angax(angle=90, axis='x', anchor=(0,1,0), start='append')
         >>> print(sensor.position)
         [[ 0.  0.  0.]
          [ 0.  1. -1.]]
         >>> print(sensor.orientation.as_euler('xyz', degrees=True))
         [[ 0.  0.  0.]
          [90.  0.  0.]]
-        >>> sensor.rotate_from_angax(angle=[10,20,30], axis='x', anchor=(0,1,0), start='append')
+        >>> sensor.rotate.from_angax(angle=[10,20,30], axis='x', anchor=(0,1,0), start='append')
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [ 0.          1.         -1.        ]
@@ -333,7 +333,7 @@ class MagpylibRotation:
 
         >>> import magpylib as magpy
         >>> sensor = magpy.Sensor()
-        >>> sensor.rotate_from_angax([10]*3, 'x', (0,1,0), start=1, increment=True)
+        >>> sensor.rotate.from_angax([10]*3, 'x', (0,1,0), start=1, increment=True)
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [ 0.          0.01519225 -0.17364818]
@@ -344,7 +344,7 @@ class MagpylibRotation:
          [10.  0.  0.]
          [20.  0.  0.]
          [30.  0.  0.]]
-        >>> sensor.rotate_from_angax(angle=[5]*4, axis='z', anchor=0, start=0, increment=True)
+        >>> sensor.rotate.from_angax(angle=[5]*4, axis='z', anchor=0, start=0, increment=True)
         >>> print(sensor.position)
         [[ 0.          0.          0.        ]
          [-0.00263811  0.01496144 -0.17364818]

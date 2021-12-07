@@ -89,7 +89,7 @@ def test_Loop_display():
     x = src.display(canvas=ax)
     assert x is None, "display test fail"
 
-    src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
+    src.rotate.from_angax([5] * 35, "x", anchor=(1, 2, 3))
     x = src.display(canvas=ax, path=3)
     assert x is None, "display test fail"
 
@@ -151,7 +151,7 @@ def test_matplotlib_model3d_extra():
     """test display extra model3d"""
     cuboid = magpy.magnet.Cuboid(
         magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
-    ).rotate_from_angax([72] * 5, "z", anchor=(0, 0, 0), start=0, increment=True)
+    ).rotate.from_angax([72] * 5, "z", anchor=(0, 0, 0), start=0, increment=True)
     cuboid.style.model3d.show = False
     cuboid.style.model3d.extra = [
         {
