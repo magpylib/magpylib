@@ -1,5 +1,4 @@
 """Collection class code"""
-
 import copy
 from magpylib._src.utility import (
     format_obj_input,
@@ -8,6 +7,7 @@ from magpylib._src.utility import (
     LIBRARY_SOURCES,
 )
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseRotation import BaseRotation
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.default_utils import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -129,6 +129,8 @@ class Collection(BaseDisplayRepr):
 
         self._object_type = "Collection"
 
+        self._rotate = BaseRotation(parent_class=self)
+
         # instance attributes
         self._objects = []
         self._sources = []
@@ -136,6 +138,11 @@ class Collection(BaseDisplayRepr):
         self.objects = objects
 
     # property getters and setters
+    @property
+    def rotate(self):
+        """Rotation class for magpylib objects"""
+        return self._rotate
+
     @property
     def objects(self):
         """Collection objects attribute getter and setter."""
@@ -342,142 +349,6 @@ class Collection(BaseDisplayRepr):
         """
         for s in self:
             s.move(displacement, start, increment)
-        return self
-
-    def rotate(self, rot, anchor=None, start=-1, increment=False):
-        """
-        Rotates each object in the Collection individually.
-
-        This method applies given rotations to the original orientation. If the input path
-        extends beyond the existing path, the old path will be padded by its last entry before paths
-        are added up.
-
-        Parameters
-        ----------
-        rotation: scipy Rotation object
-            Rotation to be applied. The rotation object can feature a single rotation
-            of shape (3,) or a set of rotations of shape (N,3) that correspond to a path.
-
-        anchor: None, 0 or array_like, shape (3,), default=None
-            The axis of rotation passes through the anchor point given in units of [mm].
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin (0,0,0).
-
-        start: int or str, default=-1
-            Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
-            the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        This method will apply the ``rotate`` operation to each Collection object individually.
-
-        >>> from scipy.spatial.transform import Rotation as R
-        >>> import magpylib as magpy
-        >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Loop(1,1)
-        >>> col = loop + dipole
-        >>> col.rotate(R.from_euler('x', [45,90], degrees=True))
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [90.  0.  0.]]
-        [[45.  0.  0.]  [90.  0.  0.]]
-
-        Manipulating individual objects keeps them in the Collection
-
-        >>> dipole.rotate(R.from_euler('x', [45], degrees=True))
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [ 90.  0.  0.]]
-        [[45.  0.  0.]  [135.  0.  0.]]
-
-        """
-        for s in self:
-            s.rotate(rot, anchor, start, increment)
-        return self
-
-    def rotate_from_angax(
-        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
-    ):
-        """
-        Rotates each object in the Collection individually from angle-axis input.
-
-        This method applies given rotations to the original orientation. If the input path
-        extends beyond the existingp path, the oldpath will be padded by its last entry before paths
-        are added up.
-
-        Parameters
-        ----------
-        angle: int/float or array_like with shape (n,) unit [deg] (by default)
-            Angle of rotation, or a vector of n angles defining a rotation path in units
-            of [deg] (by default).
-
-        axis: str or array_like, shape (3,)
-            The direction of the axis of rotation. Input can be a vector of shape (3,)
-            or a string 'x', 'y' or 'z' to denote respective directions.
-
-        anchor: None or array_like, shape (3,), default=None, unit [mm]
-            The axis of rotation passes through the anchor point given in units of [mm].
-            By default (`anchor=None`) the object will rotate about its own center.
-            `anchor=0` rotates the object about the origin (0,0,0).
-
-        start: int or str, default=-1
-            Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
-            the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-            For example, the incremental angles [1,1,1,2,2] correspond to the absolute angles
-            [1,2,3,5,7].
-
-        degrees: bool, default=True
-            By default angle is given in units of [deg]. If degrees=False, angle is given
-            in units of [rad].
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        This method will apply the ``rotate.from_angax`` operation to each Collection object
-        individually.
-
-        >>> import magpylib as magpy
-        >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Loop(1,1)
-        >>> col = loop + dipole
-        >>> col.rotate.from_angax([45,90], 'x')
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [90.  0.  0.]]
-        [[45.  0.  0.]  [90.  0.  0.]]
-
-        Manipulating individual objects keeps them in the Collection
-
-        >>> dipole.rotate.from_angax(45, 'x')
-        >>> for src in col:
-        >>>     print(src.orientation.as_euler('xyz', degrees=True))
-        [[45.  0.  0.]  [ 90.  0.  0.]]
-        [[45.  0.  0.]  [135.  0.  0.]]
-
-        """
-        for s in self:
-            s.rotate.from_angax(angle, axis, anchor, start, increment, degrees)
         return self
 
     def copy(self):

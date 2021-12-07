@@ -272,3 +272,25 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             if Config.checkinputs and warn:
                 print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list
+
+def adjust_start(start, lenop):
+    """
+    change start to a value inside of [0,lenop], i.e. inside of the
+    old path.
+    """
+    if start == "append":
+        start = lenop
+    elif start < 0:
+        start += lenop
+
+    # fix out-of-bounds start values
+    if start < 0:
+        start = 0
+        if Config.checkinputs:
+            print("Warning: start out of path bounds. Setting start=0.")
+    elif start > lenop:
+        start = lenop
+        if Config.checkinputs:
+            print(f"Warning: start out of path bounds. Setting start={lenop}.")
+
+    return start
