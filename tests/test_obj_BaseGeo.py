@@ -251,3 +251,16 @@ def test_style():
     bg = BaseGeo((0,0,0),None)
     with pytest.raises(ValueError):
         bg.style = "wrong class"
+
+def test_kwargs():
+    """test kwargs inputs, only relevant for styles"""
+    bg = BaseGeo((0,0,0),None,
+        style=dict(name='name_01'),
+        style_name='name_02'
+    )
+    assert bg.style.name == 'name_02'
+
+    with pytest.raises(TypeError):
+        bg = BaseGeo((0,0,0),None,
+            styl_name='name_02'
+        )

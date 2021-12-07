@@ -9,8 +9,8 @@ from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_vector_type, check_vector_format
 
 # init for tool tips
-d=h=None
-mx=my=mz=None
+d = h = None
+mx = my = mz = None
 
 # ON INTERFACE
 class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
@@ -83,42 +83,42 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
 
     def __init__(
-            self,
-            magnetization = (mx,my,mz),
-            dimension = (d,h),
-            position = (0,0,0),
-            orientation = None,
-            style = None):
+        self,
+        magnetization=(mx, my, mz),
+        dimension=(d, h),
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
+    ):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'Cylinder'
+        self._object_type = "Cylinder"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property
     def dimension(self):
-        """ Object dimension attribute getter and setter.
-        """
+        """Object dimension attribute getter and setter."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """ Set Cylinder dimension (d,h) in units of [mm].
-        """
+        """Set Cylinder dimension (d,h) in units of [mm]."""
         # input type check
         if Config.checkinputs:
-            check_vector_type(dim, 'dimension')
+            check_vector_type(dim, "dimension")
 
         # input type -> ndarray
-        dim = np.array(dim,dtype=float)
+        dim = np.array(dim, dtype=float)
 
         # input format check
         if Config.checkinputs:
-            check_vector_format(dim, (2,), 'Cylinder')
+            check_vector_format(dim, (2,), "Cylinder")
 
         self._dimension = dim

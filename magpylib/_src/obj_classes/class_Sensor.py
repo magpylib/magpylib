@@ -100,27 +100,26 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     """
 
     def __init__(
-            self,
-            position = (0,0,0),
-            pixel=(0,0,0),
-            orientation = None,
-            style = None):
+        self,
+        position=(0, 0, 0),
+        pixel=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
+    ):
 
         # instance attributes
         self.pixel = pixel
-        self._object_type = 'Sensor'
+        self._object_type = "Sensor"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
-
-
 
     # property getters and setters
     @property
     def pixel(self):
-        """ Sensor pixel attribute getter and setter.
-        """
+        """Sensor pixel attribute getter and setter."""
         return self._pixel
 
     @pixel.setter
@@ -130,17 +129,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """
         # check input type
         if Config.checkinputs:
-            check_vector_type(pix, 'pixel_position')
+            check_vector_type(pix, "pixel_position")
 
         # input type -> ndarray
         pix = np.array(pix, dtype=float)
 
         # check input format
         if Config.checkinputs:
-            check_position_format(pix, 'pixel_position')
+            check_position_format(pix, "pixel_position")
 
         self._pixel = pix
-
 
     # methods -------------------------------------------------------
     def getB(self, *sources, sumup=False, squeeze=True):
@@ -216,7 +214,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """
         sources = format_star_input(sources)
         return getBH_level2(True, sources, self, sumup, squeeze)
-
 
     def getH(self, *sources, sumup=False, squeeze=True):
         """

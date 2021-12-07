@@ -77,14 +77,19 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """
 
     def __init__(
-        self, moment=(mx, my, mz), position=(0, 0, 0), orientation=None, style=None
+        self,
+        moment=(mx, my, mz),
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
         # instance attributes
         self.moment = moment
         self._object_type = "Dipole"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
 
     # property getters and setters

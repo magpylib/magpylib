@@ -9,8 +9,8 @@ from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_vertex_format, check_vector_type
 
 # init for tool tips
-i0=None
-pos1=pos2=(None,None,None)
+i0 = None
+pos1 = pos2 = (None, None, None)
 
 # ON INTERFACE
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
@@ -80,39 +80,40 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
      [ 0.         -0.78438229  0.78438229]
      [ 0.         -0.34429579  0.34429579]]
     """
+
     # pylint: disable=dangerous-default-value
 
     def __init__(
-            self,
-            current = i0,
-            vertices = [pos1, pos2],
-            position = (0,0,0),
-            orientation = None,
-            style = None):
+        self,
+        current=i0,
+        vertices=[pos1, pos2],
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
+    ):
 
         # instance attributes
         self.vertices = vertices
-        self._object_type = 'Line'
+        self._object_type = "Line"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseCurrent.__init__(self, current)
 
     # property getters and setters
     @property
     def vertices(self):
-        """ Object vertices attribute getter and setter.
-        """
+        """Object vertices attribute getter and setter."""
         return self._vertices
 
     @vertices.setter
     def vertices(self, vert):
-        """ Set Line vertices, array_like, [mm].
-        """
+        """Set Line vertices, array_like, [mm]."""
         # input type check
         if Config.checkinputs:
-            check_vector_type(vert, 'vertices')
+            check_vector_type(vert, "vertices")
 
         # input type -> ndarray
         vert = np.array(vert)
