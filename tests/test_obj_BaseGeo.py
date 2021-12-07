@@ -359,3 +359,15 @@ def test_rotate_bad_inputs(test_input, expected):
     cube = lambda : magpy.magnet.Cuboid((0,0,1),(1,1,1))
     with expected:
         assert eval(test_input) is not None
+def test_kwargs():
+    """test kwargs inputs, only relevant for styles"""
+    bg = BaseGeo((0,0,0),None,
+        style=dict(name='name_01'),
+        style_name='name_02'
+    )
+    assert bg.style.name == 'name_02'
+
+    with pytest.raises(TypeError):
+        bg = BaseGeo((0,0,0),None,
+            styl_name='name_02'
+        )

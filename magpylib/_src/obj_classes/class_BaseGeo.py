@@ -55,12 +55,23 @@ class BaseGeo:
 
     """
 
-    def __init__(self, position, orientation, style=None):
+    def __init__(self, position, orientation, style=None, **kwargs):
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
         self.style_class = self._get_style_class()
-        if style is not None:
+        if style is not None or kwargs:
+            if style is None:
+                style = {}
+            style_kwargs = {}
+            for k, v in kwargs.items():
+                if k.startswith("style_"):
+                    style_kwargs[k[6:]] = v
+                else:
+                    raise TypeError(
+                        f"__init__() got an unexpected keyword argument {k!r}"
+                    )
+            style.update(**style_kwargs)
             self.style = style
 
     def _get_style_class(self):
@@ -68,6 +79,7 @@ class BaseGeo:
         not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
         # pylint: disable=import-outside-toplevel
         from magpylib._src.style import get_style_class
+
         return get_style_class(self)
 
     # properties ----------------------------------------------------

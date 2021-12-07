@@ -8,7 +8,7 @@ from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import check_scalar_type
 
 # init for tool tips
-mx=my=mz=d=None
+mx = my = mz = d = None
 
 # ON INTERFACE
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
@@ -80,36 +80,36 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """
 
     def __init__(
-            self,
-            magnetization = (mx,my,mz),
-            diameter = d,
-            position = (0,0,0),
-            orientation = None,
-            style = None):
+        self,
+        magnetization=(mx, my, mz),
+        diameter=d,
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
+    ):
 
         # instance attributes
         self.diameter = diameter
-        self._object_type = 'Sphere'
+        self._object_type = "Sphere"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style)
+        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
         BaseHomMag.__init__(self, magnetization)
 
     # property getters and setters
     @property
     def diameter(self):
-        """ Object diameter attribute getter and setter.
-        """
+        """Object diameter attribute getter and setter."""
         return self._diameter
 
     @diameter.setter
     def diameter(self, dia):
-        """ Set Sphere diameter, float, [mm].
-        """
+        """Set Sphere diameter, float, [mm]."""
         # input type check
         if Config.checkinputs:
-            check_scalar_type(dia, 'diameter')
+            check_scalar_type(dia, "diameter")
 
         # secure type
         if dia is None:
