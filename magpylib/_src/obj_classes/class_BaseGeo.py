@@ -662,7 +662,9 @@ class BaseGeo:
                 self._orientation = rot
     @property
     def rotate(self):
+        """Rotation class for magpylib objects"""
         return self._rotate
+
     @property
     def style(self):
         """instance of MagpyStyle for display styling options"""
