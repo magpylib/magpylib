@@ -26,17 +26,6 @@ class BaseRotation:
         self._parent_class = parent_class
         self._target_class = self._parent_class
 
-    def _rotate(self, rotation, anchor=None, start=-1, increment=False):
-        """Rotates the object in the global coordinate system by a given rotation input"""
-        # pylint: disable=protected-access
-        if self._parent_class._object_type == 'Collection':
-            for obj in self._parent_class:
-                self._target_class = obj
-                self(rotation, anchor, start, increment)
-            return self._parent_class
-        else:
-            return self(rotation, anchor, start, increment)
-
     def __call__(self, rotation, anchor=None, start=-1, increment=False):
         """
         Rotates the object in the global coordinate system by a given rotation input
@@ -164,7 +153,20 @@ class BaseRotation:
          [10.  0. 10.]
          [20.  0. 15.]
          [30.  0. 20.]]
+        """
+        # pylint: disable=protected-access
+        if getattr(self._parent_class, "_object_type", None) == "Collection":
+            for obj in self._parent_class.objects:
+                self._target_class = obj
+                self._rotate(rotation, anchor, start, increment)
+            return self._parent_class
+        else:
+            return self._rotate(rotation, anchor, start, increment)
 
+    def _rotate(self, rotation, anchor=None, start=-1, increment=False):
+        """
+        Rotates the object in the global coordinate system by a given rotation input
+        (can be a path).
         """
 
         # check input types
@@ -412,9 +414,8 @@ class BaseRotation:
         angle = np.tile(angle, (3, 1)).T
         axis = axis / np.linalg.norm(axis)
         rot = R.from_rotvec(axis * angle)
-        self._rotate(rot, anchor, start, increment)
 
-        return self._parent_class
+        return self(rot, anchor, start, increment)
 
     def from_rotvec(
         self, rotvec, anchor=None, start=-1, increment=False, degrees=False
@@ -435,7 +436,7 @@ class BaseRotation:
             Default is False.
         """
         rot = R.from_rotvec(rotvec, degrees=degrees)
-        return self._rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self(rot, anchor=anchor, start=start, increment=increment)
 
     def from_euler(
         self, seq, angles, anchor=None, start=-1, increment=False, degrees=False
@@ -482,7 +483,7 @@ class BaseRotation:
             Default is False.
         """
         rot = R.from_euler(seq, angles, degrees=degrees)
-        return self._rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self(rot, anchor=anchor, start=start, increment=increment)
 
     def from_matrix(self, matrix, anchor=None, start=-1, increment=False):
         """
@@ -499,7 +500,7 @@ class BaseRotation:
             the i-th matrix.
         """
         rot = R.from_matrix(matrix)
-        return self._rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self(rot, anchor=anchor, start=start, increment=increment)
 
     def from_mrp(self, mrp, anchor=None, start=-1, increment=False):
         """
@@ -520,7 +521,7 @@ class BaseRotation:
             the ith set of MRPs.
         """
         rot = R.from_mrp(mrp)
-        return self._rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self(rot, anchor=anchor, start=start, increment=increment)
 
     def from_quat(self, quat, anchor=None, start=-1, increment=False):
         """
@@ -536,4 +537,4 @@ class BaseRotation:
             norm.
         """
         rot = R.from_quat(quat)
-        return self._rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self(rot, anchor=anchor, start=start, increment=increment)
