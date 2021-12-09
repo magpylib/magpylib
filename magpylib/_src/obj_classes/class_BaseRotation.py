@@ -1,5 +1,5 @@
 """BaseRotation class code"""
-
+# pylint: disable=too-many-instance-attributes
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -160,8 +160,7 @@ class BaseRotation:
                 self._target_class = obj
                 self._rotate(rotation, anchor, start, increment)
             return self._parent_class
-        else:
-            return self._rotate(rotation, anchor, start, increment)
+        return self._rotate(rotation, anchor, start, increment)
 
     def _rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
