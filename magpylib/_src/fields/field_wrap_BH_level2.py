@@ -304,7 +304,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     #
     if sumup:
-        B = np.sum(B, axis=0)
+        B = np.sum(B, axis=0, keepdims=True)
 
     # reduce all size-1 levels
     if squeeze:

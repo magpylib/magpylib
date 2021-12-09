@@ -280,3 +280,16 @@ def test_object_tiling():
     assert src3.orientation.as_quat().shape == (12, 4), 'd3'
     assert src4.orientation.as_quat().shape == (31, 4), 'd4'
     assert sens.orientation.as_quat().shape == (4,), 'd5'
+
+
+def test_squeeze_sumup():
+    """ make sure that sumup doesnt lead to fals output shape
+    """
+
+    s = magpy.Sensor(pixel=(1,2,3))
+    ss = magpy.magnet.Sphere((1,2,3), 1)
+
+    B1 = magpy.getB(ss, s, squeeze=False)
+    B2 = magpy.getB(ss, s, squeeze=False, sumup=True)
+
+    assert B1.shape == B2.shape
