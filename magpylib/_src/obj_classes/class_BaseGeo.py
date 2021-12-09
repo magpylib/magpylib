@@ -15,7 +15,7 @@ from magpylib._src.input_checks import (
 from magpylib._src.utility import adjust_start
 
 # ALL METHODS ON INTERFACE
-class BaseGeo:
+class BaseGeo(BaseRotation):
     """Initializes position and rotation (=orientation) properties
     of an object in a global CS.
 
@@ -51,7 +51,7 @@ class BaseGeo:
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
-        self._rotate = BaseRotation(parent_class=self)
+        super().__init__()
 
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
@@ -137,11 +137,6 @@ class BaseGeo:
                 self._orientation = R.from_quat([val])
             else:
                 self._orientation = rot
-
-    @property
-    def rotate(self):
-        """Rotation class for magpylib objects"""
-        return self._rotate
 
     @property
     def style(self):

@@ -22,11 +22,10 @@ from magpylib._src.utility import adjust_start
 class BaseRotation:
     """Defines the Rotation class for magpylib objects"""
 
-    def __init__(self, parent_class):
-        self._parent_class = parent_class
-        self._target_class = self._parent_class
+    def __init__(self):
+        self._target_class = self
 
-    def __call__(self, rotation, anchor=None, start=-1, increment=False):
+    def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
         Rotates the object in the global coordinate system by a given rotation input
         (can be a path).
@@ -155,11 +154,11 @@ class BaseRotation:
          [30.  0. 20.]]
         """
         # pylint: disable=protected-access
-        if getattr(self._parent_class, "_object_type", None) == "Collection":
-            for obj in self._parent_class.objects:
+        if getattr(self, "_object_type", None) == "Collection":
+            for obj in self.objects:
                 self._target_class = obj
                 self._rotate(rotation, anchor, start, increment)
-            return self._parent_class
+            return self
         return self._rotate(rotation, anchor, start, increment)
 
     def _rotate(self, rotation, anchor=None, start=-1, increment=False):
@@ -238,7 +237,7 @@ class BaseRotation:
 
         return self._target_class
 
-    def from_angax(
+    def rotate_from_angax(
         self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
     ):
         """
@@ -414,9 +413,9 @@ class BaseRotation:
         axis = axis / np.linalg.norm(axis)
         rot = R.from_rotvec(axis * angle)
 
-        return self(rot, anchor, start, increment)
+        return self.rotate(rot, anchor, start, increment)
 
-    def from_rotvec(
+    def rotate_from_rotvec(
         self, rotvec, anchor=None, start=-1, increment=False, degrees=False
     ):
         """
@@ -435,9 +434,9 @@ class BaseRotation:
             Default is False.
         """
         rot = R.from_rotvec(rotvec, degrees=degrees)
-        return self(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
-    def from_euler(
+    def rotate_from_euler(
         self, seq, angles, anchor=None, start=-1, increment=False, degrees=False
     ):
         """Initialize from Euler angles.
@@ -482,9 +481,9 @@ class BaseRotation:
             Default is False.
         """
         rot = R.from_euler(seq, angles, degrees=degrees)
-        return self(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
-    def from_matrix(self, matrix, anchor=None, start=-1, increment=False):
+    def rotate_from_matrix(self, matrix, anchor=None, start=-1, increment=False):
         """
         Initialize from rotation matrix.
 
@@ -499,9 +498,9 @@ class BaseRotation:
             the i-th matrix.
         """
         rot = R.from_matrix(matrix)
-        return self(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
-    def from_mrp(self, mrp, anchor=None, start=-1, increment=False):
+    def rotate_from_mrp(self, mrp, anchor=None, start=-1, increment=False):
         """
         Initialize from Modified Rodrigues Parameters (MRPs).
 
@@ -520,9 +519,9 @@ class BaseRotation:
             the ith set of MRPs.
         """
         rot = R.from_mrp(mrp)
-        return self(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
-    def from_quat(self, quat, anchor=None, start=-1, increment=False):
+    def rotate_from_quat(self, quat, anchor=None, start=-1, increment=False):
         """
         Initialize from quaternions.
 
@@ -536,4 +535,4 @@ class BaseRotation:
             norm.
         """
         rot = R.from_quat(quat)
-        return self(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start, increment=increment)

@@ -13,7 +13,7 @@ from magpylib._src.default_utils import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 # ON INTERFACE
-class Collection(BaseDisplayRepr):
+class Collection(BaseDisplayRepr, BaseRotation):
     """
     Group multiple objects in one Collection for common manipulation.
 
@@ -124,12 +124,11 @@ class Collection(BaseDisplayRepr):
 
     def __init__(self, *objects):
 
-        # init inheritance
-        BaseDisplayRepr.__init__(self)
-
         self._object_type = "Collection"
 
-        self._rotate = BaseRotation(parent_class=self)
+        # init inheritance
+        BaseDisplayRepr.__init__(self)
+        BaseRotation.__init__(self)
 
         # instance attributes
         self._objects = []
@@ -138,11 +137,6 @@ class Collection(BaseDisplayRepr):
         self.objects = objects
 
     # property getters and setters
-    @property
-    def rotate(self):
-        """Rotation class for magpylib objects"""
-        return self._rotate
-
     @property
     def objects(self):
         """Collection objects attribute getter and setter."""
