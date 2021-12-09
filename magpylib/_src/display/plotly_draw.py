@@ -644,7 +644,7 @@ def make_Sensor(
     dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3], dtype=float)
     if autosize is not None:
         dim *= autosize
-    if pixel.ndim == 1:
+    if np.squeeze(pixel).ndim == 1:
         dim_ext = dim
     else:
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
