@@ -28,4 +28,4 @@ class BaseDisplayRepr:
         if name is None and hasattr(self, "style"):
             name = getattr(getattr(self, "style"), "name", None)
         name_str = "" if name is None else f", name={name!r}"
-        return f"{self._object_type}(id={id(self)!r}{name_str})"
+        return f"{type(self).__name__}(id={id(self)!r}{name_str})"
