@@ -22,7 +22,7 @@ Original software publication (version 2):
 
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
-Introduction (version 4.0.0)
+Introduction (version 4.0.0dev)
 ----------------------------
 Magpylib uses units of
 
@@ -310,7 +310,7 @@ As all input checks, coordinate transformations and position/orientation impleme
 """
 
 # module level dunders
-__version__ = '4.0.0'
+__version__ = '4.0.0dev'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH', 'getB_dict', 'getH_dict',
