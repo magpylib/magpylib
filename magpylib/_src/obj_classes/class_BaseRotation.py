@@ -419,7 +419,8 @@ class BaseRotation:
         self, rotvec, anchor=None, start=-1, increment=False, degrees=False
     ):
         """
-        Initialize from rotation vectors.
+        Rotate from rotation vectors. If object is a `Collection`, rotation is
+        applied to all its child-objects.
 
         A rotation vector is a 3 dimensional vector which is co-directional to
         the axis of rotation and whose norm gives the angle of rotation [1]_.
@@ -439,7 +440,8 @@ class BaseRotation:
     def rotate_from_euler(
         self, seq, angles, anchor=None, start=-1, increment=False, degrees=False
     ):
-        """Initialize from Euler angles.
+        """Rotate from Euler angles. If object is a `Collection`, rotation is
+        applied to all its child-objects.
 
         Rotations in 3-D can be represented by a sequence of 3
         rotations around a sequence of axes. In theory, any three axes spanning
@@ -485,7 +487,8 @@ class BaseRotation:
 
     def rotate_from_matrix(self, matrix, anchor=None, start=-1, increment=False):
         """
-        Initialize from rotation matrix.
+        Rotate from rotation matrix. If object is a `Collection`, rotation is
+        applied to all its child-objects.
 
         Rotations in 3 dimensions can be represented with 3 x 3 proper
         orthogonal matrices [1]_. If the input is not proper orthogonal,
@@ -502,7 +505,8 @@ class BaseRotation:
 
     def rotate_from_mrp(self, mrp, anchor=None, start=-1, increment=False):
         """
-        Initialize from Modified Rodrigues Parameters (MRPs).
+        Rotate from Modified Rodrigues Parameters (MRPs). If object is a `Collection`, rotation is
+        applied to all its child-objects.
 
         MRPs are a 3 dimensional vector co-directional to the axis of rotation and whose
         magnitude is equal to ``tan(theta / 4)``, where ``theta`` is the angle of rotation
@@ -523,7 +527,8 @@ class BaseRotation:
 
     def rotate_from_quat(self, quat, anchor=None, start=-1, increment=False):
         """
-        Initialize from quaternions.
+        Rotate from quaternions. If object is a `Collection`, rotation is
+        applied to all its child-objects.
 
         3D rotations can be represented using unit-norm quaternions [1]_.
 
