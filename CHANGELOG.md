@@ -5,7 +5,7 @@ All notable changes to magpylib are documented here.
 
 ## [Unreleased]
 ### Added
-- New object classes:
+- New sources classes:
   - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
   - New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
 - New display features:
@@ -13,7 +13,7 @@ All notable changes to magpylib are documented here.
     - `plotly` remains a optional dependency, needs extra installation ([#395](https://github.com/magpylib/magpylib/issues/395))
     - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
 
-  - Display defaults can be now set in `magpylib.defaults.display` ([#291](https://github.com/magpylib/magpylib/issues/291))
+  - Display defaults can be now set in `magpylib.defaults.display` ([#291](https://github.com/magpylib/magpylib/issues/291), [#396](https://github.com/magpylib/magpylib/pull/396))
   - Ability to define extra 3d-model for any object. ([#416](https://github.com/magpylib/magpylib/pull/416))
   - Zoom option in display function.
   - Display specific path positions.
@@ -43,7 +43,7 @@ All notable changes to magpylib are documented here.
   - Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs, with some performance improvement planned in the future.
   - Added `__len__` dunder for `Collection` ([#383](https://github.com/magpylib/magpylib/issues/383))
   - Improved performance of `getB` and `getH` functions and methods.
-  - Improve numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
+  - Improved numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
 - Docs:
   - General docs improvements ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
   - [MATLAB example](https://magpylib.readthedocs.io/en/latest/_pages/3_MATLAB/#example) updated ([#346](https://github.com/magpylib/magpylib/issues/346), [#366](https://github.com/magpylib/magpylib/pull/366))
@@ -52,13 +52,13 @@ All notable changes to magpylib are documented here.
 - Computation:
   - Diametral Solid Cylinder Field singularity at the axis. ([#370](https://github.com/magpylib/magpylib/issues/370))
   - `Collection` of `Lines` return incorret field ([#368](https://github.com/magpylib/magpylib/issues/368))
+  - Field array dimension wrongly reduced when `sumup=True` and `squeeze=False` ind `getB` and `getH` functions ([#425](https://github.com/magpylib/magpylib/issues/425), [#426](https://github.com/magpylib/magpylib/pull/426))
 - UI:
   - Adding multiple `Collection` objects does not mutate the first element.
   - Fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
 
 ### Removed
 - `config.ITERCYLINDER` is now obsolete. A new iterative solution replaced by an analytical expression.
-### Deprecated
 
 
 ---
