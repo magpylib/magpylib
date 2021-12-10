@@ -232,6 +232,7 @@ class BaseRotation:
         new_opath[start:end] = (rot * oldrot).as_quat()
 
         # store new position and orientation
+        # pylint: disable=attribute-defined-outside-init
         self._target_class.orientation = R.from_quat(new_opath)
         self._target_class.position = new_ppath
 
