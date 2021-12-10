@@ -14,7 +14,7 @@ def test_getB_dict1():
 
     pm = Cylinder(mag, dim)
     pm.move([(.5,0,0)]*15, increment=True)
-    pm.rotate.from_angax(np.linspace(0,666,25), 'y', anchor=0)
+    pm.rotate_from_angax(np.linspace(0,666,25), 'y', anchor=0)
     pm.move([(0,x,0) for x in np.linspace(0,5,5)])
     B2 = pm.getB(pos_obs)
 

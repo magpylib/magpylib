@@ -8,7 +8,7 @@ col = s1 + s2
 # generate a spiral path
 s1.move([(.2,0,0)]*100, increment=True)
 s2.move([(-.2,0,0)]*100, increment=True)
-col.rotate.from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
+col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 
 # display
 col.display(zoom=-.3, path=10)

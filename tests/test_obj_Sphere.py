@@ -24,7 +24,7 @@ import magpylib as magpy
 
 #     # 18 subsequent operations
 #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-#         pm.move(mv).rotate.from_angax(a,aa,aaa)
+#         pm.move(mv).rotate_from_angax(a,aa,aaa)
 
 #     B += [pm.getB(poso)]
 # B = np.array(B)
@@ -46,7 +46,7 @@ def test_Sphere_basics():
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-            pm.move(mv).rotate.from_angax(a,aa,aaa)
+            pm.move(mv).rotate_from_angax(a,aa,aaa)
 
         btest += [pm.getB(poso)]
     btest = np.array(btest)

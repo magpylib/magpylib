@@ -92,7 +92,7 @@ def test_Loop_display():
     x = src.display(canvas=fig)
     assert x is None, "display test fail"
 
-    src.rotate.from_angax([5] * 35, "x", anchor=(1, 2, 3))
+    src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
     x = src.display(canvas=fig, path=3)
     assert x is None, "display test fail"
 

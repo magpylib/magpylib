@@ -34,17 +34,17 @@ def test_path_old_new_rotate():
 
     # path style code rotation
     pm1 = Cuboid((0,0,1000), (1,2,3), position=(0,0,3))
-    pm1.rotate.from_angax(-30, ax, anch)
-    pm1.rotate.from_angax(np.linspace(0,60,n), 'x', anch)
+    pm1.rotate_from_angax(-30, ax, anch)
+    pm1.rotate_from_angax(np.linspace(0,60,n), 'x', anch)
     B1 = pm1.getB(s_pos)
 
     # old style code rotation
     pm2 = Cuboid((0,0,1000), (1,2,3), position=(0,0,3))
-    pm2.rotate.from_angax(-30, ax, anch)
+    pm2.rotate_from_angax(-30, ax, anch)
     B2 = []
     for _ in range(n):
         B2 += [pm2.getB(s_pos)]
-        pm2.rotate.from_angax(60/(n-1), ax, anch)
+        pm2.rotate_from_angax(60/(n-1), ax, anch)
     B2 = np.array(B2)
 
     assert np.allclose(B1,B2), 'path rotate problem'

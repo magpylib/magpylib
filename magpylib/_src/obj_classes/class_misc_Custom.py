@@ -52,7 +52,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     [[1. 0. 0.]
      [1. 0. 0.]]
     The custom source can be rotated as any other source object in the library.
-    >>> external_field.rotate.from_angax(90, 'z')
+    >>> external_field.rotate_from_angax(90, 'z')
     >>> B = external_field.getB([[1,2,3],[4,5,6]])
     >>> print(B) # Notice the outut field is now pointing in y-direction
     [[0. 1. 0.]

@@ -138,51 +138,51 @@ def badInput_rotate5():
     bg.rotate(r0, anchor=(1,2,3,4))
 
 
-# BAD BASEGEO .rotate.from_angax INPUT-----------------------------------------
+# BAD BASEGEO .rotate_from_angax INPUT-----------------------------------------
 def badInput_rotate_from_angax1():
     """ bad ang input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax('123', (1,2,3))
+    bg.rotate_from_angax('123', (1,2,3))
 
 def badInput_rotate_from_angax2():
     """ bad axis input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, 1)
+    bg.rotate_from_angax(123, 1)
 
 def badInput_rotate_from_angax3():
     """ bad anchor input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, (1,2,3), anchor=1)
+    bg.rotate_from_angax(123, (1,2,3), anchor=1)
 
 def badInput_rotate_from_angax4():
     """ bad start input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, (1,2,3), start=1.1)
+    bg.rotate_from_angax(123, (1,2,3), start=1.1)
 
 def badInput_rotate_from_angax5():
     """ bad increment input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, (1,2,3), increment=None)
+    bg.rotate_from_angax(123, (1,2,3), increment=None)
 
 def badInput_rotate_from_angax6():
     """ bad degrees input type"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, (1,2,3), degrees=None)
+    bg.rotate_from_angax(123, (1,2,3), degrees=None)
 
 def badInput_rotate_from_angax7():
     """ bad angle input format"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax([[1,2,3]]*2, (1,2,3))
+    bg.rotate_from_angax([[1,2,3]]*2, (1,2,3))
 
 def badInput_rotate_from_angax8():
     """ bad axis input format"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax([1,2,3], [1,2,3,4])
+    bg.rotate_from_angax([1,2,3], [1,2,3,4])
 
 def badInput_rotate_from_angax9():
     """ bad axis input format"""
     bg = BaseGeo(a3, r0)
-    bg.rotate.from_angax(123, [0,0,0])
+    bg.rotate_from_angax(123, [0,0,0])
 
 
 # EXCITATIONS -----------------------------------------
@@ -318,7 +318,7 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, badInput_rotate5)
 
     def test_rotate_from_angax(self):
-        """ bad .rotate.from_angax inputs"""
+        """ bad .rotate_from_angax inputs"""
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax1)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax2)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax3)
