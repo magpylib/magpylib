@@ -275,7 +275,8 @@ def display_matplotlib(
                 points += [obj.position]
             if faces is not None:
                 faced_objects_color += [color]
-                pts = draw_faces(faces, color, lw, ax)
+                alpha = style.opacity
+                pts = draw_faces(faces, color, lw, alpha, ax)
                 points += [np.vstack(pts).reshape(-1, 3)]
                 if style.magnetization.show:
                     check_excitations([obj])
