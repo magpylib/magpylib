@@ -37,9 +37,16 @@ def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
     centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
     moved to position `pos`.
     """
+    norm = np.linalg.norm(vec)
+    nvec = np.array(vec) / norm
+    yaxis = np.array([0, 1, 0])
+    cross = np.cross(nvec, yaxis)
+    dot = np.dot(nvec, yaxis)
+    n = np.linalg.norm(cross)
+    if dot==-1:
+        sign *= -1
     hy = sign * 0.1 * arrow_size
     hx = 0.06 * arrow_size
-    norm = np.linalg.norm(vec)
     arrow = (
         np.array(
             [
@@ -54,11 +61,6 @@ def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
         )
         * norm
     )
-    nvec = np.array(vec) / norm
-    yaxis = np.array([0, 1, 0])
-    cross = np.cross(nvec, yaxis)
-    dot = np.dot(nvec, yaxis)
-    n = np.linalg.norm(cross)
     if n != 0:
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
