@@ -296,6 +296,7 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
                     extr.trace,
                     orientation=orient,
                     position=pos,
+                    coordsargs=extr.coordsargs
                 )
                 ttype = extr.trace["type"]
                 if ttype not in path_traces_extra:
@@ -305,5 +306,6 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     for traces_extra in path_traces_extra.values():
         for tr in traces_extra:
             kwargs = {"color": color}
-            kwargs.update({k: v for k, v in tr.items() if k != "type"})
-            getattr(ax, tr["type"])(**kwargs)
+            kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
+            args = tr.get("args", [])
+            getattr(ax, tr["type"])(*args, **kwargs)
