@@ -1,7 +1,9 @@
 import pytest
+import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
+from magpylib._src.display.plotly_draw import make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 
@@ -153,6 +155,7 @@ def test_matplotlib_model3d_extra():
         magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
     ).rotate_from_angax([72] * 5, "z", anchor=(0, 0, 0), start=0, increment=True)
     cuboid.style.model3d.show = False
+    ax = plt.subplot(projection="3d")
     cuboid.style.model3d.extra = [
         {
             "backend": "matplotlib",
@@ -166,7 +169,26 @@ def test_matplotlib_model3d_extra():
             "show": True,
         }
     ]
-    ax = plt.subplot(projection="3d")
+    with pytest.raises(ValueError): # should fail because of invalid coordsargs
+        x = cuboid.display(canvas=ax, path=1)
+    cuboid.style.model3d.extra[0].coordsargs = {"x": "xs", "y": "ys", "z": "zs"}
+    x = cuboid.display(canvas=ax, path=1)
+
+    assert x is None, "display test fail"
+
+    cube = make_BaseCuboid()
+    i,j,k = [cube[k] for k in 'ijk']
+    x,y,z = [cube[k] for k in 'xyz']
+    triangles = np.array([i, j, k]).T
+    trace = dict(type="plot_trisurf", args=(x, y, z), triangles=triangles)
+    cuboid.style.model3d.extra = [
+        {
+            "backend": "matplotlib",
+            "coordsargs": {"x": "args[0]", "y": "args[1]", "z": "args[2]"},
+            "trace": trace,
+            "show": True,
+        }
+    ]
     x = cuboid.display(canvas=ax, path=1)
     assert x is None, "display test fail"
 
