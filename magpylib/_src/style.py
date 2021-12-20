@@ -89,19 +89,10 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self,
-        name=None,
-        description=None,
-        color=None,
-        opacity=None,
-        **kwargs,
+        self, name=None, description=None, color=None, opacity=None, **kwargs,
     ):
         super().__init__(
-            name=name,
-            description=description,
-            color=color,
-            opacity=opacity,
-            **kwargs,
+            name=name, description=description, color=color, opacity=opacity, **kwargs,
         )
 
     @property
@@ -329,10 +320,20 @@ class Trace3d(MagicProperties):
         plotting backend corresponding to the trace.
         Can be one of `['matplotlib', 'plotly']`
 
+    coordsargs: dict
+        tells magpylib the name of the coordinate arrays to be moved or rotated.
+        by default: `{"x": "x", "y": "y", "z": "z"}`
+        if False, object is not rotated
+
+
     """
 
-    def __init__(self, trace=None, show=True, backend="matplotlib", **kwargs):
-        super().__init__(trace=trace, show=show, backend=backend, **kwargs)
+    def __init__(
+        self, trace=None, show=True, backend="matplotlib", coordsargs=None, **kwargs
+    ):
+        super().__init__(
+            trace=trace, show=show, backend=backend, coordsargs=coordsargs, **kwargs
+        )
 
     @property
     def show(self):
@@ -351,6 +352,24 @@ class Trace3d(MagicProperties):
         self._show = val
 
     @property
+    def coordsargs(self):
+        """tells magpylib the name of the coordinate arrays to be moved or rotated.
+        by default: `{"x": "x", "y": "y", "z": "z"}`
+        if False, object is not rotated"""
+        return self._coordsargs
+
+    @coordsargs.setter
+    def coordsargs(self, val):
+        if val is None:
+            val = {"x": "x", "y": "y", "z": "z"}
+        assert isinstance(val, dict) and all(key in val for key in "xyz"), (
+            f"the `coordsargs` property of {type(self).__name__} must be "
+            f"a dictionary with `'x', 'y', 'z'` keys"
+            f" but received {repr(val)} instead"
+        )
+        self._coordsargs = val
+
+    @property
     def trace(self):
         """dictionary keys/values pairs for a model3d object"""
         return self._trace
@@ -363,9 +382,6 @@ class Trace3d(MagicProperties):
                 f" but received {type(val).__name__} instead"
             )
             assert "type" in val, "explicit trace `type` must be defined"
-            assert all(key in val for key in "xyz") or all(
-                key in val for key in ("xs", "ys", "zs")
-            ), "trace must contain the `x,y,z` or `xs,ys,zs` keys/values pairs"
         self._trace = val
 
     @property

@@ -110,10 +110,10 @@ def draw_path(
     return list(path)
 
 
-def draw_faces(faces, col, lw, ax):
+def draw_faces(faces, col, lw, alpha, ax):
     """draw faces in respective color and return list of vertex-points"""
     cuboidf = Poly3DCollection(
-        faces, facecolors=col, linewidths=lw, edgecolors="k", alpha=1
+        faces, facecolors=col, linewidths=lw, edgecolors="k", alpha=alpha,
     )
     ax.add_collection3d(cuboidf)
     return faces
@@ -292,6 +292,7 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
                     extr.trace,
                     orientation=orient,
                     position=pos,
+                    coordsargs=extr.coordsargs,
                 )
                 ttype = extr.trace["type"]
                 if ttype not in path_traces_extra:
@@ -301,5 +302,6 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     for traces_extra in path_traces_extra.values():
         for tr in traces_extra:
             kwargs = {"color": color}
-            kwargs.update({k: v for k, v in tr.items() if k != "type"})
-            getattr(ax, tr["type"])(**kwargs)
+            kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
+            args = tr.get("args", [])
+            getattr(ax, tr["type"])(*args, **kwargs)

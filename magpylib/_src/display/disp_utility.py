@@ -17,29 +17,63 @@ class MagpyMarkers:
 
 
 def place_and_orient_model3d(
-    model_dict, orientation=None, position=(0.0, 0.0, 0.0), **kwargs
+    model_dict, orientation=None, position=(0.0, 0.0, 0.0), coordsargs=None, **kwargs
 ):
     """places and orients mesh3d dict"""
+    new_model_dict = {}
+    if "args" in model_dict:
+        new_model_dict["args"] = list(model_dict["args"])
     position = np.array(position)
-    xyz = ["x", "y", "z"]
-    if all(key in model_dict for key in ["xs", "ys", "zs"]):
-        xyz = ["xs", "ys", "zs"]
-    vertices = np.array([model_dict[k] for k in xyz]).T
+    vertices = []
+    if coordsargs is None:
+        coordsargs = {"x": "x", "y": "y", "z": "z"}
+    useargs = False
+    for k in "xyz":
+        key = coordsargs[k]
+        if key.startswith("args"):
+            useargs = True
+            ind = int(key[5])
+            v = model_dict["args"][ind]
+        else:
+            if key in model_dict:
+                v = model_dict[key]
+            else:
+                raise ValueError(
+                    "Rotating/Moving of provided model failed, trace dictionary"
+                    f"has no argument {k!r}, use `coordsargs` to specify the names of the "
+                    "coordinates to be used"
+                )
+        vertices.append(v)
+    vertices = np.array(vertices).T
     if orientation is not None:
         vertices = orientation.apply(vertices)
-    x, y, z = (vertices + position).T
-    return {**model_dict, xyz[0]: x, xyz[1]: y, xyz[2]: z, **kwargs}
+    new_vertices = (vertices + position).T
+    for i, k in enumerate("xyz"):
+        key = coordsargs[k]
+        if useargs:
+            ind = int(key[5])
+            new_model_dict["args"][ind] = new_vertices[i]
+        else:
+            new_model_dict[key] = new_vertices[i]
+    return {**model_dict, **new_model_dict, **kwargs}
 
 
-def draw_arrow(vec, pos, sign=1, arrow_size=1) -> Tuple:
+def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
     centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
     moved to position `pos`.
     """
+    norm = np.linalg.norm(vec)
+    nvec = np.array(vec) / norm
+    yaxis = np.array([0, 1, 0])
+    cross = np.cross(nvec, yaxis)
+    dot = np.dot(nvec, yaxis)
+    n = np.linalg.norm(cross)
+    if dot == -1:
+        sign *= -1
     hy = sign * 0.1 * arrow_size
     hx = 0.06 * arrow_size
-    norm = np.linalg.norm(vec)
     arrow = (
         np.array(
             [
@@ -54,11 +88,6 @@ def draw_arrow(vec, pos, sign=1, arrow_size=1) -> Tuple:
         )
         * norm
     )
-    nvec = np.array(vec) / norm
-    yaxis = np.array([0, 1, 0])
-    cross = np.cross(nvec, yaxis)
-    dot = np.dot(nvec, yaxis)
-    n = np.linalg.norm(cross)
     if n != 0:
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
@@ -73,7 +102,7 @@ def draw_arrow_from_vertices(vertices, current, arrow_size):
     positions = vertices[:-1] + vectors / 2
     vertices = np.concatenate(
         [
-            draw_arrow(vec, pos, np.sign(current), arrow_size=arrow_size)
+            draw_arrowed_line(vec, pos, np.sign(current), arrow_size=arrow_size)
             for vec, pos in zip(vectors, positions)
         ],
         axis=1,
