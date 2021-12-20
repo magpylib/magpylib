@@ -31,7 +31,14 @@ def place_and_orient_model3d(
     for k in "xyz":
         key = coordsargs[k]
         if key in "xyz":
-            v = model_dict[key]
+            if key in model_dict:
+                v = model_dict[key]
+            else:
+                raise ValueError(
+                    "Rotating/Moving of provided model failed, trace dictionary"
+                    f"has no argument {k!r}, use `coordsargs` to specify the names of the "
+                    "coordinates to be used"
+                )
         elif key.startswith("args"):
             useargs = True
             ind = int(key[5])
