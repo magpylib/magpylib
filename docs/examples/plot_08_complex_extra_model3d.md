@@ -21,66 +21,91 @@ In order to use this functionality the `numpy-stl` package needs to be installed
 
 ```{code-cell} ipython3
 import os
-import requests
 import tempfile
-import numpy as np
+
 import magpylib as magpy
+import numpy as np
 import plotly.graph_objects as go
-from stl import mesh # needs numpy-stl installed
+import requests
+from stl import mesh  # needs numpy-stl installed
+
+def get_stl_color(x, return_rgb_string=True):
+    sb = f"{x:015b}"[::-1]
+    r = int(255 / 31 * int(sb[:5], base=2))
+    g = int(255 / 31 * int(sb[5:10], base=2))
+    b = int(255 / 31 * int(sb[10:15], base=2))
+    if return_rgb_string:
+        color = f'rgb({r},{g},{b})'
+    else:
+        color = (r,g,b)
+    return color
 
 # define stl to mesh3d function
-def stl2mesh3d(stl_file, recenter=False):
-    def get_stl_color(x):
-        sb = f'{x:015b}'[::-1]
-        r = int(255/31*int(sb[:5],base=2))
-        g = int(255/31*int(sb[5:10],base=2))
-        b = int(255/31*int(sb[10:15],base=2))
-        color = f'rgb({r},{g},{b})'
-        return color
+def stl2mesh3d(stl_file, recenter=False, backend='matplotlib'):
     stl_mesh = mesh.Mesh.from_file(stl_file)
     # stl_mesh is read by nympy-stl from a stl file; it is  an array of faces/triangles
     # this function extracts the unique vertices and the lists I, J, K to define a Plotly mesh3d
-    p, q, r = stl_mesh.vectors.shape #(p, 3, 3)
+    p, q, r = stl_mesh.vectors.shape  # (p, 3, 3)
     # the array stl_mesh.vectors.reshape(p*q, r) can contain multiple copies of the same vertex;
     # extract unique vertices from all mesh triangles
-    vertices, ixr = np.unique(stl_mesh.vectors.reshape(p*q, r), return_inverse=True, axis=0)
-    i = np.take(ixr, [3*k for k in range(p)])
-    j = np.take(ixr, [3*k+1 for k in range(p)])
-    k = np.take(ixr, [3*k+2 for k in range(p)])
-    facecolor = np.vectorize(get_stl_color)(stl_mesh.attr.flatten())
+    vertices, ixr = np.unique(
+        stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0
+    )
+    i = np.take(ixr, [3 * k for k in range(p)])
+    j = np.take(ixr, [3 * k + 1 for k in range(p)])
+    k = np.take(ixr, [3 * k + 2 for k in range(p)])
     if recenter:
-        vertices = vertices-0.5*(vertices.max(axis=0)+vertices.min(axis=0))
-    x,y,z = vertices.T
-    return dict(type='mesh3d', x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor)
+        vertices = vertices - 0.5 * (vertices.max(axis=0) + vertices.min(axis=0))
+    colors = stl_mesh.attr.flatten()
+    x, y, z = vertices.T
+    model3d = {"backend": backend}
+    if backend == "matplotlib":
+        triangles = np.array([i, j, k]).T
+        model3d.update(
+            trace=dict(type="plot_trisurf", args=(x, y, z), triangles=triangles),
+            coordsargs={"x": "args[0]", "y": "args[1]", "z": "args[2]"},
+        )
+    elif backend == "plotly":
+        facecolor = np.array([get_stl_color(x, return_rgb_string=True) for x in colors]).T
+        model3d.update(
+            trace=dict(
+                type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor
+            ),
+        )
+    else:
+        raise ValueError(
+            """Backend type not understood, must be one of ['matplotlib', 'plotly']"""
+        )
+    return model3d
+
 
 # import stl file
-url = 'https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl'
-file = url.split('/')[-1]
+url = "https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl"
+file = url.split("/")[-1]
 with tempfile.TemporaryDirectory() as tmpdirname:
-    fn = os.path.join(tmpdirname,file)
-    with open(fn, 'wb') as f:
+    fn = os.path.join(tmpdirname, file)
+    with open(fn, "wb") as f:
         response = requests.get(url)
         f.write(response.content)
-        
-    # create mesh3d
-    mesh3d = stl2mesh3d(fn)
-    mesh3d['opacity'] = 0.5
 
+    # create mesh3d
+    model3d_matplotlib = stl2mesh3d(fn, backend="matplotlib")
+    model3d_plotly = stl2mesh3d(fn, backend="plotly")
 # create sensor, add extra 3d-model, create path
-sensor = magpy.Sensor(position=(-15,0,-6))
-sensor.style = dict(model3d_extra=dict(backend='plotly', trace=mesh3d))
-sensor.rotate_from_angax([5]*30, 'z', increment=True, anchor=(0,0,0))
-sensor.move([[0,0,0.5]]*30, increment=True, start=0)
+sensor = magpy.Sensor(position=(-15, 0, -6))
+sensor.style = dict(model3d_extra=[model3d_matplotlib, model3d_plotly])
+sensor.rotate_from_angax([5] * 30, "z", increment=True, anchor=(0, 0, 0))
+sensor.move([[0, 0, 0.5]] * 30, increment=True, start=0)
 
 # create source, and Collection
-cuboid = magpy.magnet.Cylinder(magnetization=(0,1000,0), dimension=(20,30))
-collection =  sensor + cuboid
+cuboid = magpy.magnet.Cylinder(magnetization=(0, 0, 1000), dimension=(20, 30))
+collection = sensor + cuboid
+
+# display animated system with matplotlib backend
+magpy.display(collection, path=8, style_magnetization_size=0.4, backend="matplotlib")
 
 # display animated system with plotly backend
-fig = go.Figure()
-magpy.display(collection, canvas=fig, path='animate', backend='plotly')
-fig.update_layout(height=600)
-fig.show()
+magpy.display(collection, path=8, backend="plotly")
 ```
 
 
