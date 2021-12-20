@@ -30,7 +30,11 @@ def place_and_orient_model3d(
     useargs = False
     for k in "xyz":
         key = coordsargs[k]
-        if key in "xyz":
+        if key.startswith("args"):
+            useargs = True
+            ind = int(key[5])
+            v = model_dict["args"][ind]
+        else:
             if key in model_dict:
                 v = model_dict[key]
             else:
@@ -39,12 +43,6 @@ def place_and_orient_model3d(
                     f"has no argument {k!r}, use `coordsargs` to specify the names of the "
                     "coordinates to be used"
                 )
-        elif key.startswith("args"):
-            useargs = True
-            ind = int(key[5])
-            v = model_dict["args"][ind]
-        else:
-            raise ValueError("Bad coorsargs given")
         vertices.append(v)
     vertices = np.array(vertices).T
     if orientation is not None:
