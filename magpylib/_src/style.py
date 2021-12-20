@@ -89,19 +89,10 @@ class BaseStyle(MagicProperties):
     """
 
     def __init__(
-        self,
-        name=None,
-        description=None,
-        color=None,
-        opacity=None,
-        **kwargs,
+        self, name=None, description=None, color=None, opacity=None, **kwargs,
     ):
         super().__init__(
-            name=name,
-            description=description,
-            color=color,
-            opacity=opacity,
-            **kwargs,
+            name=name, description=description, color=color, opacity=opacity, **kwargs,
         )
 
     @property
@@ -329,6 +320,12 @@ class Trace3d(MagicProperties):
         plotting backend corresponding to the trace.
         Can be one of `['matplotlib', 'plotly']`
 
+    coordsargs: dict
+        tells magpylib the name of the coordinate arrays to be moved or rotated.
+        by default: `{"x": "x", "y": "y", "z": "z"}`
+        if False, object is not rotated
+
+
     """
 
     def __init__(
@@ -356,6 +353,9 @@ class Trace3d(MagicProperties):
 
     @property
     def coordsargs(self):
+        """tells magpylib the name of the coordinate arrays to be moved or rotated.
+        by default: `{"x": "x", "y": "y", "z": "z"}`
+        if False, object is not rotated"""
         return self._coordsargs
 
     @coordsargs.setter
