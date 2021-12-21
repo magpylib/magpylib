@@ -966,7 +966,11 @@ def get_plotly_traces(
             trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
             traces.append(trace)
 
-        if np.array(input_obj.position).ndim > 1 and show_path is not False:
+        if (
+            np.array(input_obj.position).ndim > 1
+            and show_path is not False
+            and style.path.show is not False
+        ):
             x, y, z = input_obj.position.T
             txt_kwargs = (
                 {"mode": "markers+text+lines", "text": list(range(len(x)))}

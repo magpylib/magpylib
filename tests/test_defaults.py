@@ -23,6 +23,7 @@ bad_inputs = {
     "display_style_base_path_marker_size": (-1,),  # float>=0
     "display_style_base_path_marker_symbol": ("wrongsymbol",),
     "display_style_base_path_marker_color": ("wrongcolor",),  # color
+    "display_style_base_path_show": ("notbool",),  # bool
     "display_style_base_description_show": ("notbool",),  # bool
     "display_style_base_description_text": (
         False,
@@ -75,6 +76,7 @@ good_inputs = {
     "display_style_base_path_marker_size": (0, 1),  # float>=0
     "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
+    "display_style_base_path_show": (True, False),  # bool
     "display_style_base_description_show": (True, False),  # bool
     "display_style_base_description_text": (
         True,
