@@ -287,7 +287,7 @@ def test_scipy_from_methods():
     cube0 = cube().rotate(rot, anchor=anchor)
 
     from_rotvec = cube().rotate_from_rotvec(
-        rot.as_rotvec(), anchor=anchor, degrees=False
+        rot.as_rotvec(), anchor=anchor
     )
     assert np.allclose(
         cube0.position, from_rotvec.position

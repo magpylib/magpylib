@@ -22,8 +22,10 @@ from magpylib._src.utility import adjust_start
 class BaseRotation:
     """Defines the Rotation class for magpylib objects"""
 
+
     def __init__(self):
         self._target_class = self
+
 
     def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
@@ -155,14 +157,25 @@ class BaseRotation:
         """
         # pylint: disable=protected-access
         if getattr(self, "_object_type", None) == "Collection":
-            for obj in self.objects:
+            for obj in self.objects:         # pylint: disable=no-member
                 self._target_class = obj
                 self._rotate(rotation, anchor, start, increment)
             return self
         return self._rotate(rotation, anchor, start, increment)
 
+
     def _rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
+        rotate_from_XXX generates a scipy Rotation object R
+        then rotate() is called with R
+        then _rotate() is called from rotate() to enable Collection application
+
+        Inputs:
+        rotation: scipy rotation object
+        anchor: anchor point
+        start: int or 'append', path start position
+        increment: bool, interpretation of path-input
+
         Rotates the object in the global coordinate system by a given rotation input
         (can be a path).
         """
@@ -238,9 +251,9 @@ class BaseRotation:
 
         return self._target_class
 
+
     def rotate_from_angax(
-        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True
-    ):
+        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
         """
         Object rotation in the global coordinate system from angle-axis input.
 
@@ -365,7 +378,6 @@ class BaseRotation:
          [10.  0. 10.]
          [20.  0. 15.]
          [30.  0. 20.]]
-
         """
 
         # check input types
@@ -416,12 +428,12 @@ class BaseRotation:
 
         return self.rotate(rot, anchor, start, increment)
 
+
     def rotate_from_rotvec(
-        self, rotvec, anchor=None, start=-1, increment=False, degrees=False
-    ):
+        self, rotvec, anchor=None, start=-1, increment=False):
         """
         Rotate from rotation vectors. If object is a `Collection`, rotation is
-        applied to all its child-objects.
+        applied to all child-objects.
 
         A rotation vector is a 3 dimensional vector which is co-directional to
         the axis of rotation and whose norm gives the angle of rotation [1]_.
@@ -435,14 +447,14 @@ class BaseRotation:
             If True, then the given magnitudes are assumed to be in degrees.
             Default is False.
         """
-        rot = R.from_rotvec(rotvec, degrees=degrees)
+        rot = R.from_rotvec(rotvec)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
+
     def rotate_from_euler(
-        self, seq, angles, anchor=None, start=-1, increment=False, degrees=False
-    ):
+        self, seq, angles, anchor=None, start=-1, increment=False, degrees=False):
         """Rotate from Euler angles. If object is a `Collection`, rotation is
-        applied to all its child-objects.
+        applied to all child-objects.
 
         Rotations in 3-D can be represented by a sequence of 3
         rotations around a sequence of axes. In theory, any three axes spanning
@@ -486,6 +498,7 @@ class BaseRotation:
         rot = R.from_euler(seq, angles, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
+
     def rotate_from_matrix(self, matrix, anchor=None, start=-1, increment=False):
         """
         Rotate from rotation matrix. If object is a `Collection`, rotation is
@@ -503,6 +516,7 @@ class BaseRotation:
         """
         rot = R.from_matrix(matrix)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+
 
     def rotate_from_mrp(self, mrp, anchor=None, start=-1, increment=False):
         """
@@ -525,6 +539,7 @@ class BaseRotation:
         """
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+
 
     def rotate_from_quat(self, quat, anchor=None, start=-1, increment=False):
         """
