@@ -280,9 +280,10 @@ def display_matplotlib(
                 points += [np.vstack(pts).reshape(-1, 3)]
                 if style.magnetization.show:
                     check_excitations([obj])
-                    draw_directs_faced(
+                    pts = draw_directs_faced(
                         [obj], [color], ax, show_path, style.magnetization.size
                     )
+                    points += pts
         if show_path:
             marker, line = style.path.marker, style.path.line
             points += draw_path(
