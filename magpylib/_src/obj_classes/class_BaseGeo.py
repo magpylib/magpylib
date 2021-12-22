@@ -44,8 +44,10 @@ class BaseGeo(BaseTransform):
 
     """
 
-    def __init__(self, position, orientation, style=None, **kwargs):
+    def __init__(self, position=(0.,0.,0.), orientation=None, style=None, **kwargs):
         # set pos and orient attributes
+        self._position = np.array([[0.,0.,0.]])
+        self._orientation = R.from_quat([[0.,0.,0.,1.]])
         self.position = position
         self.orientation = orientation
         super().__init__()
@@ -101,7 +103,8 @@ class BaseGeo(BaseTransform):
         # expand if input is shape (3,)
         if pos.ndim == 1:
             pos = np.expand_dims(pos, 0)
-        self._position = pos
+        self._position = np.array([[0.,0.,0.]])
+        self.move(pos)
 
     @property
     def orientation(self):

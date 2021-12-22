@@ -607,7 +607,7 @@ class BaseTransform:
 
         # add new_ppath to old_ppath
         old_ppath[start:end] += inpath
-        self._target_class.position = old_ppath
+        self._target_class._position = old_ppath
 
         return self._target_class
 
