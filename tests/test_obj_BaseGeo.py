@@ -278,7 +278,7 @@ def test_path_functionality3():
 
 
 def test_scipy_from_methods():
-    """test all rotation methods inspired from scipy implemented in BaseRotation"""
+    """test all rotation methods inspired from scipy implemented in BaseTransform"""
     cube = lambda: magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
     angs_deg = np.linspace(0, 360, 10)
     angs = np.deg2rad(angs_deg)

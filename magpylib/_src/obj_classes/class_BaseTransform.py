@@ -1,4 +1,4 @@
-"""BaseRotation class code"""
+"""BaseTransform class code"""
 # pylint: disable=too-many-instance-attributes
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -15,12 +15,14 @@ from magpylib._src.input_checks import (
     check_degree_type,
     check_angle_format,
     check_axis_format,
+    check_vector_type,
+    check_path_format,
 )
 from magpylib._src.utility import adjust_start
 
 
-class BaseRotation:
-    """Defines the Rotation class for magpylib objects"""
+class BaseTransform:
+    """Defines the Transform class for magpylib objects"""
 
 
     def __init__(self):
@@ -78,12 +80,14 @@ class BaseRotation:
         [ 0.  0. 45.]
         """
         # pylint: disable=protected-access
-        if getattr(self, "_object_type", None) == "Collection":
+        if hasattr(self, "objects"):
             for obj in self.objects:         # pylint: disable=no-member
                 self._target_class = obj
                 self._rotate(rotation, anchor, start, increment)
-            return self
-        return self._rotate(rotation, anchor, start, increment)
+        if hasattr(self, 'position'):
+            self._target_class = self
+            self._rotate(rotation, anchor, start, increment)
+        return self
 
 
     def _rotate(self, rotation, anchor=None, start=-1, increment=False):
@@ -557,3 +561,116 @@ class BaseRotation:
         """
         rot = R.from_quat(quat)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+
+    def _move(self, displacement, start=-1, increment=False):
+        """private move function, see move docstring"""
+
+        # check input types
+        if Config.checkinputs:
+            check_vector_type(displacement, "displacement")
+            check_start_type(start)
+            check_increment_type(increment)
+
+        # displacement vector -> ndarray
+        inpath = np.array(displacement, dtype=float)
+
+        # check input format
+        if Config.checkinputs:
+            check_path_format(inpath, "displacement")
+
+        # expand if input is shape (3,)
+        if inpath.ndim == 1:
+            inpath = np.expand_dims(inpath, 0)
+
+        # load old path
+        # pylint: disable=protected-access
+        old_ppath = self._target_class._position
+        old_opath = self._target_class._orientation.as_quat()
+        lenop = len(old_ppath)
+        lenin = len(inpath)
+
+        # change start to positive values in [0, lenop]
+        start = adjust_start(start, lenop)
+
+        # incremental input -> absolute input
+        if increment:
+            for i, d in enumerate(inpath[:-1]):
+                inpath[i + 1] = inpath[i + 1] + d
+
+        end = start + lenin  # end position of new_path
+
+        til = end - lenop
+        if til > 0:  # case inpos extends beyond old_path -> tile up old_path
+            old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
+            old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
+            self._target_class.orientation = R.from_quat(old_opath)
+
+        # add new_ppath to old_ppath
+        old_ppath[start:end] += inpath
+        self._target_class.position = old_ppath
+
+        return self._target_class
+
+    def move(self, displacement, start=-1, increment=False):
+        """
+        Translates the object by the input displacement, for a Collection, all objects are
+        translated individually (can be a path).
+
+        This method uses vector addition to merge the input path given by displacement and the
+        existing old path of an object. It keeps the old orientation. If the input path extends
+        beyond the old path, the old path will be padded by its last entry before paths are
+        added up.
+
+        Parameters
+        ----------
+        displacement: array_like, shape (3,) or (N,3)
+            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
+
+        start: int or str, default=-1
+            Choose at which index of the original object path, the input path will begin.
+            If `start=-1`, inp_path will start at the last old_path position.
+            If `start=0`, inp_path will start with the beginning of the old_path.
+            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
+            the old_path.
+
+        increment: bool, default=False
+            If `increment=False`, input displacements are absolute.
+            If `increment=True`, input displacements are interpreted as increments of each other.
+            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
+            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
+
+        Returns
+        -------
+        self: Collection
+
+        Examples
+        --------
+        This method will apply the ``move`` operation to each Collection object individually.
+
+        >>> import magpylib as magpy
+        >>> dipole = magpy.misc.Dipole((1,2,3))
+        >>> loop = magpy.current.Loop(1,1)
+        >>> col = loop + dipole
+        >>> col.move([(1,1,1), (2,2,2)])
+        >>> for src in col:
+        >>>     print(src.position)
+        [[1. 1. 1.]  [2. 2. 2.]]
+        [[1. 1. 1.]  [2. 2. 2.]]
+
+        But manipulating individual objects keeps them in the Collection
+
+        >>> dipole.move((1,1,1))
+        >>> for src in col:
+        >>>     print(src.position)
+        [[1. 1. 1.]  [2. 2. 2.]]
+        [[1. 1. 1.]  [3. 3. 3.]]
+
+        """
+        if hasattr(self, "objects"):
+            for obj in self.objects:         # pylint: disable=no-member
+                self._target_class = obj
+                self._move(displacement, start, increment)
+        if hasattr(self, 'position'):
+            self._target_class = self
+            self._move(displacement, start, increment)
+        return self
