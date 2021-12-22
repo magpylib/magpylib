@@ -7,13 +7,13 @@ from magpylib._src.utility import (
     LIBRARY_SOURCES,
 )
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseRotation import BaseRotation
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.default_utils import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 # ON INTERFACE
-class Collection(BaseDisplayRepr, BaseRotation):
+class Collection(BaseDisplayRepr, BaseTransform):
     """
     Group multiple objects in one Collection for common manipulation.
 
@@ -128,7 +128,7 @@ class Collection(BaseDisplayRepr, BaseRotation):
 
         # init inheritance
         BaseDisplayRepr.__init__(self)
-        BaseRotation.__init__(self)
+        BaseTransform.__init__(self)
 
         # instance attributes
         self._objects = []
@@ -284,65 +284,6 @@ class Collection(BaseDisplayRepr, BaseRotation):
         """
         self._objects.remove(obj)
         self._update_src_and_sens()
-        return self
-
-    def move(self, displacement, start=-1, increment=False):
-        """
-        Translates each object in the Collection individually by the input displacement
-        (can be a path).
-
-        This method uses vector addition to merge the input path given by displacement and the
-        existing old path of an object. It keeps the old orientation. If the input path extends
-        beyond the old path, the old path will be padded by its last entry before paths are
-        added up.
-
-        Parameters
-        ----------
-        displacement: array_like, shape (3,) or (N,3)
-            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
-
-        start: int or str, default=-1
-            Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
-            the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input displacements are absolute.
-            If `increment=True`, input displacements are interpreted as increments of each other.
-            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
-            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        This method will apply the ``move`` operation to each Collection object individually.
-
-        >>> import magpylib as magpy
-        >>> dipole = magpy.misc.Dipole((1,2,3))
-        >>> loop = magpy.current.Loop(1,1)
-        >>> col = loop + dipole
-        >>> col.move([(1,1,1), (2,2,2)])
-        >>> for src in col:
-        >>>     print(src.position)
-        [[1. 1. 1.]  [2. 2. 2.]]
-        [[1. 1. 1.]  [2. 2. 2.]]
-
-        But manipulating individual objects keeps them in the Collection
-
-        >>> dipole.move((1,1,1))
-        >>> for src in col:
-        >>>     print(src.position)
-        [[1. 1. 1.]  [2. 2. 2.]]
-        [[1. 1. 1.]  [3. 3. 3.]]
-
-        """
-        for s in self:
-            s.move(displacement, start, increment)
         return self
 
     def copy(self):
