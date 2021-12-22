@@ -994,10 +994,12 @@ class Path(MagicProperties):
         Line class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs
 
+    show: bool, default=None
+        show/hide path
     """
 
-    def __init__(self, marker=None, line=None, **kwargs):
-        super().__init__(marker=marker, line=line, **kwargs)
+    def __init__(self, marker=None, line=None, show=None, **kwargs):
+        super().__init__(marker=marker, line=line, show=show, **kwargs)
 
     @property
     def marker(self):
@@ -1016,6 +1018,19 @@ class Path(MagicProperties):
     @line.setter
     def line(self, val):
         self._line = validate_property_class(val, "line", Line, self)
+
+    @property
+    def show(self):
+        """show/hide path"""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
+            f" but received {repr(val)} instead"
+        )
+        self._show = val
 
 
 class Line(MagicProperties):

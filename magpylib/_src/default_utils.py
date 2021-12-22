@@ -38,6 +38,7 @@ LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
     "-.": "dashdot",
     "dotted": "dot",
     ".": "dot",
+    ":": "dot",
     (0, (1, 1)): "dot",
     "loosely dotted": "longdash",
     "loosely dashdotted": "longdashdot",

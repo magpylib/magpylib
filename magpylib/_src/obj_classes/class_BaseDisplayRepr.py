@@ -16,10 +16,7 @@ class BaseDisplayRepr:
     """
 
     display = display
-
-    def __init__(self):
-        if not hasattr(self, "_object_type"):
-            self._object_type = None
+    _object_type = None
 
     # ------------------------------------------------------------------
     # INTERFACE
