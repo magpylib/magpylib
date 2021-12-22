@@ -336,7 +336,7 @@ class BaseRotation:
 
 
     def rotate_from_euler(
-        self, seq, angles, anchor=None, start=-1, increment=False, degrees=True):
+        self, seq, angles, anchor=None, start=-1, increment=False, degrees=False):
         """
         Rotates object in the global coordinate system from Euler angle input.
 
@@ -387,7 +387,7 @@ class BaseRotation:
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
-        >>> s.rotate_from_euler('z', 45, anchor=0)
+        >>> s.rotate_from_euler('z', 45, anchor=0, degrees=True)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [0.70710678 0.70710678 0.        ]
