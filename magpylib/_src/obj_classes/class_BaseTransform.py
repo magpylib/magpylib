@@ -172,8 +172,8 @@ class BaseTransform:
 
         # store new position and orientation
         # pylint: disable=attribute-defined-outside-init
-        self._target_class.orientation = R.from_quat(new_opath)
-        self._target_class.position = new_ppath
+        self._target_class._orientation = R.from_quat(new_opath)
+        self._target_class._position = new_ppath
 
         return self._target_class
 
