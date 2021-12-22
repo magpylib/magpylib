@@ -81,6 +81,8 @@ class BaseTransform:
         """
         # pylint: disable=protected-access
         if hasattr(self, "objects"):
+            if anchor is None:
+                anchor = self._position[-1]
             for obj in self.objects:         # pylint: disable=no-member
                 self._target_class = obj
                 self._rotate(rotation, anchor, start, increment)
