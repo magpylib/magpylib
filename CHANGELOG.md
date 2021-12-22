@@ -63,7 +63,7 @@ Improved internal workings
   - Fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
 
 ### Removed
-- `config.ITERCYLINDER` is now obsolete. A new iterative solution replaced by an analytical expression.
+- `config.ITERCYLINDER` is now obsolete. The iterative solution replaced by a new analytical expression.
 
 
 ---
