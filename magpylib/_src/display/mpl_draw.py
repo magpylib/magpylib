@@ -23,7 +23,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
-
+    points = []
     for col, obj in zip(colors, faced_objects):
 
         # add src attributes position and orientation depending on show_path
@@ -70,6 +70,9 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
             length=length * size_direction,
             color=col,
         )
+        arrow_tip_pos = ((draw_direc * length * size_direction) - draw_pos)[0]
+        points.append(arrow_tip_pos)
+    return points
 
 
 def draw_markers(markers, ax, color, symbol, size):
