@@ -159,8 +159,8 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 - Restructuring
   - displaySystem is now a top-level function, not a Collection method anymore.
   - getBsweep and multiprocessing options have been completely removed, this functionality
-    should be overtaken by the new vector functionality which uses the numpy native vectorized 
-    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also 
+    should be overtaken by the new vector functionality which uses the numpy native vectorized
+    code paradigm. If mkl library is set (test by numpy.show_config()) numpy will also
     automatically use multiporcessing. Code parallelization at magpylib level should be done
     by hand.
 - Docstrings are adjusted to work better with intellisense. (Problems with *.rst code)
@@ -184,8 +184,8 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 ## [1.2.0b0] - 2019-07-16
 ### Added
 - Sensor Class
-  - This allows users to create a coordinate system-enabled Sensor object, which can be placed, rotated, moved and oriented. 
-  - This object can take the B-Field of a system (be it single source or a Collection) with the added functionality of having its own reference in the coordinate space, allowing users to easily acquire relative B-Field measurements of a system from an arbitrarily placed sensor object. 
+  - This allows users to create a coordinate system-enabled Sensor object, which can be placed, rotated, moved and oriented.
+  - This object can take the B-Field of a system (be it single source or a Collection) with the added functionality of having its own reference in the coordinate space, allowing users to easily acquire relative B-Field measurements of a system from an arbitrarily placed sensor object.
   - Sensors in a list may be displayed in the `Collection.displaySystem()` by using the `sensors` keyword argument.
 - Added content to the `__repr__` builtin to all source classes for quick console evaluations, simply call a defined object in your Python shell to print out its attributes.
 ### Changed
@@ -196,11 +196,11 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 ---
 
 ## [1.1.1b0] - 2019-06-25
-### Added 
+### Added
 - Changelog
 ### Changed
 - Change `Collection.displaySystem()` not having the `block=False` setting for matplotlib's `pyplot.show()` by default, this meant that outside interactive mode calling this function would hang the script until the plot was closed.
-  - If for some reason you want to block the application, you may still use `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show() normally. 
+  - If for some reason you want to block the application, you may still use `Collection.displaySystem()`'s `suppress=True` kwarg then call pyplot.show() normally.
   - This should cause no API changes, if you have problems please notify us.
 
 ### Fixed
@@ -215,10 +215,10 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 
     > `subplotAx=None`
         Draw into a subplot axe that already exists. The subplot needs to be 3D projected
-        
+
   This allows for creating side-by-side plots using displaySystem.
   Figure information must be set manually in pyplot.figure() in order to not squash the plots upon subplotting.
-    
+
 
     <details>
     <summary> Click here for Example </summary>
@@ -229,7 +229,7 @@ All objects (Sensors, Sources, Collections) have additional direct access to
     ![image](https://user-images.githubusercontent.com/7332704/58973138-86b4a600-87bf-11e9-9e63-35892b7a6713.png)
 
     </details>
-    
+
 ### Changed
 
 - `getBsweep()` for Collections and Sources now always returns a numpy array
@@ -266,7 +266,7 @@ All objects (Sensors, Sources, Collections) have additional direct access to
 
 ## [1.0.0b0] - 2019-05-21
 
-The first official release of the magpylib library. 
+The first official release of the magpylib library.
 
 ### Added
 

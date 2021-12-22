@@ -138,7 +138,7 @@ def badInput_rotate5():
     bg.rotate(r0, anchor=(1,2,3,4))
 
 
-# BAD BASEGEO .ROTATE_FROM_ANGAX INPUT-----------------------------------------
+# BAD BASEGEO .rotate_from_angax INPUT-----------------------------------------
 def badInput_rotate_from_angax1():
     """ bad ang input type"""
     bg = BaseGeo(a3, r0)
