@@ -220,6 +220,7 @@ def display_matplotlib(
     for obj, color in zip(obj_list, cycle(color_sequence)):
         style = get_style(obj, Config, **kwargs)
         color = style.color if style.color is not None else color
+        show_path = style.path.show
         lw = 0.25
         faces = None
         if obj.style.model3d.extra:

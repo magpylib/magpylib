@@ -39,6 +39,7 @@ DEFAULTS = {
                 "path": {
                     "line": {"width": 1, "style": "solid", "color": None},
                     "marker": {"size": 2, "symbol": "o", "color": None},
+                    "show": True,
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,
