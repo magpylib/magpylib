@@ -6,9 +6,9 @@ All notable changes to magpylib are documented here.
 ## [Unreleased]
 This is a major update that includes
 
-API changes
-New features
-Improved internal workings
+- API changes
+- New features
+- Improved internal workings
 ### Added
 - New sources classes:
   - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
