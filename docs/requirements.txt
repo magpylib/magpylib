@@ -1,3 +1,10 @@
-recommonmark>=0.5
-sphinx_rtd_theme>=0.4
+git+https://github.com/magpylib/magpylib.git@development#egg=magpylib
 sphinx==4.2.0
+plotly>=5.3
+sphinx-copybutton
+sphinx-book-theme
+myst-nb
+sphinx-panels
+sphinx-thebe
+jupytext
+numpy-stl

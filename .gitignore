@@ -81,11 +81,13 @@ instance/
 # Sphinx documentation
 docs/_build/
 docs/_autogen/
+docs/_auto_examples/
 # PyBuilder
 target/
 
 # Jupyter Notebook
 .ipynb_checkpoints
+*.ipynb
 
 # IPython
 profile_default/
@@ -130,3 +132,5 @@ dmypy.json
 
 ### Python Patch ###
 .venv/
+
+.DS_Store

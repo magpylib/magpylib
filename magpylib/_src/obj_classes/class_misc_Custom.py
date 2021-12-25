@@ -38,20 +38,25 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Examples
     --------
     By default the CustomSource is initialized at position (0,0,0), with unit rotation:
+
     >>> import magpylib as magpy
     >>> import numpy as np
 
     Define a external B-field function which returns constant vector in x-direction
+
     >>> def constant_Bfield(position=((0,0,0))):
     ...    return np.array([[1,0,0]]*len(position))
 
     Construct a ``CustomSource`` from the field function
+
     >>> external_field = magpy.misc.CustomSource(field_B_lambda=constant_Bfield)
     >>> B = external_field.getB([[1,2,3],[4,5,6]])
     >>> print(B)
     [[1. 0. 0.]
      [1. 0. 0.]]
+
     The custom source can be rotated as any other source object in the library.
+
     >>> external_field.rotate_from_angax(90, 'z')
     >>> B = external_field.getB([[1,2,3],[4,5,6]])
     >>> print(B) # Notice the outut field is now pointing in y-direction

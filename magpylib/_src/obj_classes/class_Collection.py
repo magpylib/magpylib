@@ -342,7 +342,7 @@ class Collection(BaseDisplayRepr, BaseTransform):
     def set_styles(self, arg=None, **kwargs):
         """
         Set display style of all objects in the Collection. Only matching properties
-        will be applied. Input can be a **style-dict or style-underscore_magic.
+        will be applied. Input can be a style-dict or style-underscore_magic.
 
         Returns
         -------
