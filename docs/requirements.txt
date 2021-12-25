@@ -1,10 +1,10 @@
-git+https://github.com/magpylib/magpylib.git@docs_v4#egg=magpylib
+git+https://github.com/magpylib/magpylib.git@development#egg=magpylib
 sphinx==4.2.0
 plotly>=5.3
 sphinx-copybutton
 sphinx-book-theme
 myst-nb
-sphinx-panels
+sphinx-panelse
 sphinx-thebe
 jupytext
 numpy-stl
