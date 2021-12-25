@@ -282,7 +282,7 @@ class BaseRotation:
 
 
     def rotate_from_rotvec(
-        self, rotvec, anchor=None, start=-1, increment=False):
+        self, rotvec, anchor=None, start=-1, increment=False, degrees=False):
         """
         Rotates object in the global coordinate system from rotation vector input. (vector
         direction is the rotation axis, vector length is the rotation angle in [rad])
@@ -309,6 +309,9 @@ class BaseRotation:
             If `increment=False`, input rotations are absolute.
             If `increment=True`, input rotations are interpreted as increments of each other.
 
+        degrees : bool, default False
+            If True, then the given angles are assumed to be in degrees.
+
         Returns
         -------
         self: Magpylib object
@@ -331,7 +334,7 @@ class BaseRotation:
         [0.54030231 0.84147098 0.        ]
         [0. 0. 1.]
         """
-        rot = R.from_rotvec(rotvec)
+        rot = R.from_rotvec(rotvec, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
 
