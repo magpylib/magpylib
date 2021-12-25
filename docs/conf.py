@@ -132,7 +132,7 @@ html_logo = "./_static/images/magpylib_logo.png"
 html_theme_options = {
     "repository_url": "https://github.com/magpylib/magpylib",
     "path_to_docs": "docs/",
-    "repository_branch": "docs_v4",
+    "repository_branch": "development",
     "use_repository_button": True,
     "use_download_button": True,
     "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
