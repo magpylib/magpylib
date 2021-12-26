@@ -70,7 +70,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
             length=length * size_direction,
             color=col,
         )
-        arrow_tip_pos = ((draw_direc * length * size_direction) - draw_pos)[0]
+        arrow_tip_pos = ((draw_direc * length * size_direction) + draw_pos)[0]
         points.append(arrow_tip_pos)
     return points
 
