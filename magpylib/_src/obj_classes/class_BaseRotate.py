@@ -19,8 +19,8 @@ from magpylib._src.input_checks import (
 from magpylib._src.utility import adjust_start
 
 
-class BaseRotation:
-    """Defines the Rotation class for magpylib objects"""
+class BaseRotate:
+    """Rotation methods for Magpylib objects"""
 
 
     def __init__(self):
@@ -78,6 +78,18 @@ class BaseRotation:
         [ 0.  0. 45.]
         """
         # pylint: disable=protected-access
+
+        # Code explanation:
+        #  - For Magpylib objects that inherit BaseRotate and BaseGeo, rotate() is applied
+        #    only to the object itself.
+        #  - Collections inherit only BaseRotate. In this case rotate() is only applied to
+        #    the children of the Collection object.
+        #  - Compounds are Collections that also inherit BaseGeo. In this case rotate()
+        #    is applied to the object itself, but also to its children.
+
+        # All rotate_fromXXX methods simply generate a scipy Rotation object and hand it over
+        #   to rotate().
+
         if getattr(self, "_object_type", None) == "Collection":
             for obj in self.objects:         # pylint: disable=no-member
                 self._target_class = obj
@@ -87,19 +99,7 @@ class BaseRotation:
 
 
     def _rotate(self, rotation, anchor=None, start=-1, increment=False):
-        """
-        rotate_from_XXX generates a scipy Rotation object R
-        then rotate() is called with R
-        then _rotate() is called from rotate() to enable Collection application
-
-        Inputs:
-        rotation: scipy rotation object
-        anchor: anchor point
-        start: int or 'append', path start position
-        increment: bool, interpretation of path-input
-
-        Rotates the object in the global coordinate system by a given rotation input
-        (can be a path).
+        """ rotate method implementation
         """
 
         # check input types
