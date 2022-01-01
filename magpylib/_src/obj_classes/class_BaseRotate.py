@@ -19,13 +19,105 @@ from magpylib._src.input_checks import (
 from magpylib._src.utility import adjust_start
 
 
+def apply_rotation(target_object, rotation, anchor=None, start=-1, increment=False):
+    """
+    Implementation of the rotate() functionality.
+
+    target_object: object with position and orientation attributes
+    rotation: scipy rotation object
+    anchor: rotation anchor
+    start: start
+    increment: increment
+    """
+
+    # check input types
+    if Config.checkinputs:
+        check_rot_type(rotation)
+        check_anchor_type(anchor)
+        check_start_type(start)
+        check_increment_type(increment)
+
+    # input anchor -> ndarray type
+    if anchor is not None:
+        anchor = np.array(anchor, dtype=float)
+
+    # check format
+    if Config.checkinputs:
+        check_anchor_format(anchor)
+        # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
+
+    # expand rot.as_quat() to shape (1,4)
+    rot = rotation
+    inrotQ = rot.as_quat()
+    if inrotQ.ndim == 1:
+        inrotQ = np.expand_dims(inrotQ, 0)
+        rot = R.from_quat(inrotQ)
+
+    # load old path
+    # pylint: disable=protected-access
+    old_ppath = target_object._position
+    old_opath = target_object._orientation.as_quat()
+
+    lenop = len(old_ppath)
+    lenin = len(inrotQ)
+
+    # change start to positive values in [0, lenop]
+    start = adjust_start(start, lenop)
+
+    # incremental input -> absolute input
+    #   missing Rotation object item assign to improve this code
+    if increment:
+        rot1 = rot[0]
+        for i, r in enumerate(rot[1:]):
+            rot1 = r * rot1
+            inrotQ[i + 1] = rot1.as_quat()
+        rot = R.from_quat(inrotQ)
+
+    end = start + lenin  # end position of new_path
+
+    # allocate new paths
+    til = end - lenop
+    if til <= 0:  # case inpos completely inside of existing path
+        new_ppath = old_ppath
+        new_opath = old_opath
+    else:  # case inpos extends beyond old_path -> tile up old_path
+        new_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
+        new_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
+
+    # position change when there is an anchor
+    if anchor is not None:
+        new_ppath[start:end] -= anchor
+        new_ppath[start:end] = rot.apply(new_ppath[start:end])
+        new_ppath[start:end] += anchor
+
+    # set new rotation
+    oldrot = R.from_quat(new_opath[start:end])
+    new_opath[start:end] = (rot * oldrot).as_quat()
+
+    # store new position and orientation
+    # pylint: disable=attribute-defined-outside-init
+    target_object.orientation = R.from_quat(new_opath)
+    target_object.position = new_ppath
+
+    return target_object
+
+
 class BaseRotate:
-    """Rotation methods for Magpylib objects"""
+    """
+    Inherit this class to provide rotation() methods.
 
+    All rotate_from_XXX methods simply generate a scipy Rotation object and hand it
+    over to the main rotate() method. This then uses the apply_rotation function to
+    apply the rotations to all target objects.
 
-    def __init__(self):
-        self._target_class = self
-
+    - For Magpylib objects that inherit BaseRotate and BaseGeo (e.g. Cuboid()),
+      apply_rotation() is applied only to the object itself.
+    - Collections inherit only BaseRotate. In this case apply_rotation() is only
+      applied to the Collection children.
+    - Compounds are user-defined classes that inherit Collection but also inherit
+      BaseGeo. In this case apply_rotation() is applied to the object itself, but also
+      to its children.
+    """
 
     def rotate(self, rotation, anchor=None, start=-1, increment=False):
         """
@@ -77,101 +169,15 @@ class BaseRotate:
         [0.70710678 0.70710678 0.        ]
         [ 0.  0. 45.]
         """
-        # pylint: disable=protected-access
 
-        # Code explanation:
-        #  - For Magpylib objects that inherit BaseRotate and BaseGeo, rotate() is applied
-        #    only to the object itself.
-        #  - Collections inherit only BaseRotate. In this case rotate() is only applied to
-        #    the children of the Collection object.
-        #  - Compounds are Collections that also inherit BaseGeo. In this case rotate()
-        #    is applied to the object itself, but also to its children.
-
-        # All rotate_fromXXX methods simply generate a scipy Rotation object and hand it over
-        #   to rotate().
-
+        # if Collection: apply to children
         if getattr(self, "_object_type", None) == "Collection":
-            for obj in self.objects:         # pylint: disable=no-member
-                self._target_class = obj
-                self._rotate(rotation, anchor, start, increment)
+            for obj in self.objects:
+                apply_rotation(obj, rotation, anchor, start, increment)
             return self
-        return self._rotate(rotation, anchor, start, increment)
 
-
-    def _rotate(self, rotation, anchor=None, start=-1, increment=False):
-        """ rotate method implementation
-        """
-
-        # check input types
-        if Config.checkinputs:
-            check_rot_type(rotation)
-            check_anchor_type(anchor)
-            check_start_type(start)
-            check_increment_type(increment)
-
-        # input anchor -> ndarray type
-        if anchor is not None:
-            anchor = np.array(anchor, dtype=float)
-
-        # check format
-        if Config.checkinputs:
-            check_anchor_format(anchor)
-            # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
-
-        # expand rot.as_quat() to shape (1,4)
-        rot = rotation
-        inrotQ = rot.as_quat()
-        if inrotQ.ndim == 1:
-            inrotQ = np.expand_dims(inrotQ, 0)
-            rot = R.from_quat(inrotQ)
-
-        # load old path
-        # pylint: disable=protected-access
-        old_ppath = self._target_class._position
-        old_opath = self._target_class._orientation.as_quat()
-
-        lenop = len(old_ppath)
-        lenin = len(inrotQ)
-
-        # change start to positive values in [0, lenop]
-        start = adjust_start(start, lenop)
-
-        # incremental input -> absolute input
-        #   missing Rotation object item assign to improve this code
-        if increment:
-            rot1 = rot[0]
-            for i, r in enumerate(rot[1:]):
-                rot1 = r * rot1
-                inrotQ[i + 1] = rot1.as_quat()
-            rot = R.from_quat(inrotQ)
-
-        end = start + lenin  # end position of new_path
-
-        # allocate new paths
-        til = end - lenop
-        if til <= 0:  # case inpos completely inside of existing path
-            new_ppath = old_ppath
-            new_opath = old_opath
-        else:  # case inpos extends beyond old_path -> tile up old_path
-            new_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
-            new_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-
-        # position change when there is an anchor
-        if anchor is not None:
-            new_ppath[start:end] -= anchor
-            new_ppath[start:end] = rot.apply(new_ppath[start:end])
-            new_ppath[start:end] += anchor
-
-        # set new rotation
-        oldrot = R.from_quat(new_opath[start:end])
-        new_opath[start:end] = (rot * oldrot).as_quat()
-
-        # store new position and orientation
-        # pylint: disable=attribute-defined-outside-init
-        self._target_class.orientation = R.from_quat(new_opath)
-        self._target_class.position = new_ppath
-
-        return self._target_class
+        # if BaseGeo apply to self
+        return apply_rotation(self, rotation, anchor, start, increment)
 
 
     def rotate_from_angax(

@@ -128,8 +128,6 @@ class Collection(BaseDisplayRepr, BaseMove, BaseRotate):
 
         # init inheritance
         BaseDisplayRepr.__init__(self)
-        BaseMove.__init__(self)
-        BaseRotate.__init__(self)
 
         # instance attributes
         self._objects = []

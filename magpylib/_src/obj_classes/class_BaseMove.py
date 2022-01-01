@@ -11,14 +11,77 @@ from magpylib._src.input_checks import (
 from magpylib._src.utility import adjust_start
 
 
+def apply_move(target_object, displacement, start=-1, increment=False):
+    """
+    Implementation of the move() functionality.
+
+    target_object: object with position and orientation attributes
+    displacement: displacement vector/path
+    start: start
+    increment: increment
+    """
+    # pylint: disable=protected-access
+    # pylint: disable=attribute-defined-outside-init
+
+    # check input types
+    if Config.checkinputs:
+        check_vector_type(displacement, "displacement")
+        check_start_type(start)
+        check_increment_type(increment)
+
+    # displacement vector -> ndarray
+    inpath = np.array(displacement, dtype=float)
+
+    # check input format
+    if Config.checkinputs:
+        check_path_format(inpath, "displacement")
+
+    # expand if input is shape (3,)
+    if inpath.ndim == 1:
+        inpath = np.expand_dims(inpath, 0)
+
+    # load old path
+    old_ppath = target_object._position
+    old_opath = target_object._orientation.as_quat()
+    lenop = len(old_ppath)
+    lenin = len(inpath)
+
+    # change start to positive values in [0, lenop]
+    start = adjust_start(start, lenop)
+
+    # incremental input -> absolute input
+    if increment:
+        for i, d in enumerate(inpath[:-1]):
+            inpath[i + 1] = inpath[i + 1] + d
+
+    end = start + lenin  # end position of new_path
+
+    til = end - lenop
+    if til > 0:  # case inpos extends beyond old_path -> tile up old_path
+        old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
+        old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
+        target_object.orientation = R.from_quat(old_opath)
+
+    # add new_ppath to old_ppath
+    old_ppath[start:end] += inpath
+    target_object.position = old_ppath
+
+    return target_object
+
+
 class BaseMove:
-    """Move method for Magpylib objects"""
+    """
+    Inherit this class to provide move() methods.
 
-
-    def __init__(self):
-        # _target_object explanation in move() below
-        self._target_object = self
-
+    The apply_move function is applied to all target objects:
+    - For Magpylib objects that inherit BaseRotate and BaseGeo (e.g. Cuboid()),
+      apply_move() is applied only to the object itself.
+    - Collections inherit only BaseMove. In this case apply_move() is only
+      applied to the Collection children.
+    - Compounds are user-defined classes that inherit Collection but also inherit
+      BaseGeo. In this case apply_move() is applied to the object itself, but also
+      to its children.
+    """
 
     def move(self, displacement, start=-1, increment=False):
         """
@@ -101,74 +164,13 @@ class BaseMove:
          [4.1 4.1 4.1]
          [4.1 4.1 4.1]
          [4.1 4.1 4.1]]
-
         """
-        # pylint: disable=protected-access
 
-        # Code explanation:
-        #  - For Magpylib objects that inherit BaseMove and BaseGeo, move() is applied
-        #    only to the object itself.
-        #  - Collections inherit only BaseMove. In this case move() is only applied to
-        #    the children of the Collection object.
-        #  - Compounds are Collections that also inherit BaseGeo. In this case move()
-        #    is applied to the object itself, but also to its children.
-
+        # if Collection: apply to children
         if getattr(self, "_object_type", None) == "Collection":
-            for obj in self.objects:         # pylint: disable=no-member
-                self._target_object = obj
-                self._move(displacement, start, increment)
+            for obj in self.objects:
+                apply_move(obj, displacement, start, increment)
             return self
-        return self._move(displacement, start, increment)
 
-
-    def _move(self, displacement, start=-1, increment=False):
-        """
-        move method implementation
-        """
-        # pylint: disable=protected-access
-        # pylint: disable=attribute-defined-outside-init
-
-        # check input types
-        if Config.checkinputs:
-            check_vector_type(displacement, "displacement")
-            check_start_type(start)
-            check_increment_type(increment)
-
-        # displacement vector -> ndarray
-        inpath = np.array(displacement, dtype=float)
-
-        # check input format
-        if Config.checkinputs:
-            check_path_format(inpath, "displacement")
-
-        # expand if input is shape (3,)
-        if inpath.ndim == 1:
-            inpath = np.expand_dims(inpath, 0)
-
-        # load old path
-        old_ppath = self._target_object._position
-        old_opath = self._target_object._orientation.as_quat()
-        lenop = len(old_ppath)
-        lenin = len(inpath)
-
-        # change start to positive values in [0, lenop]
-        start = adjust_start(start, lenop)
-
-        # incremental input -> absolute input
-        if increment:
-            for i, d in enumerate(inpath[:-1]):
-                inpath[i + 1] = inpath[i + 1] + d
-
-        end = start + lenin  # end position of new_path
-
-        til = end - lenop
-        if til > 0:  # case inpos extends beyond old_path -> tile up old_path
-            old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
-            old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-            self._target_object.orientation = R.from_quat(old_opath)
-
-        # add new_ppath to old_ppath
-        old_ppath[start:end] += inpath
-        self._target_object.position = old_ppath
-
-        return self._target_object
+        # if BaseGeo apply to self
+        return apply_move(self, displacement, start, increment)

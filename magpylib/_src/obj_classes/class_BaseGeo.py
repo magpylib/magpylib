@@ -49,8 +49,6 @@ class BaseGeo(BaseRotate, BaseMove):
         # set pos and orient attributes
         self.position = position
         self.orientation = orientation
-        BaseRotate.__init__(self)
-        BaseMove.__init__(self)
 
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
