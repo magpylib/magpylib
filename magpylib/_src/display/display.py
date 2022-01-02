@@ -122,7 +122,8 @@ def display(
     """
 
     # flatten input
-    obj_list = format_obj_input(objects)
+    obj_list = format_obj_input(objects, allow='sources+sensors')
+    obj_list_semi_flat = format_obj_input(objects, allow='sources+sensors+collections')
 
     # test if all source dimensions and excitations (if sho_direc=True) have been initialized
     check_dimensions(obj_list)
@@ -162,7 +163,7 @@ def display(
         from magpylib._src.display.plotly_draw import display_plotly
 
         display_plotly(
-            *obj_list,
+            *obj_list_semi_flat,
             markers=markers,
             show_path=path,
             zoom=zoom,

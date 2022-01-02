@@ -36,6 +36,7 @@ from magpylib._src.default_utils import (
     linearize_dict,
 )
 from magpylib._src.input_checks import check_excitations
+from magpylib._src.utility import format_obj_input
 
 # Defaults
 
@@ -445,7 +446,11 @@ def make_Loop(
 
 
 def make_UnsupportedObject(
-    pos=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+    pos=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -506,7 +511,14 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        dipole,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -527,7 +539,14 @@ def make_Cuboid(
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cuboid,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -555,7 +574,14 @@ def make_Cylinder(
         pos=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -577,7 +603,14 @@ def make_CylinderSegment(
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
-        cylinder_segment, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder_segment,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -598,7 +631,14 @@ def make_Sphere(
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
     sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        pos,
+        style,
+        **kwargs,
     )
 
 
@@ -709,10 +749,15 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = _getIntensity(
-                vertices=vertices, axis=magnetization,
+                vertices=vertices,
+                axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
+        mesh_dict,
+        orientation,
+        position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -792,6 +837,9 @@ def get_plotly_traces(
     path_numbering=False,
     color=None,
     autosize=None,
+    legendgroup=None,
+    showlegend=None,
+    legendtext=None,
     **kwargs,
 ) -> list:
     """
@@ -866,7 +914,8 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dim=input_obj.dimension,
+                mag=input_obj.magnetization,
+                dim=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -885,29 +934,37 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
+                Nvert=Nvert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization, diameter=input_obj.diameter,
+                mag=input_obj.magnetization,
+                diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment, autosize=autosize,
+                moment=input_obj.moment,
+                autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices, current=input_obj.current,
+                vertices=input_obj.vertices,
+                current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Loop):
             kwargs.update(
-                diameter=input_obj.diameter, current=input_obj.current,
+                diameter=input_obj.diameter,
+                current=input_obj.current,
             )
             make_func = make_Loop
+        elif getattr(input_obj, "position", None) is not None:
+            make_func = None
         else:
             kwargs.update(name=type(input_obj).__name__)
             make_func = make_UnsupportedObject
@@ -921,7 +978,7 @@ def get_plotly_traces(
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
-            if style.model3d.show:
+            if style.model3d.show and make_func is not None:
                 path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
             for extr in extra_model3d_traces:
                 if extr.show:
@@ -963,7 +1020,16 @@ def get_plotly_traces(
             traces.append(extra_model3d_trace)
 
         if trace:
-            trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
+            trace.update(
+                {
+                    "legendgroup": f"{input_obj}"
+                    if legendgroup is None
+                    else legendgroup,
+                    "showlegend": True if showlegend is None else showlegend,
+                }
+            )
+            if legendtext is not None:
+                trace["name"] = legendtext
             traces.append(trace)
 
         if (
@@ -1137,7 +1203,7 @@ def display_plotly(
             traces_dicts = draw_frame(
                 obj_list, color_sequence, zoom, show_path, **kwargs
             )
-            traces = [t for obj in obj_list for t in traces_dicts[obj]]
+            traces = [t for traces in traces_dicts.values() for t in traces]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
             apply_fig_ranges(fig, zoom=zoom)
@@ -1146,9 +1212,7 @@ def display_plotly(
         fig.show(renderer=renderer)
 
 
-def draw_frame(
-    objs, color_sequence, zoom, show_path, return_autosize=False, **kwargs
-) -> Tuple:
+def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -1158,23 +1222,50 @@ def draw_frame(
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    return_autosize = False
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
     traces_dicts = {}
     traces_colors = {}
     for obj, color in zip(objs, cycle(color_sequence)):
-        if not isinstance(obj, (Dipole, Sensor)):
-            traces_dicts[obj] = get_plotly_traces(
-                obj, show_path=show_path, color=color, **kwargs
-            )
-        else:
+        if isinstance(obj, (Dipole, Sensor)):
             traces_colors[obj] = color
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj.position.T
             traces_dicts[obj] = [dict(x=x, y=y, z=z)]
+        subobjs = [obj]
+        legendgroup = None
+        if getattr(obj, "objects", None) is not None:
+            subobjs = obj.objects
+            if getattr(obj, "position", None) is not None:
+                subobjs += [obj]
+                legendgroup = f"{obj}"
+                color = color if obj.style.color is None else obj.style.color
+        for ind, subobj in enumerate(subobjs):
+            if legendgroup is not None:
+                if ind == 0:
+                    showlegend = True
+                    legendtext = getattr(obj, "name", legendgroup)
+                else:
+                    showlegend = False
+            else:
+                showlegend = True
+                legendtext = None
+            traces_dicts[subobj] = get_plotly_traces(
+                subobj,
+                show_path=show_path,
+                color=color,
+                legendgroup=legendgroup,
+                showlegend=showlegend,
+                legendtext=legendtext,
+                **kwargs,
+            )
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
-    autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+    if autosize is None or autosize == "return":
+        if autosize == "return":
+            return_autosize = True
+        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, color in traces_colors.items():
         traces_dicts[obj] = get_plotly_traces(
             obj, show_path=show_path, color=color, autosize=autosize, **kwargs
@@ -1395,23 +1486,20 @@ def animate_path(
 
     # create frame for each path index or downsampled path index
     frames = []
+    autosize = "return"
     for i, ind in enumerate(path_indices):
-        if i == 0:  # calculate the dipoles and sensors autosize from first frame
-            traces_dicts, autosize = draw_frame(
-                objs,
-                color_sequence,
-                zoom,
-                show_path=[ind],
-                return_autosize=True,
-                **kwargs,
-            )
+        frame = draw_frame(
+            objs,
+            color_sequence,
+            zoom,
+            show_path=[ind],
+            autosize=autosize,
+            **kwargs,
+        )
+        if i == 0:  # get the dipoles and sensors autosize from first frame
+            traces_dicts, autosize = frame
         else:
-            traces_dicts = {
-                obj: get_plotly_traces(
-                    obj, show_path=[ind], color=color, autosize=autosize, **kwargs
-                )
-                for obj, color in zip(objs, cycle(color_sequence))
-            }
+            traces_dicts = frame
         traces = [t for tr in traces_dicts.values() for t in tr]
         frames.append(
             go.Frame(
@@ -1424,7 +1512,10 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
+                    {
+                        "frame": {"duration": 0, "redraw": True},
+                        "mode": "immediate",
+                    },
                 ],
                 "label": str(ind + 1),
                 "method": "animate",

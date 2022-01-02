@@ -76,7 +76,8 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> list:
+def format_obj_input(
+    *objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -91,15 +92,19 @@ def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> l
     # pylint: disable=protected-access
 
     obj_list = []
+    flatten_collection = not 'collections' in allow.split("+")
     for obj in objects:
         if isinstance(obj, (tuple, list)):
             obj_list += format_obj_input(
-                obj, allow=allow, warn=warn
+                *obj, allow=allow, warn=warn
             )  # recursive flattening
         else:
             try:
                 if obj._object_type == "Collection":
-                    obj_list += obj.objects
+                    if flatten_collection:
+                        obj_list += obj.objects
+                    else:
+                        obj_list += [obj]
                 elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
                     obj_list += [obj]
             except Exception as error:
@@ -264,6 +269,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             allowed_list.extend(LIBRARY_SOURCES)
         elif allowed == "sensors":
             allowed_list.extend(LIBRARY_SENSORS)
+        elif allowed =='collections':
+            allowed_list.extend(['Collection'])
     new_list = []
     for obj in obj_list:
         if obj._object_type in allowed_list:
