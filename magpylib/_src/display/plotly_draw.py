@@ -1237,15 +1237,15 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
         legendgroup = None
         if getattr(obj, "objects", None) is not None:
             subobjs = obj.objects
+            legendgroup = f"{obj}"
             if getattr(obj, "position", None) is not None:
                 subobjs += [obj]
-                legendgroup = f"{obj}"
                 color = color if obj.style.color is None else obj.style.color
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
-                if ind == 0:
+                if ind == 0: #take name of parent
                     showlegend = True
-                    legendtext =  obj.style.name #take name of parent
+                    legendtext =  getattr(getattr(obj, 'style', None), 'name', None) 
                     legendtext =  getattr(obj,'name', None) if legendtext is None else legendtext
                     legendtext =  f"{obj!r}" if legendtext is None else legendtext
                 else:
