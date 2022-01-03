@@ -109,7 +109,7 @@ def format_obj_input(
                     obj_list += [obj]
             except Exception as error:
                 raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
-    obj_list = filter_objects(obj_list, allow=allow, warn=warn)
+    obj_list = filter_objects(obj_list, allow=allow, warn=False)
     return obj_list
 
 
