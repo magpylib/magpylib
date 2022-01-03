@@ -912,7 +912,7 @@ def get_plotly_traces(
                 diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
-        elif getattr(input_obj, "position", None) is not None:
+        elif getattr(input_obj, "_object_type", None) == 'Collection':
             make_func = None
         else:
             kwargs.update(name=type(input_obj).__name__)
