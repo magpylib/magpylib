@@ -1245,7 +1245,9 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
             if legendgroup is not None:
                 if ind == 0:
                     showlegend = True
-                    legendtext = obj.style.name #take name of parent
+                    legendtext =  obj.style.name #take name of parent
+                    legendtext =  getattr(obj,'name', None) if legendtext is None else legendtext
+                    legendtext =  f"{obj!r}" if legendtext is None else legendtext
                 else:
                     showlegend = False
             else:
