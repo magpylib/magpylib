@@ -1,4 +1,4 @@
-"""BaseRotation class code"""
+"""BaseMove class code"""
 # pylint: disable=too-many-instance-attributes
 import numpy as np
 from scipy.spatial.transform import Rotation as R
