@@ -171,13 +171,15 @@ class BaseRotate:
         """
 
         # if Collection: apply to children
+        targets = []
         if getattr(self, "_object_type", None) == "Collection":
-            for obj in self.objects:
-                apply_rotation(obj, rotation, anchor, start, increment)
-            return self
-
+            targets.extend(self.objects)
         # if BaseGeo apply to self
-        return apply_rotation(self, rotation, anchor, start, increment)
+        if getattr(self, "position", None) is not None:
+            targets.append(self)
+        for obj in targets:
+            apply_rotation(obj, rotation, anchor, start, increment)
+        return self
 
 
     def rotate_from_angax(
@@ -736,13 +738,15 @@ class BaseMove:
         """
 
         # if Collection: apply to children
+        targets = []
         if getattr(self, "_object_type", None) == "Collection":
-            for obj in self.objects:
-                apply_move(obj, displacement, start, increment)
-            return self
-
+            targets.extend(self.objects)
         # if BaseGeo apply to self
-        return apply_move(self, displacement, start, increment)
+        if getattr(self, "position", None) is not None:
+            targets.append(self)
+        for obj in targets:
+            apply_move(obj, displacement, start, increment)
+        return self
 
 class BaseTransform(BaseRotate, BaseMove):
     """Base transformation class holding the move and rotate methods"""
