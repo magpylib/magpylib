@@ -60,11 +60,11 @@ def apply_move(target_object, displacement, start=-1, increment=False):
     if til > 0:  # case inpos extends beyond old_path -> tile up old_path
         old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
         old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-        target_object.orientation = R.from_quat(old_opath)
+        target_object._orientation = R.from_quat(old_opath)
 
     # add new_ppath to old_ppath
     old_ppath[start:end] += inpath
-    target_object.position = old_ppath
+    target_object._position = old_ppath
 
     return target_object
 

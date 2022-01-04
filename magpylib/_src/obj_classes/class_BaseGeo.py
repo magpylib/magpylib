@@ -44,9 +44,10 @@ class BaseGeo(BaseRotate, BaseMove):
 
     """
 
-    def __init__(self, position, orientation, style=None, **kwargs):
+    def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
         # set pos and orient attributes
+        self.reset_path()
         self.position = position
         self.orientation = orientation
 
@@ -188,5 +189,5 @@ class BaseGeo(BaseRotate, BaseMove):
         [0. 0. 0.]
 
         """
-        self.position = (0, 0, 0)
-        self.orientation = R.from_quat((0, 0, 0, 1))
+        self._position = np.array([[0, 0, 0]])
+        self._orientation = R.from_quat([0, 0, 0, 1])

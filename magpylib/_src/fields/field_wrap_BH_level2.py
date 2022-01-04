@@ -229,11 +229,11 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
             m_tile = m-m0
             # tile up position
             tile_pos = np.tile(obj._position[-1], (m_tile,1))
-            obj.position = np.concatenate((obj._position, tile_pos))
+            obj._position = np.concatenate((obj._position, tile_pos))
             # tile up orientation
             tile_orient = np.tile(obj._orientation.as_quat()[-1], (m_tile,1))
             tile_orient = np.concatenate((obj._orientation.as_quat(), tile_orient))
-            obj.orientation = R.from_quat(tile_orient)
+            obj._orientation = R.from_quat(tile_orient)
 
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pixel, 3)
@@ -312,7 +312,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
     # reset tiled objects
     for obj,m0 in zip(reset_obj, reset_obj_m0):
-        obj.position = obj.position[:m0]
-        obj.orientation = obj.orientation[:m0]
+        obj._position = obj._position[:m0]
+        obj._orientation = obj._orientation[:m0]
 
     return B
