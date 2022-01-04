@@ -608,7 +608,7 @@ class BaseTransform:
         if til > 0:  # case inpos extends beyond old_path -> tile up old_path
             old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
             old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-            self._target_class.orientation = R.from_quat(old_opath)
+            self._target_class._orientation = R.from_quat(old_opath)
 
         # add new_ppath to old_ppath
         old_ppath[start:end] += inpath
