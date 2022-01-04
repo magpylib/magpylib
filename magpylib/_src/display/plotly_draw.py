@@ -1,5 +1,6 @@
 """ plolty draw-functionalities"""
 # pylint: disable=C0302
+# pylint: disable=too-many-branches
 
 from itertools import cycle, combinations
 from math import log10
@@ -36,7 +37,6 @@ from magpylib._src.default_utils import (
     linearize_dict,
 )
 from magpylib._src.input_checks import check_excitations
-from magpylib._src.utility import format_obj_input
 
 # Defaults
 

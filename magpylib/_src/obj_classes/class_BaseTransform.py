@@ -15,6 +15,8 @@ from magpylib._src.input_checks import (
     check_degree_type,
     check_angle_format,
     check_axis_format,
+    check_vector_type,
+    check_path_format,
 )
 from magpylib._src.utility import adjust_start
 
@@ -173,6 +175,7 @@ class BaseRotate:
         # if Collection: apply to children
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
+            # pylint: disable=no-member
             targets.extend(self.objects)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:
@@ -570,17 +573,6 @@ class BaseRotate:
         return self.rotate(rot, anchor=anchor, start=start, increment=increment)
 
 
-# pylint: disable=too-many-instance-attributes
-import numpy as np
-from scipy.spatial.transform import Rotation as R
-from magpylib._src.default_classes import default_settings as Config
-from magpylib._src.input_checks import (
-    check_vector_type,
-    check_path_format,
-    check_start_type,
-    check_increment_type)
-from magpylib._src.utility import adjust_start
-
 
 def apply_move(target_object, displacement, start=-1, increment=False):
     """
@@ -740,6 +732,7 @@ class BaseMove:
         # if Collection: apply to children
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
+            # pylint: disable=no-member
             targets.extend(self.objects)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:

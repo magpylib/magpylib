@@ -563,6 +563,3 @@ class Collection(BaseCollection, BaseTransform):
     >>> xCol.getB(mCol)
     >>> mCol.getB()
     """
-
-    def __init__(self, *objects):
-        super().__init__(*objects)
