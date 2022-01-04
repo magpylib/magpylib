@@ -4,16 +4,16 @@ from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
     LIBRARY_SENSORS,
-    LIBRARY_SOURCES,
-)
+    LIBRARY_SOURCES)
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.obj_classes.class_BaseRotate import BaseRotate
+from magpylib._src.obj_classes.class_BaseMove import BaseMove
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.default_utils import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-# ON INTERFACE
-class Collection(BaseDisplayRepr, BaseTransform):
+
+class Collection(BaseDisplayRepr, BaseMove, BaseRotate):
     """
     Group multiple objects in one Collection for common manipulation.
 
@@ -128,7 +128,6 @@ class Collection(BaseDisplayRepr, BaseTransform):
 
         # init inheritance
         BaseDisplayRepr.__init__(self)
-        BaseTransform.__init__(self)
 
         # instance attributes
         self._objects = []
