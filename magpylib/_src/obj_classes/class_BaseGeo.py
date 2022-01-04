@@ -3,8 +3,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_Collection import Collection
-from magpylib._src.obj_classes.class_BaseRotate import BaseRotate
-from magpylib._src.obj_classes.class_BaseMove import BaseMove
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_vector_type,
@@ -12,7 +11,7 @@ from magpylib._src.input_checks import (
     check_rot_type)
 
 
-class BaseGeo(BaseRotate, BaseMove):
+class BaseGeo(BaseTransform):
     """Initializes position and rotation (=orientation) properties
     of an object in a global CS.
 
