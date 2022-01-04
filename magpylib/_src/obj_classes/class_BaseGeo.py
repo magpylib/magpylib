@@ -44,10 +44,9 @@ class BaseGeo(BaseRotate, BaseMove):
 
     """
 
-    def __init__(self, position=(0.,0.,0.), orientation=None, style=None, **kwargs):
+    def __init__(self, position, orientation, style=None, **kwargs):
+
         # set pos and orient attributes
-        self._position = np.array([[0.,0.,0.]])
-        self._orientation = R.from_quat([[0.,0.,0.,1.]])
         self.position = position
         self.orientation = orientation
 
@@ -102,8 +101,7 @@ class BaseGeo(BaseRotate, BaseMove):
         # expand if input is shape (3,)
         if pos.ndim == 1:
             pos = np.expand_dims(pos, 0)
-        self._position = np.array([[0.,0.,0.]])
-        self.move(pos)
+        self._position = pos
 
     @property
     def orientation(self):
@@ -127,8 +125,15 @@ class BaseGeo(BaseRotate, BaseMove):
 
         # None input generates unit rotation
         if rot is None:
-            rot = R.from_quat([(0, 0, 0, 1)] * len(self._position))
-        self.rotate(rot)
+            self._orientation = R.from_quat([(0, 0, 0, 1)] * len(self._position))
+
+        # expand rot.as_quat() to shape (1,4)
+        else:
+            val = rot.as_quat()
+            if val.ndim == 1:
+                self._orientation = R.from_quat([val])
+            else:
+                self._orientation = rot
 
     @property
     def style(self):
