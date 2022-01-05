@@ -5,8 +5,9 @@ from magpylib._src.utility import (
     check_duplicates,
     LIBRARY_SENSORS,
     LIBRARY_SOURCES)
+
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.default_utils import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
@@ -291,35 +292,6 @@ class BaseCollection(BaseDisplayRepr):
         """
         return copy.copy(self)
 
-    def reset_path(self):
-        """
-        Reset all object paths to position = (0,0,0) and orientation = unit rotation.
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        Create a collection with non-zero paths
-
-        >>> import magpylib as magpy
-        >>> dipole = magpy.misc.Dipole((1,2,3), position=(1,2,3))
-        >>> loop = magpy.current.Loop(1,1, position=[(1,1,1)]*2)
-        >>> col = loop + dipole
-        >>> for src in col:
-        >>>     print(src.position)
-        [[1. 1. 1.]  [1. 1. 1.]]
-        [1. 2. 3.]
-        >>> col.reset_path()
-        >>> for src in col:
-        >>>     print(src.position)
-        [0. 0. 0.]
-        [0. 0. 0.]
-        """
-        for obj in self:
-            obj.reset_path()
-        return self
 
     def set_styles(self, arg=None, **kwargs):
         """
@@ -455,7 +427,7 @@ class BaseCollection(BaseDisplayRepr):
         return getBH_level2(False, sources, sensors, sumup, squeeze)
 
 
-class Collection(BaseCollection, BaseTransform):
+class Collection(BaseGeo, BaseCollection):
     """
     Group multiple objects in one Collection for common manipulation.
 
@@ -563,3 +535,7 @@ class Collection(BaseCollection, BaseTransform):
     >>> xCol.getB(mCol)
     >>> mCol.getB()
     """
+
+    def __init__(self, *args, position=(0.0, 0.0, 0.0), orientation=None, style=None):
+        BaseCollection.__init__(self, *args)
+        BaseGeo.__init__(self, position=position, orientation=orientation, style=style)

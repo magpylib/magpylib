@@ -174,6 +174,8 @@ class BaseRotate:
         [ 0.  0. 45.]
         """
 
+
+        # pylint: disable=no-member
         # if Collection: apply to children
         clear = False
         if start=='clear':
@@ -183,7 +185,6 @@ class BaseRotate:
         if getattr(self, "_object_type", None) == "Collection":
             if anchor is None:
                 anchor = self._position[-1]
-            # pylint: disable=no-member
             targets.extend(self.objects)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:
@@ -753,6 +754,7 @@ class BaseMove:
             targets.append(self)
         for obj in targets:
             if clear:
+                # pylint: disable=no-member
                 obj._position -= self._position
                 obj._position = obj._position[-1:]
                 obj._orientation = obj._orientation[:len(obj._position)]

@@ -2,7 +2,6 @@
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import (
@@ -46,7 +45,8 @@ class BaseGeo(BaseTransform):
     def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
         # set pos and orient attributes
-        self.reset_path()
+        self._position = np.array([[0., 0., 0.]])
+        self._orientation = R.from_quat([[0., 0., 0., 1.]])
         self.position = position
         self.orientation = orientation
 
@@ -171,6 +171,8 @@ class BaseGeo(BaseTransform):
         -------
         Collection: Collection
         """
+        # pylint: disable=import-outside-toplevel
+        from magpylib._src.obj_classes.class_Collection import Collection
         return Collection(self, source)
 
     # methods -------------------------------------------------------
@@ -195,5 +197,16 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
 
         """
-        self._position = np.array([[0., 0., 0.]])
-        self._orientation = R.from_quat([[0., 0., 0., 1.]])
+
+        # if Collection: apply to children
+        targets = []
+        if getattr(self, "_object_type", None) == "Collection":
+            # pylint: disable=no-member
+            targets.extend(self.objects)
+        # if BaseGeo apply to self
+        if getattr(self, "position", None) is not None:
+            targets.append(self)
+        for obj in targets:
+            # pylint: disable=protected-access
+            obj._position = np.array([[0., 0., 0.]])
+            obj._orientation = R.from_quat([[0., 0., 0., 1.]])
