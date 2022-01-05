@@ -98,8 +98,8 @@ def apply_rotation(target_object, rotation, anchor=None, start=-1, increment=Fal
 
     # store new position and orientation
     # pylint: disable=attribute-defined-outside-init
-    target_object.orientation = R.from_quat(new_opath)
-    target_object.position = new_ppath
+    target_object._orientation = R.from_quat(new_opath)
+    target_object._position = new_ppath
 
     return target_object
 
