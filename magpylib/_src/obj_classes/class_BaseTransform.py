@@ -173,6 +173,10 @@ class BaseRotate:
         """
 
         # if Collection: apply to children
+        clear = False
+        if start=='clear':
+            start = 0
+            clear = True
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
             # pylint: disable=no-member
@@ -181,9 +185,8 @@ class BaseRotate:
         if getattr(self, "position", None) is not None:
             targets.append(self)
         for obj in targets:
-            if start=='clear':
+            if clear:
                 obj._orientation = R.from_quat([[0, 0, 0, 1]]*len(self._position))
-                start=0
             apply_rotation(obj, rotation, anchor, start, increment)
         return self
 
@@ -732,6 +735,10 @@ class BaseMove:
          [4.1 4.1 4.1]]
         """
 
+        clear = False
+        if start=='clear':
+            start = 0
+            clear = True
         # if Collection: apply to children
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
@@ -741,9 +748,8 @@ class BaseMove:
         if getattr(self, "position", None) is not None:
             targets.append(self)
         for obj in targets:
-            if start=='clear':
+            if clear:
                 obj._position = np.array([[0.,0.,0.]])
-                start=0
             apply_move(obj, displacement, start, increment)
         return self
 
