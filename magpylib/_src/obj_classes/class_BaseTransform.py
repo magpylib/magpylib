@@ -1,5 +1,7 @@
 """BaseTransform class code"""
 # pylint: disable=too-many-instance-attributes
+# # pylint: disable=protected-access
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
