@@ -179,6 +179,8 @@ class BaseRotate:
             clear = True
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
+            if anchor is None:
+                anchor = self._position[-1]
             # pylint: disable=no-member
             targets.extend(self.objects)
         # if BaseGeo apply to self
