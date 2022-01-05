@@ -15,4 +15,3 @@ from magpylib._src.obj_classes.class_current_Loop import Loop
 from magpylib._src.obj_classes.class_current_Line import Line
 from magpylib._src.obj_classes.class_mag_CylinderSegment import CylinderSegment
 from magpylib._src.obj_classes.class_misc_Custom import CustomSource
-
