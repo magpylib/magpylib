@@ -195,5 +195,5 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
 
         """
-        self._position = np.array([[0, 0, 0]])
-        self._orientation = R.from_quat([[0, 0, 0, 1]])
+        self._position = np.array([[0., 0., 0.]])
+        self._orientation = R.from_quat([[0., 0., 0., 1.]])
