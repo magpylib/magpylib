@@ -139,12 +139,12 @@ magpy.display(col, backend="plotly")
 
 ```{note}
 The `Collection` object does not hold any `style` attribute on its own but the helper method
-`set_styles` allows setting the style of all its children where the set arguments match
+`set_children_styles` allows setting the style of all its children where the set arguments match
 existing child style attributes.
 ```
 
 ```{code-cell} ipython3
-col.set_styles(magnetization_color_south="blue")
+col.set_children_styles(magnetization_color_south="blue")
 
 magpy.display(col, backend="plotly")
 ```

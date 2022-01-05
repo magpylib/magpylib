@@ -102,7 +102,7 @@ def format_obj_input(
             try:
                 if obj._object_type == "Collection":
                     if flatten_collection:
-                        obj_list += obj.objects
+                        obj_list += obj.children
                     else:
                         obj_list += [obj]
                 elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):

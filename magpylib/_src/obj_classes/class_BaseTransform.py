@@ -185,7 +185,7 @@ class BaseRotate:
         if getattr(self, "_object_type", None) == "Collection":
             if anchor is None:
                 anchor = self._position[-1]
-            targets.extend(self.objects)
+            targets.extend(self.children)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:
             targets.append(self)
@@ -748,7 +748,7 @@ class BaseMove:
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
             # pylint: disable=no-member
-            targets.extend(self.objects)
+            targets.extend(self.children)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:
             targets.append(self)

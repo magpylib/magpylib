@@ -1184,8 +1184,8 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
             traces_dicts[obj] = [dict(x=x, y=y, z=z)]
         subobjs = [obj]
         legendgroup = None
-        if getattr(obj, "objects", None) is not None:
-            subobjs = obj.objects
+        if getattr(obj, "children", None) is not None:
+            subobjs = obj.children
             legendgroup = f"{obj}"
             if getattr(obj, "position", None) is not None:
                 subobjs += [obj]

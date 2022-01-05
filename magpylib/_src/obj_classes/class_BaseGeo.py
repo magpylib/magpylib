@@ -202,7 +202,7 @@ class BaseGeo(BaseTransform):
         targets = []
         if getattr(self, "_object_type", None) == "Collection":
             # pylint: disable=no-member
-            targets.extend(self.objects)
+            targets.extend(self.children)
         # if BaseGeo apply to self
         if getattr(self, "position", None) is not None:
             targets.append(self)
