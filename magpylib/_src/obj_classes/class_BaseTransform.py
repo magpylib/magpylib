@@ -181,6 +181,9 @@ class BaseRotate:
         if getattr(self, "position", None) is not None:
             targets.append(self)
         for obj in targets:
+            if start=='clear':
+                obj._orientation = R.from_quat([[0, 0, 0, 1]]*len(self._position))
+                start=0
             apply_rotation(obj, rotation, anchor, start, increment)
         return self
 
@@ -738,6 +741,9 @@ class BaseMove:
         if getattr(self, "position", None) is not None:
             targets.append(self)
         for obj in targets:
+            if start=='clear':
+                obj._position = np.array([[0.,0.,0.]])
+                start=0
             apply_move(obj, displacement, start, increment)
         return self
 
