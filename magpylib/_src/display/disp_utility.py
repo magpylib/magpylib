@@ -39,7 +39,7 @@ def place_and_orient_model3d(
                 v = model_dict[key]
             else:
                 raise ValueError(
-                    "Rotating/Moving of provided model failed, trace dictionary"
+                    "Rotating/Moving of provided model failed, trace dictionary "
                     f"has no argument {k!r}, use `coordsargs` to specify the names of the "
                     "coordinates to be used"
                 )
