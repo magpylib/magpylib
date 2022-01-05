@@ -125,15 +125,16 @@ class BaseGeo(BaseTransform):
 
         # None input generates unit rotation
         if rot is None:
-            self._orientation = R.from_quat([(0, 0, 0, 1)] * len(self._position))
+            orient = R.from_quat([(0, 0, 0, 1)] * len(self._position))
 
         # expand rot.as_quat() to shape (1,4)
         else:
             val = rot.as_quat()
             if val.ndim == 1:
-                self._orientation = R.from_quat([val])
+                orient = R.from_quat([val])
             else:
-                self._orientation = rot
+                orient = rot
+        self._orientation = orient
 
     @property
     def style(self):
@@ -189,4 +190,4 @@ class BaseGeo(BaseTransform):
 
         """
         self._position = np.array([[0, 0, 0]])
-        self._orientation = R.from_quat([0, 0, 0, 1])
+        self._orientation = R.from_quat([[0, 0, 0, 1]])
