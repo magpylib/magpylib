@@ -751,7 +751,9 @@ class BaseMove:
             targets.append(self)
         for obj in targets:
             if clear:
-                obj._position = np.array([[0.,0.,0.]])
+                obj._position -= self._position
+                obj._position = obj._position[-1:]
+                obj._orientation = obj._orientation[:len(obj._position)]
             apply_move(obj, displacement, start, increment)
         return self
 
