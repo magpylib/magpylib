@@ -1,7 +1,7 @@
 """Collection of classes for display styling"""
 # pylint: disable=C0302
 
-from magpylib._src.default_utils import (
+from magpylib._src.defaults.defaults_utility import (
     MagicProperties,
     validate_property_class,
     color_validator,

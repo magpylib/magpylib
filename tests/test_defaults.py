@@ -1,8 +1,8 @@
 import pytest
 import magpylib as magpy
-from magpylib._src.default_classes import DefaultConfig
+from magpylib._src.defaults.defaults_classes import DefaultConfig
 from magpylib._src.style import DisplayStyle
-from magpylib._src.default_utils import (
+from magpylib._src.defaults.defaults_utility import (
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
 )

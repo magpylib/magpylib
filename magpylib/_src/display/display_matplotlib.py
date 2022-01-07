@@ -4,7 +4,7 @@ from itertools import cycle
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.display_utility import (
     get_rot_pos_from_path,
     draw_arrow_from_vertices,

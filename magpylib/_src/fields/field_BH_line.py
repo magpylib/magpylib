@@ -4,7 +4,7 @@ Implementations of analytical expressions of line current segments
 
 import numpy as np
 from numpy.linalg import norm
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 def field_BH_line_from_vert(

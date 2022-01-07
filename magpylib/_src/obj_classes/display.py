@@ -28,7 +28,7 @@ from magpylib._src.display.display_utility import (
     faces_cylinder_section,
 )
 from magpylib._src.input_checks import check_excitations, check_dimensions
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 # ON INTERFACE

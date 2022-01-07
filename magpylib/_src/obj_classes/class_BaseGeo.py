@@ -4,7 +4,7 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
