@@ -19,13 +19,13 @@ import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.default_classes import default_settings as Config
-from magpylib._src.display.sensor_plotly_mesh import get_sensor_mesh
+from magpylib._src.display.plotly_sensor_mesh import get_sensor_mesh
 from magpylib._src.style import (
     get_style,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
 )
-from magpylib._src.display.disp_utility import (
+from magpylib._src.display.display_utility import (
     get_rot_pos_from_path,
     MagpyMarkers,
     draw_arrow_from_vertices,

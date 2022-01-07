@@ -6,9 +6,9 @@ import numpy as np
 import matplotlib.pyplot as plt
 from magpylib._src.utility import format_obj_input, test_path_format
 from magpylib._src.style import get_style
-from magpylib._src.display.disp_utility import MagpyMarkers
+from magpylib._src.display.display_utility import MagpyMarkers
 
-from magpylib._src.display.mpl_draw import (
+from magpylib._src.display.display_matplotlib import (
     draw_directs_faced,
     draw_faces,
     draw_markers,
@@ -20,7 +20,7 @@ from magpylib._src.display.mpl_draw import (
     draw_line,
     draw_model3d_extra,
 )
-from magpylib._src.display.disp_utility import (
+from magpylib._src.display.display_utility import (
     faces_cuboid,
     faces_cylinder,
     system_size,
@@ -160,7 +160,7 @@ def display(
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.plotly_draw import display_plotly
+        from magpylib._src.display.display_plotly import display_plotly
 
         display_plotly(
             *obj_list_semi_flat,
