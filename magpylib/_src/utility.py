@@ -1,4 +1,5 @@
 """ some utility functions"""
+from math import log10
 from typing import Sequence
 import numpy as np
 
@@ -301,3 +302,55 @@ def adjust_start(start, lenop):
             print(f"Warning: start out of path bounds. Setting start={lenop}.")
 
     return start
+
+
+_UNIT_PREFIX = {
+    -24: "y",  # yocto
+    -21: "z",  # zepto
+    -18: "a",  # atto
+    -15: "f",  # femto
+    -12: "p",  # pico
+    -9: "n",  # nano
+    -6: "µ",  # micro
+    -3: "m",  # milli
+    0: "",
+    3: "k",  # kilo
+    6: "M",  # mega
+    9: "G",  # giga
+    12: "T",  # tera
+    15: "P",  # peta
+    18: "E",  # exa
+    21: "Z",  # zetta
+    24: "Y",  # yotta
+}
+
+
+def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+    """
+    displays a number with given unit and precision and uses unit prefixes for the exponents from
+    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
+
+    Parameters
+    ----------
+    number : int, float
+        can be any number
+    unit : str, optional
+        unit symbol can be any string, by default ""
+    precision : int, optional
+        gives the number of significant digits, by default 3
+    char_between : str, optional
+        character to insert between number of prefix. Can be " " or any string, if a space is wanted
+        before the unit symbol , by default ""
+
+    Returns
+    -------
+    str
+        returns formatted number as string
+    """
+    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
+    prefix = _UNIT_PREFIX.get(digits, "")
+
+    if prefix == "":
+        digits = 0
+    new_number_str = f"{number / 10 ** digits:.{precision}g}"
+    return f"{new_number_str}{char_between}{prefix}{unit}"

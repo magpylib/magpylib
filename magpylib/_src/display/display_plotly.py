@@ -3,7 +3,6 @@
 # pylint: disable=too-many-branches
 
 from itertools import cycle, combinations
-from math import log10
 from typing import Tuple
 import warnings
 
@@ -37,59 +36,7 @@ from magpylib._src.defaults.defaults_utility import (
     linearize_dict,
 )
 from magpylib._src.input_checks import check_excitations
-
-# Defaults
-
-_UNIT_PREFIX = {
-    -24: "y",  # yocto
-    -21: "z",  # zepto
-    -18: "a",  # atto
-    -15: "f",  # femto
-    -12: "p",  # pico
-    -9: "n",  # nano
-    -6: "µ",  # micro
-    -3: "m",  # milli
-    0: "",
-    3: "k",  # kilo
-    6: "M",  # mega
-    9: "G",  # giga
-    12: "T",  # tera
-    15: "P",  # peta
-    18: "E",  # exa
-    21: "Z",  # zetta
-    24: "Y",  # yotta
-}
-
-
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
-    """
-    displays a number with given unit and precision and uses unit prefixes for the exponents from
-    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-
-    Parameters
-    ----------
-    number : int, float
-        can be any number
-    unit : str, optional
-        unit symbol can be any string, by default ""
-    precision : int, optional
-        gives the number of significant digits, by default 3
-    char_between : str, optional
-        character to insert between number of prefix. Can be " " or any string, if a space is wanted
-        before the unit symbol , by default ""
-
-    Returns
-    -------
-    str
-        returns formatted number as string
-    """
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
-
-    if prefix == "":
-        digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
+from magpylib._src.utility import unit_prefix
 
 
 def _getIntensity(vertices, axis) -> np.ndarray:
@@ -454,7 +401,11 @@ def make_Loop(
 
 
 def make_UnsupportedObject(
-    position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -515,7 +466,14 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
+        dipole,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -536,7 +494,14 @@ def make_Cuboid(
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
+        cuboid,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -564,7 +529,14 @@ def make_Cylinder(
         position=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
+        cylinder,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -616,7 +588,14 @@ def make_Sphere(
         Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
     )
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -730,10 +709,15 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = _getIntensity(
-                vertices=vertices, axis=magnetization,
+                vertices=vertices,
+                axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
+        mesh_dict,
+        orientation,
+        position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -890,7 +874,8 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -909,27 +894,33 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
+                Nvert=Nvert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization, diameter=input_obj.diameter,
+                mag=input_obj.magnetization,
+                diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment, autosize=autosize,
+                moment=input_obj.moment,
+                autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices, current=input_obj.current,
+                vertices=input_obj.vertices,
+                current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Loop):
             kwargs.update(
-                diameter=input_obj.diameter, current=input_obj.current,
+                diameter=input_obj.diameter,
+                current=input_obj.current,
             )
             make_func = make_Loop
         elif getattr(input_obj, "_object_type", None) == "Collection":
@@ -1008,26 +999,33 @@ def get_plotly_traces(
             and show_path is not False
             and style.path.show is not False
         ):
-            x, y, z = input_obj.position.T
-            txt_kwargs = (
+            scatter_path = make_path(input_obj, path_numbering, style, kwargs)
+            traces.append(scatter_path)
+
+    return traces
+
+def make_path(input_obj, path_numbering, style, kwargs):
+    """draw obj path based on path style properties"""
+    x, y, z = input_obj.position.T
+    txt_kwargs = (
                 {"mode": "markers+text+lines", "text": list(range(len(x)))}
                 if path_numbering
                 else {"mode": "markers+lines"}
             )
-            marker = style.path.marker.as_dict()
-            symb = marker["symbol"]
-            marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-            marker["color"] = (
+    marker = style.path.marker.as_dict()
+    symb = marker["symbol"]
+    marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+    marker["color"] = (
                 kwargs["color"] if marker["color"] is None else marker["color"]
             )
-            marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
-            line = style.path.line.as_dict()
-            dash = line["style"]
-            line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
-            line["color"] = kwargs["color"] if line["color"] is None else line["color"]
-            line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
-            line = {k: v for k, v in line.items() if k != "style"}
-            scatter_path = dict(
+    marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+    line = style.path.line.as_dict()
+    dash = line["style"]
+    line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+    line["color"] = kwargs["color"] if line["color"] is None else line["color"]
+    line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line = {k: v for k, v in line.items() if k != "style"}
+    scatter_path = dict(
                 type="scatter3d",
                 x=x,
                 y=y,
@@ -1040,147 +1038,7 @@ def get_plotly_traces(
                 **txt_kwargs,
                 opacity=kwargs["opacity"],
             )
-            traces.append(scatter_path)
-
-    return traces
-
-
-def display_plotly(
-    *obj_list,
-    markers=None,
-    show_path=True,
-    zoom=1,
-    fig=None,
-    renderer=None,
-    animate_time=5,
-    animate_fps=30,
-    animate_slider=None,
-    color_sequence=None,
-    **kwargs,
-):
-
-    """
-    Display objects and paths graphically using the plotly library.
-
-    Parameters
-    ----------
-    objects: sources, collections or sensors
-        Objects to be displayed.
-
-    markers: array_like, None, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
-
-    show_path: bool or int or array_like, default=True
-        Options True, False, positive int or iterable. By default object paths are shown. If
-        show_path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of show_path. If show_path is an iterable
-        of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `animate` parameters.
-
-    zoom: float, default = 1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
-
-    fig: plotly Figure, default=None
-        Display graphical output in a given figure:
-        - plotly.graph_objects.Figure
-        - plotly.graph_objects.FigureWidget
-        By default a new `Figure` is created and displayed.
-
-    renderer: str. default=None,
-        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
-        of contexts.
-        Available renderers are:
-        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
-         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
-         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
-         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
-         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
-
-    animate_time: float, default = 3
-        Sets the animation duration
-
-    animate_fps: float, default = 30
-        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
-        50 by default to avoid hanging the animation process.
-
-    animate_slider: bool, default = False
-        if True, an interactive slider will be displayed and stay in sync with the animation
-
-    title: str, default = "3D-Paths Animation"
-        When zoom=0 all objects are just inside the 3D-axes.
-
-    color_sequence: list or array_like, iterable, default=
-            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
-            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
-            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
-            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-    Returns
-    -------
-    None: NoneType
-    """
-
-    show_fig = False
-    if fig is None:
-        show_fig = True
-        fig = go.Figure()
-    if animate_slider is None:
-        animate_slider = Config.display.animation.slider
-
-    if obj_list:
-        style = getattr(obj_list[0], "style", None)
-        name = getattr(style, "name", None)
-        title = name if len(obj_list) == 1 else None
-    else:
-        title = "No objects to be displayed"
-
-    if markers is not None and markers:
-        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
-
-    if color_sequence is None:
-        color_sequence = Config.display.colorsequence
-
-    with fig.batch_update():
-        if (
-            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in obj_list)
-            and show_path == "animate"
-        ):  # check if some path exist for any object
-            show_path = True
-            warnings.warn("No path to be animated detected, displaying standard plot")
-
-        if show_path == "animate":
-            title = "3D-Paths Animation" if title is None else title
-            animate_path(
-                fig=fig,
-                objs=obj_list,
-                color_sequence=color_sequence,
-                zoom=zoom,
-                title=title,
-                animate_time=animate_time,
-                animate_fps=animate_fps,
-                animate_slider=animate_slider,
-                **kwargs,
-            )
-        else:
-            traces_dicts = draw_frame(
-                obj_list, color_sequence, zoom, show_path, **kwargs
-            )
-            traces = [t for traces in traces_dicts.values() for t in traces]
-            fig.add_traces(traces)
-            fig.update_layout(title_text=title)
-            apply_fig_ranges(fig, zoom=zoom)
-        fig.update_layout(legend_itemsizing="constant")
-    if show_fig:
-        fig.show(renderer=renderer)
+    return scatter_path
 
 
 def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -> Tuple:
@@ -1469,7 +1327,12 @@ def animate_path(
     autosize = "return"
     for i, ind in enumerate(path_indices):
         frame = draw_frame(
-            objs, color_sequence, zoom, show_path=[ind], autosize=autosize, **kwargs,
+            objs,
+            color_sequence,
+            zoom,
+            show_path=[ind],
+            autosize=autosize,
+            **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
@@ -1487,7 +1350,10 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
+                    {
+                        "frame": {"duration": 0, "redraw": True},
+                        "mode": "immediate",
+                    },
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
@@ -1504,3 +1370,141 @@ def animate_path(
         sliders=[sliders_dict] if animate_slider else None,
     )
     apply_fig_ranges(fig, zoom=zoom)
+
+
+def display_plotly(
+    *obj_list,
+    markers=None,
+    show_path=True,
+    zoom=1,
+    fig=None,
+    renderer=None,
+    animate_time=5,
+    animate_fps=30,
+    animate_slider=None,
+    color_sequence=None,
+    **kwargs,
+):
+
+    """
+    Display objects and paths graphically using the plotly library.
+
+    Parameters
+    ----------
+    objects: sources, collections or sensors
+        Objects to be displayed.
+
+    markers: array_like, None, shape (N,3), default=None
+        Display position markers in the global CS. By default no marker is displayed.
+
+    show_path: bool or int or array_like, default=True
+        Options True, False, positive int or iterable. By default object paths are shown. If
+        show_path is a positive integer, objects will be displayed at multiple path
+        positions along the path, in steps of show_path. If show_path is an iterable
+        of integers, objects will be displayed for the provided indices.
+        If show_path='animate, the plot will be animated according to the `animate` parameters.
+
+    zoom: float, default = 1
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+
+    fig: plotly Figure, default=None
+        Display graphical output in a given figure:
+        - plotly.graph_objects.Figure
+        - plotly.graph_objects.FigureWidget
+        By default a new `Figure` is created and displayed.
+
+    renderer: str. default=None,
+        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
+        of contexts.
+        Available renderers are:
+        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
+         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
+         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
+         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
+         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
+
+    animate_time: float, default = 3
+        Sets the animation duration
+
+    animate_fps: float, default = 30
+        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
+        50 by default to avoid hanging the animation process.
+
+    animate_slider: bool, default = False
+        if True, an interactive slider will be displayed and stay in sync with the animation
+
+    title: str, default = "3D-Paths Animation"
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    color_sequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    Returns
+    -------
+    None: NoneType
+    """
+
+    show_fig = False
+    if fig is None:
+        show_fig = True
+        fig = go.Figure()
+    if animate_slider is None:
+        animate_slider = Config.display.animation.slider
+
+    if obj_list:
+        style = getattr(obj_list[0], "style", None)
+        name = getattr(style, "name", None)
+        title = name if len(obj_list) == 1 else None
+    else:
+        title = "No objects to be displayed"
+
+    if markers is not None and markers:
+        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
+
+    if color_sequence is None:
+        color_sequence = Config.display.colorsequence
+
+    with fig.batch_update():
+        if (
+            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in obj_list)
+            and show_path == "animate"
+        ):  # check if some path exist for any object
+            show_path = True
+            warnings.warn("No path to be animated detected, displaying standard plot")
+
+        if show_path == "animate":
+            title = "3D-Paths Animation" if title is None else title
+            animate_path(
+                fig=fig,
+                objs=obj_list,
+                color_sequence=color_sequence,
+                zoom=zoom,
+                title=title,
+                animate_time=animate_time,
+                animate_fps=animate_fps,
+                animate_slider=animate_slider,
+                **kwargs,
+            )
+        else:
+            traces_dicts = draw_frame(
+                obj_list, color_sequence, zoom, show_path, **kwargs
+            )
+            traces = [t for traces in traces_dicts.values() for t in traces]
+            fig.add_traces(traces)
+            fig.update_layout(title_text=title)
+            apply_fig_ranges(fig, zoom=zoom)
+        fig.update_layout(legend_itemsizing="constant")
+    if show_fig:
+        fig.show(renderer=renderer)
