@@ -1,5 +1,6 @@
 """BaseGeo class code"""
 
+# pylint: disable=cyclic-import
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
