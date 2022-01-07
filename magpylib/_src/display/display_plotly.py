@@ -167,7 +167,7 @@ def _getColorscale(
     return colorscale
 
 
-def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)) -> dict:
+def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=(0.0, 0.0, 0.0)) -> dict:
     """
     Provides the base plotly cuboid mesh3d parameters in a dictionary based on dimension and
     position
@@ -178,13 +178,15 @@ def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)) -> dict:
         i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
         j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
         k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dim[0] + pos[0],
-        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dim[1] + pos[1],
-        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dim[2] + pos[2],
+        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0] + position[0],
+        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1] + position[1],
+        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2] + position[2],
     )
 
 
-def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
+def make_BasePrism(
+    base_vertices=3, diameter=1, height=1, position=(0.0, 0.0, 0.0)
+) -> dict:
     """
     Provides the base plotly prism mesh3d parameters in a dictionary based on number of vertices of
     the base, the diameter the height and position.
@@ -196,7 +198,7 @@ def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -
     c2 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 + 1]) * 0.5
     c3 = np.array([[0, 0], [0, 0], [-1, 1]]) * 0.5
     c = np.concatenate([c1, c2, c3], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(pos)
+    c = c.T * np.array([diameter, diameter, height]) + np.array(position)
     i1 = np.arange(N)
     j1 = i1 + 1
     j1[-1] = 0
@@ -226,7 +228,11 @@ def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -
 
 
 def make_Ellipsoid(
-    dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0), Nvert=15, min_vert=3, max_vert=20
+    dimension=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
+    Nvert=15,
+    min_vert=3,
+    max_vert=20,
 ) -> dict:
     """
     Provides the base plotly ellipsoid mesh3d parameters in a dictionary based on number of vertices
@@ -239,9 +245,9 @@ def make_Ellipsoid(
     theta = np.linspace(-np.pi / 2, np.pi / 2, Nvert, endpoint=True)
     phi, theta = np.meshgrid(phi, theta)
 
-    x = np.cos(theta) * np.sin(phi) * dim[0] * 0.5 + pos[0]
-    y = np.cos(theta) * np.cos(phi) * dim[1] * 0.5 + pos[1]
-    z = np.sin(theta) * dim[2] * 0.5 + pos[2]
+    x = np.cos(theta) * np.sin(phi) * dimension[0] * 0.5 + position[0]
+    y = np.cos(theta) * np.cos(phi) * dimension[1] * 0.5 + position[1]
+    z = np.sin(theta) * dimension[2] * 0.5 + position[2]
 
     x, y, z = x.flatten()[N - 1 :], y.flatten()[N - 1 :], z.flatten()[N - 1 :]
 
@@ -314,7 +320,9 @@ def make_BaseCylinderSegment(r1=1, r2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict
     return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
 
 
-def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
+def make_BaseCone(
+    base_vertices=3, diameter=1, height=1, position=(0.0, 0.0, 0.0)
+) -> dict:
     """
     Provides the base plotly Cone mesh3d parameters in a dictionary based on number of vertices of
     the base, the diameter the height and position.
@@ -325,7 +333,7 @@ def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) ->
     c = np.array([np.cos(t), np.sin(t), t * 0 - 1]) * 0.5
     tp = np.array([[0, 0, 0.5]]).T
     c = np.concatenate([c, tp], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(pos)
+    c = c.T * np.array([diameter, diameter, height]) + np.array(position)
     x, y, z = c.T
 
     i = np.arange(N, dtype=int)
@@ -351,13 +359,13 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot="middle") -> 
         base_vertices=base_vertices,
         diameter=d,
         height=d,
-        pos=(0.0, 0.0, z + h / 2 - d / 2),
+        position=(0.0, 0.0, z + h / 2 - d / 2),
     )
     prism = make_BasePrism(
         base_vertices=base_vertices,
         diameter=d / 2,
         height=h - d,
-        pos=(0.0, 0.0, z + -d / 2),
+        position=(0.0, 0.0, z + -d / 2),
     )
     arrow = merge_mesh3d(cone, prism)
 
@@ -367,7 +375,7 @@ def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot="middle") -> 
 def make_Line(
     current=0.0,
     vertices=((-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     color=None,
     style=None,
@@ -391,7 +399,7 @@ def make_Line(
         vertices = np.array(vertices).T
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
-    x, y, z = (vertices.T + pos).T
+    x, y, z = (vertices.T + position).T
     line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = dict(
         type="scatter3d",
@@ -409,7 +417,7 @@ def make_Line(
 def make_Loop(
     current=0.0,
     diameter=1.0,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     Nvert=50,
     orientation=None,
     color=None,
@@ -430,7 +438,7 @@ def make_Loop(
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
-    x, y, z = (vertices.T + pos).T
+    x, y, z = (vertices.T + position).T
     line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     circular = dict(
         type="scatter3d",
@@ -446,7 +454,7 @@ def make_Loop(
 
 
 def make_UnsupportedObject(
-    pos=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+    position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -456,7 +464,7 @@ def make_UnsupportedObject(
     name, name_suffix = get_name_and_suffix(
         "Unknown object", " (Unsupported visualisation)", style
     )
-    vertices = np.array([pos])
+    vertices = np.array([position])
     if orientation is not None:
         vertices = orientation.apply(vertices).T
     x, y, z = vertices
@@ -477,7 +485,7 @@ def make_UnsupportedObject(
 
 def make_Dipole(
     moment=(0.0, 0.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     autosize=None,
@@ -507,14 +515,14 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
 def make_Cuboid(
     mag=(0.0, 0.0, 1000.0),
-    dim=(1.0, 1.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    dimension=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -523,12 +531,12 @@ def make_Cuboid(
     Creates the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments
     """
-    d = [unit_prefix(d / 1000) for d in dim]
+    d = [unit_prefix(d / 1000) for d in dimension]
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
-    cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
+    cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -537,7 +545,7 @@ def make_Cylinder(
     base_vertices=50,
     diameter=1.0,
     height=1.0,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -553,17 +561,17 @@ def make_Cylinder(
         base_vertices=base_vertices,
         diameter=diameter,
         height=height,
-        pos=(0.0, 0.0, 0.0),
+        position=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
 def make_CylinderSegment(
     mag=(0.0, 0.0, 1000.0),
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     Nvert=25.0,
     style=None,
@@ -578,7 +586,14 @@ def make_CylinderSegment(
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
-        cylinder_segment, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder_segment,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -586,7 +601,7 @@ def make_Sphere(
     mag=(0.0, 0.0, 1000.0),
     Nvert=15,
     diameter=1,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -597,9 +612,11 @@ def make_Sphere(
     """
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
-    sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
+    sphere = make_Ellipsoid(
+        Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
+    )
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -608,14 +625,14 @@ def make_Pixels(positions, size=1) -> dict:
     Creates the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
+    pixels = [make_BaseCuboid(position=p, dimension=[size] * 3) for p in positions]
     return merge_mesh3d(*pixels)
 
 
 def make_Sensor(
     pixel=(0.0, 0.0, 0.0),
-    dim=(1.0, 1.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    dimension=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     color=None,
     style=None,
@@ -642,7 +659,10 @@ def make_Sensor(
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
-    dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3], dtype=float)
+    dim = np.array(
+        [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
+        dtype=float,
+    )
     if autosize is not None:
         dim *= autosize
     if np.squeeze(pixel).ndim == 1:
@@ -671,12 +691,12 @@ def make_Sensor(
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
         hull_dim[hull_dim == 0] = pixel_dim / 2
-        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=hull_dim)
+        hull_mesh = make_BaseCuboid(position=hull_pos, dimension=hull_dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     sensor = merge_mesh3d(*meshes_to_merge)
     return _update_mag_mesh(
-        sensor, name, name_suffix, orientation=orientation, position=pos, **kwargs
+        sensor, name, name_suffix, orientation=orientation, position=position, **kwargs
     )
 
 
@@ -863,14 +883,14 @@ def get_plotly_traces(
     else:
         if isinstance(input_obj, Sensor):
             kwargs.update(
-                dim=getattr(input_obj, "dimension", style.size),
+                dimension=getattr(input_obj, "dimension", style.size),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
                 autosize=autosize,
             )
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dim=input_obj.dimension,
+                mag=input_obj.magnetization, dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -928,7 +948,9 @@ def get_plotly_traces(
         ]
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
             if style.model3d.show and make_func is not None:
-                path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+                path_traces.append(
+                    make_func(position=pos, orientation=orient, **kwargs)
+                )
             for extr in extra_model3d_traces:
                 if extr.show:
                     trace3d = {}
@@ -1242,7 +1264,7 @@ def apply_fig_ranges(fig, ranges=None, zoom=None):
 
     Parameters
     ----------
-    ranges: array of dim=(3,2)
+    ranges: array of dimension=(3,2)
         min and max graph range
 
     zoom: float, default = 1
