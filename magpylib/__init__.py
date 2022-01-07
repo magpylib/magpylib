@@ -323,5 +323,6 @@ from magpylib import magnet
 from magpylib import current
 from magpylib import misc
 from magpylib._src.fields import getB, getH, getB_dict, getH_dict
-from magpylib._src.obj_classes import Collection, Sensor, BaseCompound
+from magpylib._src.obj_classes import Sensor
+from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.display import display
