@@ -912,7 +912,7 @@ def get_plotly_traces(
                 diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
-        elif getattr(input_obj, "_object_type", None) == 'Collection':
+        elif getattr(input_obj, "_object_type", None) == "Collection":
             make_func = None
         else:
             kwargs.update(name=type(input_obj).__name__)
@@ -962,7 +962,7 @@ def get_plotly_traces(
             extra_model3d_trace.update(
                 {
                     "legendgroup": f"{input_obj}",
-                    "showlegend": not style.model3d.show and ind == 0,
+                    "showlegend": showlegend and ind == 0,
                     "name": name,
                 }
             )
@@ -1190,9 +1190,13 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
             if getattr(obj, "position", None) is not None:
                 subobjs += [obj]
                 color = color if obj.style.color is None else obj.style.color
+        first_shown = False
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
-                if ind == 0:  # take name of parent
+                if (subobj.style.model3d.show and not first_shown) or ind == len(
+                    subobjs
+                ):  # take name of parent
+                    first_shown = True
                     showlegend = True
                     legendtext = getattr(getattr(obj, "style", None), "name", None)
                     legendtext = (
@@ -1200,6 +1204,7 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
                     )
                     legendtext = f"{obj!r}" if legendtext is None else legendtext
                 else:
+                    legendtext = None
                     showlegend = False
             else:
                 showlegend = True
