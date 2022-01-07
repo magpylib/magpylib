@@ -5,66 +5,109 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_vector_type,
-    check_path_format,
-    check_start_type,
-    check_increment_type)
-from magpylib._src.utility import adjust_start
+    check_path_format)
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 
-def apply_move(target_object, displacement, start=-1, increment=False):
+def check_start_type(start):
+    """start input must be int or str"""
+    if not (isinstance(start, int) or start == 'auto'):
+        msg = 'start input must be int or str ("auto")'
+        raise MagpylibBadUserInput(msg)
+
+
+def check_absolute_type(inp):
+    """absolute input must be bool"""
+    if not isinstance(inp, bool):
+        msg = 'absolute input must be boolean'
+        raise MagpylibBadUserInput(msg)
+
+
+def apply_move(target_object, displacement, start='auto', absolute=False):
     """
     Implementation of the move() functionality.
 
     target_object: object with position and orientation attributes
-    displacement: displacement vector/path
-    start: start
-    increment: increment
+    displacement: displacement vector/path, array_like, shape (3,) or (n,3).
+        If the input is scalar (shape (3,)) the operation is applied to the
+        whole path. If the input is a vector (shape (n,3)), it is
+        appended/merged with the existing path.
+    start: int, str, default='auto'
+        start=i applies an operation starting at the i'th path index.
+        With start='auto' and scalar input the wole path is moved. With
+        start='auto' and vector input the input is appended.
+    absolute: bool, default=False
+        If absolute=False then transformations are applied on to existing
+        positions/orientations. If absolute=True position/orientation are
+        set to input values.
     """
     # pylint: disable=protected-access
     # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=too-many-branches
 
     # check input types
     if Config.checkinputs:
         check_vector_type(displacement, "displacement")
         check_start_type(start)
-        check_increment_type(increment)
+        check_absolute_type(absolute)
 
     # displacement vector -> ndarray
     inpath = np.array(displacement, dtype=float)
+    scalar_input = inpath.ndim==1
 
     # check input format
     if Config.checkinputs:
         check_path_format(inpath, "displacement")
 
-    # expand if input is shape (3,)
-    if inpath.ndim == 1:
-        inpath = np.expand_dims(inpath, 0)
-
     # load old path
-    old_ppath = target_object._position
-    old_opath = target_object._orientation.as_quat()
-    lenop = len(old_ppath)
-    lenin = len(inpath)
+    ppath = target_object._position
+    opath = target_object._orientation.as_quat()
 
-    # change start to positive values in [0, lenop]
-    start = adjust_start(start, lenop)
+    # path lengths
+    lenop = len(ppath)
+    lenip = 1 if scalar_input else len(inpath)
 
-    # incremental input -> absolute input
-    if increment:
-        for i, d in enumerate(inpath[:-1]):
-            inpath[i + 1] = inpath[i + 1] + d
+    # initialize paddings
+    pad_before = 0
+    pad_behind = 0
 
-    end = start + lenin  # end position of new_path
+    # start='auto': apply to all if scalar, append if vector
+    if start=='auto':
+        if scalar_input:
+            start=0
+        else:
+            start=lenop
 
-    til = end - lenop
-    if til > 0:  # case inpos extends beyond old_path -> tile up old_path
-        old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
-        old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-        target_object.orientation = R.from_quat(old_opath)
+    # numpy convention with negative start indices
+    if start<0:
+        start=lenop+start
+        # if start smaller than -old_path_length: pad before
+        if start<0:
+            pad_before = -start # pylint: disable=invalid-unary-operand-type
+            start=0
 
-    # add new_ppath to old_ppath
-    old_ppath[start:end] += inpath
-    target_object.position = old_ppath
+    # vector: if start+inpath extends beyond oldpath: pad behind and merge
+    if start+lenip>lenop+pad_before:
+        pad_behind = start+lenip - (lenop+pad_before)
+
+    # avoid execution when there is no padding (cost~100ns)
+    if pad_before+pad_behind:
+        ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
+        opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
+        target_object.orientation = R.from_quat(opath)
+
+    # set end-index
+    if scalar_input:
+        end = len(ppath)
+    else:
+        end = start+lenip
+
+    # apply move operation
+    if absolute:
+        ppath[start:end] = inpath
+    else:
+        ppath[start:end] += inpath
+    target_object.position = ppath
 
     return target_object
 
@@ -74,16 +117,13 @@ class BaseMove:
     Inherit this class to provide move() methods.
 
     The apply_move function is applied to all target objects:
-    - For Magpylib objects that inherit BaseRotate and BaseGeo (e.g. Cuboid()),
+    - For Magpylib objects that inherit BaseMove and BaseGeo (e.g. Cuboid()),
       apply_move() is applied only to the object itself.
-    - Collections inherit only BaseMove. In this case apply_move() is only
-      applied to the Collection children.
-    - Compounds are user-defined classes that inherit Collection but also inherit
-      BaseGeo. In this case apply_move() is applied to the object itself, but also
-      to its children.
+    - Collections inherit BaseGeo and have children with BaseGeo. In this case
+    apply_move() is applied to the object itself, but also to the children.
     """
 
-    def move(self, displacement, start=-1, increment=False):
+    def move(self, displacement, start='auto', absolute=False):
         """
         Translates the object by the input displacement (can be a path).
 
@@ -169,8 +209,8 @@ class BaseMove:
         # if Collection: apply to children
         if getattr(self, "_object_type", None) == "Collection":
             for obj in self.objects:
-                apply_move(obj, displacement, start, increment)
+                apply_move(obj, displacement, start, absolute)
             return self
 
         # if BaseGeo apply to self
-        return apply_move(self, displacement, start, increment)
+        return apply_move(self, displacement, start, absolute)

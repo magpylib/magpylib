@@ -116,7 +116,8 @@ def test_getB_level2_input_path():
 
     fb = pm1.getB([(x,0,0) for x in np.linspace(0,-1,11)])
 
-    pm1.move([(.1,0,0)]*10, start='append', increment=True)
+    possis = np.linspace((.1,0,0), (1,0,0), 10)
+    pm1.move(possis)
     B=magpy.getB(pm1,(0,0,0))
     result = fb
     assert B.shape == result.shape, "FAILOR3a shape"
@@ -151,7 +152,8 @@ def test_path_tile():
     """
     pm1 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
     pm2 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
-    pm2.move([[10/33]*3]*33, increment=True)
+    poz = np.linspace((10/33,10/33,10/33), (10,10,10), 33)
+    pm2.move(poz)
 
     path1p = pm1.position
     path1r = pm1.orientation
@@ -229,7 +231,7 @@ def test_sensor_rotation3():
     B0 = magpy.getB(src,sens)
     B0t = np.tile(B0,(12,1))
 
-    sens.move([(0,0,0)]*12)
+    sens.move([(0,0,0)]*12, start=-1)
     Bpath = magpy.getB(src,sens)
 
     assert np.allclose(B0t,Bpath)
@@ -242,14 +244,14 @@ def test_object_tiling():
     src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
 
     src2 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
-    src2.move([(1,1,1)]*21)
+    src2.move([(1,1,1)]*21, start=-1)
 
     src3 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
     src4 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
 
     col = magpy.Collection(src3, src4)
-    src3.move([(1,1,1)]*12)
-    src4.move([(1,1,1)]*31)
+    src3.move([(1,1,1)]*12, start=-1)
+    src4.move([(1,1,1)]*31, start=-1)
 
     possis = [[1,2,3]]*5
     sens = magpy.Sensor(pixel=possis)

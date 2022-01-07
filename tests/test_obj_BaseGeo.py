@@ -5,6 +5,7 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 import magpylib as magpy
+from magpylib._src.obj_classes.class_BaseMove import apply_move
 
 
 def test_BaseGeo_basics():
@@ -110,7 +111,7 @@ def test_BaseGeo_reset_path():
     bg = BaseGeo((0, 0, 0), R.from_quat((0, 0, 0, 1)))
     bg.move([(1, 1, 1)] * 11)
 
-    assert len(bg._position) == 11, "bad path generation"
+    assert len(bg._position) == 12, "bad path generation"
 
     bg.reset_path()
     assert len(bg._position) == 1, "bad path reset"
@@ -225,13 +226,13 @@ def test_path_functionality2():
     assert np.allclose(pos, P)
     assert np.allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=6))
+    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     assert np.allclose(pos, P)
     assert np.allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start="append"))
+    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     assert np.allclose(pos, P)
@@ -267,11 +268,6 @@ def test_path_functionality3():
     assert np.allclose(ori1, ori2)
 
     pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=0))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
-
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=-6))
     pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
     assert np.allclose(pos1, pos2)
     assert np.allclose(ori1, ori2)
@@ -349,3 +345,120 @@ def test_kwargs():
 
     with pytest.raises(TypeError):
         bg = BaseGeo((0, 0, 0), None, styl_name="name_02")
+
+
+
+def test_path_functionality_v4():
+    """ v4 path functionality tests """
+    # pylint: disable=too-many-statements
+
+    # SCALAR INPUT - ABSOLUTE=FALSE
+    s = magpy.Sensor()
+
+    # move object with start='auto'
+    apply_move(s, (1,2,3))
+    assert np.all(s.position == (1,2,3))
+
+    # move object with start=0
+    apply_move(s, (1,2,3), start=0)
+    assert np.all(s.position == (2,4,6))
+
+    # move object with start=-1
+    apply_move(s, (1,2,3), start=-1)
+    assert np.all(s.position == (3,6,9))
+
+    # pad behind
+    apply_move(s, (-1,-2,-3), start=1)
+    assert np.all(s.position == [(3,6,9), (2,4,6)])
+
+    # move whole path
+    apply_move(s, (-1,-2,-3))
+    assert np.all(s.position == [(2,4,6), (1,2,3)])
+
+    # pad before
+    apply_move(s, (-1,-2,-3), start=-3)
+    assert np.all(s.position == [(1,2,3), (1,2,3), (0,0,0)])
+
+    # move whole path starting in the middle
+    apply_move(s, (1,2,3), start=1)
+    assert np.all(s.position == [(1,2,3), (2,4,6), (1,2,3)])
+
+    # move whole path starting in the middle with negative start
+    apply_move(s, (1,2,3), start=-2)
+    assert np.all(s.position == [(1,2,3), (3,6,9), (2,4,6)])
+
+
+    # SCALAR INPUT - ABSOLUTE=True
+    s = magpy.Sensor()
+
+    # move object with start='auto'
+    apply_move(s, (1,2,3), absolute=True)
+    assert np.all(s.position == (1,2,3))
+
+    # move object with start=0
+    apply_move(s, (1,2,3), start=0, absolute=True)
+    assert np.all(s.position == (1,2,3))
+
+    # move object with start=-1
+    apply_move(s, (2,3,4), start=-1, absolute=True)
+    assert np.all(s.position == (2,3,4))
+
+    # pad behind
+    apply_move(s, (1,2,3), start=1, absolute=True)
+    assert np.all(s.position == [(2,3,4), (1,2,3)])
+
+    # move whole path
+    apply_move(s, (2,2,2), absolute=True)
+    assert np.all(s.position == [(2,2,2), (2,2,2)])
+
+    # pad before
+    apply_move(s, (1,2,3), start=-3, absolute=True)
+    assert np.all(s.position == [(1,2,3), (1,2,3), (1,2,3)])
+
+    # move whole path starting in the middle
+    apply_move(s, (3,3,3), start=1, absolute=True)
+    assert np.all(s.position == [(1,2,3), (3,3,3), (3,3,3)])
+
+    # move whole path starting in the middle with negative start
+    apply_move(s, (2,2,2), start=-2, absolute=True)
+    assert np.all(s.position == [(1,2,3), (2,2,2), (2,2,2)])
+
+
+    # VECTOR INPUT - ABSOLUTE=FALSE
+    s = magpy.Sensor()
+
+    # vector + start=0: simple append
+    apply_move(s, [(1,2,3)])
+    assert np.all(s.position == [(0,0,0), (1,2,3)])
+
+    # vector + start in middle: merge
+    apply_move(s, [(1,2,3)], start=1)
+    assert np.all(s.position == [(0,0,0), (2,4,6)])
+
+    # vector + start in middle: merge + pad behind
+    apply_move(s, [(-1,-2,-3), (-2,-4,-6)], start=1)
+    assert np.all(s.position == [(0,0,0), (1,2,3), (0,0,0)])
+
+    # vector + start before: merge + pad before
+    apply_move(s, [(1,2,3), (1,2,3)], start=-4)
+    assert np.all(s.position == [(1,2,3), (1,2,3), (1,2,3), (0,0,0)])
+
+
+    # VECTOR INPUT - ABSOLUTE=TRUE
+    s = magpy.Sensor()
+
+    # vector + start=0: simple append
+    apply_move(s, [(1,2,3)], absolute=True)
+    assert np.all(s.position == [(0,0,0), (1,2,3)])
+
+    # vector + start in middle: merge
+    apply_move(s, [(2,2,2)], start=1, absolute=True)
+    assert np.all(s.position == [(0,0,0), (2,2,2)])
+
+    # vector + start in middle: merge + pad behind
+    apply_move(s, [(-1,-2,-3), (-2,-4,-6)], start=1, absolute=True)
+    assert np.all(s.position == [(0,0,0), (-1,-2,-3), (-2,-4,-6)])
+
+    # vector + start before: merge + pad before
+    apply_move(s, [(1,2,3), (1,2,3)], start=-4, absolute=True)
+    assert np.all(s.position == [(1,2,3), (1,2,3), (-1,-2,-3), (-2,-4,-6)])

@@ -58,7 +58,8 @@ def test_vs_mag2_spiral():
 
     angs = np.linspace(0,297,100)
     pm.rotate_from_angax(angs, 'z', anchor=0, start=0)
-    pm.move([(0,0,.1)]*99, start=1, increment=True)
+    possis = np.linspace((0,0,.1), (0,0,9.9), 99)
+    pm.move(possis, start=1)
     B = pm.getB((0,0,0))
     assert np.allclose(B, data), 'vs mag2 - rot'
 

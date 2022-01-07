@@ -96,9 +96,9 @@ def badInput_move2():
     bg.move([1,2,3], start=1.1)
 
 def badInput_move3():
-    """ bad increment input type"""
+    """ bad absolute input type"""
     bg = BaseGeo(a3, r0)
-    bg.move([1,2,3], increment=5)
+    bg.move([1,2,3], absolute=5)
 
 def badInput_move4():
     """ bad displacement input format1"""

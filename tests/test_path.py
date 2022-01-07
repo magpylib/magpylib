@@ -10,7 +10,7 @@ def test_path_old_new_move():
 
     # path style code translation
     pm1 = Cylinder((0,0,1000), (3,3), position=(-5,0,3))
-    pm1.move([(x,0,0) for x in np.linspace(0,10,100)])
+    pm1.move([(x,0,0) for x in np.linspace(0,10,100)], start=-1)
     B1 = pm1.getB(s_pos)
 
     # old style code translation
