@@ -1,9 +1,11 @@
+import pytest
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib
 from magpylib.magnet import Cuboid, Cylinder, Sphere
 from magpylib import getB, getH
 from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict, getH_dict
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 def test_getB_dict1():
     """test field wrapper functions
@@ -349,3 +351,8 @@ def test_getB_dict_over_getB():
     B1 = magpylib.getB(**dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
+
+    # test for kwargs if sources is not a string
+    dic['sources'] = pm
+    with pytest.raises(MagpylibBadUserInput):
+        magpylib.getB(**dic)

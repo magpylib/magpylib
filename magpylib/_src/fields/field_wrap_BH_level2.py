@@ -171,8 +171,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
 
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
-
-    if kwargs:
+    if isinstance(sources, str):
         return getBH_dict_level2(
             bh = bh,
             source_type=sources,
@@ -181,7 +180,11 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
             squeeze=squeeze,
             **kwargs
         )
-
+    elif kwargs:
+        raise MagpylibBadUserInput(
+            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source is "
+            "defined by a string (e.g. sources='Cylinder')"
+        )
     # format sources input:
     #   input: allow only bare src objects or 1D lists/tuple of src and col
     #   out: sources = ordered list of sources
