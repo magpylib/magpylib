@@ -14,8 +14,7 @@ def test_Cylinder_display():
     src = Cylinder((1, 2, 3), (1, 2))
     x = src.display(canvas=ax, path=15)
     assert x is None, "path should revert to True"
-    path_len = 30
-    src.move([(0.4, 0.4, 0.4)] * path_len, increment=True)
+    src.move(np.linspace((.4,.4,.4), (12,12,12), 30), start=-1)
     x = src.display(canvas=ax, path=False, show_direction=True)
     assert x is None, "display test fail"
 
@@ -33,7 +32,7 @@ def test_CylinderSegment_display():
     x = src.display(canvas=ax, path=15)
     assert x is None, "path should revert to True"
 
-    src.move([(0.4, 0.4, 0.4)] * 33, increment=True)
+    src.move(np.linspace((.4,.4,.4), (13.2,13.2,13.2), 33), start=-1)
     x = src.display(canvas=ax, path=False, show_direction=True)
     assert x is None, "display test fail"
 
@@ -45,7 +44,7 @@ def test_Sphere_display():
     x = src.display(canvas=ax, path=15)
     assert x is None, "path should revert to True"
 
-    src.move([(0.4, 0.4, 0.4)] * 20, increment=True)
+    src.move(np.linspace((.4,.4,.4), (8,8,8), 20), start=-1)
     x = src.display(canvas=ax, path=False, show_direction=True)
     assert x is None, "display test fail"
 
@@ -53,7 +52,7 @@ def test_Sphere_display():
 def test_Cuboid_display():
     """testing display"""
     src = Cuboid((1, 2, 3), (1, 2, 3))
-    src.move([(0.1, 0.1, 0.1)] * 20, increment=True)
+    src.move(np.linspace((.1,.1,.1), (2,2,2), 20), start=-1)
     plt.ion()
     x = src.display(path=5, show_direction=True)
     plt.close()
@@ -68,7 +67,8 @@ def test_Sensor_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
-    sens.move([(0.4, 0.4, 0.4)] * 33, increment=True)
+    poz = np.linspace((.4,.4,.4), (13.2,13.2,13.2), 33)
+    sens.move(poz, start=-1)
     x = sens.display(canvas=ax, markers=[(100, 100, 100)], path=15)
     assert x is None, "display test fail"
 
@@ -113,7 +113,7 @@ def test_dipole_display():
     ax2 = plt.subplot(projection="3d")
     dip = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
     dip2 = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
-    dip2.move([(0.4, 0.4, 0.4)] * 5, increment=True)
+    dip2.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
     x = dip.display(canvas=ax2)
     assert x is None, "display test fail"
     x = dip.display(canvas=ax2, path=2)
@@ -126,10 +126,10 @@ def test_circular_line_display():
     ax2 = plt.subplot(projection="3d")
     src1 = magpy.current.Loop(1, 2)
     src2 = magpy.current.Loop(1, 2)
-    src1.move([(0.4, 0.4, 0.4)] * 5, increment=True)
+    src1.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src3.move([(0.4, 0.4, 0.4)] * 5, increment=False)
+    src3.move([(.4,.4,.4)]*5, start=-1)
     x = src1.display(canvas=ax2, path=2, style_arrow_size=0)
     assert x is None, "display test fail"
     x = src2.display(canvas=ax2)
@@ -144,7 +144,7 @@ def test_matplotlib_animation_warning():
     """animate with matplotlib should raise UserWarning"""
     ax = plt.subplot(projection="3d")
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
-    sens.move([(0.4, 0.4, 0.4)] * 33, increment=True)
+    sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     with pytest.warns(UserWarning):
         sens.display(canvas=ax, path="animate")
 
@@ -153,7 +153,7 @@ def test_matplotlib_model3d_extra():
     """test display extra model3d"""
     cuboid = magpy.magnet.Cuboid(
         magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
-    ).rotate_from_angax([72] * 5, "z", anchor=(0, 0, 0), start=0, increment=True)
+    ).rotate_from_angax(np.linspace(72,360,5), "z", anchor=(0, 0, 0), start=0)
     cuboid.style.model3d.show = False
     ax = plt.subplot(projection="3d")
     cuboid.style.model3d.extra = [

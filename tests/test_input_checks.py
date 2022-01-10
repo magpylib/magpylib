@@ -96,9 +96,9 @@ def badInput_move2():
     bg.move([1,2,3], start=1.1)
 
 def badInput_move3():
-    """ bad increment input type"""
+    """ bad absolute input type"""
     bg = BaseGeo(a3, r0)
-    bg.move([1,2,3], increment=5)
+    bg.move([1,2,3], absolute=5)
 
 def badInput_move4():
     """ bad displacement input format1"""
@@ -127,11 +127,6 @@ def badInput_rotate3():
     bg = BaseGeo(a3, r0)
     bg.rotate(r0, start=1.23)
 
-def badInput_rotate4():
-    """ bad increment input type"""
-    bg = BaseGeo(a3, r0)
-    bg.rotate(r0, increment=1)
-
 def badInput_rotate5():
     """ bad anchor input format"""
     bg = BaseGeo(a3, r0)
@@ -158,11 +153,6 @@ def badInput_rotate_from_angax4():
     """ bad start input type"""
     bg = BaseGeo(a3, r0)
     bg.rotate_from_angax(123, (1,2,3), start=1.1)
-
-def badInput_rotate_from_angax5():
-    """ bad increment input type"""
-    bg = BaseGeo(a3, r0)
-    bg.rotate_from_angax(123, (1,2,3), increment=None)
 
 def badInput_rotate_from_angax6():
     """ bad degrees input type"""
@@ -314,7 +304,6 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, badInput_rotate1)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate2)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate3)
-        self.assertRaises(MagpylibBadUserInput, badInput_rotate4)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate5)
 
     def test_rotate_from_angax(self):
@@ -323,7 +312,6 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax2)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax3)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax4)
-        self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax5)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax6)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax7)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax8)

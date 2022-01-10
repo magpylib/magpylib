@@ -75,15 +75,15 @@ def check_rot_type(inp):
 
 def check_start_type(start):
     """start input must be int or str"""
-    if not (isinstance(start, int) or start == "append"):
-        msg = 'start input must be int or str ("attach")'
+    if not (isinstance(start, int) or start == 'auto'):
+        msg = 'start input must be int or str ("auto")'
         raise MagpylibBadUserInput(msg)
 
 
-def check_increment_type(inrc):
-    """incremnt input must be bool"""
-    if not isinstance(inrc, bool):
-        msg = "increment input must be bool (True or False)."
+def check_absolute_type(inp):
+    """absolute input must be bool"""
+    if not isinstance(inp, bool):
+        msg = 'absolute input must be boolean'
         raise MagpylibBadUserInput(msg)
 
 
@@ -97,10 +97,11 @@ def check_angle_type(angle):
 
 
 def check_angle_format(angle):
-    """angle format must be of shape (N,)"""
-    if not angle.ndim == 1:
-        msg = "Bad angle input shape. Must be scalar or 1D vector."
-        raise MagpylibBadInputShape(msg)
+    """angle format must be scalar or of shape (N,)"""
+    if isinstance(angle, np.ndarray):
+        if angle.ndim not in (0,1):
+            msg = "Bad angle input shape. Must be scalar or 1D vector."
+            raise MagpylibBadInputShape(msg)
 
 
 def check_axis_type(ax):

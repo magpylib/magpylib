@@ -82,7 +82,7 @@ def test_Collection_basics():
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
                 pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
 
-            col1.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
+            col1.move(mv).rotate_from_angax(a, aa, aaa, start=-1).rotate(rot, aaa, start=-1)
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]
@@ -119,6 +119,7 @@ def test_Collection_basics():
     ],
 )
 def test_col_getB(test_input, expected):
+    """ testing some Collection stuff with getB"""
     src1 = magpy.magnet.Cuboid(
         magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
@@ -175,12 +176,13 @@ def test_col_getB(test_input, expected):
     ],
 )
 def test_bad_col_getB_inputs(test_input, expected):
+    """more undocumented Collection checking"""
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
-    )
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0))
+
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
-    )
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0))
+
     sens1 = magpy.Sensor(position=(0, 0, 6))
     sens2 = magpy.Sensor(position=(0, 0, 6))
     sens3 = magpy.Sensor(position=(0, 0, 6))
