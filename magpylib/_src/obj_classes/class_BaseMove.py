@@ -5,22 +5,9 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_vector_type,
-    check_path_format)
-from magpylib._src.exceptions import MagpylibBadUserInput
-
-
-def check_start_type(start):
-    """start input must be int or str"""
-    if not (isinstance(start, int) or start == 'auto'):
-        msg = 'start input must be int or str ("auto")'
-        raise MagpylibBadUserInput(msg)
-
-
-def check_absolute_type(inp):
-    """absolute input must be bool"""
-    if not isinstance(inp, bool):
-        msg = 'absolute input must be boolean'
-        raise MagpylibBadUserInput(msg)
+    check_path_format,
+    check_start_type,
+    check_absolute_type)
 
 
 def apply_move(target_object, displacement, start='auto', absolute=False):

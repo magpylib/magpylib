@@ -7,13 +7,15 @@ from magpylib._src.exceptions import MagpylibInternalError
 
 
 def constant_Bfield(position=((0, 0, 0))):
+    """ constant field"""
     return np.array([[1, 2, 3]] * len(position))
 
-
 def constant_Hfield(position=((0, 0, 0))):
+    """ constant field - no idea why we need this """
     return np.array([[4, 5, 6]] * len(position))
 
 def bad_Bfield_func(position):
+    """ another constant function without docstring"""
     return np.array([[1, 2, 3]])
 
 def test_CustomSource_basicB():

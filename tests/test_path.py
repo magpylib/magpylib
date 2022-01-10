@@ -35,7 +35,7 @@ def test_path_old_new_rotate():
     # path style code rotation
     pm1 = Cuboid((0,0,1000), (1,2,3), position=(0,0,3))
     pm1.rotate_from_angax(-30, ax, anch)
-    pm1.rotate_from_angax(np.linspace(0,60,n), 'x', anch)
+    pm1.rotate_from_angax(np.linspace(0,60,n), 'x', anch, start=-1)
     B1 = pm1.getB(s_pos)
 
     # old style code rotation

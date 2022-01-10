@@ -6,7 +6,6 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.default_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_start_type,
-    check_increment_type,
     check_rot_type,
     check_anchor_type,
     check_anchor_format,
@@ -14,28 +13,36 @@ from magpylib._src.input_checks import (
     check_axis_type,
     check_degree_type,
     check_angle_format,
-    check_axis_format,
-)
-from magpylib._src.utility import adjust_start
+    check_axis_format)
 
-
-def apply_rotation(target_object, rotation, anchor=None, start=-1, increment=False):
+def apply_rotation(target_object, rotation, anchor=None, start='auto'):
     """
     Implementation of the rotate() functionality.
 
     target_object: object with position and orientation attributes
-    rotation: scipy rotation object
-    anchor: rotation anchor
-    start: start
-    increment: increment
+    rotation: a scipy Rotation object
+        If the input is scalar (shape (3,)) the operation is applied to the
+        whole path. If the input is a vector (shape (n,3)), it is
+        appended/merged with the existing path.
+    anchor: array_like shape (3,)
+        Rotation anchor
+    start: int, str, default='auto'
+        start=i applies an operation starting at the i'th path index.
+        With start='auto' and scalar input the wole path is moved. With
+        start='auto' and vector input the input is appended.
+
+    It is difficult to interpret absolute when rotation anchor is not None and
+        a rotation with respect to another anchor already exists. This is a feature
+        that must be discussed.
     """
+    # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
 
     # check input types
     if Config.checkinputs:
         check_rot_type(rotation)
         check_anchor_type(anchor)
         check_start_type(start)
-        check_increment_type(increment)
 
     # input anchor -> ndarray type
     if anchor is not None:
@@ -44,60 +51,67 @@ def apply_rotation(target_object, rotation, anchor=None, start=-1, increment=Fal
     # check format
     if Config.checkinputs:
         check_anchor_format(anchor)
-        # Non need for Rotation check. R.as_quat() can only be of shape (4,) or (N,4)
+        # Non need for Rotation format check. R.as_quat() can only be of shape (4,) or (N,4)
 
-    # expand rot.as_quat() to shape (1,4)
-    rot = rotation
-    inrotQ = rot.as_quat()
-    if inrotQ.ndim == 1:
-        inrotQ = np.expand_dims(inrotQ, 0)
-        rot = R.from_quat(inrotQ)
+    # input -> quaternion ndarray
+    inrotQ = rotation.as_quat()
+    scalar_input = inrotQ.ndim==1
 
     # load old path
-    # pylint: disable=protected-access
-    old_ppath = target_object._position
-    old_opath = target_object._orientation.as_quat()
+    ppath = target_object._position
+    opath = target_object._orientation.as_quat()
 
-    lenop = len(old_ppath)
-    lenin = len(inrotQ)
+    # path lengths
+    lenop = len(ppath)
+    lenip = 1 if scalar_input else len(inrotQ)
 
-    # change start to positive values in [0, lenop]
-    start = adjust_start(start, lenop)
+    # initialize paddings
+    pad_before = 0
+    pad_behind = 0
 
-    # incremental input -> absolute input
-    #   missing Rotation object item assign to improve this code
-    if increment:
-        rot1 = rot[0]
-        for i, r in enumerate(rot[1:]):
-            rot1 = r * rot1
-            inrotQ[i + 1] = rot1.as_quat()
-        rot = R.from_quat(inrotQ)
+    # start='auto': apply to all if scalar, append if vector
+    if start=='auto':
+        if scalar_input:
+            start=0
+        else:
+            start=lenop
 
-    end = start + lenin  # end position of new_path
+    # numpy convention with negative start indices
+    if start<0:
+        start=lenop+start
+        # if start smaller than -old_path_length: pad before
+        if start<0:
+            pad_before = -start # pylint: disable=invalid-unary-operand-type
+            start=0
 
-    # allocate new paths
-    til = end - lenop
-    if til <= 0:  # case inpos completely inside of existing path
-        new_ppath = old_ppath
-        new_opath = old_opath
-    else:  # case inpos extends beyond old_path -> tile up old_path
-        new_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
-        new_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
+    # vector: if start+inpath extends beyond oldpath: pad behind and merge
+    if start+lenip>lenop+pad_before:
+        pad_behind = start+lenip - (lenop+pad_before)
+
+    # avoid execution when there is no padding (cost~100ns)
+    if pad_before+pad_behind:
+        ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
+        opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
+
+    # set end-index
+    if scalar_input:
+        end = len(ppath)
+    else:
+        end = start+lenip
 
     # position change when there is an anchor
     if anchor is not None:
-        new_ppath[start:end] -= anchor
-        new_ppath[start:end] = rot.apply(new_ppath[start:end])
-        new_ppath[start:end] += anchor
+        ppath[start:end] -= anchor
+        ppath[start:end] = rotation.apply(ppath[start:end])
+        ppath[start:end] += anchor
 
     # set new rotation
-    oldrot = R.from_quat(new_opath[start:end])
-    new_opath[start:end] = (rot * oldrot).as_quat()
+    oldrot = R.from_quat(opath[start:end])
+    opath[start:end] = (rotation * oldrot).as_quat()
 
     # store new position and orientation
-    # pylint: disable=attribute-defined-outside-init
-    target_object.orientation = R.from_quat(new_opath)
-    target_object.position = new_ppath
+    target_object.orientation = R.from_quat(opath)
+    target_object.position = ppath
 
     return target_object
 
@@ -119,7 +133,7 @@ class BaseRotate:
       to its children.
     """
 
-    def rotate(self, rotation, anchor=None, start=-1, increment=False):
+    def rotate(self, rotation, anchor=None, start='auto'):
         """
         Rotates object in the global coordinate system using a scipy Rotation object
         as input.
@@ -173,15 +187,15 @@ class BaseRotate:
         # if Collection: apply to children
         if getattr(self, "_object_type", None) == "Collection":
             for obj in self.objects:
-                apply_rotation(obj, rotation, anchor, start, increment)
+                apply_rotation(obj, rotation, anchor, start)
             return self
 
         # if BaseGeo apply to self
-        return apply_rotation(self, rotation, anchor, start, increment)
+        return apply_rotation(self, rotation, anchor, start)
 
 
     def rotate_from_angax(
-        self, angle, axis, anchor=None, start=-1, increment=False, degrees=True):
+        self, angle, axis, anchor=None, start='auto', degrees=True):
         """
         Rotates object in the global coordinate system from angle-axis input.
 
@@ -244,7 +258,6 @@ class BaseRotate:
             check_axis_type(axis)
             check_anchor_type(anchor)
             check_start_type(start)
-            check_increment_type(increment)
             check_degree_type(degrees)
 
         # generate axis from string
@@ -259,9 +272,10 @@ class BaseRotate:
                 else MagpylibBadUserInput(f'Bad axis string input "{axis}"')
             )
 
-        # input expand and ->ndarray
-        if isinstance(angle, (int, float)):
-            angle = (angle,)
+        # input is scalar or vector
+        is_scalar = isinstance(angle, (int, float))
+
+        # secure type - scalar angle will become a float
         angle = np.array(angle, dtype=float)
         axis = np.array(axis, dtype=float)
 
@@ -280,15 +294,20 @@ class BaseRotate:
             angle = angle / 180 * np.pi
 
         # apply rotation
-        angle = np.tile(angle, (3, 1)).T
+        if is_scalar:
+            angle = np.ones(3)*angle
+        else:
+            angle = np.tile(angle, (3, 1)).T
+
+        # generate rotation object from rotvec
         axis = axis / np.linalg.norm(axis)
         rot = R.from_rotvec(axis * angle)
 
-        return self.rotate(rot, anchor, start, increment)
+        return self.rotate(rot, anchor, start)
 
 
     def rotate_from_rotvec(
-        self, rotvec, anchor=None, start=-1, increment=False, degrees=False):
+        self, rotvec, anchor=None, start='auto', degrees=False):
         """
         Rotates object in the global coordinate system from rotation vector input. (vector
         direction is the rotation axis, vector length is the rotation angle in [rad])
@@ -341,11 +360,11 @@ class BaseRotate:
         [0. 0. 1.]
         """
         rot = R.from_rotvec(rotvec, degrees=degrees)
-        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start)
 
 
     def rotate_from_euler(
-        self, seq, angles, anchor=None, start=-1, increment=False, degrees=False):
+        self, seq, angles, anchor=None, start='auto', degrees=False):
         """
         Rotates object in the global coordinate system from Euler angle input.
 
@@ -403,10 +422,10 @@ class BaseRotate:
         [ 0.  0. 45.]
         """
         rot = R.from_euler(seq, angles, degrees=degrees)
-        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start)
 
 
-    def rotate_from_matrix(self, matrix, anchor=None, start=-1, increment=False):
+    def rotate_from_matrix(self, matrix, anchor=None, start='auto'):
         """
         Rotates object in the global coordinate system from matrix input.
         (see scipy rotation package matrix input)
@@ -460,10 +479,10 @@ class BaseRotate:
          [ 0.  0.  1.]]
         """
         rot = R.from_matrix(matrix)
-        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start)
 
 
-    def rotate_from_mrp(self, mrp, anchor=None, start=-1, increment=False):
+    def rotate_from_mrp(self, mrp, anchor=None, start='auto'):
         """
         Rotates object in the global coordinate system from Modified Rodrigues Parameters input.
         (see scipy rotation package Modified Rodrigues Parameters (MRPs))
@@ -512,10 +531,10 @@ class BaseRotate:
         [0. 0. 1.]
         """
         rot = R.from_mrp(mrp)
-        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start)
 
 
-    def rotate_from_quat(self, quat, anchor=None, start=-1, increment=False):
+    def rotate_from_quat(self, quat, anchor=None, start='auto'):
         """
         Rotates object in the global coordinate system from Quaternion input.
 
@@ -565,4 +584,4 @@ class BaseRotate:
         [0.         0.         0.70710678 0.70710678]
         """
         rot = R.from_quat(quat)
-        return self.rotate(rot, anchor=anchor, start=start, increment=increment)
+        return self.rotate(rot, anchor=anchor, start=start)

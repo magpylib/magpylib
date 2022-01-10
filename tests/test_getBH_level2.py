@@ -174,7 +174,7 @@ def test_sensor_rotation1():
     """
     src = magpy.magnet.Cuboid((1000,0,0),(1,1,1))
     sens = magpy.Sensor(position=(1,0,0))
-    sens.rotate_from_angax([360/55]*55, 'z', start=1, anchor=None, increment=True)
+    sens.rotate_from_angax(np.linspace(0,360,56)[1:], 'z', start=1, anchor=None)
     B = src.getB(sens)
 
     B0 = B[0,0]
@@ -192,7 +192,7 @@ def test_sensor_rotation2():
 
     poss = (0,0,0)
     sens = magpy.Sensor(pixel=poss)
-    sens.rotate_from_angax([0,45,90], 'z')
+    sens.rotate_from_angax([45,90], 'z')
 
     sens2 = magpy.Sensor(pixel=poss)
     sens2.rotate_from_angax(-45,'z')
@@ -241,7 +241,7 @@ def test_object_tiling():
     """ test if object tiling works when input paths are of various lengths
     """
     src1 = magpy.current.Loop(current=1, diameter=1)
-    src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
+    src1.rotate_from_angax(np.linspace(1,31,31), 'x', anchor=(0,1,0), start=-1)
 
     src2 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
     src2.move([(1,1,1)]*21, start=-1)

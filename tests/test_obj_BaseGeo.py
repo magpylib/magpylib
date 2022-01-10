@@ -5,7 +5,6 @@ import pytest
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseMove import apply_move
 
 
 def test_BaseGeo_basics():
@@ -51,7 +50,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((-0.1, -0.2, -0.3))
-    bgeo.rotate(rotation=rot)
+    bgeo.rotate(rotation=rot, start=-1)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -64,7 +63,8 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((0.1, 0.2, 0.3))
-    bgeo.rotate(rot, anchor=(3, 2, 1)).rotate_from_angax(33, (3, 2, 1), anchor=0)
+    bgeo.rotate(rot, anchor=(3, 2, 1), start=-1)
+    bgeo.rotate_from_angax(33, (3, 2, 1), anchor=0, start=-1)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -85,10 +85,11 @@ def test_rotate_vs_rotate_from():
         (0, 0, 0.4),
         (0, -0.2, 0),
     ]
-    rroz = R.from_rotvec(roz)
-
+    
     bg1 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
-    bg1.rotate(rotation=rroz, anchor=(-3, -2, 1), start=1, increment=True)
+    for ro in roz:
+        rroz = R.from_rotvec((ro,))
+        bg1.rotate(rotation=rroz, anchor=(-3, -2, 1))
     pos1 = bg1.position
     ori1 = bg1.orientation.as_quat()
 
@@ -96,8 +97,7 @@ def test_rotate_vs_rotate_from():
     angs = np.linalg.norm(roz, axis=1)
     for ang, ax in zip(angs, roz):
         bg2.rotate_from_angax(
-            angle=ang, degrees=False, axis=ax, anchor=(-3, -2, 1), start="append"
-        )
+            angle=[ang], degrees=False, axis=ax, anchor=(-3, -2, 1))
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
@@ -121,7 +121,7 @@ def test_BaseGeo_anchor_None():
     """testing rotation with None anchor"""
     pos = np.array([1, 2, 3])
     bg = BaseGeo(pos, R.from_quat((0, 0, 0, 1)))
-    bg.rotate(R.from_rotvec([(0, 0, 0), (0.1, 0.2, 0.3), (0.2, 0.4, 0.6)]))
+    bg.rotate(R.from_rotvec([(0.1, 0.2, 0.3), (0.2, 0.4, 0.6)]))
 
     pos3 = np.array([pos] * 3)
     rot3 = np.array([(0, 0, 0), (0.1, 0.2, 0.3), (0.2, 0.4, 0.6)])
@@ -144,12 +144,12 @@ def test_attach():
     """test attach functionality"""
     bg = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
     rot_obj = R.from_rotvec([(x, 0, 0) for x in np.linspace(0, 10, 11)])
-    bg.rotate(rot_obj)
+    bg.rotate(rot_obj, start=-1)
 
     bg2 = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
-    roto = R.from_rotvec((1, 0, 0))
+    roto = R.from_rotvec(((1, 0, 0),))
     for _ in range(10):
-        bg2.rotate(roto, start="append")
+        bg2.rotate(roto)
 
     assert np.allclose(bg.position, bg2.position), "attach p"
     assert np.allclose(bg.orientation.as_quat(), bg2.orientation.as_quat()), "attach o"
@@ -345,120 +345,3 @@ def test_kwargs():
 
     with pytest.raises(TypeError):
         bg = BaseGeo((0, 0, 0), None, styl_name="name_02")
-
-
-
-def test_path_functionality_v4():
-    """ v4 path functionality tests """
-    # pylint: disable=too-many-statements
-
-    # SCALAR INPUT - ABSOLUTE=FALSE
-    s = magpy.Sensor()
-
-    # move object with start='auto'
-    apply_move(s, (1,2,3))
-    assert np.all(s.position == (1,2,3))
-
-    # move object with start=0
-    apply_move(s, (1,2,3), start=0)
-    assert np.all(s.position == (2,4,6))
-
-    # move object with start=-1
-    apply_move(s, (1,2,3), start=-1)
-    assert np.all(s.position == (3,6,9))
-
-    # pad behind
-    apply_move(s, (-1,-2,-3), start=1)
-    assert np.all(s.position == [(3,6,9), (2,4,6)])
-
-    # move whole path
-    apply_move(s, (-1,-2,-3))
-    assert np.all(s.position == [(2,4,6), (1,2,3)])
-
-    # pad before
-    apply_move(s, (-1,-2,-3), start=-3)
-    assert np.all(s.position == [(1,2,3), (1,2,3), (0,0,0)])
-
-    # move whole path starting in the middle
-    apply_move(s, (1,2,3), start=1)
-    assert np.all(s.position == [(1,2,3), (2,4,6), (1,2,3)])
-
-    # move whole path starting in the middle with negative start
-    apply_move(s, (1,2,3), start=-2)
-    assert np.all(s.position == [(1,2,3), (3,6,9), (2,4,6)])
-
-
-    # SCALAR INPUT - ABSOLUTE=True
-    s = magpy.Sensor()
-
-    # move object with start='auto'
-    apply_move(s, (1,2,3), absolute=True)
-    assert np.all(s.position == (1,2,3))
-
-    # move object with start=0
-    apply_move(s, (1,2,3), start=0, absolute=True)
-    assert np.all(s.position == (1,2,3))
-
-    # move object with start=-1
-    apply_move(s, (2,3,4), start=-1, absolute=True)
-    assert np.all(s.position == (2,3,4))
-
-    # pad behind
-    apply_move(s, (1,2,3), start=1, absolute=True)
-    assert np.all(s.position == [(2,3,4), (1,2,3)])
-
-    # move whole path
-    apply_move(s, (2,2,2), absolute=True)
-    assert np.all(s.position == [(2,2,2), (2,2,2)])
-
-    # pad before
-    apply_move(s, (1,2,3), start=-3, absolute=True)
-    assert np.all(s.position == [(1,2,3), (1,2,3), (1,2,3)])
-
-    # move whole path starting in the middle
-    apply_move(s, (3,3,3), start=1, absolute=True)
-    assert np.all(s.position == [(1,2,3), (3,3,3), (3,3,3)])
-
-    # move whole path starting in the middle with negative start
-    apply_move(s, (2,2,2), start=-2, absolute=True)
-    assert np.all(s.position == [(1,2,3), (2,2,2), (2,2,2)])
-
-
-    # VECTOR INPUT - ABSOLUTE=FALSE
-    s = magpy.Sensor()
-
-    # vector + start=0: simple append
-    apply_move(s, [(1,2,3)])
-    assert np.all(s.position == [(0,0,0), (1,2,3)])
-
-    # vector + start in middle: merge
-    apply_move(s, [(1,2,3)], start=1)
-    assert np.all(s.position == [(0,0,0), (2,4,6)])
-
-    # vector + start in middle: merge + pad behind
-    apply_move(s, [(-1,-2,-3), (-2,-4,-6)], start=1)
-    assert np.all(s.position == [(0,0,0), (1,2,3), (0,0,0)])
-
-    # vector + start before: merge + pad before
-    apply_move(s, [(1,2,3), (1,2,3)], start=-4)
-    assert np.all(s.position == [(1,2,3), (1,2,3), (1,2,3), (0,0,0)])
-
-
-    # VECTOR INPUT - ABSOLUTE=TRUE
-    s = magpy.Sensor()
-
-    # vector + start=0: simple append
-    apply_move(s, [(1,2,3)], absolute=True)
-    assert np.all(s.position == [(0,0,0), (1,2,3)])
-
-    # vector + start in middle: merge
-    apply_move(s, [(2,2,2)], start=1, absolute=True)
-    assert np.all(s.position == [(0,0,0), (2,2,2)])
-
-    # vector + start in middle: merge + pad behind
-    apply_move(s, [(-1,-2,-3), (-2,-4,-6)], start=1, absolute=True)
-    assert np.all(s.position == [(0,0,0), (-1,-2,-3), (-2,-4,-6)])
-
-    # vector + start before: merge + pad before
-    apply_move(s, [(1,2,3), (1,2,3)], start=-4, absolute=True)
-    assert np.all(s.position == [(1,2,3), (1,2,3), (-1,-2,-3), (-2,-4,-6)])
