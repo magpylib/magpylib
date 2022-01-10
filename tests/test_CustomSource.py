@@ -4,7 +4,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibInternalError
 
 # pylint: disable=assignment-from-no-return
-
+# pylint: disable=unused-argument
 
 def constant_Bfield(position=((0, 0, 0))):
     """ constant field"""

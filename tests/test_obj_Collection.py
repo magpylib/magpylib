@@ -175,16 +175,14 @@ def test_col_getB(test_input, expected):
         ('magpy.getB(sens_col,sens_col)', pytest.raises(MagpylibBadUserInput)),
     ],
 )
-
-
 def test_bad_col_getB_inputs(test_input, expected):
     """more undocumented Collection checking"""
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
-    )
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0))
+
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
-    )
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0))
+
     sens1 = magpy.Sensor(position=(0, 0, 6))
     sens2 = magpy.Sensor(position=(0, 0, 6))
     sens3 = magpy.Sensor(position=(0, 0, 6))
