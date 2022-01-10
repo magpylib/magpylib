@@ -3,6 +3,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.utility import (all_same, check_static_sensor_orient,
     format_src_inputs, format_obs_inputs)
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
+from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
 from magpylib._src.input_checks import check_excitations, check_dimensions
 
@@ -134,7 +135,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     return kwargs
 
 
-def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
+def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     """...
 
     Parameters
@@ -147,6 +148,8 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
+    - kwargs : if not empty, returns getBH_dict_level2 with source_type=sources and observer=
+        observers
 
     Returns
     -------
@@ -168,6 +171,16 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
 
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
+
+    if kwargs:
+        return getBH_dict_level2(
+            bh = bh,
+            source_type=sources,
+            observer=observers,
+            sumup=sumup,
+            squeeze=squeeze,
+            **kwargs
+        )
 
     # format sources input:
     #   input: allow only bare src objects or 1D lists/tuple of src and col

@@ -2,7 +2,7 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 
 
 # ON INTERFACE
-def getB(sources, observers, sumup=False, squeeze=True):
+def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
     """
     Compute B-field in [mT] for given sources and observers.
 
@@ -24,6 +24,8 @@ def getB(sources, observers, sumup=False, squeeze=True):
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
+
+    kwargs: 
 
     Returns
     -------
@@ -84,11 +86,11 @@ def getB(sources, observers, sumup=False, squeeze=True):
      [0.09728187 0.34647784 0.52129178]]
 
     """
-    return getBH_level2(True, sources, observers, sumup, squeeze)
+    return getBH_level2(True, sources, observers, sumup, squeeze, **kwargs)
 
 
 # ON INTERFACE
-def getH(sources, observers, sumup=False, squeeze=True):
+def getH(sources, observers, sumup=False, squeeze=True, **kwargs):
     """
     Compute H-field in [kA/m] for given sources and observers.
 
@@ -169,4 +171,4 @@ def getH(sources, observers, sumup=False, squeeze=True):
      [0.07741445 0.27571831 0.41483082]]
 
     """
-    return getBH_level2(False, sources, observers, sumup, squeeze)
+    return getBH_level2(False, sources, observers, sumup, squeeze, **kwargs)
