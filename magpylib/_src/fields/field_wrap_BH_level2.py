@@ -180,7 +180,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
             squeeze=squeeze,
             **kwargs
         )
-    elif kwargs:
+    if kwargs:
         raise MagpylibBadUserInput(
             f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source is "
             "defined by a string (e.g. sources='Cylinder')"
