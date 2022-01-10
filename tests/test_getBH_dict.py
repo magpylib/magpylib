@@ -2,8 +2,8 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 import magpylib
 from magpylib.magnet import Cuboid, Cylinder, Sphere
-from magpylib import getB_dict, getH_dict, getB, getH
-
+from magpylib import getB, getH
+from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict, getH_dict
 
 def test_getB_dict1():
     """test field wrapper functions
@@ -284,7 +284,7 @@ def test_BHv_Cylinder_FEM():
         (0.0121250819870128,0.0104894041620816,0.00303690098080925)])
 
     # compare against FEM
-    B = magpylib.getB_dict(
+    B = getB_dict(
         source_type='CylinderSegment',
         dimension=(1,2,1,90,360),
         magnetization=np.array((1,2,3))*1000/np.sqrt(14),
@@ -298,7 +298,7 @@ def test_BHv_Cylinder_FEM():
 def test_BHv_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
-    B1 = magpylib.getB_dict(
+    B1 = getB_dict(
         source_type='CylinderSegment',
         dimension=[(0,1,2,20,120), (0,1,2,120,220), (0,1,2,220,380)],
         magnetization=(22,33,44),
@@ -306,14 +306,14 @@ def test_BHv_solid_cylinder():
     B1 = np.sum(B1,axis=0)
 
     # one big cylinder
-    B2 = magpylib.getB_dict(
+    B2 = getB_dict(
         source_type='CylinderSegment',
         dimension=(0,1,2,0,360),
         magnetization=(22,33,44),
         observer=(1,2,3))
 
     # compute with solid cylinder code
-    B3 = magpylib.getB_dict(
+    B3 = getB_dict(
         source_type='Cylinder',
         dimension=(2,2),
         magnetization=(22,33,44),
@@ -321,3 +321,31 @@ def test_BHv_solid_cylinder():
 
     assert np.allclose(B1,B2)
     assert np.allclose(B1,B3)
+
+def test_getB_dict_over_getB():
+    """test field wrapper functions
+    """
+    pos_obs = (11,2,2)
+    mag = [111,222,333]
+    dim = [3,3]
+
+    pm = Cylinder(mag, dim)
+    pm.move([(.5,0,0)]*15, increment=True)
+    pm.rotate_from_angax(np.linspace(0,666,25), 'y', anchor=0)
+    pm.move([(0,x,0) for x in np.linspace(0,5,5)])
+    B2 = pm.getB(pos_obs)
+
+    pos = pm.position
+    rot = pm.orientation
+
+    dic = {
+        'sources': 'Cylinder',
+        'observers': pos_obs,
+        'magnetization': mag,
+        'dimension': dim,
+        'position': pos,
+        'orientation':rot
+        }
+    B1 = magpylib.getB(**dic)
+
+    assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)

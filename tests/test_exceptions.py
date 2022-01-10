@@ -9,11 +9,12 @@ from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInpu
     MagpylibBadInputShape)
 from magpylib._src.utility import format_obj_input, format_src_inputs, format_obs_inputs
 from magpylib._src.utility import test_path_format as tpf
+from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict
 
 
 def getBHv_unknown_source_type():
     """ unknown source type """
-    magpy.getB_dict(
+    getB_dict(
         source_type='badName',
         magnetization=(1,0,0),
         dimension=(0,2,1,0,360),
