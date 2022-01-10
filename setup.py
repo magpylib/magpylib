@@ -70,6 +70,7 @@ setuptools.setup(
     # kaleido, jupyterlab are needed for testing with display(renderer='json', backend='plotly')
     extras_require={
         "testing": [
+            "numpy>=1.20, <1.22",
             "plotly>=5.3",
             "kaleido",
             "pytest",
