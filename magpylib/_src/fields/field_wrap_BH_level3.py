@@ -5,6 +5,12 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
     """
     Compute B-field in [mT] for given sources and observers.
+    - Object-oriented (default):
+        ``sources`` are previously defined Magpylib objects or list thereof
+    - Direct interface:
+        Field implementations can be directly accessed for faster computation. Note that ``sources``
+        parameter only accepts a single source and corresponding input parameters must be defined
+        via keyword arguments (see Other parameters).
 
     Parameters
     ----------
@@ -12,11 +18,18 @@ def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
         Sources can be a single source object, a Collection or a 1D list of L source
         objects and/or collections.
 
+        In direct interface mode, must be either 'Cuboid', 'Cylinder',
+        'Cylinder_old', 'Sphere', 'Dipole', 'Loop' or 'Line'. and other parameters depending on
+        source type must be specified.
+
     observers: array_like or Sensor or 1D list thereof
         Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
         should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
         a 1D list of K Sensor objects with similar pixel shape. All positions are given
         in units of [mm].
+
+        In direct interface mode, array_like, shape (3,) or (N,3)
+        Observer positions in units of [mm].
 
     sumup: bool, default=False
         If True, the fields of all sources are summed up.
@@ -25,7 +38,38 @@ def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
 
-    kwargs: 
+    Other Parameters
+    ----------------
+    position: array_like, shape (3,) or (N,3), default=(0,0,0)
+        Source positions in units of [mm].
+
+    orientation: scipy Rotation object, default=unit rotation
+        Source rotations relative to the initial state (see object docstrings).
+
+    magnetization: array_like, shape (3,) or (N,3)
+        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        remanence field of homogeneous magnet magnetization in units of [mT].
+
+    moment:  array_like, shape (3,) or (N,3)
+        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+        homogeneous magnets the relation is moment = magnetization*volume.
+
+    current: array_like, shape (N,)
+        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
+
+    dimension: array_like
+        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+        input in units of [mm]. Dimension format of sources similar as in object oriented
+        interface.
+
+    diameter: array_like, shape (N)
+        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
+
+    segment_start: array_like, shape (N,3)
+        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
+
+    segment_end: array_like, shape (N,3)
+        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
     Returns
     -------
@@ -40,6 +84,9 @@ def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
     This function automatically joins all sensor and position inputs together and groups
     similar sources for optimal vectorization of the computation. For maximal performance
     call this function as little as possible and avoid using it in loops.
+
+     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
+    fit with other inputs.
 
     Examples
     --------
@@ -93,6 +140,12 @@ def getB(sources, observers, sumup=False, squeeze=True, **kwargs):
 def getH(sources, observers, sumup=False, squeeze=True, **kwargs):
     """
     Compute H-field in [kA/m] for given sources and observers.
+    - Object-oriented (default):
+        ``sources`` are previously defined Magpylib objects or list thereof
+    - Direct interface:
+        Field implementations can be directly accessed for faster computation. Note that ``sources``
+        parameter only accepts a single source and corresponding input parameters must be defined
+        via keyword arguments (see Other parameters).
 
     Parameters
     ----------
@@ -100,11 +153,18 @@ def getH(sources, observers, sumup=False, squeeze=True, **kwargs):
         Sources can be a single source object, a Collection or a 1D list of L source
         objects and/or collections.
 
+        In direct interface mode, must be either 'Cuboid', 'Cylinder',
+        'Cylinder_old', 'Sphere', 'Dipole', 'Loop' or 'Line'. and other parameters depending on
+        source type must be specified.
+
     observers: array_like or Sensor or 1D list thereof
         Observers can be array_like positions of shape (N1, N2, ..., 3) where the field
         should be evaluated, can be a Sensor object with pixel shape (N1, N2, ..., 3) or
         a 1D list of K Sensor objects with similar pixel shape. All positions are given
         in units of [mm].
+
+        In direct interface mode, array_like, shape (3,) or (N,3)
+        Observer positions in units of [mm].
 
     sumup: bool, default=False
         If True, the fields of all sources are summed up.
@@ -112,6 +172,39 @@ def getH(sources, observers, sumup=False, squeeze=True, **kwargs):
     squeeze: bool, default=True
         If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
+
+    Other Parameters
+    ----------------
+    position: array_like, shape (3,) or (N,3), default=(0,0,0)
+        Source positions in units of [mm].
+
+    orientation: scipy Rotation object, default=unit rotation
+        Source rotations relative to the initial state (see object docstrings).
+
+    magnetization: array_like, shape (3,) or (N,3)
+        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+        remanence field of homogeneous magnet magnetization in units of [mT].
+
+    moment:  array_like, shape (3,) or (N,3)
+        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+        homogeneous magnets the relation is moment = magnetization*volume.
+
+    current: array_like, shape (N,)
+        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
+
+    dimension: array_like
+        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+        input in units of [mm]. Dimension format of sources similar as in object oriented
+        interface.
+
+    diameter: array_like, shape (N)
+        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
+
+    segment_start: array_like, shape (N,3)
+        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
+
+    segment_end: array_like, shape (N,3)
+        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
     Returns
     -------
@@ -126,6 +219,9 @@ def getH(sources, observers, sumup=False, squeeze=True, **kwargs):
     This function automatically joins all sensor and position inputs together and groups
     similar sources for optimal vectorization of the computation. For maximal performance
     call this function as little as possible and avoid using it in loops.
+
+    "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
+    fit with other inputs.
 
     Examples
     --------
