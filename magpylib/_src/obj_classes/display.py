@@ -160,7 +160,7 @@ def display(
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.display_plotly import display_plotly
+        from magpylib._src.display.plotly.plotly_display import display_plotly
 
         display_plotly(
             *obj_list_semi_flat,

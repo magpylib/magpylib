@@ -3,7 +3,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib._src.display.display_plotly import make_BaseCuboid
+from magpylib._src.display.plotly.plotly_base_traces import make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 

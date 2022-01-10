@@ -18,7 +18,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.plotly_sensor_mesh import get_sensor_mesh
+from magpylib._src.display.plotly.plotly_sensor_mesh import get_sensor_mesh
 from magpylib._src.style import (
     get_style,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
@@ -37,287 +37,20 @@ from magpylib._src.defaults.defaults_utility import (
 )
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.utility import unit_prefix
-
-
-def _getIntensity(vertices, axis) -> np.ndarray:
-    """
-    Calculates the intensity values for vertices based on the distance of the vertices to the mean
-    vertices position in the provided axis direction. It can be used for plotting
-    fields on meshes. If `mag` See more infos here:https://plotly.com/python/3d-mesh/
-
-    Parameters
-    ----------
-    vertices : ndarray Nx3
-        the N vertices of the mesh object
-    axis : ndarray 3
-        direction vector
-
-    Returns
-    -------
-    ndarray N
-        returns 1D array of length N
-    """
-    p = np.array(vertices).T
-    pos = np.mean(p, axis=1)
-    m = np.array(axis) / np.linalg.norm(axis)
-    intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
-    return intensity
-
-
-def _getColorscale(
-    color_transition=0,
-    color_north="#E71111",  # 'red'
-    color_middle="#DDDDDD",  # 'grey'
-    color_south="#00B050",  # 'green'
-) -> list:
-    """
-    Provides the colorscale for a plotly mesh3d trace.
-    The colorscale must be an array containing arrays mapping a normalized value to an rgb, rgba,
-    hex, hsl, hsv, or named color string. At minimum, a mapping for the lowest (0) and highest (1)
-    values are required. For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`.
-    In this case the colorscale is created depending on the north/middle/south poles colors. If the
-    middle color is `None` the colorscale will only have north and south pole colors.
-
-    Parameters
-    ----------
-    color_transition : float, optional
-        A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
-        visualization., by default 0.1
-    color_north : str, optional
-        magnetic north pole color , by default None
-    color_middle : str, optional
-        middle between south and north pole color, by default None
-    color_south : str, optional
-        magnetic north pole color , by default None
-
-    Returns
-    -------
-    list
-        returns colorscale as list of tuples
-    """
-    if color_middle is False:
-        colorscale = [
-            [0.0, color_south],
-            [0.5 * (1 - color_transition), color_south],
-            [0.5 * (1 + color_transition), color_north],
-            [1, color_north],
-        ]
-    else:
-        colorscale = [
-            [0.0, color_south],
-            [0.2 - 0.2 * (color_transition), color_south],
-            [0.2 + 0.3 * (color_transition), color_middle],
-            [0.8 - 0.3 * (color_transition), color_middle],
-            [0.8 + 0.2 * (color_transition), color_north],
-            [1.0, color_north],
-        ]
-    return colorscale
-
-
-def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=(0.0, 0.0, 0.0)) -> dict:
-    """
-    Provides the base plotly cuboid mesh3d parameters in a dictionary based on dimension and
-    position
-    The zero position is in the barycenter of the vertices.
-    """
-    return dict(
-        type="mesh3d",
-        i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-        k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0] + position[0],
-        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1] + position[1],
-        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2] + position[2],
-    )
-
-
-def make_BasePrism(
-    base_vertices=3, diameter=1, height=1, position=(0.0, 0.0, 0.0)
-) -> dict:
-    """
-    Provides the base plotly prism mesh3d parameters in a dictionary based on number of vertices of
-    the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = base_vertices
-    t = np.linspace(0, 2 * np.pi, N, endpoint=False)
-    c1 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 - 1]) * 0.5
-    c2 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 + 1]) * 0.5
-    c3 = np.array([[0, 0], [0, 0], [-1, 1]]) * 0.5
-    c = np.concatenate([c1, c2, c3], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(position)
-    i1 = np.arange(N)
-    j1 = i1 + 1
-    j1[-1] = 0
-    k1 = i1 + N
-
-    i2 = i1 + N
-    j2 = j1 + N
-    j2[-1] = N
-    k2 = i1 + 1
-    k2[-1] = 0
-
-    i3 = i1
-    j3 = j1
-    k3 = i1 * 0 + 2 * N
-
-    i4 = i2
-    j4 = j2
-    k4 = k3 + 1
-
-    # k2&j2 and k3&j3 inverted because of face orientation
-    i = np.concatenate([i1, i2, i3, i4])
-    j = np.concatenate([j1, k2, k3, j4])
-    k = np.concatenate([k1, j2, j3, k4])
-
-    x, y, z = c.T
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_Ellipsoid(
-    dimension=(1.0, 1.0, 1.0),
-    position=(0.0, 0.0, 0.0),
-    Nvert=15,
-    min_vert=3,
-    max_vert=20,
-) -> dict:
-    """
-    Provides the base plotly ellipsoid mesh3d parameters in a dictionary based on number of vertices
-    of the circumference, the 3 dimensions and position.
-    The zero position is in the barycenter of the vertices.
-    `Nvert` will be forced automatically in the range [`min_vert`, `max_vert`]
-    """
-    N = min(max(Nvert, min_vert), max_vert)
-    phi = np.linspace(0, 2 * np.pi, Nvert, endpoint=False)
-    theta = np.linspace(-np.pi / 2, np.pi / 2, Nvert, endpoint=True)
-    phi, theta = np.meshgrid(phi, theta)
-
-    x = np.cos(theta) * np.sin(phi) * dimension[0] * 0.5 + position[0]
-    y = np.cos(theta) * np.cos(phi) * dimension[1] * 0.5 + position[1]
-    z = np.sin(theta) * dimension[2] * 0.5 + position[2]
-
-    x, y, z = x.flatten()[N - 1 :], y.flatten()[N - 1 :], z.flatten()[N - 1 :]
-
-    i1 = [0] * N
-    j1 = np.array([N] + list(range(1, N)), dtype=int)
-    k1 = np.array(list(range(1, N)) + [N], dtype=int)
-
-    i2 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j2 = np.concatenate([j1 + i * N for i in range(N - 2)])
-    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-
-    i3 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 2)])
-
-    i = np.concatenate([i1, i2, i3])
-    j = np.concatenate([j1, j2, j3])
-    k = np.concatenate([k1, k2, k3])
-
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseCylinderSegment(r1=1, r2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict:
-    """
-    Provides the base plotly CylinderSegment mesh3d parameters in a dictionary based on inner
-    and outer diameters, height, start angle and end angles in degrees.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = Nvert
-    phi = np.linspace(phi1, phi2, N)
-    x = np.cos(np.deg2rad(phi))
-    y = np.sin(np.deg2rad(phi))
-    z = np.zeros(N)
-    c1 = np.array([r1 * x, r1 * y, z + h / 2])
-    c2 = np.array([r2 * x, r2 * y, z + h / 2])
-    c3 = np.array([r1 * x, r1 * y, z - h / 2])
-    c4 = np.array([r2 * x, r2 * y, z - h / 2])
-    x, y, z = np.concatenate([c1, c2, c3, c4], axis=1)
-
-    i1 = np.arange(N - 1)
-    j1 = i1 + N
-    k1 = i1 + 1
-
-    i2 = k1
-    j2 = j1
-    k2 = j1 + 1
-
-    i3 = i1
-    j3 = k1
-    k3 = j1 + N
-
-    i4 = k3 + 1
-    j4 = k3
-    k4 = k1
-
-    i5 = np.array([0, N])
-    j5 = np.array([2 * N, 0])
-    k5 = np.array([3 * N, 3 * N])
-
-    i = np.hstack(
-        [i1, i2, i1 + 2 * N, i2 + 2 * N, i3, i4, i3 + N, i4 + N, i5, i5 + N - 1]
-    )
-    j = np.hstack(
-        [j1, j2, k1 + 2 * N, k2 + 2 * N, j3, j4, k3 + N, k4 + N, j5, k5 + N - 1]
-    )
-    k = np.hstack(
-        [k1, k2, j1 + 2 * N, j2 + 2 * N, k3, k4, j3 + N, j4 + N, k5, j5 + N - 1]
-    )
-
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseCone(
-    base_vertices=3, diameter=1, height=1, position=(0.0, 0.0, 0.0)
-) -> dict:
-    """
-    Provides the base plotly Cone mesh3d parameters in a dictionary based on number of vertices of
-    the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = base_vertices
-    t = np.linspace(0, 2 * np.pi, N, endpoint=False)
-    c = np.array([np.cos(t), np.sin(t), t * 0 - 1]) * 0.5
-    tp = np.array([[0, 0, 0.5]]).T
-    c = np.concatenate([c, tp], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(position)
-    x, y, z = c.T
-
-    i = np.arange(N, dtype=int)
-    j = i + 1
-    j[-1] = 0
-    k = np.array([N] * N, dtype=int)
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot="middle") -> dict:
-    """
-    Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
-    of the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-
-    h, d, z = height, diameter, 0
-    if pivot == "tail":
-        z = h / 2
-    elif pivot == "tip":
-        z = -h / 2
-    cone = make_BaseCone(
-        base_vertices=base_vertices,
-        diameter=d,
-        height=d,
-        position=(0.0, 0.0, z + h / 2 - d / 2),
-    )
-    prism = make_BasePrism(
-        base_vertices=base_vertices,
-        diameter=d / 2,
-        height=h - d,
-        position=(0.0, 0.0, z + -d / 2),
-    )
-    arrow = merge_mesh3d(cone, prism)
-
-    return arrow
-
+from magpylib._src.display.plotly.plotly_base_traces import (
+    make_BaseCuboid,
+    make_BaseCylinderSegment,
+    make_BaseEllipsoid,
+    make_BasePrism,
+    #make_BaseCone,
+    make_BaseArrow,
+)
+from magpylib._src.display.plotly.plotly_utility import (
+    merge_mesh3d,
+    merge_traces,
+    getColorscale,
+    getIntensity,
+)
 
 def make_Line(
     current=0.0,
@@ -401,11 +134,7 @@ def make_Loop(
 
 
 def make_UnsupportedObject(
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
-    color=None,
-    style=None,
-    **kwargs,
+    position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -466,14 +195,7 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -494,14 +216,7 @@ def make_Cuboid(
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -529,14 +244,7 @@ def make_Cylinder(
         position=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -584,20 +292,12 @@ def make_Sphere(
     """
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
-    sphere = make_Ellipsoid(
+    sphere = make_BaseEllipsoid(
         Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
     )
     return _update_mag_mesh(
-        sphere,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
-
 
 def make_Pixels(positions, size=1) -> dict:
     """
@@ -702,81 +402,19 @@ def _update_mag_mesh(
                 color_middle = kwargs.get("color", None)
             elif color.mode == "bicolor":
                 color_middle = False
-            mesh_dict["colorscale"] = _getColorscale(
+            mesh_dict["colorscale"] = getColorscale(
                 color_transition=color.transition,
                 color_north=color.north,
                 color_middle=color_middle,
                 color_south=color.south,
             )
-            mesh_dict["intensity"] = _getIntensity(
-                vertices=vertices,
-                axis=magnetization,
+            mesh_dict["intensity"] = getIntensity(
+                vertices=vertices, axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict,
-        orientation,
-        position,
-        showscale=False,
-        name=f"{name}{name_suffix}",
+        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
-
-
-def merge_mesh3d(*traces):
-    """
-    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cummulate the
-    indices of each object in order to point to the right vertices in the concatenated vertices.
-    `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also get
-    concatenated if they are present in all objects. All other parameter found in the dictionary
-    keys are taken from the first object, other keys from further objects are ignored.
-    """
-    merged_trace = {}
-    L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
-    for k in "ijk":
-        if k in traces[0]:
-            merged_trace[k] = np.hstack([b[k] + l for b, l in zip(traces, L)])
-    for k in "xyz":
-        merged_trace[k] = np.concatenate([b[k] for b in traces])
-    for k in ("intensity", "facecolor"):
-        if k in traces[0] and traces[0][k] is not None:
-            merged_trace[k] = np.hstack([b[k] for b in traces])
-    for k, v in traces[0].items():
-        if k not in merged_trace:
-            merged_trace[k] = v
-    return merged_trace
-
-
-def merge_scatter3d(*traces):
-    """
-    Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
-    `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
-    the first object, other keys from further objects are ignored.
-    """
-    merged_trace = {}
-    for k in "xyz":
-        merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
-    for k, v in traces[0].items():
-        if k not in merged_trace:
-            merged_trace[k] = v
-    return merged_trace
-
-
-def merge_traces(*traces):
-    """
-    Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
-    All traces have be of the same type when merging. Keys are taken from the first object, other
-    keys from further objects are ignored.
-    """
-    if len(traces) > 1:
-        if traces[0]["type"] == "mesh3d":
-            trace = merge_mesh3d(*traces)
-        elif traces[0]["type"] == "scatter3d":
-            trace = merge_scatter3d(*traces)
-    elif len(traces) == 1:
-        trace = traces[0]
-    else:
-        trace = []
-    return trace
 
 
 def get_name_and_suffix(default_name, default_suffix, style):
@@ -874,8 +512,7 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization,
-                dimension=input_obj.dimension,
+                mag=input_obj.magnetization, dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -894,33 +531,27 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization,
-                dimension=input_obj.dimension,
-                Nvert=Nvert,
+                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization,
-                diameter=input_obj.diameter,
+                mag=input_obj.magnetization, diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment,
-                autosize=autosize,
+                moment=input_obj.moment, autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices,
-                current=input_obj.current,
+                vertices=input_obj.vertices, current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Loop):
             kwargs.update(
-                diameter=input_obj.diameter,
-                current=input_obj.current,
+                diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
         elif getattr(input_obj, "_object_type", None) == "Collection":
@@ -1004,20 +635,19 @@ def get_plotly_traces(
 
     return traces
 
+
 def make_path(input_obj, path_numbering, style, kwargs):
     """draw obj path based on path style properties"""
     x, y, z = input_obj.position.T
     txt_kwargs = (
-                {"mode": "markers+text+lines", "text": list(range(len(x)))}
-                if path_numbering
-                else {"mode": "markers+lines"}
-            )
+        {"mode": "markers+text+lines", "text": list(range(len(x)))}
+        if path_numbering
+        else {"mode": "markers+lines"}
+    )
     marker = style.path.marker.as_dict()
     symb = marker["symbol"]
     marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-    marker["color"] = (
-                kwargs["color"] if marker["color"] is None else marker["color"]
-            )
+    marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
     marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
     line = style.path.line.as_dict()
     dash = line["style"]
@@ -1026,18 +656,18 @@ def make_path(input_obj, path_numbering, style, kwargs):
     line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = {k: v for k, v in line.items() if k != "style"}
     scatter_path = dict(
-                type="scatter3d",
-                x=x,
-                y=y,
-                z=z,
-                name=f"Path: {input_obj}",
-                showlegend=False,
-                legendgroup=f"{input_obj}",
-                marker=marker,
-                line=line,
-                **txt_kwargs,
-                opacity=kwargs["opacity"],
-            )
+        type="scatter3d",
+        x=x,
+        y=y,
+        z=z,
+        name=f"Path: {input_obj}",
+        showlegend=False,
+        legendgroup=f"{input_obj}",
+        marker=marker,
+        line=line,
+        **txt_kwargs,
+        opacity=kwargs["opacity"],
+    )
     return scatter_path
 
 
@@ -1327,12 +957,7 @@ def animate_path(
     autosize = "return"
     for i, ind in enumerate(path_indices):
         frame = draw_frame(
-            objs,
-            color_sequence,
-            zoom,
-            show_path=[ind],
-            autosize=autosize,
-            **kwargs,
+            objs, color_sequence, zoom, show_path=[ind], autosize=autosize, **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
@@ -1350,10 +975,7 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {
-                        "frame": {"duration": 0, "redraw": True},
-                        "mode": "immediate",
-                    },
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
                 ],
                 "label": str(ind + 1),
                 "method": "animate",
