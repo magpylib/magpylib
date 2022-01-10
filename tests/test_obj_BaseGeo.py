@@ -85,7 +85,7 @@ def test_rotate_vs_rotate_from():
         (0, 0, 0.4),
         (0, -0.2, 0),
     ]
-    
+
     bg1 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
     for ro in roz:
         rroz = R.from_rotvec((ro,))
