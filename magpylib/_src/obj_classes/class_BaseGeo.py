@@ -158,7 +158,7 @@ class BaseGeo(BaseTransform):
         return val
 
     # dunders -------------------------------------------------------
-    def __add__(self, source):
+    def __add__(self, obj):
         """
         Add up sources to a Collection object.
 
@@ -168,7 +168,7 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from magpylib._src.obj_classes.class_Collection import Collection
-        return Collection(self, source)
+        return Collection(self, obj)
 
     # methods -------------------------------------------------------
     def reset_path(self):

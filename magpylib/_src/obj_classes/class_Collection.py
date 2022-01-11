@@ -157,13 +157,6 @@ class BaseCollection(BaseDisplayRepr):
         self.add(sens_list)
 
     # dunders
-    def __add__(self, obj):
-        if obj._object_type == "Collection":
-            new_obj = Collection(self, obj)
-        else:
-            new_obj = self.add(obj)
-        return new_obj
-
     def __sub__(self, obj):
         return self.remove(obj)
 
