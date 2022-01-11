@@ -18,11 +18,11 @@ from magpylib._src.input_checks import (
     check_axis_format,
     check_vector_type,
     check_path_format,
-    check_absolute_type
+    check_absolute_type,
 )
 
 
-def apply_rotation(target_object, rotation, anchor=None, start='auto'):
+def apply_rotation(target_object, rotation, anchor=None, start="auto"):
     """
     Implementation of the rotate() functionality.
 
@@ -62,7 +62,7 @@ def apply_rotation(target_object, rotation, anchor=None, start='auto'):
 
     # input -> quaternion ndarray
     inrotQ = rotation.as_quat()
-    scalar_input = inrotQ.ndim==1
+    scalar_input = inrotQ.ndim == 1
 
     # load old path
     ppath = target_object._position
@@ -77,26 +77,26 @@ def apply_rotation(target_object, rotation, anchor=None, start='auto'):
     pad_behind = 0
 
     # start='auto': apply to all if scalar, append if vector
-    if start=='auto':
+    if start == "auto":
         if scalar_input:
-            start=0
+            start = 0
         else:
-            start=lenop
+            start = lenop
 
     # numpy convention with negative start indices
-    if start<0:
-        start=lenop+start
+    if start < 0:
+        start = lenop + start
         # if start smaller than -old_path_length: pad before
-        if start<0:
-            pad_before = -start # pylint: disable=invalid-unary-operand-type
-            start=0
+        if start < 0:
+            pad_before = -start  # pylint: disable=invalid-unary-operand-type
+            start = 0
 
     # vector: if start+inpath extends beyond oldpath: pad behind and merge
-    if start+lenip>lenop+pad_before:
-        pad_behind = start+lenip - (lenop+pad_before)
+    if start + lenip > lenop + pad_before:
+        pad_behind = start + lenip - (lenop + pad_before)
 
     # avoid execution when there is no padding (cost~100ns)
-    if pad_before+pad_behind:
+    if pad_before + pad_behind:
         ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
         opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
 
@@ -104,7 +104,7 @@ def apply_rotation(target_object, rotation, anchor=None, start='auto'):
     if scalar_input:
         end = len(ppath)
     else:
-        end = start+lenip
+        end = start + lenip
 
     # position change when there is an anchor
     if anchor is not None:
@@ -141,7 +141,7 @@ class BaseRotate:
       to its children.
     """
 
-    def rotate(self, rotation, anchor=None, start='auto'):
+    def rotate(self, rotation, anchor=None, start="auto"):
         """
         Rotates object in the global coordinate system using a scipy Rotation object
         as input.
@@ -192,15 +192,16 @@ class BaseRotate:
         [ 0.  0. 45.]
         """
 
-
         # pylint: disable=no-member
         # if Collection: apply to children
         clear = False
-        if start=='clear':
+        if start == "clear":
             start = 0
             clear = True
         targets = []
-        if getattr(self, "_object_type", None) == "Collection":
+        if getattr(self, "_object_type", None) == "Collection" and not getattr(
+            self, "_freeze_children", False
+        ):
             if anchor is None:
                 anchor = self._position[-1]
             targets.extend(self.children)
@@ -209,13 +210,11 @@ class BaseRotate:
             targets.append(self)
         for obj in targets:
             if clear:
-                obj._orientation = R.from_quat([[0, 0, 0, 1]]*len(self._position))
+                obj._orientation = R.from_quat([[0, 0, 0, 1]] * len(self._position))
             apply_rotation(obj, rotation, anchor, start)
         return self
 
-
-    def rotate_from_angax(
-        self, angle, axis, anchor=None, start='auto', degrees=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
         """
         Rotates object in the global coordinate system from angle-axis input.
 
@@ -315,7 +314,7 @@ class BaseRotate:
 
         # apply rotation
         if is_scalar:
-            angle = np.ones(3)*angle
+            angle = np.ones(3) * angle
         else:
             angle = np.tile(angle, (3, 1)).T
 
@@ -325,9 +324,7 @@ class BaseRotate:
 
         return self.rotate(rot, anchor, start)
 
-
-    def rotate_from_rotvec(
-        self, rotvec, anchor=None, start='auto', degrees=False):
+    def rotate_from_rotvec(self, rotvec, anchor=None, start="auto", degrees=False):
         """
         Rotates object in the global coordinate system from rotation vector input. (vector
         direction is the rotation axis, vector length is the rotation angle in [rad])
@@ -382,9 +379,7 @@ class BaseRotate:
         rot = R.from_rotvec(rotvec, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_euler(
-        self, seq, angles, anchor=None, start='auto', degrees=False):
+    def rotate_from_euler(self, seq, angles, anchor=None, start="auto", degrees=False):
         """
         Rotates object in the global coordinate system from Euler angle input.
 
@@ -444,8 +439,7 @@ class BaseRotate:
         rot = R.from_euler(seq, angles, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_matrix(self, matrix, anchor=None, start='auto'):
+    def rotate_from_matrix(self, matrix, anchor=None, start="auto"):
         """
         Rotates object in the global coordinate system from matrix input.
         (see scipy rotation package matrix input)
@@ -501,8 +495,7 @@ class BaseRotate:
         rot = R.from_matrix(matrix)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_mrp(self, mrp, anchor=None, start='auto'):
+    def rotate_from_mrp(self, mrp, anchor=None, start="auto"):
         """
         Rotates object in the global coordinate system from Modified Rodrigues Parameters input.
         (see scipy rotation package Modified Rodrigues Parameters (MRPs))
@@ -553,8 +546,7 @@ class BaseRotate:
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_quat(self, quat, anchor=None, start='auto'):
+    def rotate_from_quat(self, quat, anchor=None, start="auto"):
         """
         Rotates object in the global coordinate system from Quaternion input.
 
@@ -607,8 +599,7 @@ class BaseRotate:
         return self.rotate(rot, anchor=anchor, start=start)
 
 
-
-def apply_move(target_object, displacement, start='auto', absolute=False):
+def apply_move(target_object, displacement, start="auto", absolute=False):
     """
     Implementation of the move() functionality.
 
@@ -638,7 +629,7 @@ def apply_move(target_object, displacement, start='auto', absolute=False):
 
     # displacement vector -> ndarray
     inpath = np.array(displacement, dtype=float)
-    scalar_input = inpath.ndim==1
+    scalar_input = inpath.ndim == 1
 
     # check input format
     if Config.checkinputs:
@@ -657,26 +648,26 @@ def apply_move(target_object, displacement, start='auto', absolute=False):
     pad_behind = 0
 
     # start='auto': apply to all if scalar, append if vector
-    if start=='auto':
+    if start == "auto":
         if scalar_input:
-            start=0
+            start = 0
         else:
-            start=lenop
+            start = lenop
 
     # numpy convention with negative start indices
-    if start<0:
-        start=lenop+start
+    if start < 0:
+        start = lenop + start
         # if start smaller than -old_path_length: pad before
-        if start<0:
-            pad_before = -start # pylint: disable=invalid-unary-operand-type
-            start=0
+        if start < 0:
+            pad_before = -start  # pylint: disable=invalid-unary-operand-type
+            start = 0
 
     # vector: if start+inpath extends beyond oldpath: pad behind and merge
-    if start+lenip>lenop+pad_before:
-        pad_behind = start+lenip - (lenop+pad_before)
+    if start + lenip > lenop + pad_before:
+        pad_behind = start + lenip - (lenop + pad_before)
 
     # avoid execution when there is no padding (cost~100ns)
-    if pad_before+pad_behind:
+    if pad_before + pad_behind:
         ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
         opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
         target_object._orientation = R.from_quat(opath)
@@ -685,7 +676,7 @@ def apply_move(target_object, displacement, start='auto', absolute=False):
     if scalar_input:
         end = len(ppath)
     else:
-        end = start+lenip
+        end = start + lenip
 
     # apply move operation
     if absolute:
@@ -708,7 +699,7 @@ class BaseMove:
     apply_move() is applied to the object itself, but also to the children.
     """
 
-    def move(self, displacement, start='auto', absolute=False):
+    def move(self, displacement, start="auto", absolute=False):
         """
         Translates the object by the input displacement (can be a path).
 
@@ -792,12 +783,14 @@ class BaseMove:
         """
 
         clear = False
-        if start=='clear':
+        if start == "clear":
             start = 0
             clear = True
         # if Collection: apply to children
         targets = []
-        if getattr(self, "_object_type", None) == "Collection":
+        if getattr(self, "_object_type", None) == "Collection" and not getattr(
+            self, "_freeze_children", False
+        ):
             # pylint: disable=no-member
             targets.extend(self.children)
         # if BaseGeo apply to self
@@ -808,9 +801,10 @@ class BaseMove:
                 # pylint: disable=no-member
                 obj._position -= self._position
                 obj._position = obj._position[-1:]
-                obj._orientation = obj._orientation[:len(obj._position)]
+                obj._orientation = obj._orientation[: len(obj._position)]
             apply_move(obj, displacement, start, absolute)
         return self
+
 
 class BaseTransform(BaseRotate, BaseMove):
     """Base transformation class holding the move and rotate methods"""

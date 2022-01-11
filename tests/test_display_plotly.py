@@ -225,7 +225,9 @@ def test_extra_model3d():
     cuboid.style.model3d.extra[0].show = False
     x = cuboid.display(canvas=fig)
     assert x is None, "display test fail"
-    x = cuboid.display(
+    coll = magpy.Collection(cuboid)
+    coll.rotate_from_angax(45, 'z')
+    x = magpy.display(coll,
         canvas=fig,
         path="animate",
         style=dict(model3d_show=False),

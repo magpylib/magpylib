@@ -48,9 +48,10 @@ class BaseGeo(BaseTransform):
         # set pos and orient attributes
         self._position = np.array([[0., 0., 0.]])
         self._orientation = R.from_quat([[0., 0., 0., 1.]])
+        self._freeze_children = True # avoid resetting children when adding them to a collection
         self.position = position
         self.orientation = orientation
-
+        self._freeze_children = False # release freeze so that collection can act on children
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
             if style is None:
