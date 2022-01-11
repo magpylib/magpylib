@@ -26,7 +26,8 @@ This is a major update that includes
     - Added `matplotlib` pixel display ([#279](https://github.com/magpylib/magpylib/issues/279))
 - Documentation and Example codes now available on read the docs with binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
 - `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
-- Add all scipy Rotation forms as object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
+- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build compound objects. [#444](https://github.com/magpylib/magpylib/issues/444))
+- All scipy Rotation forms are now also object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
 
 
 ### Changed
