@@ -102,10 +102,7 @@ class BaseGeo(BaseTransform):
         # expand if input is shape (3,)
         if pos.ndim == 1:
             pos = np.expand_dims(pos, 0)
-        try:
-            self.move(pos, start='clear')
-        except AttributeError:
-            self._position = pos
+        self.move(pos, start='clear')
 
     @property
     def orientation(self):
@@ -138,10 +135,7 @@ class BaseGeo(BaseTransform):
                 orient = R.from_quat([val])
             else:
                 orient = rot
-        try:
-            self.rotate(orient, start='clear')
-        except AttributeError:
-            self._orientation = orient
+        self.rotate(orient, start='clear')
 
     @property
     def style(self):
