@@ -43,7 +43,7 @@ from magpylib._src.display.plotly.plotly_base_traces import (
     make_BaseCylinderSegment,
     make_BaseEllipsoid,
     make_BasePrism,
-    #make_BaseCone,
+    # make_BaseCone,
     make_BaseArrow,
 )
 from magpylib._src.display.plotly.plotly_utility import (
@@ -52,6 +52,7 @@ from magpylib._src.display.plotly.plotly_utility import (
     getColorscale,
     getIntensity,
 )
+
 
 def make_Line(
     current=0.0,
@@ -134,22 +135,24 @@ def make_Loop(
     return {**circular, **kwargs}
 
 
-def make_UnsupportedObject(
-    position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+def make_DefaultTrace(
+    obj, position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
     representation. The object will be reprensented by a scatter point and text above with object
     name.
     """
+
+    default_suffix = ""
     name, name_suffix = get_name_and_suffix(
-        "Unknown object", " (Unsupported visualisation)", style
+        f"{type(obj).__name__}", default_suffix, style
     )
     vertices = np.array([position])
     if orientation is not None:
         vertices = orientation.apply(vertices).T
     x, y, z = vertices
-    obj = dict(
+    trace = dict(
         type="scatter3d",
         x=x,
         y=y,
@@ -161,7 +164,7 @@ def make_UnsupportedObject(
         marker_color=color,
         marker_symbol="diamond",
     )
-    return {**obj, **kwargs}
+    return {**trace, **kwargs}
 
 
 def make_Dipole(
@@ -299,6 +302,7 @@ def make_Sphere(
     return _update_mag_mesh(
         sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
+
 
 def make_Pixels(positions, size=1) -> dict:
     """
@@ -558,8 +562,8 @@ def get_plotly_traces(
         elif getattr(input_obj, "_object_type", None) == "Collection":
             make_func = None
         else:
-            kwargs.update(name=type(input_obj).__name__)
-            make_func = make_UnsupportedObject
+            kwargs.update(obj=input_obj)
+            make_func = make_DefaultTrace
 
         path_traces = []
         path_traces_extra = {}
@@ -607,7 +611,7 @@ def get_plotly_traces(
             extra_model3d_trace.update(
                 {
                     "legendgroup": f"{input_obj}",
-                    "showlegend": showlegend and ind == 0,
+                    "showlegend": showlegend and ind == 0 and not trace,
                     "name": name,
                 }
             )
@@ -858,7 +862,7 @@ def animate_path(
     path_lengths = []
     for obj in objs:
         subobjs = [obj]
-        if getattr(obj, '_object_type', None) == 'Collection':
+        if getattr(obj, "_object_type", None) == "Collection":
             subobjs.extend(obj.children)
         for subobj in subobjs:
             path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
@@ -1105,7 +1109,9 @@ def display_plotly(
     with fig.batch_update():
         flat_obj_list = format_obj_input(obj_list)
         if (
-            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list)
+            not any(
+                getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
+            )
             and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
