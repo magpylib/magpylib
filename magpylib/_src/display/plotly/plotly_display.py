@@ -35,8 +35,9 @@ from magpylib._src.defaults.defaults_utility import (
     SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY,
     linearize_dict,
 )
+
 from magpylib._src.input_checks import check_excitations
-from magpylib._src.utility import unit_prefix
+from magpylib._src.utility import unit_prefix, format_obj_input
 from magpylib._src.display.plotly.plotly_base_traces import (
     make_BaseCuboid,
     make_BaseCylinderSegment,
@@ -854,12 +855,15 @@ def animate_path(
     """
     # make sure the number of frames does not exceed the max frames and max frame rate
     # downsample if necessary
-    path_lengths = [
-        getattr(obj, "position", np.array((0.0, 0.0, 0.0))).shape[0]
-        if getattr(obj, "position", np.array((0.0, 0.0, 0.0))).ndim > 1
-        else 0
-        for obj in objs
-    ]
+    path_lengths = []
+    for obj in objs:
+        subobjs = [obj]
+        if getattr(obj, '_object_type', None) == 'Collection':
+            subobjs.extend(obj.children)
+        for subobj in subobjs:
+            path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
+            path_lengths.append(path_len)
+
     max_pl = max(path_lengths)
     maxfps = Config.display.animation.maxfps
     maxframes = Config.display.animation.maxframes
@@ -1099,8 +1103,9 @@ def display_plotly(
         color_sequence = Config.display.colorsequence
 
     with fig.batch_update():
+        flat_obj_list = format_obj_input(obj_list)
         if (
-            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in obj_list)
+            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list)
             and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
