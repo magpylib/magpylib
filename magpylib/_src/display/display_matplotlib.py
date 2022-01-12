@@ -323,7 +323,6 @@ def display_matplotlib(
     *obj_list_semi_flat,
     axis=None,
     markers=None,
-    path=True,
     zoom=0,
     color_sequence=None,
     **kwargs,
@@ -371,6 +370,7 @@ def display_matplotlib(
                 color = color if semi_flat_obj.style.color is None else semi_flat_obj.style.color
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
+            path = style.path.show
             color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
