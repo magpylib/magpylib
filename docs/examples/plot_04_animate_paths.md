@@ -42,7 +42,7 @@ coll = magpy.Collection(
     magpy.magnet.Sphere(magnetization=(0, 1, 0), diameter=dim),
 )
 
-ts = np.arange(-0.6, 0.6, 0.2)
+ts = np.linspace(-0.6, 0.6, 5)
 sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
 
 # Create paths
