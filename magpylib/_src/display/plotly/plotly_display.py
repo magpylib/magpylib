@@ -461,7 +461,6 @@ def get_plotly_traces(
 
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
-
     Sensor = _src.obj_classes.Sensor
     Cuboid = _src.obj_classes.Cuboid
     Cylinder = _src.obj_classes.Cylinder
@@ -630,10 +629,7 @@ def get_plotly_traces(
                 trace["name"] = legendtext
             traces.append(trace)
 
-        if (
-            np.array(input_obj.position).ndim > 1
-            and style.path.show is not False
-        ):
+        if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
             scatter_path = make_path(input_obj, style_path_numbering, style, kwargs)
             traces.append(scatter_path)
 
@@ -962,10 +958,8 @@ def animate_path(
     frames = []
     autosize = "return"
     for i, ind in enumerate(path_indices):
-        kwargs["style_path_show"]=[ind]
-        frame = draw_frame(
-            objs, color_sequence, zoom, autosize=autosize, **kwargs,
-        )
+        kwargs["style_path_show"] = [ind]
+        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:
@@ -1071,11 +1065,12 @@ def display_plotly(
         fig = go.Figure()
 
     # Check animation parameters
-    if np.isscalar(animation) and not isinstance(animation, bool) and animation>0:
+    if np.isscalar(animation) and not isinstance(animation, bool) and animation > 0:
         kwargs["animation_time"] = animation
         animation = True
     elif not isinstance(animation, bool):
-        msg = ("The `animation` property must be either `True` or `False` or a positive number"
+        msg = (
+            "The `animation` property must be either `True` or `False` or a positive number"
             f" but received {animation!r} instead"
         )
         raise MagpylibBadUserInput(msg)
@@ -1088,13 +1083,15 @@ def display_plotly(
         animation = False
         warnings.warn("No path to be animated detected, displaying standard plot")
 
-    animation_kwargs = {k:v for k,v in kwargs.items() if k.split('_')[0]=='animation'}
+    animation_kwargs = {
+        k: v for k, v in kwargs.items() if k.split("_")[0] == "animation"
+    }
     if animation is False:
-        kwargs = {k:v for k,v in kwargs.items() if k not in animation_kwargs}
+        kwargs = {k: v for k, v in kwargs.items() if k not in animation_kwargs}
     else:
-        for k,v in Config.display.animation.as_dict().items():
+        for k, v in Config.display.animation.as_dict().items():
             anim_key = f"animation_{k}"
-            if kwargs.get(anim_key,None) is None:
+            if kwargs.get(anim_key, None) is None:
                 kwargs[anim_key] = v
 
     if obj_list:
@@ -1122,9 +1119,7 @@ def display_plotly(
                 **kwargs,
             )
         else:
-            traces_dicts = draw_frame(
-                obj_list, color_sequence, zoom, **kwargs
-            )
+            traces_dicts = draw_frame(obj_list, color_sequence, zoom, **kwargs)
             traces = [t for traces in traces_dicts.values() for t in traces]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)

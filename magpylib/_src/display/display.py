@@ -10,7 +10,7 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 # ON INTERFACE
 def display(
     *objects,
-    path=True,  # bool, int, index list
+    path=None,  # bool, int, index list
     zoom=0,
     animation=False,
     markers=None,
@@ -37,8 +37,9 @@ def display(
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
 
-    animate_time: float, default = 3
-        Sets the animation duration.
+    animation: bool or positive float, default=False
+        If True shows animation with default animation_time value.
+        If a positive number, it overrites animation_time with given value.
 
     markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
@@ -96,8 +97,8 @@ def display(
     """
 
     # flatten input
-    obj_list_flat = format_obj_input(objects, allow='sources+sensors')
-    obj_list_semi_flat = format_obj_input(objects, allow='sources+sensors+collections')
+    obj_list_flat = format_obj_input(objects, allow="sources+sensors")
+    obj_list_semi_flat = format_obj_input(objects, allow="sources+sensors+collections")
 
     # test if all source dimensions and excitations (if sho_direc=True) have been initialized
     check_dimensions(obj_list_flat)
@@ -105,7 +106,8 @@ def display(
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
 
-    kwargs['style_path_show'] = path
+    if path is not None:
+        kwargs["style_path_show"] = path
 
     if backend is None:
         backend = Config.display.backend
@@ -117,11 +119,7 @@ def display(
             )
             path = True
         display_matplotlib(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            axis=canvas,
-            **kwargs,
+            *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
