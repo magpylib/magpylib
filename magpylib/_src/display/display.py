@@ -10,9 +10,9 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 # ON INTERFACE
 def display(
     *objects,
-    path=True,  # bool, int, index list, 'animate'
+    path=True,  # bool, int, index list
     zoom=0,
-    animate_time=3,
+    animation=False,
     markers=None,
     backend=None,
     canvas=None,
@@ -33,8 +33,6 @@ def display(
         Option int i displays the objects at every i'th path position.
         Option array_like shape (n,) discribes certain path indices. The objects
         displays are displayed at every given path index.
-        Option `'animate'` (Plotly backend only) shows an animation of objectes moving
-        along their paths.
 
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
@@ -106,16 +104,8 @@ def display(
 
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
-    check_show_path = (
-        isinstance(path, (int, bool))
-        or path == "animate"
-        or (hasattr(path, "__iter__") and not isinstance(path, str))
-    )
-    assert check_show_path, (
-        f"`path` argument of type {type(path)} is invalid, \n"
-        "it must be one of (True, False, 'animate'), a positive path index "
-        "or an Iterable of path indices."
-    )
+
+    kwargs['style_path_show'] = path
 
     if backend is None:
         backend = Config.display.backend
@@ -129,7 +119,6 @@ def display(
         display_matplotlib(
             *obj_list_semi_flat,
             markers=markers,
-            path=path,
             zoom=zoom,
             axis=canvas,
             **kwargs,
@@ -141,9 +130,8 @@ def display(
         display_plotly(
             *obj_list_semi_flat,
             markers=markers,
-            show_path=path,
             zoom=zoom,
             fig=canvas,
-            animate_time=animate_time,
+            animation=animation,
             **kwargs,
         )

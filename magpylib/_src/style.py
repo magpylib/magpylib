@@ -1030,8 +1030,14 @@ class Path(MagicProperties):
 
     @show.setter
     def show(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
+        check_show_path = (
+            val is None
+            or isinstance(val, (int, bool))
+            or (hasattr(val, "__iter__") and not isinstance(val, str))
+        )
+        assert check_show_path, (
+            f"the `show` property of {type(self).__name__} must be one of (True, False),"
+            " a positive path index or an Iterable of path indices"
             f" but received {repr(val)} instead"
         )
         self._show = val

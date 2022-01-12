@@ -220,11 +220,17 @@ class Animation(MagicProperties):
 
     Properties
     ----------
-    maxfps: str, default='matplotlib'
+    fps: str, default=30
+        Target number of frames to be displayed per second.
+
+    maxfps: str, default=50
         Maximum number of frames to be displayed per second before downsampling kicks in.
 
     maxframes: int, default=200
         Maximum total number of frames to be displayed before downsampling kicks in.
+
+    time: float, default=5
+        Default animation time
 
     slider: bool, default = True
         if True, an interactive slider will be displayed and stay in sync with the animation, will
@@ -245,6 +251,19 @@ class Animation(MagicProperties):
         self._maxfps = val
 
     @property
+    def fps(self):
+        """Target number of frames to be displayed per second."""
+        return self._fps
+
+    @fps.setter
+    def fps(self, val):
+        assert val is None or isinstance(val, int) and val > 0, (
+            f"the `fps` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead"
+        )
+        self._fps = val
+
+    @property
     def maxframes(self):
         """Maximum total number of frames to be displayed before downsampling kicks in."""
         return self._maxframes
@@ -257,6 +276,18 @@ class Animation(MagicProperties):
         )
         self._maxframes = val
 
+    @property
+    def time(self):
+        """Default animation time."""
+        return self._time
+
+    @time.setter
+    def time(self, val):
+        assert val is None or isinstance(val, int) and val > 0, (
+            f"the `time` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead"
+        )
+        self._time = val
     @property
     def slider(self):
         """show/hide slider"""
