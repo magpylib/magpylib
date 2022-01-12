@@ -229,7 +229,7 @@ def test_extra_model3d():
     coll.rotate_from_angax(45, 'z')
     x = magpy.display(coll,
         canvas=fig,
-        path="animate",
+        animation=True,
         style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
@@ -277,10 +277,10 @@ def test_display_warnings():
     src.move(np.linspace((.4,.4,.4), (4,4,4), 10), start=-1)
     fig = go.Figure()
 
-    with pytest.warns(UserWarning):  # animate_fps to big warning
-        src.display(canvas=fig, path="animate", animate_time=2, animate_fps=3)
+    with pytest.warns(UserWarning):  # animation_fps to big warning
+        src.display(canvas=fig, animation=5, animation_fps=3)
     with pytest.warns(UserWarning):  # max frames surpassed
-        src.display(canvas=fig, path="animate", animate_time=2, animate_fps=1)
+        src.display(canvas=fig, animation=True, animation_time=2, animation_fps=1)
     src = Cuboid((1, 2, 3), (1, 2, 3))
     with pytest.warns(UserWarning):  # no objet path detected
-        src.display(canvas=fig, path="animate")
+        src.display(canvas=fig, animation=True)

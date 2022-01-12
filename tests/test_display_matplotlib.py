@@ -146,7 +146,7 @@ def test_matplotlib_animation_warning():
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
     sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     with pytest.warns(UserWarning):
-        sens.display(canvas=ax, path="animate")
+        sens.display(canvas=ax, animation=True)
 
 
 def test_matplotlib_model3d_extra():

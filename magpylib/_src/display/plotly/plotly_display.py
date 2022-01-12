@@ -637,7 +637,7 @@ def get_plotly_traces(
 
 def make_path(input_obj, path_numbering, style, kwargs):
     """draw obj path based on path style properties"""
-    x, y, z = input_obj.position.T
+    x, y, z = np.array(input_obj.position).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
         if path_numbering
