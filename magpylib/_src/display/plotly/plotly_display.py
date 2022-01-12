@@ -442,7 +442,6 @@ def get_plotly_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
-    style_path_numbering=False,
     **kwargs,
 ) -> list:
     """
@@ -630,7 +629,7 @@ def get_plotly_traces(
             traces.append(trace)
 
         if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
-            scatter_path = make_path(input_obj, style_path_numbering, style, kwargs)
+            scatter_path = make_path(input_obj, style.path.numbering, style, kwargs)
             traces.append(scatter_path)
 
     return traces

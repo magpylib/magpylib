@@ -1000,10 +1000,13 @@ class Path(MagicProperties):
 
     show: bool, default=None
         show/hide path
+
+    numbering: bool, default=False
+        show/hide numbering on path positions. Only applies if show=True.
     """
 
-    def __init__(self, marker=None, line=None, show=None, **kwargs):
-        super().__init__(marker=marker, line=line, show=show, **kwargs)
+    def __init__(self, marker=None, line=None, show=None, numbering=None, **kwargs):
+        super().__init__(marker=marker, line=line, show=show, numbering=numbering, **kwargs)
 
     @property
     def marker(self):
@@ -1030,17 +1033,30 @@ class Path(MagicProperties):
 
     @show.setter
     def show(self, val):
-        check_show_path = (
-            val is None
-            or isinstance(val, (int, bool))
-            or (hasattr(val, "__iter__") and not isinstance(val, str))
-        )
-        assert check_show_path, (
+        is_valid_path = True
+        if (hasattr(val, "__iter__") and not isinstance(val, str)):
+            val = tuple(val)
+        elif not (val is None or isinstance(val, (int, bool))):
+            is_valid_path = False
+        assert is_valid_path, (
             f"the `show` property of {type(self).__name__} must be one of (True, False),"
             " a positive path index or an Iterable of path indices"
             f" but received {repr(val)} instead"
         )
         self._show = val
+
+    @property
+    def numbering(self):
+        """show/hide numbering on path positions. Only applies if show=True."""
+        return self._numbering
+
+    @numbering.setter
+    def numbering(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `numbering` property of {type(self).__name__} must be one of (True, False),"
+            f" but received {repr(val)} instead"
+        )
+        self._numbering = val
 
 
 class Line(MagicProperties):

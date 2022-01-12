@@ -41,6 +41,7 @@ DEFAULTS = {
                     "marker": {"size": 2, "symbol": "o", "color": None},
                     "show": True,
                     "indices": -1,
+                    "numbering": False,
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,
