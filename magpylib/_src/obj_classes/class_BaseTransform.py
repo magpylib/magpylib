@@ -23,7 +23,7 @@ from magpylib._src.input_checks import (
 
 def path_padding(inpath, start, target_object):
     """
-    pad path of target_object and compute start- and end-index for apply_move() 
+    pad path of target_object and compute start- and end-index for apply_move()
     and apply_rotation() functions below so that ppath[start:end] = X... can be
     applied.
 
@@ -31,7 +31,7 @@ def path_padding(inpath, start, target_object):
     start: start index
     target_object: magpylib object with position and orientation attributes
 
-    returns 
+    returns
     ppath: padded target_object position path
     opath: padded target_object orientation path
     start: modified start idex
