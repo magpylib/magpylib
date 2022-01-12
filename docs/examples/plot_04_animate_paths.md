@@ -67,6 +67,9 @@ magpy.display(
 )
 fig.update_layout(height=800)
 ```
+```{note}
+Note that the animation of the sensor stops earlier since it has a shorter path length.
+```
 
 ```{warning}
 Even if some failsafes are implemented such as a maximum frame rate and frame count. There is no
