@@ -820,16 +820,16 @@ def animate_path(
 
     Parameters
     ----------
-    animate_time: float, default = 3
+    animation_time: float, default = 3
         Sets the animation duration
 
-    animate_fps: float, default = 30
+    animation_fps: float, default = 30
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animation_fps` the path position will be downsampled to be lower or equal
+        the `animation_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
-    animate_slider: bool, default = False
+    animation_slider: bool, default = False
         if True, an interactive slider will be displayed and stay in sync with the animation
 
     title: str, default = "3D-Paths Animation"
@@ -866,8 +866,8 @@ def animate_path(
     max_pl = max(path_lengths)
     if animation_fps > animation_maxfps:
         warnings.warn(
-            f"The set `animate_fps` at {animation_fps} is greater than the max allowed of"
-            f" {animation_maxfps}. `animate_fps` will be set to {animation_maxfps}. "
+            f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
+            f" {animation_maxfps}. `animation_fps` will be set to {animation_maxfps}. "
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxfps`"
         )
@@ -900,7 +900,7 @@ def animate_path(
     if max_pl > animation_maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {animation_maxframes}. The `animate_fps` will be set to {new_fps}. "
+            f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxframes`"
         )

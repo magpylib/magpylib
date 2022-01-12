@@ -37,9 +37,10 @@ def display(
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
 
-    animation: bool or positive float, default=False
-        If True shows animation with default animation_time value.
-        If a positive number, it overrites animation_time with given value.
+    animation: bool, default=False
+        If True and at least one object has a path, animated paths are rendered.
+        If a positive float, the animation duration target is set to the given value.
+        This feature is only available for the `plotly` backend at the moment.
 
     markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.

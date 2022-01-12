@@ -59,11 +59,10 @@ magpy.display(
     *coll,
     sens,
     canvas=fig,
-    path='animate',
+    animation=3, #animation time set to 2 seconds
     zoom=0,
-    animate_time=2,
-    animate_fps=20,
-    animate_slider=True,
+    animation_fps=20,
+    animation_slider=True,
     backend="plotly",
 )
 fig.update_layout(height=800)
