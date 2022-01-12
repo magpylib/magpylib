@@ -21,42 +21,25 @@ from magpylib._src.input_checks import (
     check_absolute_type,
 )
 
-
-def apply_move(target_object, displacement, start="auto", absolute=False):
+def path_padding(inpath, start, target_object):
     """
-    Implementation of the move() functionality.
+    pad path of target_object and compute start- and end-index for apply_move() 
+    and apply_rotation() functions below so that ppath[start:end] = X... can be
+    applied.
 
-    target_object: object with position and orientation attributes
-    displacement: displacement vector/path, array_like, shape (3,) or (n,3).
-        If the input is scalar (shape (3,)) the operation is applied to the
-        whole path. If the input is a vector (shape (n,3)), it is
-        appended/merged with the existing path.
-    start: int, str, default='auto'
-        start=i applies an operation starting at the i'th path index.
-        With start='auto' and scalar input the wole path is moved. With
-        start='auto' and vector input the input is appended.
-    absolute: bool, default=False
-        If absolute=False then transformations are applied on to existing
-        positions/orientations. If absolute=True position/orientation are
-        set to input values.
+    inpath: user input as np.ndarray
+    start: start index
+    target_object: magpylib object with position and orientation attributes
+
+    returns 
+    ppath: padded target_object position path
+    opath: padded target_object orientation path
+    start: modified start idex
+    end: end index
+    padded: True if padding was necessary, else False
     """
-    # pylint: disable=protected-access
-    # pylint: disable=attribute-defined-outside-init
-    # pylint: disable=too-many-branches
-
-    # check input types
-    if Config.checkinputs:
-        check_vector_type(displacement, "displacement")
-        check_start_type(start)
-        check_absolute_type(absolute)
-
-    # displacement vector -> ndarray
-    inpath = np.array(displacement, dtype=float)
+    # scalar or vector input
     scalar_input = inpath.ndim == 1
-
-    # check input format
-    if Config.checkinputs:
-        check_path_format(inpath, "displacement")
 
     # load old path
     ppath = target_object._position
@@ -90,16 +73,62 @@ def apply_move(target_object, displacement, start="auto", absolute=False):
         pad_behind = start + lenip - (lenop + pad_before)
 
     # avoid execution when there is no padding (cost~100ns)
+    padded = False
     if pad_before + pad_behind:
         ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
         opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
-        target_object._orientation = R.from_quat(opath)
+        padded = True
 
     # set end-index
     if scalar_input:
         end = len(ppath)
     else:
         end = start + lenip
+
+    return ppath, opath, start, end, padded
+
+
+
+def apply_move(target_object, displacement, start="auto", absolute=False):
+    """
+    Implementation of the move() functionality.
+
+    target_object: object with position and orientation attributes
+    displacement: displacement vector/path, array_like, shape (3,) or (n,3).
+        If the input is scalar (shape (3,)) the operation is applied to the
+        whole path. If the input is a vector (shape (n,3)), it is
+        appended/merged with the existing path.
+    start: int, str, default='auto'
+        start=i applies an operation starting at the i'th path index.
+        With start='auto' and scalar input the wole path is moved. With
+        start='auto' and vector input the input is appended.
+    absolute: bool, default=False
+        If absolute=False then transformations are applied on to existing
+        positions/orientations. If absolute=True position/orientation are
+        set to input values.
+    """
+    # pylint: disable=protected-access
+    # pylint: disable=attribute-defined-outside-init
+    # pylint: disable=too-many-branches
+
+    # check input types
+    if Config.checkinputs:
+        check_vector_type(displacement, "displacement")
+        check_start_type(start)
+        check_absolute_type(absolute)
+
+    # displacement vector -> ndarray
+    inpath = np.array(displacement, dtype=float)
+
+    # check input format
+    if Config.checkinputs:
+        check_path_format(inpath, "displacement")
+
+    # pad target_object path and compute start and end-index for rotation application
+    ppath, opath, start, end, padded = path_padding(inpath, start, target_object)
+
+    if padded:
+        target_object._orientation = R.from_quat(opath)
 
     # apply move operation
     if absolute:
@@ -151,49 +180,9 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
 
     # input -> quaternion ndarray
     inrotQ = rotation.as_quat()
-    scalar_input = inrotQ.ndim == 1
 
-    # load old path
-    ppath = target_object._position
-    opath = target_object._orientation.as_quat()
-
-    # path lengths
-    lenop = len(ppath)
-    lenip = 1 if scalar_input else len(inrotQ)
-
-    # initialize paddings
-    pad_before = 0
-    pad_behind = 0
-
-    # start='auto': apply to all if scalar, append if vector
-    if start == "auto":
-        if scalar_input:
-            start = 0
-        else:
-            start = lenop
-
-    # numpy convention with negative start indices
-    if start < 0:
-        start = lenop + start
-        # if start smaller than -old_path_length: pad before
-        if start < 0:
-            pad_before = -start  # pylint: disable=invalid-unary-operand-type
-            start = 0
-
-    # vector: if start+inpath extends beyond oldpath: pad behind and merge
-    if start + lenip > lenop + pad_before:
-        pad_behind = start + lenip - (lenop + pad_before)
-
-    # avoid execution when there is no padding (cost~100ns)
-    if pad_before + pad_behind:
-        ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
-        opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
-
-    # set end-index
-    if scalar_input:
-        end = len(ppath)
-    else:
-        end = start + lenip
+    # pad target_object path and compute start and end-index for rotation application
+    ppath, opath, start, end, _ = path_padding(inrotQ, start, target_object)
 
     # position change when there is an anchor
     if anchor is not None:
@@ -214,7 +203,7 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
 
 class BaseTransform:
     """
-    Inherit this class to provide rotation() methods.
+    Inherit this class to provide rotation() and move() methods.
 
     All rotate_from_XXX methods simply generate a scipy Rotation object and hand it
     over to the main rotate() method. This then uses the apply_rotation function to
