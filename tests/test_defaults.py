@@ -13,6 +13,8 @@ bad_inputs = {
     "itercylinder": (0.1,),  # int>0
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
+    "display_animation_fps": (0,),  # int>0
+    "display_animation_time": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
     "display_animation_slider": ("notbool"),  # bool
     "display_backend": ("plotty",),  # str typo
@@ -24,6 +26,7 @@ bad_inputs = {
     "display_style_base_path_marker_symbol": ("wrongsymbol",),
     "display_style_base_path_marker_color": ("wrongcolor",),  # color
     "display_style_base_path_show": ("notbool",),  # bool
+    "display_style_base_path_numbering": ("notbool",),  # bool
     "display_style_base_description_show": ("notbool",),  # bool
     "display_style_base_description_text": (
         False,
@@ -90,6 +93,8 @@ good_inputs = {
     "itercylinder": (10,),  # int>0
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
+    "display_animation_fps": (10,),  # int>0
+    "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
     "display_backend": ("matplotlib", "plotly"),  # str typo
@@ -103,7 +108,8 @@ good_inputs = {
     "display_style_base_path_marker_size": (0, 1),  # float>=0
     "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
-    "display_style_base_path_show": (True, False),  # bool
+    "display_style_base_path_show": (True, False, (1,2), 1),  # bool, int or iterable
+    "display_style_base_path_numbering": (True, False),  # bool
     "display_style_base_description_show": (True, False),  # bool
     "display_style_base_description_text": ("a string",),  # string
     "display_style_base_opacity": (0, 0.5, 1),  # 0<=float<=1
@@ -159,17 +165,8 @@ def test_defaults_good_inputs(key, value, expected):
         v0 = getattr(v0, v)
     assert v0 == expected, f"{key} should be {expected}, but received {v0} instead"
 
-
-def test_bad_input_classes():
-    """testing properties which take classes as properties"""
-    with pytest.raises(ValueError):
-        magpy.defaults.display = "wrong input"
-    with pytest.raises(ValueError):
-        magpy.defaults.display.animation = "wrong input"
-    with pytest.raises(ValueError):
-        magpy.defaults.display.style = "wrong input"
-    c = DisplayStyle().reset()
-    style_classes = {
+@pytest.mark.parametrize(
+    "style_class", [
         "base",
         "base_description",
         "base_model3d",
@@ -186,11 +183,22 @@ def test_bad_input_classes():
         "markers_marker",
         "sensor",
         "sensor_pixel",
-    }
-    for s in style_classes:
-        with pytest.raises(ValueError):
-            c.update(**{s: "bad class"})
+    ]
+)
+def test_bad_style_classes(style_class):
+    """testing properties which take classes as properties"""
+    c = DisplayStyle().reset()
+    with pytest.raises(ValueError):
+        c.update(**{style_class: "bad class"})
 
+def test_bad_default_classes():
+    """testing properties which take classes as properties"""
+    with pytest.raises(ValueError):
+        magpy.defaults.display = "wrong input"
+    with pytest.raises(ValueError):
+        magpy.defaults.display.animation = "wrong input"
+    with pytest.raises(ValueError):
+        magpy.defaults.display.style = "wrong input"
 
 def test_resetting_defaults():
     """test setting and resetting the config"""
