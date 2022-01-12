@@ -14,7 +14,7 @@ bad_inputs = {
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
-    "display_animation_slider":  ('notbool'),  # bool
+    "display_animation_slider": ("notbool"),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"],),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
@@ -54,6 +54,33 @@ bad_inputs = {
     "display_style_markers_marker_symbol": ("wrongsymbol",),
 }
 
+
+def get_bad_test_data():
+    """create parametrized bad style test data"""
+    bad_test_data = []
+    for k, tup in bad_inputs.items():
+        for v in tup:
+            if "description_text" not in k:
+                if "color" in k and "transition" not in k and "mode" not in k:
+                    # color attributes use a the color validator, which raises a ValueError
+                    errortype = ValueError
+                else:
+                    # all other parameters raise AssertionError
+                    errortype = AssertionError
+            bad_test_data.append((k, v, pytest.raises(errortype)))
+    return bad_test_data
+
+
+@pytest.mark.parametrize(
+    ("key", "value", "expected_errortype"), get_bad_test_data(),
+)
+def test_defaults_bad_inputs(key, value, expected_errortype):
+    """testing defaults setting on bad inputs"""
+    c = DefaultConfig().reset()
+    with expected_errortype:
+        c.update(**{key: value})
+
+
 # dict of good input.
 # This is just for check. dict keys should not be tuples in general, but the test will iterate
 # over the values for each key
@@ -64,7 +91,7 @@ good_inputs = {
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
-    "display_animation_slider":  (True, False),  # bool
+    "display_animation_slider": (True, False),  # bool
     "display_backend": ("matplotlib", "plotly"),  # str typo
     "display_colorsequence": (
         ["#2E91E5", "#0D2A63"],
@@ -78,11 +105,7 @@ good_inputs = {
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_show": (True, False),  # bool
     "display_style_base_description_show": (True, False),  # bool
-    "display_style_base_description_text": (
-        True,
-        object,
-        "a string",
-    ),  # DOES NOT RAISE, transforms everything into str
+    "display_style_base_description_text": ("a string",),  # string
     "display_style_base_opacity": (0, 0.5, 1),  # 0<=float<=1
     "display_style_base_model3d_show": (True, False),
     "display_style_base_color": ("blue", "#2E91E5"),  # color
@@ -105,56 +128,36 @@ good_inputs = {
     "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
     "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_style_dipole_size": (0, 1),  # float>=0
-    "display_style_dipole_pivot": (
-        "middle",
-        "tail",
-        "tip",
-    ),  # pivot middle, tail, tip
+    "display_style_dipole_pivot": ("middle", "tail", "tip",),  # pivot middle, tail, tip
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
     "display_style_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
 }
 
 
-def test_defaults():
-    """test setting and resetting the config"""
-    magpy.defaults.itercylinder = 15
-    assert magpy.defaults.itercylinder == 15, "setting config failed"
-    magpy.defaults.reset()
-    assert magpy.defaults.itercylinder == 50, "resetting config failed"
+def get_good_test_data():
+    """create parametrized good style test data"""
+    good_test_data = []
+    for key, tup in good_inputs.items():
+        for value in tup:
+            expected = value
+            if "color" in key and isinstance(value, str):
+                expected = value.lower()  # hex color gets lowered
+            good_test_data.append((key, value, expected))
+    return good_test_data
 
 
-def test_defaults_bad_inputs():
-    """testing defaults setting on bad inputs"""
-    c = DefaultConfig().reset()
-    for k, tup in bad_inputs.items():
-        for v in tup:
-            if "description_text" not in k:
-                if "color" in k and "transition" not in k and "mode" not in k:
-                    # color attributes use a the color validator, which raises a ValueError
-                    errortype = ValueError
-                else:
-                    # all other parameters raise AssertionError
-                    errortype = AssertionError
-                with pytest.raises(errortype):
-                    c.update(**{k: v})
-
-
-def test_defaults_good_inputs():
+@pytest.mark.parametrize(
+    ("key", "value", "expected"), get_good_test_data(),
+)
+def test_defaults_good_inputs(key, value, expected):
     """testing defaults setting on bad inputs"""
     c = DefaultConfig()
-    for k, tup in good_inputs.items():
-        for v1 in tup:
-            c.update(**{k: v1})
-            v0 = c
-            for v in k.split("_"):
-                v0 = getattr(v0, v)
-            if "color" in k and isinstance(v1, str):
-                v1 = v1.lower()  # hex color gets lowered
-            elif "description_text" in k:
-                # for a desc text, any object is valid and is transformed into a string
-                v1 = str(v1)
-            assert v0 == v1, f"{k} should be {v1}, but received {v0} instead"
+    c.update(**{key: value})
+    v0 = c
+    for v in key.split("_"):
+        v0 = getattr(v0, v)
+    assert v0 == expected, f"{key} should be {expected}, but received {v0} instead"
 
 
 def test_bad_input_classes():
@@ -187,3 +190,11 @@ def test_bad_input_classes():
     for s in style_classes:
         with pytest.raises(ValueError):
             c.update(**{s: "bad class"})
+
+
+def test_resetting_defaults():
+    """test setting and resetting the config"""
+    magpy.defaults.itercylinder = 15
+    assert magpy.defaults.itercylinder == 15, "setting config failed"
+    magpy.defaults.reset()
+    assert magpy.defaults.itercylinder == 50, "resetting config failed"
