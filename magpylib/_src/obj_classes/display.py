@@ -36,7 +36,7 @@ def display(
     *objects,
     path=True,  # bool, int, index list, 'animate'
     zoom=0,
-    animate_time=3,
+    animation=False,
     markers=None,
     backend=None,
     canvas=None,
@@ -168,7 +168,7 @@ def display(
             show_path=path,
             zoom=zoom,
             fig=canvas,
-            animate_time=animate_time,
+            animation=animation,
             **kwargs,
         )
 
