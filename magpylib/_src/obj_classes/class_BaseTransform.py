@@ -1,6 +1,6 @@
 """BaseTransform class code"""
 # pylint: disable=too-many-instance-attributes
-# # pylint: disable=protected-access
+# pylint: disable=protected-access
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -27,11 +27,14 @@ def path_padding(inpath, start, target_object):
     and apply_rotation() functions below so that ppath[start:end] = X... can be
     applied.
 
+    Parameters
+    ----------
     inpath: user input as np.ndarray
     start: start index
     target_object: magpylib object with position and orientation attributes
 
-    returns 
+    Returns
+    -------
     ppath: padded target_object position path
     opath: padded target_object orientation path
     start: modified start idex
@@ -88,11 +91,12 @@ def path_padding(inpath, start, target_object):
     return ppath, opath, start, end, padded
 
 
-
 def apply_move(target_object, displacement, start="auto", absolute=False):
     """
     Implementation of the move() functionality.
 
+    Parameters
+    ----------
     target_object: object with position and orientation attributes
     displacement: displacement vector/path, array_like, shape (3,) or (n,3).
         If the input is scalar (shape (3,)) the operation is applied to the
@@ -106,6 +110,10 @@ def apply_move(target_object, displacement, start="auto", absolute=False):
         If absolute=False then transformations are applied on to existing
         positions/orientations. If absolute=True position/orientation are
         set to input values.
+
+    Returns
+    -------
+    target_object
     """
     # pylint: disable=protected-access
     # pylint: disable=attribute-defined-outside-init
@@ -144,6 +152,8 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
     """
     Implementation of the rotate() functionality.
 
+    Parameters
+    ----------
     target_object: object with position and orientation attributes
     rotation: a scipy Rotation object
         If the input is scalar (shape (3,)) the operation is applied to the
@@ -159,6 +169,10 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
     It is difficult to interpret absolute when rotation anchor is not None and
         a rotation with respect to another anchor already exists. This is a feature
         that must be discussed.
+
+    Returns
+    -------
+    target_object
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
@@ -220,6 +234,17 @@ class BaseTransform:
 
     def move(self, displacement, start="auto", absolute=False):
         """
+
+        Input Statement
+        If the input is a scalar the operation is applied to the whole path. If the input is a vector, it is merged with the existing path.
+
+        Start Statement
+        start=i applies an operation starting at the i'th path index. start=None applies an operation to the whole path.
+
+        Absolute Statement
+        If absolute=False then transformations are applied on to existing positions/orientations. If absolute=True position/orientation are set to input values.
+
+
         Translates the object by the input displacement (can be a path).
 
         This method uses vector addition to merge the input path given by displacement and the
@@ -301,27 +326,37 @@ class BaseTransform:
          [4.1 4.1 4.1]]
         """
 
-        clear = False
-        if start == "clear":
-            start = 0
-            clear = True
-        # if Collection: apply to children
-        targets = []
-        if getattr(self, "_object_type", None) == "Collection" and not getattr(
-            self, "_freeze_children", False
-        ):
-            # pylint: disable=no-member
-            targets.extend(self.children)
-        # if BaseGeo apply to self
-        if getattr(self, "position", None) is not None:
-            targets.append(self)
-        for obj in targets:
-            if clear:
-                # pylint: disable=no-member
-                obj._position -= self._position
-                obj._position = obj._position[-1:]
-                obj._orientation = obj._orientation[: len(obj._position)]
-            apply_move(obj, displacement, start, absolute)
+        # Idea: An operation applied to a Collection is individually
+        #    applied to its BaseGeo and to each child. Any object with
+        #    move() and rotate() has BaseGeo.
+        #  -> this automatically generates the move-Compound behavior
+
+        apply_move(self, displacement, start=start, absolute=absolute)
+
+        for child in getattr(self, "children", []):
+            apply_move(child, displacement, start=start, absolute=absolute)
+
+        # clear = False
+        # if start == "clear":
+        #     start = 0
+        #     clear = True
+        # # if Collection: apply to children
+        # targets = []
+        # if getattr(self, "_object_type", None) == "Collection" and not getattr(
+        #     self, "_freeze_children", False
+        # ):
+        #     # pylint: disable=no-member
+        #     targets.extend(self.children)
+        # # if BaseGeo apply to self
+        # if getattr(self, "position", None) is not None:
+        #     targets.append(self)
+        # for obj in targets:
+        #     if clear:
+        #         # pylint: disable=no-member
+        #         obj._position -= self._position
+        #         obj._position = obj._position[-1:]
+        #         obj._orientation = obj._orientation[: len(obj._position)]
+        #     apply_move(obj, displacement, start, absolute)
         return self
 
     def rotate(self, rotation, anchor=None, start="auto"):
@@ -376,25 +411,36 @@ class BaseTransform:
         """
 
         # pylint: disable=no-member
-        # if Collection: apply to children
-        clear = False
-        if start == "clear":
-            start = 0
-            clear = True
-        targets = []
-        if getattr(self, "_object_type", None) == "Collection" and not getattr(
-            self, "_freeze_children", False
-        ):
-            if anchor is None:
-                anchor = self._position[-1]
-            targets.extend(self.children)
-        # if BaseGeo apply to self
-        if getattr(self, "position", None) is not None:
-            targets.append(self)
-        for obj in targets:
-            if clear:
-                obj._orientation = R.from_quat([[0, 0, 0, 1]] * len(self._position))
-            apply_rotation(obj, rotation, anchor, start)
+
+        # Idea: An operation applied to a Collection is individually
+        #    applied to its BaseGeo and to each child. Any object with
+        #    move() and rotate() has BaseGeo.
+        #  -> this automatically generates the rotate-Compound behavior
+
+        apply_rotation(self, rotation, anchor=anchor, start=start)
+
+        for child in getattr(self, "children", []):
+            apply_rotation(child, rotation, anchor=anchor, start=start)
+
+        # # if Collection: apply to children
+        # clear = False
+        # if start == "clear":
+        #     start = 0
+        #     clear = True
+        # targets = []
+        # if getattr(self, "_object_type", None) == "Collection" and not getattr(
+        #     self, "_freeze_children", False
+        # ):
+        #     if anchor is None:
+        #         anchor = self._position[-1]
+        #     targets.extend(self.children)
+        # # if BaseGeo apply to self
+        # if getattr(self, "position", None) is not None:
+        #     targets.append(self)
+        # for obj in targets:
+        #     if clear:
+        #         obj._orientation = R.from_quat([[0, 0, 0, 1]] * len(self._position))
+        #     apply_rotation(obj, rotation, anchor, start)
         return self
 
     def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):

@@ -2,6 +2,7 @@
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=protected-access
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -48,12 +49,13 @@ class BaseGeo(BaseTransform):
     def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
         # set pos and orient attributes
-        self._position = np.array([[0., 0., 0.]])
-        self._orientation = R.from_quat([[0., 0., 0., 1.]])
-        self._freeze_children = True # avoid resetting children when adding them to a collection
+        #self._position = np.array([[0., 0., 0.]])
+        #self._orientation = R.from_quat([[0., 0., 0., 1.]])
+        #self._freeze_children = True # avoid resetting children when adding them to a collection
         self.position = position
         self.orientation = orientation
-        self._freeze_children = False # release freeze so that collection can act on children
+        #self._freeze_children = False # release freeze so that collection can act on children
+
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
             if style is None:
@@ -102,10 +104,19 @@ class BaseGeo(BaseTransform):
         if Config.checkinputs:
             check_path_format(pos, "position")
 
-        # expand if input is shape (3,)
-        if pos.ndim == 1:
-            pos = np.expand_dims(pos, 0)
-        self.move(pos, start='clear')
+        # MISSING: apply orientation to match position format
+
+        # Apply to children - not executed at init (BaseGeo init before Collection init)
+        # Compound behavior: When a Collection position is SET, then all children
+        #   retain their last relative position (to the Collection BaseGeo). This
+        #   creates the Compound behavior (moving Compounds around) and solves all
+        #   messy-path (different Collection and child path formats) ambiguities.
+        for child in getattr(self, "children", []):
+            relative_child_pos = child._position[-1] - self._position[-1]
+            child._position = pos + relative_child_pos
+
+        # set _position attribute with ndim=2 format
+        self._position = pos if pos.ndim==2 else np.array([pos])
 
     @property
     def orientation(self):
@@ -127,18 +138,18 @@ class BaseGeo(BaseTransform):
         if Config.checkinputs:
             check_rot_type(rot)
 
-        # None input generates unit rotation
+        # None input generates unit rotation, else tile to shape (N,)
         if rot is None:
-            orient = R.from_quat([(0, 0, 0, 1)] * len(self._position))
-
-        # expand rot.as_quat() to shape (1,4)
+            orient = R.from_quat([(0, 0, 0, 1)]*len(self._position))
         else:
             val = rot.as_quat()
-            if val.ndim == 1:
-                orient = R.from_quat([val])
-            else:
-                orient = rot
-        self.rotate(orient, start='clear')
+            orient = R.from_quat([val]) if val.ndim ==1 else rot
+
+        # set _orientation attribute with ndim=2 format
+        self._orientation = orient
+
+        # MISSING: apply position to match orientation format
+
 
     @property
     def style(self):
@@ -176,7 +187,8 @@ class BaseGeo(BaseTransform):
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Reset object path to position = (0,0,0) and orientation = unit rotation.
+        Reset object and children paths to position = (0,0,0) and
+        orientation = unit rotation.
 
         Returns
         -------
@@ -195,16 +207,22 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
 
         """
+        self._position = np.array([[0., 0., 0.]])
+        self._orientation = R.from_quat([[0., 0., 0., 1.]])
 
         # if Collection: apply to children
-        targets = []
-        if getattr(self, "_object_type", None) == "Collection":
-            # pylint: disable=no-member
-            targets.extend(self.children)
-        # if BaseGeo apply to self
-        if getattr(self, "position", None) is not None:
-            targets.append(self)
-        for obj in targets:
-            # pylint: disable=protected-access
-            obj._position = np.array([[0., 0., 0.]])
-            obj._orientation = R.from_quat([[0., 0., 0., 1.]])
+        #for child in getattr(self, "children", []):
+        #    child._position = np.array([[0., 0., 0.]])
+        #    child._orientation = R.from_quat([[0., 0., 0., 1.]])
+
+        # targets = []
+        # if getattr(self, "_object_type", None) == "Collection":
+        #     # pylint: disable=no-member
+        #     targets.extend(self.children)
+        # # if BaseGeo apply to self
+        # if getattr(self, "position", None) is not None:
+        #     targets.append(self)
+        # for obj in targets:
+        #     # pylint: disable=protected-access
+        #     obj._position = np.array([[0., 0., 0.]])
+        #     obj._orientation = R.from_quat([[0., 0., 0., 1.]])
