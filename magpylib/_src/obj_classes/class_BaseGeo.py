@@ -12,7 +12,38 @@ from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
     check_rot_type)
+from magpylib._src.exceptions import MagpylibBadUserInput
 
+def position_input_check(pos):
+    """
+    checks input type and format end returns an ndarray of shape (N,3).
+    This function is used for setter and init only -> (1,3) and (3,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_vector_type(pos, "position")
+    # path vector -> ndarray
+    pos_array = np.array(pos, dtype=float)
+    # check input format
+    if Config.checkinputs:
+        check_path_format(pos_array, "position")
+    # tile to format (N,3) and return
+    return pos_array.reshape(-1,3)
+
+def orientation_input_check(ori):
+    """ 
+    checks input type and format end returns an ndarray of shape (N,4).
+    This function is used for setter and init only -> (1,4) and (4,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_rot_type(ori)
+    # None input generates unit rotation
+    ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
+    # tile to format (N,4) and return
+    return ori_array.reshape(-1,4)
 
 class BaseGeo(BaseTransform):
     """Initializes position and rotation (=orientation) properties
@@ -48,14 +79,13 @@ class BaseGeo(BaseTransform):
 
     def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
-        # set pos and orient attributes
-        #self._position = np.array([[0., 0., 0.]])
-        #self._orientation = R.from_quat([[0., 0., 0., 1.]])
-        #self._freeze_children = True # avoid resetting children when adding them to a collection
-        self.position = position
-        self.orientation = orientation
-        #self._freeze_children = False # release freeze so that collection can act on children
+        # format position and orientation inputs
+        pos = position_input_check(position)
+        ori = orientation_input_check(orientation)
+        # set _position and _orientation attributes
+        self._init_pos_orient_setter(pos,ori)
 
+        # style
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
             if style is None:
@@ -70,6 +100,33 @@ class BaseGeo(BaseTransform):
                     )
             style.update(**style_kwargs)
             self.style = style
+
+    def _init_pos_orient_setter(self, pos, ori):
+        """
+        tile up position and orientation input at Class init and set attributes
+        _position and _orientation.
+        pos: position input
+        ori: orientation input
+        """
+        len_pos = pos.shape[0]
+        len_ori = ori.shape[0]
+
+        # CASE 1: pos and orient are of similar length
+        if len_pos==len_ori:
+            pass
+        # CASE 2: pos path (and scalar orient) -> tile up orient
+        elif (len_pos>len_ori) and (len_ori==1):
+            ori = np.tile(ori, (len_pos,1))
+        # CASE 3: orient path (and scalar position) -> tile up position
+        elif (len_ori>len_pos) and (len_pos==1):
+            pos = np.tile(pos, (len_ori,1))
+        # CASE 4: pos and orient are of different length -> this has no meaning -> ERROR
+        else:
+            msg = 'Position and orientation must have same length.'
+            raise MagpylibBadUserInput(msg)
+
+        self._position = pos
+        self._orientation = R.from_quat(ori)
 
     def _get_style_class(self):
         """returns style class based on object type. If class has no attribute `_object_type` or is
