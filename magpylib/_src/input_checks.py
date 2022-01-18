@@ -58,12 +58,13 @@ def check_anchor_type(anch):
 
 
 def check_anchor_format(anch):
-    """must be shape (3,) or 0"""
-    if anch is not None:
-        if not np.all(anch == np.array(0)):
-            if not anch.shape == (3,):
-                msg = "Bad anchor input. Must be None, 0 or shape (3,)."
-                raise MagpylibBadInputShape(msg)
+    """must be shape (N,3), (3,) or 0"""
+    if not np.all(anch == np.array(0)):
+        msg = "Bad anchor input. Must be None, 0 or shape (3,) or (N,3)."
+        if not anch.shape[-1] == 3:
+            raise MagpylibBadInputShape(msg)
+        if not anch.ndim in (1, 2):
+            raise MagpylibBadInputShape(msg)
 
 
 def check_rot_type(inp):

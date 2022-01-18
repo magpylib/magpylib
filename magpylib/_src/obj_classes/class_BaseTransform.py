@@ -18,12 +18,84 @@ from magpylib._src.input_checks import (
     check_axis_format,
     check_vector_type,
     check_path_format,
-    check_absolute_type,
 )
+
+def multi_anchor_behavior(anchor, inrotQ, rotation):
+    """
+    define behavior of rotation with given anchor
+
+    tbd: right if one is longer than the other pad up other
+    """
+    len_inrotQ = 0 if inrotQ.ndim==1 else inrotQ.shape[0]
+    len_anchor = 0 if anchor.ndim==1 else anchor.shape[0]
+
+    if len_inrotQ>len_anchor:
+        if len_anchor==0:
+            anchor = np.reshape(anchor, (1,3))
+            len_anchor = 1
+        anchor = np.pad(anchor, ((0,len_inrotQ-len_anchor),(0,0)), 'edge')
+    elif len_inrotQ<len_anchor:
+        if len_inrotQ==0:
+            inrotQ = np.reshape(inrotQ, (1,4))
+            len_inrotQ = 1
+        inrotQ = np.pad(inrotQ, ((0,len_anchor-len_inrotQ),(0,0)), 'edge')
+        rotation = R.from_quat(inrotQ)
+    return anchor, inrotQ, rotation
+
+
+def path_padding_param(scalar_input: bool, lenop: int, lenip: int, start):
+    """
+    compute path padding parameters
+
+    Example: with start>0 input path exceeds old_path
+        old_path:            |abcdefg|
+        input_path:              |xzyuvwrst|
+        -> padded_old_path:  |abcdefggggggg|
+
+    Parameters:
+    -----------
+    scalar_input: True if rotation input is scalar, else False
+    lenop: length of old_path
+    lenip: length of input_path
+    start: start index
+
+    Returns:
+    --------
+    padding: (pad_before, pad_behind)
+        how much the old_path must be padded before
+    start: modified start value
+    """
+    # initialize paddings
+    pad_before = 0
+    pad_behind = 0
+
+    # start='auto': apply to all if scalar, append if vector
+    if start == "auto":
+        if scalar_input:
+            start = 0
+        else:
+            start = lenop
+
+    # numpy convention with negative start indices
+    if start < 0:
+        start = lenop + start
+        # if start smaller than -old_path_length: pad before
+        if start < 0:
+            pad_before = -start  # pylint: disable=invalid-unary-operand-type
+            start = 0
+
+    # vector: if start+inpath extends beyond oldpath: pad behind
+    if start + lenip > lenop + pad_before:
+        pad_behind = start + lenip - (lenop + pad_before)
+
+    if pad_before+pad_behind>0:
+        return (pad_before, pad_behind), start
+    return [], start
+
 
 def path_padding(inpath, start, target_object):
     """
-    pad path of target_object and compute start- and end-index for apply_move() 
+    pad path of target_object and compute start- and end-index for apply_move()
     and apply_rotation() functions below so that ppath[start:end] = X... can be
     applied.
 
@@ -48,50 +120,21 @@ def path_padding(inpath, start, target_object):
     ppath = target_object._position
     opath = target_object._orientation.as_quat()
 
-    # path lengths
-    lenop = len(ppath)
     lenip = 1 if scalar_input else len(inpath)
 
-    # initialize paddings
-    pad_before = 0
-    pad_behind = 0
-
-    # start='auto': apply to all if scalar, append if vector
-    if start == "auto":
-        if scalar_input:
-            start = 0
-        else:
-            start = lenop
-
-    # numpy convention with negative start indices
-    if start < 0:
-        start = lenop + start
-        # if start smaller than -old_path_length: pad before
-        if start < 0:
-            pad_before = -start  # pylint: disable=invalid-unary-operand-type
-            start = 0
-
-    # vector: if start+inpath extends beyond oldpath: pad behind and merge
-    if start + lenip > lenop + pad_before:
-        pad_behind = start + lenip - (lenop + pad_before)
-
-    # avoid execution when there is no padding (cost~100ns)
-    padded = False
-    if pad_before + pad_behind:
-        ppath = np.pad(ppath, ((pad_before, pad_behind), (0, 0)), "edge")
-        opath = np.pad(opath, ((pad_before, pad_behind), (0, 0)), "edge")
-        padded = True
+    # pad old path depending on input
+    padding, start = path_padding_param(scalar_input, len(ppath), lenip, start)
+    if padding:
+        ppath = np.pad(ppath, (padding, (0, 0)), "edge")
+        opath = np.pad(opath, (padding, (0, 0)), "edge")
 
     # set end-index
-    if scalar_input:
-        end = len(ppath)
-    else:
-        end = start + lenip
+    end = len(ppath) if scalar_input else start+lenip
 
-    return ppath, opath, start, end, padded
+    return ppath, opath, start, end, bool(padding)
 
 
-def apply_move(target_object, displacement, start="auto", absolute=False):
+def apply_move(target_object, displacement, start="auto"):
     """
     Implementation of the move() functionality.
 
@@ -106,10 +149,6 @@ def apply_move(target_object, displacement, start="auto", absolute=False):
         start=i applies an operation starting at the i'th path index.
         With start='auto' and scalar input the wole path is moved. With
         start='auto' and vector input the input is appended.
-    absolute: bool, default=False
-        If absolute=False then transformations are applied on to existing
-        positions/orientations. If absolute=True position/orientation are
-        set to input values.
 
     Returns
     -------
@@ -123,7 +162,6 @@ def apply_move(target_object, displacement, start="auto", absolute=False):
     if Config.checkinputs:
         check_vector_type(displacement, "displacement")
         check_start_type(start)
-        check_absolute_type(absolute)
 
     # displacement vector -> ndarray
     inpath = np.array(displacement, dtype=float)
@@ -134,21 +172,22 @@ def apply_move(target_object, displacement, start="auto", absolute=False):
 
     # pad target_object path and compute start and end-index for rotation application
     ppath, opath, start, end, padded = path_padding(inpath, start, target_object)
-
     if padded:
         target_object._orientation = R.from_quat(opath)
 
     # apply move operation
-    if absolute:
-        ppath[start:end] = inpath
-    else:
-        ppath[start:end] += inpath
+    ppath[start:end] += inpath
     target_object._position = ppath
 
     return target_object
 
 
-def apply_rotation(target_object, rotation, anchor=None, start="auto"):
+def apply_rotation(
+    target_object,
+    rotation: R,
+    anchor=None,
+    start="auto",
+    parent_path=None):
     """
     Implementation of the rotate() functionality.
 
@@ -165,10 +204,7 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
         start=i applies an operation starting at the i'th path index.
         With start='auto' and scalar input the wole path is moved. With
         start='auto' and vector input the input is appended.
-
-    It is difficult to interpret absolute when rotation anchor is not None and
-        a rotation with respect to another anchor already exists. This is a feature
-        that must be discussed.
+    parent_path=None if there is no parent else parent._position
 
     Returns
     -------
@@ -183,30 +219,45 @@ def apply_rotation(target_object, rotation, anchor=None, start="auto"):
         check_anchor_type(anchor)
         check_start_type(start)
 
-    # input anchor -> ndarray type
-    if anchor is not None:
-        anchor = np.array(anchor, dtype=float)
-
-    # check format
-    if Config.checkinputs:
-        check_anchor_format(anchor)
-        # Non need for Rotation format check. R.as_quat() can only be of shape (4,) or (N,4)
-
     # input -> quaternion ndarray
     inrotQ = rotation.as_quat()
 
+    # when an anchor is given
+    if anchor is not None:
+        # 0-anchor -> (0,0,0)
+        anchor=np.array((0,0,0)) if anchor is 0 else np.array(anchor, dtype=float)
+        # check anchor input format
+        if Config.checkinputs:
+            check_anchor_format(anchor)
+        # apply multi-anchor behavior
+        anchor, inrotQ, rotation = multi_anchor_behavior(anchor, inrotQ, rotation)
+
     # pad target_object path and compute start and end-index for rotation application
-    ppath, opath, start, end, _ = path_padding(inrotQ, start, target_object)
+    ppath, opath, newstart, end, _ = path_padding(inrotQ, start, target_object)
+
+    # compute anchor when dealing with Compound rotation (target_object is a child
+    #   that rotates about its parent). This happens when a rotation with anchor=None
+    #   is applied to a child in a Collection. In this case the anchor must be set to
+    #   the parent_path.
+    if anchor is None and parent_path is not None:
+        # target anchor length
+        len_anchor = end-newstart
+        # pad up parent_path if input requires it
+        padding, start = path_padding_param(inrotQ.ndim==1, parent_path.shape[0], len_anchor, start)
+        if padding:
+            parent_path = np.pad(parent_path, (padding, (0,0)), 'edge')
+        # slice anchor from padded parent_path
+        anchor = parent_path[start:start+len_anchor]
 
     # position change when there is an anchor
     if anchor is not None:
-        ppath[start:end] -= anchor
-        ppath[start:end] = rotation.apply(ppath[start:end])
-        ppath[start:end] += anchor
+        ppath[newstart:end] -= anchor
+        ppath[newstart:end] = rotation.apply(ppath[newstart:end])
+        ppath[newstart:end] += anchor
 
     # set new rotation
-    oldrot = R.from_quat(opath[start:end])
-    opath[start:end] = (rotation * oldrot).as_quat()
+    oldrot = R.from_quat(opath[newstart:end])
+    opath[newstart:end] = (rotation * oldrot).as_quat()
 
     # store new position and orientation
     # pylint: disable=attribute-defined-outside-init
@@ -232,18 +283,16 @@ class BaseTransform:
       to its children.
     """
 
-    def move(self, displacement, start="auto", absolute=False):
+    def move(self, displacement, start="auto"):
         """
 
         Input Statement
-        If the input is a scalar the operation is applied to the whole path. If the input is a vector, it is merged with the existing path.
+        If the input is a scalar the operation is applied to the whole path. If the
+        input is a vector, it is merged with the existing path.
 
         Start Statement
-        start=i applies an operation starting at the i'th path index. start=None applies an operation to the whole path.
-
-        Absolute Statement
-        If absolute=False then transformations are applied on to existing positions/orientations. If absolute=True position/orientation are set to input values.
-
+        start=i applies an operation starting at the i'th path index. start=None applies
+        an operation to the whole path.
 
         Translates the object by the input displacement (can be a path).
 
@@ -263,12 +312,6 @@ class BaseTransform:
             If `start=0`, inp_path will start with the beginning of the old_path.
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input displacements are absolute.
-            If `increment=True`, input displacements are interpreted as increments of each other.
-            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
-            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
 
         Returns
         -------
@@ -327,39 +370,20 @@ class BaseTransform:
         """
 
         # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child. Any object with
-        #    move() and rotate() has BaseGeo.
-        #  -> this automatically generates the move-Compound behavior
-
-        apply_move(self, displacement, start=start, absolute=absolute)
+        #    applied to its BaseGeo and to each child.
 
         for child in getattr(self, "children", []):
-            apply_move(child, displacement, start=start, absolute=absolute)
+            apply_move(child, displacement, start=start)
 
-        # clear = False
-        # if start == "clear":
-        #     start = 0
-        #     clear = True
-        # # if Collection: apply to children
-        # targets = []
-        # if getattr(self, "_object_type", None) == "Collection" and not getattr(
-        #     self, "_freeze_children", False
-        # ):
-        #     # pylint: disable=no-member
-        #     targets.extend(self.children)
-        # # if BaseGeo apply to self
-        # if getattr(self, "position", None) is not None:
-        #     targets.append(self)
-        # for obj in targets:
-        #     if clear:
-        #         # pylint: disable=no-member
-        #         obj._position -= self._position
-        #         obj._position = obj._position[-1:]
-        #         obj._orientation = obj._orientation[: len(obj._position)]
-        #     apply_move(obj, displacement, start, absolute)
+        apply_move(self, displacement, start=start)
+
         return self
 
-    def rotate(self, rotation, anchor=None, start="auto"):
+    def rotate(
+        self,
+        rotation: R,
+        anchor=None,
+        start="auto"):
         """
         Rotates object in the global coordinate system using a scipy Rotation object
         as input.
@@ -381,10 +405,6 @@ class BaseTransform:
             If `start=0`, inp_path will start with the beginning of the old_path.
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
 
         Returns
         -------
@@ -413,34 +433,14 @@ class BaseTransform:
         # pylint: disable=no-member
 
         # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child. Any object with
-        #    move() and rotate() has BaseGeo.
+        #    applied to its BaseGeo and to each child.
         #  -> this automatically generates the rotate-Compound behavior
+
+        for child in getattr(self, "children", []):
+            apply_rotation(child, rotation, anchor=anchor, start=start, parent_path=self._position)
 
         apply_rotation(self, rotation, anchor=anchor, start=start)
 
-        for child in getattr(self, "children", []):
-            apply_rotation(child, rotation, anchor=anchor, start=start)
-
-        # # if Collection: apply to children
-        # clear = False
-        # if start == "clear":
-        #     start = 0
-        #     clear = True
-        # targets = []
-        # if getattr(self, "_object_type", None) == "Collection" and not getattr(
-        #     self, "_freeze_children", False
-        # ):
-        #     if anchor is None:
-        #         anchor = self._position[-1]
-        #     targets.extend(self.children)
-        # # if BaseGeo apply to self
-        # if getattr(self, "position", None) is not None:
-        #     targets.append(self)
-        # for obj in targets:
-        #     if clear:
-        #         obj._orientation = R.from_quat([[0, 0, 0, 1]] * len(self._position))
-        #     apply_rotation(obj, rotation, anchor, start)
         return self
 
     def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
@@ -468,10 +468,6 @@ class BaseTransform:
             If `start=0`, inp_path will start with the beginning of the old_path.
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
 
         degrees: bool, default=True
             By default angle is given in units of [deg]. If degrees=False, angle is given
@@ -576,10 +572,6 @@ class BaseTransform:
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-
         degrees : bool, default False
             If True, then the given angles are assumed to be in degrees.
 
@@ -636,10 +628,6 @@ class BaseTransform:
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-
         degrees : bool, default False
             If True, then the given angles are assumed to be in degrees.
 
@@ -690,10 +678,6 @@ class BaseTransform:
             If `start=0`, inp_path will start with the beginning of the old_path.
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
 
         Returns
         -------
@@ -746,10 +730,6 @@ class BaseTransform:
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
 
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
-
         Returns
         -------
         self: Magpylib object
@@ -797,10 +777,6 @@ class BaseTransform:
             If `start=0`, inp_path will start with the beginning of the old_path.
             If `start=len(old_path)` or `start='append'`, inp_path will be attached to
             the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input rotations are absolute.
-            If `increment=True`, input rotations are interpreted as increments of each other.
 
         Returns
         -------

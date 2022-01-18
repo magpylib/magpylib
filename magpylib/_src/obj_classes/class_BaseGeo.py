@@ -79,11 +79,8 @@ class BaseGeo(BaseTransform):
 
     def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
-        # format position and orientation inputs
-        pos = position_input_check(position)
-        ori = orientation_input_check(orientation)
         # set _position and _orientation attributes
-        self._init_pos_orient_setter(pos,ori)
+        self._init_position_orientation(position, orientation)
 
         # style
         self.style_class = self._get_style_class()
@@ -101,13 +98,18 @@ class BaseGeo(BaseTransform):
             style.update(**style_kwargs)
             self.style = style
 
-    def _init_pos_orient_setter(self, pos, ori):
+    def _init_position_orientation(self, position, orientation):
         """
         tile up position and orientation input at Class init and set attributes
         _position and _orientation.
         pos: position input
         ori: orientation input
         """
+
+        # format position and orientation inputs
+        pos = position_input_check(position)
+        ori = orientation_input_check(orientation)
+
         len_pos = pos.shape[0]
         len_ori = ori.shape[0]
 
