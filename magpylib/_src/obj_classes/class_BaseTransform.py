@@ -24,7 +24,7 @@ def multi_anchor_behavior(anchor, inrotQ, rotation):
     """
     define behavior of rotation with given anchor
 
-    tbd: right if one is longer than the other pad up other
+    if one is longer than the other pad up other
     """
     len_inrotQ = 0 if inrotQ.ndim==1 else inrotQ.shape[0]
     len_anchor = 0 if anchor.ndim==1 else anchor.shape[0]
@@ -40,6 +40,7 @@ def multi_anchor_behavior(anchor, inrotQ, rotation):
             len_inrotQ = 1
         inrotQ = np.pad(inrotQ, ((0,len_anchor-len_inrotQ),(0,0)), 'edge')
         rotation = R.from_quat(inrotQ)
+
     return anchor, inrotQ, rotation
 
 

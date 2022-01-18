@@ -12,7 +12,6 @@ from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
     check_rot_type)
-from magpylib._src.exceptions import MagpylibBadUserInput
 
 def position_input_check(pos):
     """
@@ -32,7 +31,7 @@ def position_input_check(pos):
     return pos_array.reshape(-1,3)
 
 def orientation_input_check(ori):
-    """ 
+    """
     checks input type and format end returns an ndarray of shape (N,4).
     This function is used for setter and init only -> (1,4) and (4,) input
     creates same behavior.
@@ -46,17 +45,17 @@ def orientation_input_check(ori):
     return ori_array.reshape(-1,4)
 
 class BaseGeo(BaseTransform):
-    """Initializes position and rotation (=orientation) properties
+    """Initializes position and orientation properties
     of an object in a global CS.
 
-    Position is a ndarray with shape (3,).
+    position is a ndarray with shape (3,).
 
-    Rotation is a scipy.spatial.transformation.Rotation
+    orientation is a scipy.spatial.transformation.Rotation
     object that gives the relative rotation to the init_state. The
     init_state is defined by how the fields are implemented (e.g.
     cyl upright in xy-plane)
 
-    Both attributes _pos and _rot.as_rotvec() are of shape (N,3),
+    Both attributes _position and _orientation.as_rotvec() are of shape (N,3),
     and describe a path of length N. (N=1 if there is only one
     object position).
 
@@ -103,30 +102,23 @@ class BaseGeo(BaseTransform):
         tile up position and orientation input at Class init and set attributes
         _position and _orientation.
         pos: position input
-        ori: orientation input
+        ori: orientation.as_quat() input
         """
 
         # format position and orientation inputs
         pos = position_input_check(position)
         ori = orientation_input_check(orientation)
 
+        # if one is longer than the other, pad up the other
         len_pos = pos.shape[0]
         len_ori = ori.shape[0]
 
-        # CASE 1: pos and orient are of similar length
-        if len_pos==len_ori:
-            pass
-        # CASE 2: pos path (and scalar orient) -> tile up orient
-        elif (len_pos>len_ori) and (len_ori==1):
-            ori = np.tile(ori, (len_pos,1))
-        # CASE 3: orient path (and scalar position) -> tile up position
-        elif (len_ori>len_pos) and (len_pos==1):
-            pos = np.tile(pos, (len_ori,1))
-        # CASE 4: pos and orient are of different length -> this has no meaning -> ERROR
-        else:
-            msg = 'Position and orientation must have same length.'
-            raise MagpylibBadUserInput(msg)
+        if len_pos>len_ori:
+            ori = np.pad(ori, ((0,len_pos-len_ori), (0,0)), 'edge')
+        elif len_pos<len_ori:
+            pos = np.pad(pos, ((0,len_ori-len_pos), (0,0)), 'edge')
 
+        # set attributes
         self._position = pos
         self._orientation = R.from_quat(ori)
 
