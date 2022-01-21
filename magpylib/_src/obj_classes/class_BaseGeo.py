@@ -109,7 +109,7 @@ class BaseGeo(BaseTransform):
         pos = position_input_check(position)
         ori = orientation_input_check(orientation)
 
-        # if one is longer than the other, pad up the other
+        # padding logic: if one is longer than the other, edge-pad up the other
         len_pos = pos.shape[0]
         len_ori = ori.shape[0]
 
@@ -138,36 +138,35 @@ class BaseGeo(BaseTransform):
 
     @position.setter
     def position(self, pos):
-        """Set object position-path.
+        """
+        Set object position-path.
+
+        Use edge-padding and end-slicing to adjust orientation path
+
+        When a Collection position is set, then all children retain their
+        relative position to the Collection BaseGeo.
 
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
+        # check and set new position
+        self._position = position_input_check(pos)
 
-        # check input type
-        if Config.checkinputs:
-            check_vector_type(pos, "position")
+        # pad/slice orientation path to same length
+        delta_path = len(self._position) - len(self._orientation)
+        if delta_path>0:
+            padding = ((0,delta_path), (0,0))
+            ori_pad = np.pad(self._orientation.as_quat(), padding, 'edge')
+            self._orientation = R.from_quat(ori_pad)
+        elif delta_path<0:
+            self._orientation = self._orientation[-delta_path:]
 
-        # path vector -> ndarray
-        pos = np.array(pos, dtype=float)
-
-        # check input format
-        if Config.checkinputs:
-            check_path_format(pos, "position")
-
-        # MISSING: apply orientation to match position format
-
-        # Apply to children - not executed at init (BaseGeo init before Collection init)
-        # Compound behavior: When a Collection position is SET, then all children
-        #   retain their last relative position (to the Collection BaseGeo). This
-        #   creates the Compound behavior (moving Compounds around) and solves all
-        #   messy-path (different Collection and child path formats) ambiguities.
-        for child in getattr(self, "children", []):
-            relative_child_pos = child._position[-1] - self._position[-1]
-            child._position = pos + relative_child_pos
+        # TODO for child in getattr(self, "children", []):
+        #    relative_child_pos = child._position - self.position[-1]
+        #    child._position = pos + relative_child_pos
 
         # set _position attribute with ndim=2 format
-        self._position = pos if pos.ndim==2 else np.array([pos])
+
 
     @property
     def orientation(self):
