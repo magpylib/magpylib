@@ -225,6 +225,7 @@ def test_col_reset_path():
     col.reset_path()
     assert col[0].position.ndim == 1, "col reset path fail"
     assert col[1].position.ndim == 1, "col reset path fail"
+    assert col.position.ndim == 1, "col reset path fail"
 
 
 def test_Collection_squeeze():

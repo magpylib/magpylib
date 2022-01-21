@@ -96,16 +96,11 @@ def badInput_move2():
     bg.move([1,2,3], start=1.1)
 
 def badInput_move3():
-    """ bad absolute input type"""
-    bg = BaseGeo(a3, r0)
-    bg.move([1,2,3], absolute=5)
-
-def badInput_move4():
     """ bad displacement input format1"""
     bg = BaseGeo(a3, r0)
     bg.move([1,2])
 
-def badInput_move5():
+def badInput_move4():
     """ bad displacement input format2"""
     bg = BaseGeo(a3, r0)
     bg.move([[[1,2,3]]*3]*4)
@@ -295,9 +290,8 @@ class TestExceptions(unittest.TestCase):
         """ bad .move inputs"""
         self.assertRaises(MagpylibBadUserInput, badInput_move1)
         self.assertRaises(MagpylibBadUserInput, badInput_move2)
-        self.assertRaises(MagpylibBadUserInput, badInput_move3)
+        self.assertRaises(MagpylibBadInputShape, badInput_move3)
         self.assertRaises(MagpylibBadInputShape, badInput_move4)
-        self.assertRaises(MagpylibBadInputShape, badInput_move5)
 
     def test_rotate(self):
         """ bad .rotate inputs"""
