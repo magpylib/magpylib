@@ -476,6 +476,7 @@ def get_plotly_traces(
     style_color = getattr(style, "color", None)
     kwargs["color"] = style_color if style_color is not None else color
     kwargs["opacity"] = style.opacity
+    legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
 
     if hasattr(style, "magnetization"):
         if style.magnetization.show:
@@ -608,7 +609,7 @@ def get_plotly_traces(
             )
             extra_model3d_trace.update(
                 {
-                    "legendgroup": f"{input_obj}",
+                    "legendgroup": legendgroup,
                     "showlegend": showlegend and ind == 0 and not trace,
                     "name": name,
                 }
@@ -618,9 +619,7 @@ def get_plotly_traces(
         if trace:
             trace.update(
                 {
-                    "legendgroup": f"{input_obj}"
-                    if legendgroup is None
-                    else legendgroup,
+                    "legendgroup": legendgroup,
                     "showlegend": True if showlegend is None else showlegend,
                 }
             )
@@ -629,18 +628,18 @@ def get_plotly_traces(
             traces.append(trace)
 
         if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
-            scatter_path = make_path(input_obj, style.path.numbering, style, kwargs)
+            scatter_path = make_path(input_obj,  style, legendgroup, kwargs)
             traces.append(scatter_path)
 
     return traces
 
 
-def make_path(input_obj, path_numbering, style, kwargs):
+def make_path(input_obj, style, legendgroup, kwargs):
     """draw obj path based on path style properties"""
     x, y, z = np.array(input_obj.position).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
-        if path_numbering
+        if style.path.numbering
         else {"mode": "markers+lines"}
     )
     marker = style.path.marker.as_dict()
@@ -661,7 +660,7 @@ def make_path(input_obj, path_numbering, style, kwargs):
         z=z,
         name=f"Path: {input_obj}",
         showlegend=False,
-        legendgroup=f"{input_obj}",
+        legendgroup=legendgroup,
         marker=marker,
         line=line,
         **txt_kwargs,
