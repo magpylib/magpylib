@@ -122,14 +122,14 @@ def get_setter_pos_orient_test_data():
             setter_position=(0, 0, 1),
             setter_orientation_rotvec="not_set",
             expected_position=(0, 0, 1),
-            expected_orientation_rotvec=[(0, 0, 0), (0, 0, 0)],
+            expected_orientation_rotvec=(0, 0, 0),
         ),
         dict(
             init_position=[(1, 1, 1), (2, 2, 2)],
             init_orientation_rotvec=None,
             setter_position="not_set",
             setter_orientation_rotvec=(0, 0, 0.1),
-            expected_position=[(1, 1, 1), (2, 2, 2)],
+            expected_position=(2, 2, 2),
             expected_orientation_rotvec=(0, 0, 0.1),
         ),
     ]
