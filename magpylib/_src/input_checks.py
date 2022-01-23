@@ -70,7 +70,7 @@ def check_anchor_format(anch):
 def check_rot_type(inp):
     """rotation input mut be scipy Rotation"""
     if not isinstance(inp, (Rotation, type(None))):
-        msg = "rot input must be None or scipy Rotation object."
+        msg = "orientation input must be None or scipy Rotation object."
         raise MagpylibBadUserInput(msg)
 
 

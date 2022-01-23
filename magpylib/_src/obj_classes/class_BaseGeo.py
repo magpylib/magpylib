@@ -13,6 +13,22 @@ from magpylib._src.input_checks import (
     check_path_format,
     check_rot_type)
 
+
+def pad_slice_path(path1, path2):
+    """
+    edge-pads or end-slices path 2 to fit path 1 format
+    path1: shape (N,x)
+    path2: shape (M,x)
+    return: path2 with format (N,x)
+    """
+    delta_path = len(path1) - len(path2)
+    if delta_path>0:
+        return np.pad(path2, ((0,delta_path), (0,0)), 'edge')
+    if delta_path<0:
+        return path2[-delta_path:]
+    return path2
+
+
 def position_input_check(pos):
     """
     checks input type and format end returns an ndarray of shape (N,3).
@@ -137,7 +153,7 @@ class BaseGeo(BaseTransform):
         return np.squeeze(self._position)
 
     @position.setter
-    def position(self, pos):
+    def position(self, inp):
         """
         Set object position-path.
 
@@ -149,23 +165,22 @@ class BaseGeo(BaseTransform):
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
+        old_pos = self._position
+
         # check and set new position
-        self._position = position_input_check(pos)
+        self._position = position_input_check(inp)
 
-        # pad/slice orientation path to same length
-        delta_path = len(self._position) - len(self._orientation)
-        if delta_path>0:
-            padding = ((0,delta_path), (0,0))
-            ori_pad = np.pad(self._orientation.as_quat(), padding, 'edge')
-            self._orientation = R.from_quat(ori_pad)
-        elif delta_path<0:
-            self._orientation = self._orientation[-delta_path:]
+        # pad/slice and set orientation path to same length
+        oriQ = self._orientation.as_quat()
+        self._orientation = R.from_quat(pad_slice_path(self._position, oriQ))
 
-        # TODO for child in getattr(self, "children", []):
-        #    relative_child_pos = child._position - self.position[-1]
-        #    child._position = pos + relative_child_pos
-
-        # set _position attribute with ndim=2 format
+        # when there are children include their relative position
+        for child in getattr(self, "children", []):
+            old_pos = pad_slice_path(self._position, old_pos)
+            child_pos = pad_slice_path(self._position, child._position)
+            rel_child_pos = child_pos - old_pos
+            # set child position (pad/slice orientation)
+            child.position = self._position + rel_child_pos
 
 
     @property
@@ -177,28 +192,30 @@ class BaseGeo(BaseTransform):
         return self._orientation  # return full path
 
     @orientation.setter
-    def orientation(self, rot):
+    def orientation(self, inp):
         """Set object orientation-path.
 
-        rot: None or scipy Rotation, shape (1,) or (N,), default=None
+        inp: None or scipy Rotation, shape (1,) or (N,)
             Set orientation-path of object. None generates a unit orientation
             for every path step.
         """
-        # check input type
-        if Config.checkinputs:
-            check_rot_type(rot)
-
-        # None input generates unit rotation, else tile to shape (N,)
-        if rot is None:
-            orient = R.from_quat([(0, 0, 0, 1)]*len(self._position))
-        else:
-            val = rot.as_quat()
-            orient = R.from_quat([val]) if val.ndim ==1 else rot
-
+        old_oriQ = self._orientation.as_quat()
+        
         # set _orientation attribute with ndim=2 format
-        self._orientation = orient
+        oriQ = orientation_input_check(inp)
+        self._orientation = R.from_quat(oriQ)
 
-        # MISSING: apply position to match orientation format
+        # pad/slice position path to same length
+        self._position = pad_slice_path(oriQ, self._position)
+
+        # when there are children they rotate about self.position
+        # after the old Collection orientation is rotated away.
+        for child in getattr(self, "children", []):
+            # pad/slice and set child path
+            child.position = pad_slice_path(self._position, child._position)
+            # compute rotation and apply
+            old_ori_pad = R.from_quat(np.squeeze(pad_slice_path(oriQ, old_oriQ)))
+            child.rotate(self.orientation*old_ori_pad.inv(), anchor=self._position, start=0)
 
 
     @property
