@@ -182,8 +182,8 @@ folder = r"magpylib"
 np.save(os.path.join(folder, "tests/testdata/testdata_cy_cases"), DATA) """
 
 
-# data is actually pickled, and a dictionary is stored inside of a numpy array, hence the `[()]`
-DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True)[()]
+# data is actually pickled, and a dictionary is stored inside of a numpy array
+DATA = np.load("tests/testdata/testdata_cy_cases.npy", allow_pickle=True).item()
 
 
 @pytest.mark.parametrize(
