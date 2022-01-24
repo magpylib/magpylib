@@ -118,7 +118,7 @@ def display(
             warnings.warn(
                 "The matplotlib backend does not support animation, falling back to path=True"
             )
-            animation = False
+            #animation = False
         display_matplotlib(
             *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
         )
