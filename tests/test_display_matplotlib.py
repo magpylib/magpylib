@@ -141,7 +141,7 @@ def test_circular_line_display():
 
 
 def test_matplotlib_animation_warning():
-    """animate with matplotlib should raise UserWarning"""
+    """animation=True with matplotlib should raise UserWarning"""
     ax = plt.subplot(projection="3d")
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
     sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)

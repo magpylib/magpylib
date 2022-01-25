@@ -133,7 +133,7 @@ class Display(MagicProperties):
       - A named CSS color
 
     animation: dict or Animation
-        defines the animation properties used by the `plotly` plotting backend when `path='animate'`
+        defines the animation properties used by the `plotly` plotting backend when `animation=True`
         in the `display` function.
 
     autosizefactor: int, default=10
@@ -181,7 +181,7 @@ class Display(MagicProperties):
 
     @property
     def animation(self):
-        """animation properties used by the `plotly` plotting backend when `path='animate'`
+        """animation properties used by the `plotly` plotting backend when `animation=True`
         in the `display` function."""
         return self._animation
 
@@ -215,7 +215,7 @@ class Display(MagicProperties):
 
 class Animation(MagicProperties):
     """
-    Defines the animation properties used by the `plotly` plotting backend when `path='animate'`
+    Defines the animation properties used by the `plotly` plotting backend when `animation=True`
     in the `display` function.
 
     Properties

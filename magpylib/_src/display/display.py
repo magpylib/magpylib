@@ -27,12 +27,12 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    path: bool or int i or array_like shape (n,) or `'animate'`, default = True
+    path: bool or int i or array_like shape (n,) or, default = True
         Option False shows objects at final path position and hides paths.
         Option True shows objects at final path position and shows object paths.
         Option int i displays the objects at every i'th path position.
         Option array_like shape (n,) discribes certain path indices. The objects
-        displays are displayed at every given path index.
+        3D-representations are shown at every given path index.
 
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
@@ -115,12 +115,15 @@ def display(
 
     if backend == "matplotlib":
         if animation is not False:
-            warnings.warn(
-                "The matplotlib backend does not support animation, falling back to path=True"
-            )
-            #animation = False
+            msg = "The matplotlib backend does not support animation at the moment"
+            warnings.warn(msg)
+            # animation = False
         display_matplotlib(
-            *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
+            *obj_list_semi_flat,
+            markers=markers,
+            zoom=zoom,
+            axis=canvas,
+            **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
