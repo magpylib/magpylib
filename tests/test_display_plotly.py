@@ -230,7 +230,7 @@ def test_extra_model3d():
     coll.rotate_from_angax(45, 'z')
     x = magpy.display(coll,
         canvas=fig,
-        path="animate",
+        animate=True,
         style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
