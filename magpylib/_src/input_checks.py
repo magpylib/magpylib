@@ -81,13 +81,6 @@ def check_start_type(start):
         raise MagpylibBadUserInput(msg)
 
 
-def check_absolute_type(inp):
-    """absolute input must be bool"""
-    if not isinstance(inp, bool):
-        msg = 'absolute input must be boolean'
-        raise MagpylibBadUserInput(msg)
-
-
 def check_angle_type(angle):
     """angle input must be scalar or vector"""
     if not isinstance(angle, (int, float, list, tuple, np.ndarray)):

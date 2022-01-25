@@ -1,20 +1,16 @@
+import pytest
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-import pytest
 import magpylib as magpy
 
-# position and orientation paths are tiled up at init
 
-# An operation applied to a collection is individually
-# applied to BaseGeo and to each child.
-
-# BaseGeo is mostly used for tracking the Collection
-
-# pylint: disable=no-member
+###############################################################################
+###############################################################################
+# NEW COLLECTION POS/ORI TESTS FROM v4
 
 
 def validate_pos_orient(obj, ppath, opath_as_rotvec):
-    """ test object position and orientation"""
+    """ test position (ppath) and orientation (opath) of BaseGeo object (obj) """
     sp = obj.position
     so = obj.orientation
     ppath = np.array(ppath)
@@ -36,315 +32,254 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
     )
 
 
-###############################################################################
-# INIT OBJECT TESTING
-
-# at initialization position and orientation to have similar shape (N,3)
-# - if inputs are (N,3) and (3,) then the (3,) is tiled up to (N,3)
-# - if inputs are (N,3) and (M,3) then the smaller one is padded up
-# - None orientation input is interpreted as (0,0,0) rotvec / (0,0,0,1) quat
+############################################################################
+############################################################################
+# COLLECTION POS/ORI SETTER TESTING
+# when setting pos/ori of a collection, the children retain their original
+# relative position and orientation in the Collection
 
 
-def get_init_pos_orient_test_data():
-    """init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec"""
-    p0 = (1, 2, 3)
-    p1 = [(1, 2, 3)]
-    p2 = [(1, 2, 3), (1, 1, 1)]
-    o0 = None
-    o1 = (0, 0, 0.1)
-    o2 = [(0, 0, 0.1)]
-    o3 = [(0, 0, 0.1), (0, 0, 0.2)]
-    o4 = [(0, 0, 0.1), (0, 0, 0.2), (0, 0, 0.3)]
-
-    init_test_data = [
-        [p0, o0, p0, (0, 0, 0)],
-        [p0, o1, p0, o1],
-        [p0, o2, p0, o1],
-        [p0, o3, (p0, p0), o3],
-        [p1, o0, p0, (0, 0, 0)],
-        [p1, o1, p0, o1],
-        [p1, o2, p0, o1],
-        [p1, o3, (p0, p0), o3],
-        [p2, o0, p2, [(0, 0, 0)] * 2],
-        [p2, o1, p2, [o1] * 2],
-        [p2, o2, p2, [o1] * 2],
-        [p2, o3, p2, o3],
-        [p2, o4, p2 + [(1, 1, 1)], o4],  # uneven paths
+def get_data_collection_position_setter():
+    """
+    returns data for collection setter tests
+    Args:
+    col_pos_init, col_ori_init, src_pos_init, src_ori_init
+    col_pos_test, col_ori_test, src_pos_test, src_ori_test
+    """
+    data_pos = [
+        [
+            (1, 2, 3),
+            (0.1, 0.2, 0.3),
+            (1, 1, 1),
+            (0, 0, -0.1),
+            (3, 2, 1),
+            (0.1, 0.2, 0.3),
+            (3, 1, -1),
+            (0, 0, -0.1),
+        ],
+        [
+            [(1, 2, 3), (2, 3, 4)],
+            [(0, 0, 0)] * 2,
+            [(1, 1, 1), (2, 2, 2)],
+            [(0.1, 0.1, 0.1), (0.2, 0.2, 0.2)],
+            (4, 5, 6),
+            (0, 0, 0),
+            (4, 4, 4),
+            (0.2, 0.2, 0.2),
+        ],
+        [
+            [(1, 2, 3), (2, 3, 4)],
+            [(0, 0, 0)] * 2,
+            [(1, 1, 1), (2, 2, 2)],
+            [(0.1, 0.1, 0.1), (0.2, 0.2, 0.2)],
+            [(4, 5, 6), (5, 6, 7), (6, 7, 8)],
+            [(0, 0, 0)] * 3,
+            [(4, 4, 4), (5, 5, 5), (6, 6, 6)],
+            [(0.1, 0.1, 0.1), (0.2, 0.2, 0.2), (0.2, 0.2, 0.2)],
+        ],
+        [
+            (1, 2, 3),
+            (0, 0, 0),
+            [(1, 1, 1), (2, 2, 2)],
+            [(0.1, 0.1, 0.1)],
+            [(4, 5, 6), (5, 6, 7), (6, 7, 8)],
+            [(0, 0, 0)] * 3,
+            [(4, 4, 4), (6, 6, 6), (7, 7, 7)],
+            [(0.1, 0.1, 0.1)] * 3,
+        ],
     ]
-    return init_test_data
+    return data_pos
 
 
 @pytest.mark.parametrize(
-    "init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec",
-    get_init_pos_orient_test_data(),
-    ids=[f"{ind+1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],
+    """col_pos_init, col_ori_init, src_pos_init, src_ori_init,
+    col_pos_test, col_ori_test, src_pos_test, src_ori_test""",
+    get_data_collection_position_setter(),
+    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_collection_position_setter())],
 )
-def test_init_pos_orient(
-    init_position,
-    init_orientation_rotvec,
-    expected_position,
-    expected_orientation_rotvec,
+def test_Collection_setting_position(
+    col_pos_init,
+    col_ori_init,
+    src_pos_init,
+    src_ori_init,
+    col_pos_test,
+    col_ori_test,
+    src_pos_test,
+    src_ori_test,
 ):
-    """test position and orientation initialization"""
-    # print(init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec)
-    if init_orientation_rotvec is None:
-        init_orientation_rotvec = (0, 0, 0)
     src = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
-        position=init_position,
-        orientation=R.from_rotvec(init_orientation_rotvec),
+        (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
     )
-    validate_pos_orient(src, expected_position, expected_orientation_rotvec)
+    col = magpy.Collection(
+        src, position=col_pos_init, orientation=R.from_rotvec(col_ori_init)
+    )
+    col.position = col_pos_test
+    validate_pos_orient(col, col_pos_test, col_ori_test)
+    validate_pos_orient(src, src_pos_test, src_ori_test)
+
+
+def get_data_collection_orientation_setter():
+    """
+    returns data for collection setter tests
+    Args:
+    col_pos_init, col_ori_init, src_pos_init, src_ori_init
+    col_pos_test, col_ori_test, src_pos_test, src_ori_test
+    """
+    data_ori = [
+        # col orientation setter simple
+        [
+            (1, 0, 3),
+            (0, 0, np.pi / 4),
+            (2, 0, 1),
+            (0, 0, 0.1),
+            (1, 0, 3),
+            (0, 0, -np.pi / 4),
+            (1, -1, 1),
+            (0, 0, -np.pi / 2 + 0.1),
+        ],
+        # collection orientation setter with path
+        [
+            [(1, 0, 3), (2, 0, 3)],
+            [(0, 0, 0)] * 2,
+            [(2, 0, 1), (1, 0, 1)],
+            [(0, 0, 0)] * 2,
+            [(1, 0, 3), (2, 0, 3)],
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+            [(1, 1, 1), (2, 1, 1)],
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+        ],
+        # collection orientation setter slice test
+        [
+            [(1, 0, 3), (2, 0, 3), (3, 0, 3)],
+            [(0, 0, 0)] * 3,
+            [(2, 0, 1), (1, 0, 1), (0, 0, 1)],
+            (0, 0, 0),
+            [(2, 0, 3), (3, 0, 3)],
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+            [(2, -1, 1), (3, 3, 1)],
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+        ],
+        # collection orientation setter pad test
+        [
+            (3, 0, 3),
+            (0, 0, 0),
+            (0, 0, 1),
+            (0, 0, 0),
+            [(3, 0, 3)] * 2,
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+            [(3, -3, 1), (3, 3, 1)],
+            [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
+        ],
+        # crazy collection test with different path formats
+        [
+            [(0, 0, 0), (-1, 0, 0)],
+            [(0, 0, 0)] * 2,
+            (0, 0, 0),
+            (0, 0, 0.1),
+            (-1, 0, 0),
+            (0, 0, np.pi / 2),
+            (-1, 1, 0),
+            (0, 0, np.pi / 2 + 0.1),
+        ],
+        # crazy collection test with different path formats pt2
+        [
+            [(0, 0, 0), (-1, 0, 0)],
+            [(0, 0, 0)] * 2,
+            [(1, 0, 0), (2, 0, 0), (3, 0, 0)],
+            [(0, 0, 0)] * 3,
+            (-1, 0, 0),
+            (0, 0, np.pi / 2),
+            (-1, 4, 0),
+            (0, 0, np.pi / 2),
+        ],
+    ]
+    return data_ori
+
+
+@pytest.mark.parametrize(
+    "col_pos_init, col_ori_init, src_pos_init, src_ori_init, col_pos_test, col_ori_test, src_pos_test, src_ori_test",
+    get_data_collection_orientation_setter(),
+    ids=[
+        f"{ind+1:02d}" for ind, _ in enumerate(get_data_collection_orientation_setter())
+    ],
+)
+def test_Collection_setting_orientation(
+    col_pos_init,
+    col_ori_init,
+    src_pos_init,
+    src_ori_init,
+    col_pos_test,
+    col_ori_test,
+    src_pos_test,
+    src_ori_test,
+):
+    src = magpy.magnet.Cuboid(
+        (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
+    )
+    col = magpy.Collection(
+        src, position=col_pos_init, orientation=R.from_rotvec(col_ori_init)
+    )
+    col.orientation = R.from_rotvec(col_ori_test)
+    validate_pos_orient(col, col_pos_test, col_ori_test)
+    validate_pos_orient(src, src_pos_test, src_ori_test)
+
+
+def test_Collection_setter():
+    """
+    general col position and orientation setter testing
+    """
+    # graphical test: is the Collection moving/rotating as a whole ?
+    # col0 = magpy.Collection()
+    # for poz,roz in zip(
+    #     [(0,0,0), (0,0,5), (5,0,0), (5,0,5), (10,0,0), (10,0,5)],
+    #     [(0,0,0), (1,0,0), (0,1,0), (0,0,1), (1,2,3), (-2,-1,3)]
+    #     ):
+    #     col = magpy.Collection()
+    #     for i,color in enumerate(['r', 'orange', 'gold', 'green', 'cyan']):
+    #         src = magpy.magnet.Cuboid((1,0,0), (.5,.5,.5), (1,0,0), style_color=color)
+    #         src.rotate_from_angax(72*i, 'z', (0,0,0))
+    #         col = col + src
+    #     base = magpy.Sensor()
+    #     col.position = poz
+    #     col.orientation = R.from_rotvec(roz)
+    #     base.position = poz
+    #     base.orientation = R.from_rotvec(roz)
+    #     col0 = col0 + col + base
+    # magpy.display(*col0)
+    POS = []
+    ORI = []
+    col0 = magpy.Collection()
+    for poz, roz in zip(
+        [(0, 0, 0), (0, 0, 5), (5, 0, 0), (5, 0, 5), (10, 0, 0), (10, 0, 5)],
+        [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 2, 3), (-2, -1, 3)],
+    ):
+        col = magpy.Collection()
+        for i in range(5):
+            src = magpy.magnet.Cuboid((1, 0, 0), (0.5, 0.5, 0.5), (1, 0, 0))
+            src.rotate_from_angax(72 * i, "z", (0, 0, 0))
+            col = col + src
+        col.position = poz
+        col.orientation = R.from_rotvec(roz)
+
+        col0 = col0 + col
+
+        POS += [[src.position for src in col]]
+        ORI += [[src.orientation.as_rotvec() for src in col]]
+
+    test_POS, test_ORI = np.load("tests/testdata/testdata_Collection_setter.npy")
+
+    assert np.allclose(POS, test_POS)
+    assert np.allclose(ORI, test_ORI)
 
 
 ############################################################################
-# SETTER OBJECT TESTING
-
-# object position setting
-# - when position or orientation are set by user, the other attribute is not touched
-#   advantage: the user is not aware of this happening and possibly wants to access
-#              what he thinks is in the orientation path. Any auto-tiling requires
-#              a complicated set of rules
-# -> possible extended auto-tiling functionality - possibly v4.1 ?:
-#    - if one is set to shape (N,3) and the other is (3,) then the other is tiled up
-#    - what happens if one is set to (N,3) the other is still (M,3) for M<N and M>N ?
-
-# when setting a position the orientation remains unchanged
-
-
-def get_setter_pos_orient_test_data():
-    """get test data as dictionaries for position and orientation setter testing"""
-    return [
-        dict(
-            init_position=[(1, 1, 1), (2, 2, 2)],
-            init_orientation_rotvec=None,
-            setter_position=(0, 0, 1),
-            setter_orientation_rotvec="not_set",
-            expected_position=(0, 0, 1),
-            expected_orientation_rotvec=(0, 0, 0),
-        ),
-        dict(
-            init_position=[(1, 1, 1), (2, 2, 2)],
-            init_orientation_rotvec=None,
-            setter_position="not_set",
-            setter_orientation_rotvec=(0, 0, 0.1),
-            expected_position=(2, 2, 2),
-            expected_orientation_rotvec=(0, 0, 0.1),
-        ),
-    ]
-
-
-@pytest.mark.parametrize(
-    (
-        "init_position",
-        "init_orientation_rotvec",
-        "setter_position",
-        "setter_orientation_rotvec",
-        "expected_position",
-        "expected_orientation_rotvec",
-    ),
-    [d.values() for d in get_setter_pos_orient_test_data()],
-)
-def test_setter_pos_orient(
-    init_position,
-    init_orientation_rotvec,
-    setter_position,
-    setter_orientation_rotvec,
-    expected_position,
-    expected_orientation_rotvec,
-):
-    """testing position and orientation setters"""
-    # print (locals())
-    if init_orientation_rotvec is None:
-        init_orientation_rotvec = (0, 0, 0)
-    src = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
-        position=init_position,
-        orientation=R.from_rotvec(init_orientation_rotvec),
-    )
-    if setter_position != "not_set":
-        src.position = setter_position
-    if setter_orientation_rotvec != "not_set":
-        src.orientation = R.from_rotvec(setter_orientation_rotvec)
-    validate_pos_orient(src, expected_position, expected_orientation_rotvec)
-
-
-def get_anchor_pos_orient_test_data():
-    """get test data as dictionaries for multi anchor testing"""
-    data = [
-        dict(
-            description="scalar path - scalar anchor",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=90,
-            axis="z",
-            anchor=0,
-            start="auto",
-            expected_position=(0, 0, 0),
-            expected_orientation_rotvec=(0, 0, np.pi / 2),
-        ),
-        dict(
-            description="vector path 1 - scalar anchor",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=[90],
-            axis="z",
-            anchor=(1, 0, 0),
-            start="auto",
-            expected_position=[(0, 0, 0), (1, -1, 0)],
-            expected_orientation_rotvec=[(0, 0, 0), (0, 0, np.pi / 2)],
-        ),
-        dict(
-            description="vector path 2 - scalar anchor",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=[90, 270],
-            axis="z",
-            anchor=(1, 0, 0),
-            start="auto",
-            expected_position=[(0, 0, 0), (1, -1, 0), (1, 1, 0)],
-            expected_orientation_rotvec=[
-                (0, 0, 0),
-                (0, 0, np.pi / 2),
-                (0, 0, -np.pi / 2),
-            ],
-        ),
-        dict(
-            description="scalar path - vector anchor 1",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=90,
-            axis="z",
-            anchor=[(1, 0, 0)],
-            start="auto",
-            expected_position=[(0, 0, 0), (1, -1, 0)],
-            expected_orientation_rotvec=[(0, 0, 0), (0, 0, np.pi / 2)],
-        ),
-        dict(
-            description="scalar path - vector anchor 2",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=90,
-            axis="z",
-            anchor=[(1, 0, 0), (2, 0, 0)],
-            start="auto",
-            expected_position=[(0, 0, 0), (1, -1, 0), (2, -2, 0)],
-            expected_orientation_rotvec=[
-                (0, 0, 0),
-                (0, 0, np.pi / 2),
-                (0, 0, np.pi / 2),
-            ],
-        ),
-        dict(
-            description="vector path 2 - vector anchor 2",
-            init_position=(0, 0, 0),
-            init_orientation_rotvec=None,
-            angle=[90, 270],
-            axis="z",
-            anchor=[(1, 0, 0), (2, 0, 0)],
-            start="auto",
-            expected_position=[(0, 0, 0), (1, -1, 0), (2, 2, 0)],
-            expected_orientation_rotvec=[
-                (0, 0, 0),
-                (0, 0, np.pi / 2),
-                (0, 0, -np.pi / 2),
-            ],
-        ),
-        dict(
-            description="vector path 2 - vector anchor 2 - path 2 - start=0",
-            init_position=[(0, 0, 0), (2, 1, 0)],
-            init_orientation_rotvec=None,
-            angle=[90, 270],
-            axis="z",
-            anchor=[(1, 0, 0), (2, 0, 0)],
-            start=0,
-            expected_position=[(1, -1, 0), (3, 0, 0)],
-            expected_orientation_rotvec=[(0, 0, np.pi / 2), (0, 0, -np.pi / 2)],
-        ),
-        dict(
-            description="init crazy, path 2, anchor 3, start middle",
-            init_position=[(0, 0, 0), (2, 0, 0)],
-            init_orientation_rotvec=(0, 0, 0.1),
-            angle=[90, 270],
-            axis="z",
-            anchor=[(1, 0, 0), (2, 0, 0), (3, 0, 0)],
-            start=1,
-            expected_position=[(0, 0, 0), (1, 1, 0), (2, 0, 0), (3, 1, 0)],
-            expected_orientation_rotvec=[
-                (0, 0, 0.1),
-                (0, 0, np.pi / 2 + 0.1),
-                (0, 0, -np.pi / 2 + 0.1),
-                (0, 0, -np.pi / 2 + 0.1),
-            ],
-        ),
-        dict(
-            description="init crazy, path 2, anchor 3, start before",
-            init_position=[(0, 0, 0), (2, 0, 0)],
-            init_orientation_rotvec=(0, 0, 0.1),
-            angle=[90, 270],
-            axis="z",
-            anchor=[(1, 0, 0), (2, 0, 0), (3, 0, 0)],
-            start=-4,
-            expected_position=[(1, -1, 0), (2, 2, 0), (3, 3, 0), (2, 0, 0)],
-            expected_orientation_rotvec=[
-                (0, 0, 0.1 + np.pi / 2),
-                (0, 0, 0.1 - np.pi / 2),
-                (0, 0, 0.1 - np.pi / 2),
-                (0, 0, 0.1),
-            ],
-        ),
-    ]
-    return data
-
-
-@pytest.mark.parametrize(
-    (
-        "description",
-        "init_position",
-        "init_orientation_rotvec",
-        "angle",
-        "axis",
-        "anchor",
-        "start",
-        "expected_position",
-        "expected_orientation_rotvec",
-    ),
-    [d.values() for d in get_anchor_pos_orient_test_data()],
-    ids=[d["description"] for d in get_anchor_pos_orient_test_data()],
-)
-def test_anchor_pos_orient(
-    description,
-    init_position,
-    init_orientation_rotvec,
-    angle,
-    axis,
-    anchor,
-    start,
-    expected_position,
-    expected_orientation_rotvec,
-):
-    """testing multi anchors"""
-    print(description)
-    # print(locals())
-    if init_orientation_rotvec is None:
-        init_orientation_rotvec = (0, 0, 0)
-    src = magpy.magnet.Cuboid(
-        (1, 0, 0),
-        (1, 1, 1),
-        position=init_position,
-        orientation=R.from_rotvec(init_orientation_rotvec),
-    )
-    src.rotate_from_angax(angle, axis, anchor, start)
-    validate_pos_orient(src, expected_position, expected_orientation_rotvec)
-
-
 ############################################################################
-# COLLECTION - COMPOUND BEHAVIOR TESTS
+# COLLECTION MOTION TESTS
+# An operation move() or rotate() applied to a Collection is
+# individually applied to BaseGeo and to each child:
 
 
-def test_compound_00():
+def test_compound_motion_00():
     """init Collection should not change source pos and ori"""
     src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 2, 3), (2, 3, 4)])
     validate_pos_orient(src, [(1, 2, 3), (2, 3, 4)], [(0, 0, 0)] * 2)
@@ -353,11 +288,7 @@ def test_compound_00():
     print(col)
 
 
-# test: An operation move() or rotate() applied to a Collection is
-# individually applied to BaseGeo and to each child:
-
-
-def test_compound_01():
+def test_compound_motion_01():
     """very sensible Compound behavior with rotation anchor"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 1, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, -1, -1))
@@ -376,7 +307,7 @@ def test_compound_01():
     validate_pos_orient(col, [(0, 0, 1), (0, 0, 2)], [(0, 0, np.pi / 2)] * 2)
 
 
-def test_compound_02():
+def test_compound_motion_02():
     """very sensible Compound behavior with vector anchor"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
@@ -399,7 +330,7 @@ def test_compound_02():
     )
 
 
-def test_compound_03():
+def test_compound_motion_03():
     """very sensible Compound behavior with vector path and anchor and start=0"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(3, 0, 0), (1, 0, 0)])
     s2 = magpy.magnet.Cuboid(
@@ -425,7 +356,7 @@ def test_compound_03():
     )
 
 
-def test_compound_04():
+def test_compound_motion_04():
     """nonsensical but correct Collection behavior when col and children
     all have different path formats"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=(1, 1, 1))
@@ -441,7 +372,7 @@ def test_compound_04():
     validate_pos_orient(col, [(-1, 0, 3), (-2, 0, 4)], [(0, 0, np.pi / 2)] * 2)
 
 
-def test_compound_05():
+def test_compound_motion_05():
     """nonsensical but correct Collection behavior with vector anchor"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), position=(1, 0, 1))
     s2 = magpy.magnet.Cuboid(
@@ -466,7 +397,7 @@ def test_compound_05():
     )
 
 
-def test_compound_06():
+def test_compound_motion_06():
     """Compound rotation (anchor=None), scalar input, scalar pos"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
@@ -477,7 +408,7 @@ def test_compound_06():
     validate_pos_orient(col, (0, 0, 0), (0, 0, np.pi / 2))
 
 
-def test_compound_07():
+def test_compound_motion_07():
     """Compound rotation (anchor=None), scalar input, vector pos, start=auto"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
@@ -494,7 +425,7 @@ def test_compound_07():
     )
 
 
-def test_compound_08():
+def test_compound_motion_08():
     """Compound rotation (anchor=None), scalar input, vector pos, start=1"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
@@ -505,7 +436,7 @@ def test_compound_08():
     validate_pos_orient(col, [(0, 0, 0), (1, 0, 0)], [(0, 0, 0), (0, 0, np.pi / 2)])
 
 
-def test_compound_09():
+def test_compound_motion_09():
     """Compound rotation (anchor=None), scalar input, vector pos, start=-1"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
@@ -516,7 +447,7 @@ def test_compound_09():
     validate_pos_orient(col, [(0, 0, 0), (1, 0, 0)], [(0, 0, 0), (0, 0, np.pi / 2)])
 
 
-def test_compound_10():
+def test_compound_motion_10():
     """Compound rotation (anchor=None), scalar input, vector pos, start->pad before"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
@@ -533,7 +464,7 @@ def test_compound_10():
     )
 
 
-def test_compound_11():
+def test_compound_motion_11():
     """Compound rotation (anchor=None), scalar input, vector pos, start->pad behind"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(1, 0, 0), (2, 0, 0)])
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), [(-1, 0, 0), (-2, 0, 0)])
@@ -556,7 +487,7 @@ def test_compound_11():
     )
 
 
-def test_compound_12():
+def test_compound_motion_12():
     """Compound rotation (anchor=None), vector input, simple pos, start=auto"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
@@ -579,7 +510,7 @@ def test_compound_12():
     )
 
 
-def test_compound_13():
+def test_compound_motion_13():
     """Compound rotation (anchor=None), vector input, vector pos, start=1"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
@@ -601,7 +532,7 @@ def test_compound_13():
     )
 
 
-def test_compound_14():
+def test_compound_motion_14():
     """Compound rotation (anchor=None), vector input, vector pos, start=1, pad_behind"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (0, -1, -1))
@@ -626,7 +557,7 @@ def test_compound_14():
     )
 
 
-def test_compound_15():
+def test_compound_motion_15():
     """Compound rotation (anchor=None), vector input, simple pos, start=-3, pad_before"""
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
@@ -649,7 +580,7 @@ def test_compound_15():
     )
 
 
-def test_compound_16():
+def test_compound_motion_16():
     """Compound rotation (anchor=None), vector input, vector pos, start=-3,
     pad_before AND pad_behind"""
     s1 = magpy.magnet.Cuboid(
@@ -680,7 +611,7 @@ def test_compound_16():
     )
 
 
-def test_compound_17():
+def test_compound_motion_17():
     """CRAZY Compound rotation (anchor=None) with messy path formats"""
     s1 = magpy.magnet.Cuboid(
         (1, 0, 0), (1, 1, 1), orientation=R.from_rotvec([(0, 0, 0.1), (0, 0, 0.2)])

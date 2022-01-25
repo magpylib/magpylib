@@ -1,5 +1,3 @@
-# import os
-# import pickle
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -9,6 +7,7 @@ import magpylib as magpy
 
 def test_BaseGeo_basics():
     """fundamental usage test"""
+    # pylint: disable=no-member
 
     ptest = np.array(
         [

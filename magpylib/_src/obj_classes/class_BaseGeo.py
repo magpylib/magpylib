@@ -200,7 +200,7 @@ class BaseGeo(BaseTransform):
             for every path step.
         """
         old_oriQ = self._orientation.as_quat()
-        
+
         # set _orientation attribute with ndim=2 format
         oriQ = orientation_input_check(inp)
         self._orientation = R.from_quat(oriQ)
@@ -254,8 +254,7 @@ class BaseGeo(BaseTransform):
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Reset object and children paths to position = (0,0,0) and
-        orientation = unit rotation.
+        Set object position to (0,0,0) and orientation = unit rotation.
 
         Returns
         -------
@@ -274,22 +273,6 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
 
         """
-        self._position = np.array([[0., 0., 0.]])
-        self._orientation = R.from_quat([[0., 0., 0., 1.]])
-
-        # if Collection: apply to children
-        #for child in getattr(self, "children", []):
-        #    child._position = np.array([[0., 0., 0.]])
-        #    child._orientation = R.from_quat([[0., 0., 0., 1.]])
-
-        # targets = []
-        # if getattr(self, "_object_type", None) == "Collection":
-        #     # pylint: disable=no-member
-        #     targets.extend(self.children)
-        # # if BaseGeo apply to self
-        # if getattr(self, "position", None) is not None:
-        #     targets.append(self)
-        # for obj in targets:
-        #     # pylint: disable=protected-access
-        #     obj._position = np.array([[0., 0., 0.]])
-        #     obj._orientation = R.from_quat([[0., 0., 0., 1.]])
+        self.position = (0,0,0)
+        self.orientation = None
+        return self

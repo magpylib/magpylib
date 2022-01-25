@@ -169,6 +169,11 @@ def badInput_rotate_from_angax9():
     bg = BaseGeo(a3, r0)
     bg.rotate_from_angax(123, [0,0,0])
 
+def badInput_rotate_from_angax10():
+    """ bad axis input format"""
+    bg = BaseGeo(a3, r0)
+    bg.rotate_from_angax(123, [1,2,3], anchor=[[(1,2,3)]*2]*2)
+
 
 # EXCITATIONS -----------------------------------------
 
@@ -310,6 +315,7 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax7)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax8)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax9)
+        self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax10)
 
     def test_magnetization_input(self):
         """ bad magnetization inputs"""
