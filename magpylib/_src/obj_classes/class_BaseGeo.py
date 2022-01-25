@@ -2,6 +2,7 @@
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
+# pylint: disable=protected-access
 
 import numpy as np
 from scipy.spatial.transform import Rotation as R
@@ -13,18 +14,64 @@ from magpylib._src.input_checks import (
     check_rot_type)
 
 
+def pad_slice_path(path1, path2):
+    """
+    edge-pads or end-slices path 2 to fit path 1 format
+    path1: shape (N,x)
+    path2: shape (M,x)
+    return: path2 with format (N,x)
+    """
+    delta_path = len(path1) - len(path2)
+    if delta_path>0:
+        return np.pad(path2, ((0,delta_path), (0,0)), 'edge')
+    if delta_path<0:
+        return path2[-delta_path:]
+    return path2
+
+
+def position_input_check(pos):
+    """
+    checks input type and format end returns an ndarray of shape (N,3).
+    This function is used for setter and init only -> (1,3) and (3,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_vector_type(pos, "position")
+    # path vector -> ndarray
+    pos_array = np.array(pos, dtype=float)
+    # check input format
+    if Config.checkinputs:
+        check_path_format(pos_array, "position")
+    # tile to format (N,3) and return
+    return pos_array.reshape(-1,3)
+
+def orientation_input_check(ori):
+    """
+    checks input type and format end returns an ndarray of shape (N,4).
+    This function is used for setter and init only -> (1,4) and (4,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_rot_type(ori)
+    # None input generates unit rotation
+    ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
+    # tile to format (N,4) and return
+    return ori_array.reshape(-1,4)
+
 class BaseGeo(BaseTransform):
-    """Initializes position and rotation (=orientation) properties
+    """Initializes position and orientation properties
     of an object in a global CS.
 
-    Position is a ndarray with shape (3,).
+    position is a ndarray with shape (3,).
 
-    Rotation is a scipy.spatial.transformation.Rotation
+    orientation is a scipy.spatial.transformation.Rotation
     object that gives the relative rotation to the init_state. The
     init_state is defined by how the fields are implemented (e.g.
     cyl upright in xy-plane)
 
-    Both attributes _pos and _rot.as_rotvec() are of shape (N,3),
+    Both attributes _position and _orientation.as_rotvec() are of shape (N,3),
     and describe a path of length N. (N=1 if there is only one
     object position).
 
@@ -47,13 +94,10 @@ class BaseGeo(BaseTransform):
 
     def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
-        # set pos and orient attributes
-        self._position = np.array([[0., 0., 0.]])
-        self._orientation = R.from_quat([[0., 0., 0., 1.]])
-        self._freeze_children = True # avoid resetting children when adding them to a collection
-        self.position = position
-        self.orientation = orientation
-        self._freeze_children = False # release freeze so that collection can act on children
+        # set _position and _orientation attributes
+        self._init_position_orientation(position, orientation)
+
+        # style
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
             if style is None:
@@ -68,6 +112,31 @@ class BaseGeo(BaseTransform):
                     )
             style.update(**style_kwargs)
             self.style = style
+
+    def _init_position_orientation(self, position, orientation):
+        """
+        tile up position and orientation input at Class init and set attributes
+        _position and _orientation.
+        pos: position input
+        ori: orientation.as_quat() input
+        """
+
+        # format position and orientation inputs
+        pos = position_input_check(position)
+        ori = orientation_input_check(orientation)
+
+        # padding logic: if one is longer than the other, edge-pad up the other
+        len_pos = pos.shape[0]
+        len_ori = ori.shape[0]
+
+        if len_pos>len_ori:
+            ori = np.pad(ori, ((0,len_pos-len_ori), (0,0)), 'edge')
+        elif len_pos<len_ori:
+            pos = np.pad(pos, ((0,len_ori-len_pos), (0,0)), 'edge')
+
+        # set attributes
+        self._position = pos
+        self._orientation = R.from_quat(ori)
 
     def _get_style_class(self):
         """returns style class based on object type. If class has no attribute `_object_type` or is
@@ -84,28 +153,35 @@ class BaseGeo(BaseTransform):
         return np.squeeze(self._position)
 
     @position.setter
-    def position(self, pos):
-        """Set object position-path.
+    def position(self, inp):
+        """
+        Set object position-path.
+
+        Use edge-padding and end-slicing to adjust orientation path
+
+        When a Collection position is set, then all children retain their
+        relative position to the Collection BaseGeo.
 
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
+        old_pos = self._position
 
-        # check input type
-        if Config.checkinputs:
-            check_vector_type(pos, "position")
+        # check and set new position
+        self._position = position_input_check(inp)
 
-        # path vector -> ndarray
-        pos = np.array(pos, dtype=float)
+        # pad/slice and set orientation path to same length
+        oriQ = self._orientation.as_quat()
+        self._orientation = R.from_quat(pad_slice_path(self._position, oriQ))
 
-        # check input format
-        if Config.checkinputs:
-            check_path_format(pos, "position")
+        # when there are children include their relative position
+        for child in getattr(self, "children", []):
+            old_pos = pad_slice_path(self._position, old_pos)
+            child_pos = pad_slice_path(self._position, child._position)
+            rel_child_pos = child_pos - old_pos
+            # set child position (pad/slice orientation)
+            child.position = self._position + rel_child_pos
 
-        # expand if input is shape (3,)
-        if pos.ndim == 1:
-            pos = np.expand_dims(pos, 0)
-        self.move(pos, start='clear')
 
     @property
     def orientation(self):
@@ -116,29 +192,31 @@ class BaseGeo(BaseTransform):
         return self._orientation  # return full path
 
     @orientation.setter
-    def orientation(self, rot):
+    def orientation(self, inp):
         """Set object orientation-path.
 
-        rot: None or scipy Rotation, shape (1,) or (N,), default=None
+        inp: None or scipy Rotation, shape (1,) or (N,)
             Set orientation-path of object. None generates a unit orientation
             for every path step.
         """
-        # check input type
-        if Config.checkinputs:
-            check_rot_type(rot)
+        old_oriQ = self._orientation.as_quat()
 
-        # None input generates unit rotation
-        if rot is None:
-            orient = R.from_quat([(0, 0, 0, 1)] * len(self._position))
+        # set _orientation attribute with ndim=2 format
+        oriQ = orientation_input_check(inp)
+        self._orientation = R.from_quat(oriQ)
 
-        # expand rot.as_quat() to shape (1,4)
-        else:
-            val = rot.as_quat()
-            if val.ndim == 1:
-                orient = R.from_quat([val])
-            else:
-                orient = rot
-        self.rotate(orient, start='clear')
+        # pad/slice position path to same length
+        self._position = pad_slice_path(oriQ, self._position)
+
+        # when there are children they rotate about self.position
+        # after the old Collection orientation is rotated away.
+        for child in getattr(self, "children", []):
+            # pad/slice and set child path
+            child.position = pad_slice_path(self._position, child._position)
+            # compute rotation and apply
+            old_ori_pad = R.from_quat(np.squeeze(pad_slice_path(oriQ, old_oriQ)))
+            child.rotate(self.orientation*old_ori_pad.inv(), anchor=self._position, start=0)
+
 
     @property
     def style(self):
@@ -176,7 +254,7 @@ class BaseGeo(BaseTransform):
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Reset object path to position = (0,0,0) and orientation = unit rotation.
+        Set object position to (0,0,0) and orientation = unit rotation.
 
         Returns
         -------
@@ -195,16 +273,6 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
 
         """
-
-        # if Collection: apply to children
-        targets = []
-        if getattr(self, "_object_type", None) == "Collection":
-            # pylint: disable=no-member
-            targets.extend(self.children)
-        # if BaseGeo apply to self
-        if getattr(self, "position", None) is not None:
-            targets.append(self)
-        for obj in targets:
-            # pylint: disable=protected-access
-            obj._position = np.array([[0., 0., 0.]])
-            obj._orientation = R.from_quat([[0., 0., 0., 1.]])
+        self.position = (0,0,0)
+        self.orientation = None
+        return self

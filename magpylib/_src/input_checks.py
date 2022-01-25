@@ -58,18 +58,19 @@ def check_anchor_type(anch):
 
 
 def check_anchor_format(anch):
-    """must be shape (3,) or 0"""
-    if anch is not None:
-        if not np.all(anch == np.array(0)):
-            if not anch.shape == (3,):
-                msg = "Bad anchor input. Must be None, 0 or shape (3,)."
-                raise MagpylibBadInputShape(msg)
+    """must be shape (N,3), (3,) or 0"""
+    if not np.all(anch == np.array(0)):
+        msg = "Bad anchor input. Must be None, 0 or shape (3,) or (N,3)."
+        if not anch.shape[-1] == 3:
+            raise MagpylibBadInputShape(msg)
+        if not anch.ndim in (1, 2):
+            raise MagpylibBadInputShape(msg)
 
 
 def check_rot_type(inp):
     """rotation input mut be scipy Rotation"""
     if not isinstance(inp, (Rotation, type(None))):
-        msg = "rot input must be None or scipy Rotation object."
+        msg = "orientation input must be None or scipy Rotation object."
         raise MagpylibBadUserInput(msg)
 
 
@@ -77,13 +78,6 @@ def check_start_type(start):
     """start input must be int or str"""
     if not (isinstance(start, int) or start == 'auto'):
         msg = 'start input must be int or str ("auto")'
-        raise MagpylibBadUserInput(msg)
-
-
-def check_absolute_type(inp):
-    """absolute input must be bool"""
-    if not isinstance(inp, bool):
-        msg = 'absolute input must be boolean'
         raise MagpylibBadUserInput(msg)
 
 

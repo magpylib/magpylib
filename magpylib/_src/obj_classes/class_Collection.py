@@ -530,5 +530,5 @@ class Collection(BaseGeo, BaseCollection):
     """
 
     def __init__(self, *args, position=(0.0, 0.0, 0.0), orientation=None, style=None):
-        BaseCollection.__init__(self, *args)
         BaseGeo.__init__(self, position=position, orientation=orientation, style=style)
+        BaseCollection.__init__(self, *args)

@@ -120,6 +120,9 @@ def test_Collection_basics():
 )
 def test_col_getB(test_input, expected):
     """ testing some Collection stuff with getB"""
+    # pylint: disable=unused-variable
+    # pylint: disable=eval-used
+
     src1 = magpy.magnet.Cuboid(
         magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
@@ -177,6 +180,9 @@ def test_col_getB(test_input, expected):
 )
 def test_bad_col_getB_inputs(test_input, expected):
     """more undocumented Collection checking"""
+    # pylint: disable=unused-variable
+    # pylint: disable=eval-used
+
     src1 = magpy.magnet.Cuboid(
         magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0))
 
@@ -218,6 +224,7 @@ def test_col_getH():
 
 def test_col_reset_path():
     """testing display"""
+    # pylint: disable=no-member
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     col = magpy.Collection(pm1, pm2)
@@ -225,6 +232,7 @@ def test_col_reset_path():
     col.reset_path()
     assert col[0].position.ndim == 1, "col reset path fail"
     assert col[1].position.ndim == 1, "col reset path fail"
+    assert col.position.ndim == 1, "col reset path fail"
 
 
 def test_Collection_squeeze():
