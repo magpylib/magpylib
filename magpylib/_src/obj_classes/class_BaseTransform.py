@@ -226,7 +226,10 @@ def apply_rotation(
     # when an anchor is given
     if anchor is not None:
         # 0-anchor -> (0,0,0)
-        anchor=np.array((0,0,0)) if anchor is 0 else np.array(anchor, dtype=float)
+        if np.isscalar(anchor) and anchor==0:
+            anchor = np.array((0.,0.,0.))
+        else:
+            anchor = np.array(anchor, dtype=float)
         # check anchor input format
         if Config.checkinputs:
             check_anchor_format(anchor)
