@@ -16,8 +16,8 @@ except ImportError as missing_module:  # pragma: no cover
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
-from magpylib import _src
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.plotly.plotly_sensor_mesh import get_sensor_mesh
 from magpylib._src.style import (

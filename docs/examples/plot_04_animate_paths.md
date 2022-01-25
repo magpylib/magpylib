@@ -59,7 +59,7 @@ magpy.display(
     *coll,
     sens,
     canvas=fig,
-    animation=3, #animation time set to 2 seconds
+    animation=3, #animation time set to 3 seconds
     zoom=0,
     animation_fps=20,
     animation_slider=True,

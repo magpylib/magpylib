@@ -17,7 +17,7 @@ def test_Cylinder_display():
     x = src.display(canvas=fig, path=15)
     assert x is None, "path should revert to True"
 
-    src.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     x = src.display(
         canvas=fig,
         path=False,
@@ -35,7 +35,7 @@ def test_CylinderSegment_display():
     x = src.display(canvas=fig, path=15)
     assert x is None, "path should revert to True"
 
-    src.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     x = src.display(
         canvas=fig,
         path=False,
@@ -53,7 +53,7 @@ def test_Sphere_display():
     x = src.display(canvas=fig, path=15)
     assert x is None, "path should revert to True"
 
-    src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 33), start=-1)
+    src.move(np.linspace((.4,.4,.4), (8,8,8), 33), start=-1)
     x = src.display(canvas=fig, path=False, style_magnetization_show=True)
     assert x is None, "display test fail"
 
@@ -62,7 +62,7 @@ def test_Cuboid_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     src = Cuboid((1, 2, 3), (1, 2, 3))
-    src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
+    src.move(np.linspace((.1,.1,.1), (2,2,2), 20), start=-1)
     x = src.display(path=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
 
@@ -79,7 +79,7 @@ def test_Sensor_display():
     x = sens_nopix.display(canvas=fig, style_description_text="mysensor")
     assert x is None, "display test fail"
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
-    sens.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=15)
     assert x is None, "display test fail"
     x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=False)
@@ -119,7 +119,7 @@ def test_dipole_display():
     dip1 = magpy.misc.Dipole(moment=(1, 2, 3), position=(1, 1, 1))
     dip2 = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
     dip3 = magpy.misc.Dipole(moment=(1, 2, 3), position=(3, 3, 3))
-    dip2.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
+    dip2.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
     x = dip1.display(canvas=fig, style_pivot="tail")
     assert x is None, "display test fail"
     x = dip2.display(canvas=fig, path=2, style_pivot="tip")
@@ -135,7 +135,7 @@ def test_circular_line_display():
     fig = go.Figure()
     src1 = magpy.current.Loop(1, 2)
     src2 = magpy.current.Loop(1, 2)
-    src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
+    src1.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
@@ -193,7 +193,7 @@ def test_extra_model3d():
     """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
     cuboid = Cuboid((1, 2, 3), (1, 2, 3))
-    cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    cuboid.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     cuboid.style.model3d.extra = [
         {
             "backend": "plotly",
@@ -227,8 +227,12 @@ def test_extra_model3d():
     x = cuboid.display(canvas=fig)
     assert x is None, "display test fail"
     coll = magpy.Collection(cuboid)
-    coll.rotate_from_angax(45, "z")
-    x = magpy.display(coll, canvas=fig, animation=True, style=dict(model3d_show=False),)
+    coll.rotate_from_angax(45, 'z')
+    x = magpy.display(coll,
+        canvas=fig,
+        path="animate",
+        style=dict(model3d_show=False),
+    )
     assert x is None, "display test fail"
     cuboid.style.model3d.extra = {
         "backend": "plotly",
@@ -267,7 +271,7 @@ def test_display_warnings():
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
     src = Cuboid((1, 2, 3), (1, 2, 3))
-    src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
+    src.move(np.linspace((.4,.4,.4), (4,4,4), 10), start=-1)
     fig = go.Figure()
 
     with pytest.warns(UserWarning):  # animation_fps to big warning
