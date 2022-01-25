@@ -1,32 +1,77 @@
 """BaseGeo class code"""
 
+# pylint: disable=cyclic-import
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=protected-access
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_Collection import Collection
-from magpylib._src.obj_classes.class_BaseRotation import BaseRotation
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
-    check_start_type,
-    check_increment_type,
-    check_rot_type,
-)
-from magpylib._src.utility import adjust_start
+    check_rot_type)
 
-# ALL METHODS ON INTERFACE
-class BaseGeo(BaseRotation):
-    """Initializes position and rotation (=orientation) properties
+
+def pad_slice_path(path1, path2):
+    """
+    edge-pads or end-slices path 2 to fit path 1 format
+    path1: shape (N,x)
+    path2: shape (M,x)
+    return: path2 with format (N,x)
+    """
+    delta_path = len(path1) - len(path2)
+    if delta_path>0:
+        return np.pad(path2, ((0,delta_path), (0,0)), 'edge')
+    if delta_path<0:
+        return path2[-delta_path:]
+    return path2
+
+
+def position_input_check(pos):
+    """
+    checks input type and format end returns an ndarray of shape (N,3).
+    This function is used for setter and init only -> (1,3) and (3,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_vector_type(pos, "position")
+    # path vector -> ndarray
+    pos_array = np.array(pos, dtype=float)
+    # check input format
+    if Config.checkinputs:
+        check_path_format(pos_array, "position")
+    # tile to format (N,3) and return
+    return pos_array.reshape(-1,3)
+
+def orientation_input_check(ori):
+    """
+    checks input type and format end returns an ndarray of shape (N,4).
+    This function is used for setter and init only -> (1,4) and (4,) input
+    creates same behavior.
+    """
+    # check input type
+    if Config.checkinputs:
+        check_rot_type(ori)
+    # None input generates unit rotation
+    ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
+    # tile to format (N,4) and return
+    return ori_array.reshape(-1,4)
+
+class BaseGeo(BaseTransform):
+    """Initializes position and orientation properties
     of an object in a global CS.
 
-    Position is a ndarray with shape (3,).
+    position is a ndarray with shape (3,).
 
-    Rotation is a scipy.spatial.transformation.Rotation
+    orientation is a scipy.spatial.transformation.Rotation
     object that gives the relative rotation to the init_state. The
     init_state is defined by how the fields are implemented (e.g.
     cyl upright in xy-plane)
 
-    Both attributes _pos and _rot.as_rotvec() are of shape (N,3),
+    Both attributes _position and _orientation.as_rotvec() are of shape (N,3),
     and describe a path of length N. (N=1 if there is only one
     object position).
 
@@ -47,12 +92,12 @@ class BaseGeo(BaseRotation):
 
     """
 
-    def __init__(self, position, orientation, style=None, **kwargs):
-        # set pos and orient attributes
-        self.position = position
-        self.orientation = orientation
-        super().__init__()
+    def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
 
+        # set _position and _orientation attributes
+        self._init_position_orientation(position, orientation)
+
+        # style
         self.style_class = self._get_style_class()
         if style is not None or kwargs:
             if style is None:
@@ -67,6 +112,31 @@ class BaseGeo(BaseRotation):
                     )
             style.update(**style_kwargs)
             self.style = style
+
+    def _init_position_orientation(self, position, orientation):
+        """
+        tile up position and orientation input at Class init and set attributes
+        _position and _orientation.
+        pos: position input
+        ori: orientation.as_quat() input
+        """
+
+        # format position and orientation inputs
+        pos = position_input_check(position)
+        ori = orientation_input_check(orientation)
+
+        # padding logic: if one is longer than the other, edge-pad up the other
+        len_pos = pos.shape[0]
+        len_ori = ori.shape[0]
+
+        if len_pos>len_ori:
+            ori = np.pad(ori, ((0,len_pos-len_ori), (0,0)), 'edge')
+        elif len_pos<len_ori:
+            pos = np.pad(pos, ((0,len_ori-len_pos), (0,0)), 'edge')
+
+        # set attributes
+        self._position = pos
+        self._orientation = R.from_quat(ori)
 
     def _get_style_class(self):
         """returns style class based on object type. If class has no attribute `_object_type` or is
@@ -83,28 +153,35 @@ class BaseGeo(BaseRotation):
         return np.squeeze(self._position)
 
     @position.setter
-    def position(self, pos):
-        """Set object position-path.
+    def position(self, inp):
+        """
+        Set object position-path.
+
+        Use edge-padding and end-slicing to adjust orientation path
+
+        When a Collection position is set, then all children retain their
+        relative position to the Collection BaseGeo.
 
         position: array_like, shape (3,) or (N,3)
             Position-path of object.
         """
+        old_pos = self._position
 
-        # check input type
-        if Config.checkinputs:
-            check_vector_type(pos, "position")
+        # check and set new position
+        self._position = position_input_check(inp)
 
-        # path vector -> ndarray
-        pos = np.array(pos, dtype=float)
+        # pad/slice and set orientation path to same length
+        oriQ = self._orientation.as_quat()
+        self._orientation = R.from_quat(pad_slice_path(self._position, oriQ))
 
-        # check input format
-        if Config.checkinputs:
-            check_path_format(pos, "position")
+        # when there are children include their relative position
+        for child in getattr(self, "children", []):
+            old_pos = pad_slice_path(self._position, old_pos)
+            child_pos = pad_slice_path(self._position, child._position)
+            rel_child_pos = child_pos - old_pos
+            # set child position (pad/slice orientation)
+            child.position = self._position + rel_child_pos
 
-        # expand if input is shape (3,)
-        if pos.ndim == 1:
-            pos = np.expand_dims(pos, 0)
-        self._position = pos
 
     @property
     def orientation(self):
@@ -115,28 +192,31 @@ class BaseGeo(BaseRotation):
         return self._orientation  # return full path
 
     @orientation.setter
-    def orientation(self, rot):
+    def orientation(self, inp):
         """Set object orientation-path.
 
-        rot: None or scipy Rotation, shape (1,) or (N,), default=None
+        inp: None or scipy Rotation, shape (1,) or (N,)
             Set orientation-path of object. None generates a unit orientation
             for every path step.
         """
-        # check input type
-        if Config.checkinputs:
-            check_rot_type(rot)
+        old_oriQ = self._orientation.as_quat()
 
-        # None input generates unit rotation
-        if rot is None:
-            self._orientation = R.from_quat([(0, 0, 0, 1)] * len(self._position))
+        # set _orientation attribute with ndim=2 format
+        oriQ = orientation_input_check(inp)
+        self._orientation = R.from_quat(oriQ)
 
-        # expand rot.as_quat() to shape (1,4)
-        else:
-            val = rot.as_quat()
-            if val.ndim == 1:
-                self._orientation = R.from_quat([val])
-            else:
-                self._orientation = rot
+        # pad/slice position path to same length
+        self._position = pad_slice_path(oriQ, self._position)
+
+        # when there are children they rotate about self.position
+        # after the old Collection orientation is rotated away.
+        for child in getattr(self, "children", []):
+            # pad/slice and set child path
+            child.position = pad_slice_path(self._position, child._position)
+            # compute rotation and apply
+            old_ori_pad = R.from_quat(np.squeeze(pad_slice_path(oriQ, old_oriQ)))
+            child.rotate(self.orientation*old_ori_pad.inv(), anchor=self._position, start=0)
+
 
     @property
     def style(self):
@@ -159,7 +239,7 @@ class BaseGeo(BaseRotation):
         return val
 
     # dunders -------------------------------------------------------
-    def __add__(self, source):
+    def __add__(self, obj):
         """
         Add up sources to a Collection object.
 
@@ -167,12 +247,14 @@ class BaseGeo(BaseRotation):
         -------
         Collection: Collection
         """
-        return Collection(self, source)
+        # pylint: disable=import-outside-toplevel
+        from magpylib._src.obj_classes.class_Collection import Collection
+        return Collection(self, obj)
 
     # methods -------------------------------------------------------
     def reset_path(self):
         """
-        Reset object path to position = (0,0,0) and orientation = unit rotation.
+        Set object position to (0,0,0) and orientation = unit rotation.
 
         Returns
         -------
@@ -191,134 +273,6 @@ class BaseGeo(BaseRotation):
         [0. 0. 0.]
 
         """
-        self.position = (0, 0, 0)
-        self.orientation = R.from_quat((0, 0, 0, 1))
-
-    def move(self, displacement, start=-1, increment=False):
-        """
-        Translates the object by the input displacement (can be a path).
-
-        This method uses vector addition to merge the input path given by displacement and the
-        existing old path of an object. It keeps the old orientation. If the input path extends
-        beyond the old path, the old path will be padded by its last entry before paths are
-        added up.
-
-        Parameters
-        ----------
-        displacement: array_like, shape (3,) or (N,3)
-            Displacement vector shape=(3,) or path shape=(N,3) in units of [mm].
-
-        start: int or str, default=-1
-            Choose at which index of the original object path, the input path will begin.
-            If `start=-1`, inp_path will start at the last old_path position.
-            If `start=0`, inp_path will start with the beginning of the old_path.
-            If `start=len(old_path)` or `start='append'`, inp_path will be attached to
-            the old_path.
-
-        increment: bool, default=False
-            If `increment=False`, input displacements are absolute.
-            If `increment=True`, input displacements are interpreted as increments of each other.
-            For example, an incremental input displacement of `[(2,0,0), (2,0,0), (2,0,0)]`
-            corresponds to an absolute input displacement of `[(2,0,0), (4,0,0), (6,0,0)]`.
-
-        Returns
-        -------
-        self: Magpylib object
-
-        Examples
-        --------
-
-        With the ``move`` method Magpylib objects can be repositioned in the global coordinate
-        system:
-
-        >>> import magpylib as magpy
-        >>> sensor = magpy.Sensor()
-        >>> print(sensor.position)
-        [0. 0. 0.]
-        >>> sensor.move((1,1,1))
-        >>> print(sensor.position)
-        [1. 1. 1.]
-
-        It is also a powerful tool for creating paths:
-
-        >>> import magpylib as magpy
-        >>> sensor = magpy.Sensor()
-        >>> sensor.move((1,1,1), start='append')
-        >>> print(sensor.position)
-        [[0. 0. 0.]
-         [1. 1. 1.]]
-        >>> sensor.move([(.1,.1,.1)]*2, start='append')
-        >>> print(sensor.position)
-        [[0.  0.  0. ]
-         [1.  1.  1. ]
-         [1.1 1.1 1.1]
-         [1.1 1.1 1.1]]
-
-        Complex paths can be generated with ease, by making use of the ``increment`` keyword
-        and superposition of subsequent paths:
-
-        >>> import magpylib as magpy
-        >>> sensor = magpy.Sensor()
-        >>> sensor.move([(1,1,1)]*4, start='append', increment=True)
-        >>> print(sensor.position)
-        [[0. 0. 0.]
-         [1. 1. 1.]
-         [2. 2. 2.]
-         [3. 3. 3.]
-         [4. 4. 4.]]
-        >>> sensor.move([(.1,.1,.1)]*5, start=2)
-        >>> print(sensor.position)
-        [[0.  0.  0. ]
-         [1.  1.  1. ]
-         [2.1 2.1 2.1]
-         [3.1 3.1 3.1]
-         [4.1 4.1 4.1]
-         [4.1 4.1 4.1]
-         [4.1 4.1 4.1]]
-
-        """
-
-        # check input types
-        if Config.checkinputs:
-            check_vector_type(displacement, "displacement")
-            check_start_type(start)
-            check_increment_type(increment)
-
-        # displacement vector -> ndarray
-        inpath = np.array(displacement, dtype=float)
-
-        # check input format
-        if Config.checkinputs:
-            check_path_format(inpath, "displacement")
-
-        # expand if input is shape (3,)
-        if inpath.ndim == 1:
-            inpath = np.expand_dims(inpath, 0)
-
-        # load old path
-        old_ppath = self._position
-        old_opath = self._orientation.as_quat()
-        lenop = len(old_ppath)
-        lenin = len(inpath)
-
-        # change start to positive values in [0, lenop]
-        start = adjust_start(start, lenop)
-
-        # incremental input -> absolute input
-        if increment:
-            for i, d in enumerate(inpath[:-1]):
-                inpath[i + 1] = inpath[i + 1] + d
-
-        end = start + lenin  # end position of new_path
-
-        til = end - lenop
-        if til > 0:  # case inpos extends beyond old_path -> tile up old_path
-            old_ppath = np.pad(old_ppath, ((0, til), (0, 0)), "edge")
-            old_opath = np.pad(old_opath, ((0, til), (0, 0)), "edge")
-            self.orientation = R.from_quat(old_opath)
-
-        # add new_ppath to old_ppath
-        old_ppath[start:end] += inpath
-        self.position = old_ppath
-
+        self.position = (0,0,0)
+        self.orientation = None
         return self

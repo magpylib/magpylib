@@ -82,7 +82,7 @@ def test_Collection_basics():
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
                 pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
 
-            col1.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
+            col1.move(mv).rotate_from_angax(a, aa, aaa, start=-1).rotate(rot, aaa, start=-1)
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]
@@ -119,6 +119,10 @@ def test_Collection_basics():
     ],
 )
 def test_col_getB(test_input, expected):
+    """ testing some Collection stuff with getB"""
+    # pylint: disable=unused-variable
+    # pylint: disable=eval-used
+
     src1 = magpy.magnet.Cuboid(
         magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
@@ -175,12 +179,16 @@ def test_col_getB(test_input, expected):
     ],
 )
 def test_bad_col_getB_inputs(test_input, expected):
+    """more undocumented Collection checking"""
+    # pylint: disable=unused-variable
+    # pylint: disable=eval-used
+
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
-    )
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0))
+
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
-    )
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0))
+
     sens1 = magpy.Sensor(position=(0, 0, 6))
     sens2 = magpy.Sensor(position=(0, 0, 6))
     sens3 = magpy.Sensor(position=(0, 0, 6))
@@ -216,6 +224,7 @@ def test_col_getH():
 
 def test_col_reset_path():
     """testing display"""
+    # pylint: disable=no-member
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     col = magpy.Collection(pm1, pm2)
@@ -223,6 +232,7 @@ def test_col_reset_path():
     col.reset_path()
     assert col[0].position.ndim == 1, "col reset path fail"
     assert col[1].position.ndim == 1, "col reset path fail"
+    assert col.position.ndim == 1, "col reset path fail"
 
 
 def test_Collection_squeeze():
@@ -284,15 +294,15 @@ def test_adding_sources():
     assert strs == "CubCylSphLooLinDip"
 
 
-def test_set_styles():
+def test_set_children_styles():
     """test if styles get applied"""
     src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     col = src1 + src2
-    col.set_styles(magnetization_show=False)
+    col.set_children_styles(magnetization_show=False)
     assert (
         src1.style.magnetization.show is False
         and src1.style.magnetization.show is False
     ), """failed updating styles to children"""
     with pytest.raises(ValueError):
-        col.set_styles(bad_input="somevalue")
+        col.set_children_styles(bad_input="somevalue")

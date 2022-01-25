@@ -34,13 +34,13 @@ In this example the field B in \[mT\] of the Cylinder magnet is evaluated for a 
 rotating 360° with 45° steps around the source along the z-axis and a radius of 5\[mm\].
 
 ```{code-cell} ipython3
-from magpylib.magnet import Cylinder
+import numpy as np
 from magpylib import Sensor
+from magpylib.magnet import Cylinder
 
-src = Cylinder(magnetization=(222, 333, 444), dimension=(2, 2))
-sens = Sensor(position=(5, 0, 0)).rotate_from_angax(
-    [45] * 8, "z", anchor=(0, 0, 0), start=0, increment=True
-)
+cyl = Cylinder(magnetization=(222, 333, 444), dimension=(2, 2))
+sens = Sensor(position=(5, 0, 0))
+sens.rotate_from_angax(np.linspace(0.0, 270, 12)[1:], "z", anchor=cyl.position)
 B = sens.getB(src)
 print(B)
 ```

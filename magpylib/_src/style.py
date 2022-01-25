@@ -1,7 +1,7 @@
 """Collection of classes for display styling"""
 # pylint: disable=C0302
 
-from magpylib._src.default_utils import (
+from magpylib._src.defaults.defaults_utility import (
     MagicProperties,
     validate_property_class,
     color_validator,
@@ -230,7 +230,11 @@ class Description(MagicProperties):
 
     @text.setter
     def text(self, val):
-        self._text = val if val is None else str(val)
+        assert val is None or isinstance(val, str), (
+            f"the `show` property of {type(self).__name__} must be a string\n"
+            f"but received {repr(val)} instead"
+        )
+        self._text = val
 
     @property
     def show(self):

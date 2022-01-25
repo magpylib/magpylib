@@ -58,32 +58,26 @@ def check_anchor_type(anch):
 
 
 def check_anchor_format(anch):
-    """must be shape (3,) or 0"""
-    if anch is not None:
-        if not np.all(anch == np.array(0)):
-            if not anch.shape == (3,):
-                msg = "Bad anchor input. Must be None, 0 or shape (3,)."
-                raise MagpylibBadInputShape(msg)
+    """must be shape (N,3), (3,) or 0"""
+    if not np.all(anch == np.array(0)):
+        msg = "Bad anchor input. Must be None, 0 or shape (3,) or (N,3)."
+        if not anch.shape[-1] == 3:
+            raise MagpylibBadInputShape(msg)
+        if not anch.ndim in (1, 2):
+            raise MagpylibBadInputShape(msg)
 
 
 def check_rot_type(inp):
     """rotation input mut be scipy Rotation"""
     if not isinstance(inp, (Rotation, type(None))):
-        msg = "rot input must be None or scipy Rotation object."
+        msg = "orientation input must be None or scipy Rotation object."
         raise MagpylibBadUserInput(msg)
 
 
 def check_start_type(start):
     """start input must be int or str"""
-    if not (isinstance(start, int) or start == "append"):
-        msg = 'start input must be int or str ("attach")'
-        raise MagpylibBadUserInput(msg)
-
-
-def check_increment_type(inrc):
-    """incremnt input must be bool"""
-    if not isinstance(inrc, bool):
-        msg = "increment input must be bool (True or False)."
+    if not (isinstance(start, int) or start == 'auto'):
+        msg = 'start input must be int or str ("auto")'
         raise MagpylibBadUserInput(msg)
 
 
@@ -97,10 +91,11 @@ def check_angle_type(angle):
 
 
 def check_angle_format(angle):
-    """angle format must be of shape (N,)"""
-    if not angle.ndim == 1:
-        msg = "Bad angle input shape. Must be scalar or 1D vector."
-        raise MagpylibBadInputShape(msg)
+    """angle format must be scalar or of shape (N,)"""
+    if isinstance(angle, np.ndarray):
+        if angle.ndim not in (0,1):
+            msg = "Bad angle input shape. Must be scalar or 1D vector."
+            raise MagpylibBadInputShape(msg)
 
 
 def check_axis_type(ax):

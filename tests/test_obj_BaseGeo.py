@@ -1,5 +1,3 @@
-# import os
-# import pickle
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
@@ -9,6 +7,7 @@ import magpylib as magpy
 
 def test_BaseGeo_basics():
     """fundamental usage test"""
+    # pylint: disable=no-member
 
     ptest = np.array(
         [
@@ -50,7 +49,7 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((-0.1, -0.2, -0.3))
-    bgeo.rotate(rotation=rot)
+    bgeo.rotate(rotation=rot, start=-1)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -63,7 +62,8 @@ def test_BaseGeo_basics():
     rots += [bgeo.orientation.as_rotvec()]
 
     rot = R.from_rotvec((0.1, 0.2, 0.3))
-    bgeo.rotate(rot, anchor=(3, 2, 1)).rotate_from_angax(33, (3, 2, 1), anchor=0)
+    bgeo.rotate(rot, anchor=(3, 2, 1), start=-1)
+    bgeo.rotate_from_angax(33, (3, 2, 1), anchor=0, start=-1)
     poss += [bgeo.position.copy()]
     rots += [bgeo.orientation.as_rotvec()]
 
@@ -84,10 +84,11 @@ def test_rotate_vs_rotate_from():
         (0, 0, 0.4),
         (0, -0.2, 0),
     ]
-    rroz = R.from_rotvec(roz)
 
     bg1 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
-    bg1.rotate(rotation=rroz, anchor=(-3, -2, 1), start=1, increment=True)
+    for ro in roz:
+        rroz = R.from_rotvec((ro,))
+        bg1.rotate(rotation=rroz, anchor=(-3, -2, 1))
     pos1 = bg1.position
     ori1 = bg1.orientation.as_quat()
 
@@ -95,8 +96,7 @@ def test_rotate_vs_rotate_from():
     angs = np.linalg.norm(roz, axis=1)
     for ang, ax in zip(angs, roz):
         bg2.rotate_from_angax(
-            angle=ang, degrees=False, axis=ax, anchor=(-3, -2, 1), start="append"
-        )
+            angle=[ang], degrees=False, axis=ax, anchor=(-3, -2, 1))
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
@@ -110,7 +110,7 @@ def test_BaseGeo_reset_path():
     bg = BaseGeo((0, 0, 0), R.from_quat((0, 0, 0, 1)))
     bg.move([(1, 1, 1)] * 11)
 
-    assert len(bg._position) == 11, "bad path generation"
+    assert len(bg._position) == 12, "bad path generation"
 
     bg.reset_path()
     assert len(bg._position) == 1, "bad path reset"
@@ -120,7 +120,7 @@ def test_BaseGeo_anchor_None():
     """testing rotation with None anchor"""
     pos = np.array([1, 2, 3])
     bg = BaseGeo(pos, R.from_quat((0, 0, 0, 1)))
-    bg.rotate(R.from_rotvec([(0, 0, 0), (0.1, 0.2, 0.3), (0.2, 0.4, 0.6)]))
+    bg.rotate(R.from_rotvec([(0.1, 0.2, 0.3), (0.2, 0.4, 0.6)]))
 
     pos3 = np.array([pos] * 3)
     rot3 = np.array([(0, 0, 0), (0.1, 0.2, 0.3), (0.2, 0.4, 0.6)])
@@ -143,12 +143,12 @@ def test_attach():
     """test attach functionality"""
     bg = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
     rot_obj = R.from_rotvec([(x, 0, 0) for x in np.linspace(0, 10, 11)])
-    bg.rotate(rot_obj)
+    bg.rotate(rot_obj, start=-1)
 
     bg2 = BaseGeo([0, 0, 0], R.from_rotvec((0, 0, 0)))
-    roto = R.from_rotvec((1, 0, 0))
+    roto = R.from_rotvec(((1, 0, 0),))
     for _ in range(10):
-        bg2.rotate(roto, start="append")
+        bg2.rotate(roto)
 
     assert np.allclose(bg.position, bg2.position), "attach p"
     assert np.allclose(bg.orientation.as_quat(), bg2.orientation.as_quat()), "attach o"
@@ -225,13 +225,13 @@ def test_path_functionality2():
     assert np.allclose(pos, P)
     assert np.allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=6))
+    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start=5))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     assert np.allclose(pos, P)
     assert np.allclose(ori, Q)
 
-    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath, start="append"))
+    pos, ori = evall(BaseGeo(pos0, rot0).move(inpath))
     P = np.array([b1, b2, b3, b4, b5, b5 + c1, b5 + c2, b5 + c3])
     Q = np.array([q1, q2, q3, q4, q5, q5, q5, q5])
     assert np.allclose(pos, P)
@@ -271,14 +271,9 @@ def test_path_functionality3():
     assert np.allclose(pos1, pos2)
     assert np.allclose(ori1, ori2)
 
-    pos1, ori1 = evall(BaseGeo(pos0, rot0).move(inpath, start=-6))
-    pos2, ori2 = evall(BaseGeo(pos0, rot0).move(inpath, start=-5))
-    assert np.allclose(pos1, pos2)
-    assert np.allclose(ori1, ori2)
-
 
 def test_scipy_from_methods():
-    """test all rotation methods inspired from scipy implemented in BaseRotation"""
+    """test all rotation methods inspired from scipy implemented in BaseTransform"""
     cube = lambda: magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
     angs_deg = np.linspace(0, 360, 10)
     angs = np.deg2rad(angs_deg)
