@@ -3,7 +3,7 @@ import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.utility import format_star_input
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import check_vector_type, check_position_format
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 

@@ -1,11 +1,12 @@
 """ some utility functions"""
+from math import log10
 from typing import Sequence
 import numpy as np
 
 # from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import check_position_format
 
 LIBRARY_SOURCES = (
@@ -76,7 +77,8 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> list:
+def format_obj_input(
+    *objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -91,20 +93,24 @@ def format_obj_input(objects: Sequence, allow="sources+sensors", warn=True) -> l
     # pylint: disable=protected-access
 
     obj_list = []
+    flatten_collection = not 'collections' in allow.split("+")
     for obj in objects:
         if isinstance(obj, (tuple, list)):
             obj_list += format_obj_input(
-                obj, allow=allow, warn=warn
+                *obj, allow=allow, warn=warn
             )  # recursive flattening
         else:
             try:
                 if obj._object_type == "Collection":
-                    obj_list += obj.objects
+                    if flatten_collection:
+                        obj_list += obj.children
+                    else:
+                        obj_list += [obj]
                 elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
                     obj_list += [obj]
             except Exception as error:
                 raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
-    obj_list = filter_objects(obj_list, allow=allow, warn=warn)
+    obj_list = filter_objects(obj_list, allow=allow, warn=False)
     return obj_list
 
 
@@ -264,6 +270,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             allowed_list.extend(LIBRARY_SOURCES)
         elif allowed == "sensors":
             allowed_list.extend(LIBRARY_SENSORS)
+        elif allowed =='collections':
+            allowed_list.extend(['Collection'])
     new_list = []
     for obj in obj_list:
         if obj._object_type in allowed_list:
@@ -273,24 +281,54 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
                 print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list
 
-def adjust_start(start, lenop):
-    """
-    change start to a value inside of [0,lenop], i.e. inside of the
-    old path.
-    """
-    if start == "append":
-        start = lenop
-    elif start < 0:
-        start += lenop
 
-    # fix out-of-bounds start values
-    if start < 0:
-        start = 0
-        if Config.checkinputs:
-            print("Warning: start out of path bounds. Setting start=0.")
-    elif start > lenop:
-        start = lenop
-        if Config.checkinputs:
-            print(f"Warning: start out of path bounds. Setting start={lenop}.")
+_UNIT_PREFIX = {
+    -24: "y",  # yocto
+    -21: "z",  # zepto
+    -18: "a",  # atto
+    -15: "f",  # femto
+    -12: "p",  # pico
+    -9: "n",  # nano
+    -6: "µ",  # micro
+    -3: "m",  # milli
+    0: "",
+    3: "k",  # kilo
+    6: "M",  # mega
+    9: "G",  # giga
+    12: "T",  # tera
+    15: "P",  # peta
+    18: "E",  # exa
+    21: "Z",  # zetta
+    24: "Y",  # yotta
+}
 
-    return start
+
+def unit_prefix(number, unit="", precision=3, char_between="") -> str:
+    """
+    displays a number with given unit and precision and uses unit prefixes for the exponents from
+    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
+
+    Parameters
+    ----------
+    number : int, float
+        can be any number
+    unit : str, optional
+        unit symbol can be any string, by default ""
+    precision : int, optional
+        gives the number of significant digits, by default 3
+    char_between : str, optional
+        character to insert between number of prefix. Can be " " or any string, if a space is wanted
+        before the unit symbol , by default ""
+
+    Returns
+    -------
+    str
+        returns formatted number as string
+    """
+    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
+    prefix = _UNIT_PREFIX.get(digits, "")
+
+    if prefix == "":
+        digits = 0
+    new_number_str = f"{number / 10 ** digits:.{precision}g}"
+    return f"{new_number_str}{char_between}{prefix}{unit}"
