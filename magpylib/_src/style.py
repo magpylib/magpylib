@@ -230,7 +230,11 @@ class Description(MagicProperties):
 
     @text.setter
     def text(self, val):
-        self._text = val if val is None else str(val)
+        assert val is None or isinstance(val, str), (
+            f"the `show` property of {type(self).__name__} must be a string\n"
+            f"but received {repr(val)} instead"
+        )
+        self._text = val
 
     @property
     def show(self):
