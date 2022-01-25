@@ -210,8 +210,6 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         if `True` `color_input` can be `None`, by default True
     parent_name : str, optional
         name of the parent class of the validator, by default ""
-    backend: str, optional
-        plotting backend to validate with. One of `['matplotlib','plotly']`
 
     Returns
     -------
