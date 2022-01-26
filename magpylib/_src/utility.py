@@ -20,12 +20,23 @@ LIBRARY_SOURCES = (
     "CustomSource",
 )
 
+LIBRARY_BH_DICT_SOURCE_STRINGS = (
+    "Cuboid",
+    "Cylinder",
+    "CylinderSegment",
+    "Sphere",
+    "Dipole",
+    "Loop",
+    "Line",
+)
+
 LIBRARY_SENSORS = ("Sensor",)
 
 ALLOWED_SOURCE_MSG = f"""Sources must be either
-- one of {LIBRARY_SOURCES}
+- one of type {LIBRARY_SOURCES}
 - Collection with at least one of the above
-- 1D list thereof"""
+- 1D list of the above
+- string {LIBRARY_BH_DICT_SOURCE_STRINGS}"""
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
@@ -37,7 +48,6 @@ ALLOWED_SENSORS_MSG = """Sensors must be either
 - Sensor object
 - Collection with at least one Sensor
 - 1D list thereof"""
-
 
 def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""

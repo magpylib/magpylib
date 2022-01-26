@@ -37,7 +37,7 @@ This is a major update that includes
 - `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in `Cuboid` corners.
 - Magpylib objects can now be _initialized_ **without excitation** and **without dimension** attributes.
 - `magpylib.Config` parameters are now in `magpylib.defaults` ([#387](https://github.com/magpylib/magpylib/issues/387))
-- `getBv` and `getHv` are renamed to `getB_dict` and `getH_dict` ([#294](https://github.com/magpylib/magpylib/issues/294))
+- `getBv` and `getHv` are now integrated into `getB` and `getH` ([#449](https://github.com/magpylib/magpylib/pull/449))
 - Renamed `display` arguments
   - `axis` ➡️ `canvas`
   - `show_direction` ➡️ `style_magnetization_show`

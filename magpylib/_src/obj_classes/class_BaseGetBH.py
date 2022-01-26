@@ -32,9 +32,6 @@ class BaseGetBH:
             shapes (or observer positions) of all inputs must be the same. All positions
             are given in units of [mm].
 
-        sumup: bool, default=False
-            If True, the fields of all sources are summed up.
-
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
@@ -67,9 +64,6 @@ class BaseGetBH:
             should be evaluated or Sensor objects with pixel shape (N1, N2, ..., 3). Pixel
             shapes (or observer positions) of all inputs must be the same. All positions
             are given in units of [mm].
-
-        sumup: bool, default=False
-            If True, the fields of all sources are summed up.
 
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
