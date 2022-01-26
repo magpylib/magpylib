@@ -57,7 +57,7 @@ def magnet_cyl_axial_B_Derby2009(
     r,z = pos_obs.T
     n = len(d)
 
-    # some important quantitites
+    # some important quantities
     zph, zmh = z+h, z-h
     dpr, dmr = d+r, d-r
 
@@ -245,7 +245,7 @@ def magnet_cyl_dia_H_Rauber2021(
 #     Notes
 #     -----
 #     H-Field computed from the charge picture, Simpsons approximation used
-#     to approximate the intergral.
+#     to approximate the integral.
 #     """
 
 #     r0, z0 = dim.T/2

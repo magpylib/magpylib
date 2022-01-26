@@ -4,7 +4,7 @@ magnetized Cuboids. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib._src.default_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 def field_BH_cuboid(
@@ -62,7 +62,7 @@ def field_BH_cuboid(
     if np.any(mask_gen):
         B[mask_gen] = magnet_cuboid_B_Yang1999(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
-    # return B or compute and retun H -------------
+    # return B or compute and return H -------------
     if bh:
         return B
 
@@ -137,7 +137,7 @@ def magnet_cuboid_B_Yang1999(
     In the above implementations there are several indeterminate forms
     where the limit must be taken. These forms appear at positions
     that are extensions of the edges in all xyz-octants except bottQ4.
-    In the vicinity of these indeterminat forms the formula becomes
+    In the vicinity of these indeterminate forms the formula becomes
     numerically instable.
 
     Chosen solution: use symmetries of the problem to change all

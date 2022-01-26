@@ -160,7 +160,7 @@ def utility_test_path_format():
     """ bad path format input
     """
     pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
-    pm1.position = [(1,2,3),(1,2,3)]
+    pm1._position = [(1,2,3),(1,2,3)]
     tpf(pm1)
 
 

@@ -4,10 +4,10 @@ from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict, getH_dict
 
 
 def test_getB_interfaces1():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
     B = getB_dict(
@@ -37,10 +37,10 @@ def test_getB_interfaces1():
 
 
 def test_getB_interfaces2():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
     B = getB_dict(
@@ -63,10 +63,10 @@ def test_getB_interfaces2():
 
 
 def test_getB_interfaces3():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
     poso = [[(-1,-1,-1)]*2]*2
     sens = magpy.Sensor(pixel=poso)
     B = getB_dict(
@@ -93,12 +93,12 @@ def test_getB_interfaces3():
 
 
 def test_getH_interfaces1():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)
     src = magpy.magnet.Cuboid(mag, dim)
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)
@@ -130,12 +130,12 @@ def test_getH_interfaces1():
 
 
 def test_getH_interfaces2():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)
     src = magpy.magnet.Cuboid(mag, dim)
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)
@@ -160,12 +160,12 @@ def test_getH_interfaces2():
 
 
 def test_getH_interfaces3():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)
     src = magpy.magnet.Cuboid(mag, dim)
-    src.move([(.1,.2,.3)]*10, increment=True)
+    src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
 
     poso = [[(-1,-2,-3)]*2]*2
     sens = magpy.Sensor(pixel=poso)

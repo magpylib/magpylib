@@ -36,31 +36,31 @@ def init_dim_getBH1():
     src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
     magpy.getB([src1,src2], (1,2,3))
 
-def init_exite_display1():
+def init_excite_display1():
     """throw excitation init error from display"""
     src1 = magpy.current.Loop(diameter=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.display(src1, src2, style_magnetization_show=True, style_arrow_show=True)
 
-def init_exite_getBH1():
+def init_excite_getBH1():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(diameter=1, current=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH2():
+def init_excite_getBH2():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.magnet.Cuboid(dimension=(1,2,3))
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH3():
+def init_excite_getBH3():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.current.Line(vertices=[(1,2,3),(2,3,4)])
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH4():
+def init_excite_getBH4():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.misc.Dipole()
@@ -96,16 +96,11 @@ def badInput_move2():
     bg.move([1,2,3], start=1.1)
 
 def badInput_move3():
-    """ bad increment input type"""
-    bg = BaseGeo(a3, r0)
-    bg.move([1,2,3], increment=5)
-
-def badInput_move4():
     """ bad displacement input format1"""
     bg = BaseGeo(a3, r0)
     bg.move([1,2])
 
-def badInput_move5():
+def badInput_move4():
     """ bad displacement input format2"""
     bg = BaseGeo(a3, r0)
     bg.move([[[1,2,3]]*3]*4)
@@ -126,11 +121,6 @@ def badInput_rotate3():
     """ bad start input type"""
     bg = BaseGeo(a3, r0)
     bg.rotate(r0, start=1.23)
-
-def badInput_rotate4():
-    """ bad increment input type"""
-    bg = BaseGeo(a3, r0)
-    bg.rotate(r0, increment=1)
 
 def badInput_rotate5():
     """ bad anchor input format"""
@@ -159,11 +149,6 @@ def badInput_rotate_from_angax4():
     bg = BaseGeo(a3, r0)
     bg.rotate_from_angax(123, (1,2,3), start=1.1)
 
-def badInput_rotate_from_angax5():
-    """ bad increment input type"""
-    bg = BaseGeo(a3, r0)
-    bg.rotate_from_angax(123, (1,2,3), increment=None)
-
 def badInput_rotate_from_angax6():
     """ bad degrees input type"""
     bg = BaseGeo(a3, r0)
@@ -183,6 +168,11 @@ def badInput_rotate_from_angax9():
     """ bad axis input format"""
     bg = BaseGeo(a3, r0)
     bg.rotate_from_angax(123, [0,0,0])
+
+def badInput_rotate_from_angax10():
+    """ bad axis input format"""
+    bg = BaseGeo(a3, r0)
+    bg.rotate_from_angax(123, [1,2,3], anchor=[[(1,2,3)]*2]*2)
 
 
 # EXCITATIONS -----------------------------------------
@@ -288,11 +278,11 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibMissingInput, init_dim_display2)
         self.assertRaises(MagpylibMissingInput, init_dim_display3)
         self.assertRaises(MagpylibMissingInput, init_dim_getBH1)
-        self.assertRaises(MagpylibMissingInput, init_exite_display1)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH1)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH2)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH3)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH4)
+        self.assertRaises(MagpylibMissingInput, init_excite_display1)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH1)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH2)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH3)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH4)
 
     def test_BaseGeo(self):
         """ bad BG inputs"""
@@ -305,16 +295,14 @@ class TestExceptions(unittest.TestCase):
         """ bad .move inputs"""
         self.assertRaises(MagpylibBadUserInput, badInput_move1)
         self.assertRaises(MagpylibBadUserInput, badInput_move2)
-        self.assertRaises(MagpylibBadUserInput, badInput_move3)
+        self.assertRaises(MagpylibBadInputShape, badInput_move3)
         self.assertRaises(MagpylibBadInputShape, badInput_move4)
-        self.assertRaises(MagpylibBadInputShape, badInput_move5)
 
     def test_rotate(self):
         """ bad .rotate inputs"""
         self.assertRaises(MagpylibBadUserInput, badInput_rotate1)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate2)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate3)
-        self.assertRaises(MagpylibBadUserInput, badInput_rotate4)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate5)
 
     def test_rotate_from_angax(self):
@@ -323,11 +311,11 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax2)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax3)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax4)
-        self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax5)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax6)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax7)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax8)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax9)
+        self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax10)
 
     def test_magnetization_input(self):
         """ bad magnetization inputs"""

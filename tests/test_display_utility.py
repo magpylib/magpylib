@@ -1,5 +1,5 @@
 import numpy as np
-from magpylib._src.display.disp_utility import draw_arrow_from_vertices
+from magpylib._src.display.display_utility import draw_arrow_from_vertices
 
 def test_draw_arrow_from_vertices():
     """tests also the edge case when a vertex is in -y direction"""

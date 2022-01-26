@@ -1,8 +1,8 @@
-""" plolty draw-functionalities"""
+""" plotly draw-functionalities"""
 # pylint: disable=C0302
+# pylint: disable=too-many-branches
 
 from itertools import cycle, combinations
-from math import log10
 from typing import Tuple
 import warnings
 
@@ -17,356 +17,47 @@ except ImportError as missing_module:  # pragma: no cover
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
-from magpylib._src.default_classes import default_settings as Config
-from magpylib._src.display.sensor_plotly_mesh import get_sensor_mesh
+from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.display.plotly.plotly_sensor_mesh import get_sensor_mesh
 from magpylib._src.style import (
     get_style,
     LINESTYLES_MATPLOTLIB_TO_PLOTLY,
     SYMBOLS_MATPLOTLIB_TO_PLOTLY,
 )
-from magpylib._src.display.disp_utility import (
+from magpylib._src.display.display_utility import (
     get_rot_pos_from_path,
     MagpyMarkers,
     draw_arrow_from_vertices,
     draw_arrowed_circle,
     place_and_orient_model3d,
 )
-from magpylib._src.default_utils import (
+from magpylib._src.defaults.defaults_utility import (
     SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY,
     linearize_dict,
 )
+
 from magpylib._src.input_checks import check_excitations
-
-# Defaults
-
-_UNIT_PREFIX = {
-    -24: "y",  # yocto
-    -21: "z",  # zepto
-    -18: "a",  # atto
-    -15: "f",  # femto
-    -12: "p",  # pico
-    -9: "n",  # nano
-    -6: "µ",  # micro
-    -3: "m",  # milli
-    0: "",
-    3: "k",  # kilo
-    6: "M",  # mega
-    9: "G",  # giga
-    12: "T",  # tera
-    15: "P",  # peta
-    18: "E",  # exa
-    21: "Z",  # zetta
-    24: "Y",  # yotta
-}
-
-
-def unit_prefix(number, unit="", precision=3, char_between="") -> str:
-    """
-    displays a number with given unit and precision and uses unit prefixes for the exponents from
-    yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-
-    Parameters
-    ----------
-    number : int, float
-        can be any number
-    unit : str, optional
-        unit symbol can be any string, by default ""
-    precision : int, optional
-        gives the number of significant digits, by default 3
-    char_between : str, optional
-        character to insert between number of prefix. Can be " " or any string, if a space is wanted
-        before the unit symbol , by default ""
-
-    Returns
-    -------
-    str
-        returns formatted number as string
-    """
-    digits = int(log10(abs(number))) // 3 * 3 if number != 0 else 0
-    prefix = _UNIT_PREFIX.get(digits, "")
-
-    if prefix == "":
-        digits = 0
-    new_number_str = f"{number / 10 ** digits:.{precision}g}"
-    return f"{new_number_str}{char_between}{prefix}{unit}"
-
-
-def _getIntensity(vertices, axis) -> np.ndarray:
-    """
-    Calculates the intensity values for vertices based on the distance of the vertices to the mean
-    vertices position in the provided axis direction. It can be used for plotting
-    fields on meshes. If `mag` See more infos here:https://plotly.com/python/3d-mesh/
-
-    Parameters
-    ----------
-    vertices : ndarray Nx3
-        the N vertices of the mesh object
-    axis : ndarray 3
-        direction vector
-
-    Returns
-    -------
-    ndarray N
-        returns 1D array of length N
-    """
-    p = np.array(vertices).T
-    pos = np.mean(p, axis=1)
-    m = np.array(axis) / np.linalg.norm(axis)
-    intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
-    return intensity
-
-
-def _getColorscale(
-    color_transition=0,
-    color_north="#E71111",  # 'red'
-    color_middle="#DDDDDD",  # 'grey'
-    color_south="#00B050",  # 'green'
-) -> list:
-    """
-    Provides the colorscale for a plotly mesh3d trace.
-    The colorscale must be an array containing arrays mapping a normalized value to an rgb, rgba,
-    hex, hsl, hsv, or named color string. At minimum, a mapping for the lowest (0) and highest (1)
-    values are required. For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`.
-    In this case the colorscale is created depending on the north/middle/south poles colors. If the
-    middle color is `None` the colorscale will only have north and south pole colors.
-
-    Parameters
-    ----------
-    color_transition : float, optional
-        A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
-        visualization., by default 0.1
-    color_north : str, optional
-        magnetic north pole color , by default None
-    color_middle : str, optional
-        middle between south and north pole color, by default None
-    color_south : str, optional
-        magnetic north pole color , by default None
-
-    Returns
-    -------
-    list
-        returns colorscale as list of tuples
-    """
-    if color_middle is False:
-        colorscale = [
-            [0.0, color_south],
-            [0.5 * (1 - color_transition), color_south],
-            [0.5 * (1 + color_transition), color_north],
-            [1, color_north],
-        ]
-    else:
-        colorscale = [
-            [0.0, color_south],
-            [0.2 - 0.2 * (color_transition), color_south],
-            [0.2 + 0.3 * (color_transition), color_middle],
-            [0.8 - 0.3 * (color_transition), color_middle],
-            [0.8 + 0.2 * (color_transition), color_north],
-            [1.0, color_north],
-        ]
-    return colorscale
-
-
-def make_BaseCuboid(dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0)) -> dict:
-    """
-    Provides the base plotly cuboid mesh3d parameters in a dictionary based on dimension and
-    position
-    The zero position is in the barycenter of the vertices.
-    """
-    return dict(
-        type="mesh3d",
-        i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-        k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dim[0] + pos[0],
-        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dim[1] + pos[1],
-        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dim[2] + pos[2],
-    )
-
-
-def make_BasePrism(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
-    """
-    Provides the base plotly prism mesh3d parameters in a dictionary based on number of vertices of
-    the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = base_vertices
-    t = np.linspace(0, 2 * np.pi, N, endpoint=False)
-    c1 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 - 1]) * 0.5
-    c2 = np.array([1 * np.cos(t), 1 * np.sin(t), t * 0 + 1]) * 0.5
-    c3 = np.array([[0, 0], [0, 0], [-1, 1]]) * 0.5
-    c = np.concatenate([c1, c2, c3], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(pos)
-    i1 = np.arange(N)
-    j1 = i1 + 1
-    j1[-1] = 0
-    k1 = i1 + N
-
-    i2 = i1 + N
-    j2 = j1 + N
-    j2[-1] = N
-    k2 = i1 + 1
-    k2[-1] = 0
-
-    i3 = i1
-    j3 = j1
-    k3 = i1 * 0 + 2 * N
-
-    i4 = i2
-    j4 = j2
-    k4 = k3 + 1
-
-    # k2&j2 and k3&j3 inverted because of face orientation
-    i = np.concatenate([i1, i2, i3, i4])
-    j = np.concatenate([j1, k2, k3, j4])
-    k = np.concatenate([k1, j2, j3, k4])
-
-    x, y, z = c.T
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_Ellipsoid(
-    dim=(1.0, 1.0, 1.0), pos=(0.0, 0.0, 0.0), Nvert=15, min_vert=3, max_vert=20
-) -> dict:
-    """
-    Provides the base plotly ellipsoid mesh3d parameters in a dictionary based on number of vertices
-    of the circumference, the 3 dimensions and position.
-    The zero position is in the barycenter of the vertices.
-    `Nvert` will be forced automatically in the range [`min_vert`, `max_vert`]
-    """
-    N = min(max(Nvert, min_vert), max_vert)
-    phi = np.linspace(0, 2 * np.pi, Nvert, endpoint=False)
-    theta = np.linspace(-np.pi / 2, np.pi / 2, Nvert, endpoint=True)
-    phi, theta = np.meshgrid(phi, theta)
-
-    x = np.cos(theta) * np.sin(phi) * dim[0] * 0.5 + pos[0]
-    y = np.cos(theta) * np.cos(phi) * dim[1] * 0.5 + pos[1]
-    z = np.sin(theta) * dim[2] * 0.5 + pos[2]
-
-    x, y, z = x.flatten()[N - 1 :], y.flatten()[N - 1 :], z.flatten()[N - 1 :]
-
-    i1 = [0] * N
-    j1 = np.array([N] + list(range(1, N)), dtype=int)
-    k1 = np.array(list(range(1, N)) + [N], dtype=int)
-
-    i2 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j2 = np.concatenate([j1 + i * N for i in range(N - 2)])
-    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-
-    i3 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 2)])
-
-    i = np.concatenate([i1, i2, i3])
-    j = np.concatenate([j1, j2, j3])
-    k = np.concatenate([k1, k2, k3])
-
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseCylinderSegment(r1=1, r2=2, h=1, phi1=0, phi2=90, Nvert=30) -> dict:
-    """
-    Provides the base plotly CylinderSegment mesh3d parameters in a dictionary based on inner
-    and outer diameters, height, start angle and end angles in degrees.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = Nvert
-    phi = np.linspace(phi1, phi2, N)
-    x = np.cos(np.deg2rad(phi))
-    y = np.sin(np.deg2rad(phi))
-    z = np.zeros(N)
-    c1 = np.array([r1 * x, r1 * y, z + h / 2])
-    c2 = np.array([r2 * x, r2 * y, z + h / 2])
-    c3 = np.array([r1 * x, r1 * y, z - h / 2])
-    c4 = np.array([r2 * x, r2 * y, z - h / 2])
-    x, y, z = np.concatenate([c1, c2, c3, c4], axis=1)
-
-    i1 = np.arange(N - 1)
-    j1 = i1 + N
-    k1 = i1 + 1
-
-    i2 = k1
-    j2 = j1
-    k2 = j1 + 1
-
-    i3 = i1
-    j3 = k1
-    k3 = j1 + N
-
-    i4 = k3 + 1
-    j4 = k3
-    k4 = k1
-
-    i5 = np.array([0, N])
-    j5 = np.array([2 * N, 0])
-    k5 = np.array([3 * N, 3 * N])
-
-    i = np.hstack(
-        [i1, i2, i1 + 2 * N, i2 + 2 * N, i3, i4, i3 + N, i4 + N, i5, i5 + N - 1]
-    )
-    j = np.hstack(
-        [j1, j2, k1 + 2 * N, k2 + 2 * N, j3, j4, k3 + N, k4 + N, j5, k5 + N - 1]
-    )
-    k = np.hstack(
-        [k1, k2, j1 + 2 * N, j2 + 2 * N, k3, k4, j3 + N, j4 + N, k5, j5 + N - 1]
-    )
-
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseCone(base_vertices=3, diameter=1, height=1, pos=(0.0, 0.0, 0.0)) -> dict:
-    """
-    Provides the base plotly Cone mesh3d parameters in a dictionary based on number of vertices of
-    the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-    N = base_vertices
-    t = np.linspace(0, 2 * np.pi, N, endpoint=False)
-    c = np.array([np.cos(t), np.sin(t), t * 0 - 1]) * 0.5
-    tp = np.array([[0, 0, 0.5]]).T
-    c = np.concatenate([c, tp], axis=1)
-    c = c.T * np.array([diameter, diameter, height]) + np.array(pos)
-    x, y, z = c.T
-
-    i = np.arange(N, dtype=int)
-    j = i + 1
-    j[-1] = 0
-    k = np.array([N] * N, dtype=int)
-    return dict(type="mesh3d", x=x, y=y, z=z, i=i, j=j, k=k)
-
-
-def make_BaseArrow(base_vertices=30, diameter=0.3, height=1, pivot="middle") -> dict:
-    """
-    Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
-    of the base, the diameter the height and position.
-    The zero position is in the barycenter of the vertices.
-    """
-
-    h, d, z = height, diameter, 0
-    if pivot == "tail":
-        z = h / 2
-    elif pivot == "tip":
-        z = -h / 2
-    cone = make_BaseCone(
-        base_vertices=base_vertices,
-        diameter=d,
-        height=d,
-        pos=(0.0, 0.0, z + h / 2 - d / 2),
-    )
-    prism = make_BasePrism(
-        base_vertices=base_vertices,
-        diameter=d / 2,
-        height=h - d,
-        pos=(0.0, 0.0, z + -d / 2),
-    )
-    arrow = merge_mesh3d(cone, prism)
-
-    return arrow
+from magpylib._src.utility import unit_prefix, format_obj_input
+from magpylib._src.display.plotly.plotly_base_traces import (
+    make_BaseCuboid,
+    make_BaseCylinderSegment,
+    make_BaseEllipsoid,
+    make_BasePrism,
+    # make_BaseCone,
+    make_BaseArrow,
+)
+from magpylib._src.display.plotly.plotly_utility import (
+    merge_mesh3d,
+    merge_traces,
+    getColorscale,
+    getIntensity,
+)
 
 
 def make_Line(
     current=0.0,
     vertices=((-1.0, 0.0, 0.0), (1.0, 0.0, 0.0)),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     color=None,
     style=None,
@@ -390,7 +81,7 @@ def make_Line(
         vertices = np.array(vertices).T
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
-    x, y, z = (vertices.T + pos).T
+    x, y, z = (vertices.T + position).T
     line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = dict(
         type="scatter3d",
@@ -408,7 +99,7 @@ def make_Line(
 def make_Loop(
     current=0.0,
     diameter=1.0,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     Nvert=50,
     orientation=None,
     color=None,
@@ -429,7 +120,7 @@ def make_Loop(
     vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
-    x, y, z = (vertices.T + pos).T
+    x, y, z = (vertices.T + position).T
     line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     circular = dict(
         type="scatter3d",
@@ -444,22 +135,24 @@ def make_Loop(
     return {**circular, **kwargs}
 
 
-def make_UnsupportedObject(
-    pos=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+def make_DefaultTrace(
+    obj, position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
     representation. The object will be reprensented by a scatter point and text above with object
     name.
     """
+
+    default_suffix = ""
     name, name_suffix = get_name_and_suffix(
-        "Unknown object", " (Unsupported visualisation)", style
+        f"{type(obj).__name__}", default_suffix, style
     )
-    vertices = np.array([pos])
+    vertices = np.array([position])
     if orientation is not None:
         vertices = orientation.apply(vertices).T
     x, y, z = vertices
-    obj = dict(
+    trace = dict(
         type="scatter3d",
         x=x,
         y=y,
@@ -471,12 +164,12 @@ def make_UnsupportedObject(
         marker_color=color,
         marker_symbol="diamond",
     )
-    return {**obj, **kwargs}
+    return {**trace, **kwargs}
 
 
 def make_Dipole(
     moment=(0.0, 0.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     autosize=None,
@@ -506,14 +199,14 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
 def make_Cuboid(
     mag=(0.0, 0.0, 1000.0),
-    dim=(1.0, 1.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    dimension=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -522,12 +215,12 @@ def make_Cuboid(
     Creates the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments
     """
-    d = [unit_prefix(d / 1000) for d in dim]
+    d = [unit_prefix(d / 1000) for d in dimension]
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
-    cuboid = make_BaseCuboid(dim=dim, pos=(0.0, 0.0, 0.0))
+    cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -536,7 +229,7 @@ def make_Cylinder(
     base_vertices=50,
     diameter=1.0,
     height=1.0,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -552,17 +245,17 @@ def make_Cylinder(
         base_vertices=base_vertices,
         diameter=diameter,
         height=height,
-        pos=(0.0, 0.0, 0.0),
+        position=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
 def make_CylinderSegment(
     mag=(0.0, 0.0, 1000.0),
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     Nvert=25.0,
     style=None,
@@ -577,7 +270,14 @@ def make_CylinderSegment(
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
     cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
     return _update_mag_mesh(
-        cylinder_segment, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        cylinder_segment,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -585,7 +285,7 @@ def make_Sphere(
     mag=(0.0, 0.0, 1000.0),
     Nvert=15,
     diameter=1,
-    pos=(0.0, 0.0, 0.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     style=None,
     **kwargs,
@@ -596,9 +296,11 @@ def make_Sphere(
     """
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
-    sphere = make_Ellipsoid(Nvert=Nvert, dim=[diameter] * 3, pos=(0.0, 0.0, 0.0))
+    sphere = make_BaseEllipsoid(
+        Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
+    )
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, pos, style, **kwargs,
+        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -607,14 +309,14 @@ def make_Pixels(positions, size=1) -> dict:
     Creates the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    pixels = [make_BaseCuboid(pos=p, dim=[size] * 3) for p in positions]
+    pixels = [make_BaseCuboid(position=p, dimension=[size] * 3) for p in positions]
     return merge_mesh3d(*pixels)
 
 
 def make_Sensor(
     pixel=(0.0, 0.0, 0.0),
-    dim=(1.0, 1.0, 1.0),
-    pos=(0.0, 0.0, 0.0),
+    dimension=(1.0, 1.0, 1.0),
+    position=(0.0, 0.0, 0.0),
     orientation=None,
     color=None,
     style=None,
@@ -641,7 +343,10 @@ def make_Sensor(
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
-    dim = np.array([dim] * 3 if isinstance(dim, (float, int)) else dim[:3], dtype=float)
+    dim = np.array(
+        [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
+        dtype=float,
+    )
     if autosize is not None:
         dim *= autosize
     if np.squeeze(pixel).ndim == 1:
@@ -670,12 +375,12 @@ def make_Sensor(
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
         hull_dim[hull_dim == 0] = pixel_dim / 2
-        hull_mesh = make_BaseCuboid(pos=hull_pos, dim=hull_dim)
+        hull_mesh = make_BaseCuboid(position=hull_pos, dimension=hull_dim)
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     sensor = merge_mesh3d(*meshes_to_merge)
     return _update_mag_mesh(
-        sensor, name, name_suffix, orientation=orientation, position=pos, **kwargs
+        sensor, name, name_suffix, orientation=orientation, position=position, **kwargs
     )
 
 
@@ -702,76 +407,19 @@ def _update_mag_mesh(
                 color_middle = kwargs.get("color", None)
             elif color.mode == "bicolor":
                 color_middle = False
-            mesh_dict["colorscale"] = _getColorscale(
+            mesh_dict["colorscale"] = getColorscale(
                 color_transition=color.transition,
                 color_north=color.north,
                 color_middle=color_middle,
                 color_south=color.south,
             )
-            mesh_dict["intensity"] = _getIntensity(
+            mesh_dict["intensity"] = getIntensity(
                 vertices=vertices, axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
         mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
-
-
-def merge_mesh3d(*traces):
-    """
-    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cummulate the
-    indices of each object in order to point to the right vertices in the concatenated vertices.
-    `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also get
-    concatenated if they are present in all objects. All other parameter found in the dictionary
-    keys are taken from the first object, other keys from further objects are ignored.
-    """
-    merged_trace = {}
-    L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
-    for k in "ijk":
-        if k in traces[0]:
-            merged_trace[k] = np.hstack([b[k] + l for b, l in zip(traces, L)])
-    for k in "xyz":
-        merged_trace[k] = np.concatenate([b[k] for b in traces])
-    for k in ("intensity", "facecolor"):
-        if k in traces[0] and traces[0][k] is not None:
-            merged_trace[k] = np.hstack([b[k] for b in traces])
-    for k, v in traces[0].items():
-        if k not in merged_trace:
-            merged_trace[k] = v
-    return merged_trace
-
-
-def merge_scatter3d(*traces):
-    """
-    Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
-    `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
-    the first object, other keys from further objects are ignored.
-    """
-    merged_trace = {}
-    for k in "xyz":
-        merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
-    for k, v in traces[0].items():
-        if k not in merged_trace:
-            merged_trace[k] = v
-    return merged_trace
-
-
-def merge_traces(*traces):
-    """
-    Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
-    All traces have be of the same type when merging. Keys are taken from the first object, other
-    keys from further objects are ignored.
-    """
-    if len(traces) > 1:
-        if traces[0]["type"] == "mesh3d":
-            trace = merge_mesh3d(*traces)
-        elif traces[0]["type"] == "scatter3d":
-            trace = merge_scatter3d(*traces)
-    elif len(traces) == 1:
-        trace = traces[0]
-    else:
-        trace = []
-    return trace
 
 
 def get_name_and_suffix(default_name, default_suffix, style):
@@ -792,6 +440,9 @@ def get_plotly_traces(
     path_numbering=False,
     color=None,
     autosize=None,
+    legendgroup=None,
+    showlegend=None,
+    legendtext=None,
     **kwargs,
 ) -> list:
     """
@@ -827,6 +478,7 @@ def get_plotly_traces(
     style_color = getattr(style, "color", None)
     kwargs["color"] = style_color if style_color is not None else color
     kwargs["opacity"] = style.opacity
+    legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
 
     if hasattr(style, "magnetization"):
         if style.magnetization.show:
@@ -859,14 +511,14 @@ def get_plotly_traces(
     else:
         if isinstance(input_obj, Sensor):
             kwargs.update(
-                dim=getattr(input_obj, "dimension", style.size),
+                dimension=getattr(input_obj, "dimension", style.size),
                 pixel=getattr(input_obj, "pixel", (0.0, 0.0, 0.0)),
                 autosize=autosize,
             )
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dim=input_obj.dimension,
+                mag=input_obj.magnetization, dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -908,9 +560,11 @@ def get_plotly_traces(
                 diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
+        elif getattr(input_obj, "_object_type", None) == "Collection":
+            make_func = None
         else:
-            kwargs.update(name=type(input_obj).__name__)
-            make_func = make_UnsupportedObject
+            kwargs.update(obj=input_obj)
+            make_func = make_DefaultTrace
 
         path_traces = []
         path_traces_extra = {}
@@ -921,8 +575,10 @@ def get_plotly_traces(
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
-            if style.model3d.show:
-                path_traces.append(make_func(pos=pos, orientation=orient, **kwargs))
+            if style.model3d.show and make_func is not None:
+                path_traces.append(
+                    make_func(position=pos, orientation=orient, **kwargs)
+                )
             for extr in extra_model3d_traces:
                 if extr.show:
                     trace3d = {}
@@ -955,15 +611,22 @@ def get_plotly_traces(
             )
             extra_model3d_trace.update(
                 {
-                    "legendgroup": f"{input_obj}",
-                    "showlegend": not style.model3d.show and ind == 0,
+                    "legendgroup": legendgroup,
+                    "showlegend": showlegend and ind == 0 and not trace,
                     "name": name,
                 }
             )
             traces.append(extra_model3d_trace)
 
         if trace:
-            trace.update({"legendgroup": f"{input_obj}", "showlegend": True})
+            trace.update(
+                {
+                    "legendgroup": legendgroup,
+                    "showlegend": True if showlegend is None else showlegend,
+                }
+            )
+            if legendtext is not None:
+                trace["name"] = legendtext
             traces.append(trace)
 
         if (
@@ -971,41 +634,373 @@ def get_plotly_traces(
             and show_path is not False
             and style.path.show is not False
         ):
-            x, y, z = input_obj.position.T
-            txt_kwargs = (
-                {"mode": "markers+text+lines", "text": list(range(len(x)))}
-                if path_numbering
-                else {"mode": "markers+lines"}
-            )
-            marker = style.path.marker.as_dict()
-            symb = marker["symbol"]
-            marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-            marker["color"] = (
-                kwargs["color"] if marker["color"] is None else marker["color"]
-            )
-            marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
-            line = style.path.line.as_dict()
-            dash = line["style"]
-            line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
-            line["color"] = kwargs["color"] if line["color"] is None else line["color"]
-            line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
-            line = {k: v for k, v in line.items() if k != "style"}
-            scatter_path = dict(
-                type="scatter3d",
-                x=x,
-                y=y,
-                z=z,
-                name=f"Path: {input_obj}",
-                showlegend=False,
-                legendgroup=f"{input_obj}",
-                marker=marker,
-                line=line,
-                **txt_kwargs,
-                opacity=kwargs["opacity"],
+            scatter_path = make_path(
+                input_obj, path_numbering, style, legendgroup, kwargs
             )
             traces.append(scatter_path)
 
     return traces
+
+
+def make_path(input_obj, path_numbering, style, legendgroup, kwargs):
+    """draw obj path based on path style properties"""
+    x, y, z = input_obj.position.T
+    txt_kwargs = (
+        {"mode": "markers+text+lines", "text": list(range(len(x)))}
+        if path_numbering
+        else {"mode": "markers+lines"}
+    )
+    marker = style.path.marker.as_dict()
+    symb = marker["symbol"]
+    marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+    marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
+    marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+    line = style.path.line.as_dict()
+    dash = line["style"]
+    line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+    line["color"] = kwargs["color"] if line["color"] is None else line["color"]
+    line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line = {k: v for k, v in line.items() if k != "style"}
+    scatter_path = dict(
+        type="scatter3d",
+        x=x,
+        y=y,
+        z=z,
+        name=f"Path: {input_obj}",
+        showlegend=False,
+        legendgroup=legendgroup,
+        marker=marker,
+        line=line,
+        **txt_kwargs,
+        opacity=kwargs["opacity"],
+    )
+    return scatter_path
+
+
+def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -> Tuple:
+    """
+    Creates traces from input `objs` and provided parameters, updates the size of objects like
+    Sensors and Dipoles in `kwargs` depending on the canvas size.
+
+    Returns
+    -------
+    traces_dicts, kwargs: dict, dict
+        returns the traces in a obj/traces_list dictionary and updated kwargs
+    """
+    return_autosize = False
+    Sensor = _src.obj_classes.Sensor
+    Dipole = _src.obj_classes.Dipole
+    traces_dicts = {}
+    traces_colors = {}
+    for obj, color in zip(objs, cycle(color_sequence)):
+        if isinstance(obj, (Dipole, Sensor)):
+            traces_colors[obj] = color
+            # temporary coordinates to be able to calculate ranges
+            x, y, z = obj.position.T
+            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
+        subobjs = [obj]
+        legendgroup = None
+        if getattr(obj, "children", None) is not None:
+            subobjs = obj.children
+            legendgroup = f"{obj}"
+            if getattr(obj, "position", None) is not None:
+                subobjs += [obj]
+                color = color if obj.style.color is None else obj.style.color
+        first_shown = False
+        for ind, subobj in enumerate(subobjs):
+            if legendgroup is not None:
+                if (subobj.style.model3d.show and not first_shown) or ind == len(
+                    subobjs
+                ):  # take name of parent
+                    first_shown = True
+                    showlegend = True
+                    legendtext = getattr(getattr(obj, "style", None), "name", None)
+                    legendtext = (
+                        getattr(obj, "name", None) if legendtext is None else legendtext
+                    )
+                    legendtext = f"{obj!r}" if legendtext is None else legendtext
+                else:
+                    legendtext = None
+                    showlegend = False
+            else:
+                showlegend = True
+                legendtext = None
+            traces_dicts[subobj] = get_plotly_traces(
+                subobj,
+                show_path=show_path,
+                color=color,
+                legendgroup=legendgroup,
+                showlegend=showlegend,
+                legendtext=legendtext,
+                **kwargs,
+            )
+    traces = [t for tr in traces_dicts.values() for t in tr]
+    ranges = get_scene_ranges(*traces, zoom=zoom)
+    if autosize is None or autosize == "return":
+        if autosize == "return":
+            return_autosize = True
+        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+    for obj, color in traces_colors.items():
+        traces_dicts[obj] = get_plotly_traces(
+            obj, show_path=show_path, color=color, autosize=autosize, **kwargs
+        )
+    if return_autosize:
+        res = traces_dicts, autosize
+    else:
+        res = traces_dicts
+    return res
+
+
+def apply_fig_ranges(fig, ranges=None, zoom=None):
+    """This is a helper function which applies the ranges properties of the provided `fig` object
+    according to a certain zoom level. All three space direction will be equal and match the
+    maximum of the ranges needed to display all objects, including their paths.
+
+    Parameters
+    ----------
+    ranges: array of dimension=(3,2)
+        min and max graph range
+
+    zoom: float, default = 1
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    Returns
+    -------
+    None: NoneType
+    """
+    if ranges is None:
+        frames = fig.frames if fig.frames else [fig]
+        traces = [t for frame in frames for t in frame.data]
+        ranges = get_scene_ranges(*traces, zoom=zoom)
+    fig.update_scenes(
+        **{
+            f"{k}axis": dict(range=ranges[i], autorange=False, title=f"{k} [mm]")
+            for i, k in enumerate("xyz")
+        },
+        aspectratio={k: 1 for k in "xyz"},
+        aspectmode="manual",
+        camera_eye={"x": 1, "y": -1.5, "z": 1.4},
+    )
+
+
+def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
+    """
+    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
+    any plotly trace object or a dict, with x,y,z numbered parameters.
+    """
+    if traces:
+        ranges = {k: [] for k in "xyz"}
+        for t in traces:
+            for k, v in ranges.items():
+                v.extend(
+                    [
+                        np.nanmin(np.array(t[k], dtype=float)),
+                        np.nanmax(np.array(t[k], dtype=float)),
+                    ]
+                )
+        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
+        size = np.diff(r, axis=1)
+        size[size == 0] = 1
+        m = size.max() / 2
+        center = r.mean(axis=1)
+        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    else:
+        ranges = np.array([[-1.0, 1.0]] * 3)
+    return ranges
+
+
+def animate_path(
+    fig,
+    objs,
+    color_sequence=None,
+    zoom=1,
+    title="3D-Paths Animation",
+    animate_time=3,
+    animate_fps=30,
+    animate_slider=False,
+    **kwargs,
+):
+    """This is a helper function which attaches plotly frames to the provided `fig` object
+    according to a certain zoom level. All three space direction will be equal and match the
+    maximum of the ranges needed to display all objects, including their paths.
+
+    Parameters
+    ----------
+    animate_time: float, default = 3
+        Sets the animation duration
+
+    animate_fps: float, default = 30
+        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
+        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
+        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
+        50 by default to avoid hanging the animation process.
+
+    animate_slider: bool, default = False
+        if True, an interactive slider will be displayed and stay in sync with the animation
+
+    title: str, default = "3D-Paths Animation"
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    color_sequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+
+    Returns
+    -------
+    None: NoneTyp
+    """
+    # make sure the number of frames does not exceed the max frames and max frame rate
+    # downsample if necessary
+    path_lengths = []
+    for obj in objs:
+        subobjs = [obj]
+        if getattr(obj, "_object_type", None) == "Collection":
+            subobjs.extend(obj.children)
+        for subobj in subobjs:
+            path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
+            path_lengths.append(path_len)
+
+    max_pl = max(path_lengths)
+    maxfps = Config.display.animation.maxfps
+    maxframes = Config.display.animation.maxframes
+    if animate_fps > maxfps:
+        warnings.warn(
+            f"The set `animate_fps` at {animate_fps} is greater than the max allowed of {maxfps}. "
+            f"`animate_fps` will be set to {maxfps}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxfps`"
+        )
+        animate_fps = maxfps
+
+    maxpos = min(animate_time * animate_fps, maxframes)
+
+    if max_pl <= maxpos:
+        path_indices = np.arange(max_pl)
+    else:
+        round_step = max_pl / (maxpos - 1)
+        ar = np.linspace(0, max_pl, max_pl, endpoint=False)
+        path_indices = np.unique(np.floor(ar / round_step) * round_step).astype(
+            int
+        )  # downsampled indices
+        path_indices[-1] = (
+            max_pl - 1
+        )  # make sure the last frame is the last path position
+
+    # calculate exponent of last frame index to avoid digit shift in
+    # frame number display during animation
+    exp = (
+        np.log10(path_indices.max()).astype(int) + 1
+        if path_indices.ndim != 0 and path_indices.max() > 0
+        else 1
+    )
+
+    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
+    new_fps = int(1000 / frame_duration)
+    if max_pl > maxframes:
+        warnings.warn(
+            f"The number of frames ({max_pl}) is greater than the max allowed "
+            f"of {maxframes}. The `animate_fps` will be set to {new_fps}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxframes`"
+        )
+
+    if animate_slider:
+        sliders_dict = {
+            "active": 0,
+            "yanchor": "top",
+            "font": {"size": 10},
+            "xanchor": "left",
+            "currentvalue": {
+                "prefix": f"Fps={new_fps}, Path index: ",
+                "visible": True,
+                "xanchor": "right",
+            },
+            "pad": {"b": 10, "t": 10},
+            "len": 0.9,
+            "x": 0.1,
+            "y": 0,
+            "steps": [],
+        }
+
+    buttons_dict = {
+        "buttons": [
+            {
+                "args": [
+                    None,
+                    {
+                        "frame": {"duration": frame_duration},
+                        "transition": {"duration": 0},
+                        "fromcurrent": True,
+                    },
+                ],
+                "label": "Play",
+                "method": "animate",
+            },
+            {
+                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
+                "label": "Pause",
+                "method": "animate",
+            },
+        ],
+        "direction": "left",
+        "pad": {"r": 10, "t": 20},
+        "showactive": False,
+        "type": "buttons",
+        "x": 0.1,
+        "xanchor": "right",
+        "y": 0,
+        "yanchor": "top",
+    }
+
+    # create frame for each path index or downsampled path index
+    frames = []
+    autosize = "return"
+    for i, ind in enumerate(path_indices):
+        frame = draw_frame(
+            objs, color_sequence, zoom, show_path=[ind], autosize=autosize, **kwargs,
+        )
+        if i == 0:  # get the dipoles and sensors autosize from first frame
+            traces_dicts, autosize = frame
+        else:
+            traces_dicts = frame
+        traces = [t for tr in traces_dicts.values() for t in tr]
+        frames.append(
+            go.Frame(
+                data=traces,
+                name=str(ind + 1),
+                layout=dict(title=f"""{title} - path index: {ind+1:0{exp}d}"""),
+            )
+        )
+        if animate_slider:
+            slider_step = {
+                "args": [
+                    [str(ind + 1)],
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
+                ],
+                "label": str(ind + 1),
+                "method": "animate",
+            }
+            sliders_dict["steps"].append(slider_step)
+
+    # update fig
+    fig.frames = frames
+    fig.add_traces(frames[0].data)
+    fig.update_layout(
+        height=None,
+        title=title,
+        updatemenus=[buttons_dict],
+        sliders=[sliders_dict] if animate_slider else None,
+    )
+    apply_fig_ranges(fig, zoom=zoom)
 
 
 def display_plotly(
@@ -1113,8 +1108,11 @@ def display_plotly(
         color_sequence = Config.display.colorsequence
 
     with fig.batch_update():
+        flat_obj_list = format_obj_input(obj_list)
         if (
-            not any(getattr(obj, "position", np.array([])).ndim > 1 for obj in obj_list)
+            not any(
+                getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
+            )
             and show_path == "animate"
         ):  # check if some path exist for any object
             show_path = True
@@ -1137,307 +1135,10 @@ def display_plotly(
             traces_dicts = draw_frame(
                 obj_list, color_sequence, zoom, show_path, **kwargs
             )
-            traces = [t for obj in obj_list for t in traces_dicts[obj]]
+            traces = [t for traces in traces_dicts.values() for t in traces]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
             apply_fig_ranges(fig, zoom=zoom)
         fig.update_layout(legend_itemsizing="constant")
     if show_fig:
         fig.show(renderer=renderer)
-
-
-def draw_frame(
-    objs, color_sequence, zoom, show_path, return_autosize=False, **kwargs
-) -> Tuple:
-    """
-    Creates traces from input `objs` and provided parameters, updates the size of objects like
-    Sensors and Dipoles in `kwargs` depending on the canvas size.
-
-    Returns
-    -------
-    traces_dicts, kwargs: dict, dict
-        returns the traces in a obj/traces_list dictionary and updated kwargs
-    """
-    Sensor = _src.obj_classes.Sensor
-    Dipole = _src.obj_classes.Dipole
-    traces_dicts = {}
-    traces_colors = {}
-    for obj, color in zip(objs, cycle(color_sequence)):
-        if not isinstance(obj, (Dipole, Sensor)):
-            traces_dicts[obj] = get_plotly_traces(
-                obj, show_path=show_path, color=color, **kwargs
-            )
-        else:
-            traces_colors[obj] = color
-            # temporary coordinates to be able to calculate ranges
-            x, y, z = obj.position.T
-            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
-    traces = [t for tr in traces_dicts.values() for t in tr]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
-    autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
-    for obj, color in traces_colors.items():
-        traces_dicts[obj] = get_plotly_traces(
-            obj, show_path=show_path, color=color, autosize=autosize, **kwargs
-        )
-    if return_autosize:
-        res = traces_dicts, autosize
-    else:
-        res = traces_dicts
-    return res
-
-
-def apply_fig_ranges(fig, ranges=None, zoom=None):
-    """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a certain zoom level. All three space direction will be equal and match the
-    maximum of the ranges needed to display all objects, including their paths.
-
-    Parameters
-    ----------
-    ranges: array of dim=(3,2)
-        min and max graph range
-
-    zoom: float, default = 1
-        When zoom=0 all objects are just inside the 3D-axes.
-
-    Returns
-    -------
-    None: NoneType
-    """
-    if ranges is None:
-        frames = fig.frames if fig.frames else [fig]
-        traces = [t for frame in frames for t in frame.data]
-        ranges = get_scene_ranges(*traces, zoom=zoom)
-    fig.update_scenes(
-        **{
-            f"{k}axis": dict(range=ranges[i], autorange=False, title=f"{k} [mm]")
-            for i, k in enumerate("xyz")
-        },
-        aspectratio={k: 1 for k in "xyz"},
-        aspectmode="manual",
-        camera_eye={"x": 1, "y": -1.5, "z": 1.4},
-    )
-
-
-def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
-    """
-    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
-    any plotly trace object or a dict, with x,y,z numbered parameters.
-    """
-    if traces:
-        ranges = {k: [] for k in "xyz"}
-        for t in traces:
-            for k, v in ranges.items():
-                v.extend(
-                    [
-                        np.nanmin(np.array(t[k], dtype=float)),
-                        np.nanmax(np.array(t[k], dtype=float)),
-                    ]
-                )
-        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
-        size = np.diff(r, axis=1)
-        size[size == 0] = 1
-        m = size.max() / 2
-        center = r.mean(axis=1)
-        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    else:
-        ranges = np.array([[-1.0, 1.0]] * 3)
-    return ranges
-
-
-def animate_path(
-    fig,
-    objs,
-    color_sequence=None,
-    zoom=1,
-    title="3D-Paths Animation",
-    animate_time=3,
-    animate_fps=30,
-    animate_slider=False,
-    **kwargs,
-):
-    """This is a helper function which attaches plotly frames to the provided `fig` object
-    according to a certain zoom level. All three space direction will be equal and match the
-    maximum of the ranges needed to display all objects, including their paths.
-
-    Parameters
-    ----------
-    animate_time: float, default = 3
-        Sets the animation duration
-
-    animate_fps: float, default = 30
-        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
-        50 by default to avoid hanging the animation process.
-
-    animate_slider: bool, default = False
-        if True, an interactive slider will be displayed and stay in sync with the animation
-
-    title: str, default = "3D-Paths Animation"
-        When zoom=0 all objects are just inside the 3D-axes.
-
-    color_sequence: list or array_like, iterable, default=
-            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
-            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
-            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
-            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-    Returns
-    -------
-    None: NoneTyp
-    """
-    # make sure the number of frames does not exceed the max frames and max frame rate
-    # downsample if necessary
-    path_lengths = [
-        getattr(obj, "position", np.array((0.0, 0.0, 0.0))).shape[0]
-        if getattr(obj, "position", np.array((0.0, 0.0, 0.0))).ndim > 1
-        else 0
-        for obj in objs
-    ]
-    max_pl = max(path_lengths)
-    maxfps = Config.display.animation.maxfps
-    maxframes = Config.display.animation.maxframes
-    if animate_fps > maxfps:
-        warnings.warn(
-            f"The set `animate_fps` at {animate_fps} is greater than the max allowed of {maxfps}. "
-            f"`animate_fps` will be set to {maxfps}. "
-            f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxfps`"
-        )
-        animate_fps = maxfps
-
-    maxpos = min(animate_time * animate_fps, maxframes)
-
-    if max_pl <= maxpos:
-        path_indices = np.arange(max_pl)
-    else:
-        round_step = max_pl / (maxpos - 1)
-        ar = np.linspace(0, max_pl, max_pl, endpoint=False)
-        path_indices = np.unique(np.floor(ar / round_step) * round_step).astype(
-            int
-        )  # downsampled indices
-        path_indices[-1] = (
-            max_pl - 1
-        )  # make sure the last frame is the last path position
-
-    # calculate exponent of last frame index to avoid digit shift in
-    # frame number display during animation
-    exp = (
-        np.log10(path_indices.max()).astype(int) + 1
-        if path_indices.ndim != 0 and path_indices.max() > 0
-        else 1
-    )
-
-    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
-    new_fps = int(1000 / frame_duration)
-    if max_pl > maxframes:
-        warnings.warn(
-            f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {maxframes}. The `animate_fps` will be set to {new_fps}. "
-            f"You can modify the default value by setting it in "
-            "`magpylib.defaults.display.animation.maxframes`"
-        )
-
-    if animate_slider:
-        sliders_dict = {
-            "active": 0,
-            "yanchor": "top",
-            "font": {"size": 10},
-            "xanchor": "left",
-            "currentvalue": {
-                "prefix": f"Fps={new_fps}, Path index: ",
-                "visible": True,
-                "xanchor": "right",
-            },
-            "pad": {"b": 10, "t": 10},
-            "len": 0.9,
-            "x": 0.1,
-            "y": 0,
-            "steps": [],
-        }
-
-    buttons_dict = {
-        "buttons": [
-            {
-                "args": [
-                    None,
-                    {
-                        "frame": {"duration": frame_duration},
-                        "transition": {"duration": 0},
-                        "fromcurrent": True,
-                    },
-                ],
-                "label": "Play",
-                "method": "animate",
-            },
-            {
-                "args": [[None], {"frame": {"duration": 0}, "mode": "immediate"}],
-                "label": "Pause",
-                "method": "animate",
-            },
-        ],
-        "direction": "left",
-        "pad": {"r": 10, "t": 20},
-        "showactive": False,
-        "type": "buttons",
-        "x": 0.1,
-        "xanchor": "right",
-        "y": 0,
-        "yanchor": "top",
-    }
-
-    # create frame for each path index or downsampled path index
-    frames = []
-    for i, ind in enumerate(path_indices):
-        if i == 0:  # calculate the dipoles and sensors autosize from first frame
-            traces_dicts, autosize = draw_frame(
-                objs,
-                color_sequence,
-                zoom,
-                show_path=[ind],
-                return_autosize=True,
-                **kwargs,
-            )
-        else:
-            traces_dicts = {
-                obj: get_plotly_traces(
-                    obj, show_path=[ind], color=color, autosize=autosize, **kwargs
-                )
-                for obj, color in zip(objs, cycle(color_sequence))
-            }
-        traces = [t for tr in traces_dicts.values() for t in tr]
-        frames.append(
-            go.Frame(
-                data=traces,
-                name=str(ind + 1),
-                layout=dict(title=f"""{title} - path index: {ind+1:0{exp}d}"""),
-            )
-        )
-        if animate_slider:
-            slider_step = {
-                "args": [
-                    [str(ind + 1)],
-                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
-                ],
-                "label": str(ind + 1),
-                "method": "animate",
-            }
-            sliders_dict["steps"].append(slider_step)
-
-    # update fig
-    fig.frames = frames
-    fig.add_traces(frames[0].data)
-    fig.update_layout(
-        height=None,
-        title=title,
-        updatemenus=[buttons_dict],
-        sliders=[sliders_dict] if animate_slider else None,
-    )
-    apply_fig_ranges(fig, zoom=zoom)
