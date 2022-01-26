@@ -693,7 +693,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
         subobjs = [obj]
         legendgroup = None
         if getattr(obj, "children", None) is not None:
-            subobjs = [*obj.children]
+            subobjs.extend(obj.children)
             legendgroup = f"{obj}"
             if getattr(obj, "position", None) is not None:
                 color = color if obj.style.color is None else obj.style.color
