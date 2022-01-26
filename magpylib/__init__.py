@@ -23,7 +23,7 @@ Original software publication (version 2):
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 Introduction (version 4.0.0dev)
-----------------------------
+-------------------------------
 Magpylib uses units of
 
     - [mT]: for the B-field and the magnetization (mu0*M).
