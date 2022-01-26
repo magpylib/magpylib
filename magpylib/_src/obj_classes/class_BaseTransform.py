@@ -486,14 +486,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
-        
+
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
-        
+
         >>> s.rotate_from_angax(45, (0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
@@ -590,14 +590,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
-        
+
         >>> print(s.position)
         >>> print(s.orientation.as_rotvec())
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
-        
+
         >>> s.rotate_from_rotvec((0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_rotvec())
@@ -648,14 +648,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
-        
+
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
-        
+
         >>> s.rotate_from_euler('z', 45, anchor=0, degrees=True)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
@@ -698,7 +698,7 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
-        
+
         >>> print(s.position)
         >>> print(s.orientation.as_matrix())
         [1. 0. 0.]
@@ -707,7 +707,7 @@ class BaseTransform:
          [0. 0. 1.]]
 
         rotate and print resulting position and orientation
-        
+
         >>> s.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)], anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_matrix())
@@ -751,14 +751,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
-        
+
         >>> print(s.position)
         >>> print(s.orientation.as_mrp())
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
-        
+
         >>> s.rotate_from_mrp((0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_mrp())
