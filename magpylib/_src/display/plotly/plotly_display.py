@@ -1,4 +1,4 @@
-""" plolty draw-functionalities"""
+""" plotly draw-functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 

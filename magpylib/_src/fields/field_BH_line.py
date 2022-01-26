@@ -163,13 +163,13 @@ def field_BH_line(
 
     field = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
 
-    if any_on_line_cases: # brodcast into np.zeros
+    if any_on_line_cases: # broadcast into np.zeros
         n1 = len(mask1)
         fields1 = np.zeros((n1,3))
         fields1[not_mask1] = field
         field = fields1
 
-    if any_zero_segments: # brodcast into np.zeros
+    if any_zero_segments: # broadcast into np.zeros
         n0 = len(mask0)
         fields0 = np.zeros((n0,3))
         fields0[not_mask0] = field

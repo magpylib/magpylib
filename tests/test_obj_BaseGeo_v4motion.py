@@ -331,7 +331,7 @@ def test_BaseGeo_multianchor_rotation(
     expected_position,
     expected_orientation_rotvec,
 ):
-    """testing BaseGeo multi ancho rotations"""
+    """testing BaseGeo multi anchor rotations"""
     print(description)
     # print(locals())
     if init_orientation_rotvec is None:

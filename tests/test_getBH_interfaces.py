@@ -3,7 +3,7 @@ import magpylib as magpy
 
 
 def test_getB_interfaces1():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
@@ -36,7 +36,7 @@ def test_getB_interfaces1():
 
 
 def test_getB_interfaces2():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
@@ -62,7 +62,7 @@ def test_getB_interfaces2():
 
 
 def test_getB_interfaces3():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     src = magpy.magnet.Cuboid((1,2,3), (1,2,3))
     src.move(np.linspace((.1,.2,.3), (1,2,3), 10), start=-1)
@@ -92,7 +92,7 @@ def test_getB_interfaces3():
 
 
 def test_getH_interfaces1():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)
@@ -129,7 +129,7 @@ def test_getH_interfaces1():
 
 
 def test_getH_interfaces2():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)
@@ -159,7 +159,7 @@ def test_getH_interfaces2():
 
 
 def test_getH_interfaces3():
-    """ self-consitent test of different possibilities for computing the field
+    """ self-consistent test of different possibilities for computing the field
     """
     mag=(22,-33,44)
     dim=(3,2,3)

@@ -36,7 +36,7 @@ The line-current solutions give the exact same field as outside of a wire which 
 
 Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials). For more details check out the {ref}`physComp` section.
 
-Magpylib only provides solutions for simple forms. However, in Magnetostatics the superposition principle holds: the total magnetic field is given by the (vector-)sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one.
+Magpylib only provides solutions for simple forms. However, in magnetostatics the superposition principle holds: the total magnetic field is given by the (vector-)sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one.
 
 (docu-magpylib-objects)=
 
@@ -81,7 +81,7 @@ for obj in [src1, src2, src3, src4, src5, src6, src7, sens]:
 
 ## Position and orientation
 
-All Magpylib objects are endowed with `position` `(ndarray, shape (m,3))` and `orientation` `(` [scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) `, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective docstrings.
+All Magpylib objects are endowed with `position` `(ndarray, shape (m,3))` and `orientation` `(` [scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) `, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective [docstrings](https://www.python.org/dev/peps/pep-0257/).
 
 ```python
 import magpylib as magpy
@@ -134,7 +134,7 @@ print(src.position)
 # out: [[0. 0. 0.]  [1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]  [4. 4. 4.]]
 ```
 
-Details on rotation arguments, and how to conveniently generate complex paths are found in the docstings and some examples below.
+Details on rotation arguments, and how to conveniently generate complex paths are found in the docstrings and some examples below.
 
 (docu-grouping-objects)=
 
@@ -244,7 +244,7 @@ import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
 
-# define Pyplot figure
+# define pyplot figure
 fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(10,5))
 
 # define Magpylib source
@@ -281,7 +281,7 @@ plt.show()
 .. plot:: _codes/doc_fieldBH.py
 ```
 
-The output of the most general field computation through the top level function `magpylib.getB(sources, observers)` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the pathlength, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or shape of position vector and `3` the three magnetic field components `(Bx,By,Bz)`.
+The output of the most general field computation through the top level function `magpylib.getB(sources, observers)` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or shape of position vector and `3` the three magnetic field components `(Bx,By,Bz)`.
 
 ```python
 import magpylib as magpy
@@ -317,7 +317,7 @@ The `magpylib.getB_dict` and `magpylib.getH_dict` top-level functions avoid the 
 import magpylib as magpy
 
 # observer positions
-poso = [(0,0,x) for x in range(5)]
+obs_pos = [(0,0,x) for x in range(5)]
 
 # magnet dimensions
 dim = [(d,d,d) for d in range(1,6)]
@@ -327,7 +327,7 @@ B = magpy.getB_dict(
     source_type='Cuboid',
     magnetization=(0,0,1000),
     dimension=dim,
-    observer=poso)
+    observer=obs_pos)
 print(B)
 
 # out: [[  0.           0.         666.66666667]
@@ -351,9 +351,9 @@ import magpylib as magpy
 
 mag = np.array([(100,0,0)]*5)
 dim = np.array([(1,2,45,90,-1,1)]*5)
-poso = np.array([(0,0,0)]*5)
+obs_pos = np.array([(0,0,0)]*5)
 
-B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, poso)
+B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
 print(B)
 
 # out: [[   0.           0.        -186.1347833]

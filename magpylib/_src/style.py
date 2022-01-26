@@ -199,7 +199,7 @@ class Base(BaseStyle):
 
     @property
     def model3d(self):
-        """3d object reprensation properties"""
+        """3d object representation properties"""
         return self._model3d
 
     @model3d.setter
@@ -288,7 +288,7 @@ class Model3d(MagicProperties):
 
     @property
     def extra(self):
-        """extra 3d object reprensation (trace or list of traces)"""
+        """extra 3d object representation (trace or list of traces)"""
         return self._extra
 
     @extra.setter

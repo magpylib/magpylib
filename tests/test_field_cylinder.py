@@ -329,7 +329,7 @@ def test_cylinder_slanovc_field3():
 
 def test_cylinder_rauber_field4():
     """
-    test continuiuty across indefinite form in cylinder_rauber field when observer at r=r0
+    test continuity across indefinite form in cylinder_rauber field when observer at r=r0
     """
     src = magpy.magnet.Cylinder((22, 33, 0), (2, 2))
     es = list(10 ** -np.linspace(11, 15, 50))
@@ -389,4 +389,3 @@ def test_cylinder_tile_vs_fem():
     assert np.amax((fd2[5:-5, 1:] * 1000 - B2[5:-5]).T / amp2[5:-5]) < 0.05
     assert np.amax((fd3[:, 1:] * 1000 - B3).T / amp3) < 0.05
     assert np.amax((fd4[:, 1:] * 1000 - B4).T / amp4) < 0.05
-
