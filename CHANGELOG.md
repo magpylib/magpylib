@@ -28,7 +28,7 @@ This is a major update that includes
 - `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
 - `Collection` has it's own `position`, `orientation` and `style`. This is useful to build compound objects. ([#444](https://github.com/magpylib/magpylib/issues/444))
 - All scipy Rotation forms are now also object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
-- The new `absolute` argument for the `move` method enables the absolute positioning in the global cooradinate system ([#444](https://github.com/magpylib/magpylib/issues/444))
+- The new `absolute` argument for the `move` method enables the absolute positioning in the global coordinate system ([#444](https://github.com/magpylib/magpylib/issues/444))
 
 
 ### Changed
@@ -44,7 +44,7 @@ This is a major update that includes
   - `show_path` ➡️ `path`
   - `size_sensors`&`size_dipoles` ➡️ `style_size`
   - `size_direction` ➡️ `style_magnetization_size`
-- `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply fullpath if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
+- `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 
 ### Updated
 - Computation:
