@@ -59,7 +59,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     >>> external_field.rotate_from_angax(90, 'z')
     >>> B = external_field.getB([[1,2,3],[4,5,6]])
-    >>> print(B) # Notice the outut field is now pointing in y-direction
+    >>> print(B) # Notice the output field is now pointing in y-direction
     [[0. 1. 0.]
      [0. 1. 0.]]
     """

@@ -184,7 +184,7 @@ def test_sensor_rotation1():
 
 
 def test_sensor_rotation2():
-    """ test sensor roations with different combinations of inputs mag/col + sens/pos
+    """ test sensor rotations with different combinations of inputs mag/col + sens/pos
     """
     src = magpy.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
     src2 = magpy.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
@@ -285,7 +285,7 @@ def test_object_tiling():
 
 
 def test_squeeze_sumup():
-    """ make sure that sumup doesnt lead to fals output shape
+    """ make sure that sumup does not lead to false output shape
     """
 
     s = magpy.Sensor(pixel=(1,2,3))

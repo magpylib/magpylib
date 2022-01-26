@@ -36,31 +36,31 @@ def init_dim_getBH1():
     src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
     magpy.getB([src1,src2], (1,2,3))
 
-def init_exite_display1():
+def init_excite_display1():
     """throw excitation init error from display"""
     src1 = magpy.current.Loop(diameter=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.display(src1, src2, style_magnetization_show=True, style_arrow_show=True)
 
-def init_exite_getBH1():
+def init_excite_getBH1():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(diameter=1, current=1)
     src2 = magpy.magnet.Sphere(diameter=2)
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH2():
+def init_excite_getBH2():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.magnet.Cuboid(dimension=(1,2,3))
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH3():
+def init_excite_getBH3():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.current.Line(vertices=[(1,2,3),(2,3,4)])
     magpy.getB([src1, src2], (1,2,3))
 
-def init_exite_getBH4():
+def init_excite_getBH4():
     """throw excitation init error from getB"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.misc.Dipole()
@@ -278,11 +278,11 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibMissingInput, init_dim_display2)
         self.assertRaises(MagpylibMissingInput, init_dim_display3)
         self.assertRaises(MagpylibMissingInput, init_dim_getBH1)
-        self.assertRaises(MagpylibMissingInput, init_exite_display1)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH1)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH2)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH3)
-        self.assertRaises(MagpylibMissingInput, init_exite_getBH4)
+        self.assertRaises(MagpylibMissingInput, init_excite_display1)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH1)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH2)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH3)
+        self.assertRaises(MagpylibMissingInput, init_excite_getBH4)
 
     def test_BaseGeo(self):
         """ bad BG inputs"""

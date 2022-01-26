@@ -31,7 +31,7 @@ def display(
         Option False shows objects at final path position and hides paths.
         Option True shows objects at final path position and shows object paths.
         Option int i displays the objects at every i'th path position.
-        Option array_like shape (n,) discribes certain path indices. The objects
+        Option array_like shape (n,) describes certain path indices. The objects
         3D-representations are shown at every given path index.
 
     zoom: float, default = 0
@@ -101,7 +101,7 @@ def display(
     obj_list_flat = format_obj_input(objects, allow="sources+sensors")
     obj_list_semi_flat = format_obj_input(objects, allow="sources+sensors+collections")
 
-    # test if all source dimensions and excitations (if sho_direc=True) have been initialized
+    # test if all source dimensions and excitations have been initialized
     check_dimensions(obj_list_flat)
 
     # test if every individual obj_path is good

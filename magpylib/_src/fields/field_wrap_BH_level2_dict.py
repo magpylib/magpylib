@@ -141,7 +141,7 @@ def getB_dict(**kwargs):
     length N.
 
     This function avoids the object-oriented Magpylib interface and gives direct
-    access to the field implementations. It is the fastet way to compute fields
+    access to the field implementations. It is the fastest way to compute fields
     with Magpylib.
 
     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
@@ -244,7 +244,7 @@ def getH_dict(**kwargs):
     length N.
 
     This function avoids the object-oriented Magpylib interface and gives direct
-    access to the field implementations. It is the fastet way to compute fields
+    access to the field implementations. It is the fastest way to compute fields
     with Magpylib.
 
     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to

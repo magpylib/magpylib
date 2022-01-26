@@ -35,7 +35,7 @@ def test_format_getBH_class_inputs():
 
     B1 = pm1.getB(possis)
     B2 = pm1.getB(sens)
-    assert np.allclose(B1,B2), 'pos_obs shold give same as sens'
+    assert np.allclose(B1,B2), 'pos_obs should give same as sens'
 
     B3 = pm1.getB(sens,sens)
     B4 = pm1.getB([sens,sens])

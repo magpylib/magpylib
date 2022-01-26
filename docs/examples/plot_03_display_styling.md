@@ -22,7 +22,7 @@ The default displaying style may not yield by default the visual representation 
 
 ## Hierarchy of arguments
 
-The styling options can be set at the library level, for an individual object directly or via a `Collection` and as an explicity argument in the display function. These settings, are ordered from **lowest** to **highest** precedence as follows:
+The styling options can be set at the library level, for an individual object directly or via a `Collection` and as an explicit argument in the display function. These settings, are ordered from **lowest** to **highest** precedence as follows:
 
 - library `defaults`
 - individual object `style` or at `Collection` level
@@ -68,7 +68,7 @@ Display styles can be set at the library default level at `magpy.defaults.displa
 
 +++ {"jp-MarkdownHeadingCollapsed": true, "tags": []}
 
-#### Changing defaulfts and Magic underscore notation
+#### Changing defaults and Magic underscore notation
 Nested properties can be set with directly by accessing style attributes with the dot notation, or by assigning a dictionary with equivalent keys.
 
 +++
@@ -171,7 +171,7 @@ set object style. It only affects the current representation to be displayed.
 
 +++
 
-The provided styling properties as function arguments will override temporarily the styles set by any of the aforementioned methods. All styling properties need to start with `style` and underscore magic is supported. The object family must be omitted since the style properties set at display time will apply accross object families. Only matching properties to a specific object
+The provided styling properties as function arguments will override temporarily the styles set by any of the aforementioned methods. All styling properties need to start with `style` and underscore magic is supported. The object family must be omitted since the style properties set at display time will apply across object families. Only matching properties to a specific object
 will be applied.
 
 ```{code-cell} ipython3

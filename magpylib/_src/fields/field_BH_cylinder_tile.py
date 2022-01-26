@@ -13,7 +13,7 @@ def arctan_k_tan_2(k, phi):
     """
     help function for periodic continuation
 
-    what is this function doing exactly ? what are the arguement types, ranges, ...
+    what is this function doing exactly ? what are the argument types, ranges, ...
 
     can be replaced by non-masked version ?
     """

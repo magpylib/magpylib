@@ -21,7 +21,7 @@ from magpylib._src.style import get_style
 from magpylib._src.display.display_utility import MagpyMarkers
 
 def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
-    """draw direction of magetization of faced magnets
+    """draw direction of magnetization of faced magnets
 
     Parameters
     ----------
@@ -85,7 +85,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
 
 
 def draw_markers(markers, ax, color, symbol, size):
-    """name = programm"""
+    """draws magpylib markers"""
     ax.plot(
         markers[:, 0],
         markers[:, 1],
@@ -124,15 +124,15 @@ def draw_path(
 
 def draw_faces(faces, col, lw, alpha, ax):
     """draw faces in respective color and return list of vertex-points"""
-    cuboidf = Poly3DCollection(
+    cuboid_faces = Poly3DCollection(
         faces, facecolors=col, linewidths=lw, edgecolors="k", alpha=alpha,
     )
-    ax.add_collection3d(cuboidf)
+    ax.add_collection3d(cuboid_faces)
     return faces
 
 
 def draw_pixel(sensors, ax, col, pixel_col, pixel_size, pixel_symb, show_path):
-    """draw pixels and return a list of pixel-points in gloabl CS"""
+    """draw pixels and return a list of pixel-points in global CS"""
     # pylint: disable=protected-access
 
     # collect sensor and pixel positions in global CS

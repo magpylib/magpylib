@@ -43,7 +43,7 @@ def test_repr2():
 
 def test_Cylinder_getBH():
     """
-    test Cylinder geB and getH with diffeent inputs
+    test Cylinder geB and getH with different inputs
     vs the vectorized form
     """
     mag = (22,33,44)

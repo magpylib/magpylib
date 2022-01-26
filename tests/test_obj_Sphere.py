@@ -60,7 +60,7 @@ def test_Sphere_add():
     src1 = Sphere(magnetization=(1,2,3), diameter=11)
     src2 = Sphere((1,2,3), 11)
     col = src1 + src2
-    assert isinstance(col, Collection), 'adding cuboides fail'
+    assert isinstance(col, Collection), 'adding cuboids fail'
 
 
 def test_Sphere_squeeze():
