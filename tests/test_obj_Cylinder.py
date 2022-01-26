@@ -1,6 +1,7 @@
 import numpy as np
 import magpylib as magpy
 from magpylib.magnet import Cylinder
+from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict, getH_dict
 
 
 def test_Cylinder_add():
@@ -78,23 +79,23 @@ def test_Cylinder_getBH():
         B1 = src2.getB(poso)
         H1 = src2.getH(poso)
 
-        B2 = magpy.getB_dict(
+        B2 = getB_dict(
             source_type='Cylinder',
             magnetization=mag,
             dimension=d2,
             observer=poso)
-        H2 = magpy.getH_dict(
+        H2 = getH_dict(
             source_type='Cylinder',
             magnetization=mag,
             dimension=d2,
             observer=poso)
 
-        B3 = magpy.getB_dict(
+        B3 = getB_dict(
             source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,
             observer=poso)
-        H3 = magpy.getH_dict(
+        H3 = getH_dict(
             source_type='CylinderSegment',
             magnetization=mag,
             dimension=d5,

@@ -355,7 +355,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, children
         return sources, sensors
 
-    def getB(self, *children, sumup=False, squeeze=True):
+    def getB(self, *children, squeeze=True):
         """
         Compute B-field in [mT] for given sources and observers.
 
@@ -364,9 +364,6 @@ class BaseCollection(BaseDisplayRepr):
         children: source or observer children
             If parent is a SourceCollection, input can only be M observers.
             If parent is a SensorCollection, input can only be L sources.
-
-        sumup: bool, default=False
-            If True, the fields of all sources are summed up.
 
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -385,9 +382,9 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(True, sources, sensors, sumup, squeeze)
+        return getBH_level2(True, sources, sensors, sumup=False, squeeze=squeeze)
 
-    def getH(self, *children, sumup=False, squeeze=True):
+    def getH(self, *children, squeeze=True):
         """
         Compute H-field in [kA/m] for given sources and observers.
 
@@ -396,9 +393,6 @@ class BaseCollection(BaseDisplayRepr):
         children: source or observer children
             If parent is a SourceCollection, input can only be M observers.
             If parent is a SensorCollection, input can only be L sources.
-
-        sumup: bool, default=False
-            If True, the fields of all sources are summed up.
 
         squeeze: bool, default=True
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
@@ -417,7 +411,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(False, sources, sensors, sumup, squeeze)
+        return getBH_level2(False, sources, sensors, sumup=False, squeeze=squeeze)
 
 
 class Collection(BaseGeo, BaseCollection):

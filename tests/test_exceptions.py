@@ -9,11 +9,12 @@ from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInpu
     MagpylibBadInputShape)
 from magpylib._src.utility import format_obj_input, format_src_inputs, format_obs_inputs
 from magpylib._src.utility import test_path_format as tpf
+from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict
 
 
 def getBHv_unknown_source_type():
     """ unknown source type """
-    magpy.getB_dict(
+    getB_dict(
         source_type='badName',
         magnetization=(1,0,0),
         dimension=(0,2,1,0,360),
@@ -122,12 +123,27 @@ def getBHv_missing_input5_sphere():
     getBH_dict_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
 
 # bad inputs -------------------------------------------------------------------
-def getBHv_bad_input():
+def getBHv_bad_input1():
     """ different input lengths
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
     getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x2, dimension=x)
+
+
+def getBHv_bad_input2():
+    """ bad source_type string
+    """
+    x=np.array([(1,2,3)])
+    getBH_dict_level2(bh=True, source_type='Cubooid', observer=x, magnetization=x, dimension=x)
+
+
+def getBHv_bad_input3():
+    """ mixed input
+    """
+    x=np.array([(1,2,3)])
+    s = magpy.Sensor()
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=s, magnetization=x, dimension=x)
 
 
 def utility_format_obj_input():
@@ -158,6 +174,7 @@ def utility_format_obs_inputs():
 def utility_test_path_format():
     """ bad path format input
     """
+    # pylint: disable=protected-access
     pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     pm1._position = [(1,2,3),(1,2,3)]
     tpf(pm1)
@@ -252,7 +269,9 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cuboid)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cyl)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_sphere)
-        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input1)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input2)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input3)
         self.assertRaises(MagpylibBadUserInput, getBHv_unknown_source_type)
 
     def test_except_getBH_lev1(self):

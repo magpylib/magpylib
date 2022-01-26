@@ -309,25 +309,26 @@ The object-oriented interface automatically vectorizes the computation for the u
 
 (docu-getB_dict-getH_dict)=
 
-## getB_dict and getH_dict
+## Functional vs object-oriented `getB` and `getH` use
 
-The `magpylib.getB_dict` and `magpylib.getH_dict` top-level functions avoid the object oriented interface, yet enable usage of the position/orientation implementations. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the `source_type`, different input arguments are expected (see docstring for details).
+The `magpylib.getB` and `magpylib.getH` top-level functions also allow the user to avoid the object oriented interface, yet enable usage of the position/orientation implementations via a more functional programming paradigm. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the source type defined by a string instead of a magpylib source object, different input arguments are expected (see docstring for details).
 
 ```python
 import magpylib as magpy
 
 # observer positions
-obs_pos = [(0,0,x) for x in range(5)]
+observer_pos = [(0,0,x) for x in range(5)]
 
 # magnet dimensions
 dim = [(d,d,d) for d in range(1,6)]
 
-# getB_dict computation - magnetization is automatically tiled
-B = magpy.getB_dict(
-    source_type='Cuboid',
+# functional-oriented getB computation - magnetization is automatically tiled
+B = magpy.getB(
+    'Cuboid',
+    observer_pos,
     magnetization=(0,0,1000),
     dimension=dim,
-    observer=obs_pos)
+)
 print(B)
 
 # out: [[  0.           0.         666.66666667]
@@ -337,7 +338,7 @@ print(B)
 #       [  0.           0.         221.82226656]]
 ```
 
-The `getBH_dict` functions can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
+The `getB` and `getH` functions used this way can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
 
 (docu-direct-access)=
 

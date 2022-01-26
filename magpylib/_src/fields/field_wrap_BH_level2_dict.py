@@ -4,7 +4,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.exceptions import MagpylibBadUserInput
-
+from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
 
 def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
     """ Direct access to vectorized computation
@@ -40,6 +40,10 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
     # mandatory general inputs ------------------
     try:
         src_type = kwargs['source_type']
+        if src_type not in LIBRARY_BH_DICT_SOURCE_STRINGS:
+            msg = f'sources input string must be one of {LIBRARY_BH_DICT_SOURCE_STRINGS}'
+            raise MagpylibBadUserInput(msg)
+
         poso = np.array(kwargs['observer'], dtype=float)
         tile_params['observer'] = (poso,2)    # <-- (input,tdim)
 
@@ -96,20 +100,20 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
             pos_end = np.array(kwargs['segment_end'], dtype=float)
             tile_params['segment_end'] = (pos_end,2)
 
-        else:
-            msg = 'Unknown source_type'
-            raise MagpylibBadUserInput(msg)
-
     except KeyError as kerr:
         msg = f'Missing input keys: {str(kerr)}'
         raise MagpylibBadUserInput(msg) from kerr
+    except TypeError as terr:
+        msg1='Bad user input type. When sources argument is a string,'
+        msg2=' all other inputs must be scalar or array_like.'
+        raise MagpylibBadUserInput(msg1+msg2) from terr
 
     # auto tile 1D parameters ---------------------------------------
 
     # evaluation vector length
     ns = [len(val) for val,tdim in tile_params.values() if val.ndim == tdim]
     if len(set(ns)) > 1:
-        msg = f'getBHv() bad array input lengths: {str(set(ns))}'
+        msg = f'Input array lengths must be similar. Instead received {str(set(ns))}'
         raise MagpylibBadUserInput(msg)
     n = max(ns, default=1)
 
@@ -134,7 +138,6 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
     return B
 
 
-# ON INTERFACE
 def getB_dict(**kwargs):
     """
     B-Field computation in units of [mT] from a dictionary of input vectors of
