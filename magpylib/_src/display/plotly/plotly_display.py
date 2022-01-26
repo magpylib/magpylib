@@ -701,10 +701,9 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
         subobjs = [obj]
         legendgroup = None
         if getattr(obj, "children", None) is not None:
-            subobjs = obj.children
+            subobjs = [*obj.children]
             legendgroup = f"{obj}"
             if getattr(obj, "position", None) is not None:
-                subobjs += [obj]
                 color = color if obj.style.color is None else obj.style.color
         first_shown = False
         for ind, subobj in enumerate(subobjs):
