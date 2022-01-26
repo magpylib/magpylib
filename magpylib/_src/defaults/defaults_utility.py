@@ -1,4 +1,4 @@
-"""utilites for creating property classes"""
+"""utilities for creating property classes"""
 
 from copy import deepcopy
 import collections.abc
@@ -67,7 +67,7 @@ def get_defaults_dict(arg=None) -> dict:
     Returns
     -------
     dict
-        defaut sub dict
+        default sub dict
 
     Examples
     --------
@@ -132,7 +132,7 @@ def magic_to_dict(kwargs, separator="_") -> dict:
         dictionary of keys to be decomposed into a nested dictionary
 
     separator: str, default='_'
-        defines the sperator to apply the magic parsing with
+        defines the separator to apply the magic parsing with
     Returns
     -------
     dict
@@ -165,7 +165,7 @@ def linearize_dict(kwargs, separator=".") -> dict:
         dictionary of keys linearized into an flat dictionary
 
     separator: str, default='.'
-        defines the sperator to be applied on the final dictionary keys
+        defines the separator to be applied on the final dictionary keys
 
     Returns
     -------

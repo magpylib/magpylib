@@ -3,7 +3,7 @@ import numpy as np
 
 def merge_mesh3d(*traces):
     """
-    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cummulate the
+    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate the
     indices of each object in order to point to the right vertices in the concatenated vertices.
     `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also get
     concatenated if they are present in all objects. All other parameter found in the dictionary

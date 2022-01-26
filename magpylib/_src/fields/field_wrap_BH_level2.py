@@ -82,7 +82,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pos_obs
     posov = np.tile(poso, (len(group),1))
 
-    # determine which group we are dealing with and tile up dim and exitation
+    # determine which group we are dealing with and tile up dim and excitation
     src_type = group[0]._object_type
 
     kwargs = {'source_type': src_type, 'position': posv, 'observer': posov, 'orientation': rotobj}
@@ -280,7 +280,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze) -> np.ndarray:
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
     #   note: replace by math.prod with python 3.8 or later
     k_pixel = int(np.product(pix_shape[:-1])) # total number of pixel positions
-    for i,sens in enumerate(sensors):         # cylcle through all sensors
+    for i,sens in enumerate(sensors):         # cycle through all sensors
         if not unrotated_sensors[i]:          # apply operations only to rotated sensors
             if static_sensor_rot[i]:          # special case: same rotation along path
                 # select part where rot is applied

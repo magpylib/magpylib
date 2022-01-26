@@ -55,9 +55,9 @@ def display(
         Option False shows objects at final path position and hides paths.
         Option True shows objects at final path position and shows object paths.
         Option int i displays the objects at every i'th path position.
-        Option array_like shape (n,) discribes certain path indices. The objects
+        Option array_like shape (n,) describes certain path indices. The objects
         displays are displayed at every given path index.
-        Option `'animate'` (Plotly backend only) shows an animation of objectes moving
+        Option `'animate'` (Plotly backend only) shows an animation of objects moving
         along their paths.
 
     zoom: float, default = 0
