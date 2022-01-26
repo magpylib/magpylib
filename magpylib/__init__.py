@@ -178,7 +178,7 @@ When all source and sensor objects are created and all paths are defined ``displ
 >>> col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 >>>
 >>> # display
->>> col.display(zoom=-.3, show_path=10)
+>>> col.display(zoom=-.3, show_style_path_show=10)
 ---> graphic output
 
 Various arguments like `axis, show_direction, show_path, size_sensors, size_direction, size_dipoles` and `zoom` can be used to customize the output and are described in the docstring in detail.

@@ -10,7 +10,6 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 # ON INTERFACE
 def display(
     *objects,
-    path=None,  # bool, int, index list
     zoom=0,
     animation=False,
     markers=None,
@@ -26,13 +25,6 @@ def display(
     ----------
     objects: sources, collections or sensors
         Objects to be displayed.
-
-    path: bool or int i or array_like shape (n,) or, default = True
-        Option False shows objects at final path position and hides paths.
-        Option True shows objects at final path position and shows object paths.
-        Option int i displays the objects at every i'th path position.
-        Option array_like shape (n,) describes certain path indices. The objects
-        3D-representations are shown at every given path index.
 
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
@@ -106,9 +98,6 @@ def display(
 
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
-
-    if path is not None:
-        kwargs["style_path_show"] = path
 
     if backend is None:
         backend = Config.display.backend

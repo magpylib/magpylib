@@ -61,7 +61,7 @@ def create_compound_set(show=False, **kwargs):
         setattr(c1, k, eval(v))
     if show:
         fig = go.Figure()
-        magpy.display(c2, c1, path=1, canvas=fig)
+        magpy.display(c2, c1, style_path_show=1, canvas=fig)
         fig.layout.title = ", ".join(f"c1.{k} = {v}" for k, v in kwargs.items())
         fig.show()
     return c1

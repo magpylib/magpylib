@@ -14,13 +14,13 @@ def test_Cylinder_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = Cylinder((1, 2, 3), (1, 2))
-    x = src.display(canvas=fig, path=15)
+    x = src.display(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     x = src.display(
         canvas=fig,
-        path=False,
+        style_path_show=False,
         style_magnetization_show=True,
         style_magnetization_color_mode="tricycle",
     )
@@ -32,13 +32,13 @@ def test_CylinderSegment_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
-    x = src.display(canvas=fig, path=15)
+    x = src.display(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
     x = src.display(
         canvas=fig,
-        path=False,
+        style_path_show=False,
         style_magnetization_show=True,
         style_magnetization_color_mode="bicolor",
     )
@@ -50,11 +50,11 @@ def test_Sphere_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = Sphere((1, 2, 3), 2)
-    x = src.display(canvas=fig, path=15)
+    x = src.display(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (8,8,8), 33), start=-1)
-    x = src.display(canvas=fig, path=False, style_magnetization_show=True)
+    x = src.display(canvas=fig, style_path_show=False, style_magnetization_show=True)
     assert x is None, "display test fail"
 
 
@@ -63,11 +63,11 @@ def test_Cuboid_display():
     magpy.defaults.display.backend = "plotly"
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((.1,.1,.1), (2,2,2), 20), start=-1)
-    x = src.display(path=5, style_magnetization_show=True, renderer="json")
+    x = src.display(style_path_show=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
 
     fig = go.Figure()
-    x = src.display(canvas=fig, path=False, style_magnetization_show=True)
+    x = src.display(canvas=fig, style_path_show=False, style_magnetization_show=True)
     assert x is None, "display test fail"
 
 
@@ -80,9 +80,9 @@ def test_Sensor_display():
     assert x is None, "display test fail"
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
     sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=15)
+    x = sens.display(canvas=fig, markers=[(100, 100, 100)], style_path_show=15)
     assert x is None, "display test fail"
-    x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=False)
+    x = sens.display(canvas=fig, markers=[(100, 100, 100)], style_path_show=False)
     assert x is None, "display test fail"
 
 
@@ -95,7 +95,7 @@ def test_Loop_display():
     assert x is None, "display test fail"
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
-    x = src.display(canvas=fig, path=3)
+    x = src.display(canvas=fig, style_path_show=3)
     assert x is None, "display test fail"
 
 
@@ -122,9 +122,9 @@ def test_dipole_display():
     dip2.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
     x = dip1.display(canvas=fig, style_pivot="tail")
     assert x is None, "display test fail"
-    x = dip2.display(canvas=fig, path=2, style_pivot="tip")
+    x = dip2.display(canvas=fig, style_path_show=2, style_pivot="tip")
     assert x is None, "display test fail"
-    x = dip3.display(canvas=fig, path=2, style_pivot="middle")
+    x = dip3.display(canvas=fig, style_path_show=2, style_pivot="middle")
     assert x is None, "display test fail"
 
 
@@ -139,13 +139,13 @@ def test_circular_line_display():
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
-    x = src1.display(canvas=fig, path=2, style_arrow_show=False)
+    x = src1.display(canvas=fig, style_path_show=2, style_arrow_show=False)
     assert x is None, "display test fail"
     x = src2.display(canvas=fig)
     assert x is None, "display test fail"
     x = src3.display(canvas=fig, style_arrow_show=False)
     assert x is None, "display test fail"
-    x = src4.display(canvas=fig, path=2)
+    x = src4.display(canvas=fig, style_path_show=2)
     assert x is None, "display test fail"
 
 
@@ -246,7 +246,7 @@ def test_extra_model3d():
         "show": True,
     }
     cuboid.style.model3d.extra[0].show = False
-    x = cuboid.display(canvas=fig, path=False, style=dict(model3d_show=False),)
+    x = cuboid.display(canvas=fig, style_path_show=False, style=dict(model3d_show=False),)
     assert x is None, "display test fail"
 
 
@@ -280,7 +280,7 @@ def test_display_warnings():
         src.display(canvas=fig, animation=True, animation_time=2, animation_fps=1)
     src = Cuboid((1, 2, 3), (1, 2, 3))
     with pytest.warns(UserWarning):  # no objet path detected
-        src.display(canvas=fig, path=[], animation=True)
+        src.display(canvas=fig, style_path_show=[], animation=True)
 
 
 def test_bad_animation_value():

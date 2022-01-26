@@ -45,6 +45,8 @@ This is a major update that includes
   - `size_sensors`&`size_dipoles` ➡️ `style_size`
   - `size_direction` ➡️ `style_magnetization_size`
 - `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
+- `show_path` in the `display` function is integrated in styling options with `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
+- `display` is renamed to `show` ([#453](https://github.com/magpylib/magpylib/pull/453), [#451](https://github.com/magpylib/magpylib/issues/451))
 
 ### Updated
 - Computation:
