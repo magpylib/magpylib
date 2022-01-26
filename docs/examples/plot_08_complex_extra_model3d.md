@@ -45,7 +45,7 @@ def get_stl_color(x, return_rgb_string=True):
 # define stl to mesh3d function
 def stl2mesh3d(stl_file, recenter=False, backend="matplotlib"):
     """
-    an array of faces/triangles is read by nympy-stl from a stl file;  
+    an array of faces/triangles is read by numpy-stl from a stl file;  
     this function extracts the unique vertices and the triangulation values and
     returns depending on the backend the corresponding dictionary for further
     magpylib use as extra 3d-model.
