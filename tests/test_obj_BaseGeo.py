@@ -130,11 +130,11 @@ def test_BaseGeo_anchor_None():
     ), "None rotation did not adjust rot"
 
 
-def evall(objj):
-    """return pos and orient of objject"""
+def evall(obj):
+    """return pos and orient of object"""
     # pylint: disable=protected-access
-    pp = objj._position
-    rr = objj._orientation.as_quat()
+    pp = obj._position
+    rr = obj._orientation.as_quat()
     rr = np.array([r / max(r) for r in rr])
     return (pp, rr)
 

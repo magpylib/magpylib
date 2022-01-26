@@ -107,6 +107,7 @@ def test_Collection_setting_position(
     src_pos_test,
     src_ori_test,
 ):
+    """Test position and orientation setters on Collection"""
     src = magpy.magnet.Cuboid(
         (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
     )
@@ -197,7 +198,8 @@ def get_data_collection_orientation_setter():
 
 
 @pytest.mark.parametrize(
-    "col_pos_init, col_ori_init, src_pos_init, src_ori_init, col_pos_test, col_ori_test, src_pos_test, src_ori_test",
+    """col_pos_init, col_ori_init, src_pos_init, src_ori_init, col_pos_test,
+    col_ori_test, src_pos_test, src_ori_test""",
     get_data_collection_orientation_setter(),
     ids=[
         f"{ind+1:02d}" for ind, _ in enumerate(get_data_collection_orientation_setter())
