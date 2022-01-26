@@ -364,10 +364,10 @@ def display_matplotlib(
     for semi_flat_obj, color in zip(obj_list_semi_flat, cycle(color_sequence)):
         flat_objs = [semi_flat_obj]
         if getattr(semi_flat_obj, "children", None) is not None:
-            flat_objs = semi_flat_obj.children
+            flat_objs = [*semi_flat_obj.children]
             if getattr(semi_flat_obj, "position", None) is not None:
-                flat_objs += [semi_flat_obj]
                 color = color if semi_flat_obj.style.color is None else semi_flat_obj.style.color
+
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
             path = style.path.show
