@@ -3,7 +3,7 @@
 # MATLAB Integration
 
 ```{note}
-MATLAB does not support Tkinter, which disables matplotlib. This means that {meth}`~magpylib.Collection.display()` will not generate a display and might interrupt the program.
+MATLAB does not support Tkinter, which disables matplotlib. This means that {meth}`~magpylib.Collection.show()` will not generate a window and might interrupt the program.
 ```
 
 ## Setting Python Interpreter

@@ -317,7 +317,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> style_dict = {'magnetization_size':0.5}
         >>> col.set_children_styles(style_dict)
         >>>
-        >>> magpy.display(col, src)
+        >>> magpy.show(col, src)
         ---> graphic output
         """
 

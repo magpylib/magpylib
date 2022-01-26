@@ -86,7 +86,7 @@ class BaseGeo(BaseTransform):
     Methods
     -------
 
-    - display
+    - show
     - move
     - rotate
 

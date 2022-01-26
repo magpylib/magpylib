@@ -247,7 +247,7 @@ def test_Collection_setter():
     #     base.position = poz
     #     base.orientation = R.from_rotvec(roz)
     #     col0 = col0 + col + base
-    # magpy.display(*col0)
+    # magpy.show(*col0)
     POS = []
     ORI = []
     col0 = magpy.Collection()

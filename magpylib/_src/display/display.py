@@ -8,7 +8,7 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 # ON INTERFACE
-def display(
+def show(
     *objects,
     zoom=0,
     animation=False,
@@ -62,8 +62,8 @@ def display(
     >>> src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
     >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> magpy.display(src, sens)
-    >>> magpy.display(src, sens, backend='plotly')
+    >>> magpy.show(src, sens)
+    >>> magpy.show(src, sens, backend='plotly')
     --> graphic output
 
     Display figure on your own canvas (here Matplotlib 3D axis):
@@ -73,7 +73,7 @@ def display(
     >>> my_axis = plt.axes(projection='3d')
     >>> magnet = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,2,3))
     >>> sens = magpy.Sensor(position=(0,0,3))
-    >>> magpy.display(magnet, sens, canvas=my_axis, zoom=1)
+    >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show()
     --> graphic output
 
@@ -85,7 +85,7 @@ def display(
     >>> src2 = magpy.magnet.Sphere((1,1,1), 1, (1,0,0))
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
-    >>> magpy.display(src1, src2, style_color='r', zoom=3)
+    >>> magpy.show(src1, src2, style_color='r', zoom=3)
     --> graphic output
     """
 

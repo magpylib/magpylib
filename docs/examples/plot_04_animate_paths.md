@@ -55,7 +55,7 @@ sens.move(np.linspace((0.,0.,5.), (0.,0.,-5.), 20), start=0)
 
 # display animation
 fig = go.Figure()
-magpy.display(
+magpy.show(
     *coll,
     sens,
     canvas=fig,
