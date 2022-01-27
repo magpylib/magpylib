@@ -5,8 +5,10 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     """
     Compute B-field in [mT] for given sources and observers.
+
     - Object-oriented (default):
         ``sources`` are previously defined Magpylib objects or list thereof
+
     - Direct interface:
         Field implementations can be directly accessed for faster computation. Note that ``sources``
         parameter only accepts a single source and corresponding input parameters must be defined
@@ -140,8 +142,10 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
 def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     """
     Compute H-field in [kA/m] for given sources and observers.
+    
     - Object-oriented (default):
         ``sources`` are previously defined Magpylib objects or list thereof
+    
     - Direct interface:
         Field implementations can be directly accessed for faster computation. Note that ``sources``
         parameter only accepts a single source and corresponding input parameters must be defined
