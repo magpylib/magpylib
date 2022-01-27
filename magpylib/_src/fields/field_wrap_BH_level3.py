@@ -87,12 +87,11 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     similar sources for optimal vectorization of the computation. For maximal performance
     call this function as little as possible and avoid using it in loops.
 
-     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
+    "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
     fit with other inputs.
 
     Examples
     --------
-
     Compute the B-field of a spherical magnet at a sensor positioned at (1,2,3):
 
     >>> import magpylib as magpy
@@ -133,7 +132,6 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     >>> print(B)
     [[3.99833439 3.99833439 3.46340502]
      [0.09728187 0.34647784 0.52129178]]
-
     """
     return getBH_level2(True, sources, observers, sumup, squeeze, **kwargs)
 
@@ -269,6 +267,5 @@ def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     >>> print(H)
     [[3.18177341 3.18177341 2.75609015]
      [0.07741445 0.27571831 0.41483082]]
-
     """
     return getBH_level2(False, sources, observers, sumup, squeeze, **kwargs)
