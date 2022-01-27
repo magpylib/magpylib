@@ -28,7 +28,7 @@ Display multiple objects, object paths, markers in 3D using Matplotlib:
 import magpylib as magpy
 magnet = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 2, 3))
 sens = magpy.Sensor(position=(0, 0, 3))
-magpy.display(magnet, sens, zoom=1)
+magpy.show(magnet, sens, zoom=1)
 ```
 
 Display figure on your own canvas (here Matplotlib 3D axis):
@@ -44,7 +44,7 @@ src.move(np.linspace((0.1, 0, 0), (5,0,0), 50))
 src.rotate_from_angax(angle=np.linspace(10, 500, 50), axis="z", anchor=0, start=1)
 ts = [-0.4, 0, 0.4]
 sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
-magpy.display(src, sens, canvas=my_axis)
+magpy.show(src, sens, canvas=my_axis)
 plt.show()
 ```
 
@@ -59,10 +59,10 @@ src.move(np.linspace((0.1, 0, 0), (5,0,0), 50))
 src.rotate_from_angax(angle=np.linspace(10, 500, 50), axis="z", anchor=0, start=1)
 ts = [-0.4, 0, 0.4]
 sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
-magpy.display(src, sens, backend="plotly")
+magpy.show(src, sens, backend="plotly")
 ```
 
-The display function is also available as a class method and can be called for every object separately.
+The `show` function is also available as a class method and can be called for every object separately.
 
 ```{code-cell} ipython3
 import plotly.graph_objects as go
@@ -71,6 +71,6 @@ import magpylib as magpy
 fig = go.Figure()
 ts = [-0.4, 0, 0.4]
 sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
-sens.display(canvas=fig, backend="plotly", zoom=1, style_size=5)
+sens.show(canvas=fig, backend="plotly", zoom=1, style_size=5)
 fig
 ```

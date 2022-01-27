@@ -23,7 +23,7 @@ Original software publication (version 2):
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 Introduction (version 4.0.0dev)
-----------------------------
+-------------------------------
 Magpylib uses units of
 
     - [mT]: for the B-field and the magnetization (mu0*M).
@@ -160,7 +160,7 @@ Sphere(id=2158566236896)
 Loop(id=2158565622784)
 Sphere(id=2158566236896)
 
-Graphic output with `display`
+Graphic output with `show`
 ----------------------------------
 
 When all source and sensor objects are created and all paths are defined ``display`` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
@@ -178,7 +178,7 @@ When all source and sensor objects are created and all paths are defined ``displ
 >>> col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
 >>>
 >>> # display
->>> col.display(zoom=-.3, show_path=10)
+>>> col.show(zoom=-.3, show_style_path_show=10)
 ---> graphic output
 
 Various arguments like `axis, show_direction, show_path, size_sensors, size_direction, size_dipoles` and `zoom` can be used to customize the output and are described in the docstring in detail.
@@ -314,7 +314,7 @@ __version__ = '4.0.0dev'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
-    'Sensor', 'Collection', 'display', 'defaults', '__version__',
+    'Sensor', 'Collection', 'show', 'display', 'defaults', '__version__',
     '__author__', '__credits__']
 
 # create interface to outside of package
@@ -322,7 +322,8 @@ from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib import magnet
 from magpylib import current
 from magpylib import misc
+from magpylib import display
 from magpylib._src.fields import getB, getH
 from magpylib._src.obj_classes import Sensor
 from magpylib._src.obj_classes.class_Collection import Collection
-from magpylib._src.display import display
+from magpylib._src.display.display import show

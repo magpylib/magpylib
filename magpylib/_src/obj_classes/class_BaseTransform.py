@@ -20,25 +20,24 @@ from magpylib._src.input_checks import (
     check_path_format,
 )
 
-def multi_anchor_behavior(anchor, inrotQ, rotation):
-    """
-    define behavior of rotation with given anchor
 
+def multi_anchor_behavior(anchor, inrotQ, rotation):
+    """define behavior of rotation with given anchor
     if one is longer than the other pad up other
     """
-    len_inrotQ = 0 if inrotQ.ndim==1 else inrotQ.shape[0]
-    len_anchor = 0 if anchor.ndim==1 else anchor.shape[0]
+    len_inrotQ = 0 if inrotQ.ndim == 1 else inrotQ.shape[0]
+    len_anchor = 0 if anchor.ndim == 1 else anchor.shape[0]
 
-    if len_inrotQ>len_anchor:
-        if len_anchor==0:
-            anchor = np.reshape(anchor, (1,3))
+    if len_inrotQ > len_anchor:
+        if len_anchor == 0:
+            anchor = np.reshape(anchor, (1, 3))
             len_anchor = 1
-        anchor = np.pad(anchor, ((0,len_inrotQ-len_anchor),(0,0)), 'edge')
-    elif len_inrotQ<len_anchor:
-        if len_inrotQ==0:
-            inrotQ = np.reshape(inrotQ, (1,4))
+        anchor = np.pad(anchor, ((0, len_inrotQ - len_anchor), (0, 0)), "edge")
+    elif len_inrotQ < len_anchor:
+        if len_inrotQ == 0:
+            inrotQ = np.reshape(inrotQ, (1, 4))
             len_inrotQ = 1
-        inrotQ = np.pad(inrotQ, ((0,len_anchor-len_inrotQ),(0,0)), 'edge')
+        inrotQ = np.pad(inrotQ, ((0, len_anchor - len_inrotQ), (0, 0)), "edge")
         rotation = R.from_quat(inrotQ)
 
     return anchor, inrotQ, rotation
@@ -89,7 +88,7 @@ def path_padding_param(scalar_input: bool, lenop: int, lenip: int, start):
     if start + lenip > lenop + pad_before:
         pad_behind = start + lenip - (lenop + pad_before)
 
-    if pad_before+pad_behind>0:
+    if pad_before + pad_behind > 0:
         return (pad_before, pad_behind), start
     return [], start
 
@@ -130,7 +129,7 @@ def path_padding(inpath, start, target_object):
         opath = np.pad(opath, (padding, (0, 0)), "edge")
 
     # set end-index
-    end = len(ppath) if scalar_input else start+lenip
+    end = len(ppath) if scalar_input else start + lenip
 
     return ppath, opath, start, end, bool(padding)
 
@@ -184,11 +183,8 @@ def apply_move(target_object, displacement, start="auto"):
 
 
 def apply_rotation(
-    target_object,
-    rotation: R,
-    anchor=None,
-    start="auto",
-    parent_path=None):
+    target_object, rotation: R, anchor=None, start="auto", parent_path=None
+):
     """
     Implementation of the rotate() functionality.
 
@@ -226,8 +222,8 @@ def apply_rotation(
     # when an anchor is given
     if anchor is not None:
         # 0-anchor -> (0,0,0)
-        if np.isscalar(anchor) and anchor==0:
-            anchor = np.array((0.,0.,0.))
+        if np.isscalar(anchor) and anchor == 0:
+            anchor = np.array((0.0, 0.0, 0.0))
         else:
             anchor = np.array(anchor, dtype=float)
         # check anchor input format
@@ -245,13 +241,15 @@ def apply_rotation(
     #   the parent_path.
     if anchor is None and parent_path is not None:
         # target anchor length
-        len_anchor = end-newstart
+        len_anchor = end - newstart
         # pad up parent_path if input requires it
-        padding, start = path_padding_param(inrotQ.ndim==1, parent_path.shape[0], len_anchor, start)
+        padding, start = path_padding_param(
+            inrotQ.ndim == 1, parent_path.shape[0], len_anchor, start
+        )
         if padding:
-            parent_path = np.pad(parent_path, (padding, (0,0)), 'edge')
+            parent_path = np.pad(parent_path, (padding, (0, 0)), "edge")
         # slice anchor from padded parent_path
-        anchor = parent_path[start:start+len_anchor]
+        anchor = parent_path[start : start + len_anchor]
 
     # position change when there is an anchor
     if anchor is not None:
@@ -269,6 +267,7 @@ def apply_rotation(
     target_object._position = ppath
 
     return target_object
+
 
 class BaseTransform:
     """
@@ -383,11 +382,7 @@ class BaseTransform:
 
         return self
 
-    def rotate(
-        self,
-        rotation: R,
-        anchor=None,
-        start="auto"):
+    def rotate(self, rotation: R, anchor=None, start="auto"):
         """
         Rotates object in the global coordinate system using a scipy Rotation object
         as input.
@@ -421,12 +416,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate(R.from_euler('z', 45, degrees=True), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
@@ -441,7 +438,9 @@ class BaseTransform:
         #  -> this automatically generates the rotate-Compound behavior
 
         for child in getattr(self, "children", []):
-            apply_rotation(child, rotation, anchor=anchor, start=start, parent_path=self._position)
+            apply_rotation(
+                child, rotation, anchor=anchor, start=start, parent_path=self._position
+            )
 
         apply_rotation(self, rotation, anchor=anchor, start=start)
 
@@ -487,12 +486,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate_from_angax(45, (0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
@@ -589,12 +590,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_rotvec())
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate_from_rotvec((0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_rotvec())
@@ -645,12 +648,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate_from_euler('z', 45, anchor=0, degrees=True)
         >>> print(s.position)
         >>> print(s.orientation.as_euler('xyz', degrees=True))
@@ -693,6 +698,7 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_matrix())
         [1. 0. 0.]
@@ -701,6 +707,7 @@ class BaseTransform:
          [0. 0. 1.]]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)], anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_matrix())
@@ -744,12 +751,14 @@ class BaseTransform:
         >>> s = magpy.Sensor(position=(1,0,0))
 
         print initial position and orientation
+
         >>> print(s.position)
         >>> print(s.orientation.as_mrp())
         [1. 0. 0.]
         [0. 0. 0.]
 
         rotate and print resulting position and orientation
+
         >>> s.rotate_from_mrp((0,0,1), anchor=0)
         >>> print(s.position)
         >>> print(s.orientation.as_mrp())

@@ -185,11 +185,11 @@ cube.rotate_from_angax(**rotation)
 * display system
 
 ```{code-cell} ipython3
-magpy.display(cube, sens, interp_cube, backend='matplotlib')
+magpy.show(cube, sens, interp_cube, backend='matplotlib')
 ```
 
 ```{code-cell} ipython3
-magpy.display(cube, sens, interp_cube, backend='plotly')
+magpy.show(cube, sens, interp_cube, backend='plotly')
 ```
 
 compare the interpolated field with the original source

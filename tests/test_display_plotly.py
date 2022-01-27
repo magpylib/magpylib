@@ -4,6 +4,7 @@ import pytest
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
 from magpylib._src.display.plotly.plotly_display import get_plotly_traces
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 # pylint: disable=assignment-from-no-return
 
@@ -13,13 +14,13 @@ def test_Cylinder_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = Cylinder((1, 2, 3), (1, 2))
-    x = src.display(canvas=fig, path=15)
+    x = src.show(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    x = src.display(
+    x = src.show(
         canvas=fig,
-        path=False,
+        style_path_show=False,
         style_magnetization_show=True,
         style_magnetization_color_mode="tricycle",
     )
@@ -31,13 +32,13 @@ def test_CylinderSegment_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
-    x = src.display(canvas=fig, path=15)
+    x = src.show(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    x = src.display(
+    x = src.show(
         canvas=fig,
-        path=False,
+        style_path_show=False,
         style_magnetization_show=True,
         style_magnetization_color_mode="bicolor",
     )
@@ -49,11 +50,11 @@ def test_Sphere_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = Sphere((1, 2, 3), 2)
-    x = src.display(canvas=fig, path=15)
+    x = src.show(canvas=fig, style_path_show=15)
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (8,8,8), 33), start=-1)
-    x = src.display(canvas=fig, path=False, style_magnetization_show=True)
+    x = src.show(canvas=fig, style_path_show=False, style_magnetization_show=True)
     assert x is None, "display test fail"
 
 
@@ -62,11 +63,11 @@ def test_Cuboid_display():
     magpy.defaults.display.backend = "plotly"
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((.1,.1,.1), (2,2,2), 20), start=-1)
-    x = src.display(path=5, style_magnetization_show=True, renderer="json")
+    x = src.show(style_path_show=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
 
     fig = go.Figure()
-    x = src.display(canvas=fig, path=False, style_magnetization_show=True)
+    x = src.show(canvas=fig, style_path_show=False, style_magnetization_show=True)
     assert x is None, "display test fail"
 
 
@@ -75,13 +76,13 @@ def test_Sensor_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     sens_nopix = magpy.Sensor()
-    x = sens_nopix.display(canvas=fig, style_description_text="mysensor")
+    x = sens_nopix.show(canvas=fig, style_description_text="mysensor")
     assert x is None, "display test fail"
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
     sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=15)
+    x = sens.show(canvas=fig, markers=[(100, 100, 100)], style_path_show=15)
     assert x is None, "display test fail"
-    x = sens.display(canvas=fig, markers=[(100, 100, 100)], path=False)
+    x = sens.show(canvas=fig, markers=[(100, 100, 100)], style_path_show=False)
     assert x is None, "display test fail"
 
 
@@ -90,11 +91,11 @@ def test_Loop_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     src = magpy.current.Loop(current=1, diameter=1)
-    x = src.display(canvas=fig)
+    x = src.show(canvas=fig)
     assert x is None, "display test fail"
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
-    x = src.display(canvas=fig, path=3)
+    x = src.show(canvas=fig, style_path_show=3)
     assert x is None, "display test fail"
 
 
@@ -106,7 +107,7 @@ def test_col_display():
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     col = magpy.Collection(pm1, pm2)
-    x = col.display(canvas=fig)
+    x = col.show(canvas=fig)
     assert x is None, "colletion display test fail"
 
 
@@ -119,11 +120,11 @@ def test_dipole_display():
     dip2 = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
     dip3 = magpy.misc.Dipole(moment=(1, 2, 3), position=(3, 3, 3))
     dip2.move(np.linspace((.4,.4,.4), (2,2,2), 5), start=-1)
-    x = dip1.display(canvas=fig, style_pivot="tail")
+    x = dip1.show(canvas=fig, style_pivot="tail")
     assert x is None, "display test fail"
-    x = dip2.display(canvas=fig, path=2, style_pivot="tip")
+    x = dip2.show(canvas=fig, style_path_show=2, style_pivot="tip")
     assert x is None, "display test fail"
-    x = dip3.display(canvas=fig, path=2, style_pivot="middle")
+    x = dip3.show(canvas=fig, style_path_show=2, style_pivot="middle")
     assert x is None, "display test fail"
 
 
@@ -138,13 +139,13 @@ def test_circular_line_display():
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
-    x = src1.display(canvas=fig, path=2, style_arrow_show=False)
+    x = src1.show(canvas=fig, style_path_show=2, style_arrow_show=False)
     assert x is None, "display test fail"
-    x = src2.display(canvas=fig)
+    x = src2.show(canvas=fig)
     assert x is None, "display test fail"
-    x = src3.display(canvas=fig, style_arrow_show=False)
+    x = src3.show(canvas=fig, style_arrow_show=False)
     assert x is None, "display test fail"
-    x = src4.display(canvas=fig, path=2)
+    x = src4.show(canvas=fig, style_path_show=2)
     assert x is None, "display test fail"
 
 
@@ -153,7 +154,7 @@ def test_display_bad_style_kwargs():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     with pytest.raises(ValueError):
-        magpy.display(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
+        magpy.show(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
 
 
 def test_draw_unsupported_obj():
@@ -220,51 +221,47 @@ def test_extra_model3d():
         },
     ]
     fig = go.Figure()
-    x = cuboid.display(canvas=fig, style=dict(model3d_show=True))
+    x = cuboid.show(canvas=fig, style=dict(model3d_show=True))
     assert x is None, "display test fail"
     cuboid.style.model3d.extra[0].show = False
-    x = cuboid.display(canvas=fig)
+    x = cuboid.show(canvas=fig)
     assert x is None, "display test fail"
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, 'z')
-    x = magpy.display(coll,
+    x = magpy.show(coll,
         canvas=fig,
-        path="animate",
+        animation=True,
         style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
     cuboid.style.model3d.extra = {
-            "backend": "plotly",
-            "trace": {
-                "type": "scatter3d",
-                "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
-                "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
-                "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
-                "mode": "lines",
-            },
-            "show": True,
+        "backend": "plotly",
+        "trace": {
+            "type": "scatter3d",
+            "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+            "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+            "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+            "mode": "lines",
+        },
+        "show": True,
     }
     cuboid.style.model3d.extra[0].show = False
-    x = cuboid.display(
-        canvas=fig,
-        path=False,
-        style=dict(model3d_show=False),
-    )
+    x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_show=False),)
     assert x is None, "display test fail"
 
 
 def test_CustomSource_display():
     """testing display"""
     fig = go.Figure()
-    cs = magpy.misc.CustomSource(style=dict(color='blue'))
-    x = cs.display(canvas=fig, backend="plotly")
+    cs = magpy.misc.CustomSource(style=dict(color="blue"))
+    x = cs.show(canvas=fig, backend="plotly")
     assert x is None, "display test fail"
 
 
 def test_empty_display():
     """should not fail if nothing to display"""
     fig = go.Figure()
-    x = magpy.display(canvas=fig, backend="plotly")
+    x = magpy.show(canvas=fig, backend="plotly")
     assert x is None, "empty display plotly test fail"
 
 
@@ -277,10 +274,23 @@ def test_display_warnings():
     src.move(np.linspace((.4,.4,.4), (4,4,4), 10), start=-1)
     fig = go.Figure()
 
-    with pytest.warns(UserWarning):  # animate_fps to big warning
-        src.display(canvas=fig, path="animate", animate_time=2, animate_fps=3)
+    with pytest.warns(UserWarning):  # animation_fps to big warning
+        src.show(canvas=fig, animation=5, animation_fps=3)
     with pytest.warns(UserWarning):  # max frames surpassed
-        src.display(canvas=fig, path="animate", animate_time=2, animate_fps=1)
+        src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
     src = Cuboid((1, 2, 3), (1, 2, 3))
     with pytest.warns(UserWarning):  # no objet path detected
-        src.display(canvas=fig, path="animate")
+        src.show(canvas=fig, style_path_show=[], animation=True)
+
+
+def test_bad_animation_value():
+    """should fail if animation is not a boolean or a positive number"""
+    magpy.defaults.display.backend = "plotly"
+    magpy.defaults.display.animation.maxfps = 2
+    magpy.defaults.display.animation.maxframes = 2
+    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
+    fig = go.Figure()
+
+    with pytest.raises(MagpylibBadUserInput):
+        src.show(canvas=fig, animation=-1)

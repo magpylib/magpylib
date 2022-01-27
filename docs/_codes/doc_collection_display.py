@@ -12,4 +12,4 @@ s2.move(np.linspace((-.2,0.,0.),(-20.,0.,0.),100), start=0)
 col.rotate_from_angax(np.linspace(5.,500.,100), 'z', anchor=0, start=0)
 
 # display
-magpy.display(*col, zoom=-.3, path=10)
+magpy.show(*col, zoom=-.3, style_path_show=10)

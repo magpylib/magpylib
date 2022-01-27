@@ -999,11 +999,20 @@ class Path(MagicProperties):
         key/value pairs
 
     show: bool, default=None
-        show/hide path
+        show/hide path, must be one of:
+        - False: shows object(s) at final path position and hides paths.
+        - True: shows object(s) at final path position and shows object paths.
+        - integer i: displays the object(s) at every i'th path position.
+        - array_like shape (n,): describes certain path indices.
+
+    numbering: bool, default=False
+        show/hide numbering on path positions. Only applies if show=True.
     """
 
-    def __init__(self, marker=None, line=None, show=None, **kwargs):
-        super().__init__(marker=marker, line=line, show=show, **kwargs)
+    def __init__(self, marker=None, line=None, show=None, numbering=None, **kwargs):
+        super().__init__(
+            marker=marker, line=line, show=show, numbering=numbering, **kwargs
+        )
 
     @property
     def marker(self):
@@ -1025,16 +1034,40 @@ class Path(MagicProperties):
 
     @property
     def show(self):
-        """show/hide path"""
+        """show/hide path, must be one of:
+        - False: shows object(s) at final path position and hides paths.
+        - True: shows object(s) at final path position and shows object paths.
+        - integer i: displays the object(s) at every i'th path position.
+        - array_like shape (n,): describes certain path indices."""
         return self._show
 
     @show.setter
     def show(self, val):
+        is_valid_path = True
+        if hasattr(val, "__iter__") and not isinstance(val, str):
+            val = tuple(val)
+        elif not (val is None or isinstance(val, (int, bool))):
+            is_valid_path = False
+        assert is_valid_path, f"""the `show` property of {type(self).__name__} must be one of:
+ - False: shows object(s) at final path position and hides paths.
+ - True: shows object(s) at final path position and shows object paths.
+ - integer i: displays the object(s) at every i'th path position.
+ - array_like shape (n,): describes certain path indices.
+but received {repr(val)} instead"""
+        self._show = val
+
+    @property
+    def numbering(self):
+        """show/hide numbering on path positions. Only applies if show=True."""
+        return self._numbering
+
+    @numbering.setter
+    def numbering(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
+            f"the `numbering` property of {type(self).__name__} must be one of (True, False),"
             f" but received {repr(val)} instead"
         )
-        self._show = val
+        self._numbering = val
 
 
 class Line(MagicProperties):

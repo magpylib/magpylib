@@ -8,11 +8,10 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 # ON INTERFACE
-def display(
+def show(
     *objects,
-    path=True,  # bool, int, index list, 'animate'
     zoom=0,
-    animate_time=3,
+    animation=False,
     markers=None,
     backend=None,
     canvas=None,
@@ -27,20 +26,13 @@ def display(
     objects: sources, collections or sensors
         Objects to be displayed.
 
-    path: bool or int i or array_like shape (n,) or `'animate'`, default = True
-        Option False shows objects at final path position and hides paths.
-        Option True shows objects at final path position and shows object paths.
-        Option int i displays the objects at every i'th path position.
-        Option array_like shape (n,) describes certain path indices. The objects
-        displays are displayed at every given path index.
-        Option `'animate'` (Plotly backend only) shows an animation of objects moving
-        along their paths.
-
     zoom: float, default = 0
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
 
-    animate_time: float, default = 3
-        Sets the animation duration.
+    animation: bool, default=False
+        If True and at least one object has a path, animated paths are rendered.
+        If a positive float, the animation duration target is set to the given value.
+        This feature is only available for the `plotly` backend at the moment.
 
     markers: array_like, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
@@ -70,8 +62,8 @@ def display(
     >>> src.rotate_from_angax(angle=[10]*50, axis='z', anchor=0, start=0, increment=True)
     >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> magpy.display(src, sens)
-    >>> magpy.display(src, sens, backend='plotly')
+    >>> magpy.show(src, sens)
+    >>> magpy.show(src, sens, backend='plotly')
     --> graphic output
 
     Display figure on your own canvas (here Matplotlib 3D axis):
@@ -81,7 +73,7 @@ def display(
     >>> my_axis = plt.axes(projection='3d')
     >>> magnet = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,2,3))
     >>> sens = magpy.Sensor(position=(0,0,3))
-    >>> magpy.display(magnet, sens, canvas=my_axis, zoom=1)
+    >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show()
     --> graphic output
 
@@ -93,43 +85,32 @@ def display(
     >>> src2 = magpy.magnet.Sphere((1,1,1), 1, (1,0,0))
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
-    >>> magpy.display(src1, src2, style_color='r', zoom=3)
+    >>> magpy.show(src1, src2, style_color='r', zoom=3)
     --> graphic output
     """
 
     # flatten input
-    obj_list_flat = format_obj_input(objects, allow='sources+sensors')
-    obj_list_semi_flat = format_obj_input(objects, allow='sources+sensors+collections')
+    obj_list_flat = format_obj_input(objects, allow="sources+sensors")
+    obj_list_semi_flat = format_obj_input(objects, allow="sources+sensors+collections")
 
     # test if all source dimensions and excitations have been initialized
     check_dimensions(obj_list_flat)
 
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
-    check_show_path = (
-        isinstance(path, (int, bool))
-        or path == "animate"
-        or (hasattr(path, "__iter__") and not isinstance(path, str))
-    )
-    assert check_show_path, (
-        f"`path` argument of type {type(path)} is invalid, \n"
-        "it must be one of (True, False, 'animate'), a positive path index "
-        "or an Iterable of path indices."
-    )
 
     if backend is None:
         backend = Config.display.backend
 
     if backend == "matplotlib":
-        if path == "animate":
-            warnings.warn(
-                "The matplotlib backend does not support animation, falling back to path=True"
-            )
-            path = True
+        if animation is not False:
+            msg = "The matplotlib backend does not support animation at the moment. "
+            msg+= "Use plotly backend instead."
+            warnings.warn(msg)
+            # animation = False
         display_matplotlib(
             *obj_list_semi_flat,
             markers=markers,
-            path=path,
             zoom=zoom,
             axis=canvas,
             **kwargs,
@@ -141,9 +122,8 @@ def display(
         display_plotly(
             *obj_list_semi_flat,
             markers=markers,
-            show_path=path,
             zoom=zoom,
             fig=canvas,
-            animate_time=animate_time,
+            animation=animation,
             **kwargs,
         )

@@ -16,6 +16,7 @@ except ImportError as missing_module:  # pragma: no cover
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
+from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.plotly.plotly_sensor_mesh import get_sensor_mesh
@@ -436,8 +437,6 @@ def get_name_and_suffix(default_name, default_suffix, style):
 
 def get_plotly_traces(
     input_obj,
-    show_path=False,
-    path_numbering=False,
     color=None,
     autosize=None,
     legendgroup=None,
@@ -461,7 +460,6 @@ def get_plotly_traces(
 
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
-
     Sensor = _src.obj_classes.Sensor
     Cuboid = _src.obj_classes.Cuboid
     Cylinder = _src.obj_classes.Cylinder
@@ -574,7 +572,7 @@ def get_plotly_traces(
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, show_path)):
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
             if style.model3d.show and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
@@ -629,25 +627,19 @@ def get_plotly_traces(
                 trace["name"] = legendtext
             traces.append(trace)
 
-        if (
-            np.array(input_obj.position).ndim > 1
-            and show_path is not False
-            and style.path.show is not False
-        ):
-            scatter_path = make_path(
-                input_obj, path_numbering, style, legendgroup, kwargs
-            )
+        if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
+            scatter_path = make_path(input_obj,  style, legendgroup, kwargs)
             traces.append(scatter_path)
 
     return traces
 
 
-def make_path(input_obj, path_numbering, style, legendgroup, kwargs):
+def make_path(input_obj, style, legendgroup, kwargs):
     """draw obj path based on path style properties"""
-    x, y, z = input_obj.position.T
+    x, y, z = np.array(input_obj.position).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
-        if path_numbering
+        if style.path.numbering
         else {"mode": "markers+lines"}
     )
     marker = style.path.marker.as_dict()
@@ -677,7 +669,7 @@ def make_path(input_obj, path_numbering, style, legendgroup, kwargs):
     return scatter_path
 
 
-def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -> Tuple:
+def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -726,7 +718,6 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
                 legendtext = None
             traces_dicts[subobj] = get_plotly_traces(
                 subobj,
-                show_path=show_path,
                 color=color,
                 legendgroup=legendgroup,
                 showlegend=showlegend,
@@ -741,7 +732,7 @@ def draw_frame(objs, color_sequence, zoom, show_path, autosize=None, **kwargs) -
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, color in traces_colors.items():
         traces_dicts[obj] = get_plotly_traces(
-            obj, show_path=show_path, color=color, autosize=autosize, **kwargs
+            obj, color=color, autosize=autosize, **kwargs
         )
     if return_autosize:
         res = traces_dicts, autosize
@@ -814,9 +805,11 @@ def animate_path(
     color_sequence=None,
     zoom=1,
     title="3D-Paths Animation",
-    animate_time=3,
-    animate_fps=30,
-    animate_slider=False,
+    animation_time=3,
+    animation_fps=30,
+    animation_maxfps=50,
+    animation_maxframes=200,
+    animation_slider=False,
     **kwargs,
 ):
     """This is a helper function which attaches plotly frames to the provided `fig` object
@@ -825,16 +818,16 @@ def animate_path(
 
     Parameters
     ----------
-    animate_time: float, default = 3
+    animation_time: float, default = 3
         Sets the animation duration
 
-    animate_fps: float, default = 30
+    animation_fps: float, default = 30
         This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
+        exceeds the `animation_fps` the path position will be downsampled to be lower or equal
+        the `animation_fps`. This is mainly depending on the pc/browser performance and is set to
         50 by default to avoid hanging the animation process.
 
-    animate_slider: bool, default = False
+    animation_slider: bool, default = False
         if True, an interactive slider will be displayed and stay in sync with the animation
 
     title: str, default = "3D-Paths Animation"
@@ -869,18 +862,16 @@ def animate_path(
             path_lengths.append(path_len)
 
     max_pl = max(path_lengths)
-    maxfps = Config.display.animation.maxfps
-    maxframes = Config.display.animation.maxframes
-    if animate_fps > maxfps:
+    if animation_fps > animation_maxfps:
         warnings.warn(
-            f"The set `animate_fps` at {animate_fps} is greater than the max allowed of {maxfps}. "
-            f"`animate_fps` will be set to {maxfps}. "
+            f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
+            f" {animation_maxfps}. `animation_fps` will be set to {animation_maxfps}. "
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxfps`"
         )
-        animate_fps = maxfps
+        animation_fps = animation_maxfps
 
-    maxpos = min(animate_time * animate_fps, maxframes)
+    maxpos = min(animation_time * animation_fps, animation_maxframes)
 
     if max_pl <= maxpos:
         path_indices = np.arange(max_pl)
@@ -902,17 +893,17 @@ def animate_path(
         else 1
     )
 
-    frame_duration = int(animate_time * 1000 / path_indices.shape[0])
+    frame_duration = int(animation_time * 1000 / path_indices.shape[0])
     new_fps = int(1000 / frame_duration)
-    if max_pl > maxframes:
+    if max_pl > animation_maxframes:
         warnings.warn(
             f"The number of frames ({max_pl}) is greater than the max allowed "
-            f"of {maxframes}. The `animate_fps` will be set to {new_fps}. "
+            f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
             f"You can modify the default value by setting it in "
             "`magpylib.defaults.display.animation.maxframes`"
         )
 
-    if animate_slider:
+    if animation_slider:
         sliders_dict = {
             "active": 0,
             "yanchor": "top",
@@ -964,9 +955,8 @@ def animate_path(
     frames = []
     autosize = "return"
     for i, ind in enumerate(path_indices):
-        frame = draw_frame(
-            objs, color_sequence, zoom, show_path=[ind], autosize=autosize, **kwargs,
-        )
+        kwargs["style_path_show"] = [ind]
+        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:
@@ -979,7 +969,7 @@ def animate_path(
                 layout=dict(title=f"""{title} - path index: {ind+1:0{exp}d}"""),
             )
         )
-        if animate_slider:
+        if animation_slider:
             slider_step = {
                 "args": [
                     [str(ind + 1)],
@@ -997,7 +987,7 @@ def animate_path(
         height=None,
         title=title,
         updatemenus=[buttons_dict],
-        sliders=[sliders_dict] if animate_slider else None,
+        sliders=[sliders_dict] if animation_slider else None,
     )
     apply_fig_ranges(fig, zoom=zoom)
 
@@ -1005,13 +995,10 @@ def animate_path(
 def display_plotly(
     *obj_list,
     markers=None,
-    show_path=True,
     zoom=1,
     fig=None,
     renderer=None,
-    animate_time=5,
-    animate_fps=30,
-    animate_slider=None,
+    animation=False,
     color_sequence=None,
     **kwargs,
 ):
@@ -1026,13 +1013,6 @@ def display_plotly(
 
     markers: array_like, None, shape (N,3), default=None
         Display position markers in the global CS. By default no marker is displayed.
-
-    show_path: bool or int or array_like, default=True
-        Options True, False, positive int or iterable. By default object paths are shown. If
-        show_path is a positive integer, objects will be displayed at multiple path
-        positions along the path, in steps of show_path. If show_path is an iterable
-        of integers, objects will be displayed for the provided indices.
-        If show_path='animate, the plot will be animated according to the `animate` parameters.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -1052,18 +1032,6 @@ def display_plotly(
          'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
          'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
          'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
-
-    animate_time: float, default = 3
-        Sets the animation duration
-
-    animate_fps: float, default = 30
-        This sets the maximum allowed frame rate. In case of path positions needed to be displayed
-        exceeds the `animate_fps` the path position will be downsampled to be lower or equal
-        the `animate_fps`. This is mainly depending on the pc/browser performance and is set to
-        50 by default to avoid hanging the animation process.
-
-    animate_slider: bool, default = False
-        if True, an interactive slider will be displayed and stay in sync with the animation
 
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
@@ -1086,12 +1054,42 @@ def display_plotly(
     None: NoneType
     """
 
+    flat_obj_list = format_obj_input(obj_list)
+
     show_fig = False
     if fig is None:
         show_fig = True
         fig = go.Figure()
-    if animate_slider is None:
-        animate_slider = Config.display.animation.slider
+
+    # Check animation parameters
+    if np.isscalar(animation) and not isinstance(animation, bool) and animation > 0:
+        kwargs["animation_time"] = animation
+        animation = True
+    elif not isinstance(animation, bool):
+        msg = (
+            "The `animation` property must be either `True` or `False` or a positive number"
+            f" but received {animation!r} instead"
+        )
+        raise MagpylibBadUserInput(msg)
+    if (
+        not any(
+            getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
+        )
+        and animation is not False
+    ):  # check if some path exist for any object
+        animation = False
+        warnings.warn("No path to be animated detected, displaying standard plot")
+
+    animation_kwargs = {
+        k: v for k, v in kwargs.items() if k.split("_")[0] == "animation"
+    }
+    if animation is False:
+        kwargs = {k: v for k, v in kwargs.items() if k not in animation_kwargs}
+    else:
+        for k, v in Config.display.animation.as_dict().items():
+            anim_key = f"animation_{k}"
+            if kwargs.get(anim_key, None) is None:
+                kwargs[anim_key] = v
 
     if obj_list:
         style = getattr(obj_list[0], "style", None)
@@ -1107,17 +1105,7 @@ def display_plotly(
         color_sequence = Config.display.colorsequence
 
     with fig.batch_update():
-        flat_obj_list = format_obj_input(obj_list)
-        if (
-            not any(
-                getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
-            )
-            and show_path == "animate"
-        ):  # check if some path exist for any object
-            show_path = True
-            warnings.warn("No path to be animated detected, displaying standard plot")
-
-        if show_path == "animate":
+        if animation is not False:
             title = "3D-Paths Animation" if title is None else title
             animate_path(
                 fig=fig,
@@ -1125,15 +1113,10 @@ def display_plotly(
                 color_sequence=color_sequence,
                 zoom=zoom,
                 title=title,
-                animate_time=animate_time,
-                animate_fps=animate_fps,
-                animate_slider=animate_slider,
                 **kwargs,
             )
         else:
-            traces_dicts = draw_frame(
-                obj_list, color_sequence, zoom, show_path, **kwargs
-            )
+            traces_dicts = draw_frame(obj_list, color_sequence, zoom, **kwargs)
             traces = [t for traces in traces_dicts.values() for t in traces]
             fig.add_traces(traces)
             fig.update_layout(title_text=title)

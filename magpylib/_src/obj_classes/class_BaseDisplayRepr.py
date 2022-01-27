@@ -1,6 +1,6 @@
 """BaseGeo class code"""
 
-from magpylib._src.display import display
+from magpylib._src.display.display import show
 
 # ALL METHODS ON INTERFACE
 class BaseDisplayRepr:
@@ -11,11 +11,11 @@ class BaseDisplayRepr:
 
     Methods
     -------
-    - display(self, **kwargs)
+    - show(self, **kwargs)
     - repr
     """
 
-    display = display
+    show = show
     _object_type = None
 
     # ------------------------------------------------------------------

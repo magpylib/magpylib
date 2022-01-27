@@ -117,10 +117,10 @@ cuboid = magpy.magnet.Cylinder(magnetization=(0, 0, 1000), dimension=(20, 30))
 collection = sensor + cuboid
 
 # display animated system with matplotlib backend
-magpy.display(*collection, path=8, style_magnetization_size=0.4, backend="matplotlib")
+magpy.show(*collection, style_path_show=8, style_magnetization_size=0.4, backend="matplotlib")
 
 # display animated system with plotly backend
-magpy.display(*collection, path=8, backend="plotly")
+magpy.show(*collection, style_path_show=8, backend="plotly")
 ```
 
 

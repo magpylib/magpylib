@@ -22,11 +22,11 @@ The default displaying style may not yield by default the visual representation 
 
 ## Hierarchy of arguments
 
-The styling options can be set at the library level, for an individual object directly or via a `Collection` and as an explicit argument in the display function. These settings, are ordered from **lowest** to **highest** precedence as follows:
+The styling options can be set at the library level, for an individual object directly or via a `Collection` and as an explicit argument in the `show` function. These settings, are ordered from **lowest** to **highest** precedence as follows:
 
 - library `defaults`
 - individual object `style` or at `Collection` level
-- in the `display` function
+- in the `show` function
 
 +++
 
@@ -64,7 +64,7 @@ Display styles can be set at the library default level at `magpy.defaults.displa
 - **magnet**: `Cuboid, Cylinder, Sphere, CylinderSegment`
 - **current**: `Line, Loop`
 - **sensor**: `Sensor`
-- **markers**: `display` markers
+- **markers**: markers in the `show` function
 
 +++ {"jp-MarkdownHeadingCollapsed": true, "tags": []}
 
@@ -130,7 +130,7 @@ my_default_magnetization_style = {
 }
 magpy.defaults.display.style.magnet.magnetization = my_default_magnetization_style
 
-magpy.display(col, backend="plotly")
+magpy.show(col, backend="plotly")
 ```
 
 #### Setting style via `Collection`
@@ -146,7 +146,7 @@ existing child style attributes.
 ```{code-cell} ipython3
 col.set_children_styles(magnetization_color_south="blue")
 
-magpy.display(col, backend="plotly")
+magpy.show(col, backend="plotly")
 ```
 
 #### Setting individual styles
@@ -155,7 +155,7 @@ magpy.display(col, backend="plotly")
 cylinder.style.update(magnetization_color_mode="bicolor")
 cuboid.style.magnetization.color = dict(mode="tricycle")
 
-magpy.display(col, backend="plotly")
+magpy.show(col, backend="plotly")
 ```
 
 +++ {"tags": []}
@@ -165,7 +165,7 @@ magpy.display(col, backend="plotly")
 +++
 
 ```{note}
-Setting style parameters in the `display` function does not change the default styles nor the
+Setting style parameters in the `show` function does not change the default styles nor the
 set object style. It only affects the current representation to be displayed.
 ```
 
@@ -175,7 +175,7 @@ The provided styling properties as function arguments will override temporarily 
 will be applied.
 
 ```{code-cell} ipython3
-magpy.display(col, backend="plotly", style_magnetization_show=False)
+magpy.show(col, backend="plotly", style_magnetization_show=False)
 ```
 
 In the following example, both `sensor` and `dipole` have a `size` object level style property.
@@ -193,13 +193,13 @@ sensor = magpy.Sensor(position=((-2, 0, 0)), style=dict(size=1))
 sensor2 = magpy.Sensor(position=((2, 0, 0)), style=dict(size=10))
 dipole = magpy.misc.Dipole(moment=(1, 1, 1), position=(0, 0, 2), style=dict(size=2))
 
-magpy.display(cuboid, dipole, sensor, sensor2, zoom=1)
+magpy.show(cuboid, dipole, sensor, sensor2, zoom=1)
 ```
 
 The size property can be overridden at display time with `style_size=5`
 
 ```{code-cell} ipython3
-magpy.display(cuboid, dipole, sensor, sensor2, style_size=1, zoom=1)
+magpy.show(cuboid, dipole, sensor, sensor2, style_size=1, zoom=1)
 ```
 
 ## List of available styles

@@ -6,7 +6,7 @@ DEFAULTS = {
     "itercylinder": 50,
     "display": {
         "autosizefactor": 10,
-        "animation": {"maxfps": 30, "maxframes": 200, "slider":True},
+        "animation": {"fps":20, "maxfps": 30, "maxframes": 200, "time": 5, "slider": True},
         "backend": "matplotlib",
         "colorsequence": (
             "#2E91E5",
@@ -40,6 +40,8 @@ DEFAULTS = {
                     "line": {"width": 1, "style": "solid", "color": None},
                     "marker": {"size": 2, "symbol": "o", "color": None},
                     "show": True,
+                    "indices": -1,
+                    "numbering": False,
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,

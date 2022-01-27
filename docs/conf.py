@@ -75,11 +75,11 @@ needs_sphinx = "4.2.0"
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
+    "sphinx.ext.napoleon",
     "sphinx.ext.autodoc",
     "sphinx.ext.coverage",
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
-    "sphinx.ext.napoleon",
     "matplotlib.sphinxext.plot_directive",
     # "nbsphinx",
     # "sphinx_gallery.load_style",

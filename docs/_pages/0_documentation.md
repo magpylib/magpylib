@@ -190,9 +190,9 @@ for src in col:
 
 (docu-graphic-output)=
 
-## Graphic output with `display`
+## Graphic output with `show`
 
-When all source and sensor objects are created and all paths are defined `display` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
+When all source and sensor objects are created and all paths are defined `show` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
 
 ```python
 import numpy as np
@@ -209,7 +209,7 @@ s2.move(np.linspace((-.2,0.,0.),(-20.,0.,0.),100), start=0)
 col.rotate_from_angax(np.linspace(5.,500.,100), 'z', anchor=0, start=0)
 
 # display
-magpy.display(*col, zoom=-.3, path=10)
+magpy.show(*col, zoom=-.3, style_path_show=10)
 
 ```
 

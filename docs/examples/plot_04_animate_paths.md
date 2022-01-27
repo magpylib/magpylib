@@ -42,7 +42,7 @@ coll = magpy.Collection(
     magpy.magnet.Sphere(magnetization=(0, 1, 0), diameter=dim),
 )
 
-ts = np.arange(-0.6, 0.6, 0.2)
+ts = np.linspace(-0.6, 0.6, 5)
 sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
 
 # Create paths
@@ -55,18 +55,20 @@ sens.move(np.linspace((0.,0.,5.), (0.,0.,-5.), 20), start=0)
 
 # display animation
 fig = go.Figure()
-magpy.display(
+magpy.show(
     *coll,
     sens,
     canvas=fig,
-    path='animate',
+    animation=3, #animation time set to 3 seconds
     zoom=0,
-    animate_time=2,
-    animate_fps=20,
-    animate_slider=True,
+    animation_fps=20,
+    animation_slider=True,
     backend="plotly",
 )
 fig.update_layout(height=800)
+```
+```{note}
+Note that the animation of the sensor stops earlier since it has a shorter path length.
 ```
 
 ```{warning}

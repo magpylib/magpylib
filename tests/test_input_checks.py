@@ -16,19 +16,19 @@ def init_dim_display1():
     """throw dimension init error from display"""
     src1 = magpy.current.Loop(current=1)
     src2 = magpy.magnet.Sphere(magnetization=(1,2,3))
-    magpy.display(src1, src2)
+    magpy.show(src1, src2)
 
 def init_dim_display2():
     """throw dimension init error from display"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.magnet.Cuboid(magnetization=(1,2,3))
-    magpy.display(src1, src2)
+    magpy.show(src1, src2)
 
 def init_dim_display3():
     """throw dimension init error from display"""
     src1 = magpy.current.Loop(current=1, diameter=2)
     src2 = magpy.current.Line(current=1)
-    magpy.display(src1, src2)
+    magpy.show(src1, src2)
 
 def init_dim_getBH1():
     """throw dimension init error from getB"""
@@ -40,7 +40,7 @@ def init_excite_display1():
     """throw excitation init error from display"""
     src1 = magpy.current.Loop(diameter=1)
     src2 = magpy.magnet.Sphere(diameter=2)
-    magpy.display(src1, src2, style_magnetization_show=True, style_arrow_show=True)
+    magpy.show(src1, src2, style_magnetization_show=True, style_arrow_show=True)
 
 def init_excite_getBH1():
     """throw excitation init error from getB"""
