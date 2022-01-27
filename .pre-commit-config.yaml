@@ -1,0 +1,44 @@
+repos:
+  - repo: https://github.com/pre-commit/pre-commit-hooks
+    rev: v4.1.0
+    hooks:
+      - id: check-yaml
+      - id: end-of-file-fixer
+      - id: trailing-whitespace
+      - id: end-of-file-fixer
+      - id: check-added-large-files
+      - id: debug-statements
+        language_version: python3
+
+  - repo: https://github.com/psf/black
+    rev: 21.12b0
+    hooks:
+      - id: black
+
+  - repo: https://github.com/asottile/reorder_python_imports
+    rev: v2.6.0
+    hooks:
+      - id: reorder-python-imports
+        args: [--py37-plus]
+
+  - repo: https://github.com/asottile/pyupgrade
+    rev: v2.31.0
+    hooks:
+      - id: pyupgrade
+        args: [--py37-plus]
+
+
+  - repo: local
+    hooks:
+      - id: pylint
+        name: pylint
+        entry: pylint
+        language: system
+        types: [python]
+        files: ^magpylib/
+        args: [
+            "-rn", # Only display messages
+            "-sn", # Don't display the score
+            "--rcfile=.pylintrc", # Link to your config file
+            #"--load-plugins=pylint.extensions.docparams", # Load an extension
+          ]
