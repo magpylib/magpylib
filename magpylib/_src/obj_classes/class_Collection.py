@@ -4,7 +4,8 @@ from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
     LIBRARY_SENSORS,
-    LIBRARY_SOURCES)
+    LIBRARY_SOURCES,
+)
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -285,7 +286,6 @@ class BaseCollection(BaseDisplayRepr):
         """
         return copy.copy(self)
 
-
     def set_children_styles(self, arg=None, **kwargs):
         """
         Set display style of all children in the Collection. Only matching properties
@@ -523,6 +523,10 @@ class Collection(BaseGeo, BaseCollection):
     >>> mCol.getB()
     """
 
-    def __init__(self, *args, position=(0.0, 0.0, 0.0), orientation=None, style=None):
-        BaseGeo.__init__(self, position=position, orientation=orientation, style=style)
+    def __init__(
+        self, *args, position=(0.0, 0.0, 0.0), orientation=None, style=None, **kwargs
+    ):
+        BaseGeo.__init__(
+            self, position=position, orientation=orientation, style=style, **kwargs
+        )
         BaseCollection.__init__(self, *args)
