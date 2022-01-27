@@ -104,7 +104,8 @@ def show(
 
     if backend == "matplotlib":
         if animation is not False:
-            msg = "The matplotlib backend does not support animation at the moment"
+            msg = "The matplotlib backend does not support animation at the moment. "
+            msg+= "Use plotly backend instead."
             warnings.warn(msg)
             # animation = False
         display_matplotlib(
