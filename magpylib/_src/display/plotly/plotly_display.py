@@ -101,7 +101,7 @@ def make_Loop(
     current=0.0,
     diameter=1.0,
     position=(0.0, 0.0, 0.0),
-    Nvert=50,
+    vert=50,
     orientation=None,
     color=None,
     style=None,
@@ -118,7 +118,7 @@ def make_Loop(
     )
     name, name_suffix = get_name_and_suffix("Loop", default_suffix, style)
     arrow_size = style.arrow.size if style.arrow.show else 0
-    vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
+    vertices = draw_arrowed_circle(current, diameter, arrow_size, vert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + position).T
@@ -137,7 +137,12 @@ def make_Loop(
 
 
 def make_DefaultTrace(
-    obj, position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -200,7 +205,14 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
+        dipole,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -219,9 +231,16 @@ def make_Cuboid(
     d = [unit_prefix(d / 1000) for d in dimension]
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
-    cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
+    cuboid = make_BaseCuboid(dimension=dimension)
     return _update_mag_mesh(
-        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
+        cuboid,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -246,10 +265,16 @@ def make_Cylinder(
         base_vertices=base_vertices,
         diameter=diameter,
         height=height,
-        position=(0.0, 0.0, 0.0),
     )
     return _update_mag_mesh(
-        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
+        cylinder,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -258,7 +283,7 @@ def make_CylinderSegment(
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    Nvert=25.0,
+    vert=25,
     style=None,
     **kwargs,
 ):
@@ -269,7 +294,7 @@ def make_CylinderSegment(
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
     default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
-    cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
+    cylinder_segment = make_BaseCylinderSegment(*dimension, vert=vert)
     return _update_mag_mesh(
         cylinder_segment,
         name,
@@ -284,7 +309,7 @@ def make_CylinderSegment(
 
 def make_Sphere(
     mag=(0.0, 0.0, 1000.0),
-    Nvert=15,
+    vert=15,
     diameter=1,
     position=(0.0, 0.0, 0.0),
     orientation=None,
@@ -297,11 +322,17 @@ def make_Sphere(
     """
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
-    sphere = make_BaseEllipsoid(
-        Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
-    )
+    vert = min(max(vert, 3), 20)
+    sphere = make_BaseEllipsoid(vert=vert, dimension=[diameter] * 3)
     return _update_mag_mesh(
-        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
     )
 
 
@@ -415,10 +446,15 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = getIntensity(
-                vertices=vertices, axis=magnetization,
+                vertices=vertices,
+                axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
+        mesh_dict,
+        orientation,
+        position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -516,7 +552,8 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -531,31 +568,37 @@ def get_plotly_traces(
             )
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
-            Nvert = min(
+            vert = min(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
+                mag=input_obj.magnetization,
+                dimension=input_obj.dimension,
+                vert=vert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization, diameter=input_obj.diameter,
+                mag=input_obj.magnetization,
+                diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment, autosize=autosize,
+                moment=input_obj.moment,
+                autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices, current=input_obj.current,
+                vertices=input_obj.vertices,
+                current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Loop):
             kwargs.update(
-                diameter=input_obj.diameter, current=input_obj.current,
+                diameter=input_obj.diameter,
+                current=input_obj.current,
             )
             make_func = make_Loop
         elif getattr(input_obj, "_object_type", None) == "Collection":
@@ -628,7 +671,7 @@ def get_plotly_traces(
             traces.append(trace)
 
         if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
-            scatter_path = make_path(input_obj,  style, legendgroup, kwargs)
+            scatter_path = make_path(input_obj, style, legendgroup, kwargs)
             traces.append(scatter_path)
 
     return traces
@@ -956,7 +999,13 @@ def animate_path(
     autosize = "return"
     for i, ind in enumerate(path_indices):
         kwargs["style_path_show"] = [ind]
-        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
+        frame = draw_frame(
+            objs,
+            color_sequence,
+            zoom,
+            autosize=autosize,
+            **kwargs,
+        )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:
@@ -973,7 +1022,10 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
+                    {
+                        "frame": {"duration": 0, "redraw": True},
+                        "mode": "immediate",
+                    },
                 ],
                 "label": str(ind + 1),
                 "method": "animate",

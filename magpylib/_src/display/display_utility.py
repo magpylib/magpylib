@@ -17,13 +17,17 @@ class MagpyMarkers:
 
 
 def place_and_orient_model3d(
-    model_dict, orientation=None, position=(0.0, 0.0, 0.0), coordsargs=None, **kwargs
+    model_dict, orientation=None, position=None, coordsargs=None, **kwargs
 ):
     """places and orients mesh3d dict"""
+    if orientation is None and position is None:
+        return {**model_dict, **kwargs}
+    if position is None:
+        position = (0.,0.,0.)
+    position = np.array(position, dtype=float)
     new_model_dict = {}
     if "args" in model_dict:
         new_model_dict["args"] = list(model_dict["args"])
-    position = np.array(position)
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}
@@ -111,9 +115,9 @@ def draw_arrow_from_vertices(vertices, current, arrow_size):
     return vertices
 
 
-def draw_arrowed_circle(current, diameter, arrow_size, Nvert):
+def draw_arrowed_circle(current, diameter, arrow_size, vert):
     """draws an oriented circle with an arrow"""
-    t = np.linspace(0, 2 * np.pi, Nvert)
+    t = np.linspace(0, 2 * np.pi, vert)
     x = np.cos(t)
     y = np.sin(t)
     if arrow_size != 0:
