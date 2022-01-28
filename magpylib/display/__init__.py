@@ -1,3 +1,5 @@
+# pylint: disable=line-too-long
+
 """
 display package
 
