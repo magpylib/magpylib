@@ -22,8 +22,7 @@ def place_and_orient_model3d(
     """places and orients mesh3d dict"""
     if orientation is None and position is None:
         return {**model_dict, **kwargs}
-    if position is None:
-        position = (0.,0.,0.)
+    position = (0.,0.,0.) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
     if "args" in model_dict:

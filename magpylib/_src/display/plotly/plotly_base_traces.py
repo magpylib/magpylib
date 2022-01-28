@@ -1,18 +1,19 @@
 """plotly base traces utility functions"""
-
+from functools import partial
 import numpy as np
 from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
 from magpylib._src.display.display_utility import place_and_orient_model3d
 
 
-def validate_pivot(pivot):
-    """validates pivot value"""
-    msg = f"""pivot must be one of `['tail', 'middle', 'tip']` or a number
-received value: {pivot!r}
+def base_validator(name, value, conditions):
+    """validates value based on dictionary of conditions"""
+    msg = f"""{name} must be one of `{tuple(conditions.keys())}`
+received value: {value!r}
 """
-    assert pivot in ("middle", "tail", "tip"), msg
-    return pivot
+    assert value in conditions.keys(), msg
+    return conditions[value]
 
+validate_pivot = partial(base_validator, 'pivot')
 
 def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=None, orientation=None) -> dict:
     """
@@ -310,14 +311,12 @@ def make_BaseCone(
     dict
         A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
     """
-    if pivot == "tail":
-        z_shift = height / 2
-    elif pivot == "tip":
-        z_shift = -height / 2
-    elif pivot == "middle":
-        z_shift = 0
-    else:
-        z_shift = validate_pivot(pivot)
+    pivot_conditions = {
+        "tail": height / 2,
+        "tip": -height / 2,
+        "middle": 0,
+    }
+    z_shift = validate_pivot(pivot, pivot_conditions)
     N = base_vertices
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
     c = np.array([np.cos(t), np.sin(t), t * 0 - 1]) * 0.5
@@ -378,12 +377,12 @@ def make_BaseArrow(
     """
 
     h, d, z = height, diameter, 0
-    if pivot == "tail":
-        z = h / 2
-    elif pivot == "tip":
-        z = -h / 2
-    elif pivot != "middle":
-        pivot = validate_pivot(pivot)
+    pivot_conditions = {
+        "tail": h / 2,
+        "tip": -h / 2,
+        "middle": 0,
+    }
+    z = validate_pivot(pivot, pivot_conditions)
     cone = make_BaseCone(
         base_vertices=base_vertices,
         diameter=d,
