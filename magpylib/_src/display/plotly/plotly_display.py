@@ -101,7 +101,7 @@ def make_Loop(
     current=0.0,
     diameter=1.0,
     position=(0.0, 0.0, 0.0),
-    Nvert=50,
+    vert=50,
     orientation=None,
     color=None,
     style=None,
@@ -118,7 +118,7 @@ def make_Loop(
     )
     name, name_suffix = get_name_and_suffix("Loop", default_suffix, style)
     arrow_size = style.arrow.size if style.arrow.show else 0
-    vertices = draw_arrowed_circle(current, diameter, arrow_size, Nvert)
+    vertices = draw_arrowed_circle(current, diameter, arrow_size, vert)
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + position).T
@@ -219,7 +219,7 @@ def make_Cuboid(
     d = [unit_prefix(d / 1000) for d in dimension]
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
-    cuboid = make_BaseCuboid(dimension=dimension, position=(0.0, 0.0, 0.0))
+    cuboid = make_BaseCuboid(dimension=dimension)
     return _update_mag_mesh(
         cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
@@ -243,10 +243,7 @@ def make_Cylinder(
     default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     name, name_suffix = get_name_and_suffix("Cylinder", default_suffix, style)
     cylinder = make_BasePrism(
-        base_vertices=base_vertices,
-        diameter=diameter,
-        height=height,
-        position=(0.0, 0.0, 0.0),
+        base_vertices=base_vertices, diameter=diameter, height=height,
     )
     return _update_mag_mesh(
         cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
@@ -258,7 +255,7 @@ def make_CylinderSegment(
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    Nvert=25.0,
+    vert=25,
     style=None,
     **kwargs,
 ):
@@ -269,7 +266,7 @@ def make_CylinderSegment(
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
     default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
-    cylinder_segment = make_BaseCylinderSegment(*dimension, Nvert=Nvert)
+    cylinder_segment = make_BaseCylinderSegment(*dimension, vert=vert)
     return _update_mag_mesh(
         cylinder_segment,
         name,
@@ -284,7 +281,7 @@ def make_CylinderSegment(
 
 def make_Sphere(
     mag=(0.0, 0.0, 1000.0),
-    Nvert=15,
+    vert=15,
     diameter=1,
     position=(0.0, 0.0, 0.0),
     orientation=None,
@@ -297,9 +294,8 @@ def make_Sphere(
     """
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
-    sphere = make_BaseEllipsoid(
-        Nvert=Nvert, dimension=[diameter] * 3, position=(0.0, 0.0, 0.0)
-    )
+    vert = min(max(vert, 3), 20)
+    sphere = make_BaseEllipsoid(vert=vert, dimension=[diameter] * 3)
     return _update_mag_mesh(
         sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
@@ -531,11 +527,11 @@ def get_plotly_traces(
             )
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
-            Nvert = min(
+            vert = min(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization, dimension=input_obj.dimension, Nvert=Nvert,
+                mag=input_obj.magnetization, dimension=input_obj.dimension, vert=vert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
@@ -558,7 +554,7 @@ def get_plotly_traces(
                 diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
-        elif getattr(input_obj, "_object_type", None) == "Collection":
+        elif getattr(input_obj, "children", None) is not None:
             make_func = None
         else:
             kwargs.update(obj=input_obj)
@@ -628,7 +624,7 @@ def get_plotly_traces(
             traces.append(trace)
 
         if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
-            scatter_path = make_path(input_obj,  style, legendgroup, kwargs)
+            scatter_path = make_path(input_obj, style, legendgroup, kwargs)
             traces.append(scatter_path)
 
     return traces
@@ -700,19 +696,20 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
         first_shown = False
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
-                if (subobj.style.model3d.show and not first_shown) or ind == len(
-                    subobjs
-                ):  # take name of parent
+                if (
+                    subobj.style.model3d.show or ind + 1 == len(subobjs)
+                ) and not first_shown:
+                    # take name of parent
                     first_shown = True
+                    if getattr(subobj, "children", None) is not None:
+                        first_shown = any(m3.show for m3 in obj.style.model3d.extra)
                     showlegend = True
                     legendtext = getattr(getattr(obj, "style", None), "name", None)
-                    legendtext = (
-                        getattr(obj, "name", None) if legendtext is None else legendtext
-                    )
                     legendtext = f"{obj!r}" if legendtext is None else legendtext
                 else:
                     legendtext = None
                     showlegend = False
+                # print(f"{ind+1:02d}/{len(subobjs):02d} {legendtext=}, {showlegend=}")
             else:
                 showlegend = True
                 legendtext = None
