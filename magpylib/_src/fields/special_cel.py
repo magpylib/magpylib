@@ -165,39 +165,39 @@ def cel_loop_stable(k2):
     return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
 
 
-def cel_loop_stable_old(k2):
-    """
-    numerically stabilized version of the function
-        xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2)
-        needed for the current.loop fields. See paper
-        Leitner2021
-    """
-    n = len(k2)
-    result = np.empty(n)
+# def cel_loop_stable_old(k2):
+#     """
+#     numerically stabilized version of the function
+#         xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2)
+#         needed for the current.loop fields. See paper
+#         Leitner2021
+#     """
+#     n = len(k2)
+#     result = np.empty(n)
 
-    mask1 = (k2 > 0.04)
+#     mask1 = (k2 > 0.04)
 
-    if np.any(mask1):
-        k2m = k2[mask1]
-        result[mask1] = cel(np.sqrt(1-k2m), np.ones(np.sum(mask1)), k2m, k2m*(k2m-1))
-    if np.any(~mask1):
-        result[~mask1] = cel_loop_taylor0(k2[~mask1])
-    return result
+#     if np.any(mask1):
+#         k2m = k2[mask1]
+#         result[mask1] = cel(np.sqrt(1-k2m), np.ones(np.sum(mask1)), k2m, k2m*(k2m-1))
+#     if np.any(~mask1):
+#         result[~mask1] = cel_loop_taylor0(k2[~mask1])
+#     return result
 
 
-def cel_loop_taylor0(k2):
-    """
-    taylor expansion of the function xi_loop about k2=0
-        See paper Leitner2021
-    """
-    C2 = 0.5890486225480862
-    C3 = 0.1472621556370216
-    C4 = 0.06902913545485386
-    C5 = 0.04026699568199808
-    C6 = 0.02642521591631124
-    C7 = 0.01868640268367724
-    C8 = 0.01391747699878044
-    C9 = 0.01076947624905629
-    C10 = 0.008581926385966734
-    return (C2*k2**2 + C3*k2**3 + C4*k2**4 + C5*k2**5
-        + C6*k2**6 + C7*k2**7 + C8*k2**8 + C9*k2**9 + C10*k2**10)
+# def cel_loop_taylor0(k2):
+#     """
+#     taylor expansion of the function xi_loop about k2=0
+#         See paper Leitner2021
+#     """
+#     C2 = 0.5890486225480862
+#     C3 = 0.1472621556370216
+#     C4 = 0.06902913545485386
+#     C5 = 0.04026699568199808
+#     C6 = 0.02642521591631124
+#     C7 = 0.01868640268367724
+#     C8 = 0.01391747699878044
+#     C9 = 0.01076947624905629
+#     C10 = 0.008581926385966734
+#     return (C2*k2**2 + C3*k2**3 + C4*k2**4 + C5*k2**5
+#         + C6*k2**6 + C7*k2**7 + C8*k2**8 + C9*k2**9 + C10*k2**10)
