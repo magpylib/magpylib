@@ -357,8 +357,8 @@ def display_matplotlib(
 
     # draw faced objects and store vertices
     points = []
-    dipoles_color = []
-    sensors_color = []
+    dipoles = []
+    sensors = []
     faced_objects_color = []
 
     for semi_flat_obj, color in zip(obj_list_semi_flat, cycle(color_sequence)):
@@ -371,11 +371,11 @@ def display_matplotlib(
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
             path = style.path.show
-            color = style.color if style.color is not None else color
+            obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
             if obj.style.model3d.extra:
-                draw_model3d_extra(obj, style, path, ax, color)
+                draw_model3d_extra(obj, style, path, ax, obj_color)
             if obj.style.model3d.show:
                 if obj._object_type == "Cuboid":
                     lw = 0.5
@@ -392,7 +392,7 @@ def display_matplotlib(
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     arrow_width = style.arrow.width
                     points += draw_line(
-                        [obj], path, color, arrow_size, arrow_width, ax
+                        [obj], path, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Loop":
                     if style.arrow.show:
@@ -400,24 +400,24 @@ def display_matplotlib(
                     arrow_width = style.arrow.width
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     points += draw_circular(
-                        [obj], path, color, arrow_size, arrow_width, ax
+                        [obj], path, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Sensor":
-                    sensors_color += [color]
+                    sensors.append((obj, obj_color))
                     points += draw_pixel(
                         [obj],
                         ax,
-                        color,
+                        obj_color,
                         style.pixel.color,
                         style.pixel.size,
                         style.pixel.symbol,
                         path,
                     )
                 elif obj._object_type == "Dipole":
-                    dipoles_color += [color]
+                    dipoles.append((obj, obj_color))
                     points += [obj.position]
                 elif obj._object_type == "CustomSource":
-                    draw_markers(np.array([obj.position]), ax, color, symbol="*", size=10)
+                    draw_markers(np.array([obj.position]), ax, obj_color, symbol="*", size=10)
                     name = (
                         obj.style.name
                         if obj.style.name is not None
@@ -426,14 +426,14 @@ def display_matplotlib(
                     ax.text(*obj.position, name, horizontalalignment="center")
                     points += [obj.position]
                 if faces is not None:
-                    faced_objects_color += [color]
+                    faced_objects_color += [obj_color]
                     alpha = style.opacity
-                    pts = draw_faces(faces, color, lw, alpha, ax)
+                    pts = draw_faces(faces, obj_color, lw, alpha, ax)
                     points += [np.vstack(pts).reshape(-1, 3)]
                     if style.magnetization.show:
                         check_excitations([obj])
                         pts = draw_directs_faced(
-                            [obj], [color], ax, path, style.magnetization.size
+                            [obj], [obj_color], ax, path, style.magnetization.size
                         )
                         points += pts
             if path:
@@ -441,7 +441,7 @@ def display_matplotlib(
                 if style.path.show:
                     points += draw_path(
                         obj,
-                        color,
+                        obj_color,
                         marker.symbol,
                         marker.size,
                         marker.color,
@@ -474,17 +474,14 @@ def display_matplotlib(
     ranges = np.array([c - m * (1 + zoom), c + m * (1 + zoom)]).T
 
     # draw all system sized based quantities -------------------------
-    # sensors
-    sensors = [obj for obj in obj_list_semi_flat if obj._object_type == "Sensor"]
-
-    # dipoles
-    dipoles = [obj for obj in obj_list_semi_flat if obj._object_type == "Dipole"]
 
     # not optimal for loop if many sensors/dipoles
-    for sensor in sensors:
+    for sens in sensors:
+        sensor, color = sens
         style = get_style(sensor, Config, **kwargs)
         draw_sensors([sensor], ax, sys_size, path, style.size)
-    for dipole, color in zip(dipoles, dipoles_color):
+    for dip in dipoles:
+        dipole, color = dip
         style = get_style(dipole, Config, **kwargs)
         draw_dipoles([dipole], ax, sys_size, path, style.size, color, style.pivot)
 
