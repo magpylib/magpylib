@@ -134,6 +134,40 @@ def cel(kcv:np.ndarray, pv:np.ndarray, cv:np.ndarray, sv:np.ndarray) ->np.ndarra
 def cel_loop_stable(k2):
     """
     numerically stabilized version of the function
+    xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2) = cel(np.sqrt(1-k2), 1, k2, k2*(k2-1))
+    needed for the circular current loop field. This modicfication of the cel()
+    algorithm is numerically stable when k2 becomes small.
+    """
+    # if k2 == 0: return 0    # on axis
+
+    pp = 1-k2          # allocate pp and use temporarily for 1-k2
+    k  = np.sqrt(pp)
+    kk = 1+k           # allocate pp and use temporarily for 1+k
+
+    g  = 1 if isinstance(k2,float) else np.ones(len(k2))
+    cc = k2**2
+    ss = 2*k2**2*pp/(kk-k2)
+    pp = kk
+    em = kk
+    kk = k
+
+    errtol = .000001
+    while np.any(abs(g-k) > g*errtol):
+        k = 2*np.sqrt(kk)
+        kk = k*em
+        f = cc
+        cc = cc + ss/pp
+        g = kk/pp
+        ss = 2*(ss + f*g)
+        pp = g + pp
+        g = em
+        em = k+em
+    return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
+
+
+def cel_loop_stable_old(k2):
+    """
+    numerically stabilized version of the function
         xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2)
         needed for the current.loop fields. See paper
         Leitner2021

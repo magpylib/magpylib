@@ -41,7 +41,7 @@ def field_BH_loop(
     mask0 = (r==r0)*(z==0)
 
     # forward only non-singularity observer positions for computation--------
-    Br, Bz = current_loop_B_Leitner2021(r0[~mask0], pos_obs_cy[~mask0]).T
+    Br, Bz = current_loop_Bfield(r0[~mask0], pos_obs_cy[~mask0]).T
 
     # insert non-singular computations into total vectors----------------------
     Br_all[~mask0] = Br
@@ -61,9 +61,9 @@ def field_BH_loop(
 
 
 # ON INTERFACE
-def current_loop_B_Leitner2021(
+def current_loop_Bfield(
     radius: np.ndarray,
-    pos_obs: np.ndarray
+    observer: np.ndarray
     ) -> np.ndarray:
     """
     B-field in cylindrical CS of circular line-current loop. The
@@ -76,13 +76,13 @@ def current_loop_B_Leitner2021(
     radius: ndarray, shape (n,)
         radius of current loop in units of [mm].
 
-    pos_obs: ndarray, shape (n,2)
+    observer: ndarray, shape (n,2)
         position of observer in cylindrical coordinates (r, z)
         in units of [mm].
 
     Returns
     -------
-    B-field: ndarray
+    B-field: ndarray, shape (n,2)
         B-field of current loop in cylindrical coordinates (Br, Bz),
         shape (n,2) in units of [mT].
 
@@ -94,7 +94,7 @@ def current_loop_B_Leitner2021(
     >>> import magpylib as magpy
     >>> rad = np.array([1,2,3])
     >>> obs = np.array([(1,1), (2,2), (3,3)])
-    >>> B = magpy.lib.current_loop_B_Smythe1950(rad, obs)
+    >>> B = magpy.lib.current_loop_Bfield(rad, obs)
     >>> print(B)
     [[1.14331448 0.96483239]
      [0.57165724 0.48241619]
@@ -113,15 +113,15 @@ def current_loop_B_Leitner2021(
     Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
     IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
 
-    Leitner, "work in progress"
+    Leitner/Ortner, "work in progress"
     """
 
     # inputs   -----------------------------------------------------------
     r0 = radius
-    r, z = pos_obs.T
+    r, z = observer.T
     n = len(r0)
 
-    # make dimensionless
+    # make dimensionless (express through ratios)
     rb = r/r0
     zb = z/r0
 

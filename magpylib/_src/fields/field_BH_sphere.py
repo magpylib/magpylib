@@ -9,7 +9,7 @@ import numpy as np
 def field_BH_sphere(
         bh: bool,
         mag: np.ndarray,
-        dim: np.ndarray,
+        dia: np.ndarray,
         pos_obs: np.ndarray
         ) -> np.ndarray:
     """
@@ -31,30 +31,76 @@ def field_BH_sphere(
     B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
 
-    x, y, z = np.copy(pos_obs.T)
-    r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
-    radius = dim/2
-
-    # inside field & allocate
-    B = mag*2/3
-
-    # overwrite outside field
-    # special case mag=0 automatically reflected in field formulas
-    mask_out = r>=radius
-
-    mag1 = mag[mask_out]
-    poso1 = pos_obs[mask_out]
-    r1 = r[mask_out]
-    dim1 = dim[mask_out]
-    val = (3*(np.sum(mag1*poso1,axis=1)*poso1.T)/r1**5 - mag1.T/r1**3)*dim1**3/24
-    B[mask_out] = val.T
-
-    # return B
+    B = magnet_sphere_Bfield(mag, dia, pos_obs)
     if bh:
         return B
 
     # adjust and return H
-    mask_in = ~mask_out
+    # as a result of bad code layout the inside-outside check is repeated here.
+    # this should be done in the function magnet_sphere_Bfield that is kept
+    # simple because itlies at the lib interface.
+
+    x, y, z = np.copy(pos_obs.T)
+    r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
+    mask_in = (r<dia/2)
     B[mask_in] = -mag[mask_in]/3
     H = B*10/4/np.pi
     return H
+
+
+def magnet_sphere_Bfield(
+    magnetization: np.ndarray,
+    diameter: np.ndarray,
+    observer: np.ndarray,
+    )->np.ndarray:
+    """
+    The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
+    field on the outside and is 2/3*mag in the inside (see e.g. "Theoretical Physics, Bertelmann")
+
+    Parameters:
+    -----------
+    - magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of mT
+    - radius: ndarray, shape (n,3)
+        Sphere diameter
+    - observer: ndarray, shape (n,3)
+        Position of observers in units of mm
+
+    Returns
+    -------
+    B-field: ndarray, shape (n,3)
+        B-field of magnet in cartesian coordinates (Bx, By, Bz) in units of [mT].
+
+    Examples
+    --------
+    Compute the field of two different spherical magnets at position (1,1,1),
+    inside and outside.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> dia = np.array([1,5])
+    >>> obs = np.array([(1,1,1), (1,1,1)])
+    >>> mag = np.array([(1,2,3), (0,0,3)])
+    >>> B = magpy.lib.magnet_sphere_Bfield(mag, dia, obs)
+    >>> print(B)
+    [[0.04009377 0.03207501 0.02405626]
+     [0.         0.         2.        ]]
+    """
+    x, y, z = np.copy(observer.T)
+    r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
+
+    # inside field & allocate
+    B = magnetization*2/3
+
+    # overwrite outside field entries
+    mask_out = (r>=diameter/2)
+
+    mag1 = magnetization[mask_out]
+    obs1 = observer[mask_out]
+    r1 = r[mask_out]
+    dim1 = diameter[mask_out]
+
+    field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*dim1**3/24
+    B[mask_out] = field_out.T
+
+    return B
