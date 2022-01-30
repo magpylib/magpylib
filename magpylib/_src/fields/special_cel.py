@@ -144,9 +144,9 @@ def cel_loop_stable(k2):
     k  = np.sqrt(pp)
     kk = 1+k           # allocate pp and use temporarily for 1+k
 
-    g  = 1 if isinstance(k2,float) else np.ones(len(k2))
+    g  = 1 if isinstance(k2,(float,int)) else np.ones(len(k2))
     cc = k2**2
-    ss = 2*k2**2*pp/(kk-k2)
+    ss = 2*cc*pp/(kk-k2)
     pp = kk
     em = kk
     kk = k
@@ -162,7 +162,7 @@ def cel_loop_stable(k2):
         pp = g + pp
         g = em
         em = k+em
-    return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
+    return (np.pi/2)*(ss+cc*em)/(em*(em+pp))
 
 
 # def cel_loop_stable_old(k2):

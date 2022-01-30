@@ -47,16 +47,16 @@ def test_Loop_basic_H():
     assert np.allclose(H, Htest)
 
 
-def test_Cicular_problem_positions():
-    """ Loop on z and on loop
-    """
-    src = magpy.current.Loop(current=1, diameter=2)
-    sens = magpy.Sensor()
-    sens.move([[0,1,0],[1,0,0]], start=1)
+# def test_Cicular_problem_positions():
+#     """ Loop on z and on loop
+#     """
+#     src = magpy.current.Loop(current=1, diameter=2)
+#     sens = magpy.Sensor()
+#     sens.move([[0,1,0],[1,0,0]], start=1)
 
-    B = src.getB(sens)
-    Btest = np.array([[0,0,0.6283185307179586], [0,0,0], [0,0,0]])
-    assert np.allclose(B, Btest)
+#     B = src.getB(sens)
+#     Btest = np.array([[0,0,0.6283185307179586], [0,0,0], [0,0,0]])
+#     assert np.allclose(B, Btest)
 
 
 def test_repr():

@@ -2,7 +2,7 @@
 Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
-# pylint: disable=no-name-in-module
+# pylint: disable=no-name-in-module # reason scipy.special.ellipe import
 
 import numpy as np
 from scipy.special import ellipe
@@ -17,42 +17,38 @@ def field_BH_loop(
     ) -> list:
     """
     Field of circular current loop.
-    - wraps fundamental implementation Smythe1950
+
+    - wraps fundamental implementation
     - selects B or H
-    - sets singularity at wire to 0
     - Cylinder CS <-> Cartesian CS
+
+    Parameters:
+    ----------
+    - bh: boolean, True=B, False=H
+    - current: ndarray shape (n,), current in units of [A]
+    - dia: ndarray shape (n,), diameter in units of [mm]
+    - pos_obs: ndarray shape (n,3), position of observer in units of mm
+
+    Returns:
+    --------
+    B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
     # pylint: disable=too-many-locals
 
     x, y, z = pos_obs.T
     r0 = dia/2
-    n = len(x)
 
-    # cylindrical coordinates ----------------------------------------------
+    # cylindrical coordinates
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
     pos_obs_cy = np.concatenate(((r,),(z,)),axis=0).T
 
-    # allocate fields as zeros ----------------------------------------------
-    #    singularities will become zero, other will be overwritten
-    Br_all = np.zeros(n)
-    Bz_all = np.zeros(n)
+    # compute field
+    Br, Bz = current_loop_Bfield(current, r0, pos_obs_cy).T
 
-    # determine singularity positions (pos_obs on wire) ------------------------
-    mask0 = (r==r0)*(z==0)
-
-    # forward only non-singularity observer positions for computation--------
-    Br, Bz = current_loop_Bfield(r0[~mask0], pos_obs_cy[~mask0]).T
-
-    # insert non-singular computations into total vectors----------------------
-    Br_all[~mask0] = Br
-    Bz_all[~mask0] = Bz
-
-    # transform field to cartesian CS -----------------------------------------
-    Bx = Br_all*np.cos(phi)
-    By = Br_all*np.sin(phi)
-    B_cart = np.concatenate(((Bx,),(By,),(Bz_all,)),axis=0) # ugly but fast
-
-    B_cart *= current/10
+    # transform field to cartesian CS
+    Bx = Br*np.cos(phi)
+    By = Br*np.sin(phi)
+    B_cart = np.concatenate(((Bx,),(By,),(Bz,)),axis=0) # ugly but fast
 
     # B or H field
     if bh:
@@ -62,19 +58,24 @@ def field_BH_loop(
 
 # ON INTERFACE
 def current_loop_Bfield(
+    current: np.ndarray,
     radius: np.ndarray,
     observer: np.ndarray
     ) -> np.ndarray:
     """
     B-field in cylindrical CS of circular line-current loop. The
     current loop lies in the z=0 plane with the origin at its center.
-    The field is computed with 12-14 digits precision. Implementation
-    from [Leitner2021].
+
+    The field is computed with 12-14 digits precision. On the loop the
+    result is set 0 (instead of nan). Implementation from Ortner/Leitner wip.
 
     Parameters
     ----------
+    current: ndarray, shape (n,)
+        Current in loop in units of [A]
+
     radius: ndarray, shape (n,)
-        radius of current loop in units of [mm].
+        Radius of current loop in units of [mm].
 
     observer: ndarray, shape (n,2)
         position of observer in cylindrical coordinates (r, z)
@@ -92,13 +93,14 @@ def current_loop_Bfield(
 
     >>> import numpy as np
     >>> import magpylib as magpy
+    >>> cur = np.array([1,1,2])
     >>> rad = np.array([1,2,3])
     >>> obs = np.array([(1,1), (2,2), (3,3)])
-    >>> B = magpy.lib.current_loop_Bfield(rad, obs)
+    >>> B = magpy.lib.current_loop_Bfield(cur, rad, obs)
     >>> print(B)
-    [[1.14331448 0.96483239]
-     [0.57165724 0.48241619]
-     [0.38110483 0.3216108 ]]
+    [[0.11433145 0.09648324]
+     [0.05716572 0.04824162]
+     [0.07622097 0.06432216]]
 
     Notes
     -----
@@ -116,31 +118,51 @@ def current_loop_Bfield(
     Leitner/Ortner, "work in progress"
     """
 
-    # inputs   -----------------------------------------------------------
-    r0 = radius
+    n = len(radius)
     r, z = observer.T
-    n = len(r0)
 
-    # make dimensionless (express through ratios)
-    rb = r/r0
-    zb = z/r0
+    # allocate with zeros to deal with special cases ON_LOOP and RADIUS=0
+    B_total = np.zeros((n,2))
+    mask_radius0 = radius==0
+    mask_on_loop = np.logical_and(radius==r, z==0)
+    mask_general = ~np.logical_or(mask_radius0, mask_on_loop)
+
+    # collect general case inputs
+    r = r[mask_general]
+    z = z[mask_general]
+    radius = radius[mask_general]
+    current = current[mask_general]
+    n = len(radius)
+
+    # express through ratios (make dimensionless, avoid large/small input values)
+    rb = r/radius
+    zb = z/radius
 
     # pre-compute small quantities that might not be cached
     z2 = zb**2
     brack = (z2+(rb+1)**2)
     k2 = 4*rb/brack
-    pf = 1/np.sqrt(brack)/(1-k2)/r0
     xi = cel_loop_stable(k2)
 
-    # rb=0 requires special treatment
+    # rb=0 (on z-axis) requires special treatment because ellipe(x)/x and
+    # cel(x)/x for x->0 both appear in the expressions, both are finite at x=0
+    # but evaluation gives 0/0=nan
+    # To avoid treating x=0 as a special case (with masks), one would have to find
+    # designated algorithms for these expressions (which require additional evaluation
+    # and computation time because xi must be evaluated in any case).
+
     mask1 = rb==0
     z_over_r = np.zeros(n)
     k2_over_rb = np.ones(n)*4/(z2+1)
     z_over_r[~mask1] = zb[~mask1]/rb[~mask1]    # will be zero when r=0
-    k2_over_rb[~mask1] = k2[~mask1]/rb[~mask1] # will be zero when r=0
+    k2_over_rb[~mask1] = k2[~mask1]/rb[~mask1]  # will be zero when r=0
 
     # field components
+    pf = 1/np.sqrt(brack)/(1-k2)/radius
     Br = pf * z_over_r * xi
     Bz = pf * (k2_over_rb*ellipe(k2) - xi)
 
-    return np.array([Br, Bz]).T
+    # current and [mT] unit
+    B_total[mask_general] = (np.array([Br, Bz])*current).T/10
+
+    return B_total

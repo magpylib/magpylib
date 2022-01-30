@@ -13,18 +13,16 @@ def field_BH_sphere(
         pos_obs: np.ndarray
         ) -> np.ndarray:
     """
-    The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
-    field on the outside and is 2/3*mag in the inside (see e.g. "Theoretical Physics, Bertelmann")
+    wraps fundamental sphere field computation
 
-    - separate mag=0 cases (returning 0)
     - select B or H
 
     Paramters:
     ----------
-    - bh (boolean): True=B, False=H
-    - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
-    - dim (ndarray Nx3): Sphere diameter
-    - pos_obs (ndarray Nx3): position of observer in units of mm
+    - bh: boolean, True=B, False=H
+    - mag: ndarray shape (n,3), magnetization vector in units of mT
+    - dia: ndarray shape (n,), diameter in units of [mm]
+    - pos_obs: ndarray shape (n,3), position of observer in units of mm
 
     Returns:
     --------
@@ -37,8 +35,8 @@ def field_BH_sphere(
 
     # adjust and return H
     # as a result of bad code layout the inside-outside check is repeated here.
-    # this should be done in the function magnet_sphere_Bfield that is kept
-    # simple because itlies at the lib interface.
+    # this should be done in the function magnet_sphere_Bfield() which is kept
+    # simple because it lies at the lib interface.
 
     x, y, z = np.copy(pos_obs.T)
     r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm

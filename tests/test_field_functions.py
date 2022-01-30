@@ -1,11 +1,12 @@
 import pickle
 import os
 import numpy as np
+from numpy.testing import assert_allclose
 from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid
 from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._src.fields.field_BH_sphere import field_BH_sphere
-from magpylib._src.fields.field_BH_dipole import field_BH_dipole
-from magpylib._src.fields.field_BH_loop import field_BH_loop
+from magpylib._src.fields.field_BH_dipole import field_BH_dipole, dipole_Bfield
+from magpylib._src.fields.field_BH_loop import field_BH_loop, current_loop_Bfield
 from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 
@@ -56,7 +57,7 @@ def test_field_BH_cuboid():
     for dim,pos in zip(dims,poss):
         Btest += [field_BH_cuboid(True, mag, dim, pos)]
     Btest = np.array(Btest)
-    assert np.allclose(B, Btest), 'Cuboid field computation broken'
+    assert_allclose(B, Btest)
 
 
 def test_field_BH_cuboid_mag0():
@@ -67,7 +68,7 @@ def test_field_BH_cuboid_mag0():
     dim = np.random.rand(n,3)
     pos = np.random.rand(n,3)
     B = field_BH_cuboid(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Cuboid magnetization=0 case broken'
+    assert_allclose(mag,B)
 
 
 def test_field_BH_cylinder_tile_mag0():
@@ -82,7 +83,7 @@ def test_field_BH_cylinder_tile_mag0():
     dim = np.array([r1,r2,phi1,phi2,z1,z2]).T
     pos = np.random.rand(n,3)
     B = field_BH_cylinder_tile(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'CylinderTile magnetization=0 case broken'
+    assert_allclose(mag,B)
 
 
 def test_field_sphere_vs_v2():
@@ -103,7 +104,7 @@ def test_field_sphere_vs_v2():
     poso = np.array([(0,0,0),(.2,.2,.2),(.4,.4,.4),(-1,-1,-2),(.1,.1,.1),(1,2,-3),(-3,2,1)])
     B = field_BH_sphere(True, mag, dim, poso )
 
-    assert np.allclose(result_v2, B), 'vs_v2 failed'
+    assert_allclose(result_v2, B, rtol=1e-6)
 
 
 def test_field_BH_sphere_mag0():
@@ -114,7 +115,7 @@ def test_field_BH_sphere_mag0():
     dim = np.random.rand(n)
     pos = np.random.rand(n,3)
     B = field_BH_sphere(True, mag, dim, pos)
-    assert np.allclose(mag,B), 'Cuboid magnetization=0 case broken'
+    assert_allclose(mag,B)
 
 
 def test_field_dipole1():
@@ -128,22 +129,25 @@ def test_field_dipole1():
         (0.0122722,-0.01022683,-0.02727156),
         ])
 
-    assert np.allclose(B,Btest)
+    assert_allclose(B, Btest, rtol=1e-6)
 
 
 def test_field_dipole2():
     """ test nan return when pos_obs=0
     """
-    poso = np.array([(0,0,0)])
-    mom = np.array([(-1,2,3)])
-    np.seterr(all='ignore')
-    B = field_BH_dipole(True, mom, poso)*np.pi
-    np.seterr(all='warn')
+    moment = np.array([(100,200,300)]*2 + [(0,0,0)]*2)
+    observer = np.array([(0,0,0),(1,2,3)]*2)
+    B = dipole_Bfield(moment, observer)
 
-    assert all(np.isnan(B[0]))
+    assert all(np.isinf(B[0]))
+    assert_allclose(B[1:],
+        [[0.3038282,  0.6076564,  0.91148459],
+         [0.,         0.,         0.        ],
+         [0.,         0.,         0.        ]])
 
 
-def test_field_circular():
+
+def test_field_loop():
     """ test if field function gives correct outputs
     """
     # from hyperphysics
@@ -166,22 +170,22 @@ def test_field_circular():
         [-0.27939151,  0.27939151,  0.01220605],
         [ 3.25697271,  0.32569727, -5.49353046]]
 
-    pos_test = np.array(pos_test_hyper + pos_test_mag2 + [[1,0,0]])
-    Btest = np.array(Btest_hyper + Btest_mag2 + [[0,0,0]])
+    pos_test = np.array(pos_test_hyper + pos_test_mag2)
+    Btest = np.array(Btest_hyper + Btest_mag2)
 
-    current = np.array([1,1] + [123]*8 + [123])
-    dim = np.array([2,2] + [2]*8 + [2])
+    current = np.array([1,1] + [123]*8)
+    dim = np.array([2,2] + [2]*8)
 
     B = field_BH_loop(True, current, dim, pos_test)
 
-    assert np.allclose(B, Btest)
+    assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest*10/4/np.pi
     H = field_BH_loop(False, current, dim, pos_test)
-    assert np.allclose(H, Htest)
+    assert_allclose(H, Htest, rtol=1e-6)
 
 
-def test_field_circular2():
+def test_field_loop2():
     """ test if field function accepts correct inputs
     """
     curr = np.array([1])
@@ -194,8 +198,20 @@ def test_field_circular2():
     poso = np.array([[0,0,0]]*2)
     B2 = field_BH_loop(True, curr, dim, poso)
 
-    assert np.allclose(B,B2[0])
-    assert np.allclose(B,B2[1])
+    assert_allclose(B, (B2[0],))
+    assert_allclose(B, (B2[1],))
+
+
+def test_field_loop_specials():
+    """ test loop special cases
+    """
+    cur = np.array([1,1,1,1,0,2])
+    rad = np.array([1,1,0,0,1,1])
+    obs = np.array([(0,0), (1,0), (0,0), (1,0), (1,0), (0,0)])
+
+    B = current_loop_Bfield(cur, rad, obs)
+    Btest = [[0.,0.62831853], [0,0], [0,0], [0,0], [0,0], [0,1.25663706]]
+    assert_allclose(B, Btest)
 
 
 def test_field_line():
@@ -210,18 +226,18 @@ def test_field_line():
     # only normal
     B1 = field_BH_line(True, c1, ps1, pe1, po1)
     x1 = np.array([[ 0.02672612, -0.05345225, 0.02672612]])
-    assert np.allclose(x1, B1)
+    assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
     po1b = np.array([(1,1,1)])
     B2 = field_BH_line(True, c1, ps1, pe1, po1b)
     x2 = np.zeros((1,3))
-    assert np.allclose(x2, B2)
+    assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
     B3 = field_BH_line(True, c1, ps1, ps1, po1)
     x3 = np.zeros((1,3))
-    assert np.allclose(x3, B3)
+    assert_allclose(x3, B3, rtol=1e-6)
 
     # only on_line and zero_segment
     c2 = np.array([1]*2)
@@ -230,19 +246,19 @@ def test_field_line():
     po2 = np.array([(1,2,3),(1,1,1)])
     B4 = field_BH_line(True, c2, ps2, pe2, po2)
     x4 = np.zeros((2,3))
-    assert np.allclose(x4, B4)
+    assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
     po2b = np.array([(1,2,3),(1,2,3)])
     B5 = field_BH_line(True, c2, ps2, pe2, po2b)
     x5 = np.array([[0,0,0],[ 0.02672612, -0.05345225, 0.02672612]])
-    assert np.allclose(x5, B5)
+    assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
     pe2b = np.array([(2,2,2)]*2)
     B6 = field_BH_line(True, c2, ps2, pe2b, po2)
     x6 = np.array([[0.02672612, -0.05345225, 0.02672612],[0,0,0]])
-    assert np.allclose(x6, B6)
+    assert_allclose(x6, B6, rtol=1e-6)
 
     # normal + zero_segment + on_line
     c4 = np.array([1]*3)
@@ -251,7 +267,7 @@ def test_field_line():
     po4 = np.array([(1,2,3),(1,2,3),(1,1,1)])
     B7 = field_BH_line(True, c4, ps4, pe4, po4)
     x7 = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])
-    assert np.allclose(x7, B7)
+    assert_allclose(x7, B7, rtol=1e-6)
 
 
 def test_field_line_from_vert():
@@ -277,4 +293,4 @@ def test_field_line_from_vert():
             B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
     B = np.array(B)
 
-    assert np.allclose(B_vert, B)
+    assert_allclose(B_vert, B)
