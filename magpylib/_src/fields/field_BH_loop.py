@@ -72,7 +72,7 @@ def current_loop_Bfield(
     Parameters
     ----------
     current: ndarray, shape (n,)
-        Current in loop in units of [A].
+        Electrical current in loop in units of [A].
 
     radius: ndarray, shape (n,)
         Radius of current loop in units of [mm].

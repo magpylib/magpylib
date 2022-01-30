@@ -7,7 +7,7 @@ from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._src.fields.field_BH_sphere import field_BH_sphere
 from magpylib._src.fields.field_BH_dipole import field_BH_dipole, dipole_Bfield
 from magpylib._src.fields.field_BH_loop import field_BH_loop, current_loop_Bfield
-from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert
+from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert, current_line_Bfield
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 # # GENERATE TEST DATA
@@ -294,3 +294,22 @@ def test_field_line_from_vert():
     B = np.array(B)
 
     assert_allclose(B_vert, B)
+
+
+def test_field_line_v4():
+    """ test current_line_Bfield() for all cases
+    """
+    cur = np.array([1]*7)
+    start = np.array([(-1,0,0)]*7)
+    end = np.array([(1,0,0), (-1,0,0), (1,0,0), (-1,0,0)] + [(1,0,0)]*3)
+    obs = np.array([(0,0,1),(0,0,0), (0,0,0), (0,0,0), (0,0,1e-16), (2,0,1), (-2,0,1)])
+    B = current_line_Bfield(cur, start, end, obs)
+    Btest = np.array(
+        [[0, -0.14142136, 0],
+         [0,  0.        , 0],
+         [0,  0.        , 0],
+         [0,  0.        , 0],
+         [0,  0.        , 0],
+         [0, -0.02415765, 0],
+         [0, -0.02415765, 0]])
+    np.testing.assert_allclose(B, Btest)
