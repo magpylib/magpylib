@@ -1007,7 +1007,7 @@ def animate_path(
     frames = []
     autosize = "return"
     for i, ind in enumerate(path_indices):
-        kwargs["style_path_show"] = [ind]
+        kwargs["style_path_frames"] = [ind]
         frame = draw_frame(
             objs,
             color_sequence,
