@@ -1,5 +1,6 @@
 """Collection of classes for display styling"""
 # pylint: disable=C0302
+import numpy as np
 
 from magpylib._src.defaults.defaults_utility import (
     MagicProperties,
@@ -1066,9 +1067,9 @@ class Path(MagicProperties):
         is_valid_path = True
         if hasattr(val, "__iter__") and not isinstance(val, str):
             val = tuple(val)
-            if not all(isinstance(v,int) for v in val):
+            if not all(np.issubdtype(type(v), int) for v in val):
                 is_valid_path = False
-        elif not (val is None or isinstance(val, int)):
+        elif not (val is None or np.issubdtype(type(val), int)):
             is_valid_path = False
         assert is_valid_path, f"""the `frames` property of {type(self).__name__} must be either:
 - integer i: displays the object(s) at every i'th path position.
