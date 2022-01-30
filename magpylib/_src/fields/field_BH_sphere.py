@@ -57,12 +57,14 @@ def magnet_sphere_Bfield(
 
     Parameters:
     -----------
-    - magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of mT
-    - radius: ndarray, shape (n,3)
-        Sphere diameter
-    - observer: ndarray, shape (n,3)
-        Position of observers in units of mm
+    magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT].
+
+    diameter: ndarray, shape (n,3)
+        Sphere diameter in units of [mm].
+
+    observer: ndarray, shape (n,3)
+        Position of observers in units of [mm].
 
     Returns
     -------

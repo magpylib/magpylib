@@ -45,9 +45,10 @@ def dipole_Bfield(
 
     Parameters:
     ----------
-    - moment: ndarray, shape (n,3)
+    moment: ndarray, shape (n,3)
         Dipole moment vector in units of [mT*mm^3].
-    - observer: ndarray, shape (n,3)
+
+    observer: ndarray, shape (n,3)
         Position of observer in units of [mm].
 
     Returns:
