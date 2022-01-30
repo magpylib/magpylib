@@ -496,6 +496,8 @@ def get_plotly_traces(
 
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
+    # pylint: disable=too-many-nested-blocks
+
     Sensor = _src.obj_classes.Sensor
     Cuboid = _src.obj_classes.Cuboid
     Cylinder = _src.obj_classes.Cylinder
@@ -626,6 +628,8 @@ def get_plotly_traces(
                     ttype = extr.trace["type"]
                     if ttype == "mesh3d":
                         trace3d["showscale"] = False
+                        if "facecolor" in extr.trace:
+                            ttype = "mesh3d_facecolor"
                     if ttype == "scatter3d":
                         trace3d["marker_color"] = kwargs["color"]
                         trace3d["line_color"] = kwargs["color"]
@@ -726,7 +730,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
     traces_dicts = {}
-    # dipoles and sensors use autosize, the trace building has to be put at the back of the queue. 
+    # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
     traces_to_resize = {}
     for obj, color in zip(objs, cycle(color_sequence)):
