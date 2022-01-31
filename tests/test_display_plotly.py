@@ -246,7 +246,7 @@ def test_extra_model3d():
         "show": True,
     }
     cuboid.style.model3d.extra[0].show = False
-    x = cuboid.show(canvas=fig, style_path_frames=False, style=dict(model3d_show=False),)
+    x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_show=False),)
     assert x is None, "display test fail"
 
 

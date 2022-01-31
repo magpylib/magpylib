@@ -15,7 +15,7 @@ def test_Cylinder_display():
     x = src.show(canvas=ax, style_path_frames=15)
     assert x is None, "path should revert to True"
     src.move(np.linspace((.4,.4,.4), (12,12,12), 30), start=-1)
-    x = src.show(canvas=ax, style_path_frames=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
     assert x is None, "display test fail"
 
     x = src.show(canvas=ax, style_path_frames=[], show_direction=True)
@@ -33,7 +33,7 @@ def test_CylinderSegment_display():
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (13.2,13.2,13.2), 33), start=-1)
-    x = src.show(canvas=ax, style_path_frames=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
     assert x is None, "display test fail"
 
 
@@ -45,7 +45,7 @@ def test_Sphere_display():
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((.4,.4,.4), (8,8,8), 20), start=-1)
-    x = src.show(canvas=ax, style_path_frames=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
     assert x is None, "display test fail"
 
 
@@ -59,7 +59,7 @@ def test_Cuboid_display():
     assert x is None, "display test fail"
 
     ax = plt.subplot(projection="3d")
-    x = src.show(canvas=ax, style_path_frames=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
     assert x is None, "display test fail"
 
 
@@ -72,7 +72,7 @@ def test_Sensor_display():
     x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_frames=15)
     assert x is None, "display test fail"
 
-    x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_frames=False)
+    x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_show=False)
     assert x is None, "display test fail"
 
 
