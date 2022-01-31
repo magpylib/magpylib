@@ -76,7 +76,7 @@ def check_rot_type(inp):
 
 def check_start_type(start):
     """start input must be int or str"""
-    if not (isinstance(start, int, np.int_) or start == 'auto'):
+    if not (isinstance(start, (int, np.int_)) or start == 'auto'):
         msg = 'start input must be int or str ("auto")'
         raise MagpylibBadUserInput(msg)
 
