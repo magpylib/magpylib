@@ -194,7 +194,7 @@ def test_extra_model3d():
     magpy.defaults.display.backend = "plotly"
     cuboid = Cuboid((1, 2, 3), (1, 2, 3))
     cuboid.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    cuboid.style.model3d.extra = [
+    cuboid.style.model3d.data = [
         {
             "backend": "plotly",
             "trace": {
@@ -223,7 +223,7 @@ def test_extra_model3d():
     fig = go.Figure()
     x = cuboid.show(canvas=fig, style=dict(model3d_show=True))
     assert x is None, "display test fail"
-    cuboid.style.model3d.extra[0].show = False
+    cuboid.style.model3d.data[0].show = False
     x = cuboid.show(canvas=fig)
     assert x is None, "display test fail"
     coll = magpy.Collection(cuboid)
@@ -234,7 +234,7 @@ def test_extra_model3d():
         style=dict(model3d_show=False),
     )
     assert x is None, "display test fail"
-    cuboid.style.model3d.extra = {
+    cuboid.style.model3d.data = {
         "backend": "plotly",
         "trace": {
             "type": "scatter3d",
@@ -245,7 +245,7 @@ def test_extra_model3d():
         },
         "show": True,
     }
-    cuboid.style.model3d.extra[0].show = False
+    cuboid.style.model3d.data[0].show = False
     x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_show=False),)
     assert x is None, "display test fail"
 

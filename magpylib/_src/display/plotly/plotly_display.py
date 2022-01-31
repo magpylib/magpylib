@@ -612,40 +612,47 @@ def get_plotly_traces(
         path_traces = []
         path_traces_extra = {}
         extra_model3d_traces = (
-            style.model3d.extra if style.model3d.extra is not None else []
+            style.model3d.data if style.model3d.data is not None else []
         )
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
-            if style.model3d.show and make_func is not None:
-                path_traces.append(
-                    make_func(position=pos, orientation=orient, **kwargs)
-                )
-            for extr in extra_model3d_traces:
-                if extr.show:
-                    trace3d = {}
-                    ttype = extr.trace["type"]
-                    if ttype == "mesh3d":
-                        trace3d["showscale"] = False
-                        if "facecolor" in extr.trace:
-                            ttype = "mesh3d_facecolor"
-                    if ttype == "scatter3d":
-                        trace3d["marker_color"] = kwargs["color"]
-                        trace3d["line_color"] = kwargs["color"]
-                    else:
-                        trace3d["color"] = kwargs["color"]
-                    trace3d.update(
-                        linearize_dict(
-                            place_and_orient_model3d(
-                                extr.trace, orientation=orient, position=pos
-                            ),
-                            separator="_",
+        if style.model3d.show:
+            for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
+                is_extra_now_default = False
+                for extr in extra_model3d_traces:
+                    if extr.show:
+                        if extr.makedefault is True:
+                            is_extra_now_default = True
+                        trace3d = {}
+                        if callable(extr.trace):
+                            obj_extr_trace = extr.trace()
+                        ttype = obj_extr_trace["type"]
+                        if ttype == "mesh3d":
+                            trace3d["showscale"] = False
+                            if "facecolor" in obj_extr_trace:
+                                ttype = "mesh3d_facecolor"
+                        if ttype == "scatter3d":
+                            trace3d["marker_color"] = kwargs["color"]
+                            trace3d["line_color"] = kwargs["color"]
+                        else:
+                            trace3d["color"] = kwargs["color"]
+                        trace3d.update(
+                            linearize_dict(
+                                place_and_orient_model3d(
+                                    obj_extr_trace, orientation=orient, position=pos
+                                ),
+                                separator="_",
+                            )
                         )
+                        if ttype not in path_traces_extra:
+                            path_traces_extra[ttype] = []
+                        path_traces_extra[ttype].append(trace3d)
+
+                if make_func is not None and not is_extra_now_default:
+                    path_traces.append(
+                        make_func(position=pos, orientation=orient, **kwargs)
                     )
-                    if ttype not in path_traces_extra:
-                        path_traces_extra[ttype] = []
-                    path_traces_extra[ttype].append(trace3d)
         trace = merge_traces(*path_traces)
         for ind, traces_extra in enumerate(path_traces_extra.values()):
             extra_model3d_trace = merge_traces(*traces_extra)
@@ -750,7 +757,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
                     # take name of parent
                     first_shown = True
                     if getattr(subobj, "children", None) is not None:
-                        first_shown = any(m3.show for m3 in obj.style.model3d.extra)
+                        first_shown = any(m3.show for m3 in obj.style.model3d.data)
                     showlegend = True
                     legendtext = getattr(getattr(obj, "style", None), "name", None)
                     legendtext = f"{obj!r}" if legendtext is None else legendtext

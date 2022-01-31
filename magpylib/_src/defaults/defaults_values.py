@@ -45,7 +45,7 @@ DEFAULTS = {
                 },
                 "description": {"show": True, "text": None},
                 "opacity": 1,
-                "model3d": {"show": True, "extra": []},
+                "model3d": {"show": True, "data": []},
                 "color": None,
             },
             "magnet": {

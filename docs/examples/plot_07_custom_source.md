@@ -147,7 +147,7 @@ plotly_trace = {
 }
 
 # define user defined 3d representation for each plotting backend
-interp_cube.style.model3d.extra = [
+interp_cube.style.model3d.data = [
     dict(backend='matplotlib', trace=matplotlib_trace, show=True, coordsargs={'x':'xs', 'y':'ys', 'z':'zs'}),
     dict(backend='plotly', trace=plotly_trace, show=True),
 ]

@@ -20,6 +20,7 @@ from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.display.display_utility import MagpyMarkers
 
+
 def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
     """draw direction of magnetization of faced magnets
 
@@ -289,24 +290,27 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
 
 
 def draw_model3d_extra(obj, style, show_path, ax, color):
-    """positions, orients and draws extra 3d model including path positions"""
-    extra_model3d_traces = (
-        style.model3d.extra if style.model3d.extra is not None else []
-    )
+    """positions, orients and draws extra 3d model including path positions
+    returns True if at least one the traces is now new default"""
+    is_extra_now_default = False
+    extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
     extra_model3d_traces = [
         t for t in extra_model3d_traces if t.backend == "matplotlib"
     ]
     path_traces_extra = {}
     for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
         for extr in extra_model3d_traces:
+            obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
+                if extr.makedefault is True:
+                    is_extra_now_default = True
                 trace3d = place_and_orient_model3d(
-                    extr.trace,
+                    obj_extra_trace,
                     orientation=orient,
                     position=pos,
                     coordsargs=extr.coordsargs,
                 )
-                ttype = extr.trace["type"]
+                ttype = obj_extra_trace["type"]
                 if ttype not in path_traces_extra:
                     path_traces_extra[ttype] = []
                 path_traces_extra[ttype].append(trace3d)
@@ -317,15 +321,10 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
             kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
             args = tr.get("args", [])
             getattr(ax, tr["type"])(*args, **kwargs)
-
+    return is_extra_now_default
 
 def display_matplotlib(
-    *obj_list_semi_flat,
-    axis=None,
-    markers=None,
-    zoom=0,
-    color_sequence=None,
-    **kwargs,
+    *obj_list_semi_flat, axis=None, markers=None, zoom=0, color_sequence=None, **kwargs,
 ):
     """
     Display objects and paths graphically with the matplotlib backend.
@@ -366,7 +365,11 @@ def display_matplotlib(
         if getattr(semi_flat_obj, "children", None) is not None:
             flat_objs.extend(semi_flat_obj.children)
             if getattr(semi_flat_obj, "position", None) is not None:
-                color = color if semi_flat_obj.style.color is None else semi_flat_obj.style.color
+                color = (
+                    color
+                    if semi_flat_obj.style.color is None
+                    else semi_flat_obj.style.color
+                )
 
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
@@ -374,9 +377,9 @@ def display_matplotlib(
             obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
-            if obj.style.model3d.extra:
-                draw_model3d_extra(obj, style, path, ax, obj_color)
-            if obj.style.model3d.show:
+            if obj.style.model3d.data:
+                is_extra_now_default = draw_model3d_extra(obj, style, path, ax, obj_color)
+            if obj.style.model3d.show and not is_extra_now_default:
                 if obj._object_type == "Cuboid":
                     lw = 0.5
                     faces = faces_cuboid(obj, path)
@@ -417,7 +420,9 @@ def display_matplotlib(
                     dipoles.append((obj, obj_color))
                     points += [obj.position]
                 elif obj._object_type == "CustomSource":
-                    draw_markers(np.array([obj.position]), ax, obj_color, symbol="*", size=10)
+                    draw_markers(
+                        np.array([obj.position]), ax, obj_color, symbol="*", size=10
+                    )
                     name = (
                         obj.style.name
                         if obj.style.name is not None

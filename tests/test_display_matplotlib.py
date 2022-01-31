@@ -156,7 +156,7 @@ def test_matplotlib_model3d_extra():
     ).rotate_from_angax(np.linspace(72,360,5), "z", anchor=(0, 0, 0), start=0)
     cuboid.style.model3d.show = False
     ax = plt.subplot(projection="3d")
-    cuboid.style.model3d.extra = [
+    cuboid.style.model3d.data = [
         {
             "backend": "matplotlib",
             "trace": {
@@ -171,7 +171,7 @@ def test_matplotlib_model3d_extra():
     ]
     with pytest.raises(ValueError): # should fail because of invalid coordsargs
         x = cuboid.show(canvas=ax, style_path_show=1)
-    cuboid.style.model3d.extra[0].coordsargs = {"x": "xs", "y": "ys", "z": "zs"}
+    cuboid.style.model3d.data[0].coordsargs = {"x": "xs", "y": "ys", "z": "zs"}
     x = cuboid.show(canvas=ax, style_path_show=1)
 
     assert x is None, "display test fail"
@@ -181,7 +181,7 @@ def test_matplotlib_model3d_extra():
     x,y,z = [cube[k] for k in 'xyz']
     triangles = np.array([i, j, k]).T
     trace = dict(type="plot_trisurf", args=(x, y, z), triangles=triangles)
-    cuboid.style.model3d.extra = [
+    cuboid.style.model3d.data = [
         {
             "backend": "matplotlib",
             "coordsargs": {"x": "args[0]", "y": "args[1]", "z": "args[2]"},
