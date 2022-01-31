@@ -625,8 +625,7 @@ def get_plotly_traces(
                         if extr.makedefault is True:
                             is_extra_now_default = True
                         trace3d = {}
-                        if callable(extr.trace):
-                            obj_extr_trace = extr.trace()
+                        obj_extr_trace = extr.trace() if callable(extr.trace) else extr.trace
                         ttype = obj_extr_trace["type"]
                         if ttype == "mesh3d":
                             trace3d["showscale"] = False

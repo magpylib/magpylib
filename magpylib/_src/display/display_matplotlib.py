@@ -377,6 +377,7 @@ def display_matplotlib(
             obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
+            is_extra_now_default = False
             if obj.style.model3d.data:
                 is_extra_now_default = draw_model3d_extra(obj, style, path, ax, obj_color)
             if obj.style.model3d.show and not is_extra_now_default:
