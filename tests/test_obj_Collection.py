@@ -20,7 +20,8 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 # # rvs = (np.random.rand(N,3)-.5)*0.1
 
 # # B = []
-# # for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(mags,dims2,dims3,angs,axs,anchs,movs,posos,rvs):
+# # for mag,dim2,dim3,ang,ax,anch,mov,poso,rv in zip(
+# #        mags,dims2,dims3,angs,axs,anchs,movs,posos,rvs):
 # #     rot = R.from_rotvec(rv)
 # #     pm1b = magpy.magnet.Cuboid(mag[0],dim3[0])
 # #     pm2b = magpy.magnet.Cuboid(mag[1],dim3[1])
