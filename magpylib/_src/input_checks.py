@@ -161,6 +161,15 @@ def check_vector_type(inp, origin):
 #         raise MagpylibBadUserInput(msg)
 
 
+def check_all_positive(inp, origin):
+    """
+    check if all values are larger than 0
+    """
+    if not np.all(inp > 0):
+        msg = f"{origin} input must be positive numbers."
+        raise MagpylibBadUserInput(msg)
+
+
 def check_vector_format(inp, shape, origin):
     """
     - check if vector input has correct format

@@ -6,7 +6,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_input_cyl_sect, check_vector_type
+from magpylib._src.input_checks import check_all_positive, check_input_cyl_sect, check_vector_type
 
 # init for tool tips
 d1 = d2 = h = phi1 = phi2 = None
@@ -115,7 +115,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg]."""
+        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), [mm, deg]."""
         # input type check
         if Config.checkinputs:
             check_vector_type(dim, "dimension")
@@ -126,5 +126,6 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # input format check
         if Config.checkinputs:
             check_input_cyl_sect(dim)
+            check_all_positive(dim[1:3], "CylinderSegment radius and height")
 
         self._dimension = dim
