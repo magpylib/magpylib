@@ -154,7 +154,6 @@ def test_matplotlib_model3d_extra():
     cuboid = magpy.magnet.Cuboid(
         magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
     ).rotate_from_angax(np.linspace(72,360,5), "z", anchor=(0, 0, 0), start=0)
-    cuboid.style.model3d.show = False
     ax = plt.subplot(projection="3d")
     cuboid.style.model3d.data = [
         {
@@ -167,6 +166,7 @@ def test_matplotlib_model3d_extra():
                 "ls": "-",
             },
             "show": True,
+            "makedefault":True,
         }
     ]
     with pytest.raises(ValueError): # should fail because of invalid coordsargs
