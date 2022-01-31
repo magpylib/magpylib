@@ -149,13 +149,11 @@ def magnet_cuboid_Bfield(
     """
     # pylint: disable=too-many-statements
 
-    # introduce characteristic length, make dimensionless, avoid problems
-    # from different length scales
-    scale = 10**np.around(np.sum(np.log10(dimension), axis=1)/3)
+    # implementation is completely scale invariant !
 
     magx, magy, magz = magnetization.T
-    a, b, c = dimension.T/2/scale
-    x, y, z = observer.T/scale
+    a, b, c = dimension.T/2
+    x, y, z = np.copy(observer).T
     n = len(magx)
 
     # avoid indeterminate forms by evaluating in bottQ4 only --------

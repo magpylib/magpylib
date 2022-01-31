@@ -87,3 +87,20 @@ def test_repr_cuboid():
     pm1.style.name = 'cuboid_01'
     assert pm1.__repr__()[:6] == 'Cuboid', 'Cuboid repr failed'
     assert "name='cuboid_01'" in pm1.__repr__(), 'Cuboid repr failed'
+
+
+def test_cuboid_object_vs_lib():
+    """
+    includes a test of the input copy problem
+    """
+
+    a = 1
+    mag = np.array([(10,20,30)])
+    dim = np.array([(  a,  a,  a)])
+    pos = np.array([(2*a,2*a,2*a)])
+    B0 = magpy.lib.magnet_cuboid_Bfield(mag, dim, pos)
+
+    src = magpy.magnet.Cuboid(mag[0], dim[0])
+    B1 = src.getB(pos)
+
+    np.testing.assert_allclose(B0[0], B1)
