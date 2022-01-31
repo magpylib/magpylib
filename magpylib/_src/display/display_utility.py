@@ -139,6 +139,7 @@ def get_rot_pos_from_path(obj, show_path=None):
     returns rots[[1,2,6]], poss[[1,2,6]]
     """
     # pylint: disable=protected-access
+    # pylint: disable=invalid-unary-operand-type
     if show_path is None:
         show_path = True
     pos = getattr(obj, "_position", None)
