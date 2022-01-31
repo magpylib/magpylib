@@ -76,14 +76,14 @@ def check_rot_type(inp):
 
 def check_start_type(start):
     """start input must be int or str"""
-    if not (isinstance(start, int) or start == 'auto'):
+    if not (isinstance(start, int, np.int_) or start == 'auto'):
         msg = 'start input must be int or str ("auto")'
         raise MagpylibBadUserInput(msg)
 
 
 def check_angle_type(angle):
     """angle input must be scalar or vector"""
-    if not isinstance(angle, (int, float, list, tuple, np.ndarray)):
+    if not isinstance(angle, (int, float, list, tuple, np.ndarray, np.int_, np.float_)):
         msg = (
             "angle input must be scalar (int, float) or vector (list, tuple, ndarray)."
         )
@@ -128,7 +128,7 @@ def check_degree_type(deg):
 
 def check_scalar_type(inp, origin):
     """scalar input must be int or float or nan"""
-    if not (isinstance(inp, (int, float)) or inp is None):
+    if not (isinstance(inp, (int, float, np.int_, np.float_)) or inp is None):
         msg = origin + " input must be scalar (int or float)."
         raise MagpylibBadUserInput(msg)
 

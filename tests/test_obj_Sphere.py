@@ -84,3 +84,19 @@ def test_repr():
     """
     pm3 = magpy.magnet.Sphere((1,2,3),3)
     assert pm3.__repr__()[:6] == 'Sphere', 'Sphere repr failed'
+
+
+def test_sphere_object_vs_lib():
+    """
+    tests object vs lib computation
+    this also checks if np.int (from array slice) is allowed as input
+    """
+    mag = np.array([(10,20,30)])
+    dia = np.array([1])
+    pos = np.array([(2,2,2)])
+    B1 = magpy.lib.magnet_sphere_Bfield(mag, dia, pos)[0]
+
+    src = magpy.magnet.Sphere(mag[0], dia[0])
+    B2 = src.getB(pos)
+
+    np.testing.assert_allclose(B1, B2)

@@ -86,6 +86,7 @@ def magnet_sphere_Bfield(
     [[0.04009377 0.03207501 0.02405626]
      [0.         0.         2.        ]]
     """
+
     x, y, z = np.copy(observer.T)
     r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
 

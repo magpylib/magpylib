@@ -109,7 +109,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """Set Sphere diameter, float, [mm]."""
         # input type check
         if Config.checkinputs:
-            check_scalar_type(dia, "diameter")
+            check_scalar_type(dia, "Sphere diameter")
 
         # secure type
         if dia is None:
