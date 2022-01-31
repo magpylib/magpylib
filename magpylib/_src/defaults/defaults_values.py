@@ -40,7 +40,7 @@ DEFAULTS = {
                     "line": {"width": 1, "style": "solid", "color": None},
                     "marker": {"size": 2, "symbol": "o", "color": None},
                     "show": True,
-                    "indices": -1,
+                    "frames": None,
                     "numbering": False,
                 },
                 "description": {"show": True, "text": None},
