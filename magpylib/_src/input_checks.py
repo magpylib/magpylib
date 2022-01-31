@@ -163,9 +163,9 @@ def check_vector_type(inp, origin):
 
 def check_all_positive(inp, origin):
     """
-    check if all values are larger than 0
+    check if all values are larger than 0 or None
     """
-    if not np.all(inp > 0):
+    if not np.all(np.nan_to_num(inp, nan=1)>0):
         msg = f"{origin} input must be positive numbers."
         raise MagpylibBadUserInput(msg)
 

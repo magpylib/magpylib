@@ -60,7 +60,7 @@ def field_BH_cuboid(
 
     # compute field -------------------------------
     if np.any(mask_gen):
-        B[mask_gen] = magnet_cuboid_B_Yang1999(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+        B[mask_gen] = magnet_cuboid_Bfield(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
     # return B or compute and return H -------------
     if bh:
@@ -79,10 +79,10 @@ def field_BH_cuboid(
 
 
 # ON INTERFACE
-def magnet_cuboid_B_Yang1999(
-    mag: np.ndarray,
-    dim: np.ndarray,
-    pos_obs: np.ndarray) -> np.ndarray:
+def magnet_cuboid_Bfield(
+    magnetization: np.ndarray,
+    dimension: np.ndarray,
+    observer: np.ndarray) -> np.ndarray:
     """
     B-field in Cartesian CS of Cuboid magnet with homogenous magnetization.
     The Cuboid sides are parallel to the CS axes.
@@ -92,14 +92,14 @@ def magnet_cuboid_B_Yang1999(
 
     Parameters
     ----------
-    mag: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT]
+    magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT].
 
-    dim: ndarray, shape (n,3)
-        Cuboid side lengths in units of [mm]
+    dimension: ndarray, shape (n,3)
+        Cuboid side lengths in units of [mm].
 
-    pos_obs: ndarray, shape (n,3)
-        position of observer in units of [mm]
+    observer: ndarray, shape (n,3)
+        position of observer in units of [mm].
 
     Returns
     -------
@@ -126,7 +126,7 @@ def magnet_cuboid_B_Yang1999(
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
-    Camacho: Revista Mexicana de F´ısica E 59 (2013) 8–17
+    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
 
     Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 
@@ -149,9 +149,13 @@ def magnet_cuboid_B_Yang1999(
     """
     # pylint: disable=too-many-statements
 
-    magx, magy, magz = mag.T
-    x, y, z = pos_obs.T
-    a, b, c = dim.T/2
+    # introduce characteristic length, make dimensionless, avoid problems
+    # from different length scales
+    scale = 10**np.around(np.sum(np.log10(dimension), axis=1)/3)
+
+    magx, magy, magz = magnetization.T
+    a, b, c = dimension.T/2/scale
+    x, y, z = observer.T/scale
     n = len(magx)
 
     # avoid indeterminate forms by evaluating in bottQ4 only --------
