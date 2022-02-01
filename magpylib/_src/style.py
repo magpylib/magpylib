@@ -266,15 +266,18 @@ class Model3d(MagicProperties):
 
     @data.setter
     def data(self, val):
+        self._data = self._validate_data(val)
+
+    def _validate_data(self, val):
         if val is None:
             val = []
-        elif isinstance(val, dict):
+        elif not isinstance(val, (list,tuple)):
             val = [val]
         m3 = []
         for v in val:
             v = validate_property_class(v, "data", Trace3d, self)
             m3.append(v)
-        self._data = m3
+        return m3
 
     def add_trace(
         self, trace, show=True, backend="matplotlib", coordsargs=None, makedefault=False
@@ -311,7 +314,8 @@ class Model3d(MagicProperties):
             coordsargs=coordsargs,
             makedefault=makedefault,
         )
-        self.data = self.data + [new_trace]
+        self._data += self._validate_data(new_trace)
+        return self
 
 
 class Trace3d(MagicProperties):
