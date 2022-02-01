@@ -187,6 +187,7 @@ def test_matplotlib_model3d_extra():
             "coordsargs": {"x": "args[0]", "y": "args[1]", "z": "args[2]"},
             "trace": trace,
             "show": True,
+            "makedefault": True,
         }
     ]
     x = cuboid.show(canvas=ax, style_path_show=1)
