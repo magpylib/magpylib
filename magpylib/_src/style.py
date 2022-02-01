@@ -16,12 +16,12 @@ from magpylib._src.defaults.defaults_utility import (
 
 def get_style_class(obj):
     """returns style class based on object type. If class has no attribute `_object_type` or is
-    not found in `MAGPYLIB_FAMILIES` returns `Base` class."""
+    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
     obj_type = getattr(obj, "_object_type", None)
     style_fam = MAGPYLIB_FAMILIES.get(obj_type, None)
     if isinstance(style_fam, (list, tuple)):
         style_fam = style_fam[0]
-    return STYLE_CLASSES.get(style_fam, Base)
+    return STYLE_CLASSES.get(style_fam, BaseStyle)
 
 
 def get_style(obj, default_settings, **kwargs):
@@ -57,7 +57,7 @@ def get_style(obj, default_settings, **kwargs):
     style_kwargs = validate_style_keys(style_kwargs)
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
-    style = obj_style.copy() if obj_style is not None else Base()
+    style = obj_style.copy() if obj_style is not None else BaseStyle()
     style_kwargs_specific = {
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
@@ -70,75 +70,6 @@ def get_style(obj, default_settings, **kwargs):
 
 
 class BaseStyle(MagicProperties):
-    """
-    Base class for display styling options of all objects to be displayed
-
-    Properties
-    ----------
-    name : str, default=None
-        name of the class instance, can be any string.
-
-    description: dict or Description, default=None
-        object description properties
-
-    color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
-
-    opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
-    """
-
-    def __init__(
-        self, name=None, description=None, color=None, opacity=None, **kwargs,
-    ):
-        super().__init__(
-            name=name, description=description, color=color, opacity=opacity, **kwargs,
-        )
-
-    @property
-    def name(self):
-        """name of the class instance, can be any string"""
-        return self._name
-
-    @name.setter
-    def name(self, val):
-        self._name = val if val is None else str(val)
-
-    @property
-    def description(self):
-        """Description class with 'text' and 'show' properties"""
-        return self._description
-
-    @description.setter
-    def description(self, val):
-        self._description = validate_property_class(
-            val, "description", Description, self
-        )
-
-    @property
-    def color(self):
-        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
-        return self._color
-
-    @color.setter
-    def color(self, val):
-        self._color = color_validator(val, parent_name=f"{type(self).__name__}")
-
-    @property
-    def opacity(self):
-        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
-        return self._opacity
-
-    @opacity.setter
-    def opacity(self, val):
-        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
-            "opacity must be a value betwen 0 and 1\n"
-            f"but received {repr(val)} instead"
-        )
-        self._opacity = val
-
-
-class Base(BaseStyle):
     """
     Base class for display styling options of `BaseGeo` objects
 
@@ -186,6 +117,48 @@ class Base(BaseStyle):
             model3d=model3d,
             **kwargs,
         )
+
+    @property
+    def name(self):
+        """name of the class instance, can be any string"""
+        return self._name
+
+    @name.setter
+    def name(self, val):
+        self._name = val if val is None else str(val)
+
+    @property
+    def description(self):
+        """Description class with 'text' and 'show' properties"""
+        return self._description
+
+    @description.setter
+    def description(self, val):
+        self._description = validate_property_class(
+            val, "description", Description, self
+        )
+
+    @property
+    def color(self):
+        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+    @property
+    def opacity(self):
+        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
+        return self._opacity
+
+    @opacity.setter
+    def opacity(self, val):
+        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
+            "opacity must be a value betwen 0 and 1\n"
+            f"but received {repr(val)} instead"
+        )
+        self._opacity = val
 
     @property
     def path(self):
@@ -644,13 +617,16 @@ class MagnetProperties:
     Properties
     ----------
     magnetization: dict or Magnetization, default=None
-
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs
     """
 
     @property
     def magnetization(self):
-        """Magnetization class with 'north', 'south', 'middle' and 'transition' values
-        or a dictionary with equivalent key/value pairs"""
+        """
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs
+        """
         return self._magnetization
 
     @magnetization.setter
@@ -674,8 +650,37 @@ class Magnet(MagicProperties, MagnetProperties):
         super().__init__(magnetization=magnetization, **kwargs)
 
 
-class MagnetStyle(Base, MagnetProperties):
-    """Defines the styling properties of objects of the `magnet` family with base properties"""
+class MagnetStyle(BaseStyle, MagnetProperties):
+    """Defines the styling properties of objects of the `magnet` family with base properties
+
+    Properties
+    ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description properties
+
+    color: str, default=None
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or Path, default=None
+        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of Trace3d objects, default=None
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -734,8 +739,39 @@ class Sensor(MagicProperties, SensorProperties):
         super().__init__(size=size, pixel=pixel, **kwargs)
 
 
-class SensorStyle(Base, SensorProperties):
-    """Defines the styling properties of objects of the `sensor` family with base properties"""
+class SensorStyle(BaseStyle, SensorProperties):
+    """Defines the styling properties of objects of the `sensor` family with base properties
+
+    Properties
+    ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description properties
+
+    color: str, default=None
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or Path, default=None
+        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of Trace3d objects, default=None
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    size: float, default=None
+        positive float for relative sensor to canvas size
+
+    pixel: dict, Pixel, default=None
+        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -810,12 +846,12 @@ class CurrentProperties:
     Properties
     ----------
     arrow: dict or Arrow, default=None
-        Arrow class or dict with 'show', 'size' properties/keys
+        Arrow class or dict with `'show'`, `'size'` properties/keys
     """
 
     @property
     def arrow(self):
-        """Arrow class with 'show', 'size' properties"""
+        """Arrow class or dict with `'show'`, `'size'` properties/keys"""
         return self._arrow
 
     @arrow.setter
@@ -837,8 +873,36 @@ class Current(MagicProperties, CurrentProperties):
         super().__init__(arrow=arrow, **kwargs)
 
 
-class CurrentStyle(Base, CurrentProperties):
-    """Defines the styling properties of objects of the `current` family and base properties"""
+class CurrentStyle(BaseStyle, CurrentProperties):
+    """Defines the styling properties of objects of the `current` family and base properties
+
+    Properties
+    ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description properties
+
+    color: str, default=None
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or Path, default=None
+        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of Trace3d objects, default=None
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    arrow: dict or Arrow, default=None
+        Arrow class or dict with `'show'`, `'size'` properties/keys
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1045,8 +1109,40 @@ class Dipole(MagicProperties, DipoleProperties):
         super().__init__(size=size, pivot=pivot, **kwargs)
 
 
-class DipoleStyle(Base, DipoleProperties):
-    """Defines the styling properties of the objects of the `dipole` family and base properties"""
+class DipoleStyle(BaseStyle, DipoleProperties):
+    """Defines the styling properties of the objects of the `dipole` family and base properties
+
+    Properties
+    ----------
+    name : str, default=None
+        name of the class instance, can be any string.
+
+    description: dict or Description, default=None
+        object description properties
+
+    color: str, default=None
+        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+
+    opacity: float, default=None
+        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or Path, default=None
+        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of Trace3d objects, default=None
+        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    size: float, default=None
+        positive float for relative dipole to size to canvas size
+
+    pivot: str, default=None
+        the part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
+    """
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
@@ -1256,7 +1352,7 @@ class DisplayStyle(MagicProperties):
 
     @base.setter
     def base(self, val):
-        self._base = validate_property_class(val, "base", Base, self)
+        self._base = validate_property_class(val, "base", BaseStyle, self)
 
     @property
     def magnet(self):
