@@ -243,39 +243,11 @@ def bad_input_shape_dipole_mom():
     vec4 = (1,2,3,4)
     magpy.misc.Dipole(moment=vec4)
 
-# negative dimension input exceptions
-def negative_dim_input_cuboid():
-    """ bad Luboid """
-    magpy.magnet.Cuboid((1,2,3), (1,-2,3))
 
-def negative_dim_input_loop():
-    """ bad Loop """
-    magpy.current.Loop(1, -3)
-
-def negative_dim_input_cylinder():
-    """ bad Cylinder """
-    magpy.magnet.Cylinder((1,2,3), (-1,2))
-
-def negative_dim_input_sphere():
-    """ bad Sphere """
-    magpy.magnet.Sphere((1,2,3), -1)
-
-def negative_dim_input_CylinderSegment():
-    """ bad CylinderSegment """
-    magpy.magnet.CylinderSegment((1,2,3), (1,2,-3,12,13))
-
-########################################################################
+#####################################################################
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
     """
-    def test_except_negative_dim(self):
-        """ negative dimension exceptions"""
-        self.assertRaises(MagpylibBadUserInput, negative_dim_input_cuboid)
-        self.assertRaises(MagpylibBadUserInput, negative_dim_input_loop)
-        self.assertRaises(MagpylibBadUserInput, negative_dim_input_cylinder)
-        self.assertRaises(MagpylibBadUserInput, negative_dim_input_sphere)
-        self.assertRaises(MagpylibBadUserInput, negative_dim_input_CylinderSegment)
-
 
     def test_except_utility(self):
         """ utility

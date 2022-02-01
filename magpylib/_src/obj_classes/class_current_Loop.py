@@ -5,7 +5,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_all_positive, check_scalar_type
+from magpylib._src.input_checks import check_scalar_type
 
 # init for tool tips
 i0 = None
@@ -116,4 +116,3 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             self._diameter = None
         else:
             self._diameter = float(dia)
-            check_all_positive(dia, "Loop diameter")

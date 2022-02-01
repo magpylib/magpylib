@@ -6,7 +6,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_vector_format, check_vector_type, check_all_positive
+from magpylib._src.input_checks import check_vector_format, check_vector_type
 
 # init for tool tips
 a = b = c = None
@@ -120,6 +120,5 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # input format check
         if Config.checkinputs:
             check_vector_format(dim, (3,), "dimension")
-            check_all_positive(dim, "Cuboid dimension")
 
         self._dimension = dim
