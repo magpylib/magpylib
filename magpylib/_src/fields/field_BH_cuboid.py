@@ -4,7 +4,6 @@ magnetized Cuboids. Computation details in function docstrings.
 """
 
 import numpy as np
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 def field_BH_cuboid(
@@ -18,7 +17,6 @@ def field_BH_cuboid(
     - separate edge/corner cases (returning 0)
     - call field computation for general cases
     - select B or H
-    - transform B->H (inside check)
 
     ### Args:
     - bh (boolean): True=B, False=H
@@ -30,37 +28,40 @@ def field_BH_cuboid(
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
 
-    edgesize = Config.edgesize
+    # # edgesize = 1e-8
 
-    # allocate field vectors ----------------------
-    B = np.zeros((len(mag),3))
+    # # # allocate field vectors ----------------------
+    # # B = np.zeros((len(mag),3))
 
-    # special case mag = 0 ------------------------
-    mask0 = (mag[:,0]==0) * (mag[:,1]==0) * (mag[:,2]==0)
+    # # # special case mag = 0 ------------------------
+    # # mask0 = (mag[:,0]==0) * (mag[:,1]==0) * (mag[:,2]==0) # 2x faster than np.all()
 
-    # special cases for edge/corner fields --------
-    x, y, z = np.copy(pos_obs.T)
-    a, b, c = dim.T/2
+    # # # special cases for edge/corner fields --------
+    # # x, y, z = np.copy(pos_obs.T)
+    # # a, b, c = dim.T/2
 
-    mx1 = (abs(abs(x)-a) < edgesize)
-    my1 = (abs(abs(y)-b) < edgesize)
-    mz1 = (abs(abs(z)-c) < edgesize)
+    # # mx1 = (abs(abs(x)-a) < edgesize)
+    # # my1 = (abs(abs(y)-b) < edgesize)
+    # # mz1 = (abs(abs(z)-c) < edgesize)
 
-    mx2 = (abs(x)-a < edgesize) # within actual edge
-    my2 = (abs(y)-b < edgesize)
-    mz2 = (abs(z)-c < edgesize)
+    # # mx2 = (abs(x)-a < edgesize) # within actual edge
+    # # my2 = (abs(y)-b < edgesize)
+    # # mz2 = (abs(z)-c < edgesize)
 
-    mask_xedge = my1 & mz1 & mx2
-    mask_yedge = mx1 & mz1 & my2
-    mask_zedge = mx1 & my1 & mz2
-    mask_edge = mask_xedge | mask_yedge | mask_zedge
+    # # mask_xedge = my1 & mz1 & mx2
+    # # mask_yedge = mx1 & mz1 & my2
+    # # mask_zedge = mx1 & my1 & mz2
+    # # mask_edge = mask_xedge | mask_yedge | mask_zedge
 
-    # not a special case --------------------------
-    mask_gen = ~mask_edge & ~mask0
+    # # # not a special case --------------------------
+    # # mask_gen = ~mask_edge & ~mask0
+    # # print(mask_gen)
+    # # # compute field -------------------------------
+    # # if np.any(mask_gen):
+    # #     B[mask_gen] = magnet_cuboid_Bfield(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
 
-    # compute field -------------------------------
-    if np.any(mask_gen):
-        B[mask_gen] = magnet_cuboid_Bfield(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
+
+    B = magnet_cuboid_Bfield(mag, dim, pos_obs)
 
     # return B or compute and return H -------------
     if bh:
@@ -68,9 +69,9 @@ def field_BH_cuboid(
 
     # if inside magnet subtract magnetization vector
     poso_abs = np.abs(pos_obs)
-    case1 = poso_abs[:,0]<=dim[:,0]/2-edgesize
-    case2 = poso_abs[:,1]<=dim[:,1]/2-edgesize
-    case3 = poso_abs[:,2]<=dim[:,2]/2-edgesize
+    case1 = poso_abs[:,0]<=dim[:,0]/2
+    case2 = poso_abs[:,1]<=dim[:,1]/2
+    case3 = poso_abs[:,2]<=dim[:,2]/2
     mask_inside = case1*case2*case3
     B[mask_inside] -= mag[mask_inside]
     # transform units mT -> kA/m
@@ -96,7 +97,7 @@ def magnet_cuboid_Bfield(
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,3)
-        Cuboid side lengths in units of [mm].
+        Cuboid side lengths in units of [mm]. Positive input expected.
 
     observer: ndarray, shape (n,3)
         position of observer in units of [mm].
@@ -144,107 +145,148 @@ def magnet_cuboid_Bfield(
     positions to their bottQ4 counterparts. see also
 
     Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
-
-    Numerical instabilities: see GitHub discussion
     """
     # pylint: disable=too-many-statements
 
-    # implementation is completely scale invariant !
-
     magx, magy, magz = magnetization.T
-    a, b, c = dimension.T/2
-    x, y, z = np.copy(observer).T
-    n = len(magx)
+    a, b, c = np.abs(dimension.T)/2
+    x, y, z = observer.T
 
-    # avoid indeterminate forms by evaluating in bottQ4 only --------
-    # basic masks
-    maskx = x<0
-    masky = y>0
-    maskz = z>0
+    # This implementation is completely scale invariant as only observer/dimension
+    # ratios appear in equations below.
 
-    # change all positions to their bottQ4 counterparts
-    x[maskx] = x[maskx]*-1
-    y[masky] = y[masky]*-1
-    z[maskz] = z[maskz]*-1
+    # dealing with special cases -----------------------------------
 
-    # create sign flips for position changes
-    qsigns = np.ones((n,3,3))
-    qs_flipx = np.array([[ 1,-1,-1],[-1, 1, 1],[-1, 1, 1]])
-    qs_flipy = np.array([[ 1,-1, 1],[-1, 1,-1],[ 1,-1, 1]])
-    qs_flipz = np.array([[ 1, 1,-1],[ 1, 1,-1],[-1,-1, 1]])
-    # signs flips can be applied subsequently
-    qsigns[maskx] = qsigns[maskx]*qs_flipx
-    qsigns[masky] = qsigns[masky]*qs_flipy
-    qsigns[maskz] = qsigns[maskz]*qs_flipz
+    # allocate B with zeros
+    B_all = np.zeros((len(magx),3))
 
-    # field computations --------------------------------------------
-    # Note: in principle the computation for all three mag-components can be
-    #   vectorized itself using symmetries. However, tiling the three
-    #   components will cost more than is gained by the vectorized evaluation
+    # SPECIAL CASE 1: mag = (0,0,0)
+    mask1 = (magx==0) * (magy==0) * (magz==0) # 2x faster than np.all()
 
-    # Note: making the following computation steps is not necessary
-    #   as mkl will cache such small computations
-    xma, xpa = x-a, x+a
-    ymb, ypb = y-b, y+b
-    zmc, zpc = z-c, z+c
+    # SPECIAL CASE 2: 0 in dimension
+    mask2 = (a*b*c).astype(bool)
 
-    xma2, xpa2 = xma**2, xpa**2
-    ymb2, ypb2 = ymb**2, ypb**2
-    zmc2, zpc2 = zmc**2, zpc**2
+    # SPECIAL CASE 3: observer lies on-edge/corner
+    # -> 1e-15 to account for numerical inprecision when e.g. rotating
+    # -> /a /b /c to account for the "missing" scaling (1e-15 is large when
+    #    a is e.g. 1e-15 itself)
 
-    mmm = np.sqrt(xma2 + ymb2 + zmc2)
-    pmp = np.sqrt(xpa2 + ymb2 + zpc2)
-    pmm = np.sqrt(xpa2 + ymb2 + zmc2)
-    mmp = np.sqrt(xma2 + ymb2 + zpc2)
-    mpm = np.sqrt(xma2 + ypb2 + zmc2)
-    ppp = np.sqrt(xpa2 + ypb2 + zpc2)
-    ppm = np.sqrt(xpa2 + ypb2 + zmc2)
-    mpp = np.sqrt(xma2 + ypb2 + zpc2)
+    mx1 = abs(abs(x)-a) < 1e-15 * a  # on surface
+    my1 = abs(abs(y)-b) < 1e-15 * b  # on surface
+    mz1 = abs(abs(z)-c) < 1e-15 * c  # on surface
 
-    ff2x = np.log((xma+mmm) * (xpa+ppm) * (xpa+pmp) * (xma+mpp))     \
-            -np.log((xpa+pmm) * (xma+mpm) * (xma+mmp) * (xpa+ppp))
+    mx2 = (abs(x)-a) < 1e-15 * a # within cuboid dimension
+    my2 = (abs(y)-b) < 1e-15 * b # within cuboid dimension
+    mz2 = (abs(z)-c) < 1e-15 * c # within cuboid dimension
 
-    ff2y = np.log((-ymb+mmm) * (-ypb+ppm) * (-ymb+pmp) * (-ypb+mpp)) \
-           -np.log((-ymb+pmm) * (-ypb+mpm) * ( ymb-mmp) * ( ypb-ppp))
+    mask_xedge = my1 & mz1 & mx2
+    mask_yedge = mx1 & mz1 & my2
+    mask_zedge = mx1 & my1 & mz2
+    mask3 = mask_xedge | mask_yedge | mask_zedge
 
-    ff2z = np.log((-zmc+mmm) * (-zmc+ppm) * (-zpc+pmp) * (-zpc+mpp)) \
-           -np.log((-zmc+pmm) * ( zmc-mpm) * (-zpc+mmp) * ( zpc-ppp))
+    # on-wall is not a special case
 
-    ff1x = (np.arctan2((ymb*zmc),(xma*mmm)) - np.arctan2((ymb*zmc),(xpa*pmm))
-            - np.arctan2((ypb*zmc),(xma*mpm)) + np.arctan2((ypb*zmc),(xpa*ppm))
-            - np.arctan2((ymb*zpc),(xma*mmp)) + np.arctan2((ymb*zpc),(xpa*pmp))
-            + np.arctan2((ypb*zpc),(xma*mpp)) - np.arctan2((ypb*zpc),(xpa*ppp)))
+    # continue only with general cases ----------------------------
+    mask_gen = ~mask1 & mask2 & ~mask3
 
-    ff1y = (np.arctan2((xma*zmc),(ymb*mmm)) - np.arctan2((xpa*zmc),(ymb*pmm))
-            - np.arctan2((xma*zmc),(ypb*mpm)) + np.arctan2((xpa*zmc),(ypb*ppm))
-            - np.arctan2((xma*zpc),(ymb*mmp)) + np.arctan2((xpa*zpc),(ymb*pmp))
-            + np.arctan2((xma*zpc),(ypb*mpp)) - np.arctan2((xpa*zpc),(ypb*ppp)))
+    if np.any(mask_gen):
+        magx, magy, magz = magnetization[mask_gen].T
+        a, b, c = dimension[mask_gen].T/2
+        x, y, z = np.copy(observer[mask_gen]).T
 
-    ff1z = (np.arctan2((xma*ymb),(zmc*mmm)) - np.arctan2((xpa*ymb),(zmc*pmm))
-            - np.arctan2((xma*ypb),(zmc*mpm)) + np.arctan2((xpa*ypb),(zmc*ppm))
-            - np.arctan2((xma*ymb),(zpc*mmp)) + np.arctan2((xpa*ymb),(zpc*pmp))
-            + np.arctan2((xma*ypb),(zpc*mpp)) - np.arctan2((xpa*ypb),(zpc*ppp)))
 
-    # contributions from x-magnetization
-    bx_magx = magx * ff1x * qsigns[:,0,0]  # the 'missing' third sign is hidden in ff1x
-    by_magx = magx * ff2z * qsigns[:,0,1]
-    bz_magx = magx * ff2y * qsigns[:,0,2]
-    # contributions from y-magnetization
-    bx_magy =  magy * ff2z * qsigns[:,1,0]
-    by_magy =  magy * ff1y * qsigns[:,1,1]
-    bz_magy = -magy * ff2x * qsigns[:,1,2]
-    # contributions from z-magnetization
-    bx_magz =  magz * ff2y * qsigns[:,2,0]
-    by_magz = -magz * ff2x * qsigns[:,2,1]
-    bz_magz =  magz * ff1z * qsigns[:,2,2]
+        # avoid indeterminate forms by evaluating in bottQ4 only --------
+        # basic masks
+        maskx = x<0
+        masky = y>0
+        maskz = z>0
 
-    # summing all contributions
-    bx_tot = bx_magx + bx_magy + bx_magz
-    by_tot = by_magx + by_magy + by_magz
-    bz_tot = bz_magx + bz_magy + bz_magz
+        # change all positions to their bottQ4 counterparts
+        x[maskx] = x[maskx]*-1
+        y[masky] = y[masky]*-1
+        z[maskz] = z[maskz]*-1
 
-    # combine with special edge/corner cases
-    # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
-    B = np.concatenate(((bx_tot,),(by_tot,),(bz_tot,)), axis=0).T
+        # create sign flips for position changes
+        qsigns = np.ones((len(magx),3,3))
+        qs_flipx = np.array([[ 1,-1,-1],[-1, 1, 1],[-1, 1, 1]])
+        qs_flipy = np.array([[ 1,-1, 1],[-1, 1,-1],[ 1,-1, 1]])
+        qs_flipz = np.array([[ 1, 1,-1],[ 1, 1,-1],[-1,-1, 1]])
+        # signs flips can be applied subsequently
+        qsigns[maskx] = qsigns[maskx]*qs_flipx
+        qsigns[masky] = qsigns[masky]*qs_flipy
+        qsigns[maskz] = qsigns[maskz]*qs_flipz
 
-    return B / (4*np.pi)
+        # field computations --------------------------------------------
+        # Note: in principle the computation for all three mag-components can be
+        #   vectorized itself using symmetries. However, tiling the three
+        #   components will cost more than is gained by the vectorized evaluation
+
+        # Note: making the following computation steps is not necessary
+        #   as mkl will cache such small computations
+        xma, xpa = x-a, x+a
+        ymb, ypb = y-b, y+b
+        zmc, zpc = z-c, z+c
+
+        xma2, xpa2 = xma**2, xpa**2
+        ymb2, ypb2 = ymb**2, ypb**2
+        zmc2, zpc2 = zmc**2, zpc**2
+
+        mmm = np.sqrt(xma2 + ymb2 + zmc2)
+        pmp = np.sqrt(xpa2 + ymb2 + zpc2)
+        pmm = np.sqrt(xpa2 + ymb2 + zmc2)
+        mmp = np.sqrt(xma2 + ymb2 + zpc2)
+        mpm = np.sqrt(xma2 + ypb2 + zmc2)
+        ppp = np.sqrt(xpa2 + ypb2 + zpc2)
+        ppm = np.sqrt(xpa2 + ypb2 + zmc2)
+        mpp = np.sqrt(xma2 + ypb2 + zpc2)
+
+        with np.errstate(divide='ignore', invalid='ignore'):
+            ff2x = np.log((xma+mmm) * (xpa+ppm) * (xpa+pmp) * (xma+mpp))     \
+                    -np.log((xpa+pmm) * (xma+mpm) * (xma+mmp) * (xpa+ppp))
+
+            ff2y = np.log((-ymb+mmm) * (-ypb+ppm) * (-ymb+pmp) * (-ypb+mpp)) \
+                -np.log((-ymb+pmm) * (-ypb+mpm) * ( ymb-mmp) * ( ypb-ppp))
+
+            ff2z = np.log((-zmc+mmm) * (-zmc+ppm) * (-zpc+pmp) * (-zpc+mpp)) \
+                -np.log((-zmc+pmm) * ( zmc-mpm) * (-zpc+mmp) * ( zpc-ppp))
+
+        ff1x = (np.arctan2((ymb*zmc),(xma*mmm)) - np.arctan2((ymb*zmc),(xpa*pmm))
+                - np.arctan2((ypb*zmc),(xma*mpm)) + np.arctan2((ypb*zmc),(xpa*ppm))
+                - np.arctan2((ymb*zpc),(xma*mmp)) + np.arctan2((ymb*zpc),(xpa*pmp))
+                + np.arctan2((ypb*zpc),(xma*mpp)) - np.arctan2((ypb*zpc),(xpa*ppp)))
+
+        ff1y = (np.arctan2((xma*zmc),(ymb*mmm)) - np.arctan2((xpa*zmc),(ymb*pmm))
+                - np.arctan2((xma*zmc),(ypb*mpm)) + np.arctan2((xpa*zmc),(ypb*ppm))
+                - np.arctan2((xma*zpc),(ymb*mmp)) + np.arctan2((xpa*zpc),(ymb*pmp))
+                + np.arctan2((xma*zpc),(ypb*mpp)) - np.arctan2((xpa*zpc),(ypb*ppp)))
+
+        ff1z = (np.arctan2((xma*ymb),(zmc*mmm)) - np.arctan2((xpa*ymb),(zmc*pmm))
+                - np.arctan2((xma*ypb),(zmc*mpm)) + np.arctan2((xpa*ypb),(zmc*ppm))
+                - np.arctan2((xma*ymb),(zpc*mmp)) + np.arctan2((xpa*ymb),(zpc*pmp))
+                + np.arctan2((xma*ypb),(zpc*mpp)) - np.arctan2((xpa*ypb),(zpc*ppp)))
+
+        # contributions from x-magnetization
+        bx_magx = magx * ff1x * qsigns[:,0,0]  # the 'missing' third sign is hidden in ff1x
+        by_magx = magx * ff2z * qsigns[:,0,1]
+        bz_magx = magx * ff2y * qsigns[:,0,2]
+        # contributions from y-magnetization
+        bx_magy =  magy * ff2z * qsigns[:,1,0]
+        by_magy =  magy * ff1y * qsigns[:,1,1]
+        bz_magy = -magy * ff2x * qsigns[:,1,2]
+        # contributions from z-magnetization
+        bx_magz =  magz * ff2y * qsigns[:,2,0]
+        by_magz = -magz * ff2x * qsigns[:,2,1]
+        bz_magz =  magz * ff1z * qsigns[:,2,2]
+
+        # summing all contributions
+        bx_tot = bx_magx + bx_magy + bx_magz
+        by_tot = by_magx + by_magy + by_magz
+        bz_tot = bz_magx + bz_magy + bz_magz
+
+        # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
+        B = np.concatenate(((bx_tot,),(by_tot,),(bz_tot,)), axis=0).T
+
+        # combine with special edge/corner cases
+        B_all[mask_gen] = B
+
+    return B_all / (4*np.pi)

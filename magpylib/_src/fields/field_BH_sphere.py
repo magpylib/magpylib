@@ -87,21 +87,24 @@ def magnet_sphere_Bfield(
      [0.         0.         2.        ]]
     """
 
+    # all special cases r0=0 and mag=0 automatically covered
+
     x, y, z = np.copy(observer.T)
     r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
+    r0 = abs(diameter)/2
 
     # inside field & allocate
     B = magnetization*2/3
 
     # overwrite outside field entries
-    mask_out = (r>=diameter/2)
+    mask_out = (r>=r0)
 
     mag1 = magnetization[mask_out]
     obs1 = observer[mask_out]
     r1 = r[mask_out]
-    dim1 = diameter[mask_out]
+    r01 = r0[mask_out]
 
-    field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*dim1**3/24
+    field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*r01**3/3
     B[mask_out] = field_out.T
 
     return B

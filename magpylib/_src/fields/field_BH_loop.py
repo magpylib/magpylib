@@ -118,25 +118,27 @@ def current_loop_Bfield(
     Leitner/Ortner, "work in progress"
     """
 
-    n = len(radius)
+    rad = np.abs(radius)
+    n = len(rad)
     r, z = observer.T
 
     # allocate with zeros to deal with special cases ON_LOOP and RADIUS=0
     B_total = np.zeros((n,2))
-    mask_radius0 = radius==0
-    mask_on_loop = np.logical_and(radius==r, z==0)
+    mask_radius0 = rad==0
+    # rel pos deviation by 1e-15 to account for num errors (e.g. when rotating)
+    mask_on_loop = np.logical_and(abs(r-rad)<1e-15*rad, z==0)
     mask_general = ~np.logical_or(mask_radius0, mask_on_loop)
 
     # collect general case inputs
     r = r[mask_general]
     z = z[mask_general]
-    radius = radius[mask_general]
+    rad = rad[mask_general]
     current = current[mask_general]
-    n = len(radius)
+    n = len(rad)
 
     # express through ratios (make dimensionless, avoid large/small input values)
-    rb = r/radius
-    zb = z/radius
+    rb = r/rad
+    zb = z/rad
 
     # pre-compute small quantities that might not be cached
     z2 = zb**2
@@ -158,7 +160,7 @@ def current_loop_Bfield(
     k2_over_rb[~mask1] = k2[~mask1]/rb[~mask1]  # will be zero when r=0
 
     # field components
-    pf = 1/np.sqrt(brack)/(1-k2)/radius
+    pf = 1/np.sqrt(brack)/(1-k2)/rad
     Br = pf * z_over_r * xi
     Bz = pf * (k2_over_rb*ellipe(k2) - xi)
 

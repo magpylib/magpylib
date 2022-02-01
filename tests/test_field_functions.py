@@ -1,63 +1,33 @@
-import pickle
-import os
 import numpy as np
 from numpy.testing import assert_allclose
-from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid
+from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid, magnet_cuboid_Bfield
 from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._src.fields.field_BH_sphere import field_BH_sphere
 from magpylib._src.fields.field_BH_dipole import field_BH_dipole, dipole_Bfield
 from magpylib._src.fields.field_BH_loop import field_BH_loop, current_loop_Bfield
 from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert, current_line_Bfield
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-
-# # GENERATE TEST DATA
-# n = 500
-# magpy.defaults.edgesize = 1e-14
-
-# # dim general
-# dim_gen = np.random.rand(n,3)
-# # dim edge
-# dim_edge = np.array([(2,2,2)]*n)
-
-# # pure edge positions
-# pos_edge = (np.random.rand(n,3)-0.5)*2
-# pos_edge[:,0]=1 + (np.random.rand(n)-0.5)*1e-14
-# pos_edge[:,1]=1  + (np.random.rand(n)-0.5)*1e-14
-# for i in range(n):
-#     np.random.shuffle(pos_edge[i])
-# # general positions
-# pos_gen = (np.random.rand(n,3)-0.5)*.5 # half inner half outer
-# # mixed positions
-# aa = np.r_[pos_edge, pos_gen]
-# np.random.shuffle(aa)
-# pos_mix = aa[:n]
-
-# # general mag (no special cases at this point)
-# mag = (np.random.rand(n,3)-0.5)*1000
-
-# poss = [pos_edge, pos_gen, pos_mix]
-# dims = [dim_edge, dim_gen, dim_edge]
-
-# Bs = []
-# for dim,pos in zip(dims,poss):
-#     Bs += [field_BH_cuboid(True, mag, dim, pos)]
-# Bs = np.array(Bs)
-
-# print(Bs)
-# pickle.dump([mag, dims, poss, Bs], open('testdata_field_BH_cuboid.p','wb'))
 
 
-def test_field_BH_cuboid():
+def test_magnet_cuboid_Bfield():
     """ test cuboid field
     """
-    Config.edgesize=1e-14
-    mag, dims, poss, B = pickle.load(open(
-        os.path.abspath('tests/testdata/testdata_field_BH_cuboid.p') ,'rb'))
-    Btest = []
-    for dim,pos in zip(dims,poss):
-        Btest += [field_BH_cuboid(True, mag, dim, pos)]
-    Btest = np.array(Btest)
-    assert_allclose(B, Btest)
+    mag = np.array([(0,0,0), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (2,2,2), (2,2,2), (1,1,1), (1,1,1)])
+    dim = np.array([(1,2,3), (-1,-2,2), (1,2,2), (0,2,2), (1,2,3), (2,2,2), (2,2,2), (2,2,2), (2,2,2)])
+    pos = np.array([(1,2,3), (1,-1,0), (1,-1,0), (1,-1,0), (1,2,3), (1,1+1e-14,0), (1,1,1), (1,-1,2), (1+1e-14,-1,2)])
+    B = magnet_cuboid_Bfield(mag, dim, pos)
+
+    Btest = [
+    [ 0.         , 0.         , 0.        ],
+    [-0.14174376 ,-0.16976459 ,-0.20427478],
+    [-0.14174376 ,-0.16976459 ,-0.20427478],
+    [ 0.         , 0.         , 0.        ],
+    [ 0.02596336 , 0.04530334 , 0.05840059],
+    [     np.inf ,     np.inf ,-0.29516724],
+    [ 0.         , 0.         , 0.        ],
+    [-0.0009913  ,-0.08747071 , 0.04890262],
+    [-0.0009913  ,-0.08747071 , 0.04890262],]
+
+    np.testing.assert_allclose(B, Btest, rtol=1e-5)
 
 
 def test_field_BH_cuboid_mag0():
