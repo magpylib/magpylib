@@ -321,8 +321,9 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
 
     for traces_extra in path_traces_extra.values():
         for tr in traces_extra:
-            kwargs = {"color": color}
-            kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
+            kwargs = {k: v for k, v in tr.items() if k not in ("type", "args")}
+            if "color" not in kwargs or kwargs["color"] is None:
+                kwargs.update(color=color)
             args = tr.get("args", [])
             getattr(ax, tr["type"])(*args, **kwargs)
     return is_extra_now_default, points
