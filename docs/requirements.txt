@@ -1,4 +1,4 @@
-git+https://github.com/magpylib/magpylib.git@live-code-fix#egg=magpylib
+git+https://github.com/magpylib/magpylib.git@development#egg=magpylib
 sphinx==4.2.0
 plotly>=5.3
 sphinx-copybutton
