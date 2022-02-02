@@ -17,8 +17,8 @@ def field_BH_sphere(
 
     - select B or H
 
-    Paramters:
-    ----------
+    Parameters:
+    -----------
     - bh: boolean, True=B, False=H
     - mag: ndarray shape (n,3), magnetization vector in units of mT
     - dia: ndarray shape (n,), diameter in units of [mm]
