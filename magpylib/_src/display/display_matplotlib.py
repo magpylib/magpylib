@@ -298,22 +298,26 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
         t for t in extra_model3d_traces if t.backend == "matplotlib"
     ]
     path_traces_extra = {}
+    points = []
     for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
         for extr in extra_model3d_traces:
             obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
                 if extr.makedefault is True:
                     is_extra_now_default = True
-                trace3d = place_and_orient_model3d(
+                trace3d, vertices = place_and_orient_model3d(
                     obj_extra_trace,
                     orientation=orient,
                     position=pos,
                     coordsargs=extr.coordsargs,
+                    scale=extr.scale,
+                    return_vertices=True,
                 )
                 ttype = obj_extra_trace["type"]
                 if ttype not in path_traces_extra:
                     path_traces_extra[ttype] = []
                 path_traces_extra[ttype].append(trace3d)
+                points.append(vertices.T)
 
     for traces_extra in path_traces_extra.values():
         for tr in traces_extra:
@@ -321,7 +325,8 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
             kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
             args = tr.get("args", [])
             getattr(ax, tr["type"])(*args, **kwargs)
-    return is_extra_now_default
+    return is_extra_now_default, points
+
 
 def display_matplotlib(
     *obj_list_semi_flat, axis=None, markers=None, zoom=0, color_sequence=None, **kwargs,
@@ -379,7 +384,10 @@ def display_matplotlib(
             faces = None
             is_extra_now_default = False
             if obj.style.model3d.data:
-                is_extra_now_default = draw_model3d_extra(obj, style, path, ax, obj_color)
+                is_extra_now_default, pts = draw_model3d_extra(
+                    obj, style, path, ax, obj_color
+                )
+                points += pts
             if obj.style.model3d.show and not is_extra_now_default:
                 if obj._object_type == "Cuboid":
                     lw = 0.5

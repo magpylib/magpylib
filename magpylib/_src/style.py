@@ -271,7 +271,7 @@ class Model3d(MagicProperties):
     def _validate_data(self, val):
         if val is None:
             val = []
-        elif not isinstance(val, (list,tuple)):
+        elif not isinstance(val, (list, tuple)):
             val = [val]
         m3 = []
         for v in val:
@@ -280,7 +280,7 @@ class Model3d(MagicProperties):
         return m3
 
     def add_trace(
-        self, trace, show=True, backend="matplotlib", coordsargs=None, makedefault=False
+        self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1, makedefault=False
     ):
         """creates an additional user-defined 3d model object which is positioned relatively
         to the main object to be displayed and moved automatically with it. This feature also allows
@@ -303,6 +303,11 @@ class Model3d(MagicProperties):
             by default: `{"x": "x", "y": "y", "z": "z"}`
             if False, object is not rotated
 
+        scale: float, default=1
+            scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
+            that if the object is not centered at the global CS origin, its position will
+            also be scaled.
+
         makedefault: bool
             If `True`, it replaces the default 3D-representation.
             If `False`, it adds the current trace to the default 3D-representation."""
@@ -310,6 +315,7 @@ class Model3d(MagicProperties):
         new_trace = Trace3d(
             trace=trace,
             show=show,
+            scale=scale,
             backend=backend,
             coordsargs=coordsargs,
             makedefault=makedefault,
@@ -332,6 +338,11 @@ class Trace3d(MagicProperties):
     trace: dict or callable, default=None
         dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object
 
+    scale: float, default=1
+        scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
+        that if the object is not centered at the global CS origin, its position will
+        also be scaled.
+
     backend:
         plotting backend corresponding to the trace.
         Can be one of `['matplotlib', 'plotly']`
@@ -349,6 +360,7 @@ class Trace3d(MagicProperties):
     def __init__(
         self,
         trace=None,
+        scale=1,
         show=True,
         backend="matplotlib",
         coordsargs=None,
@@ -357,6 +369,7 @@ class Trace3d(MagicProperties):
     ):
         super().__init__(
             trace=trace,
+            scale=scale,
             show=show,
             backend=backend,
             coordsargs=coordsargs,
@@ -379,6 +392,23 @@ class Trace3d(MagicProperties):
             f" but received {repr(val)} instead"
         )
         self._show = val
+
+    @property
+    def scale(self):
+        """
+        scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
+        that if the object is not centered at the global CS origin, its position will
+        also be scaled.
+        """
+        return self._scale
+
+    @scale.setter
+    def scale(self, val):
+        assert isinstance(val, (int, float)) and val > 0, (
+            f"the `scale` property of {type(self).__name__} must be a strictly positive number"
+            f" but received {repr(val)} instead"
+        )
+        self._scale = val
 
     @property
     def coordsargs(self):
