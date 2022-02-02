@@ -389,3 +389,57 @@ def test_cylinder_tile_vs_fem():
     assert np.amax((fd2[5:-5, 1:] * 1000 - B2[5:-5]).T / amp2[5:-5]) < 0.05
     assert np.amax((fd3[:, 1:] * 1000 - B3).T / amp3) < 0.05
     assert np.amax((fd4[:, 1:] * 1000 - B4).T / amp4) < 0.05
+
+
+def test_cylinder_corner():
+    """test corner =0 behavior"""
+    a = 1
+    s = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    B = s.getB([[0,a,a],[0,a,-a],[0,-a,-a],[0,-a,a],
+        [a,0,a],[a,0,-a],[-a,0,-a],[-a,0,a]])
+    np.testing.assert_allclose(B, np.zeros((8,3)))
+
+
+def test_cylinder_corner_scaling():
+    """ test corner=0 scaling"""
+    a = 1
+    obs = [[a,0,a+1e-14], [a+1e-14,0,a]]
+    s = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    Btest = [[5.12553286e+03, -2.26623480e+00, 2.59910242e+02],
+            [5.12803286e+03, -2.26623480e+00, 9.91024238e+00]]
+    np.testing.assert_allclose(s.getB(obs), Btest)
+
+    a = 1000
+    obs = [[a,0,a+1e-14], [a+1e-14,0,a]]
+    s = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    np.testing.assert_allclose(s.getB(obs), np.zeros((2,3)))
+
+
+def test_cylinder_scaling_invariance():
+    """test scaling invariance"""
+    obs = np.array([
+        [-0.12788963,  0.14872334, -0.35838915],
+        [-0.17319799,  0.39177646,  0.22413971],
+        [-0.15831916, -0.39768996,  0.41800279],
+        [-0.05762575,  0.19985373,  0.02645361],
+        [ 0.19120126, -0.13021813, -0.21615004],
+        [ 0.39272212,  0.36457661, -0.09758084],
+        [-0.39270581, -0.19805643,  0.36988649],
+        [ 0.28942161,  0.31003054, -0.29558298],
+        [ 0.13083584,  0.31396182, -0.11231319],
+        [-0.04097917,  0.43394138, -0.14109254]])
+
+    a = 1e-6
+    s1 = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    Btest1 = s1.getB(obs*a)
+
+    a = 1
+    s2 = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    Btest2 = s2.getB(obs)
+
+    a = 1e7
+    s3 = magpy.magnet.Cylinder((10,10,1000), (2*a,2*a))
+    Btest3 = s3.getB(obs*a)
+
+    np.testing.assert_allclose(Btest1, Btest2)
+    np.testing.assert_allclose(Btest1, Btest3)

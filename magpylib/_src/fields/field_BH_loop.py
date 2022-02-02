@@ -7,6 +7,7 @@ a circular current loop. Computation details in function docstrings.
 import numpy as np
 from scipy.special import ellipe
 from magpylib._src.fields.special_cel import cel_loop_stable
+from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 
 
 def field_BH_loop(
@@ -33,21 +34,16 @@ def field_BH_loop(
     --------
     B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
-    # pylint: disable=too-many-locals
 
-    x, y, z = pos_obs.T
     r0 = dia/2
-
-    # cylindrical coordinates
-    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
-    pos_obs_cy = np.concatenate(((r,),(z,)),axis=0).T
+    r, phi, z = cart_to_cyl_coordinates(pos_obs)
 
     # compute field
+    pos_obs_cy = np.concatenate(((r,), (z,)),axis=0).T
     Br, Bz = current_loop_Bfield(current, r0, pos_obs_cy).T
 
     # transform field to cartesian CS
-    Bx = Br*np.cos(phi)
-    By = Br*np.sin(phi)
+    Bx, By = cyl_field_to_cart(phi, Br)
     B_cart = np.concatenate(((Bx,),(By,),(Bz,)),axis=0) # ugly but fast
 
     # B or H field

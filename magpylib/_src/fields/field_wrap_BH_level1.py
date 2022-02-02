@@ -1,6 +1,6 @@
 import numpy as np
 from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid
-from magpylib._src.fields.field_BH_cylinder import field_BH_cylinder
+from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
 from magpylib._src.fields.field_BH_sphere import field_BH_sphere
 from magpylib._src.fields.field_BH_dipole import field_BH_dipole
@@ -48,7 +48,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'Cylinder':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
-        B = field_BH_cylinder(bh, mag, dim, pos_rel_rot)
+        B = magnet_cylinder_field(mag, dim, pos_rel_rot, bh)
 
     elif src_type == 'CylinderSegment':
         mag = kwargs['magnetization']

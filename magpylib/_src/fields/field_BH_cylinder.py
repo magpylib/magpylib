@@ -4,16 +4,17 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 # pylint: disable = no-name-in-module
 
+from distutils.log import warn
 import numpy as np
 from scipy.special import ellipk, ellipe
 from magpylib._src.fields.special_cel import cel
-from magpylib._src.utility import close
+from magpylib._src.utility import cyl_field_to_cart, cart_to_cyl_coordinates
 
 
-# ON INTERFACE
-def magnet_cyl_axial_B_Derby2009(
-    dim: np.ndarray,
-    pos_obs: np.ndarray) -> list:
+def fieldB_cylinder_axial(
+    z0: np.ndarray,
+    r: np.ndarray,
+    z: np.ndarray) -> list:
     """
     B-field in Cylindrical CS of Cylinder magnet with homogenous axial unit
     magnetization. The Cylinder axis coincides with the z-axis of the
@@ -32,34 +33,12 @@ def magnet_cyl_axial_B_Derby2009(
     -------
     B-field: ndarray
         B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of [mT].
-
-    Examples
-    --------
-    Compute the field of three instances.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> dim = np.array([(2,2), (2,3), (3,4)])
-    >>> obs = np.array([(.1,2), (2,3), (4,4)])
-    >>> B = magpy.lib.magnet_cyl_axial_B_Derby2009(dim, obs)
-    >>> print(B)
-    [[0.0080244  0.12016141]
-     [0.02622945 0.01635106]
-     [0.01931265 0.00475101]]
-
-    Notes
-    -----
-    Field computed from the current picture (perfect solenoid). Integrals reduced to cel
-    function.
     """
-
-    d,h = dim.T / 2       # d/h are now radius and h/2
-    r,z = pos_obs.T
-    n = len(d)
+    n = len(z0)
 
     # some important quantities
-    zph, zmh = z+h, z-h
-    dpr, dmr = d+r, d-r
+    zph, zmh = z+z0, z-z0
+    dpr, dmr = 1+r, 1-r
 
     sq0 = np.sqrt(zmh**2+dpr**2)
     sq1 = np.sqrt(zph**2+dpr**2)
@@ -70,20 +49,20 @@ def magnet_cyl_axial_B_Derby2009(
     one = np.ones(n)
 
     # radial field (unit magnetization)
-    Br = d*(cel(k1, one, one, -one)/sq1 - cel(k0, one, one, -one)/sq0)/np.pi
+    Br = (cel(k1, one, one, -one)/sq1 - cel(k0, one, one, -one)/sq0)/np.pi
 
     # axial field (unit magnetization)
-    Bz = d/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
+    Bz = 1/dpr*(zph*cel(k1, gamma**2, one, gamma)/sq1
               - zmh*cel(k0, gamma**2, one, gamma)/sq0)/np.pi
 
-    return np.array([Br, Bz]).T
+    return Br, Bz
 
 
-# ON INTERFACE
-def magnet_cyl_dia_H_Rauber2021(
-        tetta: np.ndarray,
-        dim: np.ndarray,
-        pos_obs: np.ndarray,
+def fieldH_cylinder_diametral(
+        z0: np.ndarray,
+        r: np.ndarray,
+        phi: np.ndarray,
+        z: np.ndarray,
         ) -> np.ndarray:
     """
     H-field in Cylindrical CS of Cylinder magnet with homogenous
@@ -91,6 +70,11 @@ def magnet_cyl_dia_H_Rauber2021(
     CS. The geometric center of the Cylinder is in the origin.
 
     Implementation from [Rauber2021].
+
+    H-Field computed analytically via the magnetic scalar potential. Final integration
+    reduced to complete elliptic integrals.
+
+    Numerical Instabilities: See discussion on GitHub.
 
     Parameters
     ----------
@@ -105,66 +89,43 @@ def magnet_cyl_dia_H_Rauber2021(
     -------
     H-field: ndarray
         H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
-
-    Examples
-    --------
-    Compute field for three instances.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> tetta = np.zeros(3)
-    >>> dim = np.array([(2,2), (2,3), (3,4)])
-    >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
-    >>> B = magpy.lib.magnet_cyl_dia_H_Rauber2021(tetta, dim, obs)
-    >>> print(B)
-    [[-0.05992403  0.          0.0080244 ]
-     [ 0.00193283  0.00219048  0.02604082]
-     [ 0.05270086  0.00606112  0.01546927]]
-
-    Notes
-    -----
-    H-Field computed analytically via the magnetic scalar potential. Final integration
-    reduced to complete elliptic integrals.
-
-    Numerical Instabilities: See discussion on GitHub.
     """
 
-    r0, z0 = dim.T/2
-    r, phi, z = pos_obs.T
-    n = len(r0)
+    # warning when numerical stability might not be granted
+    if np.any((r<1e-6) | (r>1e6) | (z/z0>1e6)):
+        msg = 'Warning: Possible numerical stability problem of Cylinder'
+        msg += ' solution with diametral magnetization when r/r0<1e-6 or'
+        msg += ' r/r0>1e6 or z/z0>1e6.'
+        warn(msg)
 
-    # phi is now relative between mag and pos_obs
-    phi = phi-tetta
+    n = len(z0)
 
-    # implementation of Rauber2021
     # compute repeated quantities
     zp = z+z0
     zm = z-z0
-    rp = r+r0
-    rm = r-r0
+    rp = r+1
+    rm = r-1
 
     zp2 = zp**2
     zm2 = zm**2
     rp2 = rp**2
     rm2 = rm**2
     r2 = r**2
-    r02 = r0**2
-    rr0 = r*r0
 
     ap2 = zp2+rm**2
     am2 = zm2+rm**2
     ap = np.sqrt(ap2)
     am = np.sqrt(am2)
 
-    argp = -4*rr0/ap2
-    argm = -4*rr0/am2
+    argp = -4*r/ap2
+    argm = -4*r/am2
 
     # special case r=r0 : indefinite form
     #   result is numerically stable in the vicinity of of r=r0
     #   so only the special case must be caught (not the surroundings)
     mask_special = rm==0
     argc = np.ones(n)*1e16      # should be np.Inf but leads to 1/0 problems in cel
-    argc[~mask_special] = -4*rr0[~mask_special]/rm2[~mask_special]
+    argc[~mask_special] = -4*r[~mask_special]/rm2[~mask_special]
 
     elle_p = ellipe(argp)
     elle_m = ellipe(argm)
@@ -176,14 +137,14 @@ def magnet_cyl_dia_H_Rauber2021(
 
     # compute fields
     Hphi = np.sin(phi)/(4*np.pi*r2)*(
-        + zm*am                  * elle_m   -  zp*ap                  * elle_p
-        - zm/am*(2*r02+zm2+2*r2) * ellk_m   +  zp/ap*(2*r02+zp2+2*r2) * ellk_p
-        + zm/am*rp2              * ellpi_m  -  zp/ap*rp2              * ellpi_p
+        + zm*am              * elle_m   -  zp*ap              * elle_p
+        - zm/am*(2+zm2+2*r2) * ellk_m   +  zp/ap*(2+zp2+2*r2) * ellk_p
+        + zm/am*rp2          * ellpi_m  -  zp/ap*rp2          * ellpi_p
         )
 
     Hz = - np.cos(phi)/(2*np.pi*r)*(
         + am              * elle_m  -  ap              * elle_p
-        - (r02+zm2+r2)/am * ellk_m  +  (r02+zp2+r2)/ap * ellk_p
+        - (1+zm2+r2)/am * ellk_m  +  (1+zp2+r2)/ap * ellk_p
         )
 
     # special case 1/rm
@@ -192,11 +153,133 @@ def magnet_cyl_dia_H_Rauber2021(
 
     Hr = - np.cos(phi)/(4*np.pi*r2)*(
         - zm*am             * elle_m   +  zp*ap             * elle_p
-        + zm/am*(2*r02+zm2) * ellk_m   -  zp/ap*(2*r02+zp2) * ellk_p
-        + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+r02) * one_over_rm)
+        + zm/am*(2+zm2) * ellk_m   -  zp/ap*(2+zp2) * ellk_p
+        + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+1) * one_over_rm)
 
-    return np.array([Hr, Hphi, Hz]).T
+    return Hr, Hphi, Hz
 
+
+# ON INTERFACE
+def magnet_cylinder_field(
+    magnetization: np.ndarray,
+    dimension: np.ndarray,
+    observer: np.ndarray,
+    Bfield=True
+    ) -> np.ndarray:
+    """
+    Computes the field of a homogeneously magnetized cylinder. The cylinder
+    axis coincides with the z-axis and the geometric center lies in the origin.
+
+    Analytic implementations from Ortner/Rauber/Leitner wip.
+
+    Parameters:
+    -----------
+    magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT].
+
+    dimension: ndarray, shape (n,2)
+        Cylinder dimension (diameter, height) in units of [mm].
+
+    observer: ndarray, shape (n,3)
+        Position of observer in cartesian coordinates (x, y, z) in units of [mm].
+
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
+    Returns
+    -------
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of magnet in cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+
+    Examples
+    --------
+    Compute the B-field of two different cylinder magnets at position (1,2,3).
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> mag = np.array([(0,0,1000), (100,0,100)])
+    >>> dim = np.array([(1,1), (2,3)])
+    >>> obs = np.array([(1,2,3), (1,2,3)])
+    >>> B = magpy.lib.magnet_cylinder_field(mag, dim, obs)
+    >>> print(B)
+    [[ 0.77141782  1.54283565  1.10384481]
+     [-0.15185713  2.90352915  2.23601722]]
+    """
+
+    # transform to Cy CS --------------------------------------------
+    r, phi, z = cart_to_cyl_coordinates(observer)
+    r0,z0 = dimension.T/2
+
+    # scale invariance (make dimensionless)
+    r  = np.copy(r/r0)
+    z  = np.copy(z/r0)
+    z0 = np.copy(z0/r0)
+
+    # allocate field vectors ----------------------------------------
+    Br, Bphi, Bz = np.zeros((3,len(r)))
+
+    # create masks to distinguish between cases ---------------------
+    m0 = np.isclose(r, 1, rtol=1e-15, atol=0)         # on Cylinder hull plane
+    m1 = np.isclose(abs(z), z0, rtol=1e-15, atol=0)   # on top or bottom plane
+    m2 = np.abs(z)<=z0      # in-between top and bottom plane
+    m3 = r<=1               # inside Cylinder hull plane
+
+    # special case: mag = 0
+    mask0 = (np.linalg.norm(magnetization, axis=1)==0)
+
+    # special case: on Cylinder edge
+    mask_edge = (m0 & m1)
+
+    # general case
+    mask_gen = ~mask0 & ~mask_edge
+
+    # axial/transv magnetization cases
+    magx, magy, magz = magnetization.T
+    mask_tv = (magx != 0) | (magy != 0)
+    mask_ax = (magz != 0)
+
+    # inside/outside
+    mask_inside = m2 & m3
+
+    # general case masks
+    mask_tv = mask_tv & mask_gen
+    mask_ax = mask_ax & mask_gen
+    mask_inside = mask_inside & mask_gen
+
+    # transversal magnetization contributions -----------------------
+    if any(mask_tv):
+        magxy = np.sqrt(magx**2 + magy**2)[mask_tv]
+        tetta = np.arctan2(magy[mask_tv], magx[mask_tv])
+        br_tv, bphi_tv, bz_tv = fieldH_cylinder_diametral(z0[mask_tv], r[mask_tv],
+            phi[mask_tv]-tetta, z[mask_tv])
+
+        # add to H-field (inside magxy is missing for B !!!)
+        Br[mask_tv]   += magxy*br_tv
+        Bphi[mask_tv] += magxy*bphi_tv
+        Bz[mask_tv]   += magxy*bz_tv
+
+    # axial magnetization contributions -----------------------------
+    if any(mask_ax):
+        br_ax, bz_ax = fieldB_cylinder_axial(z0[mask_ax], r[mask_ax], z[mask_ax])
+        Br[mask_ax] += magz[mask_ax]*br_ax
+        Bz[mask_ax] += magz[mask_ax]*bz_ax
+
+    # transform field to cartesian CS -------------------------------
+    Bx, By = cyl_field_to_cart(phi, Br, Bphi)
+
+    # add/subtract Mag when inside for B/H --------------------------
+    if Bfield:
+        if any(mask_tv): # tv computes H-field
+            Bx[mask_tv*mask_inside] += magx[mask_tv*mask_inside]
+            By[mask_tv*mask_inside] += magy[mask_tv*mask_inside]
+        return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T
+
+    if any(mask_ax): # ax computes B-field
+        Bz[mask_tv*mask_inside] -= magz[mask_tv*mask_inside]
+    return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T*10/4/np.pi
+
+
+# old iterative solution by Furlani
 
 # def magnet_cyl_dia_H_Furlani1994(
 #         tetta: np.ndarray,
@@ -298,109 +381,3 @@ def magnet_cyl_dia_H_Rauber2021(
 #     Bz = r0/2/niter*np.sum(summandz, axis=0)
 
 #     return np.array([Br, Bphi, Bz]).T
-
-
-
-def field_BH_cylinder(
-        bh: bool,
-        mag: np.ndarray,
-        dim: np.ndarray,
-        pos_obs: np.ndarray
-        ) -> np.ndarray:
-    """ setting up the Cylinder field computation
-    - transform to Cylindrical CS
-    - separate mag=0 cases (returning 0)
-    - separate edge/corner cases (returning 0)
-    - separate magz and magxy
-    - call field computation for general cases
-    - select B or H
-    - transform B<-->H (inside check)
-
-    ### Args:
-    - bh (boolean): True=B, False=H
-    - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
-    - dim (ndarray Nx2): dimension of Cylinder DxH in units of mm
-    - pos_obs (ndarray Nx3): position of observer in units of mm
-
-    ### Returns:
-    - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
-    """
-
-    # transform to Cy CS --------------------------------------------
-    x, y, z = pos_obs.T
-    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
-    pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
-
-    # allocate field vectors ----------------------------------------
-    Br, Bphi, Bz = np.zeros((3,len(x)))
-
-    # create masks to distinguish between cases ---------------------
-
-    r0,z0 = dim.T/2
-    m0 = close(r, r0)        # on Cylinder plane
-    m1 = close(abs(z), z0)   # on top or bottom plane
-    m2 = np.abs(z)<=z0       # inside Cylinder plane
-    m3 = r<=r0               # in-between top and bottom plane
-
-    # special case: mag = 0
-    mask0 = (np.linalg.norm(mag,axis=1)==0)
-
-    # special case: on Cylinder surface
-    mask_edge = (m0 & m2) | (m1 & m3)
-
-    # general case
-    mask_gen = ~mask0 & ~mask_edge
-
-    # axial/transv magnetization cases
-    magx, magy, magz = mag.T
-    mask_tv = (magx != 0) | (magy != 0)
-    mask_ax = (magz != 0)
-
-    # inside/outside
-    mask_inside = m2 & m3
-
-    # general case masks
-    mask_tv = mask_tv & mask_gen
-    mask_ax = mask_ax & mask_gen
-    mask_inside = mask_inside & mask_gen
-
-    # transversal magnetization contributions -----------------------
-    if any(mask_tv):
-        # select non-zero tv parts
-        magxy = np.sqrt(magx**2 + magy**2)[mask_tv]
-        tetta = np.arctan2(magy[mask_tv], magx[mask_tv])
-        pos_obs_tv = pos_obs_cy[mask_tv]
-        dim_tv = dim[mask_tv]
-        # compute H-field (in mT)
-        br_tv, bphi_tv, bz_tv = magnet_cyl_dia_H_Rauber2021(tetta, dim_tv, pos_obs_tv).T
-        # add to H-field (inside magxy is missing for B)
-        Br[mask_tv]   += magxy*br_tv
-        Bphi[mask_tv] += magxy*bphi_tv
-        Bz[mask_tv]   += magxy*bz_tv
-
-    # axial magnetization contributions -----------------------------
-    if any(mask_ax):
-        # select non-zero ax parts
-        pos_obs_ax = pos_obs_cy[mask_ax]
-        magz_ax = magz[mask_ax]
-        dim_ax = dim[mask_ax]
-        # compute B-field
-        br_ax, bz_ax = magnet_cyl_axial_B_Derby2009(dim_ax, pos_obs_ax[:,(0,2)]).T
-        # add to B-field
-        Br[mask_ax] += magz_ax*br_ax
-        Bz[mask_ax] += magz_ax*bz_ax
-
-    # transform field to cartesian CS -------------------------------
-    Bx = Br*np.cos(phi) - Bphi*np.sin(phi)
-    By = Br*np.sin(phi) + Bphi*np.cos(phi)
-
-    # add/subtract Mag when inside for B/H --------------------------
-    if bh:
-        if any(mask_tv): # tv computes H-field
-            Bx[mask_tv*mask_inside] += magx[mask_tv*mask_inside]
-            By[mask_tv*mask_inside] += magy[mask_tv*mask_inside]
-        return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T
-
-    if any(mask_ax): # ax computes B-field
-        Bz[mask_tv*mask_inside] -= magz[mask_tv*mask_inside]
-    return np.concatenate(((Bx,),(By,),(Bz,)),axis=0).T*10/4/np.pi

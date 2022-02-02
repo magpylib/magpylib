@@ -13,9 +13,6 @@ def field_BH_cuboid(
         pos_obs: np.ndarray
         ) -> np.ndarray:
     """ setting up the Cuboid field computation
-    - separate mag=0 cases (returning 0)
-    - separate edge/corner cases (returning 0)
-    - call field computation for general cases
     - select B or H
 
     ### Args:
@@ -27,40 +24,6 @@ def field_BH_cuboid(
     ### Returns:
     - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
     """
-
-    # # edgesize = 1e-8
-
-    # # # allocate field vectors ----------------------
-    # # B = np.zeros((len(mag),3))
-
-    # # # special case mag = 0 ------------------------
-    # # mask0 = (mag[:,0]==0) * (mag[:,1]==0) * (mag[:,2]==0) # 2x faster than np.all()
-
-    # # # special cases for edge/corner fields --------
-    # # x, y, z = np.copy(pos_obs.T)
-    # # a, b, c = dim.T/2
-
-    # # mx1 = (abs(abs(x)-a) < edgesize)
-    # # my1 = (abs(abs(y)-b) < edgesize)
-    # # mz1 = (abs(abs(z)-c) < edgesize)
-
-    # # mx2 = (abs(x)-a < edgesize) # within actual edge
-    # # my2 = (abs(y)-b < edgesize)
-    # # mz2 = (abs(z)-c < edgesize)
-
-    # # mask_xedge = my1 & mz1 & mx2
-    # # mask_yedge = mx1 & mz1 & my2
-    # # mask_zedge = mx1 & my1 & mz2
-    # # mask_edge = mask_xedge | mask_yedge | mask_zedge
-
-    # # # not a special case --------------------------
-    # # mask_gen = ~mask_edge & ~mask0
-    # # print(mask_gen)
-    # # # compute field -------------------------------
-    # # if np.any(mask_gen):
-    # #     B[mask_gen] = magnet_cuboid_Bfield(mag[mask_gen], dim[mask_gen], pos_obs[mask_gen])
-
-
     B = magnet_cuboid_Bfield(mag, dim, pos_obs)
 
     # return B or compute and return H -------------
