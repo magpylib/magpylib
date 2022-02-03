@@ -6,7 +6,7 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.13.1
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -22,7 +22,17 @@ The `magpylib` package is shipped with a display function which provides a graph
 
 +++
 
-Display multiple objects, object paths, markers in 3D using Matplotlib:
+Note that the default plotting backend can be changed to plotly by setting it a the top of script:
+```python
+import magpylib as magpy
+magpy.defaults.display.backend = 'plotly'
+```
+
+All the following calls to the `show` function or method without specifying a backend will call the `'plotly'` plotting backend. if you explicitly specify `'matplotlib'` at `show` call, it will override the set defaults.
+
++++
+
+## Display multiple objects:
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -31,7 +41,55 @@ sens = magpy.Sensor(position=(0, 0, 3))
 magpy.show(magnet, sens, zoom=1)
 ```
 
-Display figure on your own canvas (here Matplotlib 3D axis):
+## Display multiple objects with paths
+
+```{code-cell} ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+import magpylib as magpy
+
+# define sources
+src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
+
+# manipulate first source to create a path
+src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
+
+# manipulate second source
+src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
+src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
+
+# display the system
+magpy.show(src1, src2)
+```
+
++++ {"tags": []}
+
+## Display objects with a different plotting backend
+
+```{code-cell} ipython3
+import numpy as np
+import matplotlib.pyplot as plt
+import magpylib as magpy
+
+# define sources
+src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
+
+# manipulate first source to create a path
+src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
+
+# manipulate second source
+src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
+src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
+
+# display the system
+magpy.show(src1, src2, backend='plotly')
+```
+
+## Display figure on your own canvas
+
+### With a matplotlib canvas
 
 ```{code-cell} ipython3
 import numpy as np
@@ -65,37 +123,23 @@ plt.tight_layout()
 plt.show()
 ```
 
-The same objects can also be displayed using the `plotly` plotting backend
-
-```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
-import magpylib as magpy
-
-# define sources
-src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
-src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
-
-# manipulate first source to create a path
-src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
-
-# manipulate second source
-src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
-src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
-
-# display the system
-magpy.show(src1, src2, backend='plotly')
-```
-
-The `show` function is also available as a class method and can be called for every object separately.
+### With a plotly canvas 
 
 ```{code-cell} ipython3
 import plotly.graph_objects as go
 import magpylib as magpy
 
 fig = go.Figure()
-ts = [-0.4, 0, 0.4]
-sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, 0) for x in ts for y in ts])
+ts = [-2, -1, 0, 1, 2]
+sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, z) for x in ts for y in ts for z in ts])
 sens.show(canvas=fig, backend="plotly", zoom=1, style_size=5)
+fig.update_layout(
+    title_text='My own title text',
+    width=800,
+    height=600)
 fig
+```
+
+```note
+The `show` function is also available as a class method and can be called for every object separately.
 ```
