@@ -162,7 +162,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         orient = RotScipy.from_rotvec([[0, 0, 1]])
     pos = np.array([pos]) if pos.ndim == 1 else pos
     path_len = pos.shape[0]
-    if show_path is True or show_path is False:
+    if show_path is True or show_path is False or show_path==0:
         inds = np.array([-1])
     elif isinstance(show_path, int):
         inds = np.arange(path_len, dtype=int)[::-show_path]
