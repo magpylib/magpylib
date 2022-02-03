@@ -1342,35 +1342,63 @@ def magnet_cyl_tile_H_Slanovc2021(
     return result.T
 
 
-def field_BH_cylinder_tile(
-        bh: bool,
-        mag: np.ndarray,
-        dim: np.ndarray,
-        pos_obs: np.ndarray
+def magnet_cylinder_section_field(
+        magnetization: np.ndarray,
+        dimension: np.ndarray,
+        observer: np.ndarray,
+        Bfield=True,
         ) -> np.ndarray:
     """
-    ### Args:
-    - bh (boolean): True=B, False=H
-    - mag (ndarray Nx3): homogeneous magnetization vector in cartesian CS units of [mT]
-    - dim (ndarray Nx6): dimension of Cylinder (r1,r2,phi1,phi2,z1,z2) in units of [mm], [deg]
-        expects 0<=r1<r2, -2pi<phi1<phi2<2pi, z1<z2
-    - pos_obs (ndarray Nx3): position of observer in units of [mm]
-    - return 0 when on surface (analytic code yields unphysical solutions on edges and surfaces)
+    The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
+    field on the outside and is 2/3*mag in the inside (see e.g. "Theoretical Physics, Bertelmann")
 
-    ### Returns:
-    - B/H-field (ndarray Nx3): magnetic field vectors in cartesian CS at pos_obs
-        in units of [mT] or [kA/m]
+    Parameters:
+    -----------
+    magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT].
+
+    dimension: ndarray, shape (n,3)
+        Cylinder section dimensions (r1,r2,phi1,phi2,z1,z2), inner radius r1, outer radius r2,
+        the section angles phi1 and phi2  [deg]
+
+    observer: ndarray, shape (n,3)
+        Position of observers in units of [mm].
+
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
+    Returns
+    -------
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+
+    Examples
+    --------
+    Compute the field of two different spherical magnets at position (1,1,1),
+    inside and outside.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> dia = np.array([1,5])
+    >>> obs = np.array([(1,1,1), (1,1,1)])
+    >>> mag = np.array([(1,2,3), (0,0,3)])
+    >>> B = magpy.lib.magnet_sphere_Bfield(mag, dia, obs)
+    >>> print(B)
+    [[0.04009377 0.03207501 0.02405626]
+     [0.         0.         2.        ]]
     """
-    BHfinal = np.zeros((len(mag),3))
+    BHfinal = np.zeros((len(magnetization),3))
+
+    # r1, r2, h, phi1, phi2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
 
     # transform dim deg->rad
-    r1, r2, phi1, phi2, z1, z2 = dim.T
+    r1, r2, phi1, phi2, z1, z2 = dimension.T
     phi1 = phi1/180*np.pi
     phi2 = phi2/180*np.pi
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
 
     # transform obs_pos to Cy CS --------------------------------------------
-    x, y, z = pos_obs.T
+    x, y, z = observer.T
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
     pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 
@@ -1404,7 +1432,7 @@ def field_BH_cylinder_tile(
         return BHfinal
 
     # redefine input if there are some surface-points -------------------------
-    magg = mag[mask_not_on_surf]
+    magg = magnetization[mask_not_on_surf]
     dim = dim[mask_not_on_surf]
     pos_obs_cy = pos_obs_cy[mask_not_on_surf]
     phi = phi[mask_not_on_surf]
@@ -1423,12 +1451,12 @@ def field_BH_cylinder_tile(
     H = np.concatenate(((Hx,),(Hy,),(Hz,)),axis=0).T*10/4/np.pi
 
     # return B or H --------------------------------------------------------
-    if not bh:
+    if not Bfield:
         BHfinal[mask_not_on_surf] = H
         return BHfinal
 
     B = H/(10/4/np.pi) # kA/m -> mT
     BHfinal[mask_not_on_surf] = B
     maskX = mask_inside*mask_not_on_surf
-    BHfinal[maskX] += mag[maskX]
+    BHfinal[maskX] += magnetization[maskX]
     return BHfinal
