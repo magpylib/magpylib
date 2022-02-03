@@ -1,5 +1,6 @@
 """Collection of classes for display styling"""
 # pylint: disable=C0302
+import numpy as np
 
 from magpylib._src.defaults.defaults_utility import (
     MagicProperties,
@@ -999,19 +1000,23 @@ class Path(MagicProperties):
         key/value pairs
 
     show: bool, default=None
-        show/hide path, must be one of:
-        - False: shows object(s) at final path position and hides paths.
-        - True: shows object(s) at final path position and shows object paths.
+        show/hide path
+        - False: shows object(s) at final path position and hides paths lines and markers.
+        - True: shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+
+    frames: int or 1D-array_like
+        show copies of the 3D-model along the given path indices.
         - integer i: displays the object(s) at every i'th path position.
-        - array_like shape (n,): describes certain path indices.
+        - array_like shape (n,) of integers: describes certain path indices.
 
     numbering: bool, default=False
         show/hide numbering on path positions. Only applies if show=True.
     """
 
-    def __init__(self, marker=None, line=None, show=None, numbering=None, **kwargs):
+    def __init__(self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs):
         super().__init__(
-            marker=marker, line=line, show=show, numbering=numbering, **kwargs
+            marker=marker, line=line, frames=frames, show=show, numbering=numbering, **kwargs
         )
 
     @property
@@ -1034,27 +1039,43 @@ class Path(MagicProperties):
 
     @property
     def show(self):
-        """show/hide path, must be one of:
-        - False: shows object(s) at final path position and hides paths.
-        - True: shows object(s) at final path position and shows object paths.
-        - integer i: displays the object(s) at every i'th path position.
-        - array_like shape (n,): describes certain path indices."""
+        """show/hide path
+        - False: shows object(s) at final path position and hides paths lines and markers.
+        - True: shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+        """
         return self._show
 
     @show.setter
     def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `show` property of {type(self).__name__} must be either "
+            "`True` or `False`"
+            f"\nbut received {repr(val)} instead")
+        self._show = val
+
+    @property
+    def frames(self):
+        """show copies of the 3D-model along the given path indices.
+        - integer i: displays the object(s) at every i'th path position.
+        - array_like shape (n,) of integers: describes certain path indices.
+        """
+        return self._frames
+
+    @frames.setter
+    def frames(self, val):
         is_valid_path = True
         if hasattr(val, "__iter__") and not isinstance(val, str):
             val = tuple(val)
-        elif not (val is None or isinstance(val, (int, bool))):
+            if not all(np.issubdtype(type(v), int) for v in val):
+                is_valid_path = False
+        elif not (val is None or np.issubdtype(type(val), int)):
             is_valid_path = False
-        assert is_valid_path, f"""the `show` property of {type(self).__name__} must be one of:
- - False: shows object(s) at final path position and hides paths.
- - True: shows object(s) at final path position and shows object paths.
- - integer i: displays the object(s) at every i'th path position.
- - array_like shape (n,): describes certain path indices.
+        assert is_valid_path, f"""the `frames` property of {type(self).__name__} must be either:
+- integer i: displays the object(s) at every i'th path position.
+- array_like shape (n,) of integers: describes certain path indices.
 but received {repr(val)} instead"""
-        self._show = val
+        self._frames = val
 
     @property
     def numbering(self):

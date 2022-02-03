@@ -131,7 +131,7 @@ def draw_arrowed_circle(current, diameter, arrow_size, vert):
     return vertices
 
 
-def get_rot_pos_from_path(obj, show_path):
+def get_rot_pos_from_path(obj, show_path=None):
     """
     subsets orientations and positions depending on `show_path` value.
     examples:
@@ -139,6 +139,9 @@ def get_rot_pos_from_path(obj, show_path):
     returns rots[[1,2,6]], poss[[1,2,6]]
     """
     # pylint: disable=protected-access
+    # pylint: disable=invalid-unary-operand-type
+    if show_path is None:
+        show_path = True
     pos = getattr(obj, "_position", None)
     if pos is None:
         pos = obj.position
