@@ -123,7 +123,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-### With a plotly canvas 
+### With a plotly canvas
 
 ```{code-cell} ipython3
 import plotly.graph_objects as go
@@ -140,6 +140,6 @@ fig.update_layout(
 fig
 ```
 
-```note
+```{note}
 The `show` function is also available as a class method and can be called for every object separately.
 ```
