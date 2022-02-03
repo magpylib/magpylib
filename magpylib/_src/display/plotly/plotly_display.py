@@ -2,6 +2,7 @@
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 
+import numbers
 from itertools import cycle, combinations
 from typing import Tuple
 import warnings
@@ -438,7 +439,6 @@ def get_plotly_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
-    animation=False,
     **kwargs,
 ) -> list:
     """
@@ -571,10 +571,7 @@ def get_plotly_traces(
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        path_frames = style.path.frames
-        if style.path.show is False and animation is False:
-            path_frames = False
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, path_frames)):
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.frames)):
             if style.model3d.showdefault and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
@@ -1083,7 +1080,7 @@ def display_plotly(
         fig = go.Figure()
 
     # Check animation parameters
-    if np.isscalar(animation) and not isinstance(animation, bool) and animation > 0:
+    if isinstance(animation, numbers.Number) and not isinstance(animation, bool) and animation > 0:
         kwargs["animation_time"] = animation
         animation = True
     elif not isinstance(animation, bool):
@@ -1134,7 +1131,6 @@ def display_plotly(
                 color_sequence=color_sequence,
                 zoom=zoom,
                 title=title,
-                animation=animation,
                 **kwargs,
             )
         else:
