@@ -229,35 +229,32 @@ class Model3d(MagicProperties):
 
     Properties
     ----------
-    show: bool, default=None
-        shows/hides model3d object based on provided trace:
-        - True: shows mesh
-        - False: hides mesh
+    showdefault: bool, default=True
+        Shows/hides default 3D-model
 
     data: dict or list of dicts, default=None
         a trace or list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
-
     """
 
-    def __init__(self, show=True, data=None, **kwargs):
-        super().__init__(show=show, data=data, **kwargs)
+    def __init__(self, showdefault=True, data=None, **kwargs):
+        super().__init__(showdefault=showdefault, data=data, **kwargs)
 
     @property
-    def show(self):
+    def showdefault(self):
         """shows/hides main model3d object representation"""
-        return self._show
+        return self._showdefault
 
-    @show.setter
-    def show(self, val):
+    @showdefault.setter
+    def showdefault(self, val):
         assert isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be "
+            f"the `showdefault` property of {type(self).__name__} must be "
             f"one of `[True, False]`"
             f" but received {repr(val)} instead"
         )
-        self._show = val
+        self._showdefault = val
 
     @property
     def data(self):
@@ -280,7 +277,7 @@ class Model3d(MagicProperties):
         return m3
 
     def add_trace(
-        self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1, makedefault=False
+        self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1,
     ):
         """creates an additional user-defined 3d model object which is positioned relatively
         to the main object to be displayed and moved automatically with it. This feature also allows
@@ -307,18 +304,10 @@ class Model3d(MagicProperties):
             scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
             that if the object is not centered at the global CS origin, its position will
             also be scaled.
-
-        makedefault: bool
-            If `True`, it replaces the default 3D-representation.
-            If `False`, it adds the current trace to the default 3D-representation."""
+        """
 
         new_trace = Trace3d(
-            trace=trace,
-            show=show,
-            scale=scale,
-            backend=backend,
-            coordsargs=coordsargs,
-            makedefault=makedefault,
+            trace=trace, show=show, scale=scale, backend=backend, coordsargs=coordsargs,
         )
         self._data += self._validate_data(new_trace)
         return self
@@ -351,10 +340,6 @@ class Trace3d(MagicProperties):
         tells magpylib the name of the coordinate arrays to be moved or rotated.
         by default: `{"x": "x", "y": "y", "z": "z"}`
         if False, object is not rotated
-
-    makedefault: bool
-        If `True`, it replaces the default 3D-representation.
-        If `False`, it adds the current trace to the default 3D-representation.
     """
 
     def __init__(
@@ -364,7 +349,6 @@ class Trace3d(MagicProperties):
         show=True,
         backend="matplotlib",
         coordsargs=None,
-        makedefault=False,
         **kwargs,
     ):
         super().__init__(
@@ -373,7 +357,6 @@ class Trace3d(MagicProperties):
             show=show,
             backend=backend,
             coordsargs=coordsargs,
-            makedefault=makedefault,
             **kwargs,
         )
 
@@ -460,23 +443,6 @@ class Trace3d(MagicProperties):
             f" but received {repr(val)} instead"
         )
         self._backend = val
-
-    @property
-    def makedefault(self):
-        """
-        If `True`, it replaces the default 3D-representation.
-        If `False`, it adds the current trace to the default 3D-representation.
-        """
-        return self._makedefault
-
-    @makedefault.setter
-    def makedefault(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"the `makedefault` property of {type(self).__name__} must be "
-            f"one of `[True, False]`"
-            f" but received {repr(val)} instead"
-        )
-        self._makedefault = val
 
 
 class Magnetization(MagicProperties):

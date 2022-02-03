@@ -108,7 +108,7 @@ def test_col_display():
     pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     col = magpy.Collection(pm1, pm2)
     x = col.show(canvas=fig)
-    assert x is None, "colletion display test fail"
+    assert x is None, "collection display test fail"
 
 
 def test_dipole_display():
@@ -194,6 +194,7 @@ def test_extra_model3d():
     magpy.defaults.display.backend = "plotly"
     cuboid = Cuboid((1, 2, 3), (1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
         {
             "backend": "plotly",
@@ -219,18 +220,17 @@ def test_extra_model3d():
                 "facecolor": ['red']*12,
             },
             "show": True,
-            "makedefault":True,
         },
     ]
     fig = go.Figure()
-    x = cuboid.show(canvas=fig, style=dict(model3d_show=True))
+    x = cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
     assert x is None, "display test fail"
     cuboid.style.model3d.data[0].show = False
     x = cuboid.show(canvas=fig)
     assert x is None, "display test fail"
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
-    x = magpy.show(coll, canvas=fig, animation=True, style=dict(model3d_show=False),)
+    x = magpy.show(coll, canvas=fig, animation=True, style=dict(model3d_showdefault=False),)
     my_callable_trace = lambda: {
         "type": "scatter3d",
         "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
@@ -247,7 +247,7 @@ def test_extra_model3d():
         }
     )
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_show=False),)
+    x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_showdefault=False),)
     assert x is None, "display test fail"
 
 

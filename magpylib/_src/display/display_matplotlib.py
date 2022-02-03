@@ -292,7 +292,6 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
 def draw_model3d_extra(obj, style, show_path, ax, color):
     """positions, orients and draws extra 3d model including path positions
     returns True if at least one the traces is now new default"""
-    is_extra_now_default = False
     extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
     extra_model3d_traces = [
         t for t in extra_model3d_traces if t.backend == "matplotlib"
@@ -303,8 +302,6 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
         for extr in extra_model3d_traces:
             obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
-                if extr.makedefault is True:
-                    is_extra_now_default = True
                 trace3d, vertices = place_and_orient_model3d(
                     obj_extra_trace,
                     orientation=orient,
@@ -326,7 +323,7 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
                 kwargs.update(color=color)
             args = tr.get("args", [])
             getattr(ax, tr["type"])(*args, **kwargs)
-    return is_extra_now_default, points
+    return points
 
 
 def display_matplotlib(
@@ -383,13 +380,12 @@ def display_matplotlib(
             obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
-            is_extra_now_default = False
             if obj.style.model3d.data:
-                is_extra_now_default, pts = draw_model3d_extra(
+                pts = draw_model3d_extra(
                     obj, style, path, ax, obj_color
                 )
                 points += pts
-            if obj.style.model3d.show and not is_extra_now_default:
+            if obj.style.model3d.showdefault:
                 if obj._object_type == "Cuboid":
                     lw = 0.5
                     faces = faces_cuboid(obj, path)

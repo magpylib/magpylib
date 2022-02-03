@@ -570,46 +570,41 @@ def get_plotly_traces(
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        if style.model3d.show:
-            for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
-                is_extra_now_default = False
-                for extr in extra_model3d_traces:
-                    if extr.show:
-                        if extr.makedefault is True:
-                            is_extra_now_default = True
-                        trace3d = {}
-                        obj_extr_trace = (
-                            extr.trace() if callable(extr.trace) else extr.trace
-                        )
-                        ttype = obj_extr_trace["type"]
-                        if ttype == "mesh3d":
-                            trace3d["showscale"] = False
-                            if "facecolor" in obj_extr_trace:
-                                ttype = "mesh3d_facecolor"
-                        if ttype == "scatter3d":
-                            trace3d["marker_color"] = kwargs["color"]
-                            trace3d["line_color"] = kwargs["color"]
-                        else:
-                            trace3d["color"] = kwargs["color"]
-                        trace3d.update(
-                            linearize_dict(
-                                place_and_orient_model3d(
-                                    obj_extr_trace,
-                                    orientation=orient,
-                                    position=pos,
-                                    scale=extr.scale,
-                                ),
-                                separator="_",
-                            )
-                        )
-                        if ttype not in path_traces_extra:
-                            path_traces_extra[ttype] = []
-                        path_traces_extra[ttype].append(trace3d)
-
-                if make_func is not None and not is_extra_now_default:
-                    path_traces.append(
-                        make_func(position=pos, orientation=orient, **kwargs)
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
+            if make_func is not None and style.model3d.showdefault:
+                path_traces.append(
+                    make_func(position=pos, orientation=orient, **kwargs)
+                )
+            for extr in extra_model3d_traces:
+                if extr.show:
+                    trace3d = {}
+                    obj_extr_trace = (
+                        extr.trace() if callable(extr.trace) else extr.trace
                     )
+                    ttype = obj_extr_trace["type"]
+                    if ttype == "mesh3d":
+                        trace3d["showscale"] = False
+                        if "facecolor" in obj_extr_trace:
+                            ttype = "mesh3d_facecolor"
+                    if ttype == "scatter3d":
+                        trace3d["marker_color"] = kwargs["color"]
+                        trace3d["line_color"] = kwargs["color"]
+                    else:
+                        trace3d["color"] = kwargs["color"]
+                    trace3d.update(
+                        linearize_dict(
+                            place_and_orient_model3d(
+                                obj_extr_trace,
+                                orientation=orient,
+                                position=pos,
+                                scale=extr.scale,
+                            ),
+                            separator="_",
+                        )
+                    )
+                    if ttype not in path_traces_extra:
+                        path_traces_extra[ttype] = []
+                    path_traces_extra[ttype].append(trace3d)
         trace = merge_traces(*path_traces)
         for ind, traces_extra in enumerate(path_traces_extra.values()):
             extra_model3d_trace = merge_traces(*traces_extra)
@@ -709,7 +704,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
                 if (
-                    subobj.style.model3d.show or ind + 1 == len(subobjs)
+                    subobj.style.model3d.showdefault or ind + 1 == len(subobjs)
                 ) and not first_shown:
                     # take name of parent
                     first_shown = True
