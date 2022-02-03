@@ -438,6 +438,7 @@ def get_plotly_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
+    animation=False,
     **kwargs,
 ) -> list:
     """
@@ -570,8 +571,11 @@ def get_plotly_traces(
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
-            if make_func is not None and style.model3d.showdefault:
+        path_frames = style.path.frames
+        if style.path.show is False and animation is False:
+            path_frames = False
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, path_frames)):
+            if style.model3d.showdefault and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
                 )
@@ -633,7 +637,7 @@ def get_plotly_traces(
                 trace["name"] = legendtext
             traces.append(trace)
 
-        if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
+        if np.array(input_obj.position).ndim > 1 and style.path.show:
             scatter_path = make_path(input_obj, style, legendgroup, kwargs)
             traces.append(scatter_path)
 
@@ -966,8 +970,14 @@ def animate_path(
     frames = []
     autosize = "return"
     for i, ind in enumerate(path_indices):
-        kwargs["style_path_show"] = [ind]
-        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
+        kwargs["style_path_frames"] = [ind]
+        frame = draw_frame(
+            objs,
+            color_sequence,
+            zoom,
+            autosize=autosize,
+            **kwargs,
+        )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:
@@ -1124,6 +1134,7 @@ def display_plotly(
                 color_sequence=color_sequence,
                 zoom=zoom,
                 title=title,
+                animation=animation,
                 **kwargs,
             )
         else:

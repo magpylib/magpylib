@@ -45,7 +45,7 @@ def get_stl_color(x, return_rgb_string=True):
 # define stl to mesh3d function
 def stl2mesh3d(stl_file, recenter=False, backend="matplotlib"):
     """
-    an array of faces/triangles is read by numpy-stl from a stl file;  
+    an array of faces/triangles is read by numpy-stl from a stl file;
     this function extracts the unique vertices and the triangulation values and
     returns depending on the backend the corresponding dictionary for further
     magpylib use as extra 3d-model.
@@ -117,10 +117,10 @@ cuboid = magpy.magnet.Cylinder(magnetization=(0, 0, 1000), dimension=(20, 30))
 collection = sensor + cuboid
 
 # display animated system with matplotlib backend
-magpy.show(*collection, style_path_show=8, style_magnetization_size=0.4, backend="matplotlib")
+magpy.show(*collection, style_path_frames=8, style_magnetization_size=0.4, backend="matplotlib")
 
 # display animated system with plotly backend
-magpy.show(*collection, style_path_show=8, backend="plotly")
+magpy.show(*collection, style_path_frames=8, backend="plotly")
 ```
 
 

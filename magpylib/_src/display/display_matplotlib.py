@@ -376,32 +376,34 @@ def display_matplotlib(
 
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
-            path = style.path.show
+            path_frames = style.path.frames
+            if path_frames is None:
+                path_frames = True
             obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
             if obj.style.model3d.data:
                 pts = draw_model3d_extra(
-                    obj, style, path, ax, obj_color
+                    obj, style, path_frames, ax, obj_color
                 )
                 points += pts
             if obj.style.model3d.showdefault:
                 if obj._object_type == "Cuboid":
                     lw = 0.5
-                    faces = faces_cuboid(obj, path)
+                    faces = faces_cuboid(obj, path_frames)
                 elif obj._object_type == "Cylinder":
-                    faces = faces_cylinder(obj, path)
+                    faces = faces_cylinder(obj, path_frames)
                 elif obj._object_type == "CylinderSegment":
-                    faces = faces_cylinder_section(obj, path)
+                    faces = faces_cylinder_section(obj, path_frames)
                 elif obj._object_type == "Sphere":
-                    faces = faces_sphere(obj, path)
+                    faces = faces_sphere(obj, path_frames)
                 elif obj._object_type == "Line":
                     if style.arrow.show:
                         check_excitations([obj])
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     arrow_width = style.arrow.width
                     points += draw_line(
-                        [obj], path, obj_color, arrow_size, arrow_width, ax
+                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Loop":
                     if style.arrow.show:
@@ -409,7 +411,7 @@ def display_matplotlib(
                     arrow_width = style.arrow.width
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     points += draw_circular(
-                        [obj], path, obj_color, arrow_size, arrow_width, ax
+                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Sensor":
                     sensors.append((obj, obj_color))
@@ -420,7 +422,7 @@ def display_matplotlib(
                         style.pixel.color,
                         style.pixel.size,
                         style.pixel.symbol,
-                        path,
+                        path_frames,
                     )
                 elif obj._object_type == "Dipole":
                     dipoles.append((obj, obj_color))
@@ -444,22 +446,21 @@ def display_matplotlib(
                     if style.magnetization.show:
                         check_excitations([obj])
                         pts = draw_directs_faced(
-                            [obj], [obj_color], ax, path, style.magnetization.size
+                            [obj], [obj_color], ax, path_frames, style.magnetization.size
                         )
                         points += pts
-            if path:
+            if style.path.show:
                 marker, line = style.path.marker, style.path.line
-                if style.path.show:
-                    points += draw_path(
-                        obj,
-                        obj_color,
-                        marker.symbol,
-                        marker.size,
-                        marker.color,
-                        line.style,
-                        line.width,
-                        ax,
-                    )
+                points += draw_path(
+                    obj,
+                    obj_color,
+                    marker.symbol,
+                    marker.size,
+                    marker.color,
+                    line.style,
+                    line.width,
+                    ax,
+                )
 
     # markers -------------------------------------------------------
     if markers is not None and markers:
@@ -490,11 +491,11 @@ def display_matplotlib(
     for sens in sensors:
         sensor, color = sens
         style = get_style(sensor, Config, **kwargs)
-        draw_sensors([sensor], ax, sys_size, path, style.size)
+        draw_sensors([sensor], ax, sys_size, path_frames, style.size)
     for dip in dipoles:
         dipole, color = dip
         style = get_style(dipole, Config, **kwargs)
-        draw_dipoles([dipole], ax, sys_size, path, style.size, color, style.pivot)
+        draw_dipoles([dipole], ax, sys_size, path_frames, style.size, color, style.pivot)
 
     # plot styling --------------------------------------------------
     ax.set(
