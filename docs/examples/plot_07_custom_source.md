@@ -147,11 +147,18 @@ plotly_trace = {
 }
 
 # define user defined 3d representation for each plotting backend
-interp_cube.style.model3d.extra = [
-    dict(backend='matplotlib', trace=matplotlib_trace, show=True, coordsargs={'x':'xs', 'y':'ys', 'z':'zs'}),
-    dict(backend='plotly', trace=plotly_trace, show=True),
-]
-interp_cube.style.model3d.show = False # hide default 3d-model
+interp_cube.style.model3d.showdefault = False # hide default 3D-model
+interp_cube.style.model3d.add_trace(
+    backend='matplotlib', 
+    trace=matplotlib_trace, 
+    show=True,
+    coordsargs={'x':'xs', 'y':'ys', 'z':'zs'}
+)
+interp_cube.style.model3d.add_trace(
+    backend='plotly', 
+    trace=plotly_trace,
+    show=True
+)
 interp_cube.style.name = 'Interpolated cuboid field'
 ```
 

@@ -137,12 +137,7 @@ def make_Loop(
 
 
 def make_DefaultTrace(
-    obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
-    color=None,
-    style=None,
-    **kwargs,
+    obj, position=(0.0, 0.0, 0.0), orientation=None, color=None, style=None, **kwargs,
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
@@ -205,14 +200,7 @@ def make_Dipole(
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
     return _update_mag_mesh(
-        dipole,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        dipole, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -233,14 +221,7 @@ def make_Cuboid(
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
     cuboid = make_BaseCuboid(dimension=dimension)
     return _update_mag_mesh(
-        cuboid,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -262,19 +243,10 @@ def make_Cylinder(
     default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     name, name_suffix = get_name_and_suffix("Cylinder", default_suffix, style)
     cylinder = make_BasePrism(
-        base_vertices=base_vertices,
-        diameter=diameter,
-        height=height,
+        base_vertices=base_vertices, diameter=diameter, height=height,
     )
     return _update_mag_mesh(
-        cylinder,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -325,14 +297,7 @@ def make_Sphere(
     vert = min(max(vert, 3), 20)
     sphere = make_BaseEllipsoid(vert=vert, dimension=[diameter] * 3)
     return _update_mag_mesh(
-        sphere,
-        name,
-        name_suffix,
-        mag,
-        orientation,
-        position,
-        style,
-        **kwargs,
+        sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
 
 
@@ -446,15 +411,10 @@ def _update_mag_mesh(
                 color_south=color.south,
             )
             mesh_dict["intensity"] = getIntensity(
-                vertices=vertices,
-                axis=magnetization,
+                vertices=vertices, axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict,
-        orientation,
-        position,
-        showscale=False,
-        name=f"{name}{name_suffix}",
+        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -555,8 +515,7 @@ def get_plotly_traces(
             make_func = make_Sensor
         elif isinstance(input_obj, Cuboid):
             kwargs.update(
-                mag=input_obj.magnetization,
-                dimension=input_obj.dimension,
+                mag=input_obj.magnetization, dimension=input_obj.dimension,
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
@@ -575,33 +534,27 @@ def get_plotly_traces(
                 50, Config.itercylinder
             )  # no need to render more than 50 vertices
             kwargs.update(
-                mag=input_obj.magnetization,
-                dimension=input_obj.dimension,
-                vert=vert,
+                mag=input_obj.magnetization, dimension=input_obj.dimension, vert=vert,
             )
             make_func = make_CylinderSegment
         elif isinstance(input_obj, Sphere):
             kwargs.update(
-                mag=input_obj.magnetization,
-                diameter=input_obj.diameter,
+                mag=input_obj.magnetization, diameter=input_obj.diameter,
             )
             make_func = make_Sphere
         elif isinstance(input_obj, Dipole):
             kwargs.update(
-                moment=input_obj.moment,
-                autosize=autosize,
+                moment=input_obj.moment, autosize=autosize,
             )
             make_func = make_Dipole
         elif isinstance(input_obj, Line):
             kwargs.update(
-                vertices=input_obj.vertices,
-                current=input_obj.current,
+                vertices=input_obj.vertices, current=input_obj.current,
             )
             make_func = make_Line
         elif isinstance(input_obj, Loop):
             kwargs.update(
-                diameter=input_obj.diameter,
-                current=input_obj.current,
+                diameter=input_obj.diameter, current=input_obj.current,
             )
             make_func = make_Loop
         elif getattr(input_obj, "children", None) is not None:
@@ -613,7 +566,7 @@ def get_plotly_traces(
         path_traces = []
         path_traces_extra = {}
         extra_model3d_traces = (
-            style.model3d.extra if style.model3d.extra is not None else []
+            style.model3d.data if style.model3d.data is not None else []
         )
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
@@ -622,17 +575,20 @@ def get_plotly_traces(
         if style.path.show is False and animation is False:
             path_frames = False
         for orient, pos in zip(*get_rot_pos_from_path(input_obj, path_frames)):
-            if style.model3d.show and make_func is not None:
+            if style.model3d.showdefault and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
                 )
             for extr in extra_model3d_traces:
                 if extr.show:
                     trace3d = {}
-                    ttype = extr.trace["type"]
+                    obj_extr_trace = (
+                        extr.trace() if callable(extr.trace) else extr.trace
+                    )
+                    ttype = obj_extr_trace["type"]
                     if ttype == "mesh3d":
                         trace3d["showscale"] = False
-                        if "facecolor" in extr.trace:
+                        if "facecolor" in obj_extr_trace:
                             ttype = "mesh3d_facecolor"
                     if ttype == "scatter3d":
                         trace3d["marker_color"] = kwargs["color"]
@@ -642,7 +598,10 @@ def get_plotly_traces(
                     trace3d.update(
                         linearize_dict(
                             place_and_orient_model3d(
-                                extr.trace, orientation=orient, position=pos
+                                obj_extr_trace,
+                                orientation=orient,
+                                position=pos,
+                                scale=extr.scale,
                             ),
                             separator="_",
                         )
@@ -749,12 +708,12 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
                 if (
-                    subobj.style.model3d.show or ind + 1 == len(subobjs)
+                    subobj.style.model3d.showdefault or ind + 1 == len(subobjs)
                 ) and not first_shown:
                     # take name of parent
                     first_shown = True
                     if getattr(subobj, "children", None) is not None:
-                        first_shown = any(m3.show for m3 in obj.style.model3d.extra)
+                        first_shown = any(m3.show for m3 in obj.style.model3d.data)
                     showlegend = True
                     legendtext = getattr(getattr(obj, "style", None), "name", None)
                     legendtext = f"{obj!r}" if legendtext is None else legendtext
@@ -773,7 +732,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
                     showlegend=showlegend,
                     legendtext=legendtext,
                 ),
-                ** kwargs
+                **kwargs,
             }
             if isinstance(subobj, (Dipole, Sensor)):
                 traces_to_resize[subobj] = {**params}
@@ -1035,10 +994,7 @@ def animate_path(
             slider_step = {
                 "args": [
                     [str(ind + 1)],
-                    {
-                        "frame": {"duration": 0, "redraw": True},
-                        "mode": "immediate",
-                    },
+                    {"frame": {"duration": 0, "redraw": True}, "mode": "immediate",},
                 ],
                 "label": str(ind + 1),
                 "method": "animate",

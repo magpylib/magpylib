@@ -39,7 +39,7 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, name=None):
         base_vertices=Ncubes, diameter=diameter + height * 2, height=height * 0.5
     )
     trace_plotly = {**trace, "opacity": 0.5, "color": "blue"}
-    c.style.model3d.extra = [dict(backend="plotly", trace=trace_plotly)]
+    c.style.model3d.data = [dict(backend="plotly", trace=trace_plotly)]
     return c
 
 
@@ -54,8 +54,8 @@ def create_compound_set(show=False, **kwargs):
         magnetization_color_south="cyan",
     )
     c2 = make_wheel(name="Magnetic Wheel before")
-    c2.style.model3d.extra[0].trace["color"] = "red"
-    c2.style.model3d.extra[0].trace["opacity"] = 0.1
+    c2.style.model3d.data[0].trace["color"] = "red"
+    c2.style.model3d.data[0].trace["opacity"] = 0.1
     c2.set_children_styles(path_show=False, opacity=0.1)
     for k, v in kwargs.items():
         setattr(c1, k, eval(v))

@@ -78,7 +78,8 @@ def getIntensity(vertices, axis) -> np.ndarray:
     """
     p = np.array(vertices).T
     pos = np.mean(p, axis=1)
-    m = np.array(axis) / np.linalg.norm(axis)
+    norm = np.linalg.norm(axis)
+    m = (np.array(axis) / norm) if norm!=0 else (0,0,0)
     intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
     return intensity
 

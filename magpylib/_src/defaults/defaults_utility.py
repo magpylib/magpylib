@@ -390,7 +390,20 @@ class MagicProperties:
         self, arg=None, _match_properties=True, _replace_None_only=False, **kwargs
     ):
         """
-        updates the class properties with provided arguments, supports magic underscore notation
+        Updates the class properties with provided arguments, supports magic underscore notation
+
+        Parameters
+        ----------
+
+        _match_properties: bool
+            If `True`, checks if provided properties over keyword arguments are matching the current
+            object properties. An error is raised if a non-matching property is found.
+            If `False`, the `update` method does not raise any error when an argument is not
+            matching a property.
+
+        _replace_None_only:
+            updates matching properties that are equal to `None` (not already been set)
+
 
         Returns
         -------

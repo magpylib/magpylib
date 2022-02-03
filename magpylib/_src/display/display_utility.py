@@ -17,12 +17,18 @@ class MagpyMarkers:
 
 
 def place_and_orient_model3d(
-    model_dict, orientation=None, position=None, coordsargs=None, **kwargs
+    model_dict,
+    orientation=None,
+    position=None,
+    coordsargs=None,
+    scale=1,
+    return_vertices=False,
+    **kwargs,
 ):
     """places and orients mesh3d dict"""
     if orientation is None and position is None:
         return {**model_dict, **kwargs}
-    position = (0.,0.,0.) if position is None else position
+    position = (0.0, 0.0, 0.0) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
     if "args" in model_dict:
@@ -50,7 +56,7 @@ def place_and_orient_model3d(
     vertices = np.array(vertices).T
     if orientation is not None:
         vertices = orientation.apply(vertices)
-    new_vertices = (vertices + position).T
+    new_vertices = (vertices * scale + position).T
     for i, k in enumerate("xyz"):
         key = coordsargs[k]
         if useargs:
@@ -58,7 +64,10 @@ def place_and_orient_model3d(
             new_model_dict["args"][ind] = new_vertices[i]
         else:
             new_model_dict[key] = new_vertices[i]
-    return {**model_dict, **new_model_dict, **kwargs}
+    new_dict = {**model_dict, **new_model_dict, **kwargs}
+    if return_vertices:
+        return new_dict, new_vertices
+    return new_dict
 
 
 def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
@@ -153,7 +162,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         orient = RotScipy.from_rotvec([[0, 0, 1]])
     pos = np.array([pos]) if pos.ndim == 1 else pos
     path_len = pos.shape[0]
-    if show_path is True or show_path is False:
+    if show_path is True or show_path is False or show_path==0:
         inds = np.array([-1])
     elif isinstance(show_path, int):
         inds = np.arange(path_len, dtype=int)[::-show_path]
