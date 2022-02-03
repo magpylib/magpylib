@@ -6,50 +6,11 @@ magnetized Spheres. Computation details in function docstrings.
 import numpy as np
 
 
-def field_BH_sphere(
-        bh: bool,
-        mag: np.ndarray,
-        dia: np.ndarray,
-        pos_obs: np.ndarray
-        ) -> np.ndarray:
-    """
-    wraps fundamental sphere field computation
-
-    - select B or H
-
-    Parameters:
-    -----------
-    - bh: boolean, True=B, False=H
-    - mag: ndarray shape (n,3), magnetization vector in units of mT
-    - dia: ndarray shape (n,), diameter in units of [mm]
-    - pos_obs: ndarray shape (n,3), position of observer in units of mm
-
-    Returns:
-    --------
-    B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
-    """
-
-    B = magnet_sphere_Bfield(mag, dia, pos_obs)
-    if bh:
-        return B
-
-    # adjust and return H
-    # as a result of bad code layout the inside-outside check is repeated here.
-    # this should be done in the function magnet_sphere_Bfield() which is kept
-    # simple because it lies at the lib interface.
-
-    x, y, z = np.copy(pos_obs.T)
-    r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
-    mask_in = (r<dia/2)
-    B[mask_in] = -mag[mask_in]/3
-    H = B*10/4/np.pi
-    return H
-
-
-def magnet_sphere_Bfield(
+def magnet_sphere_field(
     magnetization: np.ndarray,
     diameter: np.ndarray,
     observer: np.ndarray,
+    Bfield=True
     )->np.ndarray:
     """
     The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
@@ -66,10 +27,13 @@ def magnet_sphere_Bfield(
     observer: ndarray, shape (n,3)
         Position of observers in units of [mm].
 
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field of magnet in cartesian coordinates (Bx, By, Bz) in units of [mT].
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
     Examples
     --------
@@ -107,4 +71,10 @@ def magnet_sphere_Bfield(
     field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*r01**3/3
     B[mask_out] = field_out.T
 
-    return B
+    if Bfield:
+        return B
+
+    # adjust and return H
+    B[~mask_out] = -magnetization[~mask_out]/3
+    H = B*10/4/np.pi
+    return H

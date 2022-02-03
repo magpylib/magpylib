@@ -6,47 +6,12 @@ magnetized Cuboids. Computation details in function docstrings.
 import numpy as np
 
 
-def field_BH_cuboid(
-        bh: bool,
-        mag: np.ndarray,
-        dim: np.ndarray,
-        pos_obs: np.ndarray
-        ) -> np.ndarray:
-    """ setting up the Cuboid field computation
-    - select B or H
-
-    ### Args:
-    - bh (boolean): True=B, False=H
-    - mag (ndarray Nx3): homogeneous magnetization vector in units of mT
-    - dim (ndarray Nx3): dimension of Cuboid side lengths in units of mm
-    - pos_obs (ndarray Nx3): position of observer in units of mm
-
-    ### Returns:
-    - B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
-    """
-    B = magnet_cuboid_Bfield(mag, dim, pos_obs)
-
-    # return B or compute and return H -------------
-    if bh:
-        return B
-
-    # if inside magnet subtract magnetization vector
-    poso_abs = np.abs(pos_obs)
-    case1 = poso_abs[:,0]<=dim[:,0]/2
-    case2 = poso_abs[:,1]<=dim[:,1]/2
-    case3 = poso_abs[:,2]<=dim[:,2]/2
-    mask_inside = case1*case2*case3
-    B[mask_inside] -= mag[mask_inside]
-    # transform units mT -> kA/m
-    H = B*10/4/np.pi
-    return H
-
-
 # ON INTERFACE
-def magnet_cuboid_Bfield(
+def magnet_cuboid_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
-    observer: np.ndarray) -> np.ndarray:
+    observer: np.ndarray,
+    Bfield=True) -> np.ndarray:
     """
     B-field in Cartesian CS of Cuboid magnet with homogenous magnetization.
     The Cuboid sides are parallel to the CS axes.
@@ -65,10 +30,13 @@ def magnet_cuboid_Bfield(
     observer: ndarray, shape (n,3)
         position of observer in units of [mm].
 
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
     Returns
     -------
-    B-field: ndarray
-        B-field of Cuboid in Cartesian CS, shape (n,3) in units of [mT].
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
     Examples
     --------
@@ -252,4 +220,14 @@ def magnet_cuboid_Bfield(
         # combine with special edge/corner cases
         B_all[mask_gen] = B
 
-    return B_all / (4*np.pi)
+    B = B_all / (4*np.pi)
+
+    # return B or compute and return H -------------
+    if Bfield:
+        return B
+
+    # if inside magnet subtract magnetization vector
+    mask_inside = mx2 & my2 & mz2
+    B[mask_inside] -= magnetization[mask_inside]
+    H = B*10/4/np.pi # mT -> kA/m
+    return H

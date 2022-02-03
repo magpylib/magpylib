@@ -47,7 +47,7 @@ def field_BH_line_from_vert(
     pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = field_BH_line(bh, curr_tile, pos_start, pos_end, pos_obs)
+    field = current_line_field(curr_tile, pos_start, pos_end, pos_obs, bh)
     field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set
@@ -57,50 +57,13 @@ def field_BH_line_from_vert(
     return np.reshape(field_sum, (-1,3))
 
 
-def field_BH_line(
-    bh: bool,
-    current: np.ndarray,
-    pos_start: np.ndarray,
-    pos_end: np.ndarray,
-    pos_obs: np.ndarray
-    ) -> np.ndarray:
-    """
-    compute field of Line current segments flowing in a straight line
-    from pos_start to pos_end.
-
-    - wrap fundamental implementation below
-    - select B or H
-
-    Parameters:
-    -----------
-    - bh: bool, True=B, False=H
-    - current: ndarray, shape (n,3), currents in units of [A]
-    - pos_start: ndarray, shape (n,3), start position of line segments in [mm].
-    - pos_end: ndarray, shape (n,3), end positions of line segments in [mm].
-    - pos_obs: ndarray, shape (n,3), observer positions in units of [mm]
-
-    Returns:
-    --------
-    - B-field: ndarray, shape (n,3), B-field vectors at pos_obs in units of mT
-    """
-
-    field = current_line_Bfield(current, pos_start, pos_end, pos_obs)
-
-    # return B
-    if bh:
-        return field
-
-    # return H (mT -> kA/m)
-    H = field*10/4/np.pi
-    return H
-
-
 # ON INTERFACE
-def current_line_Bfield(
+def current_line_field(
     current: np.ndarray,
     start: np.ndarray,
     end: np.ndarray,
-    observer: np.ndarray
+    observer: np.ndarray,
+    Bfield=True
     ) -> np.ndarray:
     """
     Compute the B-field of line current segments.
@@ -124,10 +87,13 @@ def current_line_Bfield(
     observer: ndarray, shape (n,3)
         position of observer (x,y,z) in units of [mm].
 
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
     Returns
     -------
-    B-field: ndarray, shape (n,3)
-        B-field of line currents (Bx, By, Bz) in units of [mT].
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
     Examples
     --------
@@ -227,4 +193,9 @@ def current_line_Bfield(
     mask0[~mask0] = mask1
     field_all[~mask0] = field
 
-    return field_all
+    # return B or H
+    if Bfield:
+        return field_all
+
+    # H: mT -> kA/m
+    return field_all*10/4/np.pi

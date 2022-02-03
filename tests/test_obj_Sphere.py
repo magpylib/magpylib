@@ -94,7 +94,7 @@ def test_sphere_object_vs_lib():
     mag = np.array([(10,20,30)])
     dia = np.array([1])
     pos = np.array([(2,2,2)])
-    B1 = magpy.lib.magnet_sphere_Bfield(mag, dia, pos)[0]
+    B1 = magpy.lib.magnet_sphere_field(mag, dia, pos)[0]
 
     src = magpy.magnet.Sphere(mag[0], dia[0])
     B2 = src.getB(pos)

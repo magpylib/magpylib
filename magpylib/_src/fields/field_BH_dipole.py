@@ -5,39 +5,10 @@ Dipole implementation
 import numpy as np
 
 
-def field_BH_dipole(
-        bh: bool,
-        moment: np.ndarray,
-        observer: np.ndarray
-        ) -> np.ndarray:
-    """
-    Dipole field
-    - wraps fundamental dipole formula
-    - selects B or H
-
-    Parameters:
-    ----------
-    - bh (boolean): True=B, False=H
-    - moment (ndarray Nx3): dipole moment vector in units of mT*mm^3
-    - observer (ndarray Nx3): position of observer in units of mm
-
-    Returns:
-    --------
-    B/H-field (ndarray Nx3): magnetic field vectors at pos_obs in units of mT / kA/m
-    """
-    B = dipole_Bfield(moment, observer)
-
-    if bh:
-        return B
-
-    # adjust and return H
-    H = B*10/4/np.pi
-    return H
-
-
-def dipole_Bfield(
+def dipole_field(
     moment: np.ndarray,
-    observer: np.ndarray
+    observer: np.ndarray,
+    Bfield = True
     ) -> np.ndarray:
     """
     The B-field of a magnetic dipole moment. The field is similar to the outside-field
@@ -51,10 +22,13 @@ def dipole_Bfield(
     observer: ndarray, shape (n,3)
         Position of observer in units of [mm].
 
-    Returns:
-    --------
-    B-field: ndarray, shape (n,3)
-        B-field field vectors at observer positions in units of [mT].
+    Bfield: bool, default=True
+        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+
+    Returns
+    -------
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of dipole in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
     Examples:
     ---------
@@ -82,4 +56,9 @@ def dipole_Bfield(
             B[mask1] = moment[mask1]/0.
             np.nan_to_num(B, copy=False, posinf=np.inf, neginf=np.NINF)
 
-    return B
+    # return B or H
+    if Bfield:
+        return B
+
+    H = B*10/4/np.pi
+    return H

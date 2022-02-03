@@ -1,11 +1,11 @@
 import numpy as np
 from numpy.testing import assert_allclose
-from magpylib._src.fields.field_BH_cuboid import field_BH_cuboid, magnet_cuboid_Bfield
+from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
-from magpylib._src.fields.field_BH_sphere import field_BH_sphere
-from magpylib._src.fields.field_BH_dipole import field_BH_dipole, dipole_Bfield
-from magpylib._src.fields.field_BH_loop import field_BH_loop, current_loop_Bfield
-from magpylib._src.fields.field_BH_line import field_BH_line, field_BH_line_from_vert, current_line_Bfield
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_loop import current_loop_field
+from magpylib._src.fields.field_BH_line import current_line_field, field_BH_line_from_vert
 
 
 def test_magnet_cuboid_Bfield():
@@ -14,7 +14,7 @@ def test_magnet_cuboid_Bfield():
     mag = np.array([(0,0,0), (1,2,3), (1,2,3), (1,2,3), (1,2,3), (2,2,2), (2,2,2), (1,1,1), (1,1,1)])
     dim = np.array([(1,2,3), (-1,-2,2), (1,2,2), (0,2,2), (1,2,3), (2,2,2), (2,2,2), (2,2,2), (2,2,2)])
     pos = np.array([(1,2,3), (1,-1,0), (1,-1,0), (1,-1,0), (1,2,3), (1,1+1e-14,0), (1,1,1), (1,-1,2), (1+1e-14,-1,2)])
-    B = magnet_cuboid_Bfield(mag, dim, pos)
+    B = magnet_cuboid_field(mag, dim, pos)
 
     Btest = [
     [ 0.         , 0.         , 0.        ],
@@ -30,14 +30,14 @@ def test_magnet_cuboid_Bfield():
     np.testing.assert_allclose(B, Btest, rtol=1e-5)
 
 
-def test_field_BH_cuboid_mag0():
+def test_magnet_cuboid_field_mag0():
     """ test cuboid field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n,3)
     pos = np.random.rand(n,3)
-    B = field_BH_cuboid(True, mag, dim, pos)
+    B = magnet_cuboid_field(mag, dim, pos)
     assert_allclose(mag,B)
 
 
@@ -72,19 +72,19 @@ def test_field_sphere_vs_v2():
     dim = np.array([1.23]*7)
     mag = np.array([(33,66,99)]*7)
     poso = np.array([(0,0,0),(.2,.2,.2),(.4,.4,.4),(-1,-1,-2),(.1,.1,.1),(1,2,-3),(-3,2,1)])
-    B = field_BH_sphere(True, mag, dim, poso )
+    B = magnet_sphere_field(mag, dim, poso )
 
-    assert_allclose(result_v2, B, rtol=1e-6)
+    np.testing.assert_allclose(result_v2, B, rtol=1e-6)
 
 
-def test_field_BH_sphere_mag0():
+def test_magnet_sphere_field_mag0():
     """ test cuboid field magnetization=0
     """
     n = 10
     mag = np.zeros((n,3))
     dim = np.random.rand(n)
     pos = np.random.rand(n,3)
-    B = field_BH_sphere(True, mag, dim, pos)
+    B = magnet_sphere_field(mag, dim, pos)
     assert_allclose(mag,B)
 
 
@@ -93,7 +93,7 @@ def test_field_dipole1():
     """
     poso = np.array([(1,2,3),(-1,2,3)])
     mom = np.array([(2,3,4),(0,-3,-2)])
-    B = field_BH_dipole(True, mom, poso)*np.pi
+    B = dipole_field(mom, poso, True)*np.pi
     Btest = np.array([
         (0.01090862,0.02658977,0.04227091),
         (0.0122722,-0.01022683,-0.02727156),
@@ -107,7 +107,7 @@ def test_field_dipole2():
     """
     moment = np.array([(100,200,300)]*2 + [(0,0,0)]*2)
     observer = np.array([(0,0,0),(1,2,3)]*2)
-    B = dipole_Bfield(moment, observer)
+    B = dipole_field(moment, observer)
 
     assert all(np.isinf(B[0]))
     assert_allclose(B[1:],
@@ -146,12 +146,12 @@ def test_field_loop():
     current = np.array([1,1] + [123]*8)
     dim = np.array([2,2] + [2]*8)
 
-    B = field_BH_loop(True, current, dim, pos_test)
+    B = current_loop_field(current, dim, pos_test)
 
     assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest*10/4/np.pi
-    H = field_BH_loop(False, current, dim, pos_test)
+    H = current_loop_field(current, dim, pos_test, False)
     assert_allclose(H, Htest, rtol=1e-6)
 
 
@@ -161,12 +161,12 @@ def test_field_loop2():
     curr = np.array([1])
     dim = np.array([2])
     poso = np.array([[0,0,0]])
-    B = field_BH_loop(True, curr, dim, poso)
+    B = current_loop_field(curr, dim, poso)
 
     curr = np.array([1]*2)
     dim = np.array([2]*2)
     poso = np.array([[0,0,0]]*2)
-    B2 = field_BH_loop(True, curr, dim, poso)
+    B2 = current_loop_field(curr, dim, poso)
 
     assert_allclose(B, (B2[0],))
     assert_allclose(B, (B2[1],))
@@ -176,11 +176,11 @@ def test_field_loop_specials():
     """ test loop special cases
     """
     cur = np.array([1,1,1,1,0,2])
-    rad = np.array([1,1,0,0,1,1])
-    obs = np.array([(0,0), (1,0), (0,0), (1,0), (1,0), (0,0)])
+    dia = np.array([2,2,0,0,2,2])
+    obs = np.array([(0,0,0), (1,0,0), (0,0,0), (1,0,0), (1,0,0), (0,0,0)])
 
-    B = current_loop_Bfield(cur, rad, obs)
-    Btest = [[0.,0.62831853], [0,0], [0,0], [0,0], [0,0], [0,1.25663706]]
+    B = current_loop_field(cur, dia, obs)
+    Btest = [[0,0,0.62831853], [0,0,0], [0,0,0], [0,0,0], [0,0,0], [0,0,1.25663706]]
     assert_allclose(B, Btest)
 
 
@@ -194,18 +194,18 @@ def test_field_line():
     pe1 = np.array([(2,2,2)])
 
     # only normal
-    B1 = field_BH_line(True, c1, ps1, pe1, po1)
+    B1 = current_line_field(c1, ps1, pe1, po1, True)
     x1 = np.array([[ 0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
     po1b = np.array([(1,1,1)])
-    B2 = field_BH_line(True, c1, ps1, pe1, po1b)
+    B2 = current_line_field(c1, ps1, pe1, po1b, True)
     x2 = np.zeros((1,3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
-    B3 = field_BH_line(True, c1, ps1, ps1, po1)
+    B3 = current_line_field(c1, ps1, ps1, po1, True)
     x3 = np.zeros((1,3))
     assert_allclose(x3, B3, rtol=1e-6)
 
@@ -214,19 +214,19 @@ def test_field_line():
     ps2 = np.array([(0,0,0)]*2)
     pe2 = np.array([(0,0,0),(2,2,2)])
     po2 = np.array([(1,2,3),(1,1,1)])
-    B4 = field_BH_line(True, c2, ps2, pe2, po2)
+    B4 = current_line_field(c2, ps2, pe2, po2, True)
     x4 = np.zeros((2,3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
     po2b = np.array([(1,2,3),(1,2,3)])
-    B5 = field_BH_line(True, c2, ps2, pe2, po2b)
+    B5 = current_line_field(c2, ps2, pe2, po2b, True)
     x5 = np.array([[0,0,0],[ 0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
     pe2b = np.array([(2,2,2)]*2)
-    B6 = field_BH_line(True, c2, ps2, pe2b, po2)
+    B6 = current_line_field(c2, ps2, pe2b, po2)
     x6 = np.array([[0.02672612, -0.05345225, 0.02672612],[0,0,0]])
     assert_allclose(x6, B6, rtol=1e-6)
 
@@ -235,7 +235,7 @@ def test_field_line():
     ps4 = np.array([(0,0,0)]*3)
     pe4 = np.array([(0,0,0),(2,2,2),(2,2,2)])
     po4 = np.array([(1,2,3),(1,2,3),(1,1,1)])
-    B7 = field_BH_line(True, c4, ps4, pe4, po4)
+    B7 = current_line_field(c4, ps4, pe4, po4)
     x7 = np.array([[0,0,0], [0.02672612, -0.05345225, 0.02672612], [0,0,0]])
     assert_allclose(x7, B7, rtol=1e-6)
 
@@ -260,7 +260,7 @@ def test_field_line_from_vert():
             p2 = vert[1:]
             po = np.array([pos]*(len(vert)-1))
             cu = np.array([curr[i]]*(len(vert)-1))
-            B += [np.sum(field_BH_line(True, cu, p1, p2, po), axis=0)]
+            B += [np.sum(current_line_field(cu, p1, p2, po), axis=0)]
     B = np.array(B)
 
     assert_allclose(B_vert, B)
@@ -273,7 +273,7 @@ def test_field_line_v4():
     start = np.array([(-1,0,0)]*7)
     end = np.array([(1,0,0), (-1,0,0), (1,0,0), (-1,0,0)] + [(1,0,0)]*3)
     obs = np.array([(0,0,1),(0,0,0), (0,0,0), (0,0,0), (0,0,1e-16), (2,0,1), (-2,0,1)])
-    B = current_line_Bfield(cur, start, end, obs)
+    B = current_line_field(cur, start, end, obs)
     Btest = np.array(
         [[0, -0.14142136, 0],
          [0,  0.        , 0],

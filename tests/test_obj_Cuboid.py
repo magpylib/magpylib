@@ -98,9 +98,12 @@ def test_cuboid_object_vs_lib():
     mag = np.array([(10,20,30)])
     dim = np.array([(  a,  a,  a)])
     pos = np.array([(2*a,2*a,2*a)])
-    B0 = magpy.lib.magnet_cuboid_Bfield(mag, dim, pos)
+    B0 = magpy.lib.magnet_cuboid_field(mag, dim, pos)
+    H0 = magpy.lib.magnet_cuboid_field(mag, dim, pos, False)
 
     src = magpy.magnet.Cuboid(mag[0], dim[0])
     B1 = src.getB(pos)
+    H1 = src.getH(pos)
 
     np.testing.assert_allclose(B0[0], B1)
+    np.testing.assert_allclose(H0[0], H1)

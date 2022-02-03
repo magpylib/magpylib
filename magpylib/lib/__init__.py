@@ -3,17 +3,17 @@ This sub-package gives direct access to our field implementations.
 """
 
 __all__ = [
-    'dipole_Bfield',
-    'current_loop_Bfield',
-    'current_line_Bfield',
-    'magnet_sphere_Bfield',
-    'magnet_cuboid_Bfield',
+    'dipole_field',
+    'current_loop_field',
+    'current_line_field',
+    'magnet_sphere_field',
+    'magnet_cuboid_field',
     'magnet_cylinder_field',
 ]
 
-from magpylib._src.fields.field_BH_dipole import dipole_Bfield
-from magpylib._src.fields.field_BH_loop import current_loop_Bfield
-from magpylib._src.fields.field_BH_line import current_line_Bfield
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_Bfield
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_Bfield
+from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_loop import current_loop_field
+from magpylib._src.fields.field_BH_line import current_line_field
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field

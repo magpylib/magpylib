@@ -189,7 +189,7 @@ def magnet_cylinder_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
     Examples
     --------
