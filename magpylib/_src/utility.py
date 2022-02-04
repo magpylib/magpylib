@@ -67,16 +67,6 @@ def wrong_obj_msg(*objs, allow="sources"):
     return msg
 
 
-def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
-    """
-    determine if arg1 and arg2 lie close to each other
-    input: ndarray, shape (n,) or numpy-interpretable scalar
-    output: ndarray, dtype=bool
-    """
-    EDGESIZE = Config.edgesize
-    return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
-
-
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"

@@ -297,7 +297,7 @@ For users who do not want to use the position/orientation interface, Magpylib of
 >>> dim = np.array([(1,2,45,90,-1,1)]*5)
 >>> poso = np.array([(0,0,0)]*5)
 >>>
->>> B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, poso)
+>>> B = magpy.lib.magnet_cylinder_section_core(mag, dim, poso)
 >>> print(B)
 [[   0.           0.        -186.1347833]
  [   0.           0.        -186.1347833]

@@ -1,7 +1,7 @@
 import numpy as np
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
-from magpylib._src.fields.field_BH_cylinder_tile import field_BH_cylinder_tile
+from magpylib._src.fields.field_BH_cylinder_tile import magnet_cylinder_section_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_loop import current_loop_field
@@ -53,10 +53,7 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'CylinderSegment':
         mag = kwargs['magnetization']
         dim = kwargs['dimension']
-        r1,r2,h,phi1,phi2 = dim.T
-        z1, z2 = -h/2, h/2
-        dim = np.array([r1,r2,phi1,phi2,z1,z2]).T
-        B = field_BH_cylinder_tile(bh, mag, dim, pos_rel_rot)
+        B = magnet_cylinder_section_field(mag, dim, pos_rel_rot, bh)
 
     elif src_type == 'Sphere':
         mag = kwargs['magnetization']

@@ -354,7 +354,7 @@ mag = np.array([(100,0,0)]*5)
 dim = np.array([(1,2,45,90,-1,1)]*5)
 obs_pos = np.array([(0,0,0)]*5)
 
-B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, obs_pos)
+B = magpy.lib.magnet_cylinder_section_core(mag, dim, obs_pos)
 print(B)
 
 # out: [[   0.           0.        -186.1347833]

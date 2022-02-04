@@ -5,8 +5,6 @@
 import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.special_el3 import el3_angle
-from magpylib._src.utility import close
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 def arctan_k_tan_2(k, phi):
@@ -24,6 +22,15 @@ def arctan_k_tan_2(k, phi):
     result = full_periods * np.pi
 
     return np.where(np.abs(phi_red) < np.pi, result + np.arctan(k * np.tan(phi_red / 2.0)), result + phi_red / 2.0)
+
+
+def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
+    """
+    determine if arg1 and arg2 lie close to each other
+    input: ndarray, shape (n,) or numpy-interpretable scalar
+    output: ndarray, dtype=bool
+    """
+    return np.isclose(arg1, arg2, rtol=1e-14, atol=1e-14)
 
 
 def determine_cases(r, phi, z, r1, phi1, z1):
@@ -1243,13 +1250,13 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     return results
 
 # ON INTERFACE
-def magnet_cyl_tile_H_Slanovc2021(
+def magnet_cylinder_section_core(
     mag: np.ndarray,
     dim: np.ndarray,
     obs_pos: np.ndarray
     ) ->np.ndarray:
     """
-    H-field of Cylinder Tile magnet with homogenous magnetization.
+    H-field of Cylinder Section magnet with homogenous magnetization.
     The full cylinder axis coincides with the z-axis of the CS.
     The geometric center of the full Cylinder is in the origin.
 
@@ -1279,7 +1286,7 @@ def magnet_cyl_tile_H_Slanovc2021(
     >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
     >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
     >>> obs = np.array([(.1,0,3), (1,pi,3)])
-    >>> B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, obs)
+    >>> B = magpy.lib.magnet_cylinder_section_core(mag, dim, obs)
     >>> print(B)
     [[-0.84506541 -0.9207606   1.48474874]
      [ 3.95719801  3.59131966  3.11703698]]
@@ -1343,23 +1350,26 @@ def magnet_cyl_tile_H_Slanovc2021(
 
 
 def magnet_cylinder_section_field(
-        magnetization: np.ndarray,
-        dimension: np.ndarray,
-        observer: np.ndarray,
-        Bfield=True,
-        ) -> np.ndarray:
+    magnetization: np.ndarray,
+    dimension: np.ndarray,
+    observer: np.ndarray,
+    Bfield=True,
+    ) -> np.ndarray:
     """
-    The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
-    field on the outside and is 2/3*mag in the inside (see e.g. "Theoretical Physics, Bertelmann")
+    Computes the magnetic field of a homogeneously magnetized cylinder section.
+    The full cylinder axis coincides with the z-axis of the CS.
+    The geometric center of the full Cylinder is in the origin.
+
+    Implementation from [Slanovc2022].
 
     Parameters:
     -----------
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
-    dimension: ndarray, shape (n,3)
-        Cylinder section dimensions (r1,r2,phi1,phi2,z1,z2), inner radius r1, outer radius r2,
-        the section angles phi1 and phi2  [deg]
+    dimension: ndarray, shape (n,5)
+        Cylinder section dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
+        height h in units of [mm] and the two section angles phi1 and phi2 in units of [deg].
 
     observer: ndarray, shape (n,3)
         Position of observers in units of [mm].
@@ -1374,25 +1384,28 @@ def magnet_cylinder_section_field(
 
     Examples
     --------
-    Compute the field of two different spherical magnets at position (1,1,1),
-    inside and outside.
+    Compute the field of two different cylinder section magnets at position (1,1,1).
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> dia = np.array([1,5])
+    >>> mag = np.array([(0,0,100), (50,50,0)])
+    >>> dim = np.array([(0,1,2,0,90), (1,2,4,35,125)])
     >>> obs = np.array([(1,1,1), (1,1,1)])
-    >>> mag = np.array([(1,2,3), (0,0,3)])
-    >>> B = magpy.lib.magnet_sphere_Bfield(mag, dia, obs)
+    >>> B = magpy.lib.magnet_cylinder_section_field(mag, dim, obs)
     >>> print(B)
-    [[0.04009377 0.03207501 0.02405626]
-     [0.         0.         2.        ]]
+    [[ 6.27410168  6.27410168 -1.20044166]
+     [29.84602335 20.75731598  0.34961733]]
     """
+
     BHfinal = np.zeros((len(magnetization),3))
 
-    # r1, r2, h, phi1, phi2 <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    r1,r2,h,phi1,phi2 = dimension.T
+    r1 = abs(r1)
+    r2 = abs(r2)
+    h = abs(h)
+    z1, z2 = -h/2, h/2
 
     # transform dim deg->rad
-    r1, r2, phi1, phi2, z1, z2 = dimension.T
     phi1 = phi1/180*np.pi
     phi2 = phi2/180*np.pi
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
@@ -1412,10 +1425,10 @@ def magnet_cylinder_section_field(
     mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
     mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
 
-    # r, phi ,z lies in-between
-    mask_r_in = (r1-Config.edgesize<r) & (r<r2+Config.edgesize)
+    # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
+    mask_r_in = (r1-1e-14<r) & (r<r2+1e-14)
     mask_phi_in = (np.sign(phio1-phi1)!=np.sign(phio1-phi2)) | (np.sign(phio2-phi1)!=np.sign(phio2-phi2))
-    mask_z_in = (z1-Config.edgesize<z) & (z<z2+Config.edgesize)
+    mask_z_in = (z1-1e-14<z) & (z<z2+1e-14)
 
     # on surface
     mask_surf_z = (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in # top / bottom
@@ -1444,7 +1457,7 @@ def magnet_cylinder_section_field(
     mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cyl_tile_H_Slanovc2021(mag_sph, dim, pos_obs_cy)
+    H_cy = magnet_cylinder_section_core(mag_sph, dim, pos_obs_cy)
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
     Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)
