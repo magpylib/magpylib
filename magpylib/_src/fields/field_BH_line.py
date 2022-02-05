@@ -67,7 +67,7 @@ def current_line_field(
     field='B'
     ) -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of line current segments.
+    Computes the magnetic field of line current segments in Cartesian coordinates.
 
     The field set to (0,0,0) on line.
 

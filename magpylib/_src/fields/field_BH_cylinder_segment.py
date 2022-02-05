@@ -1250,13 +1250,13 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     return results
 
 # ON INTERFACE
-def magnet_cylinder_section_core(
+def magnet_cylinder_segment_core(
     mag: np.ndarray,
     dim: np.ndarray,
     obs_pos: np.ndarray
     ) ->np.ndarray:
     """
-    H-field of Cylinder Section magnet with homogenous magnetization.
+    H-field of Cylinder segment magnet with homogenous magnetization.
     The full cylinder axis coincides with the z-axis of the CS.
     The geometric center of the full Cylinder is in the origin.
 
@@ -1269,7 +1269,7 @@ def magnet_cylinder_section_core(
     obs_pos : ndarray, shape (n,3)
         observer positions (r,phi,z) in cy CS, units: [mm] [rad]
     dim: ndarray, shape (n,6)
-        section dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
+        segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
 
     Returns
     -------
@@ -1286,7 +1286,7 @@ def magnet_cylinder_section_core(
     >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
     >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
     >>> obs = np.array([(.1,0,3), (1,pi,3)])
-    >>> B = magpy.lib.magnet_cylinder_section_core(mag, dim, obs)
+    >>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, obs)
     >>> print(B)
     [[-0.84506541 -0.9207606   1.48474874]
      [ 3.95719801  3.59131966  3.11703698]]
@@ -1349,15 +1349,15 @@ def magnet_cylinder_section_core(
     return result.T
 
 
-def magnet_cylinder_section_field(
+def magnet_cylinder_segment_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
     observer: np.ndarray,
     field='B',
     ) -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a homogeneously magnetized
-    cylinder section. The full cylinder axis coincides with the z-axis of the coordinate
+    Computes the magnetic field of a homogeneously magnetized cylinder segment in
+    Cartesian coordinates. The full cylinder axis coincides with the z-axis of the coordinate
     system. The geometric center of the full cylinder is in the origin.
 
     Parameters
@@ -1366,8 +1366,8 @@ def magnet_cylinder_section_field(
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,5)
-        Cylinder section dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
-        height h in units of [mm] and the two section angles phi1 and phi2 in units of [deg].
+        Cylinder segment dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
+        height h in units of [mm] and the two segment angles phi1 and phi2 in units of [deg].
 
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
@@ -1382,14 +1382,14 @@ def magnet_cylinder_section_field(
 
     Examples
     --------
-    Compute the field of two different cylinder section magnets at position (1,1,1).
+    Compute the field of two different cylinder segment magnets at position (1,1,1).
 
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> mag = np.array([(0,0,100), (50,50,0)])
     >>> dim = np.array([(0,1,2,0,90), (1,2,4,35,125)])
     >>> obs = np.array([(1,1,1), (1,1,1)])
-    >>> B = magpy.lib.magnet_cylinder_section_field(mag, dim, obs)
+    >>> B = magpy.lib.magnet_cylinder_segment_field(mag, dim, obs)
     >>> print(B)
     [[ 6.27410168  6.27410168 -1.20044166]
      [29.84602335 20.75731598  0.34961733]]
@@ -1398,7 +1398,7 @@ def magnet_cylinder_section_field(
     -----
     Implementation based on [Slanovc2022].
     """
-    bh = check_field_input(field, 'magnet_cylinder_section_field()')
+    bh = check_field_input(field, 'magnet_cylinder_segment_field()')
 
     BHfinal = np.zeros((len(magnetization),3))
 
@@ -1460,7 +1460,7 @@ def magnet_cylinder_section_field(
     mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
 
     # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cylinder_section_core(mag_sph, dim, pos_obs_cy)
+    H_cy = magnet_cylinder_segment_core(mag_sph, dim, pos_obs_cy)
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
     Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)

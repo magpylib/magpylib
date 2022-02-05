@@ -11,7 +11,7 @@ def dipole_field(
     field='B'
     ) -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a magnetic dipole moment.
+    Computes the magnetic field of a magnetic dipole moment in Cartesian coordinates.
 
     Parameters
     ----------

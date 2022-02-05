@@ -1,7 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
-from magpylib._src.fields.field_BH_cylinder_tile import magnet_cylinder_section_field
+from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_loop import current_loop_field
@@ -51,7 +51,7 @@ def test_field_BH_cylinder_tile_mag0():
     phi2=phi1+phi2
     dim = np.array([r1,r2,h,phi1,phi2]).T
     pos = np.random.rand(n,3)
-    B = magnet_cylinder_section_field(mag, dim, pos)
+    B = magnet_cylinder_segment_field(mag, dim, pos)
     assert_allclose(mag, B)
 
 

@@ -9,7 +9,7 @@ __all__ = [
     'magnet_sphere_field',
     'magnet_cuboid_field',
     'magnet_cylinder_field',
-    'magnet_cylinder_section_field',
+    'magnet_cylinder_segment_field',
 ]
 
 from magpylib._src.fields.field_BH_dipole import dipole_field
@@ -18,4 +18,4 @@ from magpylib._src.fields.field_BH_line import current_line_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
-from magpylib._src.fields.field_BH_cylinder_tile import magnet_cylinder_section_field
+from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field

@@ -215,16 +215,16 @@ def bad_dim_input9():
     magpy.current.Loop(current=1, diameter=(1,1))
 
 def bad_dim_input10():
-    """cylinder section bad dim shape"""
+    """cylinder segment bad dim shape"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,0,45))
 def bad_dim_input11():
-    """cylinder section bad dim d1>d2"""
+    """cylinder segment bad dim d1>d2"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(3,2,2,0,45))
 def bad_dim_input12():
-    """cylinder section bad dim phi1>phi2"""
+    """cylinder segment bad dim phi1>phi2"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,100,45))
 def bad_dim_input13():
-    """cylinder section bad dim phi2-phi1>360"""
+    """cylinder segment bad dim phi2-phi1>360"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,0,1145))
 
 
@@ -285,11 +285,11 @@ def bad_level0_field_input_1():
     magpy.lib.magnet_cylinder_field(mag, dim2, obs, field='y')
 
 def bad_level0_field_input_2():
-    """cylinder section"""
+    """cylinder segment"""
     mag = np.array([(100,200,300)])
     dim5 = np.array([(0,1,2,0,360)])
     obs = np.array([(1,2,3)])
-    magpy.lib.magnet_cylinder_section_field(mag, dim5, obs, field=123)
+    magpy.lib.magnet_cylinder_segment_field(mag, dim5, obs, field=123)
 
 def bad_level0_field_input_3():
     """dipole"""

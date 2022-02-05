@@ -18,10 +18,8 @@ def current_loop_field(
     field='B'
     ) -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a circular line-current loop. The
-    loop lies in the z=0 plane with the coordinate origin at its center.
-
-    The field is computed with >12 digits precision. On the loop the result is set to (0,0,0).
+    Computes the magnetic field of a circular line-current loop in Cartesian coordinates.
+    The loop lies in the z=0 plane with the coordinate origin at its center.
 
     Parameters
     ----------
@@ -70,7 +68,9 @@ def current_loop_field(
     Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
     IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017).
 
-    New numerically stable implementation based on [Ortner/Leitner wip].
+    New numerically stable implementation based on [Ortner/Leitner wip]. Based
+    thereon the field is computed with >12 digits precision everywhere. On the
+    loop the result is set to (0,0,0).
     """
 
     bh = check_field_input(field, 'current_loop_field()')

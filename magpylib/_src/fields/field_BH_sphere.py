@@ -14,8 +14,8 @@ def magnet_sphere_field(
     field='B'
     )->np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a homogeneously
-    magnetized spherical magnet.
+    Computes the magnetic field of a homogeneously magnetized spherical magnet
+    in Cartesian coordinates.
 
     Parameters
     ----------

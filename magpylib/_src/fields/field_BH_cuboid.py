@@ -14,8 +14,8 @@ def magnet_cuboid_field(
     observer: np.ndarray,
     field='B') -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a homogeneously
-    magnetized cuboid magnet. The cuboid sides are parallel to the coordinate axes.
+    Computes the magnetic field of a homogeneously magnetized cuboid magnet
+    in Cartesian coordinates . The cuboid sides are parallel to the coordinate axes.
     The geometric center of the cuboid lies in the origin.
 
     Parameters

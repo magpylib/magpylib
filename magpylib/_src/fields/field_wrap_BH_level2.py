@@ -32,8 +32,8 @@ def tile_dim_cylinder(group: list, n_pp: int):
     return dimv
 
 
-def tile_dim_cylinder_section(group: list, n_pp: int):
-    """ tile up cylinder section dimensions.
+def tile_dim_cylinder_segment(group: list, n_pp: int):
+    """ tile up cylinder segment dimensions.
     """
     dims = np.array([src.dimension for src in group])
     dimv = np.tile(dims, n_pp).reshape((-1, 5))
@@ -105,7 +105,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     elif src_type == 'CylinderSegment':
         magv = tile_mag(group, n_pp)
-        dimv = tile_dim_cylinder_section(group, n_pp)
+        dimv = tile_dim_cylinder_segment(group, n_pp)
         kwargs.update({'magnetization':magv,  'dimension':dimv})
 
     elif src_type == 'Dipole':

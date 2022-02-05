@@ -209,8 +209,8 @@ def magnet_cylinder_field(
     field='B',
     ) -> np.ndarray:
     """
-    Computes the magnetic field in Cartesian coordinates of a homogeneously
-    magnetized cylinder. The cylinder axis coincides with the z-axis and
+    Computes the magnetic field of a homogeneously magnetized cylinder
+    in Cartesian coordinates. The cylinder axis coincides with the z-axis and
     the geometric center of the cylinder lies in the origin.
 
     Parameters
