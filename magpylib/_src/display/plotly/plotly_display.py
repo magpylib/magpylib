@@ -2,6 +2,7 @@
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 
+import numbers
 from itertools import cycle, combinations
 from typing import Tuple
 import warnings
@@ -456,6 +457,8 @@ def get_plotly_traces(
 
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
+    # pylint: disable=too-many-nested-blocks
+
     Sensor = _src.obj_classes.Sensor
     Cuboid = _src.obj_classes.Cuboid
     Cylinder = _src.obj_classes.Cylinder
@@ -559,22 +562,27 @@ def get_plotly_traces(
         path_traces = []
         path_traces_extra = {}
         extra_model3d_traces = (
-            style.model3d.extra if style.model3d.extra is not None else []
+            style.model3d.data if style.model3d.data is not None else []
         )
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.show)):
-            if style.model3d.show and make_func is not None:
+        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.frames)):
+            if style.model3d.showdefault and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
                 )
             for extr in extra_model3d_traces:
                 if extr.show:
                     trace3d = {}
-                    ttype = extr.trace["type"]
+                    obj_extr_trace = (
+                        extr.trace() if callable(extr.trace) else extr.trace
+                    )
+                    ttype = obj_extr_trace["type"]
                     if ttype == "mesh3d":
                         trace3d["showscale"] = False
+                        if "facecolor" in obj_extr_trace:
+                            ttype = "mesh3d_facecolor"
                     if ttype == "scatter3d":
                         trace3d["marker_color"] = kwargs["color"]
                         trace3d["line_color"] = kwargs["color"]
@@ -583,7 +591,10 @@ def get_plotly_traces(
                     trace3d.update(
                         linearize_dict(
                             place_and_orient_model3d(
-                                extr.trace, orientation=orient, position=pos
+                                obj_extr_trace,
+                                orientation=orient,
+                                position=pos,
+                                scale=extr.scale,
                             ),
                             separator="_",
                         )
@@ -619,7 +630,7 @@ def get_plotly_traces(
                 trace["name"] = legendtext
             traces.append(trace)
 
-        if np.array(input_obj.position).ndim > 1 and style.path.show is not False:
+        if np.array(input_obj.position).ndim > 1 and style.path.show:
             scatter_path = make_path(input_obj, style, legendgroup, kwargs)
             traces.append(scatter_path)
 
@@ -675,13 +686,10 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
     traces_dicts = {}
-    traces_colors = {}
+    # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
+    # autosize is calculated from the other traces overall scene range
+    traces_to_resize = {}
     for obj, color in zip(objs, cycle(color_sequence)):
-        if isinstance(obj, (Dipole, Sensor)):
-            traces_colors[obj] = color
-            # temporary coordinates to be able to calculate ranges
-            x, y, z = obj.position.T
-            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
         subobjs = [obj]
         legendgroup = None
         if getattr(obj, "children", None) is not None:
@@ -693,12 +701,12 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
         for ind, subobj in enumerate(subobjs):
             if legendgroup is not None:
                 if (
-                    subobj.style.model3d.show or ind + 1 == len(subobjs)
+                    subobj.style.model3d.showdefault or ind + 1 == len(subobjs)
                 ) and not first_shown:
                     # take name of parent
                     first_shown = True
                     if getattr(subobj, "children", None) is not None:
-                        first_shown = any(m3.show for m3 in obj.style.model3d.extra)
+                        first_shown = any(m3.show for m3 in obj.style.model3d.data)
                     showlegend = True
                     legendtext = getattr(getattr(obj, "style", None), "name", None)
                     legendtext = f"{obj!r}" if legendtext is None else legendtext
@@ -709,24 +717,31 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
             else:
                 showlegend = True
                 legendtext = None
-            traces_dicts[subobj] = get_plotly_traces(
-                subobj,
-                color=color,
-                legendgroup=legendgroup,
-                showlegend=showlegend,
-                legendtext=legendtext,
+
+            params = {
+                **dict(
+                    color=color,
+                    legendgroup=legendgroup,
+                    showlegend=showlegend,
+                    legendtext=legendtext,
+                ),
                 **kwargs,
-            )
+            }
+            if isinstance(subobj, (Dipole, Sensor)):
+                traces_to_resize[subobj] = {**params}
+                # temporary coordinates to be able to calculate ranges
+                x, y, z = subobj.position.T
+                traces_dicts[subobj] = [dict(x=x, y=y, z=z)]
+            else:
+                traces_dicts[subobj] = get_plotly_traces(subobj, **params)
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     if autosize is None or autosize == "return":
         if autosize == "return":
             return_autosize = True
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
-    for obj, color in traces_colors.items():
-        traces_dicts[obj] = get_plotly_traces(
-            obj, color=color, autosize=autosize, **kwargs
-        )
+    for obj, params in traces_to_resize.items():
+        traces_dicts[obj] = get_plotly_traces(obj, autosize=autosize, **params)
     if return_autosize:
         res = traces_dicts, autosize
     else:
@@ -948,8 +963,14 @@ def animate_path(
     frames = []
     autosize = "return"
     for i, ind in enumerate(path_indices):
-        kwargs["style_path_show"] = [ind]
-        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
+        kwargs["style_path_frames"] = [ind]
+        frame = draw_frame(
+            objs,
+            color_sequence,
+            zoom,
+            autosize=autosize,
+            **kwargs,
+        )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:
@@ -1055,7 +1076,7 @@ def display_plotly(
         fig = go.Figure()
 
     # Check animation parameters
-    if np.isscalar(animation) and not isinstance(animation, bool) and animation > 0:
+    if isinstance(animation, numbers.Number) and not isinstance(animation, bool) and animation > 0:
         kwargs["animation_time"] = animation
         animation = True
     elif not isinstance(animation, bool):
