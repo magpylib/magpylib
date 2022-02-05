@@ -8,7 +8,7 @@ from magpylib._src.input_checks import check_field_input
 def dipole_field(
     moment: np.ndarray,
     observer: np.ndarray,
-    field = 'B'
+    field='B'
     ) -> np.ndarray:
     """
     Computes the magnetic field in Cartesian coordinates of a magnetic dipole moment.
