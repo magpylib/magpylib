@@ -443,3 +443,20 @@ def test_cylinder_scaling_invariance():
 
     np.testing.assert_allclose(Btest1, Btest2)
     np.testing.assert_allclose(Btest1, Btest3)
+
+def test_cylinder_diametral_small_r():
+    """
+    test if the transition from Taylor series to general case is smooth
+    test if the gneral case fluctuations are small
+    """
+    B = magpy.lib.magnet_cylinder_field(
+        np.array([(1,1,0)]*1000),
+        np.array([(2,2)]*1000),
+        np.array([(x,0,3) for x in np.logspace(-1.4,-1.2,1000)]),
+        Bfield=True)
+
+    dB = np.log(abs(B[1:]-B[:-1]))
+    ddB = abs(dB[1:]-dB[:-1])
+    ddB = abs(ddB - np.mean(ddB, axis=0))
+
+    assert np.all(ddB < 0.001)

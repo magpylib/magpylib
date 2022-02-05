@@ -4,7 +4,6 @@ homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 # pylint: disable = no-name-in-module
 
-from distutils.log import warn
 import numpy as np
 from scipy.special import ellipk, ellipe
 from magpylib._src.fields.special_cel import cel
@@ -90,71 +89,113 @@ def fieldH_cylinder_diametral(
     H-field: ndarray
         H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
     """
-
-    # warning when numerical stability might not be granted
-    if np.any((r<1e-6) | (r>1e6) | (z/z0>1e6)):
-        msg = 'Warning: Possible numerical stability problem of Cylinder'
-        msg += ' solution with diametral magnetization when r/r0<1e-6 or'
-        msg += ' r/r0>1e6 or z/z0>1e6.'
-        warn(msg)
+    # pylint: disable=too-many-statements
 
     n = len(z0)
 
-    # compute repeated quantities
+    # allocate to treat small r special cases
+    Hr, Hphi, Hz = np.empty((3,n))
+
+    # compute repeated quantities for all cases
     zp = z+z0
     zm = z-z0
-    rp = r+1
-    rm = r-1
 
     zp2 = zp**2
     zm2 = zm**2
-    rp2 = rp**2
-    rm2 = rm**2
     r2 = r**2
 
-    ap2 = zp2+rm**2
-    am2 = zm2+rm**2
-    ap = np.sqrt(ap2)
-    am = np.sqrt(am2)
+    # case small_r: numerical instability of general solution
+    mask_small_r = r<.05
+    mask_general = ~mask_small_r
+    if np.any(mask_small_r):
+        phiX = phi[mask_small_r]
+        zpX, zmX = zp[mask_small_r], zm[mask_small_r]
+        zp2X, zm2X = zp2[mask_small_r], zm2[mask_small_r]
+        rX, r2X = r[mask_small_r], r2[mask_small_r]
 
-    argp = -4*r/ap2
-    argm = -4*r/am2
+        # taylor series for small r
+        zpp = zp2X + 1
+        zmm = zm2X + 1
+        sqrt_p = np.sqrt(zpp)
+        sqrt_m = np.sqrt(zmm)
 
-    # special case r=r0 : indefinite form
-    #   result is numerically stable in the vicinity of of r=r0
-    #   so only the special case must be caught (not the surroundings)
-    mask_special = rm==0
-    argc = np.ones(n)*1e16      # should be np.Inf but leads to 1/0 problems in cel
-    argc[~mask_special] = -4*r[~mask_special]/rm2[~mask_special]
+        frac1 = zpX/sqrt_p
+        frac2 = zmX/sqrt_m
 
-    elle_p = ellipe(argp)
-    elle_m = ellipe(argm)
-    ellk_p = ellipk(argp)
-    ellk_m = ellipk(argm)
-    onez = np.ones(n)
-    ellpi_p = cel(np.sqrt(1-argp), 1-argc, onez, onez) # elliptic_Pi
-    ellpi_m = cel(np.sqrt(1-argm), 1-argc, onez, onez) # elliptic_Pi
+        r3X = r2X*rX
+        r4X = r3X*rX
+        r5X = r4X*rX
 
-    # compute fields
-    Hphi = np.sin(phi)/(4*np.pi*r2)*(
-        + zm*am              * elle_m   -  zp*ap              * elle_p
-        - zm/am*(2+zm2+2*r2) * ellk_m   +  zp/ap*(2+zp2+2*r2) * ellk_p
-        + zm/am*rp2          * ellpi_m  -  zp/ap*rp2          * ellpi_p
-        )
+        term1 =  (frac1 - frac2)
+        term2 = (frac1/zpp**2 - frac2/zmm**2)*r2X/8
+        term3 = ((3-4*zp2X)*frac1/zpp**4 - (3-4*zm2X)*frac2/zmm**4)/64*r4X
 
-    Hz = - np.cos(phi)/(2*np.pi*r)*(
-        + am              * elle_m  -  ap              * elle_p
-        - (1+zm2+r2)/am * ellk_m  +  (1+zp2+r2)/ap * ellk_p
-        )
+        Hr[mask_small_r] = -np.cos(phiX)/4*( term1 + 9*term2 + 25*term3)
 
-    # special case 1/rm
-    one_over_rm = np.zeros(n)
-    one_over_rm[~mask_special] = 1/rm[~mask_special]
+        Hphi[mask_small_r] = np.sin(phiX)/4*( term1 + 3*term2 + 5*term3)
 
-    Hr = - np.cos(phi)/(4*np.pi*r2)*(
-        - zm*am             * elle_m   +  zp*ap             * elle_p
-        + zm/am*(2+zm2) * ellk_m   -  zp/ap*(2+zp2) * ellk_p
-        + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+1) * one_over_rm)
+        Hz[mask_small_r] = -np.cos(phiX)/4*(
+            rX*(1/zpp/sqrt_p - 1/zmm/sqrt_m) +
+            3/8*r3X*((1 - 4*zp2X)/zpp**3/sqrt_p - (1 - 4*zm2X)/zmm**3/sqrt_m) +
+            15/64*r5X*((1-12*zp2X+8*zp2X**2)/zpp**5/sqrt_p - (1-12*zm2X+8*zm2X**2)/zmm**5/sqrt_m))
+
+        # if there are small_r, select the general/case variables
+        # when there are no small_r cases it is not necessary to slice with [True, True, Tue,...]
+        phi = phi[mask_general]
+        n = len(phi)
+        zp, zm = zp[mask_general], zm[mask_general]
+        zp2, zm2 = zp2[mask_general], zm2[mask_general]
+        r, r2 = r[mask_general], r2[mask_general]
+
+
+    if np.any(mask_general):
+        rp = r+1
+        rm = r-1
+        rp2 = rp**2
+        rm2 = rm**2
+
+        ap2 = zp2+rm**2
+        am2 = zm2+rm**2
+        ap = np.sqrt(ap2)
+        am = np.sqrt(am2)
+
+        argp = -4*r/ap2
+        argm = -4*r/am2
+
+        # special case r=r0 : indefinite form
+        #   result is numerically stable in the vicinity of of r=r0
+        #   so only the special case must be caught (not the surroundings)
+        mask_special = rm==0
+        argc = np.ones(n)*1e16      # should be np.Inf but leads to 1/0 problems in cel
+        argc[~mask_special] = -4*r[~mask_special]/rm2[~mask_special]
+        # special case 1/rm
+        one_over_rm = np.zeros(n)
+        one_over_rm[~mask_special] = 1/rm[~mask_special]
+
+        elle_p = ellipe(argp)
+        elle_m = ellipe(argm)
+        ellk_p = ellipk(argp)
+        ellk_m = ellipk(argm)
+        onez = np.ones(n)
+        ellpi_p = cel(np.sqrt(1-argp), 1-argc, onez, onez) # elliptic_Pi
+        ellpi_m = cel(np.sqrt(1-argm), 1-argc, onez, onez) # elliptic_Pi
+
+        # compute fields
+        Hr[mask_general] = - np.cos(phi)/(4*np.pi*r2)*(
+            - zm*am             * elle_m   +  zp*ap             * elle_p
+            + zm/am*(2+zm2) * ellk_m   -  zp/ap*(2+zp2) * ellk_p
+            + (zm/am* ellpi_m  -  zp/ap * ellpi_p) * rp*(r2+1) * one_over_rm)
+
+        Hphi[mask_general] = np.sin(phi)/(4*np.pi*r2)*(
+            + zm*am              * elle_m   -  zp*ap              * elle_p
+            - zm/am*(2+zm2+2*r2) * ellk_m   +  zp/ap*(2+zp2+2*r2) * ellk_p
+            + zm/am*rp2          * ellpi_m  -  zp/ap*rp2          * ellpi_p
+            )
+
+        Hz[mask_general] = - np.cos(phi)/(2*np.pi*r)*(
+            + am              * elle_m  -  ap              * elle_p
+            - (1+zm2+r2)/am * ellk_m  +  (1+zp2+r2)/ap * ellk_p
+            )
 
     return Hr, Hphi, Hz
 
