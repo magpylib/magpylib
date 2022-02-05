@@ -453,7 +453,7 @@ def test_cylinder_diametral_small_r():
         np.array([(1,1,0)]*1000),
         np.array([(2,2)]*1000),
         np.array([(x,0,3) for x in np.logspace(-1.4,-1.2,1000)]),
-        Bfield=True)
+        field='B')
 
     dB = np.log(abs(B[1:]-B[:-1]))
     ddB = abs(dB[1:]-dB[:-1])

@@ -9,6 +9,19 @@ from magpylib._src.exceptions import (
 )
 
 
+def check_field_input(inp, origin):
+    """
+    check field input
+    """
+    if isinstance(inp, (bool, str)):
+        if inp in ['B', True]:
+            return True
+        if inp in ['H', False]:
+            return False
+    msg = f'{origin} input can only be "field=B" or "field=H".'
+    raise MagpylibBadUserInput(msg)
+
+
 def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
     # pylint: disable=protected-access

@@ -5,7 +5,7 @@
 import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.special_el3 import el3_angle
-
+from magpylib._src.input_checks import check_field_input
 
 def arctan_k_tan_2(k, phi):
     """
@@ -1353,17 +1353,15 @@ def magnet_cylinder_section_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
     observer: np.ndarray,
-    Bfield=True,
+    field='B',
     ) -> np.ndarray:
     """
-    Computes the magnetic field of a homogeneously magnetized cylinder section.
-    The full cylinder axis coincides with the z-axis of the CS.
-    The geometric center of the full Cylinder is in the origin.
+    Computes the magnetic field in Cartesian coordinates of a homogeneously magnetized
+    cylinder section. The full cylinder axis coincides with the z-axis of the coordinate
+    system. The geometric center of the full cylinder is in the origin.
 
-    Implementation from [Slanovc2022].
-
-    Parameters:
-    -----------
+    Parameters
+    ----------
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
@@ -1372,10 +1370,10 @@ def magnet_cylinder_section_field(
         height h in units of [mm] and the two section angles phi1 and phi2 in units of [deg].
 
     observer: ndarray, shape (n,3)
-        Position of observers in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -1395,7 +1393,12 @@ def magnet_cylinder_section_field(
     >>> print(B)
     [[ 6.27410168  6.27410168 -1.20044166]
      [29.84602335 20.75731598  0.34961733]]
+
+    Notes
+    -----
+    Implementation based on [Slanovc2022].
     """
+    bh = check_field_input(field, 'magnet_cylinder_section_field()')
 
     BHfinal = np.zeros((len(magnetization),3))
 
@@ -1464,7 +1467,7 @@ def magnet_cylinder_section_field(
     H = np.concatenate(((Hx,),(Hy,),(Hz,)),axis=0).T*10/4/np.pi
 
     # return B or H --------------------------------------------------------
-    if not Bfield:
+    if not bh:
         BHfinal[mask_not_on_surf] = H
         return BHfinal
 

@@ -4,6 +4,7 @@ Implementations of analytical expressions of line current segments
 
 import numpy as np
 from numpy.linalg import norm
+from magpylib._src.input_checks import check_field_input
 
 
 def field_BH_line_from_vert(
@@ -63,15 +64,12 @@ def current_line_field(
     start: np.ndarray,
     end: np.ndarray,
     observer: np.ndarray,
-    Bfield=True
+    field='B'
     ) -> np.ndarray:
     """
-    Compute the B-field of line current segments.
+    Computes the magnetic field in Cartesian coordinates of line current segments.
 
-    Field computation via law of Biot Savart. See also countless online ressources.
-    eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
-
-    Field set to 0 on line.
+    The field set to (0,0,0) on line.
 
     Parameters
     ----------
@@ -79,16 +77,16 @@ def current_line_field(
         Electrical current in units of [A].
 
     start: ndarray, shape (n,3)
-        Line start positions in units of [mm].
+        Line start positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     end: ndarray, shape (n,3)
-        Line end positions in units of [mm].
+        Line end positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     observer: ndarray, shape (n,3)
-        position of observer (x,y,z) in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -110,7 +108,15 @@ def current_line_field(
     >>> print(B)
     [[ 0.         -0.14142136  0.        ]
      [ 0.          0.          0.        ]]
+
+    Notes
+    -----
+    Field computation via law of Biot Savart. See also countless online ressources.
+    eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
+    # pylint: disable=too-many-statements
+
+    bh = check_field_input(field, 'current_line_field()')
 
     # allocate for special case treatment
     ntot = len(current)
@@ -194,7 +200,7 @@ def current_line_field(
     field_all[~mask0] = field
 
     # return B or H
-    if Bfield:
+    if bh:
         return field_all
 
     # H: mT -> kA/m

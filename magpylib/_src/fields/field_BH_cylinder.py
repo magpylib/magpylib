@@ -8,6 +8,7 @@ import numpy as np
 from scipy.special import ellipk, ellipe
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.utility import cyl_field_to_cart, cart_to_cyl_coordinates
+from magpylib._src.input_checks import check_field_input
 
 
 def fieldB_cylinder_axial(
@@ -205,27 +206,26 @@ def magnet_cylinder_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
     observer: np.ndarray,
-    Bfield=True
+    field='B',
     ) -> np.ndarray:
     """
-    Computes the field of a homogeneously magnetized cylinder. The cylinder
-    axis coincides with the z-axis and the geometric center lies in the origin.
+    Computes the magnetic field in Cartesian coordinates of a homogeneously
+    magnetized cylinder. The cylinder axis coincides with the z-axis and
+    the geometric center of the cylinder lies in the origin.
 
-    Analytic implementations from Ortner/Rauber/Leitner wip.
-
-    Parameters:
-    -----------
+    Parameters
+    ----------
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,2)
-        Cylinder dimension (diameter, height) in units of [mm].
+        Cylinder dimension (d,h) with diameter d and height h in units of [mm].
 
     observer: ndarray, shape (n,3)
-        Position of observer in cartesian coordinates (x, y, z) in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -245,7 +245,14 @@ def magnet_cylinder_field(
     >>> print(B)
     [[ 0.77141782  1.54283565  1.10384481]
      [-0.15185713  2.90352915  2.23601722]]
+
+    Notes
+    -----
+    Axial implementation based on [Derby].
+    Diametral implementation based on [caciagli2018] and [rauber/leitner/ortner 2022 wip].
     """
+
+    bh = check_field_input(field, 'magnet_cylinder_field()')
 
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observer)
@@ -309,7 +316,7 @@ def magnet_cylinder_field(
     Bx, By = cyl_field_to_cart(phi, Br, Bphi)
 
     # add/subtract Mag when inside for B/H --------------------------
-    if Bfield:
+    if bh:
         if any(mask_tv): # tv computes H-field
             Bx[mask_tv*mask_inside] += magx[mask_tv*mask_inside]
             By[mask_tv*mask_inside] += magy[mask_tv*mask_inside]

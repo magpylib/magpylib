@@ -4,20 +4,21 @@ magnetized Spheres. Computation details in function docstrings.
 """
 
 import numpy as np
+from magpylib._src.input_checks import check_field_input
 
 
 def magnet_sphere_field(
     magnetization: np.ndarray,
     diameter: np.ndarray,
     observer: np.ndarray,
-    Bfield=True
+    field='B'
     )->np.ndarray:
     """
-    The B-field of a homogeneously magnetized spherical magnet corresponds to a dipole
-    field on the outside and is 2/3*mag in the inside (see e.g. "Theoretical Physics, Bertelmann")
+    Computes the magnetic field in Cartesian coordinates of a homogeneously
+    magnetized spherical magnet.
 
-    Parameters:
-    -----------
+    Parameters
+    ----------
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
@@ -25,10 +26,10 @@ def magnet_sphere_field(
         Sphere diameter in units of [mm].
 
     observer: ndarray, shape (n,3)
-        Position of observers in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -49,7 +50,14 @@ def magnet_sphere_field(
     >>> print(B)
     [[0.04009377 0.03207501 0.02405626]
      [0.         0.         2.        ]]
+
+    Notes
+    -----
+    The field corresponds to a dipole field on the outside and is 2/3*mag
+    in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
+
+    bh = check_field_input(field, 'magnet_sphere_field()')
 
     # all special cases r0=0 and mag=0 automatically covered
 
@@ -71,7 +79,7 @@ def magnet_sphere_field(
     field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*r01**3/3
     B[mask_out] = field_out.T
 
-    if Bfield:
+    if bh:
         return B
 
     # adjust and return H

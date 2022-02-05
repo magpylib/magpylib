@@ -4,6 +4,7 @@ magnetized Cuboids. Computation details in function docstrings.
 """
 
 import numpy as np
+from magpylib._src.input_checks import check_field_input
 
 
 # ON INTERFACE
@@ -11,13 +12,11 @@ def magnet_cuboid_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
     observer: np.ndarray,
-    Bfield=True) -> np.ndarray:
+    field='B') -> np.ndarray:
     """
-    B-field in Cartesian CS of Cuboid magnet with homogenous magnetization.
-    The Cuboid sides are parallel to the CS axes.
-    The geometric center of the Cuboid lies in the origin.
-
-    Implementation from [Yang1999], [Engel-Herbert2005], [Camacho2013], [Cichon2019].
+    Computes the magnetic field in Cartesian coordinates of a homogeneously
+    magnetized cuboid magnet. The cuboid sides are parallel to the coordinate axes.
+    The geometric center of the cuboid lies in the origin.
 
     Parameters
     ----------
@@ -28,10 +27,10 @@ def magnet_cuboid_field(
         Cuboid side lengths in units of [mm]. Positive input expected.
 
     observer: ndarray, shape (n,3)
-        position of observer in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -40,7 +39,7 @@ def magnet_cuboid_field(
 
     Examples
     --------
-    Compute the field of three instances.
+    Compute the field of three different instances.
 
     >>> import numpy as np
     >>> import magpylib as magpy
@@ -78,6 +77,8 @@ def magnet_cuboid_field(
     Cichon: IEEE Sensors Journal, vol. 19, no. 7, April 1, 2019, p.2509
     """
     # pylint: disable=too-many-statements
+
+    bh = check_field_input(field, 'magnet_cuboid_field()')
 
     magx, magy, magz = magnetization.T
     a, b, c = np.abs(dimension.T)/2
@@ -223,7 +224,7 @@ def magnet_cuboid_field(
     B = B_all / (4*np.pi)
 
     # return B or compute and return H -------------
-    if Bfield:
+    if bh:
         return B
 
     # if inside magnet subtract magnetization vector

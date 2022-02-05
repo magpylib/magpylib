@@ -8,36 +8,34 @@ import numpy as np
 from scipy.special import ellipe
 from magpylib._src.fields.special_cel import cel_loop_stable
 from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
-
+from magpylib._src.input_checks import check_field_input
 
 # ON INTERFACE
 def current_loop_field(
     current: np.ndarray,
     diameter: np.ndarray,
     observer: np.ndarray,
-    Bfield=True
+    field='B'
     ) -> np.ndarray:
     """
-    B-field in in Cartesian CS of a circular line-current loop. The
-    current loop lies in the z=0 plane with the origin at its center.
+    Computes the magnetic field in Cartesian coordinates of a circular line-current loop. The
+    loop lies in the z=0 plane with the coordinate origin at its center.
 
-    The field is computed with >12 digits precision. On the loop the
-    result is set to (0,0,0). Implementation from Ortner/Leitner wip.
+    The field is computed with >12 digits precision. On the loop the result is set to (0,0,0).
 
     Parameters
     ----------
     current: ndarray, shape (n,)
-        Electrical current in loop in units of [A].
+        Electrical current in units of [A].
 
     diameter: ndarray, shape (n,)
-        Diameter of current loop in units of [mm].
+        Diameter of loop in units of [mm].
 
     observer: ndarray, shape (n,3)
-        Position of observer in Cartesian coordinates (x,y,z)
-        in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    Bfield: bool, default=True
-        If True return B-field in units of [mT], else return H-field in units of [kA/m].
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
 
     Returns
     -------
@@ -70,10 +68,12 @@ def current_loop_field(
     loop," 2001.
 
     Ortner, "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing",
-    IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
+    IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017).
 
-    Leitner/Ortner, "work in progress"
+    New numerically stable implementation based on [Ortner/Leitner wip].
     """
+
+    bh = check_field_input(field, 'current_loop_field()')
 
     r, phi, z = cart_to_cyl_coordinates(observer)
     rad = np.abs(diameter/2)
@@ -130,6 +130,7 @@ def current_loop_field(
     B_cart = (np.concatenate(((Bx_tot,),(By_tot,),(Bz_tot,)), axis=0)*current).T # ugly but fast
 
     # B or H field
-    if Bfield:
+    if bh:
         return B_cart/10
+
     return B_cart/4/np.pi
