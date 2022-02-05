@@ -24,7 +24,7 @@ A `Collection` also have its own position and holds some basic styling propertie
 
 +++
 
-In the following example we will create a linear arrangement of cuboid magnets with alternating polarity. When calling the `getB` method on the `Collection`, the result is the already the sum of the field produced by its children.
+In the following example we will create a linear arrangement of cuboid magnets with alternating polarity. When calling the `getB` method on the `Collection`, the result is already the sum of the field produced by its children.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -36,17 +36,119 @@ for index in range(10):
     cuboid = magpy.magnet.Cuboid(
         magnetization=(0, 0, 1000 * mag_sign),
         dimension=(10, 10, 10),
-        position=(index * 11, 0, 0),
+        position=(index * 10, 0, 0),
     )
     cuboids.append(cuboid)
 
 # group children into a `Collection`
 coll = magpy.Collection(cuboids[:-1])
-print(f"B-Field at position (0,0,0): {coll.getB((0,0,0)).round(2)}")
+print(f"B-Field at position (0,0,0) → {coll.getB((0,0,0)).round(2)}")
 coll.show()
 ```
 
+## Add an extra 3D-model
+
++++
+
+Lets now add a body emcompassing our linear arrangement. We can do so by adding a new trace with the `style.model3d.add_trac` method. If we intend only to use the plotly backend to display the system, only a `plotly` trace is necessary.
+
+```{code-cell} ipython3
+import magpylib as magpy
+from magpylib.display.plotly import make_BaseCuboid
+
+# create children
+cuboids = []
+for index in range(11):
+    mag_sign = index % 2 * 2 - 1  # positive if index is od else even
+    cuboid = magpy.magnet.Cuboid(
+        magnetization=(0, 0, 1000 * mag_sign),
+        dimension=(10, 10, 10),
+        position=(index * 10, 0, 0),
+    )
+    cuboids.append(cuboid)
+
+# group children into a `Collection`
+coll = magpy.Collection(cuboids[:-1])
+
+# add extra 3D-trace - the make_BaseCuboid function returns a dictionary
+plotly_trace = make_BaseCuboid(dimension=(104, 12, 12), position=(45, 0, 0))
+plotly_trace["opacity"] = 0.5
+coll.style.model3d.add_trace(trace=plotly_trace, backend="plotly")
+coll.show(backend="plotly")
+```
+
+```{note}
+The `Collection` position is set to (0,0,0) at creation time. If the object is moved the extra trace will remain connected to the local coordinate system of the `Collection` object.
+```
+
++++
+
 ## Subclassing `Collection`
+
++++
+
+By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we can build a _magnetic wheel_ object on which the `diameter`, `cube_size` and number of children `cubes` can be updated on the `MagneticWheel`instance directly.
+
+```{code-cell} ipython3
+import magpylib as magpy
+import numpy as np
+
+
+# define the new `Collection` subclass
+class MagneticWheel(magpy.Collection):
+    """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
+
+    def __init__(self, cubes=6, cube_size=10, diameter=36, **style_kwargs):
+        super().__init__(**style_kwargs)
+        self.update(cubes=cubes, cube_size=cube_size, diameter=diameter)
+
+    def update(self, cubes=None, cube_size=None, diameter=None):
+        """updates the magnetic weel object"""
+        self.reset_path()
+        self.cubes = cubes if cubes is not None else self.cubes
+        self.cube_size = cube_size if cube_size is not None else self.cube_size
+        self.diameter = diameter if diameter is not None else self.diameter
+        create_cube = lambda: magpy.magnet.Cuboid(
+            magnetization=(1, 0, 0),
+            dimension=[self.cube_size] * 3,
+            position=(self.diameter / 2, 0, 0),
+        )
+        ref_cube = create_cube().rotate_from_angax(
+            np.linspace(0.0, 360.0, self.cubes, endpoint=False),
+            "z",
+            anchor=(0, 0, 0),
+            start=0,
+        )
+        children = []
+        for ind in range(self.cubes):
+            s = create_cube()
+            s.position = ref_cube.position[ind]
+            s.orientation = ref_cube.orientation[ind]
+            children.append(s)
+        self.children = children
+        return self
+
+
+# create a `MagneticWeel` class instance
+wheel = MagneticWheel()
+sens = magpy.Sensor(position=(0, 0, 20))
+print(f"B-Field at position {sens.position} → {wheel.getB(sens).round(2)}")
+magpy.show(wheel, sens)
+
+# update wheel
+wheel.update(cube_size=5, diameter=50, cubes=10)
+print(
+    f"\nB-Field at position {sens.position} for updated wheel → {wheel.getB(sens).round(2)}"
+)
+magpy.show(wheel, sens)
+```
+
+## Use dynamic extra 3D-model update
+
++++
+
+As shown previously we can aslo add an extra 3D-model to the our new `MagneticWheel` class. However if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting `attributes`. To solve this issue, the trace constructor of the `style.modeld3d` property can also accept a callable as argument. This allows the trace to be updated created from dynamic parameters and also has the advantage that the trace creation computation cost is only effective at display time and not when setting our parameters.
+In the following example, both `matplotlib` and `plotly` backends are made compatible with the `MagneticWheel` class.
 
 ```{code-cell} ipython3
 from functools import partial
@@ -60,9 +162,9 @@ from magpylib.display.plotly import make_BaseCylinderSegment
 class MagneticWheel(magpy.Collection):
     """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
 
-    def __init__(self, *children, cubes=6, height=10, diameter=36, **style_kwargs):
-        super().__init__(*children, **style_kwargs)
-        self.update(cubes=cubes, height=height, diameter=diameter)
+    def __init__(self, cubes=6, cube_size=10, diameter=36, **style_kwargs):
+        super().__init__(**style_kwargs)
+        self.update(cubes=cubes, cube_size=cube_size, diameter=diameter)
         self.style.model3d.add_trace(
             backend="plotly",
             trace=partial(self.get_trace3d, backend="plotly"),
@@ -75,15 +177,15 @@ class MagneticWheel(magpy.Collection):
             coordsargs={"x": "args[0]", "y": "args[1]", "z": "args[2]"},
         )
 
-    def update(self, cubes=None, height=None, diameter=None):
+    def update(self, cubes=None, cube_size=None, diameter=None):
         """updates the magnetic weel object"""
         self.reset_path()
         self.cubes = cubes if cubes is not None else self.cubes
-        self.height = height if height is not None else self.height
+        self.cube_size = cube_size if cube_size is not None else self.cube_size
         self.diameter = diameter if diameter is not None else self.diameter
         create_cube = lambda: magpy.magnet.Cuboid(
             magnetization=(1, 0, 0),
-            dimension=[self.height] * 3,
+            dimension=[self.cube_size] * 3,
             position=(self.diameter / 2, 0, 0),
         )
         ref_cube = create_cube().rotate_from_angax(
@@ -93,7 +195,7 @@ class MagneticWheel(magpy.Collection):
             start=0,
         )
         children = []
-        for ind in range(cubes):
+        for ind in range(self.cubes):
             s = create_cube()
             s.position = ref_cube.position[ind]
             s.orientation = ref_cube.orientation[ind]
@@ -102,10 +204,11 @@ class MagneticWheel(magpy.Collection):
         return self
 
     def get_trace3d(self, backend):
+        """creates dynamically the 3D-model considering class properties"""
         trace_plotly = make_BaseCylinderSegment(
-            r1=max(self.diameter / 2 - self.height, 0),
-            r2=self.diameter / 2 + self.height,
-            h=self.height,
+            r1=max(self.diameter / 2 - self.cube_size, 0),
+            r2=self.diameter / 2 + self.cube_size,
+            h=self.cube_size,
             phi1=0,
             phi2=360,
         )
@@ -120,13 +223,15 @@ class MagneticWheel(magpy.Collection):
             trace_mpl = dict(type="plot_trisurf", args=(x, y, z), triangles=triangles)
             return {**trace_mpl, **{"alpha": opacity}}
 
-
+# create a few `MagneticWheel`instances and manipulate them
 wheels = []
-
 for ind, cubes in enumerate((3, 6, 12)):
     diameter = cubes * 5
     wheel = MagneticWheel(
-        cubes=cubes, height=10, diameter=diameter, style_name=f"Magnetic Wheel {ind+1}"
+        cubes=cubes,
+        cube_size=10,
+        diameter=diameter,
+        style_name=f"Magnetic Wheel {ind+1}",
     )
     wheel.move((diameter, 0, -diameter * 5))
     wheel.rotate_from_angax(90, "x")
@@ -136,9 +241,16 @@ for ind, cubes in enumerate((3, 6, 12)):
     wheel.set_children_styles(path_show=False)
     wheels.append(wheel)
 
+# display the resulting systems in our own canvas with matplotlib
+magpy.show(wheels, style_path_frames=6)
+           
+# animate the resulting systems in our own canvas with plotly
 fig = go.Figure()
 magpy.show(wheels, canvas=fig, backend="plotly", animation=2)
 fig.update_layout(
-    title_text="Magnetic Wheels", height=800,
+    title_text="Magnetic Wheels",
+    height=800,
 )
+
+
 ```
