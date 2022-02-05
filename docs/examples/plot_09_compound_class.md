@@ -4,25 +4,21 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
 
 # Creating a Compound Object
 
-
 +++
 
 The Magpylib `Collection` object class serves the purpose of grouping multiple sources and/or sensors in a single object. This bares the advantage of manipulating multiple objects with single commands and can for example be used to create a compound object that acts as a unique source.
 A `Collection` also have its own position and holds some basic styling properties that can be useful to modify the 3D-representation when plotting.
 
-```{code-cell} ipython3
-%load_ext autoreload
-%autoreload 2
-```
++++
 
 ## Minimal example
 
