@@ -15,8 +15,8 @@ kernelspec:
 
 +++
 
-The Magpylib `Collection` object class serves the purpose of grouping multiple sources and/or sensors in a single object. This bares the advantage of manipulating multiple objects with single commands and can for example be used to create a compound object that acts as a unique source.
-A `Collection` also have its own position and holds some basic styling properties that can be useful to modify the 3D-representation when plotting.
+The Magpylib `Collection` object class serves the purpose of grouping multiple sources and/or sensors in a single object. This bares the advantage of manipulating multiple objects with single commands such as `move` and `rotate`. It can for example be used to create a compound object that acts as a unique source.
+A `Collection` also have its own position and holds some basic styling properties that can be useful to modify the associated 3D-representation when plotting it with the `show` method.
 
 +++
 
@@ -24,7 +24,7 @@ A `Collection` also have its own position and holds some basic styling propertie
 
 +++
 
-In the following example we will create a linear arrangement of cuboid magnets with alternating polarity. When calling the `getB` method on the `Collection`, the result is already the sum of the field produced by its children.
+In the following example we will create a linear arrangement of cuboid magnets with alternating polarity. When calling the `getB` method on the created `Collection`, the result is already the sum of the field produced by its children.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -50,7 +50,16 @@ coll.show()
 
 +++
 
-Lets now add a body emcompassing our linear arrangement. We can do so by adding a new trace with the `style.model3d.add_trac` method. If we intend only to use the plotly backend to display the system, only a `plotly` trace is necessary.
+Lets now add a body emcompassing our linear arrangement. We can do so by adding a new 3D-model with the `style.model3d.add_trace` method. If we intend only to use the plotly backend to display the system, only a `plotly` trace is necessary.
+
+A model3d trace is a dictionary containing the necessary information to draw a plot type depending on the chosen backend.
+The `add_trace` method has the following signature:
+
+```{code-cell} ipython3
+help(magpy.Collection().style.model3d.add_trace)
+```
+
+In the case of building a `Collection` of many objects, it can become quite computationally expensive to display every single children. To avoid this issue, it is possible to deactivate the default reprensation of every children using the `set_children_styles` method.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -68,18 +77,29 @@ for index in range(11):
     cuboids.append(cuboid)
 
 # group children into a `Collection`
-coll = magpy.Collection(cuboids[:-1])
+coll = magpy.Collection(cuboids[:-1], style_name='Collection with visible children')
 
 # add extra 3D-trace - the make_BaseCuboid function returns a dictionary
 plotly_trace = make_BaseCuboid(dimension=(104, 12, 12), position=(45, 0, 0))
 plotly_trace["opacity"] = 0.5
 coll.style.model3d.add_trace(trace=plotly_trace, backend="plotly")
 coll.show(backend="plotly")
+
+# Hide the children 3D-model representation
+coll.set_children_styles(model3d_showdefault=False)
+coll.style.name = 'Collection with hidden children'
+coll.show(backend="plotly")
 ```
 
 ```{note}
-The `Collection` position is set to (0,0,0) at creation time. If the object is moved the extra trace will remain connected to the local coordinate system of the `Collection` object.
+The `Collection` position is set to (0,0,0) at creation time. Any added extra 3D-model will be bound to the local coordinate system of to the `Collection` and `rotated`/`moved` together with its parent object.
 ```
+
++++
+
+```{warning}
+If no 3D-model as been assigned to a `Collection` and all children representation are hidden, you may end up with an empty plot.
+````
 
 +++
 
@@ -87,7 +107,7 @@ The `Collection` position is set to (0,0,0) at creation time. If the object is m
 
 +++
 
-By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we can build a _magnetic wheel_ object on which the `diameter`, `cube_size` and number of children `cubes` can be updated on the `MagneticWheel`instance directly.
+By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we build a _magnetic wheel_ object on which the `diameter`, `cube_size` and number of children `cubes` can be updated on the `MagneticWheel`instance directly.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -109,7 +129,7 @@ class MagneticWheel(magpy.Collection):
         self.cube_size = cube_size if cube_size is not None else self.cube_size
         self.diameter = diameter if diameter is not None else self.diameter
         create_cube = lambda: magpy.magnet.Cuboid(
-            magnetization=(1, 0, 0),
+            magnetization=(1000, 0, 0),
             dimension=[self.cube_size] * 3,
             position=(self.diameter / 2, 0, 0),
         )
@@ -147,7 +167,7 @@ magpy.show(wheel, sens)
 
 +++
 
-As shown previously we can aslo add an extra 3D-model to the our new `MagneticWheel` class. However if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting `attributes`. To solve this issue, the trace constructor of the `style.modeld3d` property can also accept a callable as argument. This allows the trace to be updated created from dynamic parameters and also has the advantage that the trace creation computation cost is only effective at display time and not when setting our parameters.
+As shown previously we can aslo add an extra 3D-model to our new `MagneticWheel` class, since it inherits all methods and properties from the parent `Collection` class. However if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting `attributes`. To solve this issue, the trace constructor of the `style.modeld3d` property can also accept a callable as argument. This allows the trace to be updated created from dynamic parameters, or in this case, class attributes. This features avoids the need to recreate the 3D-model entirely, any time an attribute of the class has been updated. The actual trace building computation cost will only be due if we choose to display the object.
 In the following example, both `matplotlib` and `plotly` backends are made compatible with the `MagneticWheel` class.
 
 ```{code-cell} ipython3
@@ -251,6 +271,4 @@ fig.update_layout(
     title_text="Magnetic Wheels",
     height=800,
 )
-
-
 ```
