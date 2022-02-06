@@ -92,7 +92,7 @@ def test_field_dipole1():
     """
     poso = np.array([(1,2,3),(-1,2,3)])
     mom = np.array([(2,3,4),(0,-3,-2)])
-    B = dipole_field(mom, poso, True)*np.pi
+    B = dipole_field(mom, poso, field='B')*np.pi
     Btest = np.array([
         (0.01090862,0.02658977,0.04227091),
         (0.0122722,-0.01022683,-0.02727156),
@@ -150,7 +150,7 @@ def test_field_loop():
     assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest*10/4/np.pi
-    H = current_loop_field(current, dim, pos_test, False)
+    H = current_loop_field(current, dim, pos_test, field='H')
     assert_allclose(H, Htest, rtol=1e-6)
 
 
@@ -193,18 +193,18 @@ def test_field_line():
     pe1 = np.array([(2,2,2)])
 
     # only normal
-    B1 = current_line_field(c1, ps1, pe1, po1, True)
+    B1 = current_line_field(c1, ps1, pe1, po1)
     x1 = np.array([[ 0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
     po1b = np.array([(1,1,1)])
-    B2 = current_line_field(c1, ps1, pe1, po1b, True)
+    B2 = current_line_field(c1, ps1, pe1, po1b)
     x2 = np.zeros((1,3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
-    B3 = current_line_field(c1, ps1, ps1, po1, True)
+    B3 = current_line_field(c1, ps1, ps1, po1)
     x3 = np.zeros((1,3))
     assert_allclose(x3, B3, rtol=1e-6)
 
@@ -213,13 +213,13 @@ def test_field_line():
     ps2 = np.array([(0,0,0)]*2)
     pe2 = np.array([(0,0,0),(2,2,2)])
     po2 = np.array([(1,2,3),(1,1,1)])
-    B4 = current_line_field(c2, ps2, pe2, po2, True)
+    B4 = current_line_field(c2, ps2, pe2, po2)
     x4 = np.zeros((2,3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
     po2b = np.array([(1,2,3),(1,2,3)])
-    B5 = current_line_field(c2, ps2, pe2, po2b, True)
+    B5 = current_line_field(c2, ps2, pe2, po2b)
     x5 = np.array([[0,0,0],[ 0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 

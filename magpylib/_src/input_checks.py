@@ -13,10 +13,10 @@ def check_field_input(inp, origin):
     """
     check field input
     """
-    if isinstance(inp, (bool, str)):
-        if inp in ['B', True]:
+    if isinstance(inp, str):
+        if inp == 'B':
             return True
-        if inp in ['H', False]:
+        if inp == 'H':
             return False
     msg = f'{origin} input can only be "field=B" or "field=H".'
     raise MagpylibBadUserInput(msg)
