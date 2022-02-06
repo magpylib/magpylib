@@ -5,7 +5,7 @@
 
 trigger:
 - master
-- development 
+- development
 - magpylib3_development
 - feature-*
 
@@ -19,9 +19,8 @@ strategy:
       python.version: '3.8'
     Python39:
       python.version: '3.9'
-    #Python310:
-    #  python.version: '3.10'
-# Add Python 3.10 when it's stable (Currently 3.10.0a6, alpha, as of 08/03/2021)
+    Python310:
+      python.version: '3.10'
 steps:
 - task: UsePythonVersion@0
   inputs:
