@@ -138,205 +138,205 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
     return B
 
 
-def getB_dict(**kwargs):
-    """
-    B-Field computation in units of [mT] from a dictionary of input vectors of
-    length N.
+# def getB_dict(**kwargs):
+#     """
+#     B-Field computation in units of [mT] from a dictionary of input vectors of
+#     length N.
 
-    This function avoids the object-oriented Magpylib interface and gives direct
-    access to the field implementations. It is the fastest way to compute fields
-    with Magpylib.
+#     This function avoids the object-oriented Magpylib interface and gives direct
+#     access to the field implementations. It is the fastest way to compute fields
+#     with Magpylib.
 
-    "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
-    fit with other inputs.
+#     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
+#     fit with other inputs.
 
-    Required inputs depend on chosen source_type!
+#     Required inputs depend on chosen source_type!
 
-    Parameters
-    ----------
-    source_type: string
-        Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old', 'Sphere',
-        'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
+#     Parameters
+#     ----------
+#     source_type: string
+#         Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old', 'Sphere',
+#         'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
-    position: array_like, shape (3,) or (N,3), default=(0,0,0)
-        Source positions in units of [mm].
+#     position: array_like, shape (3,) or (N,3), default=(0,0,0)
+#         Source positions in units of [mm].
 
-    orientation: scipy Rotation object, default=unit rotation
-        Source rotations relative to the initial state (see object docstrings).
+#     orientation: scipy Rotation object, default=unit rotation
+#         Source rotations relative to the initial state (see object docstrings).
 
-    observer: array_like, shape (3,) or (N,3)
-        Observer positions in units of [mm].
+#     observer: array_like, shape (3,) or (N,3)
+#         Observer positions in units of [mm].
 
-    squeeze: bool, default=True
-        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
+#     squeeze: bool, default=True
+#         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
-    magnetization: array_like, shape (3,) or (N,3)
-        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
-        remanence field of homogeneous magnet magnetization in units of [mT].
+#     magnetization: array_like, shape (3,) or (N,3)
+#         Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+#         remanence field of homogeneous magnet magnetization in units of [mT].
 
-    moment:  array_like, shape (3,) or (N,3)
-        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
-        homogeneous magnets the relation is moment = magnetization*volume.
+#     moment:  array_like, shape (3,) or (N,3)
+#         Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+#         homogeneous magnets the relation is moment = magnetization*volume.
 
-    current: array_like, shape (N,)
-        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
+#     current: array_like, shape (N,)
+#         Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
-    dimension: array_like
-        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
-        input in units of [mm]. Dimension format of sources similar as in object oriented
-        interface.
+#     dimension: array_like
+#         Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+#         input in units of [mm]. Dimension format of sources similar as in object oriented
+#         interface.
 
-    diameter: array_like, shape (N)
-        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
+#     diameter: array_like, shape (N)
+#         Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
 
-    segment_start: array_like, shape (N,3)
-        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
+#     segment_start: array_like, shape (N,3)
+#         Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
 
-    segment_end: array_like, shape (N,3)
-        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
+#     segment_end: array_like, shape (N,3)
+#         Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
-    Returns
-    -------
-    B-field: ndarray, shape (N,3)
-        B-field generated by sources at observer positions in units of [mT].
+#     Returns
+#     -------
+#     B-field: ndarray, shape (N,3)
+#         B-field generated by sources at observer positions in units of [mT].
 
-    Examples
-    --------
+#     Examples
+#     --------
 
-    Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
+#     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
-    >>> import magpylib as magpy
-    >>> B = magpy.getB_dict(
-    >>>     source_type='Dipole',
-    >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
-    >>>     moment=(100,100,100),
-    >>>     observer=[(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(B)
-    [[-0.71176254  0.56941003  1.85058261]
-     [-0.71176254  0.56941003  1.85058261]
-     [-0.71176254  0.56941003  1.85058261]]
+#     >>> import magpylib as magpy
+#     >>> B = magpy.getB_dict(
+#     >>>     source_type='Dipole',
+#     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
+#     >>>     moment=(100,100,100),
+#     >>>     observer=[(1,1,1), (2,2,2), (3,3,3)])
+#     >>> print(B)
+#     [[-0.71176254  0.56941003  1.85058261]
+#      [-0.71176254  0.56941003  1.85058261]
+#      [-0.71176254  0.56941003  1.85058261]]
 
-    Six-fold evaluation of a Cuboid magnet field with increasing size and magnetization
-    of the magnet. Position and orientation are by default (0,0,0) and unit-orientation,
-    respectively. The observer position is (1,2,3) for each evaluation.
+#     Six-fold evaluation of a Cuboid magnet field with increasing size and magnetization
+#     of the magnet. Position and orientation are by default (0,0,0) and unit-orientation,
+#     respectively. The observer position is (1,2,3) for each evaluation.
 
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> B = magpy.getB_dict(
-    >>>     source_type='Cuboid',
-    >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
-    >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
-    >>>     observer=(1,2,3))
-    >>> print(B)
-    [[ 0.48818967  0.97689261  0.70605984]
-     [ 1.01203491  2.02636222  1.46575704]
-     [ 1.87397714  3.756164    2.72063422]
-     [ 3.19414311  6.41330652  4.65485356]
-     [ 5.10909461 10.2855981   7.4881383 ]
-     [ 7.76954697 15.70382556 11.48192812]]
-
-
-    """
-    return getBH_dict_level2(bh=True, **kwargs)
+#     >>> import numpy as np
+#     >>> import magpylib as magpy
+#     >>> B = magpy.getB_dict(
+#     >>>     source_type='Cuboid',
+#     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
+#     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
+#     >>>     observer=(1,2,3))
+#     >>> print(B)
+#     [[ 0.48818967  0.97689261  0.70605984]
+#      [ 1.01203491  2.02636222  1.46575704]
+#      [ 1.87397714  3.756164    2.72063422]
+#      [ 3.19414311  6.41330652  4.65485356]
+#      [ 5.10909461 10.2855981   7.4881383 ]
+#      [ 7.76954697 15.70382556 11.48192812]]
 
 
-# ON INTERFACE
-def getH_dict(**kwargs):
-    """
-    H-Field computation in units of [kA/m] from a dictionary of input vectors of
-    length N.
+#     """
+#     return getBH_dict_level2(field='B', **kwargs)
 
-    This function avoids the object-oriented Magpylib interface and gives direct
-    access to the field implementations. It is the fastest way to compute fields
-    with Magpylib.
 
-    "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
-    fit with other inputs.
+# # ON INTERFACE
+# def getH_dict(**kwargs):
+#     """
+#     H-Field computation in units of [kA/m] from a dictionary of input vectors of
+#     length N.
 
-    Required inputs depend on chosen source_type!
+#     This function avoids the object-oriented Magpylib interface and gives direct
+#     access to the field implementations. It is the fastest way to compute fields
+#     with Magpylib.
 
-    Parameters
-    ----------
-    source_type: string
-        Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old', 'Sphere',
-        'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
+#     "Static" inputs of shape (x,) will automatically be tiled to shape (N,x) to
+#     fit with other inputs.
 
-    position: array_like, shape (3,) or (N,3), default=(0,0,0)
-        Source positions in units of [mm].
+#     Required inputs depend on chosen source_type!
 
-    orientation: scipy Rotation object, default=unit rotation
-        Source rotations relative to the initial state (see object docstrings).
+#     Parameters
+#     ----------
+#     source_type: string
+#         Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old', 'Sphere',
+#         'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
-    observer: array_like, shape (3,) or (N,3)
-        Observer positions in units of [mm].
+#     position: array_like, shape (3,) or (N,3), default=(0,0,0)
+#         Source positions in units of [mm].
 
-    squeeze: bool, default=True
-        If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
+#     orientation: scipy Rotation object, default=unit rotation
+#         Source rotations relative to the initial state (see object docstrings).
 
-    magnetization: array_like, shape (3,) or (N,3)
-        Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
-        remanence field of homogeneous magnet magnetization in units of [mT].
+#     observer: array_like, shape (3,) or (N,3)
+#         Observer positions in units of [mm].
 
-    moment:  array_like, shape (3,) or (N,3)
-        Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
-        homogeneous magnets the relation is moment = magnetization*volume.
+#     squeeze: bool, default=True
+#         If True, the output is squeezed, i.e. all axes of length 1 in the output are eliminated.
 
-    current: array_like, shape (N,)
-        Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
+#     magnetization: array_like, shape (3,) or (N,3)
+#         Only `source_type in ('Cuboid', 'Cylinder', 'Sphere')`! Magnetization vector (mu0*M) or
+#         remanence field of homogeneous magnet magnetization in units of [mT].
 
-    dimension: array_like
-        Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
-        input in units of [mm]. Dimension format of sources similar as in object oriented
-        interface.
+#     moment:  array_like, shape (3,) or (N,3)
+#         Only `source_type = 'Moment'`! Magnetic dipole moment in units of [mT*mm^3]. For
+#         homogeneous magnets the relation is moment = magnetization*volume.
 
-    diameter: array_like, shape (N)
-        Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
+#     current: array_like, shape (N,)
+#         Only `source_type in ('Line', 'Loop')`! Current flowing in loop in units of [A].
 
-    segment_start: array_like, shape (N,3)
-        Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
+#     dimension: array_like
+#         Only `source_type in ('Cuboid', 'Cylinder', 'CylinderSegment')`! Magnet dimension
+#         input in units of [mm]. Dimension format of sources similar as in object oriented
+#         interface.
 
-    segment_end: array_like, shape (N,3)
-        Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
+#     diameter: array_like, shape (N)
+#         Only `source_type in (Sphere, Loop)`! Diameter of source in units of [mm].
 
-    Returns
-    -------
-    H-field: ndarray, shape (N,3)
-        H-field generated by sources at observer positions in units of [kA/m].
+#     segment_start: array_like, shape (N,3)
+#         Only `source_type = 'Line'`! Start positions of line current segments in units of [mm].
 
-    Examples
-    --------
+#     segment_end: array_like, shape (N,3)
+#         Only `source_type = 'Line'`! End positions of line current segments in units of [mm].
 
-    Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
+#     Returns
+#     -------
+#     H-field: ndarray, shape (N,3)
+#         H-field generated by sources at observer positions in units of [kA/m].
 
-    >>> import magpylib as magpy
-    >>> H = magpy.getH_dict(
-    >>>     source_type='Dipole',
-    >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
-    >>>     moment=(100,100,100),
-    >>>     observer=[(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[-0.56640264  0.45312211  1.47264685]
-     [-0.56640264  0.45312211  1.47264685]
-     [-0.56640264  0.45312211  1.47264685]]
+#     Examples
+#     --------
 
-    Six-fold evaluation of a Cuboid magnet field with increasing size and magnetization
-    of the magnet. Position and orientation are (0,0,0) and unit-orientation, respectively,
-    by default. The observer position is (1,2,3) for each evaluation.
+#     Three-fold evaluation of the dipole field. For each computation the moment is (100,100,100).
 
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> H = magpy.getH_dict(
-    >>>     source_type='Cuboid',
-    >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
-    >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
-    >>>     observer=(1,2,3))
-    >>> print(H)
-    [[ 0.388489    0.77738644  0.56186457]
-     [ 0.80535179  1.61252782  1.16641239]
-     [ 1.49126363  2.98906034  2.16501192]
-     [ 2.54181833  5.10354717  3.70421476]
-     [ 4.06568831  8.1850189   5.95887113]
-     [ 6.18280903 12.49670731  9.13702808]]
+#     >>> import magpylib as magpy
+#     >>> H = magpy.getH_dict(
+#     >>>     source_type='Dipole',
+#     >>>     position=[(1,2,3), (2,3,4), (3,4,5)],
+#     >>>     moment=(100,100,100),
+#     >>>     observer=[(1,1,1), (2,2,2), (3,3,3)])
+#     >>> print(H)
+#     [[-0.56640264  0.45312211  1.47264685]
+#      [-0.56640264  0.45312211  1.47264685]
+#      [-0.56640264  0.45312211  1.47264685]]
 
-    """
-    return getBH_dict_level2(bh=False, **kwargs)
+#     Six-fold evaluation of a Cuboid magnet field with increasing size and magnetization
+#     of the magnet. Position and orientation are (0,0,0) and unit-orientation, respectively,
+#     by default. The observer position is (1,2,3) for each evaluation.
+
+#     >>> import numpy as np
+#     >>> import magpylib as magpy
+#     >>> H = magpy.getH_dict(
+#     >>>     source_type='Cuboid',
+#     >>>     magnetization = [(0,0,m) for m in np.linspace(500,1000,6)],
+#     >>>     dimension = [(a,a,a) for a in np.linspace(1,2,6)],
+#     >>>     observer=(1,2,3))
+#     >>> print(H)
+#     [[ 0.388489    0.77738644  0.56186457]
+#      [ 0.80535179  1.61252782  1.16641239]
+#      [ 1.49126363  2.98906034  2.16501192]
+#      [ 2.54181833  5.10354717  3.70421476]
+#      [ 4.06568831  8.1850189   5.95887113]
+#      [ 6.18280903 12.49670731  9.13702808]]
+
+#     """
+#     return getBH_dict_level2(field='H', **kwargs)

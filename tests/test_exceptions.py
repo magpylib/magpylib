@@ -9,24 +9,24 @@ from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInpu
     MagpylibBadInputShape)
 from magpylib._src.utility import format_obj_input, format_src_inputs, format_obs_inputs
 from magpylib._src.utility import test_path_format as tpf
-from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict
 
 
 def getBHv_unknown_source_type():
     """ unknown source type """
-    getB_dict(
+    getBH_dict_level2(
         source_type='badName',
         magnetization=(1,0,0),
         dimension=(0,2,1,0,360),
         position=(0,0,-.5),
-        observer=(1.5,0,-.1))
+        observer=(1.5,0,-.1),
+        field='B')
 
 def getBH_level1_internal_error():
     """ bad source_type input should not happen
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(bh=True,source_type='woot', magnetization=x, dimension=x, observer=x,
+    getBH_level1(field='B',source_type='woot', magnetization=x, dimension=x, observer=x,
         position=x, orientation=rot)
 
 
@@ -35,7 +35,7 @@ def getBH_level2_bad_input1():
     """
     src = magpy.magnet.Cuboid((1,1,2),(1,1,1))
     sens = magpy.Sensor()
-    getBH_level2(True, [src,sens], (0,0,0), False, True)
+    getBH_level2([src,sens], (0,0,0), False, True, field='B')
 
 
 def getBH_level2_bad_input2():

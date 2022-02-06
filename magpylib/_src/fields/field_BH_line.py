@@ -8,10 +8,10 @@ from magpylib._src.input_checks import check_field_input
 
 
 def field_BH_line_from_vert(
-    bh: bool,
     current: np.ndarray,
     vertex_sets: list,  # list of mix3 ndarrays
-    pos_obs: np.ndarray
+    pos_obs: np.ndarray,
+    field: str,
     ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
@@ -48,7 +48,7 @@ def field_BH_line_from_vert(
     pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = current_line_field(curr_tile, pos_start, pos_end, pos_obs, bh)
+    field = current_line_field(curr_tile, pos_start, pos_end, pos_obs, field=field)
     field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set

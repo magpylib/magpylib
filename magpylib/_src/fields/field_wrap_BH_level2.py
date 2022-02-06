@@ -5,7 +5,7 @@ from magpylib._src.utility import (all_same, check_static_sensor_orient,
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib._src.input_checks import check_excitations, check_dimensions
+from magpylib._src.input_checks import check_excitations, check_dimensions, check_field_input
 
 
 def tile_mag(group: list, n_pp: int):
@@ -135,7 +135,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     return kwargs
 
 
-def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
+def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     """...
 
     Parameters
@@ -173,18 +173,22 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
         return getBH_dict_level2(
-            bh = bh,
             source_type=sources,
             observer=observers,
             sumup=sumup,
             squeeze=squeeze,
             **kwargs
         )
-    if kwargs:
+
+    # bad user inputs mixing getBH_dict kwargs with object oriented interface
+    kwargs_check = kwargs.copy()
+    kwargs_check.pop('field',)
+    if kwargs_check:
         raise MagpylibBadUserInput(
-            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source is "
+            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source is "
             "defined by a string (e.g. sources='Cylinder')"
         )
+
     # format sources input:
     #   input: allow only bare src objects or 1D lists/tuple of src and col
     #   out: sources = ordered list of sources
@@ -265,7 +269,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     groups = {}
     for ind,src in enumerate(src_list):
         if src._object_type=='CustomSource':
-            group_key = src.field_B_lambda if bh else src.field_H_lambda
+            group_key = src.field_B_lambda if kwargs['field']=='B' else src.field_H_lambda
         else:
             group_key = src._object_type
         if group_key not in groups:
@@ -279,7 +283,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         lg = len(group['sources'])
         gr = group['sources']
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(bh=bh, **src_dict)       # compute field
+        B_group = getBH_level1(**kwargs, **src_dict)       # compute field
         B_group = B_group.reshape((lg,m,n_pix,3))       # reshape (2% slower for large arrays)
         for i in range(lg):                             # put into dedicated positions in B
             B[group['order'][i]] = B_group[i]

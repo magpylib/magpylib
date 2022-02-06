@@ -250,7 +250,7 @@ def test_field_line_from_vert():
     vert3 = np.array([(1,2,3),(-2,-3,3),(3,2,1),(3,3,3)])
 
     pos_tiled = np.tile(p, (3,1))
-    B_vert = field_BH_line_from_vert(True, curr, [vert1,vert2,vert3], pos_tiled)
+    B_vert = field_BH_line_from_vert(curr, [vert1,vert2,vert3], pos_tiled, field='B')
 
     B = []
     for i,vert in enumerate([vert1,vert2,vert3]):
