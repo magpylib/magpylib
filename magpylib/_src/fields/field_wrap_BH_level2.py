@@ -5,7 +5,7 @@ from magpylib._src.utility import (all_same, check_static_sensor_orient,
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib._src.input_checks import check_excitations, check_dimensions, check_field_input
+from magpylib._src.input_checks import check_excitations, check_dimensions
 
 
 def tile_mag(group: list, n_pp: int):
@@ -143,8 +143,8 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     - bh (bool): True=getB, False=getH
     - sources (src_obj or list): source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
-    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K sensors with
-        similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
+    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K
+        sensors with similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
     - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
@@ -185,8 +185,8 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     kwargs_check.pop('field',)
     if kwargs_check:
         raise MagpylibBadUserInput(
-            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source is "
-            "defined by a string (e.g. sources='Cylinder')"
+            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
+            "is defined by a string (e.g. sources='Cylinder')"
         )
 
     # format sources input:
@@ -315,8 +315,8 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
                 for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
                     Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
                     Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
-                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotation
-                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3)) # ov
+                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotat
+                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3))
 
     # rearrange sensor-pixel shape
     sens_px_shape = (k,) + pix_shape

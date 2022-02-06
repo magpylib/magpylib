@@ -155,7 +155,8 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
 #     Parameters
 #     ----------
 #     source_type: string
-#         Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old', 'Sphere',
+#         Source type for computation. Must be either 'Cuboid', 'Cylinder', 'Cylinder_old',
+#           'Sphere',
 #         'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
 #     position: array_like, shape (3,) or (N,3), default=(0,0,0)
@@ -258,7 +259,8 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
 #     Parameters
 #     ----------
 #     source_type: string
-#         Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old', 'Sphere',
+#         Source type for computation. Must be either 'Cuboid', 'Cylinder','Cylinder_old',
+#           'Sphere',
 #         'Dipole', 'Loop' or 'Line'. Expected input parameters depend on source_type.
 
 #     position: array_like, shape (3,) or (N,3), default=(0,0,0)
