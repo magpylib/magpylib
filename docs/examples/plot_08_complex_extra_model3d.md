@@ -13,7 +13,7 @@ kernelspec:
 
 # Complex extra 3d-model
 
-With the `model3d.extra` style property, it is possible to attach an extra 3d-model representation for any `magpylib` object, as long as it is supported by the chosen plotting backend. The `plotly` backend supports `mesh3d` objects and with the `numpy-stl` package, it becomes possible to import a STL CAD file and transform it to a `mesh3d` object with a little helper function.
+With the `model3d.data` style property, it is possible to attach an extra 3d-model representation for any `magpylib` object, as long as it is supported by the chosen plotting backend. The `plotly` backend supports `mesh3d` objects and with the `numpy-stl` package, it becomes possible to import a STL CAD file and transform it to a `mesh3d` object with a little helper function.
 
 ```{note}
 In order to use this functionality the `numpy-stl` package needs to be installed.
@@ -45,7 +45,7 @@ def get_stl_color(x, return_rgb_string=True):
 # define stl to mesh3d function
 def stl2mesh3d(stl_file, recenter=False, backend="matplotlib"):
     """
-    an array of faces/triangles is read by numpy-stl from a stl file;  
+    an array of faces/triangles is read by numpy-stl from a stl file;
     this function extracts the unique vertices and the triangulation values and
     returns depending on the backend the corresponding dictionary for further
     magpylib use as extra 3d-model.
@@ -109,7 +109,7 @@ with tempfile.TemporaryDirectory() as tmpdirname:
     model3d_plotly = stl2mesh3d(fn, backend="plotly")
 # create sensor, add extra 3d-model, create path
 sensor = magpy.Sensor(position=(-15, 0, -6))
-sensor.style = dict(model3d_extra=[model3d_matplotlib, model3d_plotly])
+sensor.style = dict(model3d_data=[model3d_matplotlib, model3d_plotly])
 sensor.rotate_from_angax(np.linspace(0, 150, 33), "z", anchor=0, start=0)
 sensor.move(np.linspace((0, 0, 0), (0, 0, 15), 33), start=0)
 # create source, and Collection
@@ -117,10 +117,10 @@ cuboid = magpy.magnet.Cylinder(magnetization=(0, 0, 1000), dimension=(20, 30))
 collection = sensor + cuboid
 
 # display animated system with matplotlib backend
-magpy.show(*collection, style_path_show=8, style_magnetization_size=0.4, backend="matplotlib")
+magpy.show(*collection, style_path_frames=8, style_magnetization_size=0.4, backend="matplotlib")
 
 # display animated system with plotly backend
-magpy.show(*collection, style_path_show=8, backend="plotly")
+magpy.show(*collection, style_path_frames=8, backend="plotly")
 ```
 
 

@@ -20,6 +20,7 @@ from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.display.display_utility import MagpyMarkers
 
+
 def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
     """draw direction of magnetization of faced magnets
 
@@ -289,43 +290,44 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
 
 
 def draw_model3d_extra(obj, style, show_path, ax, color):
-    """positions, orients and draws extra 3d model including path positions"""
-    extra_model3d_traces = (
-        style.model3d.extra if style.model3d.extra is not None else []
-    )
+    """positions, orients and draws extra 3d model including path positions
+    returns True if at least one the traces is now new default"""
+    extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
     extra_model3d_traces = [
         t for t in extra_model3d_traces if t.backend == "matplotlib"
     ]
     path_traces_extra = {}
+    points = []
     for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
         for extr in extra_model3d_traces:
+            obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
-                trace3d = place_and_orient_model3d(
-                    extr.trace,
+                trace3d, vertices = place_and_orient_model3d(
+                    obj_extra_trace,
                     orientation=orient,
                     position=pos,
                     coordsargs=extr.coordsargs,
+                    scale=extr.scale,
+                    return_vertices=True,
                 )
-                ttype = extr.trace["type"]
+                ttype = obj_extra_trace["type"]
                 if ttype not in path_traces_extra:
                     path_traces_extra[ttype] = []
                 path_traces_extra[ttype].append(trace3d)
+                points.append(vertices.T)
 
     for traces_extra in path_traces_extra.values():
         for tr in traces_extra:
-            kwargs = {"color": color}
-            kwargs.update({k: v for k, v in tr.items() if k not in ("type", "args")})
+            kwargs = {k: v for k, v in tr.items() if k not in ("type", "args")}
+            if "color" not in kwargs or kwargs["color"] is None:
+                kwargs.update(color=color)
             args = tr.get("args", [])
             getattr(ax, tr["type"])(*args, **kwargs)
+    return points
 
 
 def display_matplotlib(
-    *obj_list_semi_flat,
-    axis=None,
-    markers=None,
-    zoom=0,
-    color_sequence=None,
-    **kwargs,
+    *obj_list_semi_flat, axis=None, markers=None, zoom=0, color_sequence=None, **kwargs,
 ):
     """
     Display objects and paths graphically with the matplotlib backend.
@@ -357,8 +359,8 @@ def display_matplotlib(
 
     # draw faced objects and store vertices
     points = []
-    dipoles_color = []
-    sensors_color = []
+    dipoles = []
+    sensors = []
     faced_objects_color = []
 
     for semi_flat_obj, color in zip(obj_list_semi_flat, cycle(color_sequence)):
@@ -366,33 +368,42 @@ def display_matplotlib(
         if getattr(semi_flat_obj, "children", None) is not None:
             flat_objs.extend(semi_flat_obj.children)
             if getattr(semi_flat_obj, "position", None) is not None:
-                color = color if semi_flat_obj.style.color is None else semi_flat_obj.style.color
+                color = (
+                    color
+                    if semi_flat_obj.style.color is None
+                    else semi_flat_obj.style.color
+                )
 
         for obj in flat_objs:
             style = get_style(obj, Config, **kwargs)
-            path = style.path.show
-            color = style.color if style.color is not None else color
+            path_frames = style.path.frames
+            if path_frames is None:
+                path_frames = True
+            obj_color = style.color if style.color is not None else color
             lw = 0.25
             faces = None
-            if obj.style.model3d.extra:
-                draw_model3d_extra(obj, style, path, ax, color)
-            if obj.style.model3d.show:
+            if obj.style.model3d.data:
+                pts = draw_model3d_extra(
+                    obj, style, path_frames, ax, obj_color
+                )
+                points += pts
+            if obj.style.model3d.showdefault:
                 if obj._object_type == "Cuboid":
                     lw = 0.5
-                    faces = faces_cuboid(obj, path)
+                    faces = faces_cuboid(obj, path_frames)
                 elif obj._object_type == "Cylinder":
-                    faces = faces_cylinder(obj, path)
+                    faces = faces_cylinder(obj, path_frames)
                 elif obj._object_type == "CylinderSegment":
-                    faces = faces_cylinder_segment(obj, path)
+                    faces = faces_cylinder_segment(obj, path_frames)
                 elif obj._object_type == "Sphere":
-                    faces = faces_sphere(obj, path)
+                    faces = faces_sphere(obj, path_frames)
                 elif obj._object_type == "Line":
                     if style.arrow.show:
                         check_excitations([obj])
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     arrow_width = style.arrow.width
                     points += draw_line(
-                        [obj], path, color, arrow_size, arrow_width, ax
+                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Loop":
                     if style.arrow.show:
@@ -400,24 +411,26 @@ def display_matplotlib(
                     arrow_width = style.arrow.width
                     arrow_size = style.arrow.size if style.arrow.show else 0
                     points += draw_circular(
-                        [obj], path, color, arrow_size, arrow_width, ax
+                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                     )
                 elif obj._object_type == "Sensor":
-                    sensors_color += [color]
+                    sensors.append((obj, obj_color))
                     points += draw_pixel(
                         [obj],
                         ax,
-                        color,
+                        obj_color,
                         style.pixel.color,
                         style.pixel.size,
                         style.pixel.symbol,
-                        path,
+                        path_frames,
                     )
                 elif obj._object_type == "Dipole":
-                    dipoles_color += [color]
+                    dipoles.append((obj, obj_color))
                     points += [obj.position]
                 elif obj._object_type == "CustomSource":
-                    draw_markers(np.array([obj.position]), ax, color, symbol="*", size=10)
+                    draw_markers(
+                        np.array([obj.position]), ax, obj_color, symbol="*", size=10
+                    )
                     name = (
                         obj.style.name
                         if obj.style.name is not None
@@ -426,29 +439,28 @@ def display_matplotlib(
                     ax.text(*obj.position, name, horizontalalignment="center")
                     points += [obj.position]
                 if faces is not None:
-                    faced_objects_color += [color]
+                    faced_objects_color += [obj_color]
                     alpha = style.opacity
-                    pts = draw_faces(faces, color, lw, alpha, ax)
+                    pts = draw_faces(faces, obj_color, lw, alpha, ax)
                     points += [np.vstack(pts).reshape(-1, 3)]
                     if style.magnetization.show:
                         check_excitations([obj])
                         pts = draw_directs_faced(
-                            [obj], [color], ax, path, style.magnetization.size
+                            [obj], [obj_color], ax, path_frames, style.magnetization.size
                         )
                         points += pts
-            if path:
+            if style.path.show:
                 marker, line = style.path.marker, style.path.line
-                if style.path.show:
-                    points += draw_path(
-                        obj,
-                        color,
-                        marker.symbol,
-                        marker.size,
-                        marker.color,
-                        line.style,
-                        line.width,
-                        ax,
-                    )
+                points += draw_path(
+                    obj,
+                    obj_color,
+                    marker.symbol,
+                    marker.size,
+                    marker.color,
+                    line.style,
+                    line.width,
+                    ax,
+                )
 
     # markers -------------------------------------------------------
     if markers is not None and markers:
@@ -474,19 +486,16 @@ def display_matplotlib(
     ranges = np.array([c - m * (1 + zoom), c + m * (1 + zoom)]).T
 
     # draw all system sized based quantities -------------------------
-    # sensors
-    sensors = [obj for obj in obj_list_semi_flat if obj._object_type == "Sensor"]
-
-    # dipoles
-    dipoles = [obj for obj in obj_list_semi_flat if obj._object_type == "Dipole"]
 
     # not optimal for loop if many sensors/dipoles
-    for sensor in sensors:
+    for sens in sensors:
+        sensor, color = sens
         style = get_style(sensor, Config, **kwargs)
-        draw_sensors([sensor], ax, sys_size, path, style.size)
-    for dipole, color in zip(dipoles, dipoles_color):
+        draw_sensors([sensor], ax, sys_size, path_frames, style.size)
+    for dip in dipoles:
+        dipole, color = dip
         style = get_style(dipole, Config, **kwargs)
-        draw_dipoles([dipole], ax, sys_size, path, style.size, color, style.pivot)
+        draw_dipoles([dipole], ax, sys_size, path_frames, style.size, color, style.pivot)
 
     # plot styling --------------------------------------------------
     ax.set(

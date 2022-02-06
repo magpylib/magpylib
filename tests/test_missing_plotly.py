@@ -1,5 +1,4 @@
 import sys
-from importlib import reload
 from unittest import mock
 import pytest
 import magpylib as magpy

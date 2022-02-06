@@ -23,14 +23,15 @@ bad_inputs = {
     "display_style_base_path_marker_size": (-1,),  # float>=0
     "display_style_base_path_marker_symbol": ("wrongsymbol",),
     "display_style_base_path_marker_color": ("wrongcolor",),  # color
-    "display_style_base_path_show": ("notbool",),  # bool
+    "display_style_base_path_show": ("notbool", 1),  # bool
+    "display_style_base_path_frames": (True, False, ['1'], '1'),  # int or iterable
     "display_style_base_path_numbering": ("notbool",),  # bool
     "display_style_base_description_show": ("notbool",),  # bool
     "display_style_base_description_text": (
         False,
     ),  # DOES NOT RAISE, transforms everything into str
     "display_style_base_opacity": (-1,),  # 0<=float<=1
-    "display_style_base_model3d_show": ("notbool",),
+    "display_style_base_model3d_showdefault": ("notbool",),
     "display_style_base_color": ("wrongcolor",),  # color
     "display_style_magnet_magnetization_show": ("notbool",),
     "display_style_magnet_magnetization_size": (-1,),  # float>=0
@@ -104,12 +105,13 @@ good_inputs = {
     "display_style_base_path_marker_size": (0, 1),  # float>=0
     "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
-    "display_style_base_path_show": (True, False, (1,2), 1),  # bool, int or iterable
+    "display_style_base_path_show": (True, False),  # bool
+    "display_style_base_path_frames": (-1, (1,3)),  # int or iterable
     "display_style_base_path_numbering": (True, False),  # bool
     "display_style_base_description_show": (True, False),  # bool
     "display_style_base_description_text": ("a string",),  # string
     "display_style_base_opacity": (0, 0.5, 1),  # 0<=float<=1
-    "display_style_base_model3d_show": (True, False),
+    "display_style_base_model3d_showdefault": (True, False),
     "display_style_base_color": ("blue", "#2E91E5"),  # color
     "display_style_magnet_magnetization_show": (True, False),
     "display_style_magnet_magnetization_size": (0, 1),  # float>=0
