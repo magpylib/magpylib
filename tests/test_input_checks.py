@@ -275,34 +275,34 @@ def bad_level0_field_input_0():
     mag = np.array([(100,200,300)])
     dim1 = np.array((2,))
     obs = np.array([(1,2,3)])
-    magpy.lib.magnet_sphere_field(mag, dim1, obs, field='x')
+    magpy.core.magnet_sphere_field(mag, dim1, obs, field='x')
 
 def bad_level0_field_input_1():
     """cylinder"""
     mag = np.array([(100,200,300)])
     dim2 = np.array([(2,2)])
     obs = np.array([(1,2,3)])
-    magpy.lib.magnet_cylinder_field(mag, dim2, obs, field='y')
+    magpy.core.magnet_cylinder_field(mag, dim2, obs, field='y')
 
 def bad_level0_field_input_2():
     """cylinder segment"""
     mag = np.array([(100,200,300)])
     dim5 = np.array([(0,1,2,0,360)])
     obs = np.array([(1,2,3)])
-    magpy.lib.magnet_cylinder_segment_field(mag, dim5, obs, field=123)
+    magpy.core.magnet_cylinder_segment_field(mag, dim5, obs, field=123)
 
 def bad_level0_field_input_3():
     """dipole"""
     mag = np.array([(100,200,300)])
     obs = np.array([(1,2,3)])
-    magpy.lib.dipole_field(mag, obs, field=mag)
+    magpy.core.dipole_field(mag, obs, field=mag)
 
 def bad_level0_field_input_4():
     """loop"""
     cur = np.array((20,))
     dim1 = np.array((2,))
     obs = np.array([(1,2,3)])
-    magpy.lib.current_loop_field(cur, dim1, obs, field=None)
+    magpy.core.current_loop_field(cur, dim1, obs, field=None)
 
 def bad_level0_field_input_5():
     """line"""
@@ -310,14 +310,14 @@ def bad_level0_field_input_5():
     start = np.array([(1,1,1)])
     end = np.array([(3,3,3)])
     obs = np.array([(1,2,3)])
-    magpy.lib.current_line_field(cur, start, end, obs, field=(1,2,3))
+    magpy.core.current_line_field(cur, start, end, obs, field=(1,2,3))
 
 def bad_level0_field_input_6():
     """cuboid"""
     mag = np.array([(100,200,300)])
     dim3 = np.array([(2,2,2)])
     obs = np.array([(1,2,3)])
-    magpy.lib.magnet_cuboid_field(mag, dim3, obs, field='F')
+    magpy.core.magnet_cuboid_field(mag, dim3, obs, field='F')
 
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing """
