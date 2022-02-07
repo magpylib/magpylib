@@ -3,35 +3,38 @@
 
 ---
 <div>
-<p align="center"> Builds: 
+<p align="center"> Builds:
 <a href="https://anaconda.org/conda-forge/magpylib">
-<img align='center' src="https://anaconda.org/conda-forge/magpylib/badges/platforms.svg"> 
+<img align='center' src="https://anaconda.org/conda-forge/magpylib/badges/platforms.svg">
   </a>
 <a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
 <a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
 
 </p>
 
-<p align="center"> Documentation: 
+<p align="center"> Documentation:
 <a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
 <a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
 </p>
 
-<p align="center"> Test Coverage: 
+<p align="center"> Test Coverage:
 <a href="https://codecov.io/gh/magpylib/magpylib">
   <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
-  
 </a>
 <a href="https://lgtm.com/projects/g/magpylib/magpylib/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/magpylib/magpylib.svg?logo=lgtm&logoWidth=18"/></a>
 </p>
 
-<p align="center"> Downloads: 
+<p align="center"> Downloads:
 <a href="https://pypi.org/project/magpylib/">
 <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
 <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18"></a>
-<a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/downloads.svg" alt="Conda Cloud" height="18"></a> 
- <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a> 
+<a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/downloads.svg" alt="Conda Cloud" height="18"></a>
+ <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a>
+</p>
 
+<p align="center"> Try it online:
+<a href="https://mybinder.org/v2/gh/magpylib/magpylib/development?filepath=docs%2Fexamples">
+<img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18"></a>
 </p>
 
 </div>
@@ -49,8 +52,8 @@
 
 ---
 
-### Dependencies: 
-_Python3.7+_, _Numpy_, _Matplotlib_, _Scipy_
+### Dependencies:
+_Python3.7+_, _Numpy_, _Matplotlib_, _Scipy_, _Plotly_ (optional)
 
 ---
 
