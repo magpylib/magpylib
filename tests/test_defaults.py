@@ -9,8 +9,6 @@ from magpylib._src.defaults.defaults_utility import (
 
 bad_inputs = {
     "checkinputs": (-1,),  # bool
-    "edgesize": (0,),  # float>0
-    "itercylinder": (0.1,),  # int>0
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
     "display_animation_fps": (0,),  # int>0
@@ -90,8 +88,6 @@ def test_defaults_bad_inputs(key, value, expected_errortype):
 # over the values for each key
 good_inputs = {
     "checkinputs": (True, False),  # bool
-    "edgesize": (1e-9, 2),  # float>0
-    "itercylinder": (10,),  # int>0
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
     "display_animation_fps": (10,),  # int>0
@@ -204,7 +200,7 @@ def test_bad_default_classes():
 
 def test_resetting_defaults():
     """test setting and resetting the config"""
-    magpy.defaults.itercylinder = 15
-    assert magpy.defaults.itercylinder == 15, "setting config failed"
+    magpy.defaults.checkinputs = False
+    assert magpy.defaults.checkinputs == False, "setting config failed"
     magpy.defaults.reset()
-    assert magpy.defaults.itercylinder == 50, "resetting config failed"
+    assert magpy.defaults.checkinputs == True, "resetting config failed"

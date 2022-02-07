@@ -67,16 +67,6 @@ def wrong_obj_msg(*objs, allow="sources"):
     return msg
 
 
-def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
-    """
-    determine if arg1 and arg2 lie close to each other
-    input: ndarray, shape (n,) or numpy-interpretable scalar
-    output: ndarray, dtype=bool
-    """
-    EDGESIZE = Config.edgesize
-    return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
-
-
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
@@ -342,3 +332,27 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
         digits = 0
     new_number_str = f"{number / 10 ** digits:.{precision}g}"
     return f"{new_number_str}{char_between}{prefix}{unit}"
+
+
+def cart_to_cyl_coordinates(observer):
+    """
+    cartesian observer positions to cylindrical coordinates
+    observer: ndarray, shape (n,3)
+    """
+    x, y, z = observer.T
+    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
+    return r, phi, z
+
+
+def cyl_field_to_cart(phi, Br, Bphi=None):
+    """
+    transform Br,Bphi to Bx, By
+    """
+    if Bphi is not None:
+        Bx = Br*np.cos(phi) - Bphi*np.sin(phi)
+        By = Br*np.sin(phi) + Bphi*np.cos(phi)
+    else:
+        Bx = Br*np.cos(phi)
+        By = Br*np.sin(phi)
+
+    return Bx,By

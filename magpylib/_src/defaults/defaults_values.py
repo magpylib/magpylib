@@ -2,8 +2,6 @@
 
 DEFAULTS = {
     "checkinputs": True,
-    "edgesize": 1e-8,
-    "itercylinder": 50,
     "display": {
         "autosizefactor": 10,
         "animation": {"fps":20, "maxfps": 30, "maxframes": 200, "time": 5, "slider": True},

@@ -14,7 +14,7 @@ from magpylib._src.display.display_utility import (
     faces_cylinder,
     system_size,
     faces_sphere,
-    faces_cylinder_section,
+    faces_cylinder_segment,
 )
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
@@ -394,7 +394,7 @@ def display_matplotlib(
                 elif obj._object_type == "Cylinder":
                     faces = faces_cylinder(obj, path_frames)
                 elif obj._object_type == "CylinderSegment":
-                    faces = faces_cylinder_section(obj, path_frames)
+                    faces = faces_cylinder_segment(obj, path_frames)
                 elif obj._object_type == "Sphere":
                     faces = faces_sphere(obj, path_frames)
                 elif obj._object_type == "Line":

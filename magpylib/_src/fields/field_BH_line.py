@@ -4,14 +4,14 @@ Implementations of analytical expressions of line current segments
 
 import numpy as np
 from numpy.linalg import norm
-from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.input_checks import check_field_input
 
 
 def field_BH_line_from_vert(
-    bh: bool,
     current: np.ndarray,
     vertex_sets: list,  # list of mix3 ndarrays
-    pos_obs: np.ndarray
+    pos_obs: np.ndarray,
+    field: str,
     ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
@@ -48,7 +48,7 @@ def field_BH_line_from_vert(
     pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = field_BH_line(bh, curr_tile, pos_start, pos_end, pos_obs)
+    field = current_line_field(curr_tile, pos_start, pos_end, pos_obs, field=field)
     field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set
@@ -58,76 +58,108 @@ def field_BH_line_from_vert(
     return np.reshape(field_sum, (-1,3))
 
 
-def field_BH_line(
-    bh: bool,
+# ON INTERFACE
+def current_line_field(
     current: np.ndarray,
-    pos_start: np.ndarray,
-    pos_end: np.ndarray,
-    pos_obs: np.ndarray
+    start: np.ndarray,
+    end: np.ndarray,
+    observer: np.ndarray,
+    field='B'
     ) -> np.ndarray:
     """
-    ### Args:
-    - bh (boolean): True=B, False=H
-    - current (float): current on line in units of [A]
-    - pos_start (ndarray nx3) start position of line segments
-    - pos_end (ndarray nx3) end positions of line segments
-    - pos_obs (ndarray nx3): n observer positions in units of [mm]
+    Computes the magnetic field of line current segments in Cartesian coordinates.
 
-    ### Returns:
-    - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
+    The field set to (0,0,0) on line.
 
-    ### init_state:
-    Line current flowing in a straight line from pos_start to pos_end.
+    Parameters
+    ----------
+    current: ndarray, shape (n,)
+        Electrical current in units of [A].
 
-    ### Computation info:
+    start: ndarray, shape (n,3)
+        Line start positions (x,y,z) in Cartesian coordinates in units of [mm].
+
+    end: ndarray, shape (n,3)
+        Line end positions (x,y,z) in Cartesian coordinates in units of [mm].
+
+    observer: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
+    field: str, default='B'
+        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
+
+    Returns
+    -------
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+
+    Examples
+    --------
+    Compute the field of two segments. The 2nd observer lies on the segment
+    so that [0  0  0] is returned.
+
+    >>> import numpy as np
+    >>> import magpylib as magpy
+    >>> curr = np.array([1,2])
+    >>> start = np.array([(-1,0,0), (-1,0,0)])
+    >>> end   = np.array([( 1,0,0), ( 2,0,0)])
+    >>> obs   = np.array([( 0,0,1), ( 0,0,0)])
+    >>> B = magpy.lib.current_line_Bfield(curr, start, end, obs)
+    >>> print(B)
+    [[ 0.         -0.14142136  0.        ]
+     [ 0.          0.          0.        ]]
+
+    Notes
+    -----
     Field computation via law of Biot Savart. See also countless online ressources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
-
-    ### Numerical instabilities:
-        - singularity at r=0, B set to 0 within Config.edgesize
     """
     # pylint: disable=too-many-statements
 
-    # Check for zero-length segments
-    mask0 = np.all(pos_start==pos_end, axis=1)
-    if np.all(mask0):
-        n0 = len(pos_obs)
-        return np.zeros((n0,3))
+    bh = check_field_input(field, 'current_line_field()')
 
-    any_zero_segments = np.any(mask0)
+    # allocate for special case treatment
+    ntot = len(current)
+    field_all = np.zeros((ntot,3))
+
+    # Check for zero-length segments
+    mask0 = np.all(start==end, axis=1)
+    if np.all(mask0):
+        return field_all
 
     # continue only with non-zero segments
-    if any_zero_segments:
+    if np.any(mask0):
         not_mask0 = ~mask0     # avoid multiple computation of ~mask
-        p1 = pos_start[not_mask0]
-        p2 = pos_end[not_mask0]
-        po = pos_obs[not_mask0]
         current = current[not_mask0]
-    else:
-        p1 = pos_start        # just renaming
-        p2 = pos_end
-        po = pos_obs
+        start = start[not_mask0]
+        end = end[not_mask0]
+        observer = observer[not_mask0]
+
+    # rename
+    p1,p2,po = start, end, observer
+
+    # make dimensionless (avoid all large/small input problems) by introducing
+    # the segment length as characteristic length scale.
+    norm_12 = norm(p1-p2, axis=1)
+    p1 = (p1.T/norm_12).T
+    p2 = (p2.T/norm_12).T
+    po = (po.T/norm_12).T
 
     # p4 = projection of pos_obs onto line p1-p2
-    p1p2 = p1-p2
-    norm_12 = norm(p1p2, axis=1)
-    t = np.sum((po-p1)*p1p2, axis=1) / norm_12**2
-    p4 = p1 + (t*p1p2.T).T
+    t = np.sum((po-p1)*(p1-p2), axis=1)
+    p4 = p1 + (t*(p1-p2).T).T
 
     # distance of observer from line
     norm_o4 = norm(po - p4, axis=1)
 
-    # on-line cases (set B=0)
-    mask1 = norm_o4 < Config.edgesize
+    # separate on-line cases (-> B=0)
+    mask1 = norm_o4<1e-15 # account for numerical issues
     if np.all(mask1):
-        n0 = len(pos_obs)
-        return np.zeros((n0,3))
+        return field_all
 
-    any_on_line_cases = np.any(mask1)
-
-    # redefine to avoid tons of slices
-    if any_on_line_cases:
-        not_mask1 = ~mask1     # avoid multiple computation of ~mask
+    # continue only with general off-line cases
+    if np.any(mask1):
+        not_mask1 = ~mask1
         po = po[not_mask1]
         p1 = p1[not_mask1]
         p2 = p2[not_mask1]
@@ -142,7 +174,7 @@ def field_BH_line(
     eB = (cros.T/norm_cros).T
 
     # compute angles
-    norm_o1 = norm(po-p1, axis=1)
+    norm_o1 = norm(po-p1, axis=1)   # improve performance by computing all norms at once
     norm_o2 = norm(po-p2, axis=1)
     norm_41 = norm(p4-p1, axis=1)
     norm_42 = norm(p4-p2, axis=1)
@@ -152,33 +184,24 @@ def field_BH_line(
 
     # determine how p1,p2,p4 are sorted on the line (to get sinTH signs)
     # both points below
-    mask2 = ((norm_41>norm_12) * (norm_41>norm_42))
+    mask2 = ((norm_41>1) * (norm_41>norm_42))
     deltaSin[mask2] = abs(sinTh1[mask2]-sinTh2[mask2])
     # both points above
-    mask3 = ((norm_42>norm_12) * (norm_42>norm_41))
+    mask3 = ((norm_42>1) * (norm_42>norm_41))
     deltaSin[mask3] = abs(sinTh2[mask3]-sinTh1[mask3])
     # one above one below or one equals p4
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4]+sinTh2[mask4])
 
-    field = (deltaSin/norm_o4*eB.T* current/10).T # m->mm, T->mT
+    field = (deltaSin/norm_o4*eB.T / norm_12 * current / 10).T # m->mm, T->mT
 
-    if any_on_line_cases: # broadcast into np.zeros
-        n1 = len(mask1)
-        fields1 = np.zeros((n1,3))
-        fields1[not_mask1] = field
-        field = fields1
+    # broadcast general case results into allocated vector
+    mask0[~mask0] = mask1
+    field_all[~mask0] = field
 
-    if any_zero_segments: # broadcast into np.zeros
-        n0 = len(mask0)
-        fields0 = np.zeros((n0,3))
-        fields0[not_mask0] = field
-        field = fields0
-
-    # return B
+    # return B or H
     if bh:
-        return field
+        return field_all
 
-    # return H (mT -> kA/m)
-    H = field*10/4/np.pi
-    return H
+    # H: mT -> kA/m
+    return field_all*10/4/np.pi

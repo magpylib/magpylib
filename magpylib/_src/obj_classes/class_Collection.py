@@ -382,7 +382,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(True, sources, sensors, sumup=False, squeeze=squeeze)
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
 
     def getH(self, *children, squeeze=True):
         """
@@ -411,7 +411,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(False, sources, sensors, sumup=False, squeeze=squeeze)
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='H')
 
 
 class Collection(BaseGeo, BaseCollection):

@@ -5,45 +5,45 @@ import magpylib as magpy
 from magpylib.magnet import Cuboid
 from magpylib._src.obj_classes.class_Sensor import Sensor
 
-# """data generation for test_Cuboid()"""
 
-# N = 100
+# # # """data generation for test_Cuboid()"""
 
-# mags = (np.random.rand(N,3)-0.5)*1000
-# dims = (np.random.rand(N,3)-0.5)*5
-# posos = (np.random.rand(N,333,3)-0.5)*10 #readout at 333 positions
+# # N = 100
 
-# angs =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
-# axs =   (np.random.rand(N,18,3)-0.5)
-# anchs = (np.random.rand(N,18,3)-0.5)*5.5
-# movs =  (np.random.rand(N,18,3)-0.5)*0.5
+# # mags  = (np.random.rand(N,3)-0.5)*1000
+# # dims  =  np.random.rand(N,3)*5
+# # posos = (np.random.rand(N,333,3)-0.5)*10 #readout at 333 positions
 
-# B = []
-# for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-#     pm = Cuboid(mag,dim)
+# # angs  =  (np.random.rand(N,18)-0.5)*2*10 # each step rote by max 10 deg
+# # axs   =   (np.random.rand(N,18,3)-0.5)
+# # anchs = (np.random.rand(N,18,3)-0.5)*5.5
+# # movs  =  (np.random.rand(N,18,3)-0.5)*0.5
 
-#     # 18 subsequent operations
-#     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
-#         pm.move(mv).rotate_from_angax(a,aa,aaa)
+# # B = []
+# # for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
+# #     pm = magpy.magnet.Cuboid(mag,dim)
 
-#     B += [pm.getB(poso)]
-# B = np.array(B)
+# #     # 18 subsequent operations
+# #     for a,aa,aaa,mv in zip(ang,ax,anch,mov):
+# #         pm.move(mv).rotate_from_angax(a,aa,aaa)
 
-# inp = [mags,dims,posos,angs,axs,anchs,movs,B]
+# #     B += [pm.getB(poso)]
+# # B = np.array(B)
 
-# pickle.dump(inp,open(os.path.abspath('./../'testdata_Cuboid.p', 'wb'))
+# # inp = [mags,dims,posos,angs,axs,anchs,movs,B]
 
+# # pickle.dump(inp, open(os.path.abspath('testdata_Cuboid.p'), 'wb'))
 
 def test_Cuboid_basics():
-    """ test Cuboid fundamentals, test against magpylib2 fields
+    """ test Cuboid fundamentals
     """
-    # data generated below
+    # data generated in comment above
     data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Cuboid.p'), 'rb'))
     mags,dims,posos,angs,axs,anchs,movs,B = data
 
     btest = []
     for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-        pm = Cuboid(mag,dim)
+        pm = magpy.magnet.Cuboid(mag,np.abs(dim))
 
         # 18 subsequent operations
         for a,aa,aaa,mv in zip(ang,ax,anch,mov):
@@ -52,7 +52,7 @@ def test_Cuboid_basics():
         btest += [pm.getB(poso)]
     btest = np.array(btest)
 
-    assert np.allclose(B, btest), "test_Cuboid failed big time"
+    np.testing.assert_allclose(B, btest)
 
 
 def test_Cuboid_add():
@@ -87,3 +87,23 @@ def test_repr_cuboid():
     pm1.style.name = 'cuboid_01'
     assert pm1.__repr__()[:6] == 'Cuboid', 'Cuboid repr failed'
     assert "name='cuboid_01'" in pm1.__repr__(), 'Cuboid repr failed'
+
+
+def test_cuboid_object_vs_lib():
+    """
+    includes a test of the input copy problem
+    """
+
+    a = 1
+    mag = np.array([(10,20,30)])
+    dim = np.array([(  a,  a,  a)])
+    pos = np.array([(2*a,2*a,2*a)])
+    B0 = magpy.core.magnet_cuboid_field(mag, dim, pos)
+    H0 = magpy.core.magnet_cuboid_field(mag, dim, pos, field='H')
+
+    src = magpy.magnet.Cuboid(mag[0], dim[0])
+    B1 = src.getB(pos)
+    H1 = src.getH(pos)
+
+    np.testing.assert_allclose(B0[0], B1)
+    np.testing.assert_allclose(H0[0], H1)

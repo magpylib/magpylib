@@ -297,7 +297,7 @@ For users who do not want to use the position/orientation interface, Magpylib of
 >>> dim = np.array([(1,2,45,90,-1,1)]*5)
 >>> poso = np.array([(0,0,0)]*5)
 >>>
->>> B = magpy.lib.magnet_cyl_tile_H_Slanovc2021(mag, dim, poso)
+>>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, poso)
 >>> print(B)
 [[   0.           0.        -186.1347833]
  [   0.           0.        -186.1347833]
@@ -315,14 +315,11 @@ __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
     'Sensor', 'Collection', 'show', 'display', 'defaults', '__version__',
-    '__author__', '__credits__']
+    '__author__', '__credits__', 'core']
 
 # create interface to outside of package
+from magpylib import magnet, current, misc, display, core
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
-from magpylib import magnet
-from magpylib import current
-from magpylib import misc
-from magpylib import display
 from magpylib._src.fields import getB, getH
 from magpylib._src.obj_classes import Sensor
 from magpylib._src.obj_classes.class_Collection import Collection

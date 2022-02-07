@@ -213,7 +213,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         """
         sources = format_star_input(sources)
-        return getBH_level2(True, sources, self, sumup, squeeze)
+        return getBH_level2(sources, self, sumup=sumup, squeeze=squeeze, field='B')
 
     def getH(self, *sources, sumup=False, squeeze=True):
         """
@@ -287,4 +287,4 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         """
         sources = format_star_input(sources)
-        return getBH_level2(False, sources, self, sumup, squeeze)
+        return getBH_level2(sources, self, sumup=sumup, squeeze=squeeze, field='H')
