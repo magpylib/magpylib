@@ -133,7 +133,7 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     [[3.99833439 3.99833439 3.46340502]
      [0.09728187 0.34647784 0.52129178]]
     """
-    return getBH_level2(sources, observers, sumup, squeeze, field='B', **kwargs)
+    return getBH_level2(sources, observers, sumup=sumup, squeeze=squeeze, field='B', **kwargs)
 
 
 # ON INTERFACE
@@ -268,4 +268,4 @@ def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     [[3.18177341 3.18177341 2.75609015]
      [0.07741445 0.27571831 0.41483082]]
     """
-    return getBH_level2(sources, observers, sumup, squeeze, field='H', **kwargs)
+    return getBH_level2(sources, observers, sumup=sumup, squeeze=squeeze, field='H', **kwargs)

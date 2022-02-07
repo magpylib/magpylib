@@ -35,7 +35,7 @@ def getBH_level2_bad_input1():
     """
     src = magpy.magnet.Cuboid((1,1,2),(1,1,1))
     sens = magpy.Sensor()
-    getBH_level2([src,sens], (0,0,0), False, True, field='B')
+    getBH_level2([src,sens], (0,0,0), sumup=False, squeeze=True, field='B')
 
 
 def getBH_level2_bad_input2():

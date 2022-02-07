@@ -135,7 +135,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     return kwargs
 
 
-def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
+def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     """...
 
     Parameters
@@ -145,11 +145,12 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
         pathlength M and/or 1.
     - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K
         sensors with similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
-    - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
+    kwargs:
+    - 'sumup' (bool): False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
-    - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
-    - kwargs : if not empty, returns getBH_dict_level2 with source_type=sources and observer=
-        observers
+    - 'squeeze' (bool): True output is squeezed (axes of length 1 are eliminated)
+    - 'field' (str): 'B' computes B field, 'H' computes H-field
+    - getBH_dict inputs
 
     Returns
     -------
@@ -169,20 +170,18 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
-
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
         return getBH_dict_level2(
             source_type=sources,
             observer=observers,
-            sumup=sumup,
-            squeeze=squeeze,
             **kwargs
         )
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     kwargs_check = kwargs.copy()
-    kwargs_check.pop('field',)
+    for popit in ['field', 'sumup', 'squeeze']:
+        kwargs_check.pop(popit)
     if kwargs_check:
         raise MagpylibBadUserInput(
             f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
@@ -283,7 +282,7 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
         lg = len(group['sources'])
         gr = group['sources']
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(**kwargs, **src_dict)       # compute field
+        B_group = getBH_level1(field=kwargs['field'], **src_dict)       # compute field
         B_group = B_group.reshape((lg,m,n_pix,3))       # reshape (2% slower for large arrays)
         for i in range(lg):                             # put into dedicated positions in B
             B[group['order'][i]] = B_group[i]
@@ -323,11 +322,11 @@ def getBH_level2(sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
     B = B.reshape((l0,m)+sens_px_shape)
 
     #
-    if sumup:
+    if kwargs['sumup']:
         B = np.sum(B, axis=0, keepdims=True)
 
     # reduce all size-1 levels
-    if squeeze:
+    if kwargs['squeeze']:
         B = np.squeeze(B)
 
     # reset tiled objects
