@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.exceptions import MagpylibBadUserInput
 import magpylib as magpy
 
 
@@ -344,3 +345,9 @@ def test_kwargs():
 
     with pytest.raises(TypeError):
         bg = BaseGeo((0, 0, 0), None, styl_name="name_02")
+
+def test_bad_sum():
+    """test when adding bad objects"""
+    cuboid = magpy.magnet.Cuboid((1,1,1),(1,1,1))
+    with pytest.raises(MagpylibBadUserInput):
+        1 + cuboid
