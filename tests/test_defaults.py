@@ -46,6 +46,12 @@ bad_inputs = {
     "display_style_current_arrow_size": (-1,),  # float>=0
     "display_style_current_arrow_width": (-1,),  # float>=0
     "display_style_sensor_size": (-1,),  # float>=0
+    'display_style_sensor_arrows_x_color': ("wrongcolor",),
+    'display_style_sensor_arrows_x_show': ("notbool",),
+    'display_style_sensor_arrows_y_color': ("wrongcolor",),
+    'display_style_sensor_arrows_y_show': ("notbool",),
+    'display_style_sensor_arrows_z_color': ("wrongcolor",),
+    'display_style_sensor_arrows_z_show': ("notbool",),
     "display_style_sensor_pixel_size": (-1,),  # float>=0
     "display_style_sensor_pixel_color": ("notbool",),
     "display_style_sensor_pixel_symbol": ("wrongsymbol",),
@@ -128,6 +134,12 @@ good_inputs = {
     "display_style_current_arrow_size": (0, 1),  # float>=0
     "display_style_current_arrow_width": (0, 1),  # float>=0
     "display_style_sensor_size": (0, 1),  # float>=0
+    'display_style_sensor_arrows_x_color': ('magenta',),
+    'display_style_sensor_arrows_x_show': (True, False),
+    'display_style_sensor_arrows_y_color': ('yellow',),
+    'display_style_sensor_arrows_y_show': (True, False),
+    'display_style_sensor_arrows_z_color': ('cyan',),
+    'display_style_sensor_arrows_z_show': (True, False),
     "display_style_sensor_pixel_size": (0, 1),  # float>=0
     "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
     "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
@@ -201,6 +213,6 @@ def test_bad_default_classes():
 def test_resetting_defaults():
     """test setting and resetting the config"""
     magpy.defaults.checkinputs = False
-    assert magpy.defaults.checkinputs == False, "setting config failed"
+    assert magpy.defaults.checkinputs is False, "setting config failed"
     magpy.defaults.reset()
-    assert magpy.defaults.checkinputs == True, "resetting config failed"
+    assert magpy.defaults.checkinputs is True, "resetting config failed"
