@@ -353,3 +353,14 @@ def test_bad_sum():
         1 + cuboid
 
 
+
+def test_copy():
+    """test copying object"""
+    bg = BaseGeo((0, 0, 0), None, style=dict(name="name_01"))
+    bg2 = bg.copy(position=(10,0,0))
+
+    # original object should not be affected"
+    np.testing.assert_allclose(bg.position, (0,0,0))
+
+    # check if name suffix iterated correctly
+    assert bg2.style.name == "name_02"
