@@ -96,8 +96,7 @@ def test_rotate_vs_rotate_from():
     bg2 = BaseGeo(position=(3, 4, 5), orientation=R.from_quat((0, 0, 0, 1)))
     angs = np.linalg.norm(roz, axis=1)
     for ang, ax in zip(angs, roz):
-        bg2.rotate_from_angax(
-            angle=[ang], degrees=False, axis=ax, anchor=(-3, -2, 1))
+        bg2.rotate_from_angax(angle=[ang], degrees=False, axis=ax, anchor=(-3, -2, 1))
     pos2 = bg2.position
     ori2 = bg2.orientation.as_quat()
 
@@ -346,21 +345,21 @@ def test_kwargs():
     with pytest.raises(TypeError):
         bg = BaseGeo((0, 0, 0), None, styl_name="name_02")
 
+
 def test_bad_sum():
     """test when adding bad objects"""
-    cuboid = magpy.magnet.Cuboid((1,1,1),(1,1,1))
+    cuboid = magpy.magnet.Cuboid((1, 1, 1), (1, 1, 1))
     with pytest.raises(MagpylibBadUserInput):
         1 + cuboid
 
 
-
 def test_copy():
     """test copying object"""
-    bg = BaseGeo((0, 0, 0), None, style=dict(name="name_01"))
-    bg2 = bg.copy(position=(10,0,0))
+    bg = BaseGeo((0, 0, 0), None)
+    bg2 = bg.copy(position=(10, 0, 0))
 
     # original object should not be affected"
-    np.testing.assert_allclose(bg.position, (0,0,0))
+    np.testing.assert_allclose(bg.position, (0, 0, 0))
 
     # check if name suffix iterated correctly
-    assert bg2.style.name == "name_02"
+    assert bg2.style.name == "BaseGeo_01"
