@@ -169,9 +169,10 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, pixel_symb, show_path):
     return list(pos_all)
 
 
-def draw_sensors(sensors, ax, sys_size, show_path, size):
+def draw_sensors(sensors, ax, sys_size, show_path, size, arrows_style):
     """draw sensor cross"""
     # pylint: disable=protected-access
+    arrowlength = sys_size * size / Config.display.autosizefactor
 
     # collect plot data
     possis, exs, eys, ezs = [], [], [], []
@@ -184,24 +185,28 @@ def draw_sensors(sensors, ax, sys_size, show_path, size):
             eys += [rot.apply((0, 1, 0))]
             ezs += [rot.apply((0, 0, 1))]
 
-    possis = np.array(possis)
-    exs = np.array(exs)
-    eys = np.array(eys)
-    ezs = np.array(ezs)
+        possis = np.array(possis)
+        coords = np.array([exs, eys, ezs])
 
-    # quiver plot of basis vectors
-    arrowlength = sys_size * size / Config.display.autosizefactor
-    for col, es in zip(["r", "g", "b"], [exs, eys, ezs]):
-        ax.quiver(
-            possis[:, 0],
-            possis[:, 1],
-            possis[:, 2],
-            es[:, 0],
-            es[:, 1],
-            es[:, 2],
-            color=col,
-            length=arrowlength,
+        # quiver plot of basis vectors
+        arrow_colors = (
+            arrows_style.x.color,
+            arrows_style.y.color,
+            arrows_style.z.color,
         )
+        arrow_show = (arrows_style.x.show, arrows_style.y.show, arrows_style.z.show)
+        for acol, ashow, es in zip(arrow_colors, arrow_show, coords):
+            if ashow:
+                ax.quiver(
+                    possis[:, 0],
+                    possis[:, 1],
+                    possis[:, 2],
+                    es[:, 0],
+                    es[:, 1],
+                    es[:, 2],
+                    color=acol,
+                    length=arrowlength,
+                )
 
 
 def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
@@ -383,9 +388,7 @@ def display_matplotlib(
             lw = 0.25
             faces = None
             if obj.style.model3d.data:
-                pts = draw_model3d_extra(
-                    obj, style, path_frames, ax, obj_color
-                )
+                pts = draw_model3d_extra(obj, style, path_frames, ax, obj_color)
                 points += pts
             if obj.style.model3d.showdefault:
                 if obj._object_type == "Cuboid":
@@ -446,7 +449,11 @@ def display_matplotlib(
                     if style.magnetization.show:
                         check_excitations([obj])
                         pts = draw_directs_faced(
-                            [obj], [obj_color], ax, path_frames, style.magnetization.size
+                            [obj],
+                            [obj_color],
+                            ax,
+                            path_frames,
+                            style.magnetization.size,
                         )
                         points += pts
             if style.path.show:
@@ -491,11 +498,13 @@ def display_matplotlib(
     for sens in sensors:
         sensor, color = sens
         style = get_style(sensor, Config, **kwargs)
-        draw_sensors([sensor], ax, sys_size, path_frames, style.size)
+        draw_sensors([sensor], ax, sys_size, path_frames, style.size, style.arrows)
     for dip in dipoles:
         dipole, color = dip
         style = get_style(dipole, Config, **kwargs)
-        draw_dipoles([dipole], ax, sys_size, path_frames, style.size, color, style.pivot)
+        draw_dipoles(
+            [dipole], ax, sys_size, path_frames, style.size, color, style.pivot
+        )
 
     # plot styling --------------------------------------------------
     ax.set(
