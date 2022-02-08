@@ -338,9 +338,10 @@ def add_iteration_suffix(name):
     """
     adds iteration suffix. If name already ends with an integer it will continue iteration
     examples:
-        'col' -> 'col_1'
-        'col1' -> col2
-        'col_02 -> col_03'
+        'col' -> 'col_01'
+        'col' -> 'col_01'
+        'col1' -> 'col2'
+        'col_02' -> 'col_03'
     """
     # pylint: disable=import-outside-toplevel
     import re
@@ -348,7 +349,7 @@ def add_iteration_suffix(name):
     m = re.search(r"\d+$", name)
     n = "00"
     endstr = None
-    midchar = "_"
+    midchar = "_" if name[-1]!= '_' else ""
     if m is not None:
         midchar = ""
         n = m.group()
