@@ -12,6 +12,7 @@ from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
     check_rot_type)
+from magpylib._src.utility import add_iteration_suffix
 
 
 def pad_slice_path(path1, path2):
@@ -288,3 +289,18 @@ class BaseGeo(BaseTransform):
         self.position = (0,0,0)
         self.orientation = None
         return self
+
+    def copy(self, **kwargs):
+        """returns an inpendant copy of the object"""
+        # pylint: disable=import-outside-toplevel
+        from copy import deepcopy
+        name = self.style.name
+        if name is None:
+            name = f"{type(self).__name__}_copy_1"
+        else:
+            name = add_iteration_suffix(name)
+        obj_copy = deepcopy(self)
+        obj_copy.style.name = name
+        for k,v in kwargs.items():
+            setattr(obj_copy, k,v)
+        return obj_copy

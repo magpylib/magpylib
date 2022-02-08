@@ -351,3 +351,5 @@ def test_bad_sum():
     cuboid = magpy.magnet.Cuboid((1,1,1),(1,1,1))
     with pytest.raises(MagpylibBadUserInput):
         1 + cuboid
+
+
