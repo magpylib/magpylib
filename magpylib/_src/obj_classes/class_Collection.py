@@ -1,5 +1,4 @@
 """Collection class code"""
-import copy
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,

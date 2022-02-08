@@ -355,11 +355,18 @@ def test_bad_sum():
 
 def test_copy():
     """test copying object"""
-    bg = BaseGeo((0, 0, 0), None)
-    bg2 = bg.copy(position=(10, 0, 0))
+    bg1 = BaseGeo((0, 0, 0), None, style_name='name1')
+    bg2 = BaseGeo((1,2,3), None)
+    bg1c = bg1.copy()
+    bg2c = bg2.copy(position=(10, 0, 0), style=dict(color='red'), style_color='orange')
 
     # original object should not be affected"
-    np.testing.assert_allclose(bg.position, (0, 0, 0))
+    np.testing.assert_allclose(bg1.position, (0, 0, 0))
+    np.testing.assert_allclose(bg2.position, (1 ,2, 3))
 
     # check if name suffix iterated correctly
-    assert bg2.style.name == "BaseGeo_01"
+    assert bg1c.style.name == "name2"
+    assert bg2c.style.name == "BaseGeo_01"
+
+    # check if style is passed correctly
+    assert bg2c.style.color == "orange"

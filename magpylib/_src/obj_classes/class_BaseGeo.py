@@ -100,7 +100,12 @@ class BaseGeo(BaseTransform):
 
         # style
         self.style_class = self._get_style_class()
-        if style is not None or kwargs:
+        if style is not None or kwargs: #avoid style creation cost if not needed
+            self.style = self._process_style_kwargs(style=style, **kwargs)
+
+    #@staticmethod
+    def _process_style_kwargs(self, style=None, **kwargs):
+        if kwargs:
             if style is None:
                 style = {}
             style_kwargs = {}
@@ -112,7 +117,7 @@ class BaseGeo(BaseTransform):
                         f"__init__() got an unexpected keyword argument {k!r}"
                     )
             style.update(**style_kwargs)
-            self.style = style
+        return style
 
     def _init_position_orientation(self, position, orientation):
         """
@@ -324,6 +329,13 @@ class BaseGeo(BaseTransform):
             name = add_iteration_suffix(name)
         obj_copy = deepcopy(self)
         obj_copy.style.name = name
+        style_kwargs = {}
         for k,v in kwargs.items():
-            setattr(obj_copy, k,v)
+            if k.startswith('style'):
+                style_kwargs[k] = v
+            else:
+                setattr(obj_copy, k,v)
+        if style_kwargs:
+            style_kwargs = self._process_style_kwargs(**style_kwargs)
+            obj_copy.style.update(style_kwargs)
         return obj_copy
