@@ -291,12 +291,35 @@ class BaseGeo(BaseTransform):
         return self
 
     def copy(self, **kwargs):
-        """returns an inpendant copy of the object"""
+        """´Returns a copy of the current object instance. The `copy` method returns a deep copy of
+        the object, that is independant of the original object.
+
+        Parameters
+        ----------
+            kwargs: dict, optional
+                keyword arguments to be transmitted to the newly created object. Can be for example
+                `'position'`,`'orientation'`, `'style'` etc.
+
+        Examples
+        --------
+        Create an object and copy to an another position
+
+        >>> import magpylib as magpy
+        >>> obj = magpy.Sensor(position=(1,2,3))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> obj2 = obj.copy(position=(2,6,10))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> print(obj2.position)
+        [2. 6. 10.]
+
+        """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
         name = self.style.name
         if name is None:
-            name = f"{type(self).__name__}_copy_1"
+            name = f"{type(self).__name__}_01"
         else:
             name = add_iteration_suffix(name)
         obj_copy = deepcopy(self)
