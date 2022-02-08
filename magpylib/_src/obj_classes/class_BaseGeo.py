@@ -103,8 +103,8 @@ class BaseGeo(BaseTransform):
         if style is not None or kwargs: #avoid style creation cost if not needed
             self.style = self._process_style_kwargs(style=style, **kwargs)
 
-    #@staticmethod
-    def _process_style_kwargs(self, style=None, **kwargs):
+    @staticmethod
+    def _process_style_kwargs(style=None, **kwargs):
         if kwargs:
             if style is None:
                 style = {}
