@@ -380,4 +380,3 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
         By = Br * np.sin(phi)
 
     return Bx, By
-
