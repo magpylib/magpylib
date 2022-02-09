@@ -77,7 +77,7 @@ for index in range(11):
     cuboids.append(cuboid)
 
 # group children into a `Collection`
-coll = magpy.Collection(cuboids[:-1], style_name='Collection with visible children')
+coll = magpy.Collection(cuboids[:-1], style_label='Collection with visible children')
 
 # add extra 3D-trace - the make_BaseCuboid function returns a dictionary
 plotly_trace = make_BaseCuboid(dimension=(104, 12, 12), position=(45, 0, 0))
@@ -87,7 +87,7 @@ coll.show(backend="plotly")
 
 # Hide the children 3D-model representation
 coll.set_children_styles(model3d_showdefault=False)
-coll.style.name = 'Collection with hidden children'
+coll.style.label = 'Collection with hidden children'
 coll.show(backend="plotly")
 ```
 
@@ -251,7 +251,7 @@ for ind, cubes in enumerate((3, 6, 12)):
         cubes=cubes,
         cube_size=10,
         diameter=diameter,
-        style_name=f"Magnetic Wheel {ind+1}",
+        style_label=f"Magnetic Wheel {ind+1}",
     )
     wheel.move((diameter, 0, -diameter * 5))
     wheel.rotate_from_angax(90, "x")
@@ -263,7 +263,7 @@ for ind, cubes in enumerate((3, 6, 12)):
 
 # display the resulting systems in our own canvas with matplotlib
 magpy.show(wheels, style_path_frames=6)
-           
+
 # animate the resulting systems in our own canvas with plotly
 fig = go.Figure()
 magpy.show(wheels, canvas=fig, backend="plotly", animation=2)
