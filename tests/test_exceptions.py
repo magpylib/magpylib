@@ -1,86 +1,97 @@
 import unittest
 import numpy as np
 from scipy.spatial.transform.rotation import Rotation as R
-import magpylib as mag3
-from magpylib._lib.fields.field_wrap_BH_level1 import getBH_level1
-from magpylib._lib.fields.field_wrap_BH_level2 import getBH_level2
-from magpylib._lib.fields.field_wrap_BH_v import getBHv_level2
-from magpylib._lib.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
+import magpylib as magpy
+from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
+from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
+from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
     MagpylibBadInputShape)
-from magpylib._lib.utility import format_obj_input, format_src_inputs, format_obs_inputs
-from magpylib._lib.utility import test_path_format as tpf
+from magpylib._src.utility import format_obj_input, format_src_inputs, format_obs_inputs
+from magpylib._src.utility import test_path_format as tpf
 
+
+def getBHv_unknown_source_type():
+    """ unknown source type """
+    getBH_dict_level2(
+        source_type='badName',
+        magnetization=(1,0,0),
+        dimension=(0,2,1,0,360),
+        position=(0,0,-.5),
+        observer=(1.5,0,-.1),
+        field='B')
 
 def getBH_level1_internal_error():
     """ bad source_type input should not happen
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(bh=True,source_type='woot', magnetization=x, dimension=x, observer=x,
+    getBH_level1(field='B',source_type='woot', magnetization=x, dimension=x, observer=x,
         position=x, orientation=rot)
 
 
 def getBH_level2_bad_input1():
     """ test BadUserInput error at getBH_level2
     """
-    src = mag3.magnet.Box((1,1,2),(1,1,1))
-    sens = mag3.Sensor()
-    getBH_level2(True, [src,sens],(0,0,0),False,True)
+    src = magpy.magnet.Cuboid((1,1,2),(1,1,1))
+    sens = magpy.Sensor()
+    getBH_level2([src,sens], (0,0,0), sumup=False, squeeze=True, field='B')
 
 
 def getBH_level2_bad_input2():
     """ different pixel shapes
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
-    mag3.getB(pm1,[sens1,sens2])
+    dim_cuboid = (1,2,3)
+    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
+    magpy.getB(pm1,[sens1,sens2])
 
 
 def getBH_level2_internal_error1():
-    """ somhow an unrecognized objects end up in get_src_dict
+    """ somehow an unrecognized objects end up in get_src_dict
     """
     # pylint: disable=protected-access
-    sens = mag3.Sensor()
+    sens = magpy.Sensor()
     x = np.zeros((10,3))
-    mag3._lib.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
+    magpy._src.fields.field_wrap_BH_level2.get_src_dict([sens],10,10,x)
 
 
+# getBHv missing inputs ------------------------------------------------------
 def getBHv_missing_input1():
     """ missing bh
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(source_type='Box', observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(source_type='Cuboid', observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input2():
     """ missing source_type
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, observer=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input3():
     """ missing observer
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Box', magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', magnetization=x, dimension=x)
 
 
-def getBHv_missing_input4_box():
-    """ missing Box mag
+def getBHv_missing_input4_cuboid():
+    """ missing Cuboid mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Box', observer=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, dimension=x)
 
 
-def getBHv_missing_input5_box():
-    """ missing Box dim
+def getBHv_missing_input5_cuboid():
+    """ missing Cuboid dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Box', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_cyl():
@@ -88,59 +99,74 @@ def getBHv_missing_input4_cyl():
     """
     x=np.array([(1,2,3)])
     y = np.array([(1,2)])
-    getBHv_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
 
 
 def getBHv_missing_input5_cyl():
     """ missing Cylinder dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
 
 
 def getBHv_missing_input4_sphere():
     """ missing Sphere mag
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
+    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
 
 
 def getBHv_missing_input5_sphere():
     """ missing Sphere dim
     """
     x=np.array([(1,2,3)])
-    getBHv_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
 
-
-def getBHv_bad_input():
+# bad inputs -------------------------------------------------------------------
+def getBHv_bad_input1():
     """ different input lengths
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
-    getBHv_level2(bh=True, source_type='Box', observer=x, magnetization=x2, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x2, dimension=x)
+
+
+def getBHv_bad_input2():
+    """ bad source_type string
+    """
+    x=np.array([(1,2,3)])
+    getBH_dict_level2(bh=True, source_type='Cubooid', observer=x, magnetization=x, dimension=x)
+
+
+def getBHv_bad_input3():
+    """ mixed input
+    """
+    x=np.array([(1,2,3)])
+    s = magpy.Sensor()
+    getBH_dict_level2(bh=True, source_type='Cuboid', observer=s, magnetization=x, dimension=x)
 
 
 def utility_format_obj_input():
     """ bad input object
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     format_obj_input([pm1,pm2,333])
 
 
 def utility_format_src_inputs():
-    """ bar src input
+    """ bad src input
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm2 = mag3.magnet.Box((1,2,3),(1,2,3))
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
     format_src_inputs([pm1,pm2,1])
 
 
 def utility_format_obs_inputs():
-    """ bar src input
+    """ bad src input
     """
-    sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor()
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor()
     possis = [1,2,3]
     format_obs_inputs([sens1,sens2,possis,'whatever'])
 
@@ -148,88 +174,36 @@ def utility_format_obs_inputs():
 def utility_test_path_format():
     """ bad path format input
     """
-    pm1 = mag3.magnet.Box((1,2,3),(1,2,3))
-    pm1.position = [(1,2,3),(1,2,3)]
+    # pylint: disable=protected-access
+    pm1 = magpy.magnet.Cuboid((1,2,3),(1,2,3))
+    pm1._position = [(1,2,3),(1,2,3)]
     tpf(pm1)
 
 
-def box_no_mag():
-    """ Box with no mag input
-    """
-    mag3.magnet.Box(dimension=(1,2,3))
-
-
-def box_no_dim():
-    """ Box with no dim input
-    """
-    mag3.magnet.Box(magnetization=(1,2,3))
-
-
-def cyl_no_mag():
-    """ Cylinder with no mag input
-    """
-    mag3.magnet.Cylinder(dimension=(1,2))
-
-
-def cyl_no_dim():
-    """ Cylinder with no dim input
-    """
-    mag3.magnet.Cylinder(magnetization=(1,2,3))
-
-
-def sphere_no_mag():
-    """ Cylinder with no mag input
-    """
-    mag3.magnet.Sphere(diameter=1)
-
-
-def sphere_no_dim():
-    """ Cylinder with no dim input
-    """
-    mag3.magnet.Sphere(magnetization=(1,2,3))
-
-
-def dipole_no_mom():
-    """ Cylinder with no mag input
-    """
-    mag3.misc.Dipole()
-
-
-def circular_no_current():
-    """ Circular with no current input
-    """
-    mag3.current.Circular(diameter=1)
-
-
-def circular_no_dim():
-    """ Circular with no dim input
-    """
-    mag3.current.Circular(current=1)
-
-########################################################################
+###############################################################################
 # BAD INPUT SHAPE EXCEPTIONS
 def bad_input_shape_basegeo_pos():
     """ bad position input shape
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Box(vec3, vec3, vec4)
+    magpy.magnet.Cuboid(vec3, vec3, vec4)
 
 
-def bad_input_shape_box_dim():
-    """ bad box dimension shape
+def bad_input_shape_cuboid_dim():
+    """ bad cuboid dimension shape
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Box(vec3, vec4)
+    magpy.magnet.Cuboid(vec3, vec4)
 
 
-def bad_input_shape_box_mag():
-    """ bad box magnetization shape
+def bad_input_shape_cuboid_mag():
+    """ bad cuboid magnetization shape
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Box(vec4, vec3)
+    magpy.magnet.Cuboid(vec4, vec3)
 
 
 def bad_input_shape_cyl_dim():
@@ -237,22 +211,22 @@ def bad_input_shape_cyl_dim():
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cylinder(vec3, vec4)
+    magpy.magnet.Cylinder(vec3, vec4)
 
 
 def bad_input_shape_cyl_mag():
-    """ bad box magnetization shape
+    """ bad cylinder magnetization shape
     """
     vec3 = (1,2,3)
     vec4 = (1,2,3,4)
-    mag3.magnet.Cylinder(vec4, vec3)
+    magpy.magnet.Cylinder(vec4, vec3)
 
 
 def bad_input_shape_sphere_mag():
     """ bad sphere magnetization shape
     """
     vec4 = (1,2,3,4)
-    mag3.magnet.Sphere(vec4, 1)
+    magpy.magnet.Sphere(vec4, 1)
 
 
 def bad_input_shape_sensor_pix_pos():
@@ -260,48 +234,20 @@ def bad_input_shape_sensor_pix_pos():
     """
     vec4 = (1,2,3,4)
     vec3 = (1,2,3)
-    mag3.Sensor(vec3, vec4)
+    magpy.Sensor(vec3, vec4)
 
 
 def bad_input_shape_dipole_mom():
     """ bad sphere magnetization shape
     """
     vec4 = (1,2,3,4)
-    mag3.misc.Dipole(moment=vec4)
+    magpy.misc.Dipole(moment=vec4)
 
 
-########################################################################
+#####################################################################
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing
     """
-    def test_except_class_Box(self):
-        """ class_Box
-        """
-        self.assertRaises(MagpylibBadUserInput, box_no_mag)
-        self.assertRaises(MagpylibBadUserInput, box_no_dim)
-
-    def test_except_class_Cylinder(self):
-        """ class_Cylinder
-        """
-        self.assertRaises(MagpylibBadUserInput, cyl_no_mag)
-        self.assertRaises(MagpylibBadUserInput, cyl_no_dim)
-
-    def test_except_class_Sphere(self):
-        """ class_Sphere
-        """
-        self.assertRaises(MagpylibBadUserInput, sphere_no_mag)
-        self.assertRaises(MagpylibBadUserInput, sphere_no_dim)
-
-    def test_except_class_Dipole(self):
-        """ class_Dipole
-        """
-        self.assertRaises(MagpylibBadUserInput, dipole_no_mom)
-
-    def test_except_class_Circular(self):
-        """ class_Circular
-        """
-        self.assertRaises(MagpylibBadUserInput, circular_no_current)
-        self.assertRaises(MagpylibBadUserInput, circular_no_dim)
 
     def test_except_utility(self):
         """ utility
@@ -317,13 +263,16 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(KeyError, getBHv_missing_input1)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input2)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input3)
-        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_box)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_cuboid)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_cyl)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input4_sphere)
-        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_box)
+        self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cuboid)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_cyl)
         self.assertRaises(MagpylibBadUserInput, getBHv_missing_input5_sphere)
-        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input1)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input2)
+        self.assertRaises(MagpylibBadUserInput, getBHv_bad_input3)
+        self.assertRaises(MagpylibBadUserInput, getBHv_unknown_source_type)
 
     def test_except_getBH_lev1(self):
         """ getBH_level1 exception testing
@@ -341,8 +290,8 @@ class TestExceptions(unittest.TestCase):
         """ BaseGeo bad input shapes
         """
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_pos)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_box_dim)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_box_mag)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cuboid_dim)
+        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cuboid_mag)
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_dim)
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_mag)
         self.assertRaises(MagpylibBadInputShape, bad_input_shape_sphere_mag)

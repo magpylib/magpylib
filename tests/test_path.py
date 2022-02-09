@@ -1,5 +1,5 @@
 import numpy as np
-from magpylib.magnet import Box, Cylinder
+from magpylib.magnet import Cuboid, Cylinder
 
 
 def test_path_old_new_move():
@@ -10,7 +10,7 @@ def test_path_old_new_move():
 
     # path style code translation
     pm1 = Cylinder((0,0,1000), (3,3), position=(-5,0,3))
-    pm1.move([(x,0,0) for x in np.linspace(0,10,100)])
+    pm1.move([(x,0,0) for x in np.linspace(0,10,100)], start=-1)
     B1 = pm1.getB(s_pos)
 
     # old style code translation
@@ -33,13 +33,13 @@ def test_path_old_new_rotate():
     anch=(0,0,10)
 
     # path style code rotation
-    pm1 = Box((0,0,1000), (1,2,3), position=(0,0,3))
+    pm1 = Cuboid((0,0,1000), (1,2,3), position=(0,0,3))
     pm1.rotate_from_angax(-30, ax, anch)
-    pm1.rotate_from_angax(np.linspace(0,60,n), 'x', anch)
+    pm1.rotate_from_angax(np.linspace(0,60,n), 'x', anch, start=-1)
     B1 = pm1.getB(s_pos)
 
     # old style code rotation
-    pm2 = Box((0,0,1000), (1,2,3), position=(0,0,3))
+    pm2 = Cuboid((0,0,1000), (1,2,3), position=(0,0,3))
     pm2.rotate_from_angax(-30, ax, anch)
     B2 = []
     for _ in range(n):

@@ -1,5 +1,5 @@
 import numpy as np
-import magpylib as mag3
+import magpylib as magpy
 
 
 def test_getB_level2_input_simple():
@@ -7,23 +7,23 @@ def test_getB_level2_input_simple():
     inputs - simple position inputs
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
+    dim_cuboid = (1,2,3)
     dim_cyl = (1,2)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
-    pm3 = mag3.magnet.Cylinder(mag,dim_cyl)
-    pm4 = mag3.magnet.Cylinder(mag,dim_cyl)
-    col1 = mag3.Collection([pm1])
-    col2 = mag3.Collection([pm1,pm2])
-    col3 = mag3.Collection([pm1,pm2,pm3])
-    col4 = mag3.Collection([pm1,pm2,pm3,pm4])
+    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    pm3 = magpy.magnet.Cylinder(mag,dim_cyl)
+    pm4 = magpy.magnet.Cylinder(mag,dim_cyl)
+    col1 = magpy.Collection([pm1])
+    col2 = magpy.Collection([pm1,pm2])
+    col3 = magpy.Collection([pm1,pm2,pm3])
+    col4 = sum([pm1,pm2,pm3,pm4])
     pos_obs = (1,2,3)
-    sens1 = mag3.Sensor(position=pos_obs)
-    sens2 = mag3.Sensor(pixel=pos_obs)
-    sens3 = mag3.Sensor(position=(1,2,0),pixel=(0,0,3))
+    sens1 = magpy.Sensor(position=pos_obs)
+    sens2 = magpy.Sensor(pixel=pos_obs)
+    sens3 = magpy.Sensor(position=(1,2,0),pixel=(0,0,3))
 
-    fb1 = mag3.getB(pm1,pos_obs)
-    fc1 = mag3.getB(pm3,pos_obs)
+    fb1 = magpy.getB(pm1,pos_obs)
+    fc1 = magpy.getB(pm3,pos_obs)
     fb2 = np.array([fb1,fb1])
     fc2 = np.array([fc1,fc1])
 
@@ -49,7 +49,7 @@ def test_getB_level2_input_simple():
             sources, observers, result = sor
             result = np.array(result)
 
-            B = mag3.getB(sources, observers)
+            B = magpy.getB(sources, observers)
             assert B.shape == result.shape, "FAILOR shape"
             assert np.allclose(B, result), 'FAILOR values'
 
@@ -59,21 +59,21 @@ def test_getB_level2_input_shape22():
     inputs - position input with shape (2,2)
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
+    dim_cuboid = (1,2,3)
     dim_cyl = (1,2)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
-    pm3 = mag3.magnet.Cylinder(mag,dim_cyl)
-    pm4 = mag3.magnet.Cylinder(mag,dim_cyl)
-    col1 = mag3.Collection([pm1])
-    col2 = mag3.Collection([pm1,pm2])
-    col3 = mag3.Collection([pm1,pm2,pm3])
-    col4 = mag3.Collection([pm1,pm2,pm3,pm4])
+    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    pm3 = magpy.magnet.Cylinder(mag,dim_cyl)
+    pm4 = magpy.magnet.Cylinder(mag,dim_cyl)
+    col1 = magpy.Collection([pm1])
+    col2 = magpy.Collection([pm1,pm2])
+    col3 = magpy.Collection([pm1,pm2,pm3])
+    col4 = magpy.Collection([pm1,pm2,pm3,pm4])
     pos_obs = [[(1,2,3),(1,2,3)],[(1,2,3),(1,2,3)]]
-    sens1 = mag3.Sensor(pixel=pos_obs)
+    sens1 = magpy.Sensor(pixel=pos_obs)
 
-    fb22 = mag3.getB(pm1,pos_obs)
-    fc22 = mag3.getB(pm3,pos_obs)
+    fb22 = magpy.getB(pm1,pos_obs)
+    fc22 = magpy.getB(pm3,pos_obs)
 
 
     for poso,fb,fc in zip([pos_obs,sens1,[sens1,sens1,sens1]],
@@ -98,7 +98,7 @@ def test_getB_level2_input_shape22():
         for sor in src_obs_res:
             sources, observers, result = sor
             result = np.array(result)
-            B = mag3.getB(sources, observers)
+            B = magpy.getB(sources, observers)
             assert B.shape == result.shape, "FAILOR2 shape"
             assert np.allclose(B, result), 'FAILOR2 values'
 
@@ -108,38 +108,39 @@ def test_getB_level2_input_path():
     inputs - input objects with path
     """
     mag = (1,2,3)
-    dim_box = (1,2,3)
-    pm1 = mag3.magnet.Box(mag,dim_box)
-    pm2 = mag3.magnet.Box(mag,dim_box)
-    sens1 = mag3.Sensor()
-    sens2 = mag3.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
+    dim_cuboid = (1,2,3)
+    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    pm2 = magpy.magnet.Cuboid(mag,dim_cuboid)
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor(pixel=[(0,0,0),(0,0,1),(0,0,2)])
 
     fb = pm1.getB([(x,0,0) for x in np.linspace(0,-1,11)])
 
-    pm1.move([(.1,0,0)]*10, start='append', increment=True)
-    B=mag3.getB(pm1,(0,0,0))
+    possis = np.linspace((.1,0,0), (1,0,0), 10)
+    pm1.move(possis)
+    B=magpy.getB(pm1,(0,0,0))
     result = fb
     assert B.shape == result.shape, "FAILOR3a shape"
     assert np.allclose(B, result), 'FAILOR3a values'
 
-    B=mag3.getB(pm1,sens1)
+    B=magpy.getB(pm1,sens1)
     result = fb
     assert B.shape == result.shape, "FAILOR3b shape"
     assert np.allclose(B, result), 'FAILOR3b values'
 
-    B=mag3.getB([pm1,pm1],sens1)
+    B=magpy.getB([pm1,pm1],sens1)
     result = np.array([fb,fb])
     assert B.shape == result.shape, "FAILOR3c shape"
     assert np.allclose(B, result), 'FAILOR3c values'
 
     fb = pm2.getB([[(x,0,0),(x,0,0)] for x in np.linspace(0,-1,11)])
-    B=mag3.getB([pm1,pm1],[sens1,sens1])
+    B=magpy.getB([pm1,pm1],[sens1,sens1])
     result = np.array([fb,fb])
     assert B.shape == result.shape, "FAILOR3d shape"
     assert np.allclose(B, result), 'FAILOR3d values'
 
     fb = pm2.getB([[[(x,0,0),(x,0,1),(x,0,2)]]*2 for x in np.linspace(0,-1,11)])
-    B=mag3.getB([pm1,pm1],[sens2,sens2])
+    B=magpy.getB([pm1,pm1],[sens2,sens2])
     result = np.array([fb,fb])
     assert B.shape == result.shape, "FAILOR3e shape"
     assert np.allclose(B, result), 'FAILOR3e values'
@@ -149,9 +150,10 @@ def test_path_tile():
     """ Test if auto-tiled paths of objects will properly be reset
     in getB_level2 before returning
     """
-    pm1 = mag3.magnet.Box((11,22,33),(1,2,3))
-    pm2 = mag3.magnet.Box((11,22,33),(1,2,3))
-    pm2.move([[10/33]*3]*33, increment=True)
+    pm1 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
+    pm2 = magpy.magnet.Cuboid((11,22,33),(1,2,3))
+    poz = np.linspace((10/33,10/33,10/33), (10,10,10), 33)
+    pm2.move(poz)
 
     path1p = pm1.position
     path1r = pm1.orientation
@@ -159,7 +161,7 @@ def test_path_tile():
     path2p = pm2.position
     path2r = pm2.orientation
 
-    _ = mag3.getB([pm1,pm2],[0,0,0])
+    _ = magpy.getB([pm1,pm2],[0,0,0])
 
     assert np.all(path1p == pm1.position), 'FAILED: getB modified object path'
     assert np.all(path1r.as_quat() == pm1.orientation.as_quat()), 'FAILED: getB modified object path'
@@ -170,9 +172,9 @@ def test_path_tile():
 def test_sensor_rotation1():
     """ Test simple sensor rotation using sin/cos
     """
-    src = mag3.magnet.Box((1000,0,0),(1,1,1))
-    sens = mag3.Sensor(position=(1,0,0))
-    sens.rotate_from_angax([360/55]*55, 'z', start=1, anchor=None, increment=True)
+    src = magpy.magnet.Cuboid((1000,0,0),(1,1,1))
+    sens = magpy.Sensor(position=(1,0,0))
+    sens.rotate_from_angax(np.linspace(0,360,56)[1:], 'z', start=1, anchor=None)
     B = src.getB(sens)
 
     B0 = B[0,0]
@@ -182,17 +184,17 @@ def test_sensor_rotation1():
 
 
 def test_sensor_rotation2():
-    """ test sensor roations with different combinations of inputs mag/col + sens/pos
+    """ test sensor rotations with different combinations of inputs mag/col + sens/pos
     """
-    src = mag3.magnet.Box((1000,0,0),(1,1,1),(0,0,2))
-    src2 = mag3.magnet.Box((1000,0,0),(1,1,1),(0,0,2))
-    col = mag3.Collection(src,src2)
+    src = magpy.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
+    src2 = magpy.magnet.Cuboid((1000,0,0),(1,1,1),(0,0,2))
+    col = magpy.Collection(src,src2)
 
     poss = (0,0,0)
-    sens = mag3.Sensor(pixel=poss)
-    sens.rotate_from_angax([0,45,90], 'z')
+    sens = magpy.Sensor(pixel=poss)
+    sens.rotate_from_angax([45,90], 'z')
 
-    sens2 = mag3.Sensor(pixel=poss)
+    sens2 = magpy.Sensor(pixel=poss)
     sens2.rotate_from_angax(-45,'z')
 
     x1 = np.array([-9.82, 0, 0])
@@ -202,19 +204,19 @@ def test_sensor_rotation2():
     x2b = np.array([-13.89, 13.89, 0])
     x3b = np.array([0, 19.64, 0])
 
-    B = mag3.getB(src,poss,squeeze=True)
+    B = magpy.getB(src,poss,squeeze=True)
     Btest = x1
     assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  pos'
 
-    B = mag3.getB([src],[sens],squeeze=True)
+    B = magpy.getB([src],[sens],squeeze=True)
     Btest = np.array([x1,x2,x3])
     assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  sens_rot_path'
 
-    B = mag3.getB([src],[sens,poss],squeeze=True)
+    B = magpy.getB([src],[sens,poss],squeeze=True)
     Btest = np.array([[x1,x1],[x2,x1],[x3,x1]])
     assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag  +  sens_rot_path, pos'
 
-    B = mag3.getB([src,col],[sens,poss],squeeze=True)
+    B = magpy.getB([src,col],[sens,poss],squeeze=True)
     Btest = np.array([[[x1,x1],[x2,x1],[x3,x1]],[[x1b,x1b],[x2b,x1b],[x3b,x1b]]])
     assert np.allclose(np.around(B,decimals=2), Btest), 'FAIL: mag,col  +  sens_rot_path, pos'
 
@@ -223,14 +225,14 @@ def test_sensor_rotation3():
     """ testing rotated static sensor path
     """
     # case static sensor rot
-    src = mag3.magnet.Box((1000,0,0),(1,1,1))
-    sens = mag3.Sensor()
+    src = magpy.magnet.Cuboid((1000,0,0),(1,1,1))
+    sens = magpy.Sensor()
     sens.rotate_from_angax(45,'z')
-    B0 = mag3.getB(src,sens)
+    B0 = magpy.getB(src,sens)
     B0t = np.tile(B0,(12,1))
 
-    sens.move([(0,0,0)]*12)
-    Bpath = mag3.getB(src,sens)
+    sens.move([(0,0,0)]*12, start=-1)
+    Bpath = magpy.getB(src,sens)
 
     assert np.allclose(B0t,Bpath)
 
@@ -238,21 +240,21 @@ def test_sensor_rotation3():
 def test_object_tiling():
     """ test if object tiling works when input paths are of various lengths
     """
-    src1 = mag3.current.Circular(current=1, diameter=1)
-    src1.rotate_from_angax([1]*31, 'x', anchor=(0,1,0), increment=True)
+    src1 = magpy.current.Loop(current=1, diameter=1)
+    src1.rotate_from_angax(np.linspace(1,31,31), 'x', anchor=(0,1,0), start=-1)
 
-    src2 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
-    src2.move([(1,1,1)]*21)
+    src2 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src2.move([(1,1,1)]*21, start=-1)
 
-    src3 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
-    src4 = mag3.magnet.Box(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src3 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
+    src4 = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,1,1), position=(1,1,1))
 
-    col = mag3.Collection(src3, src4)
-    src3.move([(1,1,1)]*12)
-    src4.move([(1,1,1)]*31)
+    col = magpy.Collection(src3, src4)
+    src3.move([(1,1,1)]*12, start=-1)
+    src4.move([(1,1,1)]*31, start=-1)
 
     possis = [[1,2,3]]*5
-    sens = mag3.Sensor(pixel=possis)
+    sens = magpy.Sensor(pixel=possis)
 
     assert src1.position.shape == (31, 3), 'a1'
     assert src2.position.shape == (21, 3), 'a2'
@@ -266,7 +268,7 @@ def test_object_tiling():
     assert src4.orientation.as_quat().shape == (31, 4), 'b4'
     assert sens.orientation.as_quat().shape == (4,), 'b5'
 
-    B = mag3.getB([src1,src2,col], [sens,possis])
+    B = magpy.getB([src1,src2,col], [sens,possis])
     assert B.shape == (3, 31, 2, 5, 3)
 
     assert src1.position.shape == (31, 3), 'c1'
@@ -280,3 +282,16 @@ def test_object_tiling():
     assert src3.orientation.as_quat().shape == (12, 4), 'd3'
     assert src4.orientation.as_quat().shape == (31, 4), 'd4'
     assert sens.orientation.as_quat().shape == (4,), 'd5'
+
+
+def test_squeeze_sumup():
+    """ make sure that sumup does not lead to false output shape
+    """
+
+    s = magpy.Sensor(pixel=(1,2,3))
+    ss = magpy.magnet.Sphere((1,2,3), 1)
+
+    B1 = magpy.getB(ss, s, squeeze=False)
+    B2 = magpy.getB(ss, s, squeeze=False, sumup=True)
+
+    assert B1.shape == B2.shape
