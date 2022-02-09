@@ -322,13 +322,13 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
-        name = self.style.name
-        if name is None:
-            name = f"{type(self).__name__}_01"
+        label = self.style.label
+        if label is None:
+            label = f"{type(self).__name__}_01"
         else:
-            name = add_iteration_suffix(name)
+            label = add_iteration_suffix(label)
         obj_copy = deepcopy(self)
-        obj_copy.style.name = name
+        obj_copy.style.label = label
         style_kwargs = {}
         for k,v in kwargs.items():
             if k.startswith('style'):

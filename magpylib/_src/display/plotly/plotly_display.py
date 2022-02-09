@@ -423,7 +423,7 @@ def _update_mag_mesh(
 
 def get_name_and_suffix(default_name, default_suffix, style):
     """provides legend entry based on name and suffix"""
-    name = default_name if style.name is None else style.name
+    name = default_name if style.label is None else style.label
     if style.description.show and style.description.text is None:
         name_suffix = default_suffix
     elif not style.description.show:
@@ -606,16 +606,16 @@ def get_plotly_traces(
         trace = merge_traces(*path_traces)
         for ind, traces_extra in enumerate(path_traces_extra.values()):
             extra_model3d_trace = merge_traces(*traces_extra)
-            name = (
-                input_obj.style.name
-                if input_obj.style.name is not None
+            label = (
+                input_obj.style.label
+                if input_obj.style.label is not None
                 else str(type(input_obj).__name__)
             )
             extra_model3d_trace.update(
                 {
                     "legendgroup": legendgroup,
                     "showlegend": showlegend and ind == 0 and not trace,
-                    "name": name,
+                    "name": label,
                 }
             )
             traces.append(extra_model3d_trace)
@@ -709,7 +709,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
                     if getattr(subobj, "children", None) is not None:
                         first_shown = any(m3.show for m3 in obj.style.model3d.data)
                     showlegend = True
-                    legendtext = getattr(getattr(obj, "style", None), "name", None)
+                    legendtext = getattr(getattr(obj, "style", None), "label", None)
                     legendtext = f"{obj!r}" if legendtext is None else legendtext
                 else:
                     legendtext = None
@@ -1108,8 +1108,8 @@ def display_plotly(
 
     if obj_list:
         style = getattr(obj_list[0], "style", None)
-        name = getattr(style, "name", None)
-        title = name if len(obj_list) == 1 else None
+        label = getattr(style, "label", None)
+        title = label if len(obj_list) == 1 else None
     else:
         title = "No objects to be displayed"
 
