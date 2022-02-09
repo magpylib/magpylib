@@ -49,6 +49,7 @@ ALLOWED_SENSORS_MSG = """Sensors must be either
 - Collection with at least one Sensor
 - 1D list thereof"""
 
+
 def wrong_obj_msg(*objs, allow="sources"):
     """return error message for wrong object type provided"""
     assert len(objs) <= 1, "only max one obj allowed"
@@ -67,16 +68,6 @@ def wrong_obj_msg(*objs, allow="sources"):
     return msg
 
 
-def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
-    """
-    determine if arg1 and arg2 lie close to each other
-    input: ndarray, shape (n,) or numpy-interpretable scalar
-    output: ndarray, dtype=bool
-    """
-    EDGESIZE = Config.edgesize
-    return np.isclose(arg1, arg2, rtol=0, atol=EDGESIZE)
-
-
 def format_star_input(inp):
     """
     *inputs are always wrapped in tuple. Formats *inputs of form "src", "src, src"
@@ -87,8 +78,7 @@ def format_star_input(inp):
     return list(inp)
 
 
-def format_obj_input(
-    *objects: Sequence, allow="sources+sensors", warn=True) -> list:
+def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
 
     ### Args:
@@ -103,7 +93,7 @@ def format_obj_input(
     # pylint: disable=protected-access
 
     obj_list = []
-    flatten_collection = not 'collections' in allow.split("+")
+    flatten_collection = not "collections" in allow.split("+")
     for obj in objects:
         if isinstance(obj, (tuple, list)):
             obj_list += format_obj_input(
@@ -280,8 +270,8 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             allowed_list.extend(LIBRARY_SOURCES)
         elif allowed == "sensors":
             allowed_list.extend(LIBRARY_SENSORS)
-        elif allowed =='collections':
-            allowed_list.extend(['Collection'])
+        elif allowed == "collections":
+            allowed_list.extend(["Collection"])
     new_list = []
     for obj in obj_list:
         if obj._object_type in allowed_list:
@@ -342,3 +332,51 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
         digits = 0
     new_number_str = f"{number / 10 ** digits:.{precision}g}"
     return f"{new_number_str}{char_between}{prefix}{unit}"
+
+
+def add_iteration_suffix(name):
+    """
+    adds iteration suffix. If name already ends with an integer it will continue iteration
+    examples:
+        'col' -> 'col_01'
+        'col' -> 'col_01'
+        'col1' -> 'col2'
+        'col_02' -> 'col_03'
+    """
+    # pylint: disable=import-outside-toplevel
+    import re
+
+    m = re.search(r"\d+$", name)
+    n = "00"
+    endstr = None
+    midchar = "_" if name[-1]!= '_' else ""
+    if m is not None:
+        midchar = ""
+        n = m.group()
+        endstr = -len(n)
+    name = f"{name[:endstr]}{midchar}{int(n)+1:0{len(n)}}"
+    return name
+
+
+def cart_to_cyl_coordinates(observer):
+    """
+    cartesian observer positions to cylindrical coordinates
+    observer: ndarray, shape (n,3)
+    """
+    x, y, z = observer.T
+    r, phi = np.sqrt(x ** 2 + y ** 2), np.arctan2(y, x)
+    return r, phi, z
+
+
+def cyl_field_to_cart(phi, Br, Bphi=None):
+    """
+    transform Br,Bphi to Bx, By
+    """
+    if Bphi is not None:
+        Bx = Br * np.cos(phi) - Bphi * np.sin(phi)
+        By = Br * np.sin(phi) + Bphi * np.cos(phi)
+    else:
+        Bx = Br * np.cos(phi)
+        By = Br * np.sin(phi)
+
+    return Bx, By

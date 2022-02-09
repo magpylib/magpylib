@@ -12,6 +12,7 @@ from magpylib._src.input_checks import (
     check_vector_type,
     check_path_format,
     check_rot_type)
+from magpylib._src.utility import add_iteration_suffix
 
 
 def pad_slice_path(path1, path2):
@@ -99,7 +100,12 @@ class BaseGeo(BaseTransform):
 
         # style
         self.style_class = self._get_style_class()
-        if style is not None or kwargs:
+        if style is not None or kwargs: #avoid style creation cost if not needed
+            self.style = self._process_style_kwargs(style=style, **kwargs)
+
+    @staticmethod
+    def _process_style_kwargs(style=None, **kwargs):
+        if kwargs:
             if style is None:
                 style = {}
             style_kwargs = {}
@@ -111,7 +117,7 @@ class BaseGeo(BaseTransform):
                         f"__init__() got an unexpected keyword argument {k!r}"
                     )
             style.update(**style_kwargs)
-            self.style = style
+        return style
 
     def _init_position_orientation(self, position, orientation):
         """
@@ -251,6 +257,18 @@ class BaseGeo(BaseTransform):
         from magpylib._src.obj_classes.class_Collection import Collection
         return Collection(self, obj)
 
+    def __radd__(self, other):
+        """
+        Add up sources to a Collection object. Allows to use `sum(objects)`
+
+        Returns
+        -------
+        Collection: Collection
+        """
+        if other==0:
+            return self
+        return self.__add__(other)
+
     # methods -------------------------------------------------------
     def reset_path(self):
         """
@@ -276,3 +294,48 @@ class BaseGeo(BaseTransform):
         self.position = (0,0,0)
         self.orientation = None
         return self
+
+    def copy(self, **kwargs):
+        """´Returns a copy of the current object instance. The `copy` method returns a deep copy of
+        the object, that is independant of the original object.
+
+        Parameters
+        ----------
+            kwargs: dict, optional
+                keyword arguments to be transmitted to the newly created object. Can be for example
+                `'position'`,`'orientation'`, `'style'` etc.
+
+        Examples
+        --------
+        Create an object and copy to an another position
+
+        >>> import magpylib as magpy
+        >>> obj = magpy.Sensor(position=(1,2,3))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> obj2 = obj.copy(position=(2,6,10))
+        >>> print(obj.position)
+        [1. 2. 3.]
+        >>> print(obj2.position)
+        [2. 6. 10.]
+
+        """
+        # pylint: disable=import-outside-toplevel
+        from copy import deepcopy
+        name = self.style.name
+        if name is None:
+            name = f"{type(self).__name__}_01"
+        else:
+            name = add_iteration_suffix(name)
+        obj_copy = deepcopy(self)
+        obj_copy.style.name = name
+        style_kwargs = {}
+        for k,v in kwargs.items():
+            if k.startswith('style'):
+                style_kwargs[k] = v
+            else:
+                setattr(obj_copy, k,v)
+        if style_kwargs:
+            style_kwargs = self._process_style_kwargs(**style_kwargs)
+            obj_copy.style.update(style_kwargs)
+        return obj_copy

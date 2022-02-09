@@ -115,7 +115,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (d1,d2,h,phi1,phi2), shape (5,), [mm, deg]."""
+        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), [mm, deg]."""
         # input type check
         if Config.checkinputs:
             check_vector_type(dim, "dimension")

@@ -16,7 +16,7 @@ def test_getB_level2_input_simple():
     col1 = magpy.Collection([pm1])
     col2 = magpy.Collection([pm1,pm2])
     col3 = magpy.Collection([pm1,pm2,pm3])
-    col4 = magpy.Collection([pm1,pm2,pm3,pm4])
+    col4 = sum([pm1,pm2,pm3,pm4])
     pos_obs = (1,2,3)
     sens1 = magpy.Sensor(position=pos_obs)
     sens2 = magpy.Sensor(pixel=pos_obs)

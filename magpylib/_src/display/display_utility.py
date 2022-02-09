@@ -264,7 +264,7 @@ def faces_cylinder(src, show_path):
     return all_faces
 
 
-def faces_cylinder_section(src, show_path):
+def faces_cylinder_segment(src, show_path):
     """
     Compute vertices and faces of CylinderSegment for plotting.
 
@@ -280,7 +280,7 @@ def faces_cylinder_section(src, show_path):
     # pylint: disable=protected-access
     res = 15  # surface discretization
 
-    # generate cylinder section faces
+    # generate cylinder segment faces
     r1, r2, h, phi1, phi2 = src.dimension
     res_tile = (
         int((phi2 - phi1) / 360 * 2 * res) + 2

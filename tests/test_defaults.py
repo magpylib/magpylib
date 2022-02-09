@@ -9,8 +9,6 @@ from magpylib._src.defaults.defaults_utility import (
 
 bad_inputs = {
     "checkinputs": (-1,),  # bool
-    "edgesize": (0,),  # float>0
-    "itercylinder": (0.1,),  # int>0
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
     "display_animation_fps": (0,),  # int>0
@@ -48,6 +46,12 @@ bad_inputs = {
     "display_style_current_arrow_size": (-1,),  # float>=0
     "display_style_current_arrow_width": (-1,),  # float>=0
     "display_style_sensor_size": (-1,),  # float>=0
+    'display_style_sensor_arrows_x_color': ("wrongcolor",),
+    'display_style_sensor_arrows_x_show': ("notbool",),
+    'display_style_sensor_arrows_y_color': ("wrongcolor",),
+    'display_style_sensor_arrows_y_show': ("notbool",),
+    'display_style_sensor_arrows_z_color': ("wrongcolor",),
+    'display_style_sensor_arrows_z_show': ("notbool",),
     "display_style_sensor_pixel_size": (-1,),  # float>=0
     "display_style_sensor_pixel_color": ("notbool",),
     "display_style_sensor_pixel_symbol": ("wrongsymbol",),
@@ -90,8 +94,6 @@ def test_defaults_bad_inputs(key, value, expected_errortype):
 # over the values for each key
 good_inputs = {
     "checkinputs": (True, False),  # bool
-    "edgesize": (1e-9, 2),  # float>0
-    "itercylinder": (10,),  # int>0
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
     "display_animation_fps": (10,),  # int>0
@@ -132,6 +134,12 @@ good_inputs = {
     "display_style_current_arrow_size": (0, 1),  # float>=0
     "display_style_current_arrow_width": (0, 1),  # float>=0
     "display_style_sensor_size": (0, 1),  # float>=0
+    'display_style_sensor_arrows_x_color': ('magenta',),
+    'display_style_sensor_arrows_x_show': (True, False),
+    'display_style_sensor_arrows_y_color': ('yellow',),
+    'display_style_sensor_arrows_y_show': (True, False),
+    'display_style_sensor_arrows_z_color': ('cyan',),
+    'display_style_sensor_arrows_z_show': (True, False),
     "display_style_sensor_pixel_size": (0, 1),  # float>=0
     "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
     "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
@@ -204,7 +212,7 @@ def test_bad_default_classes():
 
 def test_resetting_defaults():
     """test setting and resetting the config"""
-    magpy.defaults.itercylinder = 15
-    assert magpy.defaults.itercylinder == 15, "setting config failed"
+    magpy.defaults.checkinputs = False
+    assert magpy.defaults.checkinputs is False, "setting config failed"
     magpy.defaults.reset()
-    assert magpy.defaults.itercylinder == 50, "resetting config failed"
+    assert magpy.defaults.checkinputs is True, "resetting config failed"

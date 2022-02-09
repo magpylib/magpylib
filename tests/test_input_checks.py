@@ -215,16 +215,16 @@ def bad_dim_input9():
     magpy.current.Loop(current=1, diameter=(1,1))
 
 def bad_dim_input10():
-    """cylinder section bad dim shape"""
+    """cylinder segment bad dim shape"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,0,45))
 def bad_dim_input11():
-    """cylinder section bad dim d1>d2"""
+    """cylinder segment bad dim d1>d2"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(3,2,2,0,45))
 def bad_dim_input12():
-    """cylinder section bad dim phi1>phi2"""
+    """cylinder segment bad dim phi1>phi2"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,100,45))
 def bad_dim_input13():
-    """cylinder section bad dim phi2-phi1>360"""
+    """cylinder segment bad dim phi2-phi1>360"""
     magpy.magnet.CylinderSegment(magnetization=a3, dimension=(1,2,2,0,1145))
 
 
@@ -269,8 +269,66 @@ def bad_observer_input4():
     magpy.getB(src, 123)
 
 
+# test bad level0 inputs
+def bad_level0_field_input_0():
+    """sphere"""
+    mag = np.array([(100,200,300)])
+    dim1 = np.array((2,))
+    obs = np.array([(1,2,3)])
+    magpy.core.magnet_sphere_field(mag, dim1, obs, field='x')
+
+def bad_level0_field_input_1():
+    """cylinder"""
+    mag = np.array([(100,200,300)])
+    dim2 = np.array([(2,2)])
+    obs = np.array([(1,2,3)])
+    magpy.core.magnet_cylinder_field(mag, dim2, obs, field='y')
+
+def bad_level0_field_input_2():
+    """cylinder segment"""
+    mag = np.array([(100,200,300)])
+    dim5 = np.array([(0,1,2,0,360)])
+    obs = np.array([(1,2,3)])
+    magpy.core.magnet_cylinder_segment_field(mag, dim5, obs, field=123)
+
+def bad_level0_field_input_3():
+    """dipole"""
+    mag = np.array([(100,200,300)])
+    obs = np.array([(1,2,3)])
+    magpy.core.dipole_field(mag, obs, field=mag)
+
+def bad_level0_field_input_4():
+    """loop"""
+    cur = np.array((20,))
+    dim1 = np.array((2,))
+    obs = np.array([(1,2,3)])
+    magpy.core.current_loop_field(cur, dim1, obs, field=None)
+
+def bad_level0_field_input_5():
+    """line"""
+    cur = np.array((20,))
+    start = np.array([(1,1,1)])
+    end = np.array([(3,3,3)])
+    obs = np.array([(1,2,3)])
+    magpy.core.current_line_field(cur, start, end, obs, field=(1,2,3))
+
+def bad_level0_field_input_6():
+    """cuboid"""
+    mag = np.array([(100,200,300)])
+    dim3 = np.array([(2,2,2)])
+    obs = np.array([(1,2,3)])
+    magpy.core.magnet_cuboid_field(mag, dim3, obs, field='F')
+
 class TestExceptions(unittest.TestCase):
     """ test class for exception testing """
+    def test_level0_field_inputs(self):
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_0)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_1)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_2)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_3)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_4)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_5)
+        self.assertRaises(MagpylibBadUserInput, bad_level0_field_input_6)
 
     def test_init(self):
         """ missing inputs when calling display and getB"""

@@ -4,8 +4,8 @@ from scipy.spatial.transform import Rotation as R
 import magpylib
 from magpylib.magnet import Cuboid, Cylinder, Sphere
 from magpylib import getB, getH
-from magpylib._src.fields.field_wrap_BH_level2_dict import getB_dict, getH_dict
 from magpylib._src.exceptions import MagpylibBadUserInput
+
 
 def test_getB_dict1():
     """test field wrapper functions
@@ -24,14 +24,12 @@ def test_getB_dict1():
     rot = pm.orientation
 
     dic = {
-        'source_type': 'Cylinder',
-        'observer': pos_obs,
         'magnetization': mag,
         'dimension': dim,
         'position': pos,
         'orientation':rot
         }
-    B1 = getB_dict(**dic)
+    B1 = getB('Cylinder', pos_obs, **dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
@@ -45,13 +43,11 @@ def test_getB_dict2():
     pos = [(1,1,1),(2,2,2),(3,3,3),(5,5,5)]
 
     dic = {
-        'source_type': 'Cylinder',
-        'observer': pos_obs,
         'magnetization': mag,
         'dimension': dim,
         'position': pos
         }
-    B1 = getB_dict(**dic)
+    B1 = getB('Cylinder', pos_obs, **dic)
 
     pm = Cylinder(mag, dim, position=pos)
     B2 = getB([pm],pos_obs)
@@ -67,12 +63,10 @@ def test_getH_dict1():
     dim = [3,3]
 
     dic = {
-        'source_type': 'Cylinder',
-        'observer': pos_obs,
         'magnetization': mag,
         'dimension': dim,
         }
-    B1 = getH_dict(**dic)
+    B1 = getH('Cylinder', pos_obs, **dic)
 
     pm = Cylinder(mag, dim)
     B2 = pm.getH(pos_obs)
@@ -91,14 +85,12 @@ def test_getB_dict3():
     rot = R.from_quat([(t,.2,.3,.4) for t in np.linspace(0,.1,n)])
 
     dic = {
-        'source_type': 'Cuboid',
-        'observer': pos_obs,
         'magnetization': mag,
         'dimension': dim,
         'position': pos,
         'orientation': rot
         }
-    B1 = getB_dict(**dic)
+    B1 = getB('Cuboid', pos_obs, **dic)
 
     B2 = []
     for i in range(n):
@@ -117,12 +109,10 @@ def test_getH_dict3():
     dim = 3
 
     dic = {
-        'source_type': 'Sphere',
-        'observer': pos_obs,
         'magnetization': mag,
         'diameter': dim
         }
-    B1 = getH_dict(**dic)
+    B1 = getH('Sphere', pos_obs, **dic)
 
     B2 = []
     for i in range(3):
@@ -144,14 +134,12 @@ def test_getB_dict4():
     rot = R.from_quat([(t,.2,.3,.4) for t in np.linspace(0,.1,n)])
 
     dic = {
-        'source_type': 'Sphere',
-        'observer': pos_obs,
         'magnetization': mag,
         'diameter': dim,
         'position': pos,
         'orientation': rot
         }
-    B1 = getB_dict(**dic)
+    B1 = getB('Sphere', pos_obs, **dic)
 
     B2 = []
     for i in range(n):
@@ -165,11 +153,11 @@ def test_getB_dict4():
 def test_geBHv_dipole():
     """ test if Dipole implementation gives correct output
     """
-    B = getB_dict(source_type='Dipole', moment=(1,2,3), observer=(1,1,1))
+    B = getB('Dipole', (1,1,1), moment=(1,2,3))
     Btest = np.array([0.07657346,0.06125877,0.04594407])
     assert np.allclose(B,Btest)
 
-    H = getH_dict(source_type='Dipole', moment=(1,2,3), observer=(1,1,1))
+    H = getH('Dipole', (1,1,1), moment=(1,2,3))
     Htest = np.array([0.06093522,0.04874818,0.03656113])
     assert np.allclose(H,Htest)
 
@@ -177,11 +165,11 @@ def test_geBHv_dipole():
 def test_geBHv_circular():
     """ test if Loop implementation gives correct output
     """
-    B = getB_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
+    B = getB('Loop', (0,0,0), current=1, diameter=2)
     Btest = np.array([0,0,0.6283185307179586])
     assert np.allclose(B,Btest)
 
-    H = getH_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
+    H = getH('Loop', (0,0,0), current=1, diameter=2)
     Htest = np.array([0,0,0.6283185307179586*10/4/np.pi])
     assert np.allclose(H,Htest)
 
@@ -189,10 +177,10 @@ def test_geBHv_circular():
 def test_getBHv_squeeze():
     """ test if squeeze works
     """
-    B1 = getB_dict(source_type='Loop', current=1, diameter=2, observer=(0,0,0))
-    B2 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)])
-    B3 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)], squeeze=False)
-    B4 = getB_dict(source_type='Loop', current=1, diameter=2, observer=[(0,0,0)]*2)
+    B1 = getB('Loop', (0,0,0)    , current=1, diameter=2)
+    B2 = getB('Loop', [(0,0,0)]  , current=1, diameter=2)
+    B3 = getB('Loop', [(0,0,0)]  , current=1, diameter=2, squeeze=False)
+    B4 = getB('Loop', [(0,0,0)]*2, current=1, diameter=2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1
@@ -203,9 +191,9 @@ def test_getBHv_squeeze():
 def test_getBHv_line():
     """ test getBHv with Line
     """
-    H = getH_dict(
-        source_type='Line',
-        observer=[(1,1,1),(1,2,3),(2,2,2)],
+    H = getH(
+        'Line',
+        [(1,1,1),(1,2,3),(2,2,2)],
         current=1,
         segment_start=(0,0,0),
         segment_end=[(0,0,0),(2,2,2),(2,2,2)])
@@ -219,30 +207,30 @@ def test_getBHv_line2():
     x = 0.14142136
 
     # z-line on x=1
-    B1 = getB_dict(source_type='Line', observer=(0,0,0), current=1,
+    B1 = getB('Line', (0,0,0), current=1,
         segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B1, np.array([0,-x,0]))
 
     # move z-line to x=-1
-    B2 = getB_dict(source_type='Line', position=(-2,0,0), observer=(0,0,0), current=1,
+    B2 = getB('Line', (0,0,0), position=(-2,0,0), current=1,
         segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B2, np.array([0,x,0]))
 
     # rotate 1
     rot = R.from_euler('z', 90, degrees=True)
-    B3 = getB_dict(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
+    B3 = getB('Line', (0,0,0), orientation=rot, current=1,
         segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B3, np.array([x,0,0]))
 
     # rotate 2
     rot = R.from_euler('x', 90, degrees=True)
-    B4 = getB_dict(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
+    B4 = getB('Line', (0,0,0), orientation=rot, current=1,
         segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B4, np.array([0,0,-x]))
 
     # rotate 3
     rot = R.from_euler('y', 90, degrees=True)
-    B5 = getB_dict(source_type='Line', orientation=rot, observer=(0,0,0), current=1,
+    B5 = getB('Line', (0,0,0), orientation=rot, current=1,
         segment_start=(1,0,-1), segment_end=(1,0,1))
     assert np.allclose(B5, np.array([0,-x,0]))
 
@@ -286,12 +274,13 @@ def test_BHv_Cylinder_FEM():
         (0.0121250819870128,0.0104894041620816,0.00303690098080925)])
 
     # compare against FEM
-    B = getB_dict(
-        source_type='CylinderSegment',
+    B = getB(
+        'CylinderSegment',
+        obsp,
         dimension=(1,2,1,90,360),
         magnetization=np.array((1,2,3))*1000/np.sqrt(14),
         position = (0,0,0.5),
-        observer=obsp)
+    )
 
     err = np.linalg.norm(B-Bfem*1000, axis=1)/np.linalg.norm(B,axis=1)
     assert np.amax(err)<0.01
@@ -300,26 +289,29 @@ def test_BHv_Cylinder_FEM():
 def test_BHv_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
-    B1 = getB_dict(
-        source_type='CylinderSegment',
+    B1 = getB(
+        'CylinderSegment',
+        (1,2,3),
         dimension=[(0,1,2,20,120), (0,1,2,120,220), (0,1,2,220,380)],
         magnetization=(22,33,44),
-        observer=(1,2,3))
+    )
     B1 = np.sum(B1,axis=0)
 
     # one big cylinder
-    B2 = getB_dict(
-        source_type='CylinderSegment',
+    B2 = getB(
+        'CylinderSegment',
+        (1,2,3),
         dimension=(0,1,2,0,360),
         magnetization=(22,33,44),
-        observer=(1,2,3))
+    )
 
     # compute with solid cylinder code
-    B3 = getB_dict(
-        source_type='Cylinder',
+    B3 = getB(
+        'Cylinder',
+        (1,2,3),
         dimension=(2,2),
         magnetization=(22,33,44),
-        observer=(1,2,3))
+    )
 
     assert np.allclose(B1,B2)
     assert np.allclose(B1,B3)

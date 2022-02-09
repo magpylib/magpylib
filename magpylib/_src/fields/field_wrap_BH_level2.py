@@ -32,8 +32,8 @@ def tile_dim_cylinder(group: list, n_pp: int):
     return dimv
 
 
-def tile_dim_cylinder_section(group: list, n_pp: int):
-    """ tile up cylinder section dimensions.
+def tile_dim_cylinder_segment(group: list, n_pp: int):
+    """ tile up cylinder segment dimensions.
     """
     dims = np.array([src.dimension for src in group])
     dimv = np.tile(dims, n_pp).reshape((-1, 5))
@@ -105,7 +105,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     elif src_type == 'CylinderSegment':
         magv = tile_mag(group, n_pp)
-        dimv = tile_dim_cylinder_section(group, n_pp)
+        dimv = tile_dim_cylinder_segment(group, n_pp)
         kwargs.update({'magnetization':magv,  'dimension':dimv})
 
     elif src_type == 'Dipole':
@@ -135,7 +135,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     return kwargs
 
 
-def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray:
+def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     """...
 
     Parameters
@@ -143,13 +143,14 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     - bh (bool): True=getB, False=getH
     - sources (src_obj or list): source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
-    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K sensors with
-        similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
-    - sumup (bool): default=False returns [B1,B2,...] for every source, True returns sum(Bi)
+    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K
+        sensors with similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
+    kwargs:
+    - 'sumup' (bool): False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
-    - squeeze (bool): default=True, If True output is squeezed (axes of length 1 are eliminated)
-    - kwargs : if not empty, returns getBH_dict_level2 with source_type=sources and observer=
-        observers
+    - 'squeeze' (bool): True output is squeezed (axes of length 1 are eliminated)
+    - 'field' (str): 'B' computes B field, 'H' computes H-field
+    - getBH_dict inputs
 
     Returns
     -------
@@ -169,22 +170,24 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
-
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
         return getBH_dict_level2(
-            bh = bh,
             source_type=sources,
             observer=observers,
-            sumup=sumup,
-            squeeze=squeeze,
             **kwargs
         )
-    if kwargs:
+
+    # bad user inputs mixing getBH_dict kwargs with object oriented interface
+    kwargs_check = kwargs.copy()
+    for popit in ['field', 'sumup', 'squeeze']:
+        kwargs_check.pop(popit)
+    if kwargs_check:
         raise MagpylibBadUserInput(
-            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source is "
-            "defined by a string (e.g. sources='Cylinder')"
+            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
+            "is defined by a string (e.g. sources='Cylinder')"
         )
+
     # format sources input:
     #   input: allow only bare src objects or 1D lists/tuple of src and col
     #   out: sources = ordered list of sources
@@ -265,7 +268,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
     groups = {}
     for ind,src in enumerate(src_list):
         if src._object_type=='CustomSource':
-            group_key = src.field_B_lambda if bh else src.field_H_lambda
+            group_key = src.field_B_lambda if kwargs['field']=='B' else src.field_H_lambda
         else:
             group_key = src._object_type
         if group_key not in groups:
@@ -279,7 +282,7 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
         lg = len(group['sources'])
         gr = group['sources']
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(bh=bh, **src_dict)       # compute field
+        B_group = getBH_level1(field=kwargs['field'], **src_dict)       # compute field
         B_group = B_group.reshape((lg,m,n_pix,3))       # reshape (2% slower for large arrays)
         for i in range(lg):                             # put into dedicated positions in B
             B[group['order'][i]] = B_group[i]
@@ -311,19 +314,19 @@ def getBH_level2(bh, sources, observers, sumup, squeeze, **kwargs) -> np.ndarray
                 for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
                     Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
                     Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
-                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotation
-                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3)) # ov
+                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotat
+                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3))
 
     # rearrange sensor-pixel shape
     sens_px_shape = (k,) + pix_shape
     B = B.reshape((l0,m)+sens_px_shape)
 
     #
-    if sumup:
+    if kwargs['sumup']:
         B = np.sum(B, axis=0, keepdims=True)
 
     # reduce all size-1 levels
-    if squeeze:
+    if kwargs['squeeze']:
         B = np.squeeze(B)
 
     # reset tiled objects

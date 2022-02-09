@@ -7,7 +7,7 @@
 <a href="https://anaconda.org/conda-forge/magpylib">
 <img align='center' src="https://anaconda.org/conda-forge/magpylib/badges/platforms.svg">
   </a>
-<a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=master"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=master"> </a>
+<a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=main"> <img align='center' src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=main"> </a>
 <a href="https://circleci.com/gh/magpylib/magpylib"> <img align='center' src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg"> </a>
 
 </p>
@@ -19,7 +19,8 @@
 
 <p align="center"> Test Coverage:
 <a href="https://codecov.io/gh/magpylib/magpylib">
-  <img src="https://codecov.io/gh/magpylib/magpylib/branch/master/graph/badge.svg" />
+  <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg" />
+
 </a>
 <a href="https://lgtm.com/projects/g/magpylib/magpylib/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/magpylib/magpylib.svg?logo=lgtm&logoWidth=18"/></a>
 </p>

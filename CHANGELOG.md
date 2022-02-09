@@ -3,17 +3,19 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [Unreleased]
+## [Unreleased v4]
 This is a major update that includes
 
 - API changes
 - New features
 - Improved internal workings
 ### Added
+- New computaion core: ([#376](https://github.com/magpylib/magpylib/issues/376))
+  - top level subpackage `magpylib.core` where all field expression implementations can be accessed directly.
 - New sources classes:
-  - New `CylinderSegment` computation with sector angles `(r1,r2,h,phi1,phi2)`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
+  - New `CylinderSegment` computation with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
   - New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
-- New display features:
+- New `display` (now `show`) features:
   - 🚀 New `plotly` plotting backend: ([#396](https://github.com/magpylib/magpylib/pull/396), [#353](https://github.com/magpylib/magpylib/issues/353))
     - `plotly` remains a optional dependency, needs extra installation ([#395](https://github.com/magpylib/magpylib/issues/395))
     - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
@@ -34,11 +36,11 @@ This is a major update that includes
 ### Changed
 - `Box` class renamed to `Cuboid`. ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`. ([#402](https://github.com/magpylib/magpylib/pull/402))
-- `magpylib.defaults.edgesize` set to `1e-8` by default to avoid problems in `Cuboid` corners.
 - Magpylib objects can now be _initialized_ **without excitation** and **without dimension** attributes.
 - `magpylib.Config` parameters are now in `magpylib.defaults` ([#387](https://github.com/magpylib/magpylib/issues/387))
 - `getBv` and `getHv` are now integrated into `getB` and `getH` ([#449](https://github.com/magpylib/magpylib/pull/449))
-- Renamed `display` arguments
+- `display` is renamed to `show` ([#453](https://github.com/magpylib/magpylib/pull/453), [#451](https://github.com/magpylib/magpylib/issues/451))
+- Renamed `show` (prev. `display`) arguments
   - `axis` ➡️ `canvas`
   - `show_direction` ➡️ `style_magnetization_show`
   - `show_path` ➡️ `path`
@@ -46,14 +48,21 @@ This is a major update that includes
   - `size_direction` ➡️ `style_magnetization_size`
 - `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 - `show_path` in the `display` function is integrated in styling options with `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
-- `display` is renamed to `show` ([#453](https://github.com/magpylib/magpylib/pull/453), [#451](https://github.com/magpylib/magpylib/issues/451))
 
 ### Updated
 - Computation:
-  - Updated `Cylinder` computation with a new exact closed form implementation without iteration, from a new paper (F.Slanovc, preprint-2021). Computation times are around 50-100 µs, with some performance improvement planned in the future.
-  - Added `__len__` dunder for `Collection` ([#383](https://github.com/magpylib/magpylib/issues/383))
+  - Improoved field computations: ([#374](https://github.com/magpylib/magpylib/issues/374))
+    - negative dimension input taken as absolute when only positive dimensions are allowed
+    - scale invariant field evaluations
+    - special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
+    - supress numpy divide/invalid warnings. return np.nan as (0,0,0) (e.g. on magnet edges or on line currents) and allow return of np.inf.
+  - Updated `Cylinder` diametral magnetization computation with novel closed form implementation. 
+    - Much faster (100-1000x)
+    - Numerically stable for small `r`.
   - Improved performance of `getB` and `getH` functions and methods.
-  - Improved numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
+  - Improved numerical stability of current Loop field. [#374](https://github.com/magpylib/magpylib/issues/374) 
+- Other
+  - Added `__len__` dunder for `Collection` ([#383](https://github.com/magpylib/magpylib/issues/383))
 - Docs:
   - General docs improvements ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
   - [MATLAB example](https://magpylib.readthedocs.io/en/latest/_pages/3_MATLAB/#example) updated ([#346](https://github.com/magpylib/magpylib/issues/346), [#366](https://github.com/magpylib/magpylib/pull/366))

@@ -1,5 +1,4 @@
 """Collection class code"""
-import copy
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
@@ -263,28 +262,6 @@ class BaseCollection(BaseDisplayRepr):
         self._update_src_and_sens()
         return self
 
-    def copy(self):
-        """
-        Returns a copy of the Collection.
-
-        Returns
-        -------
-        self: Collection
-
-        Examples
-        --------
-        Create a deep copy of the current Collection:
-
-        >>> import magpylib as magpy
-        >>> col = magpy.Collection()
-        >>> print(id(col))
-        2221754911040
-        >>> col2 = col.copy()
-        >>> print(id(col2))
-        2221760504160
-
-        """
-        return copy.copy(self)
 
     def set_children_styles(self, arg=None, **kwargs):
         """
@@ -382,7 +359,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(True, sources, sensors, sumup=False, squeeze=squeeze)
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
 
     def getH(self, *children, squeeze=True):
         """
@@ -411,7 +388,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(False, sources, sensors, sumup=False, squeeze=squeeze)
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='H')
 
 
 class Collection(BaseGeo, BaseCollection):

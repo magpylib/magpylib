@@ -48,7 +48,7 @@ class BaseGetBH:
         --------
         """
         observers = format_star_input(observers)
-        return getBH_level2(True, self, observers, False, squeeze)
+        return getBH_level2(self, observers, sumup=False, squeeze=squeeze, field='B')
 
     # ------------------------------------------------------------------
     # INTERFACE
@@ -81,4 +81,4 @@ class BaseGetBH:
         --------
         """
         observers = format_star_input(observers)
-        return getBH_level2(False, self, observers, False, squeeze)
+        return getBH_level2(self, observers, sumup=False, squeeze=squeeze, field='H')

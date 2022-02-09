@@ -9,6 +9,19 @@ from magpylib._src.exceptions import (
 )
 
 
+def check_field_input(inp, origin):
+    """
+    check field input
+    """
+    if isinstance(inp, str):
+        if inp == 'B':
+            return True
+        if inp == 'H':
+            return False
+    msg = f'{origin} input can only be "field=B" or "field=H".'
+    raise MagpylibBadUserInput(msg)
+
+
 def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
     # pylint: disable=protected-access
@@ -76,14 +89,14 @@ def check_rot_type(inp):
 
 def check_start_type(start):
     """start input must be int or str"""
-    if not (isinstance(start, int) or start == 'auto'):
+    if not (isinstance(start, (int, np.int_)) or start == 'auto'):
         msg = 'start input must be int or str ("auto")'
         raise MagpylibBadUserInput(msg)
 
 
 def check_angle_type(angle):
     """angle input must be scalar or vector"""
-    if not isinstance(angle, (int, float, list, tuple, np.ndarray)):
+    if not isinstance(angle, (int, float, list, tuple, np.ndarray, np.int_, np.float_)):
         msg = (
             "angle input must be scalar (int, float) or vector (list, tuple, ndarray)."
         )
@@ -128,7 +141,7 @@ def check_degree_type(deg):
 
 def check_scalar_type(inp, origin):
     """scalar input must be int or float or nan"""
-    if not (isinstance(inp, (int, float)) or inp is None):
+    if not (isinstance(inp, (int, float, np.int_, np.float_)) or inp is None):
         msg = origin + " input must be scalar (int or float)."
         raise MagpylibBadUserInput(msg)
 
@@ -149,16 +162,6 @@ def check_vector_type(inp, origin):
     if not isinstance(inp, (list, tuple, np.ndarray)):
         msg = origin + " input must be vector type (list, tuple or ndarray)."
         raise MagpylibBadUserInput(msg)
-
-
-# def check_vector_init(inp, origin):
-#     """
-#     - check if vector input was initialized (former None vector)
-#     - return error msg with reference to origin
-#     """
-#     if None in inp:
-#         msg = origin + ' must be initialized.'
-#         raise MagpylibBadUserInput(msg)
 
 
 def check_vector_format(inp, shape, origin):

@@ -67,6 +67,8 @@ def test_Sensor_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
+    sens.style.arrows.z.color = 'magenta'
+    sens.style.arrows.z.show = False
     poz = np.linspace((.4,.4,.4), (13.2,13.2,13.2), 33)
     sens.move(poz, start=-1)
     x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_frames=15)

@@ -337,7 +337,8 @@ def make_Sensor(
         else ""
     )
     name, name_suffix = get_name_and_suffix("Sensor", default_suffix, style)
-    sensor = get_sensor_mesh()
+    style_arrows = style.arrows.as_dict(flatten=True, separator='_')
+    sensor = get_sensor_mesh(**style_arrows, center_color=color)
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
@@ -519,9 +520,7 @@ def get_plotly_traces(
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
-            base_vertices = min(
-                50, Config.itercylinder
-            )  # no need to render more than 50 vertices
+            base_vertices = 50
             kwargs.update(
                 mag=input_obj.magnetization,
                 diameter=input_obj.dimension[0],
@@ -530,9 +529,7 @@ def get_plotly_traces(
             )
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
-            vert = min(
-                50, Config.itercylinder
-            )  # no need to render more than 50 vertices
+            vert = 50
             kwargs.update(
                 mag=input_obj.magnetization, dimension=input_obj.dimension, vert=vert,
             )

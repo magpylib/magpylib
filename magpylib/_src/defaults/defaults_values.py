@@ -2,11 +2,15 @@
 
 DEFAULTS = {
     "checkinputs": True,
-    "edgesize": 1e-8,
-    "itercylinder": 50,
     "display": {
         "autosizefactor": 10,
-        "animation": {"fps":20, "maxfps": 30, "maxframes": 200, "time": 5, "slider": True},
+        "animation": {
+            "fps": 20,
+            "maxfps": 30,
+            "maxframes": 200,
+            "time": 5,
+            "slider": True,
+        },
         "backend": "matplotlib",
         "colorsequence": (
             "#2E91E5",
@@ -62,7 +66,15 @@ DEFAULTS = {
                 }
             },
             "current": {"arrow": {"show": True, "size": 1, "width": 2}},
-            "sensor": {"size": 1, "pixel": {"size": 1, "color": None, "symbol": "o"}},
+            "sensor": {
+                "size": 1,
+                "pixel": {"size": 1, "color": None, "symbol": "o"},
+                "arrows": {
+                    "x": {"color": "red"},
+                    "y": {"color": "green"},
+                    "z": {"color": "blue"},
+                },
+            },
             "dipole": {"size": 1, "pivot": "middle"},
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
