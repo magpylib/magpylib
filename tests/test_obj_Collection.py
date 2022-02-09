@@ -75,7 +75,7 @@ def test_Collection_basics():
         col1 += col2
         col1 - pm5 - pm4
         col1.remove(pm1)
-        col3 = col1.copy() + pm5 + pm4 + pm1
+        col3 = col1 + pm5 + pm4 + pm1
         col1.add(pm5, pm4, pm1)
 
         # 18 subsequent operations
