@@ -76,7 +76,7 @@ class BaseStyle(MagicProperties):
 
     Properties
     ----------
-    label : str, default=None
+    label: str, default=None
         label of the class instance, can be any string.
 
     description: dict or Description, default=None
@@ -656,7 +656,7 @@ class MagnetStyle(BaseStyle, MagnetProperties):
 
     Properties
     ----------
-    label : str, default=None
+    label: str, default=None
         label of the class instance, can be any string.
 
     description: dict or Description, default=None
@@ -846,7 +846,7 @@ class SensorStyle(BaseStyle, SensorProperties):
 
     Properties
     ----------
-    label : str, default=None
+    label: str, default=None
         label of the class instance, can be any string.
 
     description: dict or Description, default=None
@@ -983,7 +983,7 @@ class CurrentStyle(BaseStyle, CurrentProperties):
 
     Properties
     ----------
-    label : str, default=None
+    label: str, default=None
         label of the class instance, can be any string.
 
     description: dict or Description, default=None
@@ -1219,7 +1219,7 @@ class DipoleStyle(BaseStyle, DipoleProperties):
 
     Properties
     ----------
-    label : str, default=None
+    label: str, default=None
         label of the class instance, can be any string.
 
     description: dict or Description, default=None
