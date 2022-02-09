@@ -76,8 +76,8 @@ class BaseStyle(MagicProperties):
 
     Properties
     ----------
-    name : str, default=None
-        name of the class instance, can be any string.
+    label : str, default=None
+        label of the class instance, can be any string.
 
     description: dict or Description, default=None
         object description properties
@@ -101,7 +101,7 @@ class BaseStyle(MagicProperties):
 
     def __init__(
         self,
-        name=None,
+        label=None,
         description=None,
         color=None,
         opacity=None,
@@ -110,7 +110,7 @@ class BaseStyle(MagicProperties):
         **kwargs,
     ):
         super().__init__(
-            name=name,
+            label=label,
             description=description,
             color=color,
             opacity=opacity,
@@ -120,13 +120,13 @@ class BaseStyle(MagicProperties):
         )
 
     @property
-    def name(self):
-        """name of the class instance, can be any string"""
-        return self._name
+    def label(self):
+        """label of the class instance, can be any string"""
+        return self._label
 
-    @name.setter
-    def name(self, val):
-        self._name = val if val is None else str(val)
+    @label.setter
+    def label(self, val):
+        self._label = val if val is None else str(val)
 
     @property
     def description(self):
@@ -656,8 +656,8 @@ class MagnetStyle(BaseStyle, MagnetProperties):
 
     Properties
     ----------
-    name : str, default=None
-        name of the class instance, can be any string.
+    label : str, default=None
+        label of the class instance, can be any string.
 
     description: dict or Description, default=None
         object description properties
@@ -846,8 +846,8 @@ class SensorStyle(BaseStyle, SensorProperties):
 
     Properties
     ----------
-    name : str, default=None
-        name of the class instance, can be any string.
+    label : str, default=None
+        label of the class instance, can be any string.
 
     description: dict or Description, default=None
         object description properties
@@ -983,8 +983,8 @@ class CurrentStyle(BaseStyle, CurrentProperties):
 
     Properties
     ----------
-    name : str, default=None
-        name of the class instance, can be any string.
+    label : str, default=None
+        label of the class instance, can be any string.
 
     description: dict or Description, default=None
         object description properties
@@ -1219,8 +1219,8 @@ class DipoleStyle(BaseStyle, DipoleProperties):
 
     Properties
     ----------
-    name : str, default=None
-        name of the class instance, can be any string.
+    label : str, default=None
+        label of the class instance, can be any string.
 
     description: dict or Description, default=None
         object description properties

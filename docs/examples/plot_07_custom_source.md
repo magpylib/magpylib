@@ -130,8 +130,8 @@ interp_cube = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
 ```{code-cell} ipython3
 matplotlib_trace = {
     'type':'plot',
-    'xs': np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])* 0.5 * dim[0], 
-    'ys': np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])* 0.5 * dim[0], 
+    'xs': np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])* 0.5 * dim[0],
+    'ys': np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])* 0.5 * dim[0],
     'zs': np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])* 0.5 * dim[0],
     'ls': '-',
 }
@@ -149,17 +149,17 @@ plotly_trace = {
 # define user defined 3d representation for each plotting backend
 interp_cube.style.model3d.showdefault = False # hide default 3D-model
 interp_cube.style.model3d.add_trace(
-    backend='matplotlib', 
-    trace=matplotlib_trace, 
+    backend='matplotlib',
+    trace=matplotlib_trace,
     show=True,
     coordsargs={'x':'xs', 'y':'ys', 'z':'zs'}
 )
 interp_cube.style.model3d.add_trace(
-    backend='plotly', 
+    backend='plotly',
     trace=plotly_trace,
     show=True
 )
-interp_cube.style.name = 'Interpolated cuboid field'
+interp_cube.style.label = 'Interpolated cuboid field'
 ```
 
 ## Testing the accuracy of the interpolation
