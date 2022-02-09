@@ -74,7 +74,7 @@ class BaseStyle(MagicProperties):
     """
     Base class for display styling options of `BaseGeo` objects
 
-    Properties
+    Parameters
     ----------
     label: str, default=None
         label of the class instance, can be any string.
@@ -185,7 +185,7 @@ class Description(MagicProperties):
     """
     Defines properties for a description object
 
-    Properties
+    Parameters
     ----------
     text: str, default=None
         Object description text
@@ -228,7 +228,7 @@ class Model3d(MagicProperties):
     """
     Defines properties for the 3d model representation of the magpylib objects
 
-    Properties
+    Parameters
     ----------
     showdefault: bool, default=True
         Shows/hides default 3D-model
@@ -320,7 +320,7 @@ class Trace3d(MagicProperties):
     to the main object to be displayed and moved automatically with it. This feature also allows
     the user to replace the original 3d representation of the object
 
-    Properties
+    Parameters
     ----------
     show : bool, default=None
         shows/hides model3d object based on provided trace:
@@ -450,7 +450,7 @@ class Magnetization(MagicProperties):
     """
     Defines magnetization styling properties
 
-    Properties
+    Parameters
     ----------
     show : bool, default=None
         if `True` shows magnetization direction based on active plotting backend
@@ -510,7 +510,7 @@ class MagnetizationColor(MagicProperties):
 
     Note: This feature is only relevant for the plotly backend.
 
-    Properties
+    Parameters
     ----------
     north: str, default=None
         defines the color of the magnetic north pole
@@ -615,7 +615,7 @@ class MagnetProperties:
     """
     Defines the specific styling properties of objects of the `magnet` family
 
-    Properties
+    Parameters
     ----------
     magnetization: dict or Magnetization, default=None
         Magnetization styling with `'show'`, `'size'`, `'color'` properties
@@ -641,7 +641,7 @@ class Magnet(MagicProperties, MagnetProperties):
     """
     Defines the specific styling properties of objects of the `magnet` family
 
-    Properties
+    Parameters
     ----------
     magnetization: dict or Magnetization, default=None
 
@@ -654,7 +654,7 @@ class Magnet(MagicProperties, MagnetProperties):
 class MagnetStyle(BaseStyle, MagnetProperties):
     """Defines the styling properties of objects of the `magnet` family with base properties
 
-    Properties
+    Parameters
     ----------
     label: str, default=None
         label of the class instance, can be any string.
@@ -777,7 +777,7 @@ class SensorProperties:
     """
     Defines the specific styling properties of objects of the `sensor` family
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         positive float for relative sensor to canvas size
@@ -825,7 +825,7 @@ class Sensor(MagicProperties, SensorProperties):
     """
     Defines the specific styling properties of objects of the `sensor` family
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         positive float for relative sensor to canvas size
@@ -844,7 +844,7 @@ class Sensor(MagicProperties, SensorProperties):
 class SensorStyle(BaseStyle, SensorProperties):
     """Defines the styling properties of objects of the `sensor` family with base properties
 
-    Properties
+    Parameters
     ----------
     label: str, default=None
         label of the class instance, can be any string.
@@ -886,7 +886,7 @@ class Pixel(MagicProperties):
     """
     Defines the styling properties of sensor pixels
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         defines the relative pixel size:
@@ -948,7 +948,7 @@ class CurrentProperties:
     """
     Defines the specific styling properties of objects of the `current` family
 
-    Properties
+    Parameters
     ----------
     arrow: dict or Arrow, default=None
         Arrow class or dict with `'show'`, `'size'` properties/keys
@@ -968,7 +968,7 @@ class Current(MagicProperties, CurrentProperties):
     """
     Defines the specific styling properties of objects of the `current` family
 
-    Properties
+    Parameters
     ----------
     arrow: dict or Arrow, default=None
         Arrow class or dict with 'show', 'size' properties/keys
@@ -981,7 +981,7 @@ class Current(MagicProperties, CurrentProperties):
 class CurrentStyle(BaseStyle, CurrentProperties):
     """Defines the styling properties of objects of the `current` family and base properties
 
-    Properties
+    Parameters
     ----------
     label: str, default=None
         label of the class instance, can be any string.
@@ -1017,7 +1017,7 @@ class Arrow(MagicProperties):
     """
     Defines the styling properties of current arrows
 
-    Properties
+    Parameters
     ----------
     show: bool, default=None
         if `True` current direction is shown with an arrow
@@ -1076,7 +1076,7 @@ class Marker(MagicProperties):
     """
     Defines the styling properties of plot markers
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         marker size
@@ -1131,7 +1131,7 @@ class Markers(BaseStyle):
     """
     Defines the styling properties of the markers trace
 
-    Properties
+    Parameters
     ----------
     marker: dict, Markers, default=None
         Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
@@ -1155,7 +1155,7 @@ class DipoleProperties:
     """
     Defines the specific styling properties of the objects of the `dipole` family
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         positive float for relative dipole to size to canvas size
@@ -1200,7 +1200,7 @@ class Dipole(MagicProperties, DipoleProperties):
     """
     Defines the specific styling properties of the objects of the `dipole` family
 
-    Properties
+    Parameters
     ----------
     size: float, default=None
         positive float for relative dipole to size to canvas size
@@ -1217,7 +1217,7 @@ class Dipole(MagicProperties, DipoleProperties):
 class DipoleStyle(BaseStyle, DipoleProperties):
     """Defines the styling properties of the objects of the `dipole` family and base properties
 
-    Properties
+    Parameters
     ----------
     label: str, default=None
         label of the class instance, can be any string.
@@ -1257,7 +1257,7 @@ class Path(MagicProperties):
     """
     Defines the styling properties of an object's path
 
-    Properties
+    Parameters
     ----------
     marker: dict, Markers, default=None
         Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
@@ -1371,7 +1371,7 @@ class Line(MagicProperties):
     """
     Defines Line styling properties
 
-    Properties
+    Parameters
     ----------
     style: str, default=None
         Can be one of:
@@ -1431,7 +1431,7 @@ class DisplayStyle(MagicProperties):
     Base class containing styling properties for all object families. The properties of the
     sub-classes get set to hard coded defaults at class instantiation
 
-    Properties
+    Parameters
     ----------
     base: dict, Base, default=None
         base properties common to all families
