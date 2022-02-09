@@ -687,6 +687,92 @@ class MagnetStyle(BaseStyle, MagnetProperties):
         super().__init__(**kwargs)
 
 
+class ArrowCS(MagicProperties):
+    """Triple coordinate system arrow properties
+
+    Parameters
+    ----------
+    x: dict or ArrowSingle, default=None
+        x-direction `Arrowsingle` class or dict with equivalent key/value pairs
+        (e.g. `color`, `show`)
+
+    y: dict or ArrowSingle, default=None
+        y-direction `Arrowsingle` class or dict with equivalent key/value pairs
+        (e.g. `color`, `show`)
+
+    z: dict or ArrowSingle, default=None
+        z-direction `Arrowsingle` class or dict with equivalent key/value pairs
+        (e.g. `color`, `show`)
+    """
+
+    def __init__(self, x=None, y=None, z=None):
+        super().__init__(x=x, y=y, z=z)
+
+    @property
+    def x(self):
+        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        return self._x
+
+    @x.setter
+    def x(self, val):
+        self._x = validate_property_class(val, "x", ArrowSingle, self)
+
+    @property
+    def y(self):
+        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        return self._y
+
+    @y.setter
+    def y(self, val):
+        self._y = validate_property_class(val, "y", ArrowSingle, self)
+
+    @property
+    def z(self):
+        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        return self._z
+
+    @z.setter
+    def z(self, val):
+        self._z = validate_property_class(val, "z", ArrowSingle, self)
+
+
+class ArrowSingle(MagicProperties):
+    """Single coordinate system arrow properties
+
+    Parameters
+    ----------
+    show: bool, default=True
+        show/hide arrow
+
+    color: color, default=None
+        valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+    """
+    def __init__(self, show=True, color=None):
+        super().__init__(show=show, color=color)
+
+    @property
+    def show(self):
+        """show/hide arrow"""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
+            f" but received {repr(val)} instead"
+        )
+        self._show = val
+
+    @property
+    def color(self):
+        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+
 class SensorProperties:
     """
     Defines the specific styling properties of objects of the `sensor` family
@@ -698,6 +784,9 @@ class SensorProperties:
 
     pixel: dict, Pixel, default=None
         `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+
+    arrows: dict, ArrowCS, default=None
+        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
     """
 
     @property
@@ -722,6 +811,15 @@ class SensorProperties:
     def pixel(self, val):
         self._pixel = validate_property_class(val, "pixel", Pixel, self)
 
+    @property
+    def arrows(self):
+        """`ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)"""
+        return self._arrows
+
+    @arrows.setter
+    def arrows(self, val):
+        self._arrows = validate_property_class(val, "arrows", ArrowCS, self)
+
 
 class Sensor(MagicProperties, SensorProperties):
     """
@@ -734,10 +832,13 @@ class Sensor(MagicProperties, SensorProperties):
 
     pixel: dict, Pixel, default=None
         `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+
+    arrows: dict, ArrowCS, default=None
+        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
     """
 
-    def __init__(self, size=None, pixel=None, **kwargs):
-        super().__init__(size=size, pixel=pixel, **kwargs)
+    def __init__(self, size=None, pixel=None, arrows=None, **kwargs):
+        super().__init__(size=size, pixel=pixel, arrows=arrows, **kwargs)
 
 
 class SensorStyle(BaseStyle, SensorProperties):
@@ -772,6 +873,9 @@ class SensorStyle(BaseStyle, SensorProperties):
 
     pixel: dict, Pixel, default=None
         `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+
+    arrows: dict, ArrowCS, default=None
+        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
     """
 
     def __init__(self, **kwargs):
@@ -1178,9 +1282,16 @@ class Path(MagicProperties):
         show/hide numbering on path positions. Only applies if show=True.
     """
 
-    def __init__(self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs):
+    def __init__(
+        self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs
+    ):
         super().__init__(
-            marker=marker, line=line, frames=frames, show=show, numbering=numbering, **kwargs
+            marker=marker,
+            line=line,
+            frames=frames,
+            show=show,
+            numbering=numbering,
+            **kwargs,
         )
 
     @property
@@ -1215,7 +1326,8 @@ class Path(MagicProperties):
         assert val is None or isinstance(val, bool), (
             f"the `show` property of {type(self).__name__} must be either "
             "`True` or `False`"
-            f"\nbut received {repr(val)} instead")
+            f"\nbut received {repr(val)} instead"
+        )
         self._show = val
 
     @property

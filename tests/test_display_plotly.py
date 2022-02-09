@@ -80,6 +80,8 @@ def test_Sensor_display():
     assert x is None, "display test fail"
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
     sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
+    sens.style.arrows.z.color = 'magenta'
+    sens.style.arrows.z.show = False
     x = sens.show(canvas=fig, markers=[(100, 100, 100)], style_path_frames=15)
     assert x is None, "display test fail"
     x = sens.show(canvas=fig, markers=[(100, 100, 100)], style_path_show=False)
