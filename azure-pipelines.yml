@@ -5,8 +5,6 @@
 
 trigger:
 - main
-- development
-- magpylib3_development
 - feature-*
 
 pool:
