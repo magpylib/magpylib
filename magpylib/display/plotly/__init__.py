@@ -1,11 +1,7 @@
-# pylint: disable=line-too-long
-
 """
-plotly display utilities
-
-This package regroups useful functions to easily create the 3D traces for commonly used objects in the library.
-
-These objects are just simple representations as dictionaries and do not contain any other information than the ones need to create a 3D-model
+The `magpylib.display.plotly` sub-package provides useful functions for
+convenient creation of 3D traces for commonly used objects in the
+library.
 """
 
 __all__ = [

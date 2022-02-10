@@ -95,7 +95,7 @@ Field computation is automatically performed on the whole path in a vectorized f
  [-80.14272938   0.         -71.27583002]
  [  0.           0.         -24.62209631]]
 
-Group sources and sensors for common manipulation using the ``Collection`` class.
+Group sources and sensors for common manipulation using the `Collection` class.
 
 >>> col = magpy.Collection(sens1, src2)
 >>> print(sens1.position)
@@ -113,7 +113,7 @@ Group sources and sensors for common manipulation using the ``Collection`` class
 [2. 2. 2.]
 [1. 1. 1.]
 
-When all source and sensor objects are created and all paths are defined the ``show()`` (top level function and method of all Magpylib objects) provides a convenient way to graphically display the geometric arrangement through the Matplotlib,
+When all source and sensor objects are created and all paths are defined the `show()` (top level function and method of all Magpylib objects) provides a convenient way to graphically display the geometric arrangement through the Matplotlib,
 
 >>> magpy.show(col)
 ---> graphic output from matplotlib
@@ -130,10 +130,10 @@ __author__ =  'Michael Ortner & Alexandre Boissolet'
 __credits__ = 'The Magpylib community'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
     'Sensor', 'Collection', 'show', 'defaults', '__version__',
-    '__author__', '__credits__', 'core']
+    '__author__', '__credits__', 'core', 'display']
 
 # create interface to outside of package
-from magpylib import magnet, current, misc, core
+from magpylib import magnet, current, misc, core, display
 from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.fields import getB, getH
 from magpylib._src.obj_classes import Sensor

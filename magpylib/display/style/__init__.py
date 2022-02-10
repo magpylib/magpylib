@@ -1,4 +1,6 @@
-"""style package"""
+"""
+The `magpylib.display.style` sub-packge provides different object styles.
+"""
 
 __all__ = [
     "MagnetStyle",

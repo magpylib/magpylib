@@ -10,7 +10,7 @@ from magpylib._src.style import DisplayStyle
 
 # ON INTERFACE
 class DefaultConfig(MagicProperties):
-    """Library default settings. All default values get set at class instantiation.
+    """Library default settings.
 
     Parameters
     ----------
@@ -18,15 +18,6 @@ class DefaultConfig(MagicProperties):
         Check user input types, shapes at various stages and raise errors
         when they are not within designated parameters.
 
-    edgesize: float, default=1e-8
-        getB and getH return 0 on edge, formulas often show singularities there and undefined forms.
-        EDGESIZE defines how close to the edge 0 will be returned to avoid running into numerical
-        instabilities.
-
-    itercylinder: int, default=50
-        Cylinder with diametral magnetization uses Simpsons iterative formula
-        to compute the integral. More iterations increase precision but slow
-        down the computation.
 
     display: dict or Display
         `Display` class containing display settings. `('backend', 'animation', 'colorsequence' ...)`
@@ -111,34 +102,34 @@ class DefaultConfig(MagicProperties):
 
 class Display(MagicProperties):
     """
-    Defines the display properties for the plotting features
+    Defines the properties for the plotting features.
 
     Properties
     ----------
     backend: str, default='matplotlib'
-        defines the plotting backend to be used by default, if not explicitly set in the `display`
+        Defines the plotting backend to be used by default, if not explicitly set in the `display`
         function. Can be one of `['matplotlib', 'plotly']`
 
-    colorsequence:, iterable, default=
+    colorsequence: iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
             '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
         An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
+        A color may be specified by
+      - a hex string (e.g. '#ff0000')
+      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - a named CSS color
 
     animation: dict or Animation
-        defines the animation properties used by the `plotly` plotting backend when `animation=True`
-        in the `display` function.
+        Defines the animation properties used by the `plotly` plotting backend when `animation=True`
+        in the `show` function.
 
     autosizefactor: int, default=10
         Defines at which scale objects like sensors and dipoles are displayed.
-        -> object_size = canvas_size / AUTOSIZE_FACTOR
+        Specifically `object_size` = `canvas_size` / `AUTOSIZE_FACTOR`.
 
     styles: dict or DisplayStyle
         Base class containing display styling properties for all object families.
@@ -162,12 +153,12 @@ class Display(MagicProperties):
     @property
     def colorsequence(self):
         """An iterable of color values used to cycle trough for every object displayed.
-            A color and may be specified as:
-        - A hex string (e.g. '#ff0000')
-        - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-        - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-        - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-        - A named CSS color"""
+        A color may be specified by
+      - a hex string (e.g. '#ff0000')
+      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - a named CSS color"""
         return self._colorsequence
 
     @colorsequence.setter
@@ -181,8 +172,8 @@ class Display(MagicProperties):
 
     @property
     def animation(self):
-        """animation properties used by the `plotly` plotting backend when `animation=True`
-        in the `display` function."""
+        """Animation properties used by the `plotly` plotting backend when `animation=True`
+        in the `show` function."""
         return self._animation
 
     @animation.setter
@@ -192,7 +183,7 @@ class Display(MagicProperties):
     @property
     def autosizefactor(self):
         """Defines at which scale objects like sensors and dipoles are displayed.
-        -> object_size = canvas_size / AUTOSIZE_FACTOR"""
+        Specifically `object_size` = `canvas_size` / `AUTOSIZE_FACTOR`."""
         return self._autosizefactor
 
     @autosizefactor.setter
@@ -230,10 +221,10 @@ class Animation(MagicProperties):
         Maximum total number of frames to be displayed before downsampling kicks in.
 
     time: float, default=5
-        Default animation time
+        Default animation time.
 
     slider: bool, default = True
-        if True, an interactive slider will be displayed and stay in sync with the animation, will
+        If True, an interactive slider will be displayed and stay in sync with the animation, will
         be hidden otherwise.
     """
 
@@ -245,8 +236,8 @@ class Animation(MagicProperties):
     @maxfps.setter
     def maxfps(self, val):
         assert val is None or isinstance(val, int) and val > 0, (
-            f"the `maxfps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead"
+            f"The `maxfps` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead."
         )
         self._maxfps = val
 
@@ -258,8 +249,8 @@ class Animation(MagicProperties):
     @fps.setter
     def fps(self, val):
         assert val is None or isinstance(val, int) and val > 0, (
-            f"the `fps` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead"
+            f"The `fps` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead."
         )
         self._fps = val
 
@@ -271,8 +262,8 @@ class Animation(MagicProperties):
     @maxframes.setter
     def maxframes(self, val):
         assert val is None or isinstance(val, int) and val > 0, (
-            f"the `maxframes` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead"
+            f"The `maxframes` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead."
         )
         self._maxframes = val
 
@@ -284,8 +275,8 @@ class Animation(MagicProperties):
     @time.setter
     def time(self, val):
         assert val is None or isinstance(val, int) and val > 0, (
-            f"the `time` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead"
+            f"The `time` property of {type(self).__name__} must be a strictly positive"
+            f" integer but received {repr(val)} instead."
         )
         self._time = val
     @property
@@ -296,8 +287,8 @@ class Animation(MagicProperties):
     @slider.setter
     def slider(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `slider` property of {type(self).__name__} must be a either `True` or `False`"
-            f" but received {repr(val)} instead"
+            f"The `slider` property of {type(self).__name__} must be a either `True` or `False`"
+            f" but received {repr(val)} instead."
         )
         self._slider = val
 

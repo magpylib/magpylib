@@ -278,38 +278,36 @@ def make_BaseCone(
     orientation=None,
 ) -> dict:
     """
-    Provides the base plotly Cone mesh3d parameters in a dictionary based on number of vertices of
-    the base, diameter and height.
-    The zero position is in the barycenter of the vertices.
+    Provides the base plotly `Cone` mesh3d parameters in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
 
     Parameters
     ----------
-    base_vertices : int, optional
-        Number of vertices of the cone base, by default 30
+    base_vertices : int, default=30
+        Number of vertices of the cone base.
 
-    diameter : int, optional
-        Diameter of the cone base , by default 1
+    diameter : float, default=1
+        Diameter of the cone base.
 
-    height : int, optional
-        Cone height, by default 1
+    height : int, default=1
+        Cone height.
 
-    pivot : str, optional
-        The part of the cone that is anchored to the grid and arround which it rotates.
-        Can be one of `['tail', 'middle', 'tip']`, by default `'middle'`
+    pivot : str, default='middle'
+        The part of the cone that is anchored to the grid and about which it rotates.
+        Can be one of `['tail', 'middle', 'tip']`.
 
-    position: 3-tuple, optional
-        Positional reference for the vertices in the global CS.
-        The zero position is in the barycenter of the vertices.
-        by default `(0., 0., 0.)`
+    position: 3-tuple, default=(0,0,0)
+        Positional reference of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or M
-        Orientation for the vertices in the global CS
-        by default `identity`
+    orientation: scipy Rotation object with length 1 or M, default=identity
+        Orientation of the vertices in the global CS.
 
     Returns
     -------
-    dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+    Cone model3d plotly trace: dict
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
     pivot_conditions = {
         "tail": height / 2,
@@ -342,38 +340,36 @@ def make_BaseArrow(
     orientation=None,
 ) -> dict:
     """
-    Provides the base plotly 3D Arrow mesh3d parameters in a dictionary based on number of vertices
-    of the base, diameter and height.
-    The zero position is in the barycenter of the vertices.
+    Provides the base plotly `Arrow` mesh3d parameters in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
 
     Parameters
     ----------
-    base_vertices : int, optional
-        Number of vertices of the base, by default 30
+    base_vertices : int, default=30
+        Number of vertices of the arrow base.
 
-    diameter : float, optional
-        Diameter of the base, by default 0.3
+    diameter : float, default=0.3
+        Diameter of the arrow base.
 
-    height : int, optional
-        Arrow height, by default 1
+    height : int, default=1
+        Arrow height.
 
-    pivot : str, optional
-        The part of the arrow that is anchored to the grid and arround which it rotates.
-        Can be one of `['tail', 'middle', 'tip']`, by default `'middle'`
+    pivot : str, default='middle'
+        The part of the arrow that is anchored to the grid and about which it rotates.
+        Can be one of `['tail', 'middle', 'tip']`.
 
-    position: 3-tuple, optional
-        Positional reference for the vertices in the global CS.
-        The zero position is in the barycenter of the vertices.
-        by default (0., 0., 0.)
+    position: 3-tuple, default=(0,0,0)
+        Positional reference of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or M
-        Orientation for the vertices in the global CS
-        by default `identity`
+    orientation: scipy Rotation object with length 1 or M, default=identity
+        Orientation of the vertices in the global CS.
 
     Returns
     -------
-    dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+    Arrow model3d plotly trace: dict
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
 
     h, d, z = height, diameter, 0
