@@ -4,8 +4,10 @@
 Welcome to Magpylib !
 ---------------------
 
-Magpylib provides static 3D magnetic field computation for permanent magnets,
-currents and other sources using (semi-) analytical formulas from the literature.
+Magpylib combines static 3D magnetic field computation for permanent magnets,
+currents and other sources using analytical formulas from the literature with
+an object oriented (magnet, current, sensor) position/orientation interface
+and graphical output to display the system geometry.
 
 Resources
 ---------
@@ -22,291 +24,96 @@ Original software publication (version 2):
 
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
-Introduction (version 4.0.0dev)
--------------------------------
-Magpylib uses units of
-
-    - [mT]: for the B-field and the magnetization (mu0*M).
-    - [kA/m]: for the H-field.
-    - [mm]: for all position inputs.
-    - [deg]: for angle inputs by default.
-    - [A]: for current inputs.
-
-Magpylib objects
----------------------
-
-The most convenient way to compute magnetic fields is through the object oriented interface. Magpylib objects represent magnetic field sources and sensors with various defining attributes.
-
->>> import magpylib as magpy
->>>
->>> # magnets
->>> src1 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
->>> src2 = magpy.magnet.Cylinder(magnetization=(0,1000,0), dimension=(1,2))
->>> src3 = magpy.magnet.CylinderSegment(magnetization=(0,1000,0), dimension=(1,2,2,45,90))
->>> src4 = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
->>>
->>> # currents
->>> src5 = magpy.current.Loop(current=15, diameter=3)
->>> src6 = magpy.current.Line(current=15, vertices=[(0,0,0), (1,2,3)])
->>>
->>> # misc
->>> src7 = magpy.misc.Dipole(moment=(100,200,300))
->>>
->>> # sensor
->>> sens = magpy.Sensor()
->>>
->>> # print object representation
->>> for obj in [src1, src2, src3, src4, src5, src6, src7, sens]:
->>>     print(obj)
-Cuboid(id=1331541150016)
-Cylinder(id=1331541148672)
-CylinderSegment(id=1331541762784)
-Sphere(id=1331541762448)
-Loop(id=1331543166304)
-Line(id=1331543188720)
-Dipole(id=1331543189632)
-Sensor(id=1331642701760)
-
-Position and orientation
------------------------------
-
-All Magpylib objects are endowed with ``position`` `(ndarray, shape (m,3))` and ``orientation`` `(scipy Rotation object, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective docstrings.
-
->>> import magpylib as magpy
->>> sens = magpy.Sensor()
->>> print(sens.position)
->>> print(sens.orientation.as_euler('xyz', degrees=True))
-[0. 0. 0.]
-[0. 0. 0.]
-
-Manipulate position and orientation attributes directly through source attributes, or by using built-in ``move``, ``rotate`` or ``rotate_from_angax`` methods.
-
->>> import magpylib as magpy
->>> from scipy.spatial.transform import Rotation as R
->>>
->>> sens = magpy.Sensor(position=(1,1,1))
->>> print(sens.position)
->>>
->>> sens.move((1,1,1))
->>> print(sens.position)
->>>
-[1. 1. 1.]
-[2. 2. 2.]
-
->>> sens = magpy.Sensor(orientation=R.from_euler('x', 10, degrees=True))
->>> print(sens.orientation.as_euler('xyz'))
->>>
->>> sens.rotate(R.from_euler('x', 10, degrees=True)))
->>> print(sens.orientation.as_euler('xyz'))
->>>
->>> sens.rotate_from_angax(angle=10, axis=(1,0,0))
->>> print(sens.orientation.as_euler('xyz'))
-[10 0. 0.]
-[20 0. 0.]
-[30 0. 0.]
-
-Source position and orientation attributes can also represent complete source paths in the global coordinate system. Such paths can be generated conveniently using the ``move`` and ``rotate`` methods.
-
->>> import magpylib as magpy
->>>
->>> src = magpy.magnet.Cuboid(magnetization=(1,2,3), dimension=(1,2,3))
->>> src.move([(1,1,1),(2,2,2),(3,3,3),(4,4,4)], start='append')
->>> print(src.position)
-[[0. 0. 0.]  [1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]  [4. 4. 4.]]
-
-Details on rotation arguments, and how to conveniently generate complex paths are found in the docstings and some examples below.
-
-Grouping objects with `Collection`
----------------------------------------
-
-The top level class ``magpylib.Collection`` allows a user to group sources for common manipulation. A Collection functions like a list of source objects extended by Magpylib source methods: all operations applied to a Collection are applied to each source individually. Specific sources in the Collection can still be accessed and manipulated individually.
-
->>> import magpylib as magpy
->>>
->>> src1 = magpy.magnet.Cuboid(magnetization=(0,0,11), dimension=(1,2,3))
->>> src2 = magpy.magnet.Cylinder(magnetization=(0,22,0), dimension=(1,2))
->>> src3 = magpy.magnet.Sphere(magnetization=(33,0,0), diameter=2)
->>>
->>> col = magpy.Collection(src1, src2, src3)
->>> col.move((1,2,3))
->>> src1.move((1,2,3))
->>>
->>> for src in col:
->>>     print(src.position)
-[2. 4. 6.]
-[1. 2. 3.]
-[1. 2. 3.]
-
-Magpylib sources have addition and subtraction methods defined, adding up to a Collection, or removing a specific source from a Collection.
-
->>> import magpylib as magpy
->>>
->>> src1 = magpy.misc.Dipole(moment=(1,2,3))
->>> src2 = magpy.current.Loop(current=1, diameter=2)
->>> src3 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1)
->>>
->>> col = src1 + src2 + src3
->>>
->>> for src in col:
->>>     print(src)
-Dipole(id=2158565624128)
-Loop(id=2158565622784)
-Sphere(id=2158566236896)
-
->>> col - src1
->>>
->>> for src in col:
->>>     print(src)
-Loop(id=2158565622784)
-Sphere(id=2158566236896)
-
-Graphic output with `show`
-----------------------------------
-
-When all source and sensor objects are created and all paths are defined ``display`` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
-
->>> import magpylib as magpy
->>>
->>> # create a Collection of three sources
->>> s1 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=3, position=(3,0,0))
->>> s2 = magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(2,2,2), position=(-3,0,0))
->>> col = s1 + s2
->>>
->>> # generate a spiral path
->>> s1.move([(.2,0,0)]*100, increment=True)
->>> s2.move([(-.2,0,0)]*100, increment=True)
->>> col.rotate_from_angax([5]*100, 'z', anchor=0, increment=True, start=0)
->>>
->>> # display
->>> col.show(zoom=-.3, show_style_path_frames=10)
----> graphic output
-
-Various arguments like `axis, show_direction, show_path, size_sensors, size_direction, size_dipoles` and `zoom` can be used to customize the output and are described in the docstring in detail.
-
-Field computation
-----------------------
-
-Field computation is done through the ``getB`` and ``getH`` function/methods. They always require `sources` and `observers` inputs. Sources are single Magpylib source objects, Collections or lists thereof.  Observers are arbitrary tensors of position vectors `(shape (n1,n2,n3,...,3))`, sensors or lists thereof. A most fundamental field computation example is
-
->>> from magpylib.magnet import Cylinder
->>>
->>> src = Cylinder(magnetization=(222,333,444), dimension=(2,2))
->>> B = src.getB((1,2,3))
->>> print(B)
-[-2.74825633  9.77282601 21.43280135]
-
-The magnetization input is in units of [mT], the B-field is returned in [mT], the H-field in [kA/m]. Field computation is also valid inside of the magnets.
-
->>> import numpy as np
->>> import matplotlib.pyplot as plt
->>> import magpylib as magpy
->>>
->>> # define Pyplot figure
->>> fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(10,5))
->>>
->>> # define Magpylib source
->>> src = magpy.magnet.Cuboid(magnetization=(500,0,500), dimension=(2,2,2))
->>>
->>> # create a grid in the xz-symmetry plane
->>> ts = np.linspace(-3, 3, 30)
->>> grid = np.array([[(x,0,z) for x in ts] for z in ts])
->>>
->>> # compute B field on grid using a source method
->>> B = src.getB(grid)
->>> ampB = np.linalg.norm(B, axis=2)
->>>
->>> # compute H-field on grid using the top-level function
->>> H = magpy.getH(src, grid)
->>> ampH = np.linalg.norm(H, axis=2)
->>>
->>> # display field with Pyplot
->>> ax1.streamplot(grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2],
->>>     density=2, color=np.log(ampB), linewidth=1, cmap='autumn')
->>>
->>> ax2.streamplot(grid[:,:,0], grid[:,:,2], H[:,:,0], H[:,:,2],
->>>     density=2, color=np.log(ampH), linewidth=1, cmap='winter')
->>>
->>> # outline magnet boundary
->>> for ax in [ax1,ax2]:
->>>     ax.plot([1,1,-1,-1,1], [1,-1,-1,1,1], 'k--')
->>>
->>> plt.tight_layout()
->>> plt.show()
----> graphic output
-
-The output of the most general field computation through the top level function ``magpylib.getB(sources, observers)`` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the pathlength, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or shape of position vector and `3` the three magnetic field components `(Bx,By,Bz)`.
-
->>> import magpylib as magpy
->>>
->>> # three sources
->>> s1 = magpy.misc.Dipole(moment=(0,0,100))
->>> s2 = magpy.current.Loop(current=1, diameter=3)
->>> col = s1 + s2
->>>
->>> # two observers with 4x5 pixel
->>> pix = [[(1,2,3)]*4]*5
->>> sens1 = magpy.Sensor(pixel=pix)
->>> sens2 = magpy.Sensor(pixel=pix)
->>>
->>> # path of length 11
->>> s1.move([(1,1,1)]*11)
->>>
->>> B = magpy.getB([s1,s2,col], [sens1, sens2])
->>> print(B.shape)
-(3, 11, 2, 5, 4, 3)
-
-The object-oriented interface automatically vectorizes the computation for the user. Similar source types of multiple input-objects are automatically tiled up.
-
-getB_dict and getH_dict
+Introduction (version 4.0.0)
 ----------------------------
 
-The ``magpylib.getB_dict`` and ``magpylib.getH_dict`` top-level functions avoid the object oriented interface, yet enable usage of the position/orientation implementations. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the `source_type`, different input arguments are expected (see docstring for details).
+Define magnets, currents and sensors as python objects, set their position and orientation in a global coordinate system and compute the magnetic field, generated by the sources at the sensor.
 
 >>> import magpylib as magpy
->>>
->>> # observer positions
->>> poso = [(0,0,x) for x in range(5)]
->>>
->>> # magnet dimensions
->>> dim = [(d,d,d) for d in range(1,6)]
->>>
->>> # getB_dict computation - magnetization is automatically tiled
->>> B = magpy.getB_dict(
->>>     source_type='Cuboid',
->>>     magnetization=(0,0,1000),
->>>     dimension=dim,
->>>     observer=poso)
+
+Define a Cuboid magnet source object.
+>>> src1 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
+>>> print(src1.position)
+>>> print(src1.orientation.as_euler('xyz', degrees=True))
+[0. 0. 0.]
+[0. 0. 0.]
+
+Define a sensor object at a specific position.
+>>> sens1 = magpy.Sensor(position=(1,2,3))
+>>> print(sens1.position)
+[1. 2. 3.]
+
+Use the built-in move method to move a second source around.
+>>> src2 = magpy.current.Loop(current=15, diameter=3)
+>>> src2.move((1, 1, 1))
+>>> print(src2.position)
+[1. 1. 1.]
+
+Use the built-in rotate method to move a second sensor around.
+>>> sens2 = magpy.Sensor(position=(1,0,0))
+>>> sens2.rotate_from_angax(angle=45, axis=(0,0,1), anchor=(0,0,0))
+>>> print(sens2.position)
+>>> print(sens2.orientation.as_euler('xyz', degrees=True))
+[0.70710678 0.70710678  0.        ]
+[0.         0.         45.       ]
+
+Compute the field generated by src1 at sens1
+>>> B = magpy.getB(src1, sens1)
 >>> print(B)
-[[  0.           0.         666.66666667]
- [  0.           0.         435.90578315]
- [  0.           0.         306.84039675]
- [  0.           0.         251.12200327]
- [  0.           0.         221.82226656]]
+[ 7.48940807 13.41208607  8.02900384]
 
-The ``getBH_dict`` functions can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
+Compute the field of src1 and src2 at sens1 and sens2.
+>>> H = magpy.getH([src1, src2], [sens1, sens2])
+>>> print(H)
+[[[ 5.95988158e+00  1.06729990e+01  6.38927824e+00]
+  [ 1.98854533e-14  1.98854533e-14 -6.10055863e+01]]
 
-Direct access to field implementations
--------------------------------------------
+ [[ 2.68813151e-17  4.39005190e-01  8.11887842e-01]
+  [ 5.64983190e-01 -2.77555756e-16  2.81121230e+00]]]
 
-For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the ``magpylib.lib`` subpackage. Details on the implementations can be found in the respective function docstrings.
+Position and orientation attributes can be paths.
 
->>> import numpy as np
->>> import magpylib as magpy
->>>
->>> mag = np.array([(100,0,0)]*5)
->>> dim = np.array([(1,2,45,90,-1,1)]*5)
->>> poso = np.array([(0,0,0)]*5)
->>>
->>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, poso)
->>> print(B)
-[[   0.           0.        -186.1347833]
- [   0.           0.        -186.1347833]
- [   0.           0.        -186.1347833]
- [   0.           0.        -186.1347833]
- [   0.           0.        -186.1347833]]
+>>> src1.move([(1,1,1), (2,2,2), (3,3,3)])
+>>> print(src1.position)
+[[0. 0. 0.]
+ [1. 1. 1.]
+ [2. 2. 2.]
+ [3. 3. 3.]]
 
-As all input checks, coordinate transformations and position/orientation implementation are avoided, this is the fastest way to compute fields in Magpylib.
+Field computation is automatically performed on the whole path in a vectorized form.
+>>> print(src1.getB(sens1))
+[[  7.48940807  13.41208607   8.02900384]
+ [  0.          99.07366165 109.1400359 ]
+ [-80.14272938   0.         -71.27583002]
+ [  0.           0.         -24.62209631]]
 
+Group sources and sensors for common manipulation using the Collection class.
+
+>>> col = magpy.Collection(sens1, src2)
+>>> print(sens1.position)
+>>> print(src2.position)
+>>> print(col.position)
+[1. 2. 3.]
+[1. 1. 1.]
+[0. 0. 0.]
+
+>>> col.move((1,1,1))
+>>> print(sens1.position)
+>>> print(src2.position)
+>>> print(col.position)
+[2. 3. 4.]
+[2. 2. 2.]
+[1. 1. 1.]
+
+When all source and sensor objects are created and all paths are defined ``show`` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through the Matplotlib,
+
+>>> magpy.show(col)
+---> graphic output from matplotlib
+
+and and the Plotly graphic backend
+
+>>> magpy.show(col, backend='plotly')
+---> graphic output from plotly
 """
 
 # module level dunders
