@@ -56,13 +56,13 @@ def setup(app):
 # -- Project information -----------------------------------------------------
 
 project = "Magpylib"
-copyright = "2021, SAL - Silicon Austria Labs"
+copyright = "2022, SAL - Silicon Austria Labs"
 author = "Michael Ortner <magpylib@gmail.com>"
 
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = '4.0.0dev'
+release = '4.0.0-beta1'
 
 
 # -- General configuration ---------------------------------------------------
@@ -132,7 +132,7 @@ html_logo = "./_static/images/magpylib_logo.png"
 html_theme_options = {
     "repository_url": "https://github.com/magpylib/magpylib",
     "path_to_docs": "docs/",
-    "repository_branch": "development",
+    "repository_branch": "main",
     "use_repository_button": True,
     "use_download_button": True,
     "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
