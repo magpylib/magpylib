@@ -310,7 +310,7 @@ As all input checks, coordinate transformations and position/orientation impleme
 """
 
 # module level dunders
-__version__ = '4.0.0dev'
+__version__ = '4.0.0-beta1'
 __author__ =  'Michael Ortner & friends'
 __credits__ = 'Silicon Austria Labs - Sensor Systems'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
