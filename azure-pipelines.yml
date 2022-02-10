@@ -4,9 +4,7 @@
 # https://docs.microsoft.com/azure/devops/pipelines/languages/python
 
 trigger:
-- master
-- development
-- magpylib3_development
+- main
 - feature-*
 
 pool:
