@@ -434,12 +434,12 @@ def display_matplotlib(
                     draw_markers(
                         np.array([obj.position]), ax, obj_color, symbol="*", size=10
                     )
-                    name = (
-                        obj.style.name
-                        if obj.style.name is not None
+                    label = (
+                        obj.style.label
+                        if obj.style.label is not None
                         else str(type(obj).__name__)
                     )
-                    ax.text(*obj.position, name, horizontalalignment="center")
+                    ax.text(*obj.position, label, horizontalalignment="center")
                     points += [obj.position]
                 if faces is not None:
                     faced_objects_color += [obj_color]

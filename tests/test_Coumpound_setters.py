@@ -13,7 +13,7 @@ from magpylib._src.display.plotly.plotly_base_traces import make_BasePrism
 magpy.defaults.display.backend = "plotly"
 
 
-def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, name=None):
+def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
     cs_lambda = lambda: magpy.magnet.Cuboid(
         (1, 0, 0), dimension=[height] * 3, position=(diameter / 2, 0, 0)
@@ -33,7 +33,7 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, name=None):
         np.linspace(90, 360, path_len), axis="z", start=0, anchor=(80, 0, 0)
     )
     c.move(np.linspace((0, 0, 0), (0, 0, 200), path_len), start=0)
-    c.style.name = name
+    c.style.label = label
 
     trace = make_BasePrism(
         base_vertices=Ncubes, diameter=diameter + height * 2, height=height * 0.5
@@ -47,13 +47,13 @@ def create_compound_set(show=False, **kwargs):
     """creates a styled Collection Compound object with a rotary arrangement of cuboid magnets.
     A copy is created to show the difference when applying position and/or orientation setters over
     kwargs."""
-    c1 = make_wheel(name="Magnetic Wheel after")
+    c1 = make_wheel(label="Magnetic Wheel after")
     c1.set_children_styles(
         path_show=False,
         magnetization_color_north="magenta",
         magnetization_color_south="cyan",
     )
-    c2 = make_wheel(name="Magnetic Wheel before")
+    c2 = make_wheel(label="Magnetic Wheel before")
     c2.style.model3d.data[0].trace["color"] = "red"
     c2.style.model3d.data[0].trace["opacity"] = 0.1
     c2.set_children_styles(path_show=False, opacity=0.1)
