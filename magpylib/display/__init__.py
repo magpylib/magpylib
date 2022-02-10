@@ -1,7 +1,8 @@
-# pylint: disable=line-too-long
-
 """
-display package
-
-This package regroups additional display features that can be used independently.
+The `magpylib.display` sub-package provides additional plotting
+features for independent use.
 """
+
+__all__ = ['plotly', 'style']
+
+from magpylib.display import plotly, style

@@ -1,5 +1,5 @@
 """
-This sub-package gives direct access to our field implementations.
+The core sub-package gives direct access to our field implementations.
 """
 
 __all__ = [
