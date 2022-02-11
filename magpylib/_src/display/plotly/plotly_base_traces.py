@@ -6,9 +6,10 @@ from magpylib._src.display.display_utility import place_and_orient_model3d
 
 
 def base_validator(name, value, conditions):
-    """validates value based on dictionary of conditions"""
-    msg = f"""{name} must be one of `{tuple(conditions.keys())}`
-received value: {value!r}
+    """Validates value based on dictionary of conditions"""
+
+    msg = f"""Input {name} must be one of `{tuple(conditions.keys())},`
+received {value!r} instead.
 """
     assert value in conditions.keys(), msg
     return conditions[value]
@@ -16,8 +17,7 @@ received value: {value!r}
 validate_pivot = partial(base_validator, 'pivot')
 
 def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=None, orientation=None) -> dict:
-    """
-    Provides the plotly mesh3d parameters for a cuboid in dictionary form, based on
+    """Provides the plotly mesh3d parameters for a cuboid in dictionary form, based on
     the given dimension. The zero position is in the barycenter of the vertices.
 
     Parameters
@@ -29,13 +29,13 @@ def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=None, orientation=None) 
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy `Rotation` object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns
     -------
     BaseCuboid model3d plotly trace: dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
     dimension = np.array(dimension, dtype=float)
     trace = dict(
@@ -53,8 +53,7 @@ def make_BaseCuboid(dimension=(1.0, 1.0, 1.0), position=None, orientation=None) 
 def make_BasePrism(
     base_vertices=6, diameter=1.0, height=1.0, position=None, orientation=None
 ) -> dict:
-    """
-    Provides the plotly mesh3d parameters for a prism in dictionary form, based on
+    """Provides the plotly mesh3d parameters for a prism in dictionary form, based on
     number of vertices of the base, diameter and height. The zero position is in the
     barycenter of the vertices.
 
@@ -73,13 +72,13 @@ def make_BasePrism(
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns
     -------
     BasePrism model3d plotly trace: dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
     N = base_vertices
     t = np.linspace(0, 2 * np.pi, N, endpoint=False)
@@ -120,8 +119,7 @@ def make_BasePrism(
 def make_BaseEllipsoid(
     dimension=(1.0, 1.0, 1.0), vert=15, position=None, orientation=None
 ) -> dict:
-    """
-    Provides the plotly mesh3d parameters for an ellipsoid in dictionary form, based
+    """Provides the plotly mesh3d parameters for an ellipsoid in dictionary form, based
     on number of vertices of the circumference, and the dimension. The zero position is in the
     barycenter of the vertices.
 
@@ -137,13 +135,13 @@ def make_BaseEllipsoid(
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns
     -------
     BaseEllipsoid model3d plotly trace: dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
     N = vert
     phi = np.linspace(0, 2 * np.pi, vert, endpoint=False)
@@ -179,8 +177,7 @@ def make_BaseEllipsoid(
 def make_BaseCylinderSegment(
     r1=1, r2=2, h=1, phi1=0, phi2=90, vert=50, position=None, orientation=None
 ) -> dict:
-    """
-    Provides the plotly mesh3d parameters for a cylinder segment in dictionary form, based on
+    """Provides the plotly mesh3d parameters for a cylinder segment in dictionary form, based on
     inner and outer diameters, height, and section angles in degrees. The zero position is at
     `z=0` at the center point of the arcs.
 
@@ -209,13 +206,13 @@ def make_BaseCylinderSegment(
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns
     -------
     BaseCylinderSegment model3d plotly trace: dict
-        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys
+        A dictionary with `type="mesh3d" and corresponding `i,j,k,x,y,z` keys.
     """
 
     N = max(5, int(vert * abs(phi1 - phi2) / 360))
@@ -271,8 +268,7 @@ def make_BaseCone(
     position=None,
     orientation=None,
 ) -> dict:
-    """
-    Provides the plotly mesh3d parameters for a cone in dictionary form, based on
+    """Provides the plotly mesh3d parameters for a cone in dictionary form, based on
     number of vertices of the base, diameter and height. The zero position is in the
     barycenter of the vertices.
 
@@ -295,7 +291,7 @@ def make_BaseCone(
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns
@@ -333,8 +329,7 @@ def make_BaseArrow(
     position=None,
     orientation=None,
 ) -> dict:
-    """
-    Provides the plotly mesh3d parameters for an arrow in dictionary form, based on
+    """Provides the plotly mesh3d parameters for an arrow in dictionary form, based on
     number of vertices of the base, diameter and height. The zero position is in the
     barycenter of the vertices.
 
@@ -357,7 +352,7 @@ def make_BaseArrow(
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=identity
+    orientation: scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
 
     Returns

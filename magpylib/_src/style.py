@@ -1,4 +1,4 @@
-"""Collection of classes for display styling"""
+"""Collection of classes for display styling."""
 # pylint: disable=C0302
 import numpy as np
 
@@ -16,8 +16,9 @@ from magpylib._src.defaults.defaults_utility import (
 
 
 def get_style_class(obj):
-    """returns style class based on object type. If class has no attribute `_object_type` or is
-    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+    """Returns style instance based on object type. If object has no attribute `_object_type` or is
+    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` instance.
+    """
     obj_type = getattr(obj, "_object_type", None)
     style_fam = MAGPYLIB_FAMILIES.get(obj_type, None)
     if isinstance(style_fam, (list, tuple)):
@@ -26,8 +27,7 @@ def get_style_class(obj):
 
 
 def get_style(obj, default_settings, **kwargs):
-    """
-    returns default style based on increasing priority:
+    """Returns default style based on increasing priority:
     - style from defaults
     - style from object
     - style from kwargs arguments
@@ -71,29 +71,28 @@ def get_style(obj, default_settings, **kwargs):
 
 
 class BaseStyle(MagicProperties):
-    """
-    Base class for display styling options of `BaseGeo` objects
+    """Base class for display styling options of `BaseGeo` objects.
 
     Parameters
     ----------
     label: str, default=None
-        label of the class instance, can be any string.
+        Label of the class instance, e.g. to be displayed in the legend.
 
-    description: dict or Description, default=None
-        object description properties
+    description: dict or `Description` object, default=None
+        Object description properties.
 
     color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     opacity: float, default=None
         object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or Path, default=None
-        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    model3d: list of Trace3d objects, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
@@ -121,7 +120,7 @@ class BaseStyle(MagicProperties):
 
     @property
     def label(self):
-        """label of the class instance, can be any string"""
+        """Label of the class instance, e.g. to be displayed in the legend."""
         return self._label
 
     @label.setter
@@ -130,7 +129,7 @@ class BaseStyle(MagicProperties):
 
     @property
     def description(self):
-        """Description class with 'text' and 'show' properties"""
+        """Description with 'text' and 'show' properties."""
         return self._description
 
     @description.setter
@@ -141,7 +140,7 @@ class BaseStyle(MagicProperties):
 
     @property
     def color(self):
-        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
+        """A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`."""
         return self._color
 
     @color.setter
@@ -150,21 +149,21 @@ class BaseStyle(MagicProperties):
 
     @property
     def opacity(self):
-        """object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent"""
+        """Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent."""
         return self._opacity
 
     @opacity.setter
     def opacity(self, val):
         assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
-            "opacity must be a value betwen 0 and 1\n"
-            f"but received {repr(val)} instead"
+            "The `opacity` property must be a value betwen 0 and 1,\n"
+            f"but received {repr(val)} instead."
         )
         self._opacity = val
 
     @property
     def path(self):
-        """an instance of `Path` or dictionary of equivalent key/value pairs, defining the
-        object path marker and path line properties"""
+        """An instance of `Path` or dictionary of equivalent key/value pairs, defining the
+        object path marker and path line properties."""
         return self._path
 
     @path.setter
@@ -173,7 +172,7 @@ class BaseStyle(MagicProperties):
 
     @property
     def model3d(self):
-        """3d object representation properties"""
+        """3d object representation properties."""
         return self._model3d
 
     @model3d.setter
@@ -182,16 +181,15 @@ class BaseStyle(MagicProperties):
 
 
 class Description(MagicProperties):
-    """
-    Defines properties for a description object
+    """Defines properties for a description object.
 
     Parameters
     ----------
     text: str, default=None
-        Object description text
+        Object description text.
 
     show: bool, default=None
-        if `True`, adds legend entry suffix based on value
+        If True, adds legend entry suffix based on value.
     """
 
     def __init__(self, text=None, show=None, **kwargs):
@@ -199,42 +197,41 @@ class Description(MagicProperties):
 
     @property
     def text(self):
-        """description text"""
+        """Description text."""
         return self._text
 
     @text.setter
     def text(self, val):
         assert val is None or isinstance(val, str), (
-            f"the `show` property of {type(self).__name__} must be a string\n"
-            f"but received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be a string,\n"
+            f"but received {repr(val)} instead."
         )
         self._text = val
 
     @property
     def show(self):
-        """if `True`, adds legend entry suffix based on value"""
+        """If True, adds legend entry suffix based on value."""
         return self._show
 
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either `True` or `False`\n"
-            f"but received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
 
 class Model3d(MagicProperties):
-    """
-    Defines properties for the 3d model representation of the magpylib objects
+    """Defines properties for the 3d model representation of magpylib objects.
 
     Parameters
     ----------
     showdefault: bool, default=True
-        Shows/hides default 3D-model
+        Shows/hides default 3d-model.
 
     data: dict or list of dicts, default=None
-        a trace or list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        A trace or list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
@@ -245,21 +242,21 @@ class Model3d(MagicProperties):
 
     @property
     def showdefault(self):
-        """shows/hides main model3d object representation"""
+        """If True, show default model3d object representation, else hide it."""
         return self._showdefault
 
     @showdefault.setter
     def showdefault(self, val):
         assert isinstance(val, bool), (
-            f"the `showdefault` property of {type(self).__name__} must be "
-            f"one of `[True, False]`"
-            f" but received {repr(val)} instead"
+            f"The `showdefault` property of {type(self).__name__} must be "
+            f"one of `[True, False]`,\n"
+            f"but received {repr(val)} instead."
         )
         self._showdefault = val
 
     @property
     def data(self):
-        """data 3d object representation (trace or list of traces)"""
+        """Data of 3d object representation (trace or list of traces)."""
         return self._data
 
     @data.setter
@@ -277,34 +274,28 @@ class Model3d(MagicProperties):
             m3.append(v)
         return m3
 
-    def add_trace(
-        self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1,
-    ):
-        """creates an additional user-defined 3d model object which is positioned relatively
+    def add_trace(self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1):
+        """Creates an additional user-defined 3d model object which is positioned relatively
         to the main object to be displayed and moved automatically with it. This feature also allows
-        the user to replace the original 3d representation of the object
+        the user to replace the original 3d representation of the object.
 
         Properties
         ----------
         show : bool, default=None
-            shows/hides model3d object based on provided trace:
+            Shows/hides model3d object based on provided trace.
 
         trace: dict or callable, default=None
-            dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object
+            Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object.
 
-        backend:
-            plotting backend corresponding to the trace.
-            Can be one of `['matplotlib', 'plotly']`
+        backend: str, default='matplotlib'
+            Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
 
-        coordsargs: dict
-            tells magpylib the name of the coordinate arrays to be moved or rotated.
-            by default: `{"x": "x", "y": "y", "z": "z"}`
-            if False, object is not rotated
+        coordsargs: dict, default=None
+            Tells magpylib the name of the coordinate arrays to be moved or rotated,
+            by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
 
         scale: float, default=1
-            scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
-            that if the object is not centered at the global CS origin, its position will
-            also be scaled.
+            Scaling factor by which the trace vertices coordinates are multiplied.
         """
 
         new_trace = Trace3d(
@@ -315,32 +306,27 @@ class Model3d(MagicProperties):
 
 
 class Trace3d(MagicProperties):
-    """
-    Defines properties for an additional user-defined 3d model object which is positioned relatively
-    to the main object to be displayed and moved automatically with it. This feature also allows
-    the user to replace the original 3d representation of the object
+    """Defines properties for an additional user-defined 3d model object which is positioned
+    relatively to the main object to be displayed and moved automatically with it. This feature
+    also allows the user to replace the original 3d representation of the object.
 
     Parameters
     ----------
     show : bool, default=None
-        shows/hides model3d object based on provided trace:
+        Shows/hides model3d object based on provided trace.
 
     trace: dict or callable, default=None
-        dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object
+        Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object.
 
     scale: float, default=1
-        scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
-        that if the object is not centered at the global CS origin, its position will
-        also be scaled.
+        Scaling factor by which the trace vertices coordinates are multiplied.
 
-    backend:
-        plotting backend corresponding to the trace.
-        Can be one of `['matplotlib', 'plotly']`
+    backend: str, default='matplotlib'
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
 
-    coordsargs: dict
-        tells magpylib the name of the coordinate arrays to be moved or rotated.
-        by default: `{"x": "x", "y": "y", "z": "z"}`
-        if False, object is not rotated
+    coordsargs: dict, default=None
+        Tells magpylib the name of the coordinate arrays to be moved or rotated,
+            by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
     """
 
     def __init__(
@@ -363,42 +349,36 @@ class Trace3d(MagicProperties):
 
     @property
     def show(self):
-        """
-        shows/hides model3d object based on provided trace
-        """
+        """If True, show default model3d object representation, else hide it."""
         return self._show
 
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be "
-            f"one of `[True, False]`"
-            f" but received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be "
+            f"one of `[True, False]`,\n"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
     @property
     def scale(self):
-        """
-        scaling factor by which the trace vertices coordinates should be multiplied by. Be aware
-        that if the object is not centered at the global CS origin, its position will
-        also be scaled.
-        """
+        """Scaling factor by which the trace vertices coordinates are multiplied."""
         return self._scale
 
     @scale.setter
     def scale(self, val):
         assert isinstance(val, (int, float)) and val > 0, (
-            f"the `scale` property of {type(self).__name__} must be a strictly positive number"
-            f" but received {repr(val)} instead"
+            f"The `scale` property of {type(self).__name__} must be a strictly positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._scale = val
 
     @property
     def coordsargs(self):
-        """tells magpylib the name of the coordinate arrays to be moved or rotated.
-        by default: `{"x": "x", "y": "y", "z": "z"}`
-        if False, object is not rotated"""
+        """Tells magpylib the name of the coordinate arrays to be moved or rotated,
+        by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
+        """
         return self._coordsargs
 
     @coordsargs.setter
@@ -406,23 +386,23 @@ class Trace3d(MagicProperties):
         if val is None:
             val = {"x": "x", "y": "y", "z": "z"}
         assert isinstance(val, dict) and all(key in val for key in "xyz"), (
-            f"the `coordsargs` property of {type(self).__name__} must be "
-            f"a dictionary with `'x', 'y', 'z'` keys"
-            f" but received {repr(val)} instead"
+            f"The `coordsargs` property of {type(self).__name__} must be "
+            f"a dictionary with `'x', 'y', 'z'` keys,\n"
+            f"but received {repr(val)} instead."
         )
         self._coordsargs = val
 
     @property
     def trace(self):
-        """dictionary keys/values pairs for a model3d object"""
+        """Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object."""
         return self._trace
 
     @trace.setter
     def trace(self, val):
         if val is not None:
             assert isinstance(val, dict) or callable(val), (
-                "trace must be a dictionary or a callable returning a dictionary"
-                f" but received {type(val).__name__} instead"
+                "The `trace` input must be a dictionary or a callable returning a dictionary,\n"
+                f"but received {type(val).__name__} instead."
             )
             test_val = val
             if callable(val):
@@ -432,36 +412,35 @@ class Trace3d(MagicProperties):
 
     @property
     def backend(self):
-        """plotting backend corresponding to the trace.
-        Can be one of `['matplotlib', 'plotly']`"""
+        """Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        """
         return self._backend
 
     @backend.setter
     def backend(self, val):
         assert val is None or val in SUPPORTED_PLOTTING_BACKENDS, (
-            f"the `backend` property of {type(self).__name__} must be one of"
-            f"{SUPPORTED_PLOTTING_BACKENDS}"
-            f" but received {repr(val)} instead"
+            f"The `backend` property of {type(self).__name__} must be one of"
+            f"{SUPPORTED_PLOTTING_BACKENDS},\n"
+            f"but received {repr(val)} instead."
         )
         self._backend = val
 
 
 class Magnetization(MagicProperties):
-    """
-    Defines magnetization styling properties
+    """Defines magnetization styling properties.
 
     Parameters
     ----------
     show : bool, default=None
-        if `True` shows magnetization direction based on active plotting backend
+        If True show magnetization direction.
 
     size: float, default=None
-        arrow size of the magnetization direction (for the matplotlib backend)
-        only applies if `show=True`
+        Arrow size of the magnetization direction (for the matplotlib backend)
+        only applies if `show=True`.
 
-    color: dict, MagnetizationColor, default=None
-        color properties showing the magnetization direction (for the plotly backend)
-        only applies if `show=True`
+    color: dict or MagnetizationColor object, default=None
+        Color properties showing the magnetization direction (for the plotly backend).
+        Only applies if `show=True`.
     """
 
     def __init__(self, show=None, size=None, color=None, **kwargs):
@@ -469,34 +448,35 @@ class Magnetization(MagicProperties):
 
     @property
     def show(self):
-        """if `True` shows magnetization direction based on active plotting backend"""
+        """If True, show magnetization direction."""
         return self._show
 
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            "show must be either `True` or `False` \n"
-            f" but received {repr(val)} instead"
+            "The `show` input must be either True or False,\n"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
     @property
     def size(self):
-        """positive float for relative arrow size to magnet size"""
+        """Positive float for ratio of arrow size to magnet size."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def color(self):
-        """color properties showing the magnetization direction (for the plotly backend)
-        only applies if `show=True`"""
+        """Color properties showing the magnetization direction (for the plotly backend).
+        Applies only if `show=True`.
+        """
         return self._color
 
     @color.setter
@@ -505,34 +485,30 @@ class Magnetization(MagicProperties):
 
 
 class MagnetizationColor(MagicProperties):
-    """
-    Defines the magnetization direction color styling properties.
-
-    Note: This feature is only relevant for the plotly backend.
+    """Defines the magnetization direction color styling properties. (Only relevant for
+    the plotly backend)
 
     Parameters
     ----------
     north: str, default=None
-        defines the color of the magnetic north pole
+        Defines the color of the magnetic north pole.
 
     south: str, default=None
-        defines the color of the magnetic south pole
+        Defines the color of the magnetic south pole.
 
     middle: str, default=None
-        defines the color between the magnetic poles
+        Defines the color between the magnetic poles.
 
     transition: float, default=None
-        sets the transition smoothness between poles colors.
-        - `transition=0`: discrete transition
-        - `transition=1`: smoothest transition
-        - can be any value in-between 0 and 1"
+        Sets the transition smoothness between poles colors. Can be any value
+        in-between 0 (discrete) and 1(smooth).
 
     mode: str, default=None
-        sets the coloring mode for the magnetization.
-        - `'bicolor'`: only north and south poles are shown, middle color is hidden.
-        - `'tricolor'`: both pole colors and middle color are shown.
-        - `'tricycle'`: both pole colors are shown and middle color is replaced by a color cycling
-            through the color sequence.
+        Sets the coloring mode for the magnetization.
+        - `'bicolor'`: Only north and south pole colors are shown.
+        - `'tricolor'`: Both pole colors and middle color are shown.
+        - `'tricycle'`: Both pole colors are shown and middle color is replaced by a color cycling
+            through the default color sequence.
     """
 
     _allowed_modes = ("bicolor", "tricolor", "tricycle")
@@ -551,7 +527,7 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def north(self):
-        """the color of the magnetic north pole"""
+        """Color of the magnetic north pole."""
         return self._north
 
     @north.setter
@@ -560,7 +536,7 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def south(self):
-        """the color of the magnetic south pole"""
+        """Color of the magnetic south pole."""
         return self._south
 
     @south.setter
@@ -569,7 +545,7 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def middle(self):
-        """the color between the magnetic poles"""
+        """Color between the magnetic poles."""
         return self._middle
 
     @middle.setter
@@ -578,10 +554,9 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def transition(self):
-        """sets the transition smoothness between poles colors.
-        `transition=0`: discrete transition
-        `transition=1`: smoothest transition
-        can be any value in-between 0 and 1"""
+        """Sets the transition smoothness between poles colors. Can be any value
+        in-between 0 (discrete) and 1(smooth).
+        """
         return self._transition
 
     @transition.setter
@@ -593,40 +568,38 @@ class MagnetizationColor(MagicProperties):
 
     @property
     def mode(self):
-        """sets the coloring mode for the magnetization.
-        - `'bicolor'`: only north and south poles are shown, middle color is hidden.
-        - `'tricolor'`: both pole colors and middle color are shown.
-        - `'tricycle'`: both pole colors are shown and middle color is replaced by a color cycling
-            through the color sequence.
+        """Sets the coloring mode for the magnetization.
+        - `'bicolor'`: Only north and south pole colors are shown.
+        - `'tricolor'`: Both pole colors and middle color are shown.
+        - `'tricycle'`: Both pole colors are shown and middle color is replaced by a color cycling
+            through the default color sequence.
         """
         return self._mode
 
     @mode.setter
     def mode(self, val):
         assert val is None or val in self._allowed_modes, (
-            f"the `mode` property of {type(self).__name__} must be one of"
-            f"{list(self._allowed_modes)}"
-            f" but received {repr(val)} instead"
+            f"The `mode` property of {type(self).__name__} must be one of"
+            f"{list(self._allowed_modes)},\n"
+            f"but received {repr(val)} instead."
         )
         self._mode = val
 
 
 class MagnetProperties:
-    """
-    Defines the specific styling properties of objects of the `magnet` family
+    """Defines styling properties of homogeneous magnet classes.
 
     Parameters
     ----------
-    magnetization: dict or Magnetization, default=None
-        Magnetization styling with `'show'`, `'size'`, `'color'` properties
-        or a dictionary with equivalent key/value pairs
+    magnetization: dict or `Magnetization` object, default=None
+        `Magnetization` instance with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
     """
 
     @property
     def magnetization(self):
-        """
-        Magnetization styling with `'show'`, `'size'`, `'color'` properties
-        or a dictionary with equivalent key/value pairs
+        """`Magnetization` instance with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
         """
         return self._magnetization
 
@@ -638,13 +611,11 @@ class MagnetProperties:
 
 
 class Magnet(MagicProperties, MagnetProperties):
-    """
-    Defines the specific styling properties of objects of the `magnet` family
+    """Defines styling properties of homogeneous magnet classes.
 
     Parameters
     ----------
     magnetization: dict or Magnetization, default=None
-
     """
 
     def __init__(self, magnetization=None, **kwargs):
@@ -652,35 +623,35 @@ class Magnet(MagicProperties, MagnetProperties):
 
 
 class MagnetStyle(BaseStyle, MagnetProperties):
-    """Defines the styling properties of objects of the `magnet` family with base properties
+    """Defines styling properties of homogeneous magnet classes.
 
     Parameters
     ----------
     label: str, default=None
-        label of the class instance, can be any string.
+        Label of the class instance, e.g. to be displayed in the legend.
 
-    description: dict or Description, default=None
-        object description properties
+    description: dict or `Description` object, default=None
+        Object description properties.
 
     color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or Path, default=None
-        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    model3d: list of Trace3d objects, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
 
     magnetization: dict or Magnetization, default=None
         Magnetization styling with `'show'`, `'size'`, `'color'` properties
-        or a dictionary with equivalent key/value pairs
+        or a dictionary with equivalent key/value pairs.
     """
 
     def __init__(self, **kwargs):
@@ -688,21 +659,21 @@ class MagnetStyle(BaseStyle, MagnetProperties):
 
 
 class ArrowCS(MagicProperties):
-    """Triple coordinate system arrow properties
+    """Defines triple coordinate system arrow properties.
 
     Parameters
     ----------
-    x: dict or ArrowSingle, default=None
-        x-direction `Arrowsingle` class or dict with equivalent key/value pairs
-        (e.g. `color`, `show`)
+    x: dict or `ArrowSingle` object, default=None
+        x-direction `Arrowsingle` object or dict with equivalent key/value pairs
+        (e.g. `color`, `show`).
 
-    y: dict or ArrowSingle, default=None
-        y-direction `Arrowsingle` class or dict with equivalent key/value pairs
-        (e.g. `color`, `show`)
+    y: dict or `ArrowSingle` object, default=None
+        y-direction `Arrowsingle` object or dict with equivalent key/value pairs
+        (e.g. `color`, `show`).
 
-    z: dict or ArrowSingle, default=None
-        z-direction `Arrowsingle` class or dict with equivalent key/value pairs
-        (e.g. `color`, `show`)
+    z: dict or `ArrowSingle` object, default=None
+        z-direction `Arrowsingle` object or dict with equivalent key/value pairs
+        (e.g. `color`, `show`).
     """
 
     def __init__(self, x=None, y=None, z=None):
@@ -710,7 +681,9 @@ class ArrowCS(MagicProperties):
 
     @property
     def x(self):
-        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        """
+        `ArrowSingle` object or dict with equivalent key/value pairs (e.g. `color`, `show`).
+        """
         return self._x
 
     @x.setter
@@ -719,7 +692,9 @@ class ArrowCS(MagicProperties):
 
     @property
     def y(self):
-        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        """
+        `ArrowSingle` object or dict with equivalent key/value pairs (e.g. `color`, `show`).
+        """
         return self._y
 
     @y.setter
@@ -728,7 +703,9 @@ class ArrowCS(MagicProperties):
 
     @property
     def z(self):
-        """`Arrowsingle` class or dict with equivalent key/value pairs (e.g. `color`, `show`)"""
+        """
+        `ArrowSingle` object or dict with equivalent key/value pairs (e.g. `color`, `show`).
+        """
         return self._z
 
     @z.setter
@@ -737,35 +714,35 @@ class ArrowCS(MagicProperties):
 
 
 class ArrowSingle(MagicProperties):
-    """Single coordinate system arrow properties
+    """Single coordinate system arrow properties.
 
     Parameters
     ----------
     show: bool, default=True
-        show/hide arrow
+        Show/hide arrow.
 
     color: color, default=None
-        valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        Valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
     """
     def __init__(self, show=True, color=None):
         super().__init__(show=show, color=color)
 
     @property
     def show(self):
-        """show/hide arrow"""
+        """Show/hide arrow."""
         return self._show
 
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
-            f" but received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
     @property
     def color(self):
-        """a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`"""
+        """A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`."""
         return self._color
 
     @color.setter
@@ -774,37 +751,36 @@ class ArrowSingle(MagicProperties):
 
 
 class SensorProperties:
-    """
-    Defines the specific styling properties of objects of the `sensor` family
+    """Defines the specific styling properties of the Sensor class.
 
     Parameters
     ----------
     size: float, default=None
-        positive float for relative sensor to canvas size
+        Positive float for ratio of sensor to canvas size.
 
     pixel: dict, Pixel, default=None
-        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
 
     arrows: dict, ArrowCS, default=None
-        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
     """
 
     @property
     def size(self):
-        """positive float for relative sensor to canvas size"""
+        """Positive float for ratio of sensor to canvas size."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def pixel(self):
-        """`Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)"""
+        """`Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`)."""
         return self._pixel
 
     @pixel.setter
@@ -813,7 +789,7 @@ class SensorProperties:
 
     @property
     def arrows(self):
-        """`ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)"""
+        """`ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`)."""
         return self._arrows
 
     @arrows.setter
@@ -822,19 +798,18 @@ class SensorProperties:
 
 
 class Sensor(MagicProperties, SensorProperties):
-    """
-    Defines the specific styling properties of objects of the `sensor` family
+    """Defines styling properties of the Sensor class.
 
     Parameters
     ----------
     size: float, default=None
-        positive float for relative sensor to canvas size
+        Positive float for ratio of sensor to canvas size.
 
     pixel: dict, Pixel, default=None
-        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
 
     arrows: dict, ArrowCS, default=None
-        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
     """
 
     def __init__(self, size=None, pixel=None, arrows=None, **kwargs):
@@ -842,40 +817,40 @@ class Sensor(MagicProperties, SensorProperties):
 
 
 class SensorStyle(BaseStyle, SensorProperties):
-    """Defines the styling properties of objects of the `sensor` family with base properties
+    """Defines the styling properties of the Sensor class.
 
     Parameters
     ----------
     label: str, default=None
-        label of the class instance, can be any string.
+        Label of the class instance, e.g. to be displayed in the legend.
 
-    description: dict or Description, default=None
-        object description properties
+    description: dict or `Description` object, default=None
+        Object description properties.
 
     color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or Path, default=None
-        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    model3d: list of Trace3d objects, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
 
     size: float, default=None
-        positive float for relative sensor to canvas size
+        Positive float for ratio of sensor size to canvas size.
 
     pixel: dict, Pixel, default=None
-        `Pixel` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
 
     arrows: dict, ArrowCS, default=None
-        `ArrowCS` class or dict with equivalent key/value pairs (e.g. `color`, `size`)
+        `ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
     """
 
     def __init__(self, **kwargs):
@@ -883,23 +858,21 @@ class SensorStyle(BaseStyle, SensorProperties):
 
 
 class Pixel(MagicProperties):
-    """
-    Defines the styling properties of sensor pixels
+    """Defines the styling properties of sensor pixels.
 
     Parameters
     ----------
-    size: float, default=None
-        defines the relative pixel size:
-        - matplotlib backend: pixel size is the marker size
-        - plotly backend:  relative size to the distance of nearest neighboring pixel
+    size: float, default=1
+        Positive float for relative pixel size.
+        - matplotlib backend: Pixel size is the marker size.
+        - plotly backend: Relative distance to nearest neighbor pixel.
 
     color: str, default=None
-        defines the pixel color@property
+        Defines the pixel color@property.
 
     symbol: str, default=None
-        pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`
-        Only applies for matplotlib.
-
+        Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
+        Only applies for matplotlib plotting backend.
     """
 
     def __init__(self, size=1, color=None, symbol=None, **kwargs):
@@ -907,22 +880,22 @@ class Pixel(MagicProperties):
 
     @property
     def size(self):
-        """positive float, the relative pixel size:
-        - matplotlib backend: pixel size is the marker size
-        - plotly backend:  relative size to the distance of nearest neighboring pixel"""
+        """Positive float for relative pixel size.
+        - matplotlib backend: Pixel size is the marker size.
+        - plotly backend: Relative distance to nearest neighbor pixel."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
             f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def color(self):
-        """the pixel color"""
+        """Pixel color."""
         return self._color
 
     @color.setter
@@ -931,32 +904,31 @@ class Pixel(MagicProperties):
 
     @property
     def symbol(self):
-        """pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`"""
+        """Pixel symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`."""
         return self._symbol
 
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
-            f"the `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())}"
-            f" but received {repr(val)} instead"
+            f"The `symbol` property of {type(self).__name__} must be one of"
+            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"but received {repr(val)} instead."
         )
         self._symbol = val
 
 
 class CurrentProperties:
-    """
-    Defines the specific styling properties of objects of the `current` family
+    """Defines styling properties of line current classes.
 
     Parameters
     ----------
-    arrow: dict or Arrow, default=None
-        Arrow class or dict with `'show'`, `'size'` properties/keys
+    arrow: dict or `Arrow` object, default=None
+        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
     """
 
     @property
     def arrow(self):
-        """Arrow class or dict with `'show'`, `'size'` properties/keys"""
+        """`Arrow` object or dict with `'show'`, `'size'` properties/keys."""
         return self._arrow
 
     @arrow.setter
@@ -965,13 +937,12 @@ class CurrentProperties:
 
 
 class Current(MagicProperties, CurrentProperties):
-    """
-    Defines the specific styling properties of objects of the `current` family
+    """Defines the specific styling properties of line current classes.
 
     Parameters
     ----------
-    arrow: dict or Arrow, default=None
-        Arrow class or dict with 'show', 'size' properties/keys
+    arrow: dict or `Arrow`object, default=None
+        `Arrow` object or dict with 'show', 'size' properties/keys.
     """
 
     def __init__(self, arrow=None, **kwargs):
@@ -979,34 +950,34 @@ class Current(MagicProperties, CurrentProperties):
 
 
 class CurrentStyle(BaseStyle, CurrentProperties):
-    """Defines the styling properties of objects of the `current` family and base properties
+    """Defines styling properties of line current classes.
 
     Parameters
     ----------
     label: str, default=None
-        label of the class instance, can be any string.
+        Label of the class instance, e.g. to be displayed in the legend.
 
-    description: dict or Description, default=None
-        object description properties
+    description: dict or `Description` object, default=None
+        Object description properties.
 
     color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or Path, default=None
-        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    model3d: list of Trace3d objects, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
 
-    arrow: dict or Arrow, default=None
-        Arrow class or dict with `'show'`, `'size'` properties/keys
+    arrow: dict or `Arrow` object, default=None
+        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
     """
 
     def __init__(self, **kwargs):
@@ -1014,19 +985,18 @@ class CurrentStyle(BaseStyle, CurrentProperties):
 
 
 class Arrow(MagicProperties):
-    """
-    Defines the styling properties of current arrows
+    """Defines styling properties of current arrows.
 
     Parameters
     ----------
     show: bool, default=None
-        if `True` current direction is shown with an arrow
+        If True current direction is shown with an arrow.
 
-    size: float
-        positive number defining the size of the arrows
+    size: float, default=None
+        Positive number defining the size of the arrows.
 
     width: float, default=None
-        positive number that defines the arrow line width
+        Positive number that defines the arrow line width.
     """
 
     def __init__(self, show=None, size=None, **kwargs):
@@ -1034,57 +1004,55 @@ class Arrow(MagicProperties):
 
     @property
     def show(self):
-        """show/hide arrow showing current direction"""
+        """Show/hide arrow showing current direction."""
         return self._show
 
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either `True` or `False`"
-            f" but received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be either True or False,"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
     @property
     def size(self):
-        """positive number defining the size of the arrows"""
+        """Positive number defining the size of the arrows."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def width(self):
-        """positive number that defines the arrow line width"""
+        """Positive number that defines the arrow line width."""
         return self._width
 
     @width.setter
     def width(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `width` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._width = val
 
 
 class Marker(MagicProperties):
-    """
-    Defines the styling properties of plot markers
+    """Defines styling properties of plot markers.
 
     Parameters
     ----------
     size: float, default=None
-        marker size
+        Marker size.
     color: str, default=None
-        marker color
+        Marker color.
     symbol: str, default=None
-        marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`
-
+        Marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`.
     """
 
     def __init__(self, size=None, color=None, symbol=None, **kwargs):
@@ -1092,20 +1060,20 @@ class Marker(MagicProperties):
 
     @property
     def size(self):
-        """marker size"""
+        """Marker size."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def color(self):
-        """marker color"""
+        """Marker color."""
         return self._color
 
     @color.setter
@@ -1114,28 +1082,27 @@ class Marker(MagicProperties):
 
     @property
     def symbol(self):
-        """marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`"""
+        """Marker symbol. Can be one of `['.', 'o', '+', 'D', 'd', 's', 'x']`."""
         return self._symbol
 
     @symbol.setter
     def symbol(self, val):
         assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
-            f"the `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())}"
-            f" but received {repr(val)} instead"
+            f"The `symbol` property of {type(self).__name__} must be one of"
+            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"but received {repr(val)} instead."
         )
         self._symbol = val
 
 
 class Markers(BaseStyle):
-    """
-    Defines the styling properties of the markers trace
+    """Defines styling properties of the markers trace.
 
     Parameters
     ----------
-    marker: dict, Markers, default=None
-        Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
-        key/value pairs
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
     """
 
     def __init__(self, marker=None, **kwargs):
@@ -1143,7 +1110,7 @@ class Markers(BaseStyle):
 
     @property
     def marker(self):
-        """Markers class with 'color', 'symbol', 'size' properties"""
+        """`Markers` object with 'color', 'symbol', 'size' properties."""
         return self._marker
 
     @marker.setter
@@ -1152,62 +1119,62 @@ class Markers(BaseStyle):
 
 
 class DipoleProperties:
-    """
-    Defines the specific styling properties of the objects of the `dipole` family
+    """Defines styling properties of dipoles.
 
     Parameters
     ----------
-    size: float, default=None
-        positive float for relative dipole to size to canvas size
+    size: float
+        Positive value for ratio of dipole size to canvas size.
 
-    pivot: str, default=None
-        the part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
+    pivot: str
+        The part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
     """
 
     _allowed_pivots = ("tail", "middle", "tip")
 
     @property
     def size(self):
-        """positive float for relative dipole to size to canvas size"""
+        """Positive value for ratio of dipole size to canvas size."""
         return self._size
 
     @size.setter
     def size(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `size` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._size = val
 
     @property
     def pivot(self):
         """The part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`"""
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
+        """
         return self._pivot
 
     @pivot.setter
     def pivot(self, val):
         assert val is None or val in (self._allowed_pivots), (
-            f"the `pivot` property of {type(self).__name__} must be one of "
-            f"{self._allowed_pivots}\n"
-            f" but received {repr(val)} instead"
+            f"The `pivot` property of {type(self).__name__} must be one of "
+            f"{self._allowed_pivots},\n"
+            f"but received {repr(val)} instead."
         )
         self._pivot = val
 
 
 class Dipole(MagicProperties, DipoleProperties):
     """
-    Defines the specific styling properties of the objects of the `dipole` family
+    Defines styling properties of dipoles.
 
     Parameters
     ----------
     size: float, default=None
-        positive float for relative dipole to size to canvas size
+        Positive float for ratio of dipole size to canvas size.
 
     pivot: str, default=None
-        the part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
+        The part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
     """
 
     def __init__(self, size=None, pivot=None, **kwargs):
@@ -1215,38 +1182,38 @@ class Dipole(MagicProperties, DipoleProperties):
 
 
 class DipoleStyle(BaseStyle, DipoleProperties):
-    """Defines the styling properties of the objects of the `dipole` family and base properties
+    """Defines the styling properties of dipole objects.
 
     Parameters
     ----------
     label: str, default=None
-        label of the class instance, can be any string.
+        Label of the class instance, e.g. to be displayed in the legend.
 
-    description: dict or Description, default=None
-        object description properties
+    description: dict or `Description` object, default=None
+        Object description properties.
 
     color: str, default=None
-        a valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     opacity: float, default=None
-        object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
 
-    path: dict or Path, default=None
-        an instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
         path marker and path line properties.
 
-    model3d: list of Trace3d objects, default=None
-        a list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
         key/value pairs. Defines properties for an additional user-defined model3d object which is
         positioned relatively to the main object to be displayed and moved automatically with it.
         This feature also allows the user to replace the original 3d representation of the object.
 
     size: float, default=None
-        positive float for relative dipole to size to canvas size
+        Positive float for ratio of dipole size to canvas size.
 
     pivot: str, default=None
-        the part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`
+        The part of the arrow that is anchored to the X, Y grid.
+        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
     """
 
     def __init__(self, **kwargs):
@@ -1254,32 +1221,31 @@ class DipoleStyle(BaseStyle, DipoleProperties):
 
 
 class Path(MagicProperties):
-    """
-    Defines the styling properties of an object's path
+    """Defines styling properties of an object's path.
 
     Parameters
     ----------
-    marker: dict, Markers, default=None
-        Markers class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
-        key/value pairs
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
 
-    line: dict, Line, default=None
-        Line class with 'color', 'symbol', 'size' properties, or dictionary with equivalent
-        key/value pairs
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
 
     show: bool, default=None
-        show/hide path
-        - False: shows object(s) at final path position and hides paths lines and markers.
-        - True: shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
         parameters.
 
-    frames: int or 1D-array_like
-        show copies of the 3D-model along the given path indices.
-        - integer i: displays the object(s) at every i'th path position.
-        - array_like shape (n,) of integers: describes certain path indices.
+    frames: int or array_like, shape (n,), default=None
+        Show copies of the 3D-model along the given path indices.
+        - integer i: Displays the object(s) at every i'th path position.
+        - array_like, shape (n,), dtype=int: Displays object(s) at given path indices.
 
     numbering: bool, default=False
-        show/hide numbering on path positions. Only applies if show=True.
+        Show/hide numbering on path positions.
     """
 
     def __init__(
@@ -1296,7 +1262,7 @@ class Path(MagicProperties):
 
     @property
     def marker(self):
-        """Markers class with 'color', 'symbol', 'size' properties"""
+        """`Markers` object with 'color', 'symbol', 'size' properties."""
         return self._marker
 
     @marker.setter
@@ -1305,7 +1271,7 @@ class Path(MagicProperties):
 
     @property
     def line(self):
-        """Line class with 'color', 'type', 'width' properties"""
+        """`Line` object with 'color', 'type', 'width' properties."""
         return self._line
 
     @line.setter
@@ -1314,9 +1280,9 @@ class Path(MagicProperties):
 
     @property
     def show(self):
-        """show/hide path
-        - False: shows object(s) at final path position and hides paths lines and markers.
-        - True: shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        """Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
         parameters.
         """
         return self._show
@@ -1324,17 +1290,16 @@ class Path(MagicProperties):
     @show.setter
     def show(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `show` property of {type(self).__name__} must be either "
-            "`True` or `False`"
-            f"\nbut received {repr(val)} instead"
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
         )
         self._show = val
 
     @property
     def frames(self):
-        """show copies of the 3D-model along the given path indices.
-        - integer i: displays the object(s) at every i'th path position.
-        - array_like shape (n,) of integers: describes certain path indices.
+        """Show copies of the 3D-model along the given path indices.
+        - integer i: Displays the object(s) at every i'th path position.
+        - array_like shape (n,) of integers: Displays object(s) at given path indices.
         """
         return self._frames
 
@@ -1347,29 +1312,28 @@ class Path(MagicProperties):
                 is_valid_path = False
         elif not (val is None or np.issubdtype(type(val), int)):
             is_valid_path = False
-        assert is_valid_path, f"""the `frames` property of {type(self).__name__} must be either:
-- integer i: displays the object(s) at every i'th path position.
-- array_like shape (n,) of integers: describes certain path indices.
+        assert is_valid_path, f"""The `frames` property of {type(self).__name__} must be either:
+- integer i: Displays the object(s) at every i'th path position.
+- array_like, shape (n,), dtype=int: Displays object(s) at given path indices.
 but received {repr(val)} instead"""
         self._frames = val
 
     @property
     def numbering(self):
-        """show/hide numbering on path positions. Only applies if show=True."""
+        """Show/hide numbering on path positions. Only applies if show=True."""
         return self._numbering
 
     @numbering.setter
     def numbering(self, val):
         assert val is None or isinstance(val, bool), (
-            f"the `numbering` property of {type(self).__name__} must be one of (True, False),"
-            f" but received {repr(val)} instead"
+            f"The `numbering` property of {type(self).__name__} must be one of (True, False),\n"
+            f"but received {repr(val)} instead."
         )
         self._numbering = val
 
 
 class Line(MagicProperties):
-    """
-    Defines Line styling properties
+    """Defines line styling properties.
 
     Parameters
     ----------
@@ -1379,11 +1343,10 @@ class Line(MagicProperties):
         'loosely dotted', 'loosely dashdotted']`
 
     color: str, default=None
-        line color
+        Line color.
 
     width: float, default=None
-        positive number that defines the line width
-
+        Positive number that defines the line width.
     """
 
     def __init__(self, style=None, color=None, width=None, **kwargs):
@@ -1391,21 +1354,21 @@ class Line(MagicProperties):
 
     @property
     def style(self):
-        """line style"""
+        """Line style."""
         return self._style
 
     @style.setter
     def style(self, val):
         assert val is None or val in LINESTYLES_MATPLOTLIB_TO_PLOTLY, (
-            f"the `style` property of {type(self).__name__} must be one of"
-            f"{list(LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())}"
-            f" but received {repr(val)} instead"
+            f"The `style` property of {type(self).__name__} must be one of "
+            f"{list(LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"but received {repr(val)} instead."
         )
         self._style = val
 
     @property
     def color(self):
-        """line color"""
+        """Line color."""
         return self._color
 
     @color.setter
@@ -1414,42 +1377,41 @@ class Line(MagicProperties):
 
     @property
     def width(self):
-        """positive number that defines the line width"""
+        """Positive number that defines the line width."""
         return self._width
 
     @width.setter
     def width(self, val):
         assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"the `width` property of {type(self).__name__} must be a positive number"
-            f" but received {repr(val)} instead"
+            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
         )
         self._width = val
 
 
 class DisplayStyle(MagicProperties):
-    """
-    Base class containing styling properties for all object families. The properties of the
-    sub-classes get set to hard coded defaults at class instantiation
+    """Base class containing styling properties for all object families. The properties of the
+    sub-classes are set to hard coded defaults at class instantiation.
 
     Parameters
     ----------
-    base: dict, Base, default=None
-        base properties common to all families
+    base: dict or `Base` object, default=None
+        Base properties common to all families.
 
-    magnet: dict, Magnet, default=None
-        magnet properties
+    magnet: dict or `Magnet` object, default=None
+        Magnet properties.
 
-    current: dict, Current, default=None
-        current properties
+    current: dict or `Current` object, default=None
+        Current properties.
 
-    dipole: dict, Dipole, default=None
-        dipole properties
+    dipole: dict or `Dipole` object, default=None
+        Dipole properties.
 
-    sensor: dict, Sensor, default=None
-        sensor properties
+    sensor: dict or `Sensor` object, default=None
+        Sensor properties.
 
-    markers: dict, Markers, default=None
-        markers properties
+    markers: dict or `Markers` object, default=None
+        Markers properties.
     """
 
     def __init__(
@@ -1474,13 +1436,13 @@ class DisplayStyle(MagicProperties):
         # self.reset()
 
     def reset(self):
-        """Resets all nested properties to their hard coded default values"""
+        """Resets all nested properties to their hard coded default values."""
         self.update(get_defaults_dict("display.style"), _match_properties=False)
         return self
 
     @property
     def base(self):
-        """base properties common to all families"""
+        """Base properties common to all families."""
         return self._base
 
     @base.setter
@@ -1489,7 +1451,7 @@ class DisplayStyle(MagicProperties):
 
     @property
     def magnet(self):
-        """Magnet class"""
+        """Magnet class."""
         return self._magnet
 
     @magnet.setter
@@ -1498,7 +1460,7 @@ class DisplayStyle(MagicProperties):
 
     @property
     def current(self):
-        """Current class"""
+        """Current class."""
         return self._current
 
     @current.setter
@@ -1507,7 +1469,7 @@ class DisplayStyle(MagicProperties):
 
     @property
     def dipole(self):
-        """Dipole class"""
+        """Dipole class."""
         return self._dipole
 
     @dipole.setter
@@ -1516,7 +1478,7 @@ class DisplayStyle(MagicProperties):
 
     @property
     def sensor(self):
-        """Sensor"""
+        """Sensor class."""
         return self._sensor
 
     @sensor.setter
@@ -1525,7 +1487,7 @@ class DisplayStyle(MagicProperties):
 
     @property
     def markers(self):
-        """Markers class"""
+        """Markers class."""
         return self._markers
 
     @markers.setter
