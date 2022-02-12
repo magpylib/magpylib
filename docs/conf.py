@@ -4,7 +4,7 @@
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
-# http://www.sphinx-doc.org/en/master/config
+# http://www.sphinx-doc.org/en/main/config
 
 # -- Path setup --------------------------------------------------------------
 
@@ -62,7 +62,7 @@ author = "Michael Ortner <magpylib@gmail.com>"
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = '4.0.0-beta1'
+release = '4.0.0-beta2'
 
 
 # -- General configuration ---------------------------------------------------

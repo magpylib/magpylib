@@ -1,7 +1,5 @@
 """
-This subpackage contains all magnet classes. Magnets are modeled with homogeneous
-magnetization given in units of millitesla [mT] through mu0*M. See documentation
-for details on field computations.
+The `magpylib.magnet` subpackage contains all magnet classes.
 """
 
 __all__ = ['Cuboid', 'Cylinder', 'Sphere', 'CylinderSegment']
