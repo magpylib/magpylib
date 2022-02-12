@@ -38,12 +38,12 @@ def position_input_check(pos):
     """
     # check input type
     if Config.checkinputs:
-        check_vector_type(pos, "position")
+        check_vector_type(pos, "`position`")
     # path vector -> ndarray
     pos_array = np.array(pos, dtype=float)
     # check input format
     if Config.checkinputs:
-        check_path_format(pos_array, "position")
+        check_path_format(pos_array, "`position`")
     # tile to format (N,3) and return
     return pos_array.reshape(-1,3)
 

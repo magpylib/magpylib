@@ -160,7 +160,7 @@ def apply_move(target_object, displacement, start="auto"):
 
     # check input types
     if Config.checkinputs:
-        check_vector_type(displacement, "displacement")
+        check_vector_type(displacement, "`displacement`")
         check_start_type(start)
 
     # displacement vector -> ndarray
@@ -168,7 +168,7 @@ def apply_move(target_object, displacement, start="auto"):
 
     # check input format
     if Config.checkinputs:
-        check_path_format(inpath, "displacement")
+        check_path_format(inpath, "`displacement`")
 
     # pad target_object path and compute start and end-index for rotation application
     ppath, opath, start, end, padded = path_padding(inpath, start, target_object)

@@ -371,7 +371,7 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax4)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax6)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax7)
-        self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax8)
+        self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax8)
         self.assertRaises(MagpylibBadUserInput, badInput_rotate_from_angax9)
         self.assertRaises(MagpylibBadInputShape, badInput_rotate_from_angax10)
 
@@ -389,7 +389,7 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadInputShape, bad_dim_input6)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input7)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input9)
-        self.assertRaises(MagpylibBadInputShape, bad_dim_input10)
+        self.assertRaises(MagpylibBadUserInput, bad_dim_input10)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input11)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input12)
         self.assertRaises(MagpylibBadUserInput, bad_dim_input13)
