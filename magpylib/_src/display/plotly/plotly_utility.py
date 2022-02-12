@@ -2,12 +2,11 @@
 import numpy as np
 
 def merge_mesh3d(*traces):
-    """
-    Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate the
-    indices of each object in order to point to the right vertices in the concatenated vertices.
-    `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also get
-    concatenated if they are present in all objects. All other parameter found in the dictionary
-    keys are taken from the first object, other keys from further objects are ignored.
+    """Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate
+    the indices of each object in order to point to the right vertices in the concatenated
+    vertices. `x,y,z,i,j,k` are mandatory fields, the `intensity` and `facecolor` parameters also
+    get concatenated if they are present in all objects. All other parameter found in the
+    dictionary keys are taken from the first object, other keys from further objects are ignored.
     """
     merged_trace = {}
     L = np.array([0] + [len(b["x"]) for b in traces[:-1]]).cumsum()
@@ -26,10 +25,9 @@ def merge_mesh3d(*traces):
 
 
 def merge_scatter3d(*traces):
-    """
-    Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
-    `None` vertex to prevent line connection between objects to be concatenated. Keys are taken from
-    the first object, other keys from further objects are ignored.
+    """Merges a list of plotly scatter3d. `x,y,z` are mandatory fields and are concatenated with a
+    `None` vertex to prevent line connection between objects to be concatenated. Keys are taken
+    from the first object, other keys from further objects are ignored.
     """
     merged_trace = {}
     for k in "xyz":
@@ -41,8 +39,7 @@ def merge_scatter3d(*traces):
 
 
 def merge_traces(*traces):
-    """
-    Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
+    """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
     All traces have be of the same type when merging. Keys are taken from the first object, other
     keys from further objects are ignored.
     """
@@ -59,22 +56,20 @@ def merge_traces(*traces):
 
 
 def getIntensity(vertices, axis) -> np.ndarray:
-    """
-    Calculates the intensity values for vertices based on the distance of the vertices to the mean
-    vertices position in the provided axis direction. It can be used for plotting
+    """Calculates the intensity values for vertices based on the distance of the vertices to
+    the mean vertices position in the provided axis direction. It can be used for plotting
     fields on meshes. If `mag` See more infos here:https://plotly.com/python/3d-mesh/
 
     Parameters
     ----------
-    vertices : ndarray Nx3
-        the N vertices of the mesh object
-    axis : ndarray 3
-        direction vector
+    vertices : ndarray, shape (n,3)
+        The n vertices of the mesh object.
+    axis : ndarray, shape (3,)
+        Direction vector.
 
     Returns
     -------
-    ndarray N
-        returns 1D array of length N
+    Intensity values: ndarray, shape (n,)
     """
     p = np.array(vertices).T
     pos = np.mean(p, axis=1)
@@ -90,30 +85,29 @@ def getColorscale(
     color_middle="#DDDDDD",  # 'grey'
     color_south="#00B050",  # 'green'
 ) -> list:
-    """
-    Provides the colorscale for a plotly mesh3d trace.
-    The colorscale must be an array containing arrays mapping a normalized value to an rgb, rgba,
-    hex, hsl, hsv, or named color string. At minimum, a mapping for the lowest (0) and highest (1)
-    values are required. For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`.
-    In this case the colorscale is created depending on the north/middle/south poles colors. If the
-    middle color is `None` the colorscale will only have north and south pole colors.
+    """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
+    containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
+    color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.
+    For example, `[[0, 'rgb(0,0,255)'], [1,'rgb(255,0,0)']]`. In this case the colorscale
+    is created depending on the north/middle/south poles colors. If the middle color is
+    None, the colorscale will only have north and south pole colors.
 
     Parameters
     ----------
-    color_transition : float, optional
+    color_transition : float, default=0.1
         A value between 0 and 1. Sets the smoothness of the color transitions from adjacent colors
-        visualization., by default 0.1
-    color_north : str, optional
-        magnetic north pole color , by default None
-    color_middle : str, optional
-        middle between south and north pole color, by default None
-    color_south : str, optional
-        magnetic north pole color , by default None
+        visualization.
+    color_north : str, default=None
+        Magnetic north pole color.
+    color_middle : str, default=None
+        Color of area between south and north pole.
+    color_south : str, default=None
+        Magnetic north pole color.
 
     Returns
     -------
-    list
-        returns colorscale as list of tuples
+    colorscale: list
+        Colorscale as list of tuples.
     """
     if color_middle is False:
         colorscale = [
