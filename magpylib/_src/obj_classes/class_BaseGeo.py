@@ -7,11 +7,10 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import (
-    check_vector_type,
-    check_path_format,
-    check_rot_type)
+    check_format_input_orientation,
+    check_format_input_position,
+    )
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -30,36 +29,36 @@ def pad_slice_path(path1, path2):
     return path2
 
 
-def position_input_check(pos):
-    """
-    checks input type and format end returns an ndarray of shape (N,3).
-    This function is used for setter and init only -> (1,3) and (3,) input
-    creates same behavior.
-    """
-    # check input type
-    if Config.checkinputs:
-        check_vector_type(pos, "`position`")
-    # path vector -> ndarray
-    pos_array = np.array(pos, dtype=float)
-    # check input format
-    if Config.checkinputs:
-        check_path_format(pos_array, "`position`")
-    # tile to format (N,3) and return
-    return pos_array.reshape(-1,3)
+# def position_input_check(pos):
+#     """
+#     checks input type and format end returns an ndarray of shape (N,3).
+#     This function is used for setter and init only -> (1,3) and (3,) input
+#     creates same behavior.
+#     """
+#     # check input type
+#     if Config.checkinputs:
+#         check_vector_type(pos, "`position`")
+#     # path vector -> ndarray
+#     pos_array = np.array(pos, dtype=float)
+#     # check input format
+#     if Config.checkinputs:
+#         check_path_format(pos_array, "`position`")
+#     # tile to format (N,3) and return
+#     return pos_array.reshape(-1,3)
 
-def orientation_input_check(ori):
-    """
-    checks input type and format end returns an ndarray of shape (N,4).
-    This function is used for setter and init only -> (1,4) and (4,) input
-    creates same behavior.
-    """
-    # check input type
-    if Config.checkinputs:
-        check_rot_type(ori)
-    # None input generates unit rotation
-    ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
-    # tile to format (N,4) and return
-    return ori_array.reshape(-1,4)
+# def orientation_input_check(ori):
+#     """
+#     checks input type and format end returns an ndarray of shape (N,4).
+#     This function is used for setter and init only -> (1,4) and (4,) input
+#     creates same behavior.
+#     """
+#     # check input type
+#     if Config.checkinputs:
+#         check_rot_type(ori)
+#     # None input generates unit rotation
+#     ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
+#     # tile to format (N,4) and return
+#     return ori_array.reshape(-1,4)
 
 class BaseGeo(BaseTransform):
     """Initializes position and orientation properties
@@ -128,8 +127,8 @@ class BaseGeo(BaseTransform):
         """
 
         # format position and orientation inputs
-        pos = position_input_check(position)
-        ori = orientation_input_check(orientation)
+        pos = check_format_input_position(position)
+        ori = check_format_input_orientation(orientation)
 
         # padding logic: if one is longer than the other, edge-pad up the other
         len_pos = pos.shape[0]
@@ -174,7 +173,7 @@ class BaseGeo(BaseTransform):
         old_pos = self._position
 
         # check and set new position
-        self._position = position_input_check(inp)
+        self._position = check_format_input_position(inp)
 
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
@@ -208,7 +207,7 @@ class BaseGeo(BaseTransform):
         old_oriQ = self._orientation.as_quat()
 
         # set _orientation attribute with ndim=2 format
-        oriQ = orientation_input_check(inp)
+        oriQ = check_format_input_orientation(inp)
         self._orientation = R.from_quat(oriQ)
 
         # pad/slice position path to same length
@@ -296,7 +295,7 @@ class BaseGeo(BaseTransform):
         return self
 
     def copy(self, **kwargs):
-        """´Returns a copy of the current object instance. The `copy` method returns a deep copy of
+        """Returns a copy of the current object instance. The `copy` method returns a deep copy of
         the object, that is independant of the original object.
 
         Parameters

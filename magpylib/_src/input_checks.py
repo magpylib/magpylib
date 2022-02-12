@@ -8,6 +8,82 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 
+def is_array_like(inp, origin):
+    """ test if inp is array_like: type list, tuple or ndarray"""
+    if not isinstance(inp, (list, tuple, np.ndarray)):
+        raise MagpylibBadUserInput(
+            f"Input parameter `{origin}` must be array_like (list, tuple, ndarray).\n"
+            f"Instead received type {type(inp)}."
+        )
+
+def make_float_array(inp, origin):
+    """transform inp to array with dtype=float, throw error with bad input
+    inp: test object
+    origin: str, error msg reference
+    """
+    try:
+        inp_array = np.array(inp, dtype=float)
+    except Exception as err:
+        raise MagpylibBadUserInput(
+            f"Input parameter `{origin}` must contain only float compatible entries,\n"
+            f"{err}"
+            ) from err
+    return inp_array
+
+def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, origin:str, origin_shape:str):
+    """check if inp shape is allowed
+    inp: test object
+    dims: list, list of allowed dims
+    shape_m1: shape of lowest level
+    origin: str, error msg reference
+    """
+    if inp.ndim in dims:
+        if inp.shape[-1]==shape_m1:
+            return None
+    raise MagpylibBadUserInput(
+            f"Input parameter `{origin}` must have shape {origin_shape}.\n"
+            f"Instead received shape {inp.shape}."
+        )
+
+def check_orientation_type(inp):
+    """orientation input mut be scipy Rotation or None"""
+    if not isinstance(inp, (Rotation, type(None))):
+        raise MagpylibBadUserInput(
+            f"Input parameter `orientation` must be `None` or scipy `Rotation` object,\n"
+            f"received {repr(inp)} instead."
+        )
+
+###########################
+
+def check_format_input_position(inp):
+    """checks input and return formatted ndarray of shape (n,3).
+    - inp must be array_like
+    - convert inp to ndarray with dtype float
+    - inp shape must be (3,) or (n,3)
+    returns shape (n,3)
+
+    This function is used for setter and init only -> (1,3) and (3,) input
+    creates same behavior.
+    """
+    is_array_like(inp, origin='position')
+    inp = make_float_array(inp, origin='position')
+    check_array_shape(inp, dims=(1,2), shape_m1=3, origin='position', origin_shape='(3,) or (n,3)')
+    return np.reshape(inp, (-1,3))
+
+
+def check_format_input_orientation(inp):
+    """checks input and return formatted ndarray of shape (n,4).
+    - inp must be None or Rotation object
+    - transform None to unit rotation as quat (0,0,0,1)    
+    returns shape (n,4)
+
+    This function is used for setter and init only -> (1,4) and (4,) input
+    creates same behavior.
+    """
+    check_orientation_type(inp)
+    inpQ = np.array([(0,0,0,1)]) if inp is None else inp.as_quat()
+    return np.reshape(inpQ, (-1,4))
+
 
 def check_field_input(inp, origin):
     """check field input"""
@@ -86,13 +162,7 @@ def check_anchor_format(anch):
         )
 
 
-def check_rot_type(inp):
-    """rotation input mut be scipy Rotation"""
-    if not isinstance(inp, (Rotation, type(None))):
-        raise MagpylibBadUserInput(
-            f"Input parameter `orientation` must be `None` or scipy `Rotation` object,\n"
-            f"received {repr(inp)} instead."
-        )
+
 
 
 def check_start_type(start):

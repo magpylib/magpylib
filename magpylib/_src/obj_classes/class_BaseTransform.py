@@ -8,7 +8,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import (
     check_start_type,
-    check_rot_type,
+    check_orientation_type,
     check_anchor_type,
     check_anchor_format,
     check_angle_type,
@@ -212,7 +212,7 @@ def apply_rotation(
 
     # check input types
     if Config.checkinputs:
-        check_rot_type(rotation)
+        check_orientation_type(rotation)
         check_anchor_type(anchor)
         check_start_type(start)
 
