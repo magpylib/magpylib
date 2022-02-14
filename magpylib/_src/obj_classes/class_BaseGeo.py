@@ -1,4 +1,6 @@
-"""BaseGeo class code"""
+"""BaseGeo class code
+DOCSTRING v4 READY
+"""
 
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
@@ -27,38 +29,6 @@ def pad_slice_path(path1, path2):
     if delta_path<0:
         return path2[-delta_path:]
     return path2
-
-
-# def position_input_check(pos):
-#     """
-#     checks input type and format end returns an ndarray of shape (N,3).
-#     This function is used for setter and init only -> (1,3) and (3,) input
-#     creates same behavior.
-#     """
-#     # check input type
-#     if Config.checkinputs:
-#         check_vector_type(pos, "`position`")
-#     # path vector -> ndarray
-#     pos_array = np.array(pos, dtype=float)
-#     # check input format
-#     if Config.checkinputs:
-#         check_path_format(pos_array, "`position`")
-#     # tile to format (N,3) and return
-#     return pos_array.reshape(-1,3)
-
-# def orientation_input_check(ori):
-#     """
-#     checks input type and format end returns an ndarray of shape (N,4).
-#     This function is used for setter and init only -> (1,4) and (4,) input
-#     creates same behavior.
-#     """
-#     # check input type
-#     if Config.checkinputs:
-#         check_rot_type(ori)
-#     # None input generates unit rotation
-#     ori_array = np.array([(0, 0, 0, 1)]) if ori is None else ori.as_quat()
-#     # tile to format (N,4) and return
-#     return ori_array.reshape(-1,4)
 
 class BaseGeo(BaseTransform):
     """Initializes position and orientation properties
@@ -119,33 +89,34 @@ class BaseGeo(BaseTransform):
         return style
 
     def _init_position_orientation(self, position, orientation):
-        """
-        tile up position and orientation input at Class init and set attributes
-        _position and _orientation.
+        """tile up position and orientation input and set _position and
+        _orientation at class init. Because position and orientation inputs
+        come at the same time, tiling is slightly different then with setters.
         pos: position input
-        ori: orientation.as_quat() input
+        ori: orientation input
         """
 
         # format position and orientation inputs
-        pos = check_format_input_position(position)
-        ori = check_format_input_orientation(orientation)
+        pos = check_format_input_position(position, 'position', reshape=True)
+        oriQ = check_format_input_orientation(orientation, init_format=True)
 
         # padding logic: if one is longer than the other, edge-pad up the other
         len_pos = pos.shape[0]
-        len_ori = ori.shape[0]
+        len_ori = oriQ.shape[0]
 
         if len_pos>len_ori:
-            ori = np.pad(ori, ((0,len_pos-len_ori), (0,0)), 'edge')
+            oriQ = np.pad(oriQ, ((0,len_pos-len_ori), (0,0)), 'edge')
         elif len_pos<len_ori:
             pos = np.pad(pos, ((0,len_ori-len_pos), (0,0)), 'edge')
 
         # set attributes
         self._position = pos
-        self._orientation = R.from_quat(ori)
+        self._orientation = R.from_quat(oriQ)
 
     def _get_style_class(self):
         """returns style class based on object type. If class has no attribute `_object_type` or is
-        not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class."""
+        not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class.
+        """
         # pylint: disable=import-outside-toplevel
         from magpylib._src.style import get_style_class
 
@@ -173,7 +144,7 @@ class BaseGeo(BaseTransform):
         old_pos = self._position
 
         # check and set new position
-        self._position = check_format_input_position(inp)
+        self._position = check_format_input_position(inp, 'position', reshape=True)
 
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
@@ -207,7 +178,7 @@ class BaseGeo(BaseTransform):
         old_oriQ = self._orientation.as_quat()
 
         # set _orientation attribute with ndim=2 format
-        oriQ = check_format_input_orientation(inp)
+        oriQ = check_format_input_orientation(inp, init_format=True)
         self._orientation = R.from_quat(oriQ)
 
         # pad/slice position path to same length
@@ -240,13 +211,15 @@ class BaseGeo(BaseTransform):
         if isinstance(val, dict):
             val = self.style_class(**val)
         if not isinstance(val, self.style_class):
-            raise ValueError(f"style must be of type {self.style_class}")
+            raise ValueError(
+                f"Input parameter `style` must be of type {self.style_class}.\n"
+                f"Instead received type {type(val)}"
+                )
         return val
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """
-        Add up sources to a Collection object.
+        """Add up sources to a Collection object.
 
         Returns
         -------
@@ -257,8 +230,7 @@ class BaseGeo(BaseTransform):
         return Collection(self, obj)
 
     def __radd__(self, other):
-        """
-        Add up sources to a Collection object. Allows to use `sum(objects)`
+        """Add up sources to a Collection object. Allows to use `sum(objects)`.
 
         Returns
         -------
@@ -270,54 +242,53 @@ class BaseGeo(BaseTransform):
 
     # methods -------------------------------------------------------
     def reset_path(self):
-        """
-        Set object position to (0,0,0) and orientation = unit rotation.
+        """Set object position to (0,0,0) and orientation = unit rotation.
 
         Returns
         -------
-        self: Magpylib object
+        self: magpylib object
 
         Examples
         --------
-        Create an object with non-zero path
+        Demonstration of `reset_path` functionality:
 
         >>> import magpylib as magpy
         >>> obj = magpy.Sensor(position=(1,2,3))
+        >>> obj.rotate_from_angax(45, 'z')
         >>> print(obj.position)
+        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [1. 2. 3.]
+        [ 0.  0. 45.]
+
         >>> obj.reset_path()
         >>> print(obj.position)
+        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [0. 0. 0.]
-
+        [0. 0. 0.]
         """
         self.position = (0,0,0)
         self.orientation = None
         return self
 
     def copy(self, **kwargs):
-        """Returns a copy of the current object instance. The `copy` method returns a deep copy of
-        the object, that is independant of the original object.
+        """Returns an independent copy of the object.
 
         Parameters
         ----------
-            kwargs: dict, optional
-                keyword arguments to be transmitted to the newly created object. Can be for example
-                `'position'`,`'orientation'`, `'style'` etc.
+        kwargs: dict
+            Keyword arguments (for example `position`, `style`, ...) are applied to the copy.
 
         Examples
         --------
-        Create an object and copy to an another position
+        Create a `Sensor` object and copy to an another position:
 
         >>> import magpylib as magpy
-        >>> obj = magpy.Sensor(position=(1,2,3))
-        >>> print(obj.position)
-        [1. 2. 3.]
-        >>> obj2 = obj.copy(position=(2,6,10))
-        >>> print(obj.position)
-        [1. 2. 3.]
-        >>> print(obj2.position)
-        [2. 6. 10.]
-
+        >>> sens1 = magpy.Sensor()
+        >>> sens2 = sens1.copy(position=(2,6,10))
+        >>> print(f"Instance {sens1} with position {sens1.position}.")
+        >>> print(f"Instance {sens2} with position {sens2.position}.")
+        Instance Sensor(id=2756069642496) with position [0. 0. 0.].
+        Instance Sensor(id=2756171531744) with position [2. 6. 10.].
         """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy

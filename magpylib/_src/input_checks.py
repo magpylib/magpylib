@@ -8,81 +8,231 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 
-def is_array_like(inp, origin):
-    """ test if inp is array_like: type list, tuple or ndarray"""
-    if not isinstance(inp, (list, tuple, np.ndarray)):
-        raise MagpylibBadUserInput(
-            f"Input parameter `{origin}` must be array_like (list, tuple, ndarray).\n"
-            f"Instead received type {type(inp)}."
-        )
+#################################################################
+#################################################################
+# FUNDAMENTAL CHECKS
 
-def make_float_array(inp, origin):
+def is_array_like(inp, msg:str):
+    """ test if inp is array_like: type list, tuple or ndarray
+    inp: test object
+    msg: str, error msg
+    """
+    if not isinstance(inp, (list, tuple, np.ndarray)):
+        raise MagpylibBadUserInput(msg)
+
+def make_float_array(inp, msg:str):
     """transform inp to array with dtype=float, throw error with bad input
     inp: test object
-    origin: str, error msg reference
+    msg: str, error msg
     """
     try:
         inp_array = np.array(inp, dtype=float)
     except Exception as err:
-        raise MagpylibBadUserInput(
-            f"Input parameter `{origin}` must contain only float compatible entries,\n"
-            f"{err}"
-            ) from err
+        raise MagpylibBadUserInput(msg + f"{err}") from err
     return inp_array
 
-def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, origin:str, origin_shape:str):
+def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
     """check if inp shape is allowed
     inp: test object
     dims: list, list of allowed dims
-    shape_m1: shape of lowest level
-    origin: str, error msg reference
+    shape_m1: shape of lowest level, if 'any' allow any shape
+    msg: str, error msg
     """
     if inp.ndim in dims:
         if inp.shape[-1]==shape_m1:
             return None
-    raise MagpylibBadUserInput(
-            f"Input parameter `{origin}` must have shape {origin_shape}.\n"
-            f"Instead received shape {inp.shape}."
-        )
+        if shape_m1 == 'any':
+            return None
+    raise MagpylibBadUserInput(msg)
 
-def check_orientation_type(inp):
-    """orientation input mut be scipy Rotation or None"""
-    if not isinstance(inp, (Rotation, type(None))):
+
+
+#################################################################
+#################################################################
+# SIMPLE CHECKS
+
+def check_start_type(inp):
+    """start input must be int or str"""
+    if not (isinstance(inp, (int, np.int_)) or inp == 'auto'):
         raise MagpylibBadUserInput(
-            f"Input parameter `orientation` must be `None` or scipy `Rotation` object,\n"
-            f"received {repr(inp)} instead."
+            f"Input parameter `start` must be integer value or 'auto'.\n"
+            f"Instead received {repr(inp)}."
         )
 
-###########################
 
-def check_format_input_position(inp):
-    """checks input and return formatted ndarray of shape (n,3).
+def check_degree_type(inp):
+    """degrees input must be bool"""
+    if not isinstance(inp, bool):
+        raise MagpylibBadUserInput(
+            "Input parameter `degrees` must be boolean (`True` or `False`).\n"
+            f"Instead received {repr(inp)}."
+        )
+
+
+#################################################################
+#################################################################
+# CHECK - FORMAT
+
+def check_format_input_position(inp, signature, reshape=False):
+    """checks input of init and setter position, returns formatted input
     - inp must be array_like
     - convert inp to ndarray with dtype float
     - inp shape must be (3,) or (n,3)
-    returns shape (n,3)
+    - if reshape=True: returns shape (n,3)
 
     This function is used for setter and init only -> (1,3) and (3,) input
     creates same behavior.
     """
-    is_array_like(inp, origin='position')
-    inp = make_float_array(inp, origin='position')
-    check_array_shape(inp, dims=(1,2), shape_m1=3, origin='position', origin_shape='(3,) or (n,3)')
-    return np.reshape(inp, (-1,3))
+    is_array_like(inp,
+        f"Input parameter `{signature}` must be array_like (list, tuple, ndarray).\n"
+        f"Instead received type {type(inp)}."
+    )
+    inp = make_float_array(inp,
+        f"Input parameter `{signature}` must contain only float compatible entries.\n"
+    )
+    check_array_shape(inp, dims=(1,2), shape_m1=3, msg=(
+        f"Input parameter `{signature}` must have shape (3,) or (n,3).\n"
+        f"Instead received shape {inp.shape}.")
+    )
+    if reshape:
+        return np.reshape(inp, (-1,3))
+    return inp
 
 
-def check_format_input_orientation(inp):
-    """checks input and return formatted ndarray of shape (n,4).
+def check_format_input_orientation(inp, init_format=False):
+    """checks input of init and setter orientation, returns formatted input
     - inp must be None or Rotation object
-    - transform None to unit rotation as quat (0,0,0,1)    
-    returns shape (n,4)
+    - transform None to unit rotation as quat (0,0,0,1)
+    if init_format: (for move method)
+        return inp and inpQ
+    else: (for init and setter)
+        return inpQ in shape (-1,4)
 
-    This function is used for setter and init only -> (1,4) and (4,) input
+    This function is used for setter and init only -> shape (1,4) and (4,) input
     creates same behavior.
     """
-    check_orientation_type(inp)
-    inpQ = np.array([(0,0,0,1)]) if inp is None else inp.as_quat()
-    return np.reshape(inpQ, (-1,4))
+    # check type
+    if not isinstance(inp, (Rotation, type(None))):
+        raise MagpylibBadUserInput(
+            f"Input parameter `orientation` must be `None` or scipy `Rotation` object.\n"
+            f"Instead received type {type(inp)}.")
+    # handle None input and compute inpQ
+    if inp is None:
+        inpQ = np.array((0,0,0,1))
+        inp=Rotation.from_quat(inpQ)
+    else:
+        inpQ = inp.as_quat()
+    # return
+    if init_format:
+        return np.reshape(inpQ, (-1,4))
+    return inp, inpQ
+
+
+def check_format_input_anchor(inp):
+    """ checks input and return formatted anchor
+    - input must be array_like or None or 0
+    """
+    if inp is None:
+        return None
+
+    if np.isscalar(inp) and inp == 0:
+        return np.array((0.0, 0.0, 0.0))
+
+    is_array_like(inp,
+        f"Input parameter `anchor` must be `None`, `0` or array_like (list, tuple, ndarray).\n"
+        f"Instead received {repr(inp)}."
+    )
+    inp = make_float_array(inp,
+        "Input parameter `anchor` must contain only float compatible entries.\n"
+    )
+    check_array_shape(inp, dims=(1,2), shape_m1=3, msg=(
+        "Input parameter `anchor` must be `None`, `0` or array_like with shape (3,) or (n,3),\n"
+        f"Instead received array_like with shape {inp.shape}")
+    )
+    return inp
+
+
+def check_format_input_axis(inp):
+    """check axis input and return in formatted form
+    - input must be array_like or str
+    - if string 'x'->(1,0,0), 'y'->(0,1,0), 'z'->(0,0,1)
+    - convert inp to ndarray with dtype float
+    - inp shape must be (3,)
+    - axis must not be (0,0,0)
+    - return as ndarray shape (3,)
+    """
+    if isinstance(inp, str):
+        if inp == 'x':
+            return np.array((1,0,0))
+        if inp == 'y':
+            return np.array((0,1,0))
+        if inp == 'z':
+            return np.array((0,0,1))
+        raise MagpylibBadUserInput(
+            "Input parameter `axis` must be array_like shape (3,) or one of ['x', 'y', 'z'].\n"
+            f"Instead received string {inp}.\n")
+
+    is_array_like(inp,
+        "Input parameter `axis` must be array_like shape (3,) or one of ['x', 'y', 'z'].\n"
+        f"Instead received type {type(inp)}."
+    )
+    inp = make_float_array(inp,
+        "Input parameter `axis` must contain only float compatible entries.\n"
+    )
+    check_array_shape(inp, dims=(1,), shape_m1=3, msg=(
+        "Input parameter `axis` must be array_like shape (3,) or one of ['x', 'y', 'z'].\n"
+        f"Instead received array_like with shape {inp.shape}.")
+    )
+    if np.all(inp==0):
+        raise MagpylibBadUserInput(
+            "Input parameter `axis` must not be (0,0,0).\n")
+    return inp
+
+
+def check_format_input_angle(inp):
+    """check angle input and return in formatted form
+    - must be scalar (int/float) or array_like
+    - if scalar
+        - return float
+    - if array_like
+        - convert inp to ndarray with dtype float
+        - inp shape must be (n,)
+        - return as ndarray
+    """
+    if np.isscalar(inp):
+        return float(inp)
+
+    is_array_like(inp,
+        "Input parameter `angle` must be int, float or array_like with shape (n,).\n"
+        f"Instead received type {type(inp)}."
+    )
+    inp = make_float_array(inp,
+        "Input parameter `angle` must contain only float compatible entries.\n"
+    )
+    check_array_shape(inp, dims=(1,), shape_m1='any', msg=(
+        "Input parameter `angle` must be int, float or array_like with shape (n,).\n"
+        f"Instead received array_like with shape {inp.shape}.")
+    )
+    return inp
+
+
+# check_anchor_type(anchor)
+#     check_start_type(start)
+
+#     # when an anchor is given
+#     if anchor is not None:
+#         # 0-anchor -> (0,0,0)
+#         if np.isscalar(anchor) and anchor == 0:
+#             anchor = np.array((0.0, 0.0, 0.0))
+#         else:
+#             anchor = np.array(anchor, dtype=float)
+#         # check anchor input format
+#         if Config.checkinputs:
+#             check_anchor_format(anchor)
+#         # apply multi-anchor behavior
+
+
+
 
 
 def check_field_input(inp, origin):
@@ -141,87 +291,75 @@ def check_path_format(inp, origin):
         )
 
 
-def check_anchor_type(anch):
-    """anchor input must be vector or None or 0"""
-    if not (isinstance(anch, (list, tuple, np.ndarray, type(None))) or anch == 0):
-        raise MagpylibBadUserInput(
-            f"Input parameter `anchor` must be `None`, `0` or array_like with shape (3,) or (n,3),\n"
-            f"received {repr(anch)} instead."
-        )
+# def check_anchor_type(anch):
+#     """anchor input must be vector or None or 0"""
+#     if not (isinstance(anch, (list, tuple, np.ndarray, type(None))) or anch == 0):
+#         raise MagpylibBadUserInput(
+#             f"Input parameter `anchor` must be `None`, `0` or array_like with shape (3,) or (n,3),\n"
+#             f"received {repr(anch)} instead."
+#         )
 
 
-def check_anchor_format(anch):
-    """must be shape (n,3), (3,) or 0"""
-    case0 = (anch.ndim==0) and anch==0
-    case1 = (anch.ndim==1) and len(anch)==3
-    case2 = (anch.ndim==2) and (anch.shape[-1]==3)
-    if not case0 | case1 | case2:
-        raise MagpylibBadInputShape(
-            f"Input parameter `anchor` must be `None`, `0` or array_like with shape (3,) or (n,3),\n"
-            f"received {repr(anch)} instead."
-        )
+# def check_anchor_format(anch):
+#     """must be shape (n,3), (3,) or 0"""
+#     case0 = (anch.ndim==0) and anch==0
+#     case1 = (anch.ndim==1) and len(anch)==3
+#     case2 = (anch.ndim==2) and (anch.shape[-1]==3)
+#     if not case0 | case1 | case2:
+#         raise MagpylibBadInputShape(
+#             f"Input parameter `anchor` must be `None`, `0` or array_like with shape (3,) or (n,3),\n"
+#             f"received {repr(anch)} instead."
+#         )
 
 
 
 
 
-def check_start_type(start):
-    """start input must be int or str"""
-    if not (isinstance(start, (int, np.int_)) or start == 'auto'):
-        raise MagpylibBadUserInput(
-            f"Input parameter `start` must be int or 'auto',\n"
-            f"received {repr(start)} instead."
-        )
 
 
-def check_angle_type(inp):
-    """angle input must be scalar or vector"""
-    if not isinstance(inp, (int, float, list, tuple, np.ndarray, np.int_, np.float_, range)):
-        raise MagpylibBadUserInput(
-            f"Input parameter `angle` must be int, float, or array_like with shape (n,),\n"
-            f"but received {repr(inp)} instead."
-        )
 
-def check_angle_format(inp):
-    """angle format must be scalar or of shape (N,)"""
-    if isinstance(inp, np.ndarray):
-        if inp.ndim not in (0,1):
-            raise MagpylibBadInputShape(
-                f"Input parameter `angle` must be int, float, or array_like with shape (n,),\n"
-                f"but received {repr(inp)} instead."
-            )
+# def check_angle_type(inp):
+#     """angle input must be scalar or vector"""
+#     if not isinstance(inp, (int, float, list, tuple, np.ndarray, np.int_, np.float_, range)):
+#         raise MagpylibBadUserInput(
+#             f"Input parameter `angle` must be int, float, or array_like with shape (n,),\n"
+#             f"but received {repr(inp)} instead."
+#         )
 
-
-def check_axis_type(inp):
-    """axis input must be vector or str"""
-    if not isinstance(inp, (list, tuple, np.ndarray, str)):
-        raise MagpylibBadUserInput(
-            f"Input parameter `axis` must be str 'x', 'y', 'z', or array_like with shape (3,),\n"
-            f"but received {repr(inp)} instead."
-        )
+# def check_angle_format(inp):
+#     """angle format must be scalar or of shape (N,)"""
+#     if isinstance(inp, np.ndarray):
+#         if inp.ndim not in (0,1):
+#             raise MagpylibBadInputShape(
+#                 f"xxInput parameter `angle` must be int, float, or array_like with shape (n,),\n"
+#                 f"but received {repr(inp)} instead."
+#             )
 
 
-def check_axis_format(inp):
-    """
-    - must be of shape (3,)
-    - must not be (0,0,0)
-    """
-    case1 = not inp.shape==(3,)
-    case2 = np.all(inp==0)
-    if case1 | case2:
-        raise MagpylibBadUserInput(
-            f"Input parameter `axis` must be str 'x', 'y', 'z', or non-zero array_like with shape (3,),\n"
-            f"but received {repr(inp)} instead."
-        )
+# def check_axis_type(inp):
+#     """axis input must be vector or str"""
+#     if not isinstance(inp, (list, tuple, np.ndarray, str)):
+#         raise MagpylibBadUserInput(
+#             f"Input parameter `axis` must be str 'x', 'y', 'z', or array_like with shape (3,),\n"
+#             f"but received {repr(inp)} instead."
+#         )
 
 
-def check_degree_type(inp):
-    """degrees input must be bool"""
-    if not isinstance(inp, bool):
-        raise MagpylibBadUserInput(
-            f"Input parameter `degrees` must be bool (`True` or `False`),\n"
-            f"but received {repr(inp)} instead."
-        )
+# def check_axis_format(inp):
+#     """
+#     - must be of shape (3,)
+#     - must not be (0,0,0)
+#     """
+#     case1 = not inp.shape==(3,)
+#     case2 = np.all(inp==0)
+#     if case1 | case2:
+#         raise MagpylibBadUserInput(
+#             f"Input parameter `axis` must be str 'x', 'y', 'z', or non-zero array_like with shape (3,),\n"
+#             f"but received {repr(inp)} instead."
+#         )
+
+
+
 
 
 def check_scalar_type(inp, origin):
