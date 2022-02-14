@@ -23,7 +23,7 @@ import os
 import setuptools
 from setuptools.command.install import install
 
-_magPyVersion = "4.0.0-beta1"
+_magPyVersion = "4.0.0-beta2"
 
 _SphinxVersion = "4.2.0"
 _name = "magpylib"
@@ -47,9 +47,7 @@ class VerifyVersionCommand(install):
         tag = os.getenv("CIRCLE_TAG")
 
         if tag != _magPyVersion:
-            info = "Git tag: {0} does not match the version of this app: {1}".format(
-                tag, _magPyVersion
-            )
+            info = f"Git tag: {tag} does not match the version of this app: {_magPyVersion}"
             sys.exit(info)
 
 

@@ -18,6 +18,9 @@ kernelspec:
 
 The default displaying style may not yield by default the visual representation the user wants. For these cases, the library includes a variety of styling options that can be applied at multiple levels in the user's code.
 
+```{warning}
+Users should be aware that specifying style attributes increases initializing time. While this may not be noticeable for a small number objects, this can become an issue when initializating a lot of objects or repeatedly creating objects in a loop, for example in an optimization algorithm. In this cases you may want to specify objects styles not until plotting time.
+```
 +++ {"tags": []}
 
 ## Hierarchy of arguments

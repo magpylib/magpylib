@@ -1,5 +1,5 @@
 """
-This sub-package contains miscellaneous source objects.
+The `magpylib.misc` sub-package contains miscellaneous source objects.
 """
 
 __all__ = ['Dipole', 'CustomSource']
