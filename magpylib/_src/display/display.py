@@ -5,7 +5,8 @@ from magpylib._src.utility import format_obj_input, test_path_format
 from magpylib._src.display.display_matplotlib import display_matplotlib
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 
 # ON INTERFACE
 def show(
@@ -105,15 +106,11 @@ def show(
     if backend == "matplotlib":
         if animation is not False:
             msg = "The matplotlib backend does not support animation at the moment. "
-            msg+= "Use plotly backend instead."
+            msg += "Use plotly backend instead."
             warnings.warn(msg)
             # animation = False
         display_matplotlib(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            axis=canvas,
-            **kwargs,
+            *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
@@ -127,3 +124,9 @@ def show(
             animation=animation,
             **kwargs,
         )
+    else:
+        msg = (
+            f"The plotting backend must be one of {SUPPORTED_PLOTTING_BACKENDS},"
+            f" received {backend!r} instead"
+        )
+        raise MagpylibBadUserInput(msg)
