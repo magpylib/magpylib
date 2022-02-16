@@ -4,7 +4,7 @@
 import os
 
 import pytest
-from scipy.spatial.transform.rotation import Rotation as R
+from scipy.spatial.transform import Rotation as R
 import numpy as np
 import plotly.graph_objects as go
 import magpylib as magpy
