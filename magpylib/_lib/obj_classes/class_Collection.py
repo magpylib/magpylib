@@ -114,8 +114,7 @@ class Collection(BaseDisplayRepr, BaseGetBH):
 
     # dunders -------------------------------------------------------
     def __add__(self, source):
-        self.add(source)
-        return self
+        return Collection(*self.sources, source)
 
 
     def __sub__(self, source):
