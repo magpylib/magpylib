@@ -19,7 +19,7 @@
 import os
 import sys
 #Location of Sphinx files
-sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above 
+sys.path.insert(0, os.path.abspath('./../')) ##Add the folder one level above
 os.environ["SPHINX_APIDOC_OPTIONS"] = "members,show-inheritance" ## Hide undocumented members
 import sphinx.apidoc
 
@@ -31,7 +31,7 @@ autodoc_default_options = {
 
 # Recommon Mark Configuration
 from recommonmark.transform import AutoStructify
-github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/' 
+github_doc_root = 'https://github.com/rtfd/recommonmark/tree/master/doc/'
 
 def setup(app):
     app.add_stylesheet('css/stylesheet.css')
@@ -42,7 +42,7 @@ def setup(app):
             }, True)
     app.add_transform(AutoStructify) # RecommonMark Configuration for Markdown
     app.add_javascript('webcode/summaryOpen.js')
-    app.add_javascript('webcode/copybutton.js') # Add the button for 
+    app.add_javascript('webcode/copybutton.js') # Add the button for
                                         # hiding ">>>" in examples
     sphinx.apidoc.main(['-f', #Overwrite existing files
                         '-T', #Create table of contents
@@ -68,7 +68,7 @@ author = 'Michael Ortner <magpylib@gmail.com>'
 # The short X.Y version
 version = ''
 # The full version, including alpha/beta/rc tags
-release = '3.0.2'
+release = '3.0.3'
 
 
 # -- General configuration ---------------------------------------------------

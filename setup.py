@@ -1,5 +1,5 @@
 ####
-# This is a basic setup.py structure so we can generate 
+# This is a basic setup.py structure so we can generate
 # distributable package information with setuptools.
 # More information: https://packaging.python.org/tutorials/packaging-projects/
 ###
@@ -16,7 +16,7 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-_magPyVersion = "3.0.2"
+_magPyVersion = "3.0.3"
 
 _SphinxVersion = "1.8.2"
 _name = "magpylib"
@@ -48,7 +48,7 @@ class VerifyVersionCommand(install):
                 tag, _magPyVersion
             )
             sys.exit(info)
-    
+
 setuptools.setup(
     name=_name,
     version=_magPyVersion,
