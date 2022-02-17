@@ -1,92 +1,82 @@
 """Line current class code"""
 
-import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_vertex_format, check_vector_type
+from magpylib._src.input_checks import check_format_input_vertices
 
-# init for tool tips
-i0 = None
-pos1 = pos2 = (None, None, None)
-
-# ON INTERFACE
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
-    """
-    Current flowing in straight lines from vertex to vertex.
+    """Current flowing in straight lines from vertex to vertex.
 
-    Local object coordinates: The Line current vertices are defined in the local object
-    coordinate system. Local (Line) and global CS coincide when position=(0,0,0)
-    and orientation=unit_rotation.
+    Can be used as `sources` input for magnetic field computation.
+
+    The vertex positions are defined in the local object coordinates (rotate with object).
+    When `position=(0,0,0)` and `orientation=None` global and local coordinates conincide.
 
     Parameters
     ----------
-    current: float
+    current: float, default=`None`
         Electrical current in units of [A].
 
-    vertices: array_like, shape (N,3)
+    vertices: array_like, shape (N,3), default=`None`
         The current flows along the vertices which are given in units of [mm] in the
-        local CS of the Line object.
+        local object coordinates (move/rotate with object).
 
-    position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position (local CS origin) in the global CS in units of [mm].
-        For M>1, the position represents a path. The position and orientation
-        parameters must always be of the same length.
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
-    orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation (local CS orientation) in the global CS. For M>1
-        orientation represents different values along a path. The position and
-        orientation parameters must always be of the same length.
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
 
     Returns
     -------
-    Line object: Line
+    current source: `Line` object
 
     Examples
     --------
-    # By default a Line is initialized at position (0,0,0), with unit rotation:
+    `Line` objects are magnetic field sources. In this example we compute the H-field [kA/m]
+    of a square-shaped line-current with 1 [A] current at the observer position (1,1,1) given in
+    units of [mm]:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.current.Line(current=100, vertices=[(-1,0,0),(1,0,0)])
-    >>> print(magnet.position)
-    [0. 0. 0.]
-    >>> print(magnet.orientation.as_quat())
-    [0. 0. 0. 1.]
-
-    Lines are magnetic field sources. Below we compute the H-field [kA/m] of the above Line at the
-    observer position (1,1,1),
-
-    >>> H = magnet.getH((1,1,1))
+    >>> src = magpy.current.Line(
+    >>>     current=1,
+    >>>     vertices=((1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)))
+    >>> H = src.getH((1,1,1))
     >>> print(H)
-    [ 0.         -3.24873667  3.24873667]
+    [0.03160639 0.03160639 0.00766876]
 
-    or at a set of observer positions:
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[ 0.         -3.24873667  3.24873667]
-     [ 0.         -0.78438229  0.78438229]
-     [ 0.         -0.34429579  0.34429579]]
+    >>> src.rotate_from_angax(45, 'x')
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(B)
+    [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
+     [-5.94009823e-19  3.62181325e-03 -3.62181325e-03]
+     [-2.21112416e-19  1.03643004e-03 -1.03643004e-03]]
 
-    The same result is obtained when the Line moves along a path,
-    away from the observer:
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
-    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
-    >>> H = magnet.getH((1,1,1))
-    >>> print(H)
-    [[ 0.         -3.24873667  3.24873667]
-     [ 0.         -0.78438229  0.78438229]
-     [ 0.         -0.34429579  0.34429579]]
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
+     [-5.94009823e-19  3.62181325e-03 -3.62181325e-03]
+     [-2.21112416e-19  1.03643004e-03 -1.03643004e-03]]
     """
 
     # pylint: disable=dangerous-default-value
 
     def __init__(
         self,
-        current=i0,
-        vertices=[pos1, pos2],
+        current=None,
+        vertices=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
@@ -95,7 +85,7 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.vertices = vertices
-        self._object_type = "Line"
+        self._object_type = 'Line'
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -111,15 +101,4 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     @vertices.setter
     def vertices(self, vert):
         """Set Line vertices, array_like, [mm]."""
-        # input type check
-        if Config.checkinputs:
-            check_vector_type(vert, "vertices")
-
-        # input type -> ndarray
-        vert = np.array(vert)
-
-        # input format check
-        if Config.checkinputs:
-            check_vertex_format(vert)
-
-        self._vertices = vert
+        self._vertices = check_format_input_vertices(vert)

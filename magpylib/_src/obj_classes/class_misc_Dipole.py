@@ -1,84 +1,74 @@
 """Dipole class code"""
 
-import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_vector_format, check_vector_type
+from magpylib._src.input_checks import check_format_input_vector
 
-# init for tool tips
-mx = my = mz = None
-
-# ON INTERFACE
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
-    """
-    Magnetic dipole moment.
+    """Magnetic dipole moment.
 
-    Local object coordinates: The Dipole is located in the origin of
-    the local object coordinate system. Local (Dipole) and global CS coincide when
-    position=(0,0,0) and orientation=unit_rotation.
+    Can be used as `sources` input for magnetic field computation.
+
+    When `position=(0,0,0)` and `orientation=None` the dipole is located in the origin of
+    global coordinate system.
 
     Parameters
     ----------
-    moment: array_like, shape (3,), unit [mT*mm^3]
-        Magnetic dipole moment in units of [mT*mm^3] given in the local CS.
-        For homogeneous magnets there is a relation moment=magnetization*volume.
+    moment: array_like, shape (3,), unit [mT*mm^3], default=`None`
+        Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates
+        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
+        holds.
 
-    position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position (local CS origin) in the global CS in units of [mm].
-        For M>1, the position represents a path. The position and orientation
-        parameters must always be of the same length.
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
-    orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation (local CS orientation) in the global CS. For M>1
-        orientation represents different values along a path. The position and
-        orientation parameters must always be of the same length.
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
 
     Returns
     -------
-    Dipole object: Dipole
+    source: `Dipole` object
 
     Examples
     --------
-    By default a Dipole is initialized at position (0,0,0), with unit rotation:
+    `Dipole` objects are magnetic field sources. In this example we compute the H-field [kA/m]
+    of such a magnetic dipole with a moment of (100,100,100) [mT*mm^2] at an observer position
+    (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
-    >>> dipole = magpy.misc.Dipole(moment=(100,100,100))
-    >>> print(dipole.position)
-    [0. 0. 0.]
-    >>> print(dipole.orientation.as_quat())
-    [0. 0. 0. 1.]
-
-    Dipoles are magnetic field sources. Below we compute the H-field [kA/m] of the above Dipole at
-    an observer position (1,1,1),
-
-    >>> H = dipole.getH((1,1,1))
+    >>> src = magpy.misc.Dipole(moment=(100,100,100))
+    >>> H = src.getH((1,1,1))
     >>> print(H)
     [2.43740886 2.43740886 2.43740886]
 
-    or at a set of observer positions:
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> H = dipole.getH([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[2.43740886 2.43740886 2.43740886]
-     [0.30467611 0.30467611 0.30467611]
-     [0.0902744  0.0902744  0.0902744 ]]
+    >>> src.rotate_from_angax(45, 'x')
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(B)
+    [[2.16582445 3.6972936  1.53146915]
+     [0.27072806 0.4621617  0.19143364]
+     [0.08021572 0.1369368  0.05672108]]
 
-    The same result is obtained when the Dipole object moves along a path,
-    away from the observer:
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
-    >>> dipole.move([(-1,-1,-1), (-2,-2,-2)], start=1)
-    >>> H = dipole.getH((1,1,1))
-    >>> print(H)
-    [[2.43740886 2.43740886 2.43740886]
-     [0.30467611 0.30467611 0.30467611]
-     [0.0902744  0.0902744  0.0902744 ]]
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[2.16582445 3.6972936  1.53146915]
+     [0.27072806 0.4621617  0.19143364]
+     [0.08021572 0.1369368  0.05672108]]
     """
 
     def __init__(
         self,
-        moment=(mx, my, mz),
+        moment=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
@@ -86,7 +76,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ):
         # instance attributes
         self.moment = moment
-        self._object_type = "Dipole"
+        self._object_type = 'Dipole'
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -101,15 +91,9 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @moment.setter
     def moment(self, mom):
         """Set dipole moment vector, shape (3,), unit [mT*mm^3]."""
-        # input type check
-        if Config.checkinputs:
-            check_vector_type(mom, "moment")
-
-        # secure type
-        mom = np.array(mom, dtype=float)
-
-        # input format check
-        if Config.checkinputs:
-            check_vector_format(mom, (3,), "moment")
-
-        self._moment = mom
+        self._moment = check_format_input_vector(mom,
+            dims=(1,),
+            shape_m1=3,
+            sig_name='moment',
+            sig_type='array_like (list, tuple, ndarray) with shape (3,)',
+            allow_None=True)

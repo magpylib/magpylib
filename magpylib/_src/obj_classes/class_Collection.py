@@ -346,7 +346,7 @@ class BaseCollection(BaseDisplayRepr):
             If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
             a single sensor or only a single source) are eliminated.
 
-        Returns
+        Returns 
         -------
         B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
             B-field of each source (L) at each path position (M) and each sensor pixel

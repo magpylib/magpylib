@@ -11,7 +11,7 @@ from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.input_checks import (
     check_format_input_orientation,
-    check_format_input_position,
+    check_format_input_vector,
     )
 from magpylib._src.utility import add_iteration_suffix
 
@@ -97,7 +97,13 @@ class BaseGeo(BaseTransform):
         """
 
         # format position and orientation inputs
-        pos = check_format_input_position(position, 'position', reshape=True)
+        pos = check_format_input_vector(
+            position,
+            dims=(1,2),
+            shape_m1=3,
+            sig_name='position',
+            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)',
+            reshape=True)
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
         # padding logic: if one is longer than the other, edge-pad up the other
@@ -144,7 +150,13 @@ class BaseGeo(BaseTransform):
         old_pos = self._position
 
         # check and set new position
-        self._position = check_format_input_position(inp, 'position', reshape=True)
+        self._position = check_format_input_vector(
+            inp,
+            dims=(1,2),
+            shape_m1=3,
+            sig_name='position',
+            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)',
+            reshape=True)
 
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()

@@ -289,11 +289,11 @@ class TestExceptions(unittest.TestCase):
     def test_except_bad_input_shape_basegeo(self):
         """ BaseGeo bad input shapes
         """
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_basegeo_pos)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cuboid_dim)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cuboid_mag)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_dim)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_cyl_mag)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_sphere_mag)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_sensor_pix_pos)
-        self.assertRaises(MagpylibBadInputShape, bad_input_shape_dipole_mom)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_basegeo_pos)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cuboid_dim)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cuboid_mag)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cyl_dim)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_cyl_mag)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_sphere_mag)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_sensor_pix_pos)
+        self.assertRaises(MagpylibBadUserInput, bad_input_shape_dipole_mom)

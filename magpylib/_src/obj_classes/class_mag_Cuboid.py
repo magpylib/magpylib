@@ -1,91 +1,79 @@
 """Magnet Cuboid class code"""
 
-import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_vector_format, check_vector_type
+from magpylib._src.input_checks import check_format_input_vector
 
-# init for tool tips
-a = b = c = None
-mx = my = mz = None
-
-# ON INTERFACE
 class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
-    """
-    Cuboid magnet with homogeneous magnetization.
+    """Cuboid magnet with homogeneous magnetization.
 
-    Local object coordinates: The geometric center of the Cuboid is located
-    in the origin of the local object coordinate system. Cuboid sides are
-    parallel to the local basis vectors. Local (Cuboid) and global CS coincide when
-    position=(0,0,0) and orientation=unit_rotation.
+    Can be used as `sources` input for magnetic field computation.
+
+    When `position=(0,0,0)` and `orientation=None` the Cuboid sides are parallel
+    to the global coordinate basis vectors and the geometric center of the Cuboid
+    is located in the origin.
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,)
+    magnetization: array_like, shape (3,), default=`None`
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-        the local CS of the Cuboid object.
+        the local object coordinates (rotates with object).
 
-    dimension: array_like, shape (3,)
-        Dimension/Size of the Cuboid with sides [a,b,c] in units of [mm].
+    dimension: array_like, shape (3,), default=`None`
+        Length of the cuboid sides [a,b,c] in units of [mm].
 
-    position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position (local CS origin) in the global CS in units of [mm].
-        For M>1, the position represents a path. The position and orientation
-        parameters must always be of the same length.
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
-    orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation (local CS orientation) in the global CS. For M>1
-        orientation represents different values along a path. The position and
-        orientation parameters must always be of the same length.
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
 
     Returns
     -------
-    Cuboid object: Cuboid
+    magnet source: `Cuboid` object
 
     Examples
     --------
-    By default a Cuboid is initialized at position (0,0,0), with unit rotation:
+    `Cuboid` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
+    cubical magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
+    at the observer position (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.Cuboid(magnetization=(100,100,100), dimension=(1,1,1))
-    >>> print(magnet.position)
-    [0. 0. 0.]
-    >>> print(magnet.orientation.as_quat())
-    [0. 0. 0. 1.]
-
-    Cuboids are magnetic field sources. Below we compute the H-field [kA/m] of the above Cuboid
-    at the observer position (1,1,1),
-
-    >>> H = magnet.getH((1,1,1))
+    >>> src = magpy.magnet.Cuboid(magnetization=(100,200,300), dimension=(1,1,1))
+    >>> H = src.getH((1,1,1))
     >>> print(H)
-    [2.4844679 2.4844679 2.4844679]
+    [6.21116976 4.9689358  3.72670185]
 
-    or at a set of observer positions:
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[2.4844679  2.4844679  2.4844679 ]
-     [0.30499798 0.30499798 0.30499798]
-     [0.0902928  0.0902928  0.0902928 ]]
+    >>> src.rotate_from_angax(45, 'x')
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(B)
+    [[4.30496934 6.9363475  0.50728577]
+     [0.54127889 0.86827283 0.05653357]
+     [0.1604214  0.25726266 0.01664045]]
 
-    The same result is obtained when the Cuboid moves along a path,
-    away from the observer:
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). Here we use a `Sensor` object as observer.
 
-    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
-    >>> H = magnet.getH((1,1,1))
-    >>> print(H)
-    [[2.4844679  2.4844679  2.4844679 ]
-     [0.30499798 0.30499798 0.30499798]
-     [0.0902928  0.0902928  0.0902928 ]]
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[4.30496934 6.9363475  0.50728577]
+     [0.54127889 0.86827283 0.05653357]
+     [0.1604214  0.25726266 0.01664045]]
     """
 
     def __init__(
         self,
-        magnetization=(mx, my, mz),
-        dimension=(a, b, c),
+        magnetization=None,
+        dimension=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
@@ -94,7 +82,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = "Cuboid"
+        self._object_type = 'Cuboid'
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -110,15 +98,9 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @dimension.setter
     def dimension(self, dim):
         """Set Cuboid dimension (a,b,c), shape (3,), [mm]."""
-        # input type check
-        if Config.checkinputs:
-            check_vector_type(dim, "dimension")
-
-        # input type -> ndarray
-        dim = np.array(dim, dtype=float)
-
-        # input format check
-        if Config.checkinputs:
-            check_vector_format(dim, (3,), "dimension")
-
-        self._dimension = dim
+        self._dimension = check_format_input_vector(dim,
+            dims=(1,),
+            shape_m1=3,
+            sig_name='Cuboid.dimension',
+            sig_type='array_like (list, tuple, ndarray) of shape (3,)',
+            allow_None=True)

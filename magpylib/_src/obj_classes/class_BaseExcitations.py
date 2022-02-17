@@ -1,26 +1,15 @@
-"""BaseHomMag class code"""
+"""BaseHomMag class code
+DOCSTRINGS V4 READY
+"""
 
-import numpy as np
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.input_checks import (
-    check_vector_type,
-    check_vector_format,
-    check_scalar_type,
+    check_format_input_scalar,
+    check_format_input_vector
 )
 
 
-# MAG PROPERTY ON INTERFACE
 class BaseHomMag:
-    """
-    provide magnetization attribute (homogeneous magnetization)
-
-    Properties
-    ----------
-    magnetization
-
-    Methods
-    -------
-    """
+    """provides the magnetization attribute  for homogeneously magnetized magnets """
 
     def __init__(self, magnetization):
         self.magnetization = magnetization
@@ -32,34 +21,18 @@ class BaseHomMag:
 
     @magnetization.setter
     def magnetization(self, mag):
-        """Set magnetization vector, shape (3,), unit [mT]."""
-        # input type and init check
-        if Config.checkinputs:
-            check_vector_type(mag, "magnetization")
-            # check_vector_init(mag, 'magnetization')
-
-        # input type -> ndarray
-        mag = np.array(mag, dtype=float)
-
-        # input format check
-        if Config.checkinputs:
-            check_vector_format(mag, (3,), "magnetization")
-
-        self._magnetization = mag
+        """Set magnetization vector, array_like, shape (3,), unit [mT]."""
+        self._magnetization = check_format_input_vector(
+            mag,
+            dims=(1,),
+            shape_m1=3,
+            sig_name='magnetization',
+            sig_type='array_like (list, tuple, ndarray) with shape (3,)',
+            allow_None=True)
 
 
-# CURRENT PROPERTY ON INTERFACE
 class BaseCurrent:
-    """
-    provide scalar current attribute
-
-    Properties
-    ----------
-    current
-
-    Methods
-    -------
-    """
+    """provides scalar current attribute """
 
     def __init__(self, current):
         self.current = current
@@ -71,14 +44,6 @@ class BaseCurrent:
 
     @current.setter
     def current(self, current):
-        """Set Current value, unit [A]."""
+        """Set current value, scalar, unit [A]."""
         # input type and init check
-        if Config.checkinputs:
-            # check_scalar_init(current, 'current')
-            check_scalar_type(current, "current")
-
-        # secure type
-        if current is None:
-            self._current = None
-        else:
-            self._current = float(current)
+        self._current = check_format_input_scalar(current, 'current')

@@ -10,7 +10,7 @@ from magpylib._src.input_checks import (
     check_format_input_axis,
     check_format_input_orientation,
     check_format_input_anchor,
-    check_format_input_position,
+    check_format_input_vector,
     check_format_input_angle,
     check_start_type,
     check_degree_type,
@@ -152,7 +152,12 @@ def apply_move(target_object, displacement, start='auto'):
     # pylint: disable=too-many-branches
 
     # check and format inputs
-    inpath = check_format_input_position(displacement, 'displacement')
+    inpath = check_format_input_vector(
+            displacement,
+            dims=(1,2),
+            shape_m1=3,
+            sig_name='displacement',
+            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)')
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
