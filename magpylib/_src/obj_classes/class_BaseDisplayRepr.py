@@ -1,25 +1,15 @@
-"""BaseGeo class code"""
+"""BaseGeo class code
+READY FOR V4
+"""
 
 from magpylib._src.display.display import show
 
-# ALL METHODS ON INTERFACE
 class BaseDisplayRepr:
-    """Provides the display(self) and self.repr methods for all objects
-
-    Properties
-    ----------
-
-    Methods
-    -------
-    - show(self, **kwargs)
-    - repr
-    """
+    """Provides the display(self) and self.repr methods for all objects"""
 
     show = show
     _object_type = None
 
-    # ------------------------------------------------------------------
-    # INTERFACE
     def __repr__(self) -> str:
         name = getattr(self, "name", None)
         if name is None and hasattr(self, "style"):

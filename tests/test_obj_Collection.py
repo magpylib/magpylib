@@ -307,3 +307,17 @@ def test_set_children_styles():
     ), """failed updating styles to children"""
     with pytest.raises(ValueError):
         col.set_children_styles(bad_input="somevalue")
+
+
+def test_reprs():
+    """test repr strings"""
+    s1 = magpy.magnet.Sphere((1,2,3), 5)
+    x1 = magpy.Sensor()
+    c = magpy.Collection()
+    assert repr(c)[:10]=='Collection'
+    c = magpy.Collection(s1)
+    assert repr(c)[:10]=='SourceColl'
+    c = magpy.Collection(x1)
+    assert repr(c)[:10]=='SensorColl'
+    c = magpy.Collection(s1,x1)
+    assert repr(c)[:10]=='MixedColle'

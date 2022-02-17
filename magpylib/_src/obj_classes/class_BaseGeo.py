@@ -17,8 +17,7 @@ from magpylib._src.utility import add_iteration_suffix
 
 
 def pad_slice_path(path1, path2):
-    """
-    edge-pads or end-slices path 2 to fit path 1 format
+    """edge-pads or end-slices path 2 to fit path 1 format
     path1: shape (N,x)
     path2: shape (M,x)
     return: path2 with format (N,x)
@@ -288,7 +287,7 @@ class BaseGeo(BaseTransform):
         Parameters
         ----------
         kwargs: dict
-            Keyword arguments (for example `position`, `style`, ...) are applied to the copy.
+            Keyword arguments (for example `position=(1,2,3)`) are applied to the copy.
 
         Examples
         --------

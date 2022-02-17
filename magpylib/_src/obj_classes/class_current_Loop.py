@@ -1,4 +1,6 @@
-"""Loop current class code"""
+"""Loop current class code
+DOCSTRINGS V4 READY
+"""
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -31,6 +33,10 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    style: dict
+        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+        using style_underscore_magic, e.g. `style_color='red'`.
 
     Returns
     -------

@@ -1,4 +1,7 @@
-"""Collection class code"""
+"""Collection class code
+DOCSTRING v4 READY
+"""
+
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
@@ -12,108 +15,16 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-
 class BaseCollection(BaseDisplayRepr):
-    """
-    Group multiple children in one Collection for common manipulation.
-
-    Operations applied to a Collection are sequentially applied to all children in the Collection.
-    Collections do not allow duplicate children (will be eliminated automatically).
-
-    Collections have the following dunders defined: __add__, __sub__, __iter__, __getitem__,
-    __repr__.
-
-    Depending on the input, Collection children can be sources, observers or both. A Collection
-    with only source children will become either a SourceCollection, one with only Sensors a
-    SensorCollection, and one with sources and sensors a MixedCollection
-    A SourceCollection functions like any SINGLE source. A SensorCollection functions like a
-    list of observer inputs. A MixedCollection will function as source or as observer.
-
-    Parameters
-    ----------
-    children: sources, sensors, collections or arbitrary lists thereof
-        Ordered list of children in the Collection.
-
-    Returns
-    -------
-    Collection object: Collection
-
-    Examples
-    --------
-
-    Create Collections for common manipulation. All children added to a Collection
-    are stored in the ``children`` attribute, and additionally in the ``sensors``
-    and ``sources`` attributes. These three return ordered sets (lists with
-    unique elements only)
-
-    >>> import magpylib as magpy
-    >>> sphere = magpy.magnet.Sphere((1,2,3),1)
-    >>> loop = magpy.current.Loop(1,1)
-    >>> dipole = magpy.misc.Dipole((1,2,3))
-    >>> col = magpy.Collection(sphere, loop, dipole)
-    >>> print(col.children)
-    [Sphere(id=1879891544384), Loop(id=1879891543040), Dipole(id=1879892157152)]
-
-    Cycle directly through the Collection ``children`` attribute
-
-    >>> for src in col:
-    >>>    print(src)
-    Sphere(id=1879891544384)
-    Loop(id=1879891543040)
-    Dipole(id=1879892157152)
-
-    and directly access children from the Collection
-
-    >>> print(col[1])
-    Loop(id=1879891543040)
-
-    Add and subtract children to form a Collection and to remove children from a Collection.
-
-    >>> col = sphere + loop
-    >>> print(col.children)
-    [Sphere(id=1879891544384), Loop(id=1879891543040)]
-    >>> col - sphere
-    >>> print(col.children)
-    [Loop(id=1879891543040)]
-
-    Consider three collections, a SourceCollection sCol a SensorCollection xCol and a
-    MixedCollection mCol, all made up from the same children.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-
-    >>> s1=magpy.magnet.Sphere((1,2,3), 1)
-    >>> s2=magpy.magnet.Cylinder((1,2,3), (1,1), (3,0,0))
-    >>> s3=magpy.magnet.Cuboid((1,2,3), (1,1,1), (6,0,0))
-
-    >>> x1=magpy.Sensor((1,0,3))
-    >>> x2=magpy.Sensor((4,0,3))
-    >>> x3=magpy.Sensor((7,0,3))
-
-    >>> sCol = magpy.Collection(s1, s2, s3)
-    >>> xCol = magpy.Collection(x1, x2, x3)
-    >>> mCol = magpy.Collection(sCol, xCol)
-
-    All the following lines will all give the same output
-
-    >>> magpy.getB([s1,s2,s3], [x1,x2,x3], sumup=True)
-    >>> magpy.getB(sCol, xCol)
-    >>> magpy.getB(mCol, mCol)
-    >>> sCol.getB(xCol)
-    >>> xCol.getB(sCol)
-    >>> sCol.getB(mCol)
-    >>> xCol.getB(mCol)
-    >>> mCol.getB()
+    """ Collection base class without BaseGeo properties
     """
 
     def __init__(self, *children):
 
-        self._object_type = "Collection"
+        self._object_type = 'Collection'
 
-        # init inheritance
         BaseDisplayRepr.__init__(self)
 
-        # instance attributes
         self._children = []
         self._sources = []
         self._sensors = []
@@ -171,43 +82,41 @@ class BaseCollection(BaseDisplayRepr):
 
     def __repr__(self) -> str:
         # pylint: disable=protected-access
-        if not self._sources:
-            pref = "Sensor"
-        elif not self._sensors:
-            pref = "Source"
-        else:
-            pref = "Mixed"
         s = super().__repr__()
-        return f"{pref}{s}"
+        if self._children:
+            if not self._sources:
+                pref = 'Sensor'
+            elif not self._sensors:
+                pref = 'Source'
+            else:
+                pref = 'Mixed'
+            return f"{pref}{s}"
+        return s
 
     # methods -------------------------------------------------------
     def add(self, *children):
-        """
-        Add arbitrary Magpylib children or Collections.
+        """Add sources, sensors or collections.
 
         Parameters
         ----------
-        children: sources, Sensors, Collections or arbitrary lists thereof
-            Add arbitrary sequences of children and Collections to the Collection.
-            The new children will be added at the end of self.children. Duplicates
-            will be eliminated.
+        children: source, `Sensor` or `Collection` objects or arbitrary lists thereof
+            Add arbitrary sources, sensors or other collections to this collection.
+            Duplicate children will automatically be eliminated.
 
         Returns
         -------
-        self: Collection
+        self: `Collection` object
 
         Examples
         --------
-
-        Add children to a Collection:
+        In this example we add a sensor object to a collection:
 
         >>> import magpylib as magpy
-        >>> src = magpy.current.Loop(1,1)
         >>> col = magpy.Collection()
-        >>> col.add(src)
+        >>> sens = magpy.Sensor()
+        >>> col.add(sens)
         >>> print(col.children)
-        [Loop(id=2519738714432)]
-
+        [Sensor(id=2236606343584)]
         """
         # format input
         obj_list = format_obj_input(children)
@@ -231,32 +140,30 @@ class BaseCollection(BaseDisplayRepr):
         ]
 
     def remove(self, child):
-        """
-        Remove a specific child from the Collection.
+        """Remove a specific child from the collection.
 
         Parameters
         ----------
         child: child object
-            Remove the given child from the Collection.
+            Remove the given child from the collection.
 
         Returns
         -------
-        self: Collection
+        self: `Collection` object
 
         Examples
         --------
-        Remove a specific child from a Collection:
+        In this example we remove a child from a Collection:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.current.Loop(1,1)
-        >>> src2 = magpy.current.Loop(1,1)
-        >>> col = src1 + src2
+        >>> sens = magpy.Sensor()
+        >>> col = magpy.Collection(sens)
         >>> print(col.children)
-        [Loop(id=2405009623360), Loop(id=2405010235504)]
-        >>> col.remove(src1)
-        >>> print(col.children)
-        [Loop(id=2405010235504)]
+        [Sensor(id=2048351734560)]
 
+        >>> col.remove(sens)
+        >>> print(col.children)
+        []
         """
         self._children.remove(child)
         self._update_src_and_sens()
@@ -264,36 +171,32 @@ class BaseCollection(BaseDisplayRepr):
 
 
     def set_children_styles(self, arg=None, **kwargs):
-        """
-        Set display style of all children in the Collection. Only matching properties
-        will be applied. Input can be a style-dict or style-underscore_magic.
+        """Set display style of all children in the collection. Only matching properties
+        will be applied. Input can be a style-dict or style_underscore_magic.
 
         Returns
         -------
-        self
+        self: `Collection` object
 
         Examples
         --------
-        Apply a style to all children inside a Collection using a style-dict or
-        style-underscore_magic.
+        In this example we start by creating a collection from three sphere magnets:
 
         >>> import magpylib as magpy
-        >>>
-        >>> # create collection
         >>> col = magpy.Collection()
         >>> for i in range(3):
-        >>>     col + magpy.magnet.Sphere((1,1,1), 1, (i,0,0))
-        >>>
-        >>> # separate object
-        >>> src = magpy.magnet.Sphere((1,1,1), 1, (3,0,0))
-        >>>
-        >>> # set collection style
-        >>> col.set_children_styles(color='g')
-        >>>
-        >>> # set collection style with style-dict
-        >>> style_dict = {'magnetization_size':0.5}
-        >>> col.set_children_styles(style_dict)
-        >>>
+        >>>     col = col + magpy.magnet.Sphere((0,0,1), 1, position=(i,0,0))
+
+        We apply styles using underscore magic for magnetization vector size and a style
+        dictionary for the color.
+
+        >>> col.set_children_styles(magnetization_size=0.5)
+        >>> col.set_children_styles({'color':'g'})
+
+        Finally we create a separate sphere magnet to demonstrate the default style and display
+        the collection and the separate magnet with Matplotlib:
+
+        >>> src = magpy.magnet.Sphere((0,0,1), 1, position=(3,0,0))
         >>> magpy.show(col, src)
         ---> graphic output
         """
@@ -323,8 +226,8 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, self
             if children:
                 raise MagpylibBadUserInput(
-                    "No inputs allowed for a Mixed Collection, "
-                    "since it already has Sensors and Sources"
+                    "Collections with sensors and sources do not allow `collection.getB()` inputs."
+                    "Consider using `magpy.getB()` instead."
                 )
         elif not sources:
             sources, sensors = children, self
@@ -332,58 +235,102 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, children
         return sources, sensors
 
-    def getB(self, *children, squeeze=True):
-        """
-        Compute B-field in [mT] for given sources and observers.
+
+    def getB(self, *sources_observers, squeeze=True):
+        """Compute B-field in [mT] for given sources and observer inputs.
 
         Parameters
         ----------
-        children: source or observer children
-            If parent is a SourceCollection, input can only be M observers.
-            If parent is a SensorCollection, input can only be L sources.
+        sources_observers: source or observer inputs
+            Input can only be observers if the collection contains only sources. In this case the
+            collection behaves like a single source.
+            Input can only be sources if the collection contains only sensors. In this case the
+            collection behaves like a list of all its sensors.
 
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
-
-        Returns 
-        -------
-        B-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
-            B-field of each source (L) at each path position (M) and each sensor pixel
-            position (N1,N2,...) in units of [mT]. Paths of children that are shorter than
-            M will be considered as static beyond their end.
-
-        Examples
-        --------
-        """
-
-        sources, sensors = self._validate_getBH_inputs(*children)
-
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
-
-    def getH(self, *children, squeeze=True):
-        """
-        Compute H-field in [kA/m] for given sources and observers.
-
-        Parameters
-        ----------
-        children: source or observer children
-            If parent is a SourceCollection, input can only be M observers.
-            If parent is a SensorCollection, input can only be L sources.
-
-        squeeze: bool, default=True
-            If True, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
-            a single sensor or only a single source) are eliminated.
+        squeeze: bool, default=`True`
+            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
+            only a single source) are eliminated.
 
         Returns
         -------
-        H-field: ndarray, shape squeeze(L, M, N1, N2, ..., 3)
-            H-field of each source (L) at each path position (M) and each sensor pixel
-            position (N1,N2,...) in units of [kA/m]. Paths of children that are shorter than
-            M will be considered as static beyond their end.
+        B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+            B-field at each path position (m) for each sensor (k) and each sensor pixel
+            position (n1,n2,...) in units of [mT]. Sensor pixel positions are equivalent
+            to simple observer positions. Paths of objects that are shorter than m will be
+            considered as static beyond their end.
 
         Examples
         --------
+        In this example we create a collection from two sources and two sensors:
+
+        >>> import magpylib as magpy
+        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src2 = src1.copy()
+        >>> sens1 = magpy.Sensor(position=(0,0,1))
+        >>> sens2 = sens1.copy()
+        >>> col = src1 + src2 + sens1 + sens2
+
+        The following computations all give the same result:
+
+        >>> B = col.getB()
+        >>> B = magpy.getB(col, col)
+        >>> B = magpy.getB(col, [sens1, sens2])
+        >>> B = magpy.getB([src1, src2], col)
+        >>> B = magpy.getB([src1, src2], [sens1, sens2])
+        >>> print(B)
+        [[  0.           0.         166.66666667]
+         [  0.           0.         166.66666667]]
+        """
+
+        sources, sensors = self._validate_getBH_inputs(*sources_observers)
+
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
+
+
+    def getH(self, *children, squeeze=True):
+        """Compute H-field in [kA/m] for given sources and observer inputs.
+
+        Parameters
+        ----------
+        sources_observers: source or observer inputs
+            Input can only be observers if the collection contains only sources. In this case the
+            collection behaves like a single source.
+            Input can only be sources if the collection contains sensors. In this case the
+            collection behaves like a list of all its sensors.
+
+        squeeze: bool, default=`True`
+            If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
+            only a single source) are eliminated.
+
+        Returns
+        -------
+        H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+            H-field at each path position (m) for each sensor (k) and each sensor pixel
+            position (n1,n2,...) in units of [kA/m]. Sensor pixel positions are equivalent
+            to simple observer positions. Paths of objects that are shorter than m will be
+            considered as static beyond their end.
+
+        Examples
+        --------
+        In this example we create a collection from two sources and two sensors:
+
+        >>> import magpylib as magpy
+        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src2 = src1.copy()
+        >>> sens1 = magpy.Sensor(position=(0,0,1))
+        >>> sens2 = sens1.copy()
+        >>> col = src1 + src2 + sens1 + sens2
+
+        The following computations all give the same result:
+
+        >>> H = col.getH()
+        >>> H = magpy.getH(col, col)
+        >>> H = magpy.getH(col, [sens1, sens2])
+        >>> H = magpy.getH([src1, src2], col)
+        >>> H = magpy.getH([src1, src2], [sens1, sens2])
+        >>> print(H)
+        [[  0.           0.         66.31455962]
+         [  0.           0.         66.31455962]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*children)
@@ -392,118 +339,91 @@ class BaseCollection(BaseDisplayRepr):
 
 
 class Collection(BaseGeo, BaseCollection):
-    """
-    Group multiple children in one Collection for common manipulation.
+    """ Group multiple children (sources and sensors) in one Collection for
+    common manipulation.
 
-    Operations applied to a Collection are sequentially applied to all children in the Collection.
-    Collections do not allow duplicate children (will be eliminated automatically).
+    Collections can be used as `sources` and `observers` input for magnetic field
+    computation. For magnetic field computation a collection that contains sources
+    functions like a single (compound) source. When the collection contains sensors
+    it functions like a list of all its sensors.
 
-    Collections have the following dunders defined: __add__, __sub__, __iter__, __getitem__,
-    __repr__.
-
-    Depending on the input, Collection children can be sources, observers or both. A Collection
-    with only source children will become either a SourceCollection, one with only Sensors a
-    SensorCollection, and one with sources and sensors a MixedCollection
-    A SourceCollection functions like any SINGLE source. A SensorCollection functions like a
-    list of observer inputs. A MixedCollection will function as source or as observer.
+    Collections function like compound-objects. They have their own `position` and
+    `orientation` attributes. Move, rotate and setter operations acting on a
+    `Collection` object are individually applied to all child objects so that the
+    geometric compound sturcture is maintained. For example, `rotate()` with
+    `anchor=None` rotates all children about `collection.position`.
 
     Parameters
     ----------
     children: sources, sensors, collections or arbitrary lists thereof
-        Ordered list of children in the Collection.
+        Ordered list of all children.
+
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+
+    style: dict
+        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+        using style_underscore_magic, e.g. `style_color='red'`.
 
     Returns
     -------
-    Collection object: Collection
+    collection: `Collection` object
 
     Examples
     --------
-
-    Create Collections for common manipulation. All children added to a Collection
-    are stored in the ``children`` attribute, and additionally in the ``sensors``
-    and ``sources`` attributes. These three return ordered sets (lists with
-    unique elements only)
+    Collections function as groups of multiple magpylib objects. In this example
+    we create a collection with two sources and move the whole collection:
 
     >>> import magpylib as magpy
-    >>> sphere = magpy.magnet.Sphere((1,2,3),1)
-    >>> loop = magpy.current.Loop(1,1)
-    >>> dipole = magpy.misc.Dipole((1,2,3))
-    >>> col = magpy.Collection(sphere, loop, dipole)
+    >>> src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
+    >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
+    >>> col = magpy.Collection(src1, src2)
+    >>> col.move(((0,0,2)))
+    >>> print(src1.position)
+    >>> print(src2.position)
+    >>> print(col.position)
+    [2. 0. 2.]
+    [-2.  0.  2.]
+    [0. 0. 2.]
+
+    We can still directly access individual objects by name and by index:
+
+    >>> src1.move((2,0,0))
+    >>> col[1].move((-2,0,0))
+    >>> print(src1.position)
+    >>> print(src2.position)
+    >>> print(col.position)
+    [4. 0. 2.]
+    [-4.  0.  2.]
+    [0. 0. 2.]
+
+    The field can be computed at position (0,0,0) as if the collection was a single source:
+
+    B = col.getB((0,0,0))
+    print(B)
+    [ 0.00126232 -0.00093169 -0.00034448]
+
+    We add a sensor at position (0,0,0) to the collection:
+
+    >>> sens = magpy.Sensor()
+    >>> col.add(sens)
     >>> print(col.children)
-    [Sphere(id=1879891544384), Loop(id=1879891543040), Dipole(id=1879892157152)]
+    [Sphere(id=2236606344304), Loop(id=2236606344256), Sensor(id=2236606343584)]
 
-    Cycle directly through the Collection ``children`` attribute
+    and can compute the field of the sources in the collection seen by the sensor with
+    a single command:
 
-    >>> for src in col:
-    >>>    print(src)
-    Sphere(id=1879891544384)
-    Loop(id=1879891543040)
-    Dipole(id=1879892157152)
-
-    and directly access children from the Collection
-
-    >>> print(col[1])
-    Loop(id=1879891543040)
-
-    Add and subtract children to form a Collection and to remove children from a Collection.
-
-    >>> col = sphere + loop
-    >>> print(col.children)
-    [Sphere(id=1879891544384), Loop(id=1879891543040)]
-    >>> col - sphere
-    >>> print(col.children)
-    [Loop(id=1879891543040)]
-
-    Manipulate all children in a Collection directly using ``move`` and ``rotate`` methods
-
-    >>> import magpylib as magpy
-    >>> sphere = magpy.magnet.Sphere((1,2,3),1)
-    >>> loop = magpy.current.Loop(1,1)
-    >>> col = sphere + loop
-    >>> col.move((1,1,1))
-    >>> print(sphere.position)
-    [1. 1. 1.]
-
-    and compute the total magnetic field generated by the Collection.
-
-    >>> B = col.getB((1,2,3))
-    >>> print(B)
-    [-0.00372678  0.01820438  0.03423079]
-
-    Consider three collections, a SourceCollection sCol a SensorCollection xCol and a
-    MixedCollection mCol, all made up from the same children.
-
-    >>> import numpy as np
-    >>> import magpylib as magpy
-
-    >>> s1=magpy.magnet.Sphere((1,2,3), 1)
-    >>> s2=magpy.magnet.Cylinder((1,2,3), (1,1), (3,0,0))
-    >>> s3=magpy.magnet.Cuboid((1,2,3), (1,1,1), (6,0,0))
-
-    >>> x1=magpy.Sensor((1,0,3))
-    >>> x2=magpy.Sensor((4,0,3))
-    >>> x3=magpy.Sensor((7,0,3))
-
-    >>> sCol = magpy.Collection(s1, s2, s3)
-    >>> xCol = magpy.Collection(x1, x2, x3)
-    >>> mCol = magpy.Collection(sCol, xCol)
-
-    All the following lines will all give the same output
-
-    >>> magpy.getB([s1,s2,s3], [x1,x2,x3], sumup=True)
-    >>> magpy.getB(sCol, xCol)
-    >>> magpy.getB(mCol, mCol)
-    >>> sCol.getB(xCol)
-    >>> xCol.getB(sCol)
-    >>> sCol.getB(mCol)
-    >>> xCol.getB(mCol)
-    >>> mCol.getB()
+    B = col.getB()
+    print(B)
+    [ 0.00126232 -0.00093169 -0.00034448]
     """
 
-    def __init__(
-        self, *args, position=(0.0, 0.0, 0.0), orientation=None, style=None, **kwargs
-    ):
-        BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs
-        )
+    def __init__(self, *args, position=(0,0,0), orientation=None, style=None, **kwargs):
+        BaseGeo.__init__(self, position=position, orientation=orientation, style=style, **kwargs)
         BaseCollection.__init__(self, *args)

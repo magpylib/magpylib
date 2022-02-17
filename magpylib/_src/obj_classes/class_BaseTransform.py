@@ -248,13 +248,13 @@ class BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
     def move(self, displacement, start='auto'):
-        """Move object by the input displacement.
+        """Move object by the displacement input.
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -327,9 +327,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -419,9 +419,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -519,9 +519,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -598,9 +598,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -682,9 +682,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -743,9 +743,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
@@ -805,9 +805,9 @@ class BaseTransform:
 
         Terminology for move/rotate methods:
         - 'path' refers to `position` and `orientation` of an object.
-        - When an input is just a single operation (e.g. a displacement or an angle)
-        we call it 'scalar'. When an input is an array_like made up of of such
-        scalars, we refer to it as 'vector'.
+        - When an input is just a single operation (e.g. one displacement vector or one angle)
+        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+        it as 'vector input'.
 
         General move/rotate behavior:
         - Scalar input is applied to the whole object path, starting with path index `start`.
