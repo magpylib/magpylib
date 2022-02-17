@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -28,7 +28,7 @@ import magpylib as magpy
 magpy.defaults.display.backend = 'plotly'
 ```
 
-All the following calls to the `show` function or method without specifying a backend will call the `'plotly'` plotting backend. if you explicitly specify `'matplotlib'` at `show` call, it will override the set defaults.
+All the following calls to the `show` function or method without specifying a backend will call the `'plotly'` plotting backend. If you explicitly specify `'matplotlib'` at `show` call, it will locally override the set defaults.
 
 +++
 
