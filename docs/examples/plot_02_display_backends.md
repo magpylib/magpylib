@@ -15,7 +15,9 @@ kernelspec:
 
 +++
 
-The `magpylib` package is shipped with a display function which provides a graphical representation of every magnet, current and sensor of the library. To date the library includes two possible backends:
+For easy inspection of sources, sensors or collection thereof, the Magpylib package has default graphical representations for every magnet, current and sensor of the library. Objects can be displayed via the `magpylib.show` function or directly via the `show` method available for all objects (see examples below). 
+
+Additionally, objects can be rendered via different plottting backends libraries, which to date includes:
 
 - matplotlib (by default)
 - plotly
@@ -36,6 +38,7 @@ All the following calls to the `show` function or method without specifying a ba
 
 ```{code-cell} ipython3
 import magpylib as magpy
+
 magnet = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 2, 3))
 sens = magpy.Sensor(position=(0, 0, 3))
 magpy.show(magnet, sens, zoom=1)
@@ -44,19 +47,19 @@ magpy.show(magnet, sens, zoom=1)
 ## Display multiple objects with paths
 
 ```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
 import magpylib as magpy
+import matplotlib.pyplot as plt
+import numpy as np
 
 # define sources
 src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
-src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1, 2))
 
 # manipulate first source to create a path
-src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
+src1.move(np.linspace((0, 0, 0.1), (0, 0, 8), 20))
 
 # manipulate second source
-src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
+src2.move(np.linspace((0.1, 0, 0.1), (5, 0, 5), 50))
 src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
 
 # display the system
@@ -68,23 +71,23 @@ magpy.show(src1, src2)
 ## Display objects with a different plotting backend
 
 ```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
 import magpylib as magpy
+import matplotlib.pyplot as plt
+import numpy as np
 
 # define sources
 src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
-src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1, 2))
 
 # manipulate first source to create a path
-src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
+src1.move(np.linspace((0, 0, 0.1), (0, 0, 8), 20))
 
 # manipulate second source
-src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
+src2.move(np.linspace((0.1, 0, 0.1), (5, 0, 5), 50))
 src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
 
 # display the system
-magpy.show(src1, src2, backend='plotly')
+magpy.show(src1, src2, backend="plotly")
 ```
 
 ## Display figure on your own canvas
@@ -92,26 +95,26 @@ magpy.show(src1, src2, backend='plotly')
 ### With a matplotlib canvas
 
 ```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
 import magpylib as magpy
-
-# setup matplotlib figure and subplots
-fig = plt.figure(figsize=(12,4))
-ax1 = fig.add_subplot(131, projection='3d')  # 3D-axis
-ax2 = fig.add_subplot(132, projection='3d')  # 3D-axis
-ax3 = fig.add_subplot(133, projection='3d')  # 3D-axis
+import matplotlib.pyplot as plt
+import numpy as np
 
 # define sources
 src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
-src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1,2))
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1, 2))
 
 # manipulate first source to create a path
-src1.move(np.linspace((0,0,0.1), (0,0,8), 20))
+src1.move(np.linspace((0, 0, 0.1), (0, 0, 8), 20))
 
 # manipulate second source
-src2.move(np.linspace((0.1, 0, 0.1), (5,0,5), 50))
+src2.move(np.linspace((0.1, 0, 0.1), (5, 0, 5), 50))
 src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
+
+# setup matplotlib figure and subplots
+fig = plt.figure(figsize=(12, 4))
+ax1 = fig.add_subplot(131, projection="3d")  # 3D-axis
+ax2 = fig.add_subplot(132, projection="3d")  # 3D-axis
+ax3 = fig.add_subplot(133, projection="3d")  # 3D-axis
 
 # draw the objects
 magpy.show(src1, canvas=ax1)
@@ -126,20 +129,38 @@ plt.show()
 ### With a plotly canvas
 
 ```{code-cell} ipython3
-import plotly.graph_objects as go
 import magpylib as magpy
+import numpy as np
+import plotly.graph_objects as go
 
-fig = go.Figure()
-ts = [-2, -1, 0, 1, 2]
-sens = magpy.Sensor(position=(0, 0, 2), pixel=[(x, y, z) for x in ts for y in ts for z in ts])
-sens.show(canvas=fig, backend="plotly", zoom=1, style_size=5)
-fig.update_layout(
-    title_text='My own title text',
-    width=800,
-    height=600)
-fig
-```
+# set 'plotly' as default plotting backend
+magpy.defaults.display.backend = "plotly"
 
-```{note}
-The `show` function is also available as a class method and can be called for every object separately.
+# define sources
+src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
+src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1, 2))
+
+# manipulate first source to create a path
+src1.move(np.linspace((0, 0, 0.1), (0, 0, 8), 20))
+
+# manipulate second source
+src2.move(np.linspace((0.1, 0, 0.1), (5, 0, 5), 50))
+src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
+
+# draw the objects
+fig = go.Figure().set_subplots(rows=1, cols=3, specs=[[{"type": "scene"}] * 3])
+temp_fig = go.Figure()
+magpy.show(src1, canvas=temp_fig)
+fig.add_traces(temp_fig.data, rows=1, cols=1)
+fig.layout.scene1 = temp_fig.layout.scene
+temp_fig = go.Figure()
+magpy.show(src2, canvas=temp_fig)
+fig.add_traces(temp_fig.data, rows=1, cols=2)
+fig.layout.scene2 = temp_fig.layout.scene
+temp_fig = go.Figure()
+magpy.show(src1, src2, canvas=temp_fig)
+fig.add_traces(temp_fig.data, rows=1, cols=3)
+fig.layout.scene3 = temp_fig.layout.scene
+legend_groups = []
+fig.show()
 ```
