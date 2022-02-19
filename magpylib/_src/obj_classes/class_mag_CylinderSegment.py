@@ -77,7 +77,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     >>> B = src.getB(sens)
     >>> print(B)
     [[-32.82849635  30.15882073 -16.32885658]
-     [  0.62876075   3.97579164   0.73297829]     
+     [  0.62876075   3.97579164   0.73297829]
      [  0.25439493   0.74331628   0.11682542]]
     """
 

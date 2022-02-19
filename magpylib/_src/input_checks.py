@@ -332,7 +332,9 @@ def check_format_input_cylinder_segment(inp):
         dims=(1,),
         shape_m1=5,
         sig_name='CylinderSegment.dimension',
-        sig_type='array_like of the form (r1, r2, h, phi1, phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360',
+        sig_type=(
+            'array_like of the form (r1, r2, h, phi1, phi2) with r1<r2,'
+            'phi1<phi2 and phi2-phi1<=360'),
         allow_None=True)
 
     if inp is None:
@@ -344,7 +346,8 @@ def check_format_input_cylinder_segment(inp):
     case4 = (phi2 - phi1)>360
     if case2 | case3 | case4:
         raise MagpylibBadUserInput(
-            f"Input parameter `CylinderSegment.dimension` must be array_like of the form (r1, r2, h, phi1, phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360,\n"
+            f"Input parameter `CylinderSegment.dimension` must be array_like of the form"
+            f" (r1, r2, h, phi1, phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360,\n"
             f"but received {inp} instead."
         )
     return inp

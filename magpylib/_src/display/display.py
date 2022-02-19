@@ -1,6 +1,5 @@
 """ Display function codes"""
 
-import numpy as np
 import warnings
 from magpylib._src.utility import format_obj_input, test_path_format
 from magpylib._src.display.display_matplotlib import display_matplotlib
@@ -114,7 +113,13 @@ def show(
 
     check_input_zoom(zoom)
     check_input_animation(animation)
-    check_format_input_vector(markers, (2,), 3, 'markers', 'array_like of shape (n,3)')
+    check_format_input_vector(
+        markers,
+        dims=(2,),
+        shape_m1=3,
+        sig_name='markers',
+        sig_type='array_like of shape (n,3)',
+        allow_None=True)
 
     if backend == "matplotlib":
         if animation is not False:
