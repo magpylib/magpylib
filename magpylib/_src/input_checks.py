@@ -93,6 +93,37 @@ def check_field_input(inp, origin):
         f"Instead received {repr(inp)}."
     )
 
+
+def validate_field_lambda(val, bh):
+    """test if field function for custom source is valid
+    - needs to be a callable
+    - input and output shape must match
+    """
+    if val is not None:
+        if not callable(val):
+            raise MagpylibBadUserInput(
+                f"Input parameter `field_{bh}_lambda` must be a callable."
+            )
+        out = val(np.array([4, 5, 6]))
+        out_shape = np.array(out).shape
+        if out_shape!=(3,):
+            raise MagpylibBadUserInput(
+                f"Input parameter `field_{bh}_lambda` must be a callable function"
+                " and return a field ndarray of shape (3,) or (n,3) when its `observer`"
+                " input is of shape (3,) or (n,3) respectively.\n"
+                f"Instead received shape {out_shape}.")
+
+        out = val(np.array([[1, 2, 3], [4, 5, 6]]))
+        out_shape = np.array(out).shape
+        if out_shape!=(2, 3):
+            raise MagpylibBadUserInput(
+                f"Input parameter `field_{bh}_lambda` must be a callable function"
+                " and return a field ndarray of shape (3,) or (n,3) when its `observer`"
+                " input is of shape (3,) or (n,3) respectively.\n"
+                f"Instead received shape {out_shape}.")
+    return val
+
+
 #################################################################
 #################################################################
 # CHECK - FORMAT
@@ -297,21 +328,22 @@ def check_format_input_cylinder_segment(inp):
     return inp
 
 
-
-
+############################################################################################
+############################################################################################
+# SHOW AND GETB CHECKS
 
 def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
     # pylint: disable=protected-access
     for s in sources:
         obj_type = getattr(s, '_object_type', None)
-        if obj_type in ("Cuboid", "Cylinder"):
+        if obj_type in ('Cuboid', 'Cylinder'):
             if np.isnan(s.dimension).any():
                 raise MagpylibMissingInput(f"Parameter `dimension` of {s} must be set.")
-        elif obj_type in ("Sphere", "Loop"):
+        elif obj_type in ('Sphere', 'Loop'):
             if s.diameter is None:
                 raise MagpylibMissingInput(f"Parameter `diameter` of {s} must be set.")
-        elif obj_type == "Line":
+        elif obj_type == 'Line':
             if None in s.vertices[0]:
                 raise MagpylibMissingInput(f"Parameter `vertices` of {s} must be set.")
 
@@ -321,13 +353,13 @@ def check_excitations(sources):
     # pylint: disable=protected-access
     for s in sources:
         obj_type = getattr(s, '_object_type', None)
-        if obj_type in ("Cuboid", "Cylinder", "Sphere"):
+        if obj_type in ('Cuboid', 'Cylinder', 'Sphere'):
             if np.isnan(s.magnetization).any():
                 raise MagpylibMissingInput(f"Parameter `magnetization` of {s} must be set.")
-        elif obj_type in ("Loop", "Line"):
+        elif obj_type in ('Loop', 'Line'):
             if s.current is None:
                 raise MagpylibMissingInput(f"Parameter `current` of {s} must be set.")
-        elif obj_type == "Dipole":
+        elif obj_type == 'Dipole':
             if np.isnan(s.moment).any():
                 raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
 
@@ -338,8 +370,8 @@ def check_path_format(inp, origin):
     case2 = (inp.ndim in (1, 2))
     if not case1 & case2:
         raise MagpylibBadInputShape(
-            f"Input parameter {origin} has bad shape. Must be shape (3,) or (n,3),\n"
-            f"received shape {inp.shape} instead."
+            f"Input parameter {origin} has bad shape. Must be shape (3,) or (n,3).\n"
+            f"Instead received shape {inp.shape}."
         )
 
 
@@ -414,63 +446,63 @@ def check_path_format(inp, origin):
 
 
 
-def check_scalar_type(inp, origin):
-    """scalar input must be int or float or nan"""
-    if not (isinstance(inp, (int, float, np.int_, np.float_)) or inp is None):
-        raise MagpylibBadUserInput(
-            f"{origin} input must be scalar (int or float),\n"
-            f"but received {repr(inp)} instead."
-        )
+# def check_scalar_type(inp, origin):
+#     """scalar input must be int or float or nan"""
+#     if not (isinstance(inp, (int, float, np.int_, np.float_)) or inp is None):
+#         raise MagpylibBadUserInput(
+#             f"{origin} input must be scalar (int or float),\n"
+#             f"but received {repr(inp)} instead."
+#         )
 
 
-def check_vector_type(inp, origin):
-    """
-    - vector input must be list, tuple or ndarray
-    - return error msg with reference to origin
-    """
-    if not isinstance(inp, (list, tuple, np.ndarray)):
-        raise MagpylibBadUserInput(
-            f"{origin} input must be array_like,\n"
-            f"but received {repr(inp)} instead."
-        )
+# def check_vector_type(inp, origin):
+#     """
+#     - vector input must be list, tuple or ndarray
+#     - return error msg with reference to origin
+#     """
+#     if not isinstance(inp, (list, tuple, np.ndarray)):
+#         raise MagpylibBadUserInput(
+#             f"{origin} input must be array_like,\n"
+#             f"but received {repr(inp)} instead."
+#         )
 
 
-def check_vector_format(inp, shape, origin):
-    """
-    - check if vector input has correct format
-    - return error msg with reference to origin
-    """
-    if not inp.shape == shape:
-        raise MagpylibBadInputShape(
-            f"Bad {origin} input shape. Must be shape {shape}."
-            f"but received shape {inp.shape} instead."
-        )
+# def check_vector_format(inp, shape, origin):
+#     """
+#     - check if vector input has correct format
+#     - return error msg with reference to origin
+#     """
+#     if not inp.shape == shape:
+#         raise MagpylibBadInputShape(
+#             f"Bad {origin} input shape. Must be shape {shape}."
+#             f"but received shape {inp.shape} instead."
+#         )
 
 
-def check_input_cyl_sect(inp):
-    """
-    - check if cylinder dimension has correct format (5,)
-    - check if d1<d2, phi1<phi2
-    - check if phi2-phi1 > 360
-    - return error msg
-    """
-    trigger = False
+# def check_input_cyl_sect(inp):
+#     """
+#     - check if cylinder dimension has correct format (5,)
+#     - check if d1<d2, phi1<phi2
+#     - check if phi2-phi1 > 360
+#     - return error msg
+#     """
+#     trigger = False
 
-    case1 = inp.shape==(5,)
-    if case1:
-        d1, d2, _, phi1, phi2 = inp
-        case2 = d1>=d2
-        case3 = phi1>=phi2
-        case4 = (phi2 - phi1)>360
-        if case2 | case3 | case4:
-            trigger=True
-    else:
-        trigger=True
-    if trigger:
-        raise MagpylibBadUserInput(
-        f"CylinderSegment input format must be (r1,r2,h,phi1,phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360,\n"
-        f"but received {inp} instead."
-        )
+#     case1 = inp.shape==(5,)
+#     if case1:
+#         d1, d2, _, phi1, phi2 = inp
+#         case2 = d1>=d2
+#         case3 = phi1>=phi2
+#         case4 = (phi2 - phi1)>360
+#         if case2 | case3 | case4:
+#             trigger=True
+#     else:
+#         trigger=True
+#     if trigger:
+#         raise MagpylibBadUserInput(
+#         f"CylinderSegment input format must be (r1,r2,h,phi1,phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360,\n"
+#         f"but received {inp} instead."
+#         )
 
 
 def check_position_format(inp, origin):
@@ -485,38 +517,18 @@ def check_position_format(inp, origin):
         )
 
 
-def check_vertex_format(inp):
-    """
-    - test if input has the correct shape (N,3) with N >= 2
-    - return err msg
-    """
-    case1 = not inp.shape[-1]==3
-    case2 = not inp.ndim==2
-    case3 = not inp.shape[0]>1
-    if case1 | case2 | case3:
-        raise MagpylibBadInputShape(
-            "Bad shape of input parameter `vertex`. Must be (n,3) with n>1,\n"
-            f"but received shape {inp.shape} instead."
-        )
+# def check_vertex_format(inp):
+#     """
+#     - test if input has the correct shape (N,3) with N >= 2
+#     - return err msg
+#     """
+#     case1 = not inp.shape[-1]==3
+#     case2 = not inp.ndim==2
+#     case3 = not inp.shape[0]>1
+#     if case1 | case2 | case3:
+#         raise MagpylibBadInputShape(
+#             "Bad shape of input parameter `vertex`. Must be (n,3) with n>1,\n"
+#             f"but received shape {inp.shape} instead."
+#         )
 
 
-def validate_field_lambda(val, bh):
-    """
-    test if field function for custom source is valid
-    - needs to be a callable
-    - input and output shape must match
-    """
-    if val is not None:
-        if not callable(val):
-            raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable."
-            )
-        out = val(np.array([[1, 2, 3], [4, 5, 6]]))
-        out_shape = np.array(out).shape
-        if out_shape!=(2, 3):
-            raise MagpylibBadUserInput(
-                f"Input parameter field_{bh}_lambda shape and output "
-                "must match and be of dimension (n,3)\n"
-                f"received shape={out_shape} instead"
-        )
-    return val
