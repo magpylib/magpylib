@@ -8,7 +8,6 @@ from magpylib._src.defaults.defaults_utility import (
 )
 
 bad_inputs = {
-    "checkinputs": (-1,),  # bool
     "display_autosizefactor": (0,),  # float>0
     "display_animation_maxfps": (0,),  # int>0
     "display_animation_fps": (0,),  # int>0
@@ -93,7 +92,6 @@ def test_defaults_bad_inputs(key, value, expected_errortype):
 # This is just for check. dict keys should not be tuples in general, but the test will iterate
 # over the values for each key
 good_inputs = {
-    "checkinputs": (True, False),  # bool
     "display_autosizefactor": (1,),  # float>0
     "display_animation_maxfps": (10,),  # int>0
     "display_animation_fps": (10,),  # int>0
@@ -210,9 +208,9 @@ def test_bad_default_classes():
     with pytest.raises(ValueError):
         magpy.defaults.display.style = "wrong input"
 
-def test_resetting_defaults():
-    """test setting and resetting the config"""
-    magpy.defaults.checkinputs = False
-    assert magpy.defaults.checkinputs is False, "setting config failed"
-    magpy.defaults.reset()
-    assert magpy.defaults.checkinputs is True, "resetting config failed"
+# def test_resetting_defaults():
+#     """test setting and resetting the config"""
+#     magpy.defaults.checkinputs = False
+#     assert magpy.defaults.checkinputs is False, "setting config failed"
+#     magpy.defaults.reset()
+#     assert magpy.defaults.checkinputs is True, "resetting config failed"

@@ -281,7 +281,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if obj._object_type in allowed_list:
             new_list += [obj]
         else:
-            if Config.checkinputs and warn:
+            if warn:
                 print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list
 
