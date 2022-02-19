@@ -101,20 +101,24 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
             tile_params['segment_end'] = (pos_end,2)
 
     except KeyError as kerr:
-        msg = f'Missing input keys: {str(kerr)}'
-        raise MagpylibBadUserInput(msg) from kerr
+        raise MagpylibBadUserInput(
+            f"Missing input keys: {str(kerr)}"
+        ) from kerr
     except TypeError as terr:
-        msg1='Bad user input type. When sources argument is a string,'
-        msg2=' all other inputs must be scalar or array_like.'
-        raise MagpylibBadUserInput(msg1+msg2) from terr
+        raise MagpylibBadUserInput(
+            "Bad user input type. When sources argument is a string,"
+            " all other inputs must be scalar or array_like."
+        ) from terr
 
     # auto tile 1D parameters ---------------------------------------
 
     # evaluation vector length
     ns = [len(val) for val,tdim in tile_params.values() if val.ndim == tdim]
     if len(set(ns)) > 1:
-        msg = f'Input array lengths must be similar. Instead received {str(set(ns))}'
-        raise MagpylibBadUserInput(msg)
+        raise MagpylibBadUserInput(
+        "Input array lengths must be 1 or of a similarlength.\n"
+        f"Instead received {str(set(ns))}"
+        )
     n = max(ns, default=1)
 
     # tile 1D inputs and replace original values in kwargs

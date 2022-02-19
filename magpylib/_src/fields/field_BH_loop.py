@@ -17,8 +17,8 @@ def current_loop_field(
     observer: np.ndarray,
     field='B'
     ) -> np.ndarray:
-    """
-    Computes the magnetic field of a circular line-current loop in Cartesian coordinates.
+    """Magnetic field of a circular (line) current loop.
+
     The loop lies in the z=0 plane with the coordinate origin at its center.
 
     Parameters
@@ -32,8 +32,9 @@ def current_loop_field(
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    field: str, default='B'
-        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
 
     Returns
     -------

@@ -112,8 +112,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Parameters
         ----------
-        sources: magpylib source and `Collection` objects
-            Can be a mixture of l source objects or Collections.
+        sources: source and collection objects or 1D list thereof
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
 
         sumup: bool, default=`False`
             If `True`, the fields of all sources are summed up.
@@ -166,8 +167,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         Parameters
         ----------
-        sources: magpylib source and `Collection` objects
-            Can be a mixture of l source objects or Collections.
+        sources: source and collection objects or 1D list thereof
+            Sources that generate the magnetic field. Can be a single source (or collection)
+            or a 1D list of l source and/or collection objects.
 
         sumup: bool, default=`False`
             If `True`, the fields of all sources are summed up.

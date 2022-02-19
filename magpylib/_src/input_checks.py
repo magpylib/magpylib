@@ -80,6 +80,19 @@ def check_degree_type(inp):
         )
 
 
+
+def check_field_input(inp, origin):
+    """check field input"""
+    if isinstance(inp, str):
+        if inp == 'B':
+            return True
+        if inp == 'H':
+            return False
+    raise MagpylibBadUserInput(
+        f"{origin} input can only be `field='B'` or `field='H'`.\n"
+        f"Instead received {repr(inp)}."
+    )
+
 #################################################################
 #################################################################
 # CHECK - FORMAT
@@ -285,17 +298,6 @@ def check_format_input_cylinder_segment(inp):
 
 
 
-def check_field_input(inp, origin):
-    """check field input"""
-    if isinstance(inp, str):
-        if inp == 'B':
-            return True
-        if inp == 'H':
-            return False
-    raise MagpylibBadUserInput(
-        f"{origin} input can only be `field='B'` or `field='H'`,\n"
-        f"received shape {repr(inp)} instead."
-    )
 
 
 def check_dimensions(sources):
