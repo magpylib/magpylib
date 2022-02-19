@@ -16,44 +16,46 @@ def show(
     canvas=None,
     **kwargs,
 ):
-    """Display objects and paths graphically. Global graphic styles can be set with
-    kwargs as style-dict or style-underscore_magic.
+    """Display objects and paths graphically.
+
+    Global graphic styles can be set with kwargs as style-dictionary or using
+    style-underscore_magic.
 
     Parameters
     ----------
-    objects: magpylib objects (sources, collections, sensors)
+    objects: Magpylib objects (sources, collections, sensors)
         Objects to be displayed.
 
-    zoom: float, default=0
+    zoom: float, default=`0`
         Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
 
-    animation: bool or float, default=False
-        If True and at least one object has a path, animated paths are rendered.
-        If a positive float, the animation time is set to the given value.
+    animation: bool or float, default=`False`
+        If `True` and at least one object has a path, the paths are rendered.
+        If input is a positive float, the animation time is set to the given value.
         This feature is only available for the plotly backend.
 
-    markers: array_like, shape (n,3), default=None
+    markers: array_like, shape (n,3), default=`None`
         Display position markers in the global coordinate system.
 
-    backend: string, default=None
-        One of 'matplotlib' or 'plotly'. If not set, parameter will default to
-        `magpylib.defaults.display.backend` which is 'matplotlib' by installation
-        default.
+    backend: string, default=`None`
+        Define plotting backend. Must be one of `'matplotlib'` or `'plotly'`. If not
+        set, parameter will default to `magpylib.defaults.display.backend` which is
+        `'matplotlib'` by installation default.
 
-    canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=None
-        Display graphical output in a given canvas:
+    canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=`None`
+        Display graphical output on a given canvas:
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
-        By default a new canvas is created and displayed.
+        By default a new canvas is created and immediately displayed.
 
     Returns
     -------
-    None: NoneType
+    `None`: NoneType
 
     Examples
     --------
 
-    Display multiple objects, object paths, markers in 3d using Matplotlib or Plotly:
+    Display multiple objects, object paths, markers in 3D using Matplotlib or Plotly:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
@@ -65,7 +67,7 @@ def show(
     >>> magpy.show(src, sens, backend='plotly')
     --> graphic output
 
-    Display figure on your own canvas (here Matplotlib 3d-axes):
+    Display output on your own canvas (here a Matplotlib 3d-axes):
 
     >>> import matplotlib.pyplot as plt
     >>> import magpylib as magpy

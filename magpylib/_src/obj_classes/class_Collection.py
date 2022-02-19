@@ -172,7 +172,7 @@ class BaseCollection(BaseDisplayRepr):
 
     def set_children_styles(self, arg=None, **kwargs):
         """Set display style of all children in the collection. Only matching properties
-        will be applied. Input can be a style-dict or style_underscore_magic.
+        will be applied. Input can be a style-dict or style-underscore_magic.
 
         Returns
         -------
@@ -369,7 +369,7 @@ class Collection(BaseGeo, BaseCollection):
 
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style_underscore_magic, e.g. `style_color='red'`.
+        using style-underscore_magic, e.g. `style_color='red'`.
 
     Returns
     -------
