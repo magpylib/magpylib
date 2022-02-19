@@ -1,9 +1,16 @@
 """ Display function codes"""
 
+import numpy as np
 import warnings
 from magpylib._src.utility import format_obj_input, test_path_format
 from magpylib._src.display.display_matplotlib import display_matplotlib
-from magpylib._src.input_checks import check_dimensions
+from magpylib._src.input_checks import (
+    check_dimensions,
+    check_format_input_backend,
+    check_input_zoom,
+    check_input_animation,
+    check_format_input_vector,
+    )
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
@@ -100,13 +107,19 @@ def show(
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
 
+    # input checks
+    backend = check_format_input_backend(backend)
     if backend is None:
         backend = Config.display.backend
 
+    check_input_zoom(zoom)
+    check_input_animation(animation)
+    check_format_input_vector(markers, (2,), 3, 'markers', 'array_like of shape (n,3)')
+
     if backend == "matplotlib":
         if animation is not False:
-            msg = "The matplotlib backend does not support animation at the moment. "
-            msg+= "Use plotly backend instead."
+            msg = "The matplotlib backend does not support animation at the moment.\n"
+            msg+= "Use `backend=plotly` instead."
             warnings.warn(msg)
             # animation = False
         display_matplotlib(

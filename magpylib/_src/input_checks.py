@@ -1,5 +1,6 @@
 """ input checks code"""
 
+import warnings
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._src.exceptions import (
@@ -55,6 +56,28 @@ def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
             return None
     raise MagpylibBadUserInput(msg)
 
+
+def check_input_zoom(inp):
+    """check show zoom input"""
+    if not np.isscalar(inp):
+        raise MagpylibBadUserInput(
+            "Input parameter `zoom` must be a number `zoom>=0`.\n"
+            f"Instead received {inp}."
+        )
+    if inp<0:
+        raise MagpylibBadUserInput(
+            "Input parameter `zoom` must be a number `zoom>=0`.\n"
+            f"Instead received {inp}."
+        )
+
+
+def check_input_animation(inp):
+    """check show animation input"""
+    if not isinstance(inp, (bool, float, int, np.float_, np.int_)):
+        raise MagpylibBadUserInput(
+            "Input parameter `animation` must be boolean or a positive number.\n"
+            f"Instead received {inp}."
+        )
 
 
 #################################################################
@@ -325,6 +348,17 @@ def check_format_input_cylinder_segment(inp):
             f"but received {inp} instead."
         )
     return inp
+
+
+def check_format_input_backend(inp):
+    """checks show-backend input and returns Non if bad input value"""
+    if inp in ('matplotlib', 'plotly', None):
+        return inp
+    warnings.warn(
+        "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
+        f"Instead received {inp}.\n"
+        "Setting to default value `Config.display.backend`.")
+    return None
 
 
 ############################################################################################
