@@ -1,4 +1,6 @@
-"""Custom class code"""
+"""Custom class code
+DOCSTRINGS V4 READY
+"""
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -8,60 +10,76 @@ from magpylib._src.input_checks import validate_field_lambda
 
 # ON INTERFACE
 class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
-    """
-    Custom Source class
+    """User-defined custom source.
+
+    Can be used as `sources` input for magnetic field computation.
+
+    When `position=(0,0,0)` and `orientation=None` local object coordinates
+    coincide with the gobal coordinate system.
 
     Parameters
     ----------
-    field_B_lambda: function
-        field function for B-field, should accept (n,3) position array and return
-        B-field array of same shape in the global coordinate system.
+    field_B_lambda: callable, default=`None`
+        Field function for the B-field. must accept position input with format (n,3) and
+        return the B-field with similar shape.
 
-    field_H_lambda: function
-        field function for H-field, should accept (n,3) position array and return
-        H-field array of same shape in the global coordinate system.
+    field_H_lambda: callable, default=`None`
+        Field function for the H-field. must accept position input with format (n,3) and
+        return the H-field with similar shape.
 
-    position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position (local CS origin) in the global CS in units of [mm].
-        For M>1, the position represents a path. The position and orientation
-        parameters must always be of the same length.
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
-    orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation (local CS orientation) in the global CS. For M>1
-        orientation represents different values along a path. The position and
-        orientation parameters must always be of the same length.
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+
+    style: dict
+        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+        using style-underscore_magic, e.g. `style_color='red'`.
 
     Returns
     -------
-    CustomSource object: CustomSource
+    source: `CustomSource` object
 
     Examples
     --------
-    By default the CustomSource is initialized at position (0,0,0), with unit rotation:
+    With version 4.0.0 `CustomSource` objects enable users to define their own source
+    objects, and to embedd them in the Magpylib object oriented interface. In this example
+    we create a source that generates a constant field and evaluate the field at observer
+    position (1,1,1) given in [mm]:
 
-    >>> import magpylib as magpy
     >>> import numpy as np
+    >>> import magpylib as magpy
+    >>>
+    >>> bfield = lambda observer: np.array([(100,0,0)]*len(observer))
+    >>> hfield = lambda observer: np.array([(80,0,0)]*len(observer))
+    >>> src = magpy.misc.CustomSource(field_B_lambda=bfield, field_H_lambda=hfield)
+    >>> H = src.getH((1,1,1))
+    >>> print(H)
+    [80.  0.  0.]
 
-    Define a external B-field function which returns constant vector in x-direction
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> def constant_Bfield(position=((0,0,0))):
-    ...    return np.array([[1,0,0]]*len(position))
-
-    Construct a ``CustomSource`` from the field function
-
-    >>> external_field = magpy.misc.CustomSource(field_B_lambda=constant_Bfield)
-    >>> B = external_field.getB([[1,2,3],[4,5,6]])
+    >>> src.rotate_from_angax(45, 'z')
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
-    [[1. 0. 0.]
-     [1. 0. 0.]]
+    [[70.71067812 70.71067812  0.        ]
+     [70.71067812 70.71067812  0.        ]
+     [70.71067812 70.71067812  0.        ]]
 
-    The custom source can be rotated as any other source object in the library.
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
-    >>> external_field.rotate_from_angax(90, 'z')
-    >>> B = external_field.getB([[1,2,3],[4,5,6]])
-    >>> print(B) # Notice the output field is now pointing in y-direction
-    [[0. 1. 0.]
-     [0. 1. 0.]]
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[70.71067812 70.71067812  0.        ]
+     [70.71067812 70.71067812  0.        ]
+     [70.71067812 70.71067812  0.        ]]
     """
 
     def __init__(
@@ -84,8 +102,10 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_B_lambda(self):
-        """field function for B-field, should accept (n,3) position array and return
-        B-field array of same shape in the global coordinate system."""
+        """Field function for B-field, should accept array_like positions of shape (n,3)
+        in units of [mm] and return a B-field array of same shape in the global
+        coordinate system in units of [mT].
+        """
         return self._field_B_lambda
 
     @field_B_lambda.setter
@@ -94,8 +114,10 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_H_lambda(self):
-        """field function for H-field, should accept (n,3) position array and return
-        H-field array of same shape in the global coordinate system."""
+        """Field function for H-field, should accept array_like positions of shape (n,3)
+        in units of [mm] and return a H-field array of same shape in the global
+        coordinate system in units of [kA/m].
+        """
         return self._field_H_lambda
 
     @field_H_lambda.setter

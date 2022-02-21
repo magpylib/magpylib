@@ -6,8 +6,7 @@ import numpy as np
 # from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_position_format
+from magpylib._src.input_checks import check_format_input_vector
 
 LIBRARY_SOURCES = (
     "Cuboid",
@@ -183,8 +182,12 @@ def format_obs_inputs(observers) -> list:
 
         # case 2: ndarray of positions
         elif isinstance(obs, (list, tuple, np.ndarray)):
-            if Config.checkinputs:
-                check_position_format(np.array(obs), "observer position")
+            check_format_input_vector(
+                obs,
+                dims=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
+                shape_m1=3,
+                sig_name='observer position',
+                sig_type='array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)')
             sensors.append(Sensor(pixel=obs))
         elif getattr(obs, "_object_type", "") == "Collection":
             if not obs.sensors:
@@ -277,7 +280,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
         if obj._object_type in allowed_list:
             new_list += [obj]
         else:
-            if Config.checkinputs and warn:
+            if warn:
                 print(f"Warning, cannot add {obj.__repr__()} to Collection.")
     return new_list
 

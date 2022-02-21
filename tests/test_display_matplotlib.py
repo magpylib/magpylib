@@ -7,21 +7,22 @@ from magpylib._src.display.plotly.plotly_base_traces import make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 
+magpy.defaults.reset()
 
 def test_Cylinder_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
     src = Cylinder((1, 2, 3), (1, 2))
-    x = src.show(canvas=ax, style_path_frames=15)
+    x = src.show(canvas=ax, style_path_frames=15, backend='matplotlib')
     assert x is None, "path should revert to True"
     src.move(np.linspace((.4,.4,.4), (12,12,12), 30), start=-1)
-    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False, show_direction=True, backend='matplotlib')
     assert x is None, "display test fail"
 
-    x = src.show(canvas=ax, style_path_frames=[], show_direction=True)
+    x = src.show(canvas=ax, style_path_frames=[], show_direction=True, backend='matplotlib')
     assert x is None, "ind>path_len, should display last position"
 
-    x = src.show(canvas=ax, style_path_frames=[1, 5, 6], show_direction=True)
+    x = src.show(canvas=ax, style_path_frames=[1, 5, 6], show_direction=True, backend='matplotlib')
     assert x is None, "should display 1,5,6 position"
 
 
