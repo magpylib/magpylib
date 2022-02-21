@@ -21,9 +21,10 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     current: float, default=`None`
         Electrical current in units of [A].
 
-    vertices: array_like, shape (N,3), default=`None`
+    vertices: array_like, shape (n,3), default=`None`
         The current flows along the vertices which are given in units of [mm] in the
-        local object coordinates (move/rotate with object).
+        local object coordinates (move/rotate with object). At least two vertices
+        must be given.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the

@@ -104,4 +104,9 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @diameter.setter
     def diameter(self, dia):
         """Set Sphere diameter, float, [mm]."""
-        self._diameter = check_format_input_scalar(dia, 'diameter')
+        self._diameter = check_format_input_scalar(
+            dia,
+            sig_name='diameter',
+            sig_type='`None` or a positive number (int, float)',
+            allow_None=True,
+            forbid_negative=True,)

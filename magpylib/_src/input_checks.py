@@ -246,7 +246,12 @@ def check_format_input_angle(inp):
         sig_type='int, float or array_like (list, tuple, ndarray) with shape (n,)')
 
 
-def check_format_input_scalar(inp, signature, allow_None=True):
+def check_format_input_scalar(
+    inp,
+    sig_name,
+    sig_type,
+    allow_None=False,
+    forbid_negative=False):
     """check sclar input and return in formatted form
     - must be scalar or None (if allowed)
     - must be float compatible
@@ -256,14 +261,19 @@ def check_format_input_scalar(inp, signature, allow_None=True):
         if inp is None:
             return None
 
+    ERR_MSG = (
+        f"Input parameter `{sig_name}` must be {sig_type}.\n"
+        f"Instead received {repr(inp)}.")
+
     if not np.isscalar(inp):
-        raise MagpylibBadUserInput(
-            f"Input parameter `{signature}` must be scalar (int or float) or `None`.\n"
-            f"Instead received {repr(inp)}."
-        )
+        raise MagpylibBadUserInput(ERR_MSG)
+
     inp = make_float(inp,
-        f"Input parameter `{signature}` input must be float compatible.\n"
+        f"Input parameter `{sig_name}` input must be float compatible.\n"
     )
+    if forbid_negative:
+        if inp<0:
+            raise MagpylibBadUserInput(ERR_MSG)
     return inp
 
 
@@ -273,7 +283,9 @@ def check_format_input_vector(inp,
     sig_name,
     sig_type,
     reshape=False,
-    allow_None=False):
+    allow_None=False,
+    forbid_negative0=False,
+    squeeze=False):
     """checks vector input and returns in formatted form
     - inp must be array_like
     - convert inp to ndarray with dtype float
@@ -299,6 +311,13 @@ def check_format_input_vector(inp,
     )
     if reshape:
         return np.reshape(inp, (-1,3))
+    if forbid_negative0:
+        if np.any(inp<=0):
+            raise MagpylibBadUserInput(
+                f"Input parameter `{sig_name}` cannot have values <= 0."
+            )
+    if squeeze:
+        return np.squeeze(inp)
     return inp
 
 
@@ -310,13 +329,13 @@ def check_format_input_vertices(inp):
         dims=(2,),
         shape_m1=3,
         sig_name='vertices',
-        sig_type='array_like (list, tuple, ndarray) with shape (n,3)',
+        sig_type='`None` or array_like (list, tuple, ndarray) with shape (n,3)',
         allow_None=True)
 
     if inp is not None:
         if inp.shape[0]<2:
             raise MagpylibBadUserInput(
-                "Input parameter `vertices` must have more than one vertex position.\n"
+                "Input parameter `vertices` must have more than one vertex."
             )
     return inp
 
@@ -340,14 +359,15 @@ def check_format_input_cylinder_segment(inp):
     if inp is None:
         return None
 
-    d1, d2, _, phi1, phi2 = inp
-    case2 = d1>=d2
-    case3 = phi1>=phi2
+    r1, r2, h, phi1, phi2 = inp
+    case2 = r1>r2
+    case3 = phi1>phi2
     case4 = (phi2 - phi1)>360
-    if case2 | case3 | case4:
+    case5 = (r1<0) | (r2<=0) | (h<=0)
+    if case2 | case3 | case4 | case5:
         raise MagpylibBadUserInput(
             f"Input parameter `CylinderSegment.dimension` must be array_like of the form"
-            f" (r1, r2, h, phi1, phi2) with r1<r2, phi1<phi2 and phi2-phi1<=360,\n"
+            f" (r1, r2, h, phi1, phi2) with 0<=r1<r2, h>0, phi1<phi2 and phi2-phi1<=360,\n"
             f"but received {inp} instead."
         )
     return inp

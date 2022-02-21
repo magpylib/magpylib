@@ -108,5 +108,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             dims=(1,),
             shape_m1=3,
             sig_name='Cuboid.dimension',
-            sig_type='array_like (list, tuple, ndarray) of shape (3,)',
-            allow_None=True)
+            sig_type='array_like (list, tuple, ndarray) of shape (3,) with positive values',
+            allow_None=True,
+            forbid_negative0=True,
+        )

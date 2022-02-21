@@ -1,10 +1,363 @@
-# import unittest
-# import numpy as np
-# from scipy.spatial.transform import Rotation as R
-# from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-# from magpylib._src.exceptions import (MagpylibBadUserInput,
-#     MagpylibBadInputShape, MagpylibMissingInput)
-# import magpylib as magpy
+import numpy as np
+from scipy.spatial.transform import Rotation as R
+from magpylib._src.exceptions import MagpylibBadUserInput
+import magpylib as magpy
+
+
+def test_input_objects_position_good():
+    """good positions"""
+    goods = [
+        (1,2,3),
+        (0,0,0),
+        ((1,2,3),(2,3,4)),
+        [(2,3,4)],
+        [2,3,4],
+        [[2,3,4],[3,4,5]],
+        [(2,3,4),(3,4,5)],
+        np.array((1,2,3)),
+        np.array(((1,2,3),(2,3,4))),
+        ]
+    for good in goods:
+        sens = magpy.Sensor(position=good)
+        np.testing.assert_allclose(sens.position, np.squeeze(np.array(good)))
+
+
+def test_input_objects_position_bad():
+    """bad positions"""
+    bads = [
+        (1,2),
+        (1,2,3,4),
+        [(1,2,3,4)]*2,
+        (((1,2,3), (1,2,3)), ((1,2,3), (1,2,3))),
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, bad)
+
+
+def test_input_objects_pixel_good():
+    """good pixel"""
+    goods = [
+        (1,-2,3),
+        (0,0,0),
+        ((1,2,3),(2,3,4)),
+        (((1,2,3),(2,-3,4)), ((1,2,3),(2,3,4))),
+        [(2,3,4)],
+        [2,3,4],
+        [[-2,3,4],[3,4,5]],
+        [[[2,3,4],[3,4,5]]]*4,
+        [(2,3,4),(3,4,5)],
+        np.array((1,2,-3)),
+        np.array(((1,-2,3),(2,3,4))),
+        ]
+    for good in goods:
+        sens = magpy.Sensor(pixel=good)
+        np.testing.assert_allclose(sens.pixel, np.squeeze(np.array(good)))
+
+
+def test_input_objects_pixel_bad():
+    """bad pixel"""
+    bads = [
+        (1,2),
+        (1,2,3,4),
+        [(1,2,3,4)]*2,
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, (0,0,0), bad)
+
+
+def test_input_objects_orientation_good():
+    """good orientations (from rotvec)"""
+    goods = [
+        None,
+        (.1,.2,.3),
+        (0,0,0),
+        [(.1,.2,.3)],
+        [(.1,.2,.3)]*5,
+        ]
+    for good in goods:
+        if good is None:
+            sens = magpy.Sensor(orientation=None)
+            np.testing.assert_allclose(sens.orientation.as_rotvec(), (0,0,0))
+        else:
+            sens = magpy.Sensor(orientation=R.from_rotvec(good))
+            np.testing.assert_allclose(sens.orientation.as_rotvec(), np.squeeze(np.array(good)))
+
+
+def test_input_objects_orientation_bad():
+    """bad orienations"""
+    bads = [
+        (1,2),
+        (1,2,3,4),
+        [(1,2,3,4)]*2,
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, (0,0,0), (0,0,0), bad)
+
+
+def test_input_objects_current_good():
+    """good currents"""
+    goods = [
+        None,
+        0,
+        1,
+        1.2,
+        np.array([1,2,3])[1],
+        -1,
+        -1.123,
+        True,
+        ]
+    for good in goods:
+        src = magpy.current.Loop(good)
+        if good is None:
+            assert src.current is None
+        else:
+            np.testing.assert_allclose(src.current, good)
+
+
+def test_input_objects_current_bad():
+    """bad current"""
+    bads = [
+        (1,2),
+        [(1,2,3,4)]*2,
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.current.Loop, bad)
+
+
+def test_input_objects_diameter_good():
+    """good diameter"""
+    goods = [
+        None,
+        0,
+        1,
+        1.2,
+        np.array([1,2,3])[1],
+        True,
+        ]
+    for good in goods:
+        src = magpy.current.Loop(1, good)
+        if good is None:
+            assert src.diameter is None
+        else:
+            np.testing.assert_allclose(src.diameter, good)
+
+
+def test_input_objects_diameter_bad():
+    """bad diameter"""
+    bads = [
+        (1,2),
+        [(1,2,3,4)]*2,
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        -1,
+        -1.123,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.current.Loop, 1, bad)
+
+
+def test_input_objects_vertices_good():
+    """good vertices"""
+    goods = [
+        None,
+        ((0,0,0),(0,0,0)),
+        ((1,2,3),(2,3,4)),
+        [(2,3,4), (-1,-2,-3)]*2,
+        [[2,3,4],[3,4,5]],
+        np.array(((1,2,3),(2,3,4))),
+        ]
+    for good in goods:
+        src = magpy.current.Line(1, good)
+        if good is None:
+            assert src.vertices is None
+        else:
+            np.testing.assert_allclose(src.vertices, good)
+
+
+def test_input_objects_vertices_bad():
+    """bad vertices"""
+    bads = [
+        (1,2),
+        [(1,2,3,4)]*2,
+        (1,2,3),
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        0,
+        -1.123,
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.current.Line, 1, bad)
+
+
+def test_input_objects_magnetization_moment_good():
+    """good magnetization and moment"""
+    goods = [
+        None,
+        (1,2,3),
+        (0,0,0),
+        [-1,-2,-3],
+        np.array((1,2,3)),
+        ]
+    for good in goods:
+        src = magpy.magnet.Cuboid(good)
+        src2 = magpy.misc.Dipole(good)
+        if good is None:
+            assert src.magnetization is None
+            assert src2.moment is None
+        else:
+            np.testing.assert_allclose(src.magnetization, good)
+            np.testing.assert_allclose(src2.moment, good)
+
+
+def test_input_objects_magnetization_moment_bad():
+    """bad magnetization and moment"""
+    bads = [
+        (1,2),
+        [1,2,3,4],
+        [(1,2,3)]*2,
+        np.array([(1,2,3)]*2),
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        0,
+        -1.123,
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.magnet.Cuboid, bad)
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.Dipole, bad)
+
+
+def test_input_objects_dimension_cuboid_good():
+    """good cuboid dimension"""
+    goods = [
+        None,
+        (1,2,3),
+        [11,22,33],
+        np.array((1,2,3)),
+        ]
+    for good in goods:
+        src = magpy.magnet.Cuboid((1,1,1), good)
+        if good is None:
+            assert src.dimension is None
+        else:
+            np.testing.assert_allclose(src.dimension, good)
+
+
+def test_input_objects_dimension_cuboid_bad():
+    """bad cuboid dimension"""
+    bads = [
+        [-1,2,3],
+        (0,1,2),
+        (1,2),
+        [1,2,3,4],
+        [(1,2,3)]*2,
+        np.array([(1,2,3)]*2),
+        'x',
+        ['x','y','z'],
+        dict(woot=15),
+        0,
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.magnet.Cuboid, (1,1,1), bad)
+
+
+def test_input_objects_dimension_cylinder_good():
+    """good cylinder dimension"""
+    goods = [
+        None,
+        (1,2),
+        [11,22],
+        np.array((1,2)),
+        ]
+    for good in goods:
+        src = magpy.magnet.Cylinder((1,1,1), good)
+        if good is None:
+            assert src.dimension is None
+        else:
+            np.testing.assert_allclose(src.dimension, good)
+
+
+def test_input_objects_dimension_cylinder_bad():
+    """bad cylinder dimension"""
+    bads = [
+        [-1,2],
+        (0,1),
+        (1,),
+        [1,2,3],
+        [(1,2)]*2,
+        np.array([(2,3)]*2),
+        'x',
+        ['x','y'],
+        dict(woot=15),
+        0,
+        True,
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.magnet.Cylinder, (1,1,1), bad)
+
+
+def test_input_objects_dimension_cylinderSegment_good():
+    """good cylinder segment dimension"""
+    goods = [
+        None,
+        (0,2,3,0,50),
+        (1,2,3,40,50),
+        [11,22,33,44,360],
+        [11,22,33,-44,55],
+        np.array((1,2,3,4,5)),
+        [11,22,33,-44,-33],
+        (0,2,3,-10,0),
+        ]
+    for good in goods:
+        src = magpy.magnet.CylinderSegment((1,1,1), good)
+        if good is None:
+            assert src.dimension is None
+        else:
+            np.testing.assert_allclose(src.dimension, good)
+
+
+def test_input_objects_dimension_cylinderSegment_bad():
+    """bad cylinder segment dimension"""
+    bads = [
+        (1,2,3,4),
+        (1,2,3,4,5,6),
+        (0,0,3,4,5),
+        (2,1,3,4,5),
+        (-1,2,3,4,5),
+        (1,2,0,4,5),
+        (1,2,-1,4,5),
+        (1,2,3,5,4),
+        [(1,2,3,4,5)]*2,
+        np.array([(1,2,3,4,5)]*2),
+        'x',
+        ['x','y','z',1,2],
+        dict(woot=15),
+        0,
+        True
+        ]
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.magnet.CylinderSegment, (1,1,1), bad)
+
 
 # a3 = np.array([1,2,3])
 # a2 = np.array([1,2])

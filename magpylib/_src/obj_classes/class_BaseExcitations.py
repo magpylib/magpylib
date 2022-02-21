@@ -46,4 +46,8 @@ class BaseCurrent:
     def current(self, current):
         """Set current value, scalar, unit [A]."""
         # input type and init check
-        self._current = check_format_input_scalar(current, 'current')
+        self._current = check_format_input_scalar(
+            current,
+            sig_name='current',
+            sig_type='`None` or a number (int, float)',
+            allow_None=True)

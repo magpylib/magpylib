@@ -108,5 +108,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             dims=(1,),
             shape_m1=2,
             sig_name='Cylinder.dimension',
-            sig_type='array_like (list, tuple, ndarray) with shape (2,)',
-            allow_None=True,)
+            sig_type='array_like (list, tuple, ndarray) with shape (2,) with positive values',
+            allow_None=True,
+            forbid_negative0=True,
+        )

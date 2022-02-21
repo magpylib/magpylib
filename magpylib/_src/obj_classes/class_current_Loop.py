@@ -103,4 +103,9 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     @diameter.setter
     def diameter(self, dia):
         """Set Loop loop diameter, float, [mm]."""
-        self._diameter = check_format_input_scalar(dia, 'diameter')
+        self._diameter = check_format_input_scalar(
+            dia,
+            sig_name='diameter',
+            sig_type='`None` or a positive number (int, float)',
+            allow_None=True,
+            forbid_negative=True)
