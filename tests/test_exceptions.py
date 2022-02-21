@@ -1,6 +1,6 @@
 import unittest
 import numpy as np
-from scipy.spatial.transform.rotation import Rotation as R
+from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2

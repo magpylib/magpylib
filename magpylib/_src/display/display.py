@@ -12,7 +12,8 @@ from magpylib._src.input_checks import (
     check_format_input_vector,
     )
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 
 def show(
     *objects,
@@ -130,11 +131,7 @@ def show(
             warnings.warn(msg)
             # animation = False
         display_matplotlib(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            axis=canvas,
-            **kwargs,
+            *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
@@ -148,3 +145,9 @@ def show(
             animation=animation,
             **kwargs,
         )
+    else:
+        msg = (
+            f"The plotting backend must be one of {SUPPORTED_PLOTTING_BACKENDS},"
+            f" received {backend!r} instead"
+        )
+        raise MagpylibBadUserInput(msg)
