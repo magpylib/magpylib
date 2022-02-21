@@ -150,15 +150,15 @@ temp_fig = go.Figure()
 
 # draw the objects
 magpy.show(src1, canvas=temp_fig, backend='plotly')
-fig.add_traces(temp_fig.data)
+fig.add_traces(temp_fig.data, rows=1, cols=1)
 fig.layout.scene1 = temp_fig.layout.scene
 temp_fig = go.Figure()
 magpy.show(src2, canvas=temp_fig, backend='plotly')
-fig.add_traces(temp_fig.data)
+fig.add_traces(temp_fig.data, rows=1, cols=2)
 fig.layout.scene2 = temp_fig.layout.scene
 temp_fig = go.Figure()
 magpy.show(src1, src2, canvas=temp_fig, backend='plotly')
-fig.add_traces(temp_fig.data)
+fig.add_traces(temp_fig.data, rows=1, cols=3)
 fig.layout.scene3 = temp_fig.layout.scene
 
 # display the system
