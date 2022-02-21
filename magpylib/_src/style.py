@@ -285,7 +285,7 @@ class Model3d(MagicProperties):
             Shows/hides model3d object based on provided trace.
 
         trace: dict or callable, default=None
-            Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object.
+            Dictionary containing at least the `x,y,z` information for a model3d object.
 
         backend: str, default='matplotlib'
             Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
@@ -394,7 +394,7 @@ class Trace3d(MagicProperties):
 
     @property
     def trace(self):
-        """Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object."""
+        """Dictionary containing at least the `x,y,z` information for a model3d object."""
         return self._trace
 
     @trace.setter
