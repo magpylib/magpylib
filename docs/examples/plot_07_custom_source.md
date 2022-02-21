@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python 3
   language: python
@@ -15,18 +15,9 @@ kernelspec:
 
 +++
 
-The magpylib library provides a custom class which enables the user to define its own source with
-an arbitrary field function. The user field function must return a position-dependent value in
-the local coordinate system of the source. The custom source instance is then treated the same as
-any other built-in source and can be moved or rotated. Coordinate transformations are taken care
-of by the library. The field values in the global coordinate system can be obtained with `getB`
-or `getH` as long as a respective field function has been provided.
+The Magpylib library provides a custom class which enables the user to define its own source with an arbitrary field function. The user field function must return a position-dependent value in the local coordinate system of the source. The custom source instance is then treated the same as any other built-in source and can be moved or rotated while coordinate transformations are taken care of by the library. The field values in the global coordinate system can be obtained with `getB` or `getH` as long as a respective field function has been provided.
 
-The custom source class can for example be used to manipulate data originating from a 3d-vector
-field from measured or exported FEM data. In this case, the field function must be an
-interpolation function of the data. In this example, the source data comes directly from the field
-calculation provided by magpylib itself, but the same procedure can be applied to aforementioned
-dataset types.
+The custom source class can for example be used recreate an external constant magnetic field. It can also be implemented to manipulate data originating from a 3d-vector field from measured or exported FEM data. In this case, the field function must be an interpolation function of the data. In the following example, the source data comes directly from the field calculation provided by magpylib itself, but the same procedure can be applied to aforementioned dataset types.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -167,7 +158,7 @@ interp_cube.style.label = 'Interpolated cuboid field'
 +++
 
 ```{warning}
-If `getB` gets called for positions outside the interpolated field boundaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions exactly on the interpolation boundaries may yield `np.nan` values.
+If `getB` gets called for positions outside the interpolated field boundaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions on the interpolation boundaries may yield `np.nan` values.
 ```
 
 +++
@@ -199,7 +190,7 @@ magpy.show(cube, sens, interp_cube, backend='matplotlib')
 magpy.show(cube, sens, interp_cube, backend='plotly')
 ```
 
-compare the interpolated field with the original source
+* compare the interpolated field with the original source
 
 ```{code-cell} ipython3
 Bcube = sens.getB(cube)

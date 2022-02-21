@@ -52,14 +52,15 @@ coll.show()
 
 Lets now add a body emcompassing our linear arrangement. We can do so by adding a new 3D-model with the `style.model3d.add_trace` method. If we intend only to use the plotly backend to display the system, only a `plotly` trace is necessary.
 
-A model3d trace is a dictionary containing the necessary information to draw a plot type depending on the chosen backend.
+A model3d trace is a dictionary containing the necessary information to draw a plot type, depending on the chosen backend.
+
 The `add_trace` method has the following signature:
 
 ```{code-cell} ipython3
 help(magpy.Collection().style.model3d.add_trace)
 ```
 
-In the case of building a `Collection` of many objects, it can become quite computationally expensive to display every single children. To avoid this issue, it is possible to deactivate the default reprensation of every children using the `set_children_styles` method.
+In the case of building a `Collection` of many objects, it can become quite computationally expensive to display every single children. To avoid this issue, it is possible to deactivate the default representation of every children using the `set_children_styles` method.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -107,7 +108,7 @@ If no 3D-model as been assigned to a `Collection` and all children representatio
 
 +++
 
-By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we build a _magnetic wheel_ object on which the `diameter`, `cube_size` and number of children `cubes` can be updated on the `MagneticWheel`instance directly.
+By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we build a _magnetic wheel_ object for which the `diameter`, `cube_size` and number of children `cubes` can be updated for each `MagneticWheel` instance directly.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -167,7 +168,7 @@ magpy.show(wheel, sens)
 
 +++
 
-As shown previously we can aslo add an extra 3D-model to our new `MagneticWheel` class, since it inherits all methods and properties from the parent `Collection` class. However if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting `attributes`. To solve this issue, the trace constructor of the `style.modeld3d` property can also accept a callable as argument. This allows the trace to be updated created from dynamic parameters, or in this case, class attributes. This features avoids the need to recreate the 3D-model entirely, any time an attribute of the class has been updated. The actual trace building computation cost will only be due if we choose to display the object.
+As shown previously we can aslo add an extra 3D-model to our new `MagneticWheel` class, since it inherits all methods and properties from the parent `Collection` class. However, if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting attributes such as `diameter`. To solve this issue, the trace constructor of the `style.modeld3d` property also accepts callables as argument. This allows the trace to be updated created from dynamic parameters, or in this case, class attributes. This features avoids the need to recreate the 3D-model entirely, any time an attribute of the class has been updated. The actual trace building computation cost will only be due if we choose to display the object.
 In the following example, both `matplotlib` and `plotly` backends are made compatible with the `MagneticWheel` class.
 
 ```{code-cell} ipython3
@@ -271,4 +272,8 @@ fig.update_layout(
     title_text="Magnetic Wheels",
     height=800,
 )
+```
+
+```{note}
+The `magpylib.display.plotly` module incorporates a collection of function which return dictionaries with the necessary information to build basic geometries as 3D-mesh objects. The outputs can also be used by the `matplotlib` libraray via the `plot_trisurf` command with adapting the syntax as shown in the example above. 
 ```

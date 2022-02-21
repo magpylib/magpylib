@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python 3
   language: python
@@ -13,10 +13,10 @@ kernelspec:
 
 # Complex extra 3d-model
 
-With the `model3d.data` style property, it is possible to attach an extra 3d-model representation for any `magpylib` object, as long as it is supported by the chosen plotting backend. The `plotly` backend supports `mesh3d` objects and with the `numpy-stl` package, it becomes possible to import a STL CAD file and transform it to a `mesh3d` object with a little helper function.
+With the `model3d.data` style property, it is possible to attach an extra 3D-model representation for any Magpylib object, as long as it is supported by the chosen plotting backend. With a little helper function and the third-party `numpy-stl` package, a CAD file can be imported and transformed into a mesh object, displayable by both `matplotlib` and `plotly` backends.
 
 ```{note}
-In order to use this functionality the `numpy-stl` package needs to be installed.
+In order to use this functionality the `numpy-stl` package needs to be installed, as it does not come with Magpylib by default.
 ```
 
 ```{code-cell} ipython3
@@ -122,5 +122,3 @@ magpy.show(*collection, style_path_frames=8, style_magnetization_size=0.4, backe
 # display animated system with plotly backend
 magpy.show(*collection, style_path_frames=8, backend="plotly")
 ```
-
-

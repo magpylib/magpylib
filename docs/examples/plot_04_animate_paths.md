@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python 3
   language: python
@@ -15,19 +15,13 @@ kernelspec:
 
 +++
 
-For objects for which a path has been constructed using the path-API, the ``magpylib`` library
-enables, users to animate the object movements, in addition to displaying them statically.
+For objects for which a path has been constructed using the path-API, the Magpylib library enables users to animate their movements, in addition to displaying them statically.
 
 +++
 
 ```{note}
 This feature is only available for the ``plotly`` backend at the moment.
 ```
-
-+++
-
-While the orientation is static while the animation is running, it can be dynamically set when the
-the animation is on pause.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -67,8 +61,10 @@ magpy.show(
 )
 fig.update_layout(height=800)
 ```
+
 ```{note}
-Note that the animation of the sensor stops earlier since it has a shorter path length.
+While the canvas orientation is static while the animation is running, it can be dynamically set with by draging the mouse when the animation is on pause or finished.
+Also note that the animation of the sensor stops earlier since it has a shorter path length.
 ```
 
 ```{warning}

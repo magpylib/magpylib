@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
   display_name: Python 3
   language: python
@@ -15,7 +15,7 @@ kernelspec:
 
 +++
 
-In this general example two source objects, a magnet and a current, are created, moved and rotated. The system geometry is displayed before and after rotation/displacement, together with the magnetic field in the xz-plane.
+In this general example, two source objects, a magnet and a current, are created, moved and rotated. The system geometry is displayed before and after rotation/displacement, together with the magnetic field in the xz-plane.
 
 +++
 
