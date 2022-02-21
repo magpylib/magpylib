@@ -144,9 +144,11 @@ src1.move(np.linspace((0, 0, 0.1), (0, 0, 8), 20))
 src2.move(np.linspace((0.1, 0, 0.1), (5, 0, 5), 50))
 src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start=1)
 
-# draw the objects
+# setup plotly figure and subplots
 fig = go.Figure().set_subplots(rows=1, cols=3, specs=[[{"type": "scene"}] * 3])
 temp_fig = go.Figure()
+
+# draw the objects
 magpy.show(src1, canvas=temp_fig, backend='plotly')
 fig.add_traces(temp_fig.data)
 fig.layout.scene1 = temp_fig.layout.scene
@@ -158,6 +160,7 @@ temp_fig = go.Figure()
 magpy.show(src1, src2, canvas=temp_fig, backend='plotly')
 fig.add_traces(temp_fig.data)
 fig.layout.scene3 = temp_fig.layout.scene
-legend_groups = []
+
+# display the system
 fig.show()
 ```
