@@ -15,7 +15,7 @@ kernelspec:
 
 +++
 
-For easy inspection of sources, sensors or collection thereof, the Magpylib package has default graphical representations for every magnet, current and sensor of the library. Objects can be displayed via the `magpylib.show` function or directly via the `show` method available for all objects (see examples below). 
+For easy inspection of sources, sensors or collection thereof, the Magpylib package has default graphical representations for every magnet, current and sensor of the library. Objects can be displayed via the `magpylib.show` function or directly via the `show` method available for all objects (see examples below).
 
 Additionally, objects can be rendered via different plottting backends libraries, which to date includes:
 
@@ -133,9 +133,6 @@ import magpylib as magpy
 import numpy as np
 import plotly.graph_objects as go
 
-# set 'plotly' as default plotting backend
-magpy.defaults.display.backend = "plotly"
-
 # define sources
 src1 = magpy.magnet.Sphere(magnetization=(0, 0, 1), diameter=1)
 src2 = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(1, 2))
@@ -150,16 +147,16 @@ src2.rotate_from_angax(angle=np.linspace(10, 600, 50), axis="z", anchor=0, start
 # draw the objects
 fig = go.Figure().set_subplots(rows=1, cols=3, specs=[[{"type": "scene"}] * 3])
 temp_fig = go.Figure()
-magpy.show(src1, canvas=temp_fig)
-fig.add_traces(temp_fig.data, rows=1, cols=1)
+magpy.show(src1, canvas=temp_fig, backend='plotly')
+fig.add_traces(temp_fig.data)
 fig.layout.scene1 = temp_fig.layout.scene
 temp_fig = go.Figure()
-magpy.show(src2, canvas=temp_fig)
-fig.add_traces(temp_fig.data, rows=1, cols=2)
+magpy.show(src2, canvas=temp_fig, backend='plotly')
+fig.add_traces(temp_fig.data)
 fig.layout.scene2 = temp_fig.layout.scene
 temp_fig = go.Figure()
-magpy.show(src1, src2, canvas=temp_fig)
-fig.add_traces(temp_fig.data, rows=1, cols=3)
+magpy.show(src1, src2, canvas=temp_fig, backend='plotly')
+fig.add_traces(temp_fig.data)
 fig.layout.scene3 = temp_fig.layout.scene
 legend_groups = []
 fig.show()
