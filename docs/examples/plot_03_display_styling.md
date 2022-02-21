@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.1
+    jupytext_version: 1.13.6
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -16,20 +16,28 @@ kernelspec:
 
 +++
 
-The default displaying style may not yield by default the visual representation the user wants. For these cases, the library includes a variety of styling options that can be applied at multiple levels in the user's code.
+Display styling refers to 3D-visual representation properties of Magpylib **sources**, **sensors** or **collections** and can be fine tuned at multiple levels in the user's code.
 
 ```{warning}
 Users should be aware that specifying style attributes increases initializing time. While this may not be noticeable for a small number objects, this can become an issue when initializating a lot of objects or repeatedly creating objects in a loop, for example in an optimization algorithm. In this cases you may want to specify objects styles not until plotting time.
 ```
+
 +++ {"tags": []}
 
 ## Hierarchy of arguments
 
-The styling options can be set at the library level, for an individual object directly or via a `Collection` and as an explicit argument in the `show` function. These settings, are ordered from **lowest** to **highest** precedence as follows:
+The styling properties can be set at the library level as defaults, for an individual object directly or via a `Collection` and as an explicit argument in the `show` function. These settings, are ordered from **lowest** to **highest** precedence as follows:
 
 - library `defaults`
-- individual object `style` or at `Collection` level
+- individual object `style` or at `Collection` level via `set_children_styles(...)` method
+
 - in the `show` function or method
+
++++
+
+```{note}
+The `Collection` objects can have their own style attributes which don't interfere with the styles of their children except for the color property. In case a color is specified at a collection level, all children with no explicit color set, will inherit the collection color property.
+```
 
 +++ {"tags": []}
 
@@ -39,7 +47,7 @@ The styling options can be set at the library level, for an individual object di
 
 ### Defaults style structure
 
-General Magpylib defaults can be set from the top library level by settings `magpylib.defaults` properties and default display styling properties can be accessed with `magpylib.defaults.display.style`. The default styles are separated into the following object families:
+General Magpylib defaults can be set from the top library level `magpylib.defaults` while display styling properties can be accessed with `magpylib.defaults.display.style`. The default styles are separated into the following object families:
 
 - **base** : common properties for all families
 - **magnet**: `Cuboid, Cylinder, Sphere, CylinderSegment`
@@ -71,7 +79,7 @@ magpy.defaults.display.style.magnet = {
 +++ {"tags": [], "jp-MarkdownHeadingCollapsed": true}
 
 ### Using the _magic underscore notation_
-To make it easier to work with nested properties, style constructors and object style method support magic underscore notation. This allows you to reference nested properties by joining together multiple nested property names with underscores. This feature mainly helps reduce the code verbosity and is heavily inspired by the `plotly` implementation (see [plotly underscore notation](https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation)). The previous examples can therefore, also be written as:
+To make it easier to work with nested properties, style constructors and object style method support magic underscore notation. This allows referencing nested properties by joining together multiple nested property names with underscores. This feature mainly helps reduce the code verbosity and is heavily inspired by the `plotly` implementation (see [plotly underscore notation](https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation)). The previous examples can therefore, also be written as:
 
 ```python
 import magpylib as magpy
@@ -162,7 +170,7 @@ magpy.show(coll, backend="plotly")
 
 +++
 
-Style properties can also be set for any Magpylib object instance. Note that the object family which is required for the default styles is not present when setting invidual styles.
+Style properties can also be set for any Magpylib object instance. Note that the object family specifier such as _magnet_ or _current_ which is required for the default styles is omitted when setting invidual styles.
 
 For example setting the default magnetization north color is set a the family level as:
 ```python
@@ -206,8 +214,7 @@ magpy.show(*coll, backend="plotly")
 
 +++
 
-The provided styling properties as function arguments will temporarily override the style properties set by any of the aforementioned methods. All styling properties need to start with `style` and underscore magic is supported. The object family must be omitted since the style properties set at display time will apply across object families. Only matching properties to a specific object
-will be applied.
+The provided styling properties as function arguments will temporarily override the style properties set by any of the aforementioned methods. All styling properties need to start with the `style` prefix and underscore magic is supported. The object family specifier must be omitted since the style properties set at display time will apply across object families. Only matching properties are applied.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -224,12 +231,12 @@ magpy.show(*coll, backend="plotly", style_magnetization_show=False)
 ```
 
 ```{note}
-Setting style arguments in the `show` function does not change the default styles nor does it modify individual object styles,  only the current representation to be displayed is affected.
+Setting style arguments in the `show` function does not change the default styles nor does it modify individual object styles, only the current representation to be displayed is affected.
 ```
 
 +++
 
-In the following example, both `sensor` and `dipole` have a `size` object level style property that has be set explicitly at object creation.
+In the following example, both `sensor` and `dipole` have a `size` object level style property that has been set explicitly at object creation.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -274,7 +281,7 @@ magpy.show(cuboid, dipole, sensor, sensor2, style_size=1, zoom=0)
 ## List of available styles
 
 ```{code-cell} ipython3
-magpy.defaults.display.style.as_dict(flatten=True)
+magpy.defaults.display.style.as_dict(flatten=True, separator='.')
 ```
 
 ```{warning}
