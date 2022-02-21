@@ -5,6 +5,7 @@ from magpylib._src.utility import format_obj_input, test_path_format
 from magpylib._src.display.display_matplotlib import display_matplotlib
 from magpylib._src.input_checks import (
     check_dimensions,
+    check_excitations,
     check_format_input_backend,
     check_input_zoom,
     check_input_animation,
@@ -102,6 +103,7 @@ def show(
 
     # test if all source dimensions and excitations have been initialized
     check_dimensions(obj_list_flat)
+    check_excitations(obj_list_flat)
 
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)

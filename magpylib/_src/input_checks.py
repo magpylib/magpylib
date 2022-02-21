@@ -1,6 +1,5 @@
 """ input checks code"""
 
-import warnings
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._src.exceptions import (
@@ -73,11 +72,15 @@ def check_input_zoom(inp):
 
 def check_input_animation(inp):
     """check show animation input"""
-    if not isinstance(inp, (bool, float, int, np.float_, np.int_)):
-        raise MagpylibBadUserInput(
-            "Input parameter `animation` must be boolean or a positive number.\n"
-            f"Instead received {inp}."
+    ERR_MSG = (
+        "Input parameter `animation` must be boolean or a positive number.\n"
+        f"Instead received {inp}."
         )
+    if not isinstance(inp, (bool, float, int, np.float_, np.int_)):
+        raise MagpylibBadUserInput(ERR_MSG)
+    if inp<0:
+        raise MagpylibBadUserInput(ERR_MSG)
+
 
 
 #################################################################
@@ -128,16 +131,13 @@ def validate_field_lambda(val, bh):
             )
         out = val(np.array([4, 5, 6]))
         out_shape = np.array(out).shape
-        if out_shape!=(3,):
-            raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable function"
-                " and return a field ndarray of shape (3,) or (n,3) when its `observer`"
-                " input is of shape (3,) or (n,3) respectively.\n"
-                f"Instead received shape {out_shape}.")
+        case1 = out_shape!=(3,)
 
         out = val(np.array([[1, 2, 3], [4, 5, 6]]))
         out_shape = np.array(out).shape
-        if out_shape!=(2, 3):
+        case2 = out_shape!=(2, 3)
+
+        if case1 | case2:
             raise MagpylibBadUserInput(
                 f"Input parameter `field_{bh}_lambda` must be a callable function"
                 " and return a field ndarray of shape (3,) or (n,3) when its `observer`"
@@ -377,11 +377,9 @@ def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
     if inp in ('matplotlib', 'plotly', None):
         return inp
-    warnings.warn(
+    raise MagpylibBadUserInput(
         "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
-        f"Instead received {inp}.\n"
-        "Setting to default value `Config.display.backend`.")
-    return None
+        f"Instead received {inp}.")
 
 
 ############################################################################################
@@ -393,14 +391,14 @@ def check_dimensions(sources):
     # pylint: disable=protected-access
     for s in sources:
         obj_type = getattr(s, '_object_type', None)
-        if obj_type in ('Cuboid', 'Cylinder'):
-            if np.isnan(s.dimension).any():
+        if obj_type in ('Cuboid', 'Cylinder', 'CylinderSegment'):
+            if s.dimension is None:
                 raise MagpylibMissingInput(f"Parameter `dimension` of {s} must be set.")
         elif obj_type in ('Sphere', 'Loop'):
             if s.diameter is None:
                 raise MagpylibMissingInput(f"Parameter `diameter` of {s} must be set.")
         elif obj_type == 'Line':
-            if None in s.vertices[0]:
+            if s.vertices is None:
                 raise MagpylibMissingInput(f"Parameter `vertices` of {s} must be set.")
 
 
@@ -409,12 +407,12 @@ def check_excitations(sources):
     # pylint: disable=protected-access
     for s in sources:
         obj_type = getattr(s, '_object_type', None)
-        if obj_type in ('Cuboid', 'Cylinder', 'Sphere'):
-            if np.isnan(s.magnetization).any():
+        if obj_type in ('Cuboid', 'Cylinder', 'Sphere', 'CylinderSegment'):
+            if s.magnetization is None:
                 raise MagpylibMissingInput(f"Parameter `magnetization` of {s} must be set.")
         elif obj_type in ('Loop', 'Line'):
             if s.current is None:
                 raise MagpylibMissingInput(f"Parameter `current` of {s} must be set.")
         elif obj_type == 'Dipole':
-            if np.isnan(s.moment).any():
+            if s.moment is None:
                 raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
