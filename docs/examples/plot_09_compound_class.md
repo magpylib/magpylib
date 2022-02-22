@@ -168,7 +168,7 @@ magpy.show(wheel, sens)
 
 +++
 
-As shown previously we can aslo add an extra 3D-model to our new `MagneticWheel` class, since it inherits all methods and properties from the parent `Collection` class. However, if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting attributes such as `diameter`. To solve this issue, the trace constructor of the `style.modeld3d` property also accepts callables as argument. This allows the trace to be updated created from dynamic parameters, or in this case, class attributes. This features avoids the need to recreate the 3D-model entirely, any time an attribute of the class has been updated. The actual trace building computation cost will only be due if we choose to display the object.
+As shown previously we can aslo add an extra 3D-model to our new `MagneticWheel` class, since it inherits all methods and properties from the parent `Collection` class. However, if we specify a fixed model from a dictionary the trace will not adapt to the parameters we define in our `update` method or via setting attributes such as `diameter`. To solve this issue, the trace constructor of the `style.model3d` property also accepts callables as argument. This allows the trace to be updated created from dynamic parameters, or in this case, class attributes. This features avoids the need to recreate the 3D-model entirely, any time an attribute of the class has been updated. The actual trace building computation cost will only be due if we choose to display the object.
 In the following example, both `matplotlib` and `plotly` backends are made compatible with the `MagneticWheel` class.
 
 ```{code-cell} ipython3
@@ -275,5 +275,5 @@ fig.update_layout(
 ```
 
 ```{note}
-The `magpylib.display.plotly` module incorporates a collection of function which return dictionaries with the necessary information to build basic geometries as 3D-mesh objects. The outputs can also be used by the `matplotlib` libraray via the `plot_trisurf` command with adapting the syntax as shown in the example above. 
+The `magpylib.display.plotly` module incorporates a collection of function which return dictionaries with the necessary information to build basic geometries as 3D-mesh objects. The outputs can also be used by the `matplotlib` libraray via the `plot_trisurf` command with adapting the syntax as shown in the example above.
 ```
