@@ -275,5 +275,5 @@ fig.update_layout(
 ```
 
 ```{note}
-The `magpylib.display.plotly` module incorporates a collection of function which return dictionaries with the necessary information to build basic geometries as 3D-mesh objects. The outputs can also be used by the `matplotlib` libraray via the `plot_trisurf` command with adapting the syntax as shown in the example above.
+The `magpylib.display.plotly` module incorporates a collection of functions which return dictionaries with the necessary information to build basic geometries as 3D-mesh objects. The outputs can also be used by the `matplotlib` libraray via the `plot_trisurf` command with adapting the syntax as shown in the example above.
 ```
