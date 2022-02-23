@@ -78,7 +78,7 @@ def check_input_animation(inp):
         "Input parameter `animation` must be boolean or a positive number.\n"
         f"Instead received {inp}."
         )
-    if not isinstance(inp, (bool, float, int, np.float_, np.int_)):
+    if not isinstance(inp, (bool, float, int, np.float_, np.integer)):
         raise MagpylibBadUserInput(ERR_MSG)
     if inp<0:
         raise MagpylibBadUserInput(ERR_MSG)
@@ -91,7 +91,7 @@ def check_input_animation(inp):
 
 def check_start_type(inp):
     """start input must be int or str"""
-    if not (isinstance(inp, (int, np.int_)) or inp == 'auto'):
+    if not (isinstance(inp, (int, np.integer)) or (inp is 'auto')):
         raise MagpylibBadUserInput(
             f"Input parameter `start` must be integer value or 'auto'.\n"
             f"Instead received {repr(inp)}."
