@@ -5,13 +5,15 @@ Dipole implementation
 import numpy as np
 from magpylib._src.input_checks import check_field_input
 
+
 def dipole_field(
     moment: np.ndarray,
     observer: np.ndarray,
     field='B'
     ) -> np.ndarray:
-    """
-    Computes the magnetic field of a magnetic dipole moment in Cartesian coordinates.
+    """Magnetic field of a dipole moment.
+
+    The dipole moment lies in the origin of the coordinate system.
 
     Parameters
     ----------
@@ -21,8 +23,9 @@ def dipole_field(
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    field: str, default='B'
-        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
 
     Returns
     -------

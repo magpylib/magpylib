@@ -303,7 +303,7 @@ def test_compound_motion_01():
     validate_pos_orient(s1, [(1, 1, 2), (1, 1, 3)], [(0, 0, 0)] * 2)
     validate_pos_orient(s2, [(-1, -1, 0), (-1, -1, 1)], [(0, 0, 0)] * 2)
     validate_pos_orient(col, [(0, 0, 1), (0, 0, 2)], [(0, 0, 0)] * 2)
-    col.rotate_from_rotvec((0, 0, np.pi / 2), anchor=0)
+    col.rotate_from_rotvec((0, 0, np.pi / 2), anchor=0, degrees=False)
     validate_pos_orient(s1, [(-1, 1, 2), (-1, 1, 3)], [(0, 0, np.pi / 2)] * 2)
     validate_pos_orient(s2, [(1, -1, 0), (1, -1, 1)], [(0, 0, np.pi / 2)] * 2)
     validate_pos_orient(col, [(0, 0, 1), (0, 0, 2)], [(0, 0, np.pi / 2)] * 2)
@@ -314,7 +314,7 @@ def test_compound_motion_02():
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
     col = magpy.Collection(s1, s2, position=(3, 0, 3))
-    col.rotate_from_rotvec((0, 0, np.pi / 2), anchor=[(1, 0, 0), (2, 0, 0)])
+    col.rotate_from_rotvec((0, 0, np.pi / 2), anchor=[(1, 0, 0), (2, 0, 0)], degrees=False)
     validate_pos_orient(
         s1,
         [(1, 0, 1), (1, 0, 1), (2, -1, 1)],
@@ -346,6 +346,7 @@ def test_compound_motion_03():
         [(0, 0, np.pi / 2), (0, 0, 3 * np.pi / 2)],
         anchor=[(1, 0, 0), (2, 0, 0)],
         start=0,
+        degrees=False,
     )
     validate_pos_orient(
         s1, [(1, 2, 0), (2, 1, 0)], [(0, 0, np.pi / 2), (0, 0, -np.pi / 2)]

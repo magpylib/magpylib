@@ -8,33 +8,21 @@ from magpylib._src.defaults.defaults_utility import (
 from magpylib._src.style import DisplayStyle
 
 
-# ON INTERFACE
 class DefaultConfig(MagicProperties):
     """Library default settings.
 
     Parameters
     ----------
-    checkinputs: bool, default=True
-        Check user input types, shapes at various stages and raise errors
-        when they are not within designated parameters.
-
-
     display: dict or Display
         `Display` class containing display settings. `('backend', 'animation', 'colorsequence' ...)`
     """
 
     def __init__(
         self,
-        checkinputs=None,
-        edgesize=None,
-        itercylinder=None,
         display=None,
         **kwargs,
     ):
         super().__init__(
-            checkinputs=checkinputs,
-            edgesize=edgesize,
-            itercylinder=itercylinder,
             display=display,
             **kwargs,
         )
@@ -44,50 +32,6 @@ class DefaultConfig(MagicProperties):
         """Resets all nested properties to their hard coded default values"""
         self.update(get_defaults_dict(), _match_properties=False)
         return self
-
-    @property
-    def checkinputs(self):
-        """Check user input types, shapes at various stages and raise errors
-        when they are not within designated parameters."""
-        return self._checkinputs
-
-    @checkinputs.setter
-    def checkinputs(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"the `checkinputs` property of {type(self).__name__} must be either `True` or `False`"
-            f" but received {repr(val)} instead"
-        )
-        self._checkinputs = val
-
-    @property
-    def edgesize(self):
-        """getB and getH return 0 on edge, formulas often show singularities there and undefined
-        forms. EDGESIZE defines how close to the edge 0 will be returned to avoid running into
-        numerical instabilities."""
-        return self._edgesize
-
-    @edgesize.setter
-    def edgesize(self, val):
-        assert val is None or isinstance(val, (int, float)) and val > 0, (
-            f"the `edgesize` property of {type(self).__name__} must be a strictly positive number"
-            f" but received {repr(val)} instead"
-        )
-        self._edgesize = val
-
-    @property
-    def itercylinder(self):
-        """Cylinder with diametral magnetization uses Simpsons iterative formula
-        to compute the integral. More iterations increase precision but slow
-        down the computation."""
-        return self._itercylinder
-
-    @itercylinder.setter
-    def itercylinder(self, val):
-        assert val is None or isinstance(val, int) and val > 0, (
-            f"the `itercylinder` property of {type(self).__name__} must be a strictly positive"
-            f" integer but received {repr(val)} instead"
-        )
-        self._itercylinder = val
 
     @property
     def display(self):

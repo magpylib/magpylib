@@ -1,7 +1,6 @@
 """Package level config defaults"""
 
 DEFAULTS = {
-    "checkinputs": True,
     "display": {
         "autosizefactor": 10,
         "animation": {

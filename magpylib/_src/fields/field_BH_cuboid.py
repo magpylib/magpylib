@@ -6,17 +6,15 @@ magnetized Cuboids. Computation details in function docstrings.
 import numpy as np
 from magpylib._src.input_checks import check_field_input
 
-
-# ON INTERFACE
 def magnet_cuboid_field(
     magnetization: np.ndarray,
     dimension: np.ndarray,
     observer: np.ndarray,
     field='B') -> np.ndarray:
-    """
-    Computes the magnetic field of a homogeneously magnetized cuboid magnet
-    in Cartesian coordinates . The cuboid sides are parallel to the coordinate axes.
-    The geometric center of the cuboid lies in the origin.
+    """Magnetic field of a homogeneously magnetized cuboid.
+
+    The cuboid sides are parallel to the coordinate axes. The geometric center of the
+    cuboid lies in the origin.
 
     Parameters
     ----------
@@ -24,13 +22,14 @@ def magnet_cuboid_field(
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,3)
-        Cuboid side lengths in units of [mm]. Positive input expected.
+        Cuboid side lengths in units of [mm].
 
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    field: str, default='B'
-        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
 
     Returns
     -------

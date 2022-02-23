@@ -1249,7 +1249,7 @@ def case235(r, r_i, r_bar_i, phi_bar_j, phi_bar_M, phi_bar_Mj, theta_M, z_bar_k)
     results[:,2,2] = Hz_zk_case235(r, r_i, r_bar_i, phi_bar_j, theta_M, z_bar_k)
     return results
 
-# ON INTERFACE
+
 def magnet_cylinder_segment_core(
     mag: np.ndarray,
     dim: np.ndarray,
@@ -1355,10 +1355,10 @@ def magnet_cylinder_segment_field(
     observer: np.ndarray,
     field='B',
     ) -> np.ndarray:
-    """
-    Computes the magnetic field of a homogeneously magnetized cylinder segment in
-    Cartesian coordinates. The full cylinder axis coincides with the z-axis of the coordinate
-    system. The geometric center of the full cylinder is in the origin.
+    """Magnetic field of a homogeneously magnetized cylinder segment.
+
+    The full cylinder axis coincides with the z-axis of the coordinate system. The geometric
+    center of the full cylinder lies in the origin.
 
     Parameters
     ----------
@@ -1372,8 +1372,9 @@ def magnet_cylinder_segment_field(
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
-    field: str, default='B'
-        If 'B' return B-field in units of [mT], if 'H' return H-field in units of [kA/m].
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
 
     Returns
     -------

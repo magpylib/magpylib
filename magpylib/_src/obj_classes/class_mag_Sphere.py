@@ -1,88 +1,85 @@
-"""Magnet Sphere class code"""
+"""Magnet Sphere class code
+DOCSTRINGS V4 READY
+"""
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.input_checks import check_scalar_type
+from magpylib._src.input_checks import check_format_input_scalar
 
-# init for tool tips
-mx = my = mz = d = None
-
-# ON INTERFACE
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
-    """
-    Spherical magnet with homogeneous magnetization.
+    """Spherical magnet with homogeneous magnetization.
 
-    Local object coordinates: The Sphere center is located in the origin of
-    the local object coordinate system. Local (Sphere) and global CS coincide when
-    position=(0,0,0) and orientation=unit_rotation.
+    Can be used as `sources` input for magnetic field computation.
+
+    When `position=(0,0,0)` and `orientation=None` the sphere center is located
+    in the origin of the global coordinate system.
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,)
+    magnetization: array_like, shape (3,), default=`None`
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-        the local CS of the Sphere object.
+        the local object coordinates (rotates with object).
 
-    diameter: float
-        Diameter of the Sphere in units of [mm].
+    diameter: float, default=`None`
+        Diameter of the sphere in units of [mm].
 
-    position: array_like, shape (3,) or (M,3), default=(0,0,0)
-        Object position (local CS origin) in the global CS in units of [mm].
-        For M>1, the position represents a path. The position and orientation
-        parameters must always be of the same length.
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
-    orientation: scipy Rotation object with length 1 or M, default=unit rotation
-        Object orientation (local CS orientation) in the global CS. For M>1
-        orientation represents different values along a path. The position and
-        orientation parameters must always be of the same length.
+    orientation: scipy `Rotation` object with length 1 or m, default=`None`
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+
+    style: dict
+        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+        using style-underscore_magic, e.g. `style_color='red'`.
+
 
     Returns
     -------
-    Sphere object: Sphere
+    magnet source: `Sphere` object
 
     Examples
     --------
-    By default a Sphere is initialized at position (0,0,0), with unit rotation:
+    `Sphere` objects are magnetic field sources. In this example we compute the H-field [kA/m]
+    of a spherical magnet with magnetization (100,200,300) in units of [mT] and diameter
+    of 1 [mm] at the observer position (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
-    >>> magnet = magpy.magnet.Sphere(magnetization=(100,100,100), diameter=1)
-    >>> print(magnet.position)
-    [0. 0. 0.]
-    >>> print(magnet.orientation.as_quat())
-    [0. 0. 0. 1.]
-
-    Spheres are magnetic field sources. Below we compute the H-field [kA/m] of the
-    above Sphere at the observer position (1,1,1),
-
-    >>> H = magnet.getH((1,1,1))
+    >>> src = magpy.magnet.Sphere(magnetization=(100,200,300), diameter=1)
+    >>> H = src.getH((1,1,1))
     >>> print(H)
-    [1.27622429 1.27622429 1.27622429]
+    [3.19056074 2.55244859 1.91433644]
 
-    or at a set of observer positions:
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> H = magnet.getH([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(H)
-    [[1.27622429 1.27622429 1.27622429]
-     [0.15952804 0.15952804 0.15952804]
-     [0.04726757 0.04726757 0.04726757]]
+    >>> src.rotate_from_angax(45, 'x')
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(B)
+    [[2.26804606 3.63693295 0.23486386]
+     [0.28350576 0.45461662 0.02935798]
+     [0.08400171 0.13470122 0.00869866]]
 
-    The same result is obtained when the Sphere object moves along a path,
-    away from the observer:
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
-    >>> magnet.move([(-1,-1,-1), (-2,-2,-2)], start=1)
-    >>> H = magnet.getH((1,1,1))
-    >>> print(H)
-    [[1.27622429 1.27622429 1.27622429]
-     [0.15952804 0.15952804 0.15952804]
-     [0.04726757 0.04726757 0.04726757]]
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[2.26804606 3.63693295 0.23486386]
+     [0.28350576 0.45461662 0.02935798]
+     [0.08400171 0.13470122 0.00869866]]
     """
 
     def __init__(
         self,
-        magnetization=(mx, my, mz),
-        diameter=d,
+        magnetization=None,
+        diameter=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
@@ -107,12 +104,9 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @diameter.setter
     def diameter(self, dia):
         """Set Sphere diameter, float, [mm]."""
-        # input type check
-        if Config.checkinputs:
-            check_scalar_type(dia, "Sphere diameter")
-
-        # secure type
-        if dia is None:
-            self._diameter = None
-        else:
-            self._diameter = float(dia)
+        self._diameter = check_format_input_scalar(
+            dia,
+            sig_name='diameter',
+            sig_type='`None` or a positive number (int, float)',
+            allow_None=True,
+            forbid_negative=True,)
