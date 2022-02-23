@@ -11,9 +11,6 @@ from magpylib._src.input_checks import (
     check_input_animation,
     check_format_input_vector,
     )
-from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 
 def show(
     *objects,
@@ -111,8 +108,15 @@ def show(
 
     # input checks
     backend = check_format_input_backend(backend)
-    if backend is None:
-        backend = Config.display.backend
+    check_input_zoom(zoom)
+    check_input_animation(animation)
+    check_format_input_vector(
+        markers,
+        dims=(2,),
+        shape_m1=3,
+        sig_name='markers',
+        sig_type='array_like of shape (n,3)',
+        allow_None=True)
 
     check_input_zoom(zoom)
     check_input_animation(animation)
@@ -145,9 +149,3 @@ def show(
             animation=animation,
             **kwargs,
         )
-    else:
-        msg = (
-            f"The plotting backend must be one of {SUPPORTED_PLOTTING_BACKENDS},"
-            f" received {backend!r} instead"
-        )
-        raise MagpylibBadUserInput(msg)

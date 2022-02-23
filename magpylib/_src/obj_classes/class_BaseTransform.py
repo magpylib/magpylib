@@ -4,6 +4,7 @@ DOCSTRING v4 READY
 
 # pylint: disable=protected-access
 
+import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.input_checks import (
@@ -503,7 +504,7 @@ class BaseTransform:
             angle = angle / 180 * np.pi
 
         # create rotation vector from angle/axis input
-        if np.isscalar(angle):
+        if isinstance(angle, numbers.Number):
             angle = np.ones(3) * angle
         else:
             angle = np.tile(angle, (3, 1)).T

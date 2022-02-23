@@ -282,7 +282,8 @@ class BaseGeo(BaseTransform):
         return self
 
     def copy(self, **kwargs):
-        """Returns an independent copy of the object.
+        """Returns a copy of the current object instance. The `copy` method returns a deep copy of
+        the object, that is independant of the original object.
 
         Parameters
         ----------
@@ -303,13 +304,14 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
-        label = self.style.label
-        if label is None:
-            label = f"{type(self).__name__}_01"
-        else:
-            label = add_iteration_suffix(label)
         obj_copy = deepcopy(self)
-        obj_copy.style.label = label
+        if getattr(self, '_style', None) is not None:
+            label = self.style.label
+            if label is None:
+                label = f"{type(self).__name__}_01"
+            else:
+                label = add_iteration_suffix(label)
+            obj_copy.style.label = label
         style_kwargs = {}
         for k,v in kwargs.items():
             if k.startswith('style'):

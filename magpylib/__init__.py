@@ -125,8 +125,8 @@ and and the Plotly graphic backend.
 """
 
 # module level dunders
-__version__ = '4.0.0-beta2'
-__author__ =  'Michael Ortner & Alexandre Boissolet'
+__version__ = '4.0.0'
+__author__ =  'Michael Ortner & Alexandre Boisselet'
 __credits__ = 'The Magpylib community'
 __all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
     'Sensor', 'Collection', 'show', 'defaults', '__version__',

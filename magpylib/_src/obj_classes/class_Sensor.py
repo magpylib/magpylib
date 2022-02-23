@@ -101,7 +101,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """
         self._pixel = check_format_input_vector(
             pix,
-            dims=(1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20),
+            dims=range(1,20),
             shape_m1=3,
             sig_name='pixel',
             sig_type='array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)',
