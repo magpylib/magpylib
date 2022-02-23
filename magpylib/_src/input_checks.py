@@ -6,6 +6,7 @@ from magpylib._src.exceptions import (
     MagpylibBadUserInput,
     MagpylibMissingInput,
 )
+from magpylib._src.defaults.defaults_classes import default_settings
 
 #################################################################
 #################################################################
@@ -375,7 +376,9 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
-    if inp in ('matplotlib', 'plotly', None):
+    if inp is None:
+        inp = default_settings.display.backend
+    if inp in ('matplotlib', 'plotly'):
         return inp
     raise MagpylibBadUserInput(
         "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
