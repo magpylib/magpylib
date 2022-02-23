@@ -1,5 +1,6 @@
 """ input checks code"""
 
+import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._src.exceptions import (
@@ -59,7 +60,7 @@ def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
 
 def check_input_zoom(inp):
     """check show zoom input"""
-    if not np.isscalar(inp):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(
             "Input parameter `zoom` must be a number `zoom>=0`.\n"
             f"Instead received {inp}."
@@ -184,7 +185,7 @@ def check_format_input_anchor(inp):
     """ checks rotate anchor input and return in formatted form
     - input must be array_like or None or 0
     """
-    if np.isscalar(inp) and inp == 0:
+    if isinstance(inp, numbers.Number) and inp == 0:
         return np.array((0.0, 0.0, 0.0))
 
     return check_format_input_vector(inp,
@@ -237,7 +238,7 @@ def check_format_input_angle(inp):
         - inp shape must be (n,)
         - return as ndarray
     """
-    if np.isscalar(inp):
+    if isinstance(inp, numbers.Number):
         return float(inp)
 
     return check_format_input_vector(inp,
@@ -266,7 +267,7 @@ def check_format_input_scalar(
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
         f"Instead received {repr(inp)}.")
 
-    if not np.isscalar(inp):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
 
     inp = make_float(inp,

@@ -1,9 +1,8 @@
 """ some utility functions"""
+import numbers
 from math import log10
 from typing import Sequence
 import numpy as np
-
-# from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib import _src
 from magpylib._src.input_checks import check_format_input_vector
@@ -170,7 +169,7 @@ def format_obs_inputs(observers) -> list:
         observers = (observers,)
     elif len(observers) == 0:
         raise MagpylibBadUserInput(wrong_obj_msg(allow="observers"))
-    elif np.isscalar(observers[0]):
+    elif isinstance(observers[0], numbers.Number):
         observers = (observers,)
 
     sensors = []
