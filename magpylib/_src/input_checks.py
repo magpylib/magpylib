@@ -32,16 +32,6 @@ def make_float_array(inp, msg:str):
         raise MagpylibBadUserInput(msg + f"{err}") from err
     return inp_array
 
-def make_float(inp, msg:str):
-    """transform inp to float, throw error with bad input
-    inp: test object
-    msg: str, error msg
-    """
-    try:
-        inp = float(inp)
-    except Exception as err:
-        raise MagpylibBadUserInput(msg + f"{err}") from err
-    return inp
 
 def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
     """check if inp shape is allowed
@@ -78,7 +68,7 @@ def check_input_animation(inp):
         "Input parameter `animation` must be boolean or a positive number.\n"
         f"Instead received {inp}."
         )
-    if not isinstance(inp, (bool, float, int, np.float_, np.integer)):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
     if inp<0:
         raise MagpylibBadUserInput(ERR_MSG)
@@ -91,7 +81,7 @@ def check_input_animation(inp):
 
 def check_start_type(inp):
     """start input must be int or str"""
-    if not (isinstance(inp, (int, np.integer)) or (inp is 'auto')):
+    if not (isinstance(inp, (int, np.integer)) or (isinstance(inp, str) and inp == 'auto')):
         raise MagpylibBadUserInput(
             f"Input parameter `start` must be integer value or 'auto'.\n"
             f"Instead received {repr(inp)}."
@@ -270,9 +260,8 @@ def check_format_input_scalar(
     if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
 
-    inp = make_float(inp,
-        f"Input parameter `{sig_name}` input must be float compatible.\n"
-    )
+    inp = float(inp)
+
     if forbid_negative:
         if inp<0:
             raise MagpylibBadUserInput(ERR_MSG)
