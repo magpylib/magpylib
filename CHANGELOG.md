@@ -10,7 +10,7 @@ This is a major update that includes
 - New features
 - Improved internal workings
 ### Added
-- New computaion core: ([#376](https://github.com/magpylib/magpylib/issues/376))
+- New computation core: ([#376](https://github.com/magpylib/magpylib/issues/376))
   - top level subpackage `magpylib.core` where all field expression implementations can be accessed directly.
 - New sources classes:
   - New `CylinderSegment` computation with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
@@ -30,7 +30,6 @@ This is a major update that includes
 - `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
 - `Collection` has it's own `position`, `orientation` and `style`. This is useful to build compound objects. ([#444](https://github.com/magpylib/magpylib/issues/444))
 - All scipy Rotation forms are now also object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
-- The new `absolute` argument for the `move` method enables the absolute positioning in the global coordinate system ([#444](https://github.com/magpylib/magpylib/issues/444))
 
 
 ### Changed
@@ -51,11 +50,11 @@ This is a major update that includes
 
 ### Updated
 - Computation:
-  - Improoved field computations: ([#374](https://github.com/magpylib/magpylib/issues/374))
-    - negative dimension input taken as absolute when only positive dimensions are allowed
-    - scale invariant field evaluations
-    - special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
-    - supress numpy divide/invalid warnings. return np.nan as (0,0,0) (e.g. on magnet edges or on line currents) and allow return of np.inf.
+  - Improved field computations: ([#374](https://github.com/magpylib/magpylib/issues/374))
+    - Negative dimension input taken as absolute when only positive dimensions are allowed
+    - Scale invariant field evaluations
+    - Special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
+    - Supress numpy divide/invalid warnings. return np.nan as (0,0,0) (e.g. on magnet edges or on line currents) and allow return of np.inf.
   - Updated `Cylinder` diametral magnetization computation with novel closed form implementation.
     - Much faster (100-1000x)
     - Numerically stable for small `r`.
@@ -73,7 +72,6 @@ This is a major update that includes
   - `Collection` of `Lines` return incorret field ([#368](https://github.com/magpylib/magpylib/issues/368))
   - Field array dimension wrongly reduced when `sumup=True` and `squeeze=False` ind `getB` and `getH` functions ([#425](https://github.com/magpylib/magpylib/issues/425), [#426](https://github.com/magpylib/magpylib/pull/426))
 - UI:
-  - Adding multiple `Collection` objects does not mutate the first element.
   - Fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
 
 ### Removed
@@ -94,8 +92,8 @@ This is a major update that includes
 
 ---
 
-## [3.0.2] - 2021
-- Update release version and license year ([#343](https://github.com/magpylib/magpylib/pull/343)], [#344](https://github.com/magpylib/magpylib/pull/344)])
+## [3.0.2] - 2021-06-27
+- Update release version and license year ([#343](https://github.com/magpylib/magpylib/pull/343), [#344](https://github.com/magpylib/magpylib/pull/344))
 
 ---
 

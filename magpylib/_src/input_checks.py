@@ -1,11 +1,13 @@
 """ input checks code"""
 
+import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
     MagpylibMissingInput,
 )
+from magpylib._src.defaults.defaults_classes import default_settings
 
 #################################################################
 #################################################################
@@ -30,16 +32,6 @@ def make_float_array(inp, msg:str):
         raise MagpylibBadUserInput(msg + f"{err}") from err
     return inp_array
 
-def make_float(inp, msg:str):
-    """transform inp to float, throw error with bad input
-    inp: test object
-    msg: str, error msg
-    """
-    try:
-        inp = float(inp)
-    except Exception as err:
-        raise MagpylibBadUserInput(msg + f"{err}") from err
-    return inp
 
 def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
     """check if inp shape is allowed
@@ -58,7 +50,7 @@ def check_array_shape(inp: np.ndarray, dims:tuple, shape_m1:int, msg:str):
 
 def check_input_zoom(inp):
     """check show zoom input"""
-    if not np.isscalar(inp):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(
             "Input parameter `zoom` must be a number `zoom>=0`.\n"
             f"Instead received {inp}."
@@ -68,7 +60,6 @@ def check_input_zoom(inp):
             "Input parameter `zoom` must be a number `zoom>=0`.\n"
             f"Instead received {inp}."
         )
-
 
 def check_input_animation(inp):
     """check show animation input"""
@@ -76,12 +67,15 @@ def check_input_animation(inp):
         "Input parameter `animation` must be boolean or a positive number.\n"
         f"Instead received {inp}."
         )
-    if not isinstance(inp, (bool, float, int, np.float_, np.int_)):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
     if inp<0:
         raise MagpylibBadUserInput(ERR_MSG)
 
 
+#################################################################
+#################################################################
+# SIMPLE CHECKS
 
 #################################################################
 #################################################################
@@ -89,7 +83,7 @@ def check_input_animation(inp):
 
 def check_start_type(inp):
     """start input must be int or str"""
-    if not (isinstance(inp, (int, np.int_)) or inp == 'auto'):
+    if not (isinstance(inp, (int, np.integer)) or (isinstance(inp, str) and inp == 'auto')):
         raise MagpylibBadUserInput(
             f"Input parameter `start` must be integer value or 'auto'.\n"
             f"Instead received {repr(inp)}."
@@ -183,7 +177,7 @@ def check_format_input_anchor(inp):
     """ checks rotate anchor input and return in formatted form
     - input must be array_like or None or 0
     """
-    if np.isscalar(inp) and inp == 0:
+    if isinstance(inp, numbers.Number) and inp == 0:
         return np.array((0.0, 0.0, 0.0))
 
     return check_format_input_vector(inp,
@@ -236,7 +230,7 @@ def check_format_input_angle(inp):
         - inp shape must be (n,)
         - return as ndarray
     """
-    if np.isscalar(inp):
+    if isinstance(inp, numbers.Number):
         return float(inp)
 
     return check_format_input_vector(inp,
@@ -265,12 +259,11 @@ def check_format_input_scalar(
         f"Input parameter `{sig_name}` must be {sig_type}.\n"
         f"Instead received {repr(inp)}.")
 
-    if not np.isscalar(inp):
+    if not isinstance(inp, numbers.Number):
         raise MagpylibBadUserInput(ERR_MSG)
 
-    inp = make_float(inp,
-        f"Input parameter `{sig_name}` input must be float compatible.\n"
-    )
+    inp = float(inp)
+
     if forbid_negative:
         if inp<0:
             raise MagpylibBadUserInput(ERR_MSG)
@@ -375,7 +368,9 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
-    if inp in ('matplotlib', 'plotly', None):
+    if inp is None:
+        inp = default_settings.display.backend
+    if inp in ('matplotlib', 'plotly'):
         return inp
     raise MagpylibBadUserInput(
         "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
