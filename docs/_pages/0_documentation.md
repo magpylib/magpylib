@@ -1,8 +1,8 @@
 (docu)=
 
-# Documentation
+# Introduction to Magpylib
 
-Brief overview and some critical information.
+This section provides an introduction to the Magpylib API. Details are documented in the docstrings.
 
 ## Contents
 
@@ -20,9 +20,9 @@ Brief overview and some critical information.
 
 ## The idea behind Magpylib
 
-Magpylib provides fully tested and properly implemented analytical solutions to permanent magnet and current problems, and thus gives quick access to extremely fast and accurate magnetic field computation. Details on how these solutions are mathematically obtained can be found in the {ref}`physComp` section.
+Magpylib provides fully tested and properly implemented **analytical solutions** to permanent magnet and current problems. It gives quick access to extremely fast and accurate magnetic field computation. Details on how these solutions are mathematically obtained can be found in the {ref}`physComp` section.
 
-The core API of Magpylib is object oriented and couples the field computation to a position/orientation interface. The idea is that users can create Magpylib objects like sensors, magnets, currents, etc. with defined position and orientation in a global coordinate system. These objects can be easily manipulated, displayed, grouped and used for user-friendly field computation. For users who would like to avoid the object oriented interface, the field implementations can also be accessed directly.
+The central API of Magpylib is object oriented and couples the field computation to a position/orientation interface. The idea is that users can create Magpylib objects like sensors, magnets, currents, etc. with defined position and orientation in a global coordinate system. These objects can then be easily manipulated, displayed, grouped and used for user-friendly field computation. For users who would like to avoid the object oriented interface, the field implementations can also be accessed directly.
 
 (docu-when-to-use)=
 
@@ -30,162 +30,240 @@ The core API of Magpylib is object oriented and couples the field computation to
 
 The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed.
 
-For permanent magnets, when (remanent) permeabilities are below $\mu_r < 1.1$ the error is typically below 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. With these factors the precision can be increased to below 1 % error. Error estimation as a result of the material response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873).
+For **permanent magnets**, when (remanent) permeabilities are below $\mu_r < 1.1$ the error is typically below 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. Error estimation as a result of the material response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873).
 
-The line-current solutions give the exact same field as outside of a wire which carries a homogenous current.
+The **line-current** solutions give the exact same field as outside of a wire that carries a homogenous current.
 
-Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials). For more details check out the {ref}`physComp` section.
+**Magpylib is at its best** when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials). For more details check out the {ref}`physComp` section.
 
-Magpylib only provides solutions for simple forms. However, in magnetostatics the superposition principle holds: the total magnetic field is given by the (vector-)sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one.
+Magpylib only provides solutions for simple geometric forms. However, in magnetostatics the **superposition principle** holds: the total magnetic field is given by the (vector-)sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one.
 
 (docu-magpylib-objects)=
 
-## Magpylib objects
+## The Magpylib objects
 
-The most convenient way to compute magnetic fields is through the object oriented interface. Magpylib objects represent magnetic field sources and sensors with various defining attributes.
+The most convenient way to compute magnetic fields is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4.0.0 the following classes are implemented:
+
+**Magnets**
+
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in units of millitesla. This is often referred to as the material remanence (=$\mu_0 M$). All magnets can be used as Magpylib `sources` input.
+
+- `Cuboid(magnetization, dimension, position, orientation, style)` represents a cuboid magnet where `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
+
+- `Cylinder(magnetization, dimension, position, orientation, style)` represents a cylindrical magnet where `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+
+- `CylinderSegment(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r1,r2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of milimeters and the two section angles $\varphi_1<\varphi_2$ in degrees. By default (`position=(0,0,0)`, `orientation=None`) the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+
+- `Sphere(magnetization, diameter, position, orientation, style)` represents a spherical magnet. `diameter` is the sphere diameter $d$ in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the sphere lies in the origin of the global coordinates.
+
+**Currents**
+
+All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of Ampere. All currents can be used as Magpylib `sources` input.
+
+- `Loop(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the loop lies in the xy-plane with its center in the origin of the global coordinates.
+
+- `Line(current, vertices, position, orientation, style)` represents electrical current segments that flow in a straight line from vertex to vertex. By default (`position=(0,0,0)`, `orientation=None`) the locally defined vertices have the same position in the global coordinates.
+
+**Other**
+
+- `Dipole(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in $mT\times mm^3$. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
+
+- `CustomSource(field_B_lambda, field_H_lambda, position, orientation, style)` can be used to create user defined custom sources. Can be used as Magpylib `sources` input.
+
+- `Sensor(position, pixel, orientation)` represents a magnetic field sensor. The field is evaluated at the given pixel positions, by default `pixel=(0,0,0)`. Can be used as Magpylib `observers` input.
+
+- `Collection(*children, position, orientation)` represents a group of source and sensor objects (children) for common manipulation. Depending on the children, a collection can be used as Magpylib `sources` and `observers` input.
 
 ```python
 import magpylib as magpy
 
 # magnets
-src1 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
-src2 = magpy.magnet.Cylinder(magnetization=(0,1000,0), dimension=(1,2))
-src3 = magpy.magnet.CylinderSegment(magnetization=(0,1000,0), dimension=(1,2,2,45,90))
-src4 = magpy.magnet.Sphere(magnetization=(1000,0,0), diameter=1)
+src1 = magpy.magnet.Cuboid()
+src2 = magpy.magnet.Cylinder()
+src3 = magpy.magnet.CylinderSegment()
+src4 = magpy.magnet.Sphere()
 
 # currents
-src5 = magpy.current.Loop(current=15, diameter=3)
-src6 = magpy.current.Line(current=15, vertices=[(0,0,0), (1,2,3)])
+src5 = magpy.current.Loop()
+src6 = magpy.current.Line()
 
-# misc
-src7 = magpy.misc.Dipole(moment=(100,200,300))
-
-# sensor
+# other
+src7 = magpy.misc.Dipole()
+src8 = magpy.misc.CustomSource()
 sens = magpy.Sensor()
+col = magpy.Collection()
 
 # print object representation
-for obj in [src1, src2, src3, src4, src5, src6, src7, sens]:
+for obj in [src1, src2, src3, src4, src5, src6, src7, src8, sens, col]:
     print(obj)
 
-# out: Cuboid(id=1331541150016)
-# out: Cylinder(id=1331541148672)
-# out: CylinderSegment(id=1331541762784)
-# out: Sphere(id=1331541762448)
-# out: Loop(id=1331543166304)
-# out: Line(id=1331543188720)
-# out: Dipole(id=1331543189632)
-# out: Sensor(id=1331642701760)
+# out: Cuboid(id=2097455834016)
+# out: Cylinder(id=2097455834256)
+# out: CylinderSegment(id=2097455837040)
+# out: Sphere(id=2097455834352)
+# out: Loop(id=2097455833920)
+# out: Line(id=2097455834688)
+# out: Dipole(id=2097455835504)
+# out: CustomSource(id=2097455836320)
+# out: Sensor(id=2097455836272)
+# out: Collection(id=2097455836656)
 ```
 
+<!-- #region -->
 (docu-position-and-orientation)=
 
-## Position and orientation
 
-All Magpylib objects are endowed with `position` `(ndarray, shape (m,3))` and `orientation` `(` [scipy Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) `, shape (m,3))` attributes that describe their state in a global coordinate system. Details on default object position (0-position) and alignment (unit-rotation) are found in the respective [docstrings](https://www.python.org/dev/peps/pep-0257/).
+## Position and orientation, move() and rotate()
+
+All Magpylib objects have the `position` and `orientation` attributes that refer to object position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy `ndarray, shape (3,) or (m,3)` and denotes `(x,y,z)` coordinates in units of millimeter. By default every object is created at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html). By default the orientation of an object is the unit rotation, given by `rotation=None`.
+
+Both attributes can be either of "scalar" nature, i.e. a single position or a single rotation, or "vectors" when they are arrays of such scalars. The `position` and `orientation` attributes together form an object "path".
+<!-- #endregion -->
 
 ```python
 import magpylib as magpy
 sens = magpy.Sensor()
-print(sens.position)
-print(sens.orientation.as_euler('xyz', degrees=True))
 
+print(sens.position)
 # out: [0. 0. 0.]
+
+print(sens.orientation.as_euler('xyz', degrees=True))
 # out: [0. 0. 0.]
 ```
 
-Manipulate position and orientation attributes directly through source attributes, or by using built-in `move`, `rotate` or `rotate_from_angax` methods.
+Set and manipulate position and orientation at object initialization,
+
+```python
+import magpylib as magpy
+sens = magpy.Sensor(position=[(1,1,1), (2,2,2), (3,3,3)])
+
+print(sens.position)
+# out: [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
+
+print(sens.orientation.as_euler('xyz', degrees=True))
+# out: [[0. 0. 0.]  [0. 0. 0.]  [0. 0. 0.]]
+```
+
+or after initialization using the setter methods
 
 ```python
 import magpylib as magpy
 from scipy.spatial.transform import Rotation as R
 
-sens = magpy.Sensor(position=(1,1,1))
+sens = magpy.Sensor()
+sens.orientation=R.from_rotvec([(0,0,45), (0,0,90)], degrees=True)
+
 print(sens.position)
+# out: [[0. 0. 0.]  [0. 0. 0.]]
 
-sens.move((1,1,1))
-print(sens.position)
-
-# out: [1. 1. 1.]
-# out: [2. 2. 2.]
-
-sens = magpy.Sensor(orientation=R.from_euler('x', 10, degrees=True))
-print(sens.orientation.as_euler('xyz'))
-
-sens.rotate(R.from_euler('x', 10, degrees=True)))
-print(sens.orientation.as_euler('xyz'))
-
-sens.rotate_from_angax(angle=10, axis=(1,0,0))
-print(sens.orientation.as_euler('xyz'))
-
-# out: [10 0. 0.]
-# out: [20 0. 0.]
-# out: [30 0. 0.]
+print(sens.orientation.as_euler('xyz', degrees=True))
+# out: [[ 0.  0. 45.]  [ 0.  0. 90.]]
 ```
 
-Source position and orientation attributes can also represent complete source paths in the global coordinate system. Such paths can be generated conveniently using the `move` and `rotate` methods.
+or by making use of the `move` and `rotate` methods.
 
 ```python
 import magpylib as magpy
 
-src = magpy.magnet.Cuboid(magnetization=(1,2,3), dimension=(1,2,3))
-src.move([(1,1,1),(2,2,2),(3,3,3),(4,4,4)], start='append')
-print(src.position)
+sens = magpy.Sensor()
+sens.move((1,2,3))
+sens.rotate_from_angax(45, 'z')
 
-# out: [[0. 0. 0.]  [1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]  [4. 4. 4.]]
+print(sens.position)
+# out: [1. 2. 3.]
+
+print(sens.orientation.as_euler('xyz', degrees=True))
+# out: [ 0.  0. 45.]
 ```
 
-Details on rotation arguments, and how to conveniently generate complex paths are found in the docstrings and some examples below.
+Notice that, when one of the `position` and `orientation` attributes is manipulated, the other is automatically adjusted to the same size. The underlying logic is to pad the edge entries of the path when the length is increased, and to slice from the end of the path when the length is reduced.
+
+The `move` and `rotate` methods provide a lot of functionality that makes it easy to generate more complex motions. They obey the following rules:
+
+1. **Scalar input** is applied to the whole object path, starting with path index `start`.
+2. **Vector input** of length n applies the individual n operations to n object path entries, starting with path index `start`.
+
+By default (`start='auto'`) the index is set to `start=0` for scalar input (=move whole object path), and to `start=len(object path)` for vector input (=append to existing object path).
+
+The following example demonstrates this functionality (works similarly for rotations):
+
+```python
+import magpylib as magpy
+
+sens = magpy.Sensor(position=((0,0,0), (1,1,1)))
+
+sens.move((1,1,1))                  # scalar input is by default applied to the whole path
+print(sens.position)
+# out: [[1. 1. 1.]  [2. 2. 2.]]
+
+sens.move([(1,1,1)])                # vector input is by default appended
+print(sens.position)
+# out: [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
+
+sens.move((1,1,1), start=1)         # applied to whole path starting at index 1
+print(sens.position)
+# out: [[1. 1. 1.]  [3. 3. 3.]  [4. 4. 4.]]
+
+sens.move([(0,0,10)]*3, start=1)    # merges with existing path starting at index 1
+print(sens.position)
+# out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 14.]  [ 4.  4. 14.]]
+```
+
+
+
+
 
 (docu-grouping-objects)=
 
-## Grouping objects with `Collection`
+## Grouping objects with collections
 
-The top level class `magpylib.Collection` allows a user to group sources for common manipulation. A Collection functions like a list of source objects extended by Magpylib source methods: all operations applied to a Collection are applied to each source individually. Specific sources in the Collection can still be accessed and manipulated individually.
+The top level class `magpylib.Collection` allows a user to group sources for common manipulation. All operations acting on a collection are individually applied to all child objects.
 
 ```python
 import magpylib as magpy
 
-src1 = magpy.magnet.Cuboid(magnetization=(0,0,11), dimension=(1,2,3))
-src2 = magpy.magnet.Cylinder(magnetization=(0,22,0), dimension=(1,2))
-src3 = magpy.magnet.Sphere(magnetization=(33,0,0), diameter=2)
-
-col = magpy.Collection(src1, src2, src3)
-col.move((1,2,3))
-src1.move((1,2,3))
-
-for src in col:
-    print(src.position)
-
-# out: [2. 4. 6.]
-# out: [1. 2. 3.]
-# out: [1. 2. 3.]
+src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
+src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
+col = magpy.Collection(src1, src2)
+col.move(((0,0,2)))
+print(src1.position)   # out: [2. 0. 2.]
+print(src2.position)   # out: [-2.  0.  2.]
+print(col.position)    # out: [0. 0. 2.]
 ```
 
-Magpylib sources have addition and subtraction methods defined, adding up to a Collection, or removing a specific source from a Collection.
+We can still directly access individual objects by name and by index:
+
+```python
+src1.move((2,0,0))
+col[1].move((-2,0,0))
+print(src1.position)   # out: [4. 0. 2.]
+print(src2.position)   # out: [-4.  0.  2.]
+print(col.position)    # out: [0. 0. 2.]
+```
+
+But collections can not only be used for grouping, but they function like "compound-objects" themselves. For magnetic field computation a collection that contains sources functions like a single (compound) source. When the collection contains sensors it functions like a list of all its sensors.
+
+Collections have their own `position` and `orientation` attributes. Move, rotate and setter operations acting on a `Collection` object are individually applied to all child objects so that the geometric compound sturcture is maintained. For example, `rotate()` with `anchor=None` rotates all children about `collection.position`.
 
 ```python
 import magpylib as magpy
 
-src1 = magpy.misc.Dipole(moment=(1,2,3))
-src2 = magpy.current.Loop(current=1, diameter=2)
-src3 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1)
+sens1 = magpy.Sensor(position=(2,0,0))
+sens2 = magpy.Sensor(position=(-2,0,0))
+col = sens1 + sens2
+col.rotate_from_angax(90, 'z')
+print(sens1.position)   # out: [0. 2. 0.]
+print(sens2.position)   # out: [ 0. -2.  0.]
+```
 
-col = src1 + src2 + src3
+```python
 
-for src in col:
-    print(src)
+```
 
-# out: Dipole(id=2158565624128)
-# out: Loop(id=2158565622784)
-# out: Sphere(id=2158566236896)
 
-col - src1
 
-for src in col:
-    print(src)
+```python
 
-# out: Loop(id=2158565622784)
-# out: Sphere(id=2158566236896)
 ```
 
 (docu-graphic-output)=
