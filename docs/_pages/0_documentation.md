@@ -209,8 +209,44 @@ print(sens.position)
 # out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 14.]  [ 4.  4. 14.]]
 ```
 
+(docu-graphic-output)=
 
+## Graphic output with `show`
 
+When all source and sensor objects are created and all paths are defined `show()` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib and Plotly backends.
+
+```python
+import magpylib as magpy
+
+src1 = magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(1,1,1), position=(-10,0,0))
+src2 = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(1,1), position=(-8,0,0))
+src3 = magpy.magnet.CylinderSegment(magnetization=(0,0,100), dimension=(.3,1,1,0,140), position=(-6,0,0))
+src4 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1, position=(-4,0,0))
+src5 = magpy.current.Loop(current=1, diameter=1, position=(-2,0,0))
+src6 = magpy.current.Line(current=1, vertices=[(0,0,-1), (0,0,1), (0,1,1), (0,1,-1)])
+src7 = magpy.misc.Dipole(moment=(0,0,100), position=(2,0,0))
+sens = magpy.Sensor(pixel=[(0,0,z) for z in (-.1,0,.1)], position=(4,0,0))
+magpy.show(src1, src2, src3, src4, src5, src6, src7, sens)
+```
+
+```python
+import numpy as np
+import magpylib as magpy
+
+# create a Collection of three sources
+src1 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=3, position=(3,0,0))
+src2 = magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(2,2,2), position=(-3,0,0))
+col = s1 + s2
+
+# generate a spiral path
+s1.move(np.linspace((.2,0.,0.),(20.,0.,0.),100), start=0)
+s2.move(np.linspace((-.2,0.,0.),(-20.,0.,0.),100), start=0)
+col.rotate_from_angax(np.linspace(5.,500.,100), 'z', anchor=0, start=0)
+
+# display
+magpy.show(col)
+
+```
 
 
 (docu-grouping-objects)=
@@ -256,38 +292,9 @@ print(sens1.position)   # out: [0. 2. 0.]
 print(sens2.position)   # out: [ 0. -2.  0.]
 ```
 
-```python
-
-```
-
 
 
 ```python
-
-```
-
-(docu-graphic-output)=
-
-## Graphic output with `show`
-
-When all source and sensor objects are created and all paths are defined `show` (top level function and method of all Magpylib objects) provides a convenient way to graphically view the geometric arrangement through Matplotlib.
-
-```python
-import numpy as np
-import magpylib as magpy
-
-# create a Collection of three sources
-s1 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=3, position=(3,0,0))
-s2 = magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(2,2,2), position=(-3,0,0))
-col = s1 + s2
-
-# generate a spiral path
-s1.move(np.linspace((.2,0.,0.),(20.,0.,0.),100), start=0)
-s2.move(np.linspace((-.2,0.,0.),(-20.,0.,0.),100), start=0)
-col.rotate_from_angax(np.linspace(5.,500.,100), 'z', anchor=0, start=0)
-
-# display
-magpy.show(*col, zoom=-.3, style_path_frames=10)
 
 ```
 
