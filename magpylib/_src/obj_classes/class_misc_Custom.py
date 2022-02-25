@@ -46,7 +46,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     Examples
     --------
-    With version 4.0.0 `CustomSource` objects enable users to define their own source
+    With version 4 `CustomSource` objects enable users to define their own source
     objects, and to embedd them in the Magpylib object oriented interface. In this example
     we create a source that generates a constant field and evaluate the field at observer
     position (1,1,1) given in [mm]:
