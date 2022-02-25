@@ -50,7 +50,7 @@ Magpylib only provides solutions for simple geometric forms. However, in magneto
 
 ## The Magpylib objects
 
-The most convenient way for working with Magpylib is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4.0.0 the following classes are implemented:
+The most convenient way for working with Magpylib is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4 the following classes are implemented:
 
 **Magnets**
 

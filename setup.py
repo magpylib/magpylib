@@ -22,8 +22,7 @@ import sys
 import os
 import setuptools
 from setuptools.command.install import install
-
-_magPyVersion = "4.0.0"
+from magpylib import __version__ as _magPyVersion
 
 _SphinxVersion = "4.2.0"
 _name = "magpylib"

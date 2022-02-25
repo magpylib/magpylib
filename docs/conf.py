@@ -18,6 +18,7 @@
 
 import os
 import sys
+import magpylib
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
@@ -62,7 +63,7 @@ author = "Michael Ortner <magpylib@gmail.com>"
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = '4.0.0'
+release = magpylib.__version__
 
 
 # -- General configuration ---------------------------------------------------
@@ -132,7 +133,7 @@ html_logo = "./_static/images/magpylib_logo.png"
 html_theme_options = {
     "repository_url": "https://github.com/magpylib/magpylib",
     "path_to_docs": "docs/",
-    "repository_branch": "main",
+    "repository_branch": release,
     "use_repository_button": True,
     "use_download_button": True,
     "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
