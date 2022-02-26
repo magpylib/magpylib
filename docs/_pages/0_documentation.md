@@ -294,15 +294,19 @@ But collections also function as **compound objects**: For magnetic field comput
 import numpy as np
 import magpylib as magpy
 
-src1 = magpy.magnet.Cuboid((0,0,1), (1,1,1), (4,0,0))
-src2 = src1.copy(position=(-4,0,0))
+src1 = magpy.magnet.Cuboid((0,0,1), (1,1,1), (2,0,0))
+src2 = src1.copy(position=(-2,0,0))
 
 col = src1 + src2
-col.rotate_from_angax(np.linspace(0, 120, 50), 'y')
-col.show(style_path_frames=15, style_magnetization_show=False)
+col.move(np.linspace((0,0,0), (0,2,0), 30))
+col.rotate_from_angax(np.linspace(0, 180, 30), 'y')
+col.show(animation=True, style_path_show=False, backend='plotly')
 ```
 
-Notice that, when Magpylib objects are added up they will form a collection. We can make use of the `path.frames` property to show our objects at several path positions, and when a collection is displayed, it will apply the same color to all its children.
+Here we have used the powerful `backend='plotly'` graphic library to animate the path. Notice also, that when Magpylib objects are added up they will form a collection. Similarly objects can be subtracted from a Collection.
+
+To better understand the capabilities and usefulness of the `Collection` class consider to study **EXAMPLE_COLLECTION_MANIPULATION** and **EXAMPLE_COMPOUND**.
+
 
 (docu-field-computation)=
 
@@ -325,7 +329,7 @@ B = src.getB((1,2,3))
 print(B)
 ```
 
-When computing the field of multiple sources, or multiple observers or long paths, `getB` and `getH` will automatically return the field for all inputs as one big array. In the following example B- and H-field of a cuboid magnet are computed on a grid and displayed using Matplotlib:
+When dealing with multiple observer positions, `getB` and `getH` will return the field in the shape of the observer input. In the following example B- and H-field of a cuboid magnet are computed on a grid and displayed using Matplotlib:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -359,19 +363,17 @@ plt.tight_layout()
 plt.show()
 ```
 
-Magpylib automatically vectorizes the computation so that maximal performance is achieved.
-
 ```{note}
-The output of the most general field computation `getB(sources, observers)` is an ndarray of shape `(l,m,k,n1,n2,n3,...,3)` where `l` is the number of input sources, `m` the maximal object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of a position vector input and `3` the three magnetic field components $(B_x,B_y,B_z)$.
+The output of the most general field computation `getB(sources, observers)` is an ndarray of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the maximal object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of a position vector input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 ```
 
-When input objects have different path lengths, all shorter paths are padded (=static objects) beyond their end. In the following example we compute the field of three sources, two observers with pixel shape (4,5) and one object with path length 11:
+When input objects have different path lengths, all shorter paths are padded (= objects remain "static") beyond their end. In the following example we compute the field of three sources, one with length 11 path and two sensors with pixel shape (4,5):
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# 3 sources
-s1 = magpy.misc.Dipole(moment=(0,0,100))
+# 3 sources, one with length 11 path
+s1 = magpy.misc.Dipole(moment=(0,0,100), position=[(1,1,1)]*11)
 s2 = magpy.current.Loop(current=1, diameter=3)
 col = s1 + s2
 
@@ -380,10 +382,79 @@ pix = [[(1,2,3)]*4]*5
 sens1 = magpy.Sensor(pixel=pix)
 sens2 = magpy.Sensor(pixel=pix)
 
-# length 11 path
-s1.move([(1,1,1)]*11, start=0)
-
 B = magpy.getB([s1,s2,col], [sens1, sens2])
 print(B.shape)
 ```
 
+In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations (no slow loops) when `getB` and `getH` are called. For maximal performance try to make all field computations with only a single function call.
+
+## Direct interface
+
+The direct interface is for users who work with complex inputs, favor a more functional programming paradigm or simply try to avoid the object oriented interface for performance reasons.
+
+The direct interface works by providing the top-level functions `magpy.getB()` and `magpy.getH()` with 
+
+1. a string for the `sources` argument denoting the source type
+2. an array like of shape (3,) or (n,3) for the `observers` argument providing the positions
+3. and array_likes of shape (x,) or (n,x) for all other inputs in dictionary form.
+
+All inputs will be tiled up to shape (n,x), and for every of the n given instances the field is computed.
+
+
+Finally, the functions `getB` and `getH` also hide the **direct interface**.
+
+
+The `magpylib.getB` and `magpylib.getH` top-level functions also allow the user to avoid the object oriented interface, yet enable usage of the position/orientation implementations via a more functional programming paradigm. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the source type defined by a string instead of a magpylib source object, different input arguments are expected (see docstring for details).
+
+```python
+import magpylib as magpy
+
+# observer positions
+observer_pos = [(0,0,x) for x in range(5)]
+
+# magnet dimensions
+dim = [(d,d,d) for d in range(1,6)]
+
+# functional-oriented getB computation - magnetization is automatically tiled
+B = magpy.getB(
+    'Cuboid',
+    observer_pos,
+    magnetization=(0,0,1000),
+    dimension=dim,
+)
+print(B)
+
+# out: [[  0.           0.         666.66666667]
+#       [  0.           0.         435.90578315]
+#       [  0.           0.         306.84039675]
+#       [  0.           0.         251.12200327]
+#       [  0.           0.         221.82226656]]
+```
+
+The `getB` and `getH` functions used this way can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
+
+(docu-direct-access)=
+
+## Direct access to field implementations
+
+For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the `magpylib.lib` subpackage. Details on the implementations can be found in the respective function docstrings.
+
+```python
+import numpy as np
+import magpylib as magpy
+
+mag = np.array([(100,0,0)]*5)
+dim = np.array([(1,2,45,90,-1,1)]*5)
+obs_pos = np.array([(0,0,0)]*5)
+
+B = magpy.lib.magnet_cylinder_section_core(mag, dim, obs_pos)
+print(B)
+
+# out: [[   0.           0.        -186.1347833]
+#       [   0.           0.        -186.1347833]
+#       [   0.           0.        -186.1347833]
+#       [   0.           0.        -186.1347833]
+#       [   0.           0.        -186.1347833]]
+```
+
+As all input checks, coordinate transformations and position/orientation implementation are avoided, this is the fastest way to compute fields in Magpylib.
