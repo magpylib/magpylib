@@ -15,7 +15,7 @@ kernelspec:
 
 # Introduction to Magpylib
 
-This section provides an introduction to the Magpylib API. Detailed behavior is documented in the docstrings. Many practical examples how to use Magpylib can be found in the example galleries.
+This section provides an introduction to the Magpylib API. Many practical examples how to use Magpylib can be found in the example galleries.
 
 ## Contents
 
@@ -394,67 +394,43 @@ The direct interface is for users who work with complex inputs, favor a more fun
 
 The direct interface works by providing the top-level functions `magpy.getB()` and `magpy.getH()` with 
 
-1. a string for the `sources` argument denoting the source type
-2. an array like of shape (3,) or (n,3) for the `observers` argument providing the positions
-3. and array_likes of shape (x,) or (n,x) for all other inputs in dictionary form.
+1. a string denoting the source type for the `sources` argument,
+2. an array like of shape (3,) or (n,3) giving the positions for the `observers` argument,
+3. a dictionary with array_likes of shape (x,) or (n,x) for all other inputs.
 
-All inputs will be tiled up to shape (n,x), and for every of the n given instances the field is computed.
+All scalar inputs of shape (x,) will be tiled up to shape (n,x), and for every of the n given instances the field is computed and returned with shape (n,3). The allowed source types are similar to the Magpylib source class names, and the required dictionary inputs are the respective class inputs. Detailes can be found in the docstrings.
 
-
-Finally, the functions `getB` and `getH` also hide the **direct interface**.
-
-
-The `magpylib.getB` and `magpylib.getH` top-level functions also allow the user to avoid the object oriented interface, yet enable usage of the position/orientation implementations via a more functional programming paradigm. The input arguments must be shape `(n,x)` vectors/lists/tuple. Static inputs e.g. of shape `(x,)` are automatically tiled up to shape `(n,x)`. Depending on the source type defined by a string instead of a magpylib source object, different input arguments are expected (see docstring for details).
-
-```python
+```{code-cell} ipython3
 import magpylib as magpy
 
-# observer positions
-observer_pos = [(0,0,x) for x in range(5)]
-
-# magnet dimensions
+obs = [(0,0,x) for x in range(5)]
 dim = [(d,d,d) for d in range(1,6)]
 
-# functional-oriented getB computation - magnetization is automatically tiled
 B = magpy.getB(
     'Cuboid',
-    observer_pos,
+    obs,
     magnetization=(0,0,1000),
-    dimension=dim,
-)
-print(B)
+    dimension=dim)
 
-# out: [[  0.           0.         666.66666667]
-#       [  0.           0.         435.90578315]
-#       [  0.           0.         306.84039675]
-#       [  0.           0.         251.12200327]
-#       [  0.           0.         221.82226656]]
+print(B)
 ```
 
-The `getB` and `getH` functions used this way can be up to 2 times faster than the object oriented interface. However, this requires that the user knows how to properly generate the vectorized input.
+The direct inteface is typically faster than the object oriented one, but it requires that users know how to generate the inputs efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 
 (docu-direct-access)=
 
-## Direct access to field implementations
+## Core functions
 
-For users who do not want to use the position/orientation interface, Magpylib offers direct access to the vectorized analytical implementations that lie at the bottom of the library through the `magpylib.lib` subpackage. Details on the implementations can be found in the respective function docstrings.
+At the heart of Magpylib lies a set of core functions that are our implementations of the analytical field expressions, see **PHYSICS & COMPUTATION**. For users who are not interested in the position/orientation interface, the `magpylib.core` subpackage gives direct access to these functions. Inputs are ndarrays of shape (n,x). Details can be found in the respective function docstrings.
 
-```python
+```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
 mag = np.array([(100,0,0)]*5)
-dim = np.array([(1,2,45,90,-1,1)]*5)
+dim = np.array([(1,2,3,45,90)]*5)
 obs_pos = np.array([(0,0,0)]*5)
 
-B = magpy.lib.magnet_cylinder_section_core(mag, dim, obs_pos)
+B = magpy.core.magnet_cylinder_segment_field(mag, dim, obs_pos, field='B')
 print(B)
-
-# out: [[   0.           0.        -186.1347833]
-#       [   0.           0.        -186.1347833]
-#       [   0.           0.        -186.1347833]
-#       [   0.           0.        -186.1347833]
-#       [   0.           0.        -186.1347833]]
 ```
-
-As all input checks, coordinate transformations and position/orientation implementation are avoided, this is the fastest way to compute fields in Magpylib.
