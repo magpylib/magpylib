@@ -18,7 +18,6 @@
 
 import os
 import sys
-import magpylib
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
@@ -63,7 +62,7 @@ author = "Michael Ortner <magpylib@gmail.com>"
 # The short X.Y version
 version = ""
 # The full version, including alpha/beta/rc tags
-release = magpylib.__version__
+from magpylib import __version__ as release
 
 
 # -- General configuration ---------------------------------------------------
