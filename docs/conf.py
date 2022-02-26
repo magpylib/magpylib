@@ -258,5 +258,6 @@ copybutton_prompt_is_regexp = True
 html_js_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
     "https://unpkg.com/thebe@latest/lib/index.js",
-    "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/MathJax.js",
 ]
+
+myst_update_mathjax=False
