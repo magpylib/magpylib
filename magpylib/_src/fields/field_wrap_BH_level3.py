@@ -19,10 +19,10 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
         `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
 
     observers: array_like or (list of) `Sensor` objects
-            Can be array_like positions of shape (n1, n2, ..., 3) where the field
-            should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-            of such sensor objects (must all have similar pixel shapes). All positions
-            are given in units of [mm].
+        Can be array_like positions of shape (n1, n2, ..., 3) where the field
+        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
+        of such sensor objects (must all have similar pixel shapes). All positions
+        are given in units of [mm].
 
         Direct interface: Input must be array_like with shape (3,) or (n,3) corresponding
         positions to observer positions in units of [mm].
@@ -159,12 +159,12 @@ def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
         `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
 
     observers: array_like or (list of) `Sensor` objects
-            Can be array_like positions of shape (n1, n2, ..., 3) where the field
-            should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
-            of such sensor objects (must all have similar pixel shapes). All positions
-            are given in units of [mm].
+        Can be array_like positions of shape (n1, n2, ..., 3) where the field
+        should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
+        of such sensor objects (must all have similar pixel shapes). All positions
+        are given in units of [mm].
 
-         Direct interface: Input must be array_like with shape (3,) or (n,3) corresponding
+        Direct interface: Input must be array_like with shape (3,) or (n,3) corresponding
         positions to observer positions in units of [mm].
 
     sumup: bool, default=`False`
