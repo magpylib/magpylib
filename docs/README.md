@@ -1,10 +1,10 @@
 ## About magPyLib Documentation
 
-- Documentation is done with [Sphinx](http://www.sphinx-doc.org/en/main/) v4.2.0.
+- Documentation is done with [Sphinx](http://www.sphinx-doc.org/en/main/) v4.4.0.
 - Sphinx configuration is [conf.py](./conf.py);
 - Docstring format is under the [Numpy Convention](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html).
-- Sphinx is configured to read Docstring information from the codebase and convert it into pages utilizing the [autodoc extension](http://www.sphinx-doc.org/en/main/usage/extensions/autodoc.html). 
-   
+- Sphinx is configured to read Docstring information from the codebase and convert it into pages utilizing the [autodoc extension](http://www.sphinx-doc.org/en/main/usage/extensions/autodoc.html).
+
   - These generated files are created at build time and put into a folder called `_autogen`
 
 - Handwritten document pages and guides are kept in the [_pages](./_pages) folder.
@@ -20,9 +20,9 @@
 
 ### Building Locally
 
-This repository is set up to be easily built on [ReadTheDocs](https://readthedocs.org/) as the codebase is updated. 
+This repository is set up to be easily built on [ReadTheDocs](https://readthedocs.org/) as the codebase is updated.
 
-##### To build locally on Linux, 
+##### To build locally on Linux,
 1. Install the dependencies on [requirements.txt](./requirements.txt):
     ```
     pip install requirements.txt
@@ -42,7 +42,7 @@ This will create a `_build` folder with an `index.html`, containing the built do
 
 ##### To build locally on Windows,
 
-1. [Install Sphinx](http://www.sphinx-doc.org/en/main/usage/installation.html) 
+1. [Install Sphinx](http://www.sphinx-doc.org/en/main/usage/installation.html)
 2. Install the dependencies on [requirements.txt](./requirements.txt):
     ```
     pip install -r requirements.txt

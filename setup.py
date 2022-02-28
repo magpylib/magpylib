@@ -24,7 +24,7 @@ import setuptools
 from setuptools.command.install import install
 
 _magPyVersion = "4.0.0rc0"
-_SphinxVersion = "4.2.0"
+_SphinxVersion = "4.4.0"
 _name = "magpylib"
 _description = "Free Python3 package to compute magnetic fields."
 _author_email = "magpylib@gmail.com"
@@ -74,7 +74,7 @@ setuptools.setup(
             "coverage",
             "pylint",
             "jupyterlab>=3.2",
-            "sphinx==4.2.0",
+            "sphinx==4.4.0",
         ]
     },
     classifiers=[
