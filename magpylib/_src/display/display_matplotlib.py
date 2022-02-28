@@ -58,8 +58,11 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
                 r1, r2, _, phi1, phi2 = odim
                 phi_mid = (phi1 + phi2) / 2 * np.pi / 180
                 r_mid = (r2 + r1) / 2
-                shift = r_mid * np.array([np.cos(phi_mid), np.sin(phi_mid), 0])
-                shift = rot.apply(shift)
+                if (phi2-phi1)<=180:
+                    shift = r_mid * np.array([np.cos(phi_mid), np.sin(phi_mid), 0])
+                    shift = rot.apply(shift)
+                else:
+                    shift = 0
                 draw_pos += [pos + shift]
             else:
                 draw_pos += [pos]
