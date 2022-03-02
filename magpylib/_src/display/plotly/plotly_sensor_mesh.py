@@ -152,4 +152,3 @@ def get_sensor_mesh(
                 t.extend(trace[k][i[0]:i[1]])
         trace[k] = np.array(t)
     return trace
-
