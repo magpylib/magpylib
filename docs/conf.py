@@ -31,7 +31,7 @@ import sphinx.ext.apidoc
 # pio.renderers.default = "sphinx_gallery"
 
 autodoc_default_options = {
-    "private-members": True,
+    "private-members": False,
     "inherited-members": True,
 }
 
