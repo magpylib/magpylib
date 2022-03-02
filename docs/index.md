@@ -52,11 +52,15 @@ _pages/*
 ```
 
 ```{toctree}
-:caption: 'Changelog:'
+:caption: Example galleries
 :glob: true
 :maxdepth: 2
 
-_changelog.md
+examples/01_fundamentals.md
+examples/02_graphic_output.md
+examples/03_advanced_features.md
+examples/04_application_examples.md
+
 ```
 
 ```{toctree}
@@ -68,14 +72,11 @@ _autogen/magpylib
 ```
 
 ```{toctree}
-:caption: Example galleries
+:caption: 'Changelog:'
 :glob: true
 :maxdepth: 2
 
-examples/01_core_functionality.md
-examples/02_display_features.md
-examples/03_advanced_examples.md
-
+_changelog.md
 ```
 
 # Index

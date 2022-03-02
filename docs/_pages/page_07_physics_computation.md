@@ -50,6 +50,10 @@ The analytical solutions are exact when bodies have a homogeneous magnetization.
 
 Modern high grade permanent magnets (NdFeB, SmCo, Ferrite) have a very weak material responses (local slope of the magnetization curve, remanent permeability) of the order of $\mu_r \approx 1.05$. In this case the analytical solutions provide an excellent approximation with less than 1% error even at close distance from the magnet surface. A detailed error analysis and discussion is presented in the appendix of \[2020Malago\].
 
+Error estimation as a result of the material response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873).
+
+Note on demagnetization factors !!!
+
 **Soft-Magnetic Materials**
 
 Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ can in principle not be modeled with Magpylib. However, when the body is static, when there is no strong local interaction with an adjacent magnet and when the body is mostly conformal one can approximate the field using the Magpylib solutions and some empirical magnetization that depends on the shape of the body, the material response and the strength of the magnetizing field.
@@ -87,7 +91,7 @@ Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programm
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 ```
 
-Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function `magpylib.getB_dict` (see {ref}`docu-getB_dict-getH_dict`)
+Of course the objective oriented interface (sensors and sources) comes with an overhead. If you want to achieve maximal performance this overhead can be avoided through direct access to the vectorized field functions with the top level function `magpylib.getB_dict` **FIX THIS**
 
 
 

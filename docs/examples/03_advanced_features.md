@@ -11,20 +11,17 @@ kernelspec:
   name: python3
 ---
 
-This section includes a few code examples that show how the library can be used and what it can be used for.
-Detailed package, class, method and function documentations are found in the library docstrings {ref}`genindex`.
+This section includes code examples that show how the library can be used and what it can be used for.
+Detailed package, class, method and function documentations are found in the library docstrings {ref}`genindex`. A technical introduction is given in {ref}`intro`.
 
-Technical details are outlined in {ref}`docu`.
-
-Advanced examples
+Advanced Features
 =================
 
 ```{toctree}
-:caption: Advanced examples
+:caption: Advanced Features
 :maxdepth: 2
 
 plot_05_streamlines_in_2d_symmetry.md
-plot_06_modeling_a_coil.md
 plot_07_custom_source.md
 plot_08_complex_extra_model3d.md
 plot_09_compound_class.md

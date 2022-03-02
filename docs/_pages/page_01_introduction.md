@@ -11,50 +11,53 @@ kernelspec:
   name: python3
 ---
 
-(docu)=
+(intro)=
 
 # Introduction to Magpylib
 
-This section provides an introduction to the Magpylib API. Many practical examples how to use Magpylib can be found in the example galleries.
+This section gives an introduction to the Magpylib API. Many practical examples how to use Magpylib can be found in the example galleries.
+Detailed package, class, method and function documentations are found in the library docstrings {ref}`genindex`.
 
 ## Contents
 
-- {ref}`docu-idea`
-- {ref}`docu-when-to-use`
-- {ref}`docu-magpylib-objects`
-- {ref}`docu-position-and-orientation`
-- {ref}`docu-grouping-objects`
-- {ref}`docu-graphic-output`
-- {ref}`docu-field-computation`
-- {ref}`docu-getB_dict-getH_dict`
-- {ref}`docu-direct-access`
+- {ref}`intro-idea`
+- {ref}`intro-when-to-use`
+- {ref}`intro-magpylib-objects`
+- {ref}`intro-position-and-orientation`
+- {ref}`intro-graphic-output`
+- {ref}`intro-collections`
+- {ref}`intro-field-computation`
+- {ref}`intro-direct-interface`
+- {ref}`intro-core-functions`
 
 
-(docu-idea)=
+(intro-idea)=
 
 ## The idea behind Magpylib
 
-Magpylib provides fully tested and properly implemented **analytical solutions** to permanent magnet and current problems. It gives quick access to extremely fast and accurate magnetic field computation. Details on how these solutions are mathematically obtained can be found in the {ref}`physComp` section.
+Magpylib provides fast and accurate magnetic field computation through **analytical solutions** to permanent magnet and current problems. Details on how these solutions are mathematically obtained can be found in the {ref}`physComp` section.
 
-The central API of Magpylib is object oriented and couples the field computation to a position/orientation interface. The idea is that users can create Magpylib objects like sensors, magnets, currents, etc. with defined position and orientation in a global coordinate system. These objects can then be easily manipulated, displayed, grouped and used for user-friendly field computation. For users who would like to avoid the object oriented interface, the field implementations can also be accessed directly.
+Magpylib couples the field computation to a position and orientation interface. The idea is that users can create Magpylib objects like sensors, magnets, currents, etc. with defined position and orientation in a global coordinate system. These objects can then be easily manipulated, displayed, grouped and used for magnetic field computation. For users who would like to avoid the object oriented interface, the field implementations can also be accessed directly.
 
-(docu-when-to-use)=
+(intro-when-to-use)=
 
 ## When can you use Magpylib ?
 
-The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed. For permanent **magnets**, when (remanent) permeabilities are below $\mu_r < 1.1$ the error is typically below 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. Error estimation as a result of the material response is evaluated in more detail in the appendix of [Malagò2020](https://www.mdpi.com/1424-8220/20/23/6873). The line **current** solutions give the exact same field as outside of a wire that carries a homogenous current. In general, Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials). For more details check out the {ref}`physComp` section.
+The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed. In general, Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnet assemblies (Ferrite, NdFeB, SmCo or similar materials).
 
-Magpylib only provides solutions for simple geometric forms. However, in magnetostatics the **superposition principle** holds, i.e. the total magnetic field is given by the sum of all the fields of all sources. For magnets this means that complex magnet shapes can be constructed from simple forms. **EXAMPLE_CONSTRUCTING_A_COMPLEX_FORM** Specifically, it is possible to cut-out a part of a magnet simply by placing a second magnet with opposite magnetization inside the first one. **EXAMPLE_HOLLOW_CYLINDER**
+When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. The line **current** solutions give the exact same field as outside of a wire that carries a homogenous current. For more details check out the {ref}`physComp` section.
 
-(docu-magpylib-objects)=
+Magpylib only provides solutions for simple geometric forms (cuboids, clinders, lines, ...). How complex shapes can be constructed from these simple base shapes is described in {ref}`examples-complex-forms`.
+
+(intro-magpylib-objects)=
 
 ## The Magpylib objects
 
-The most convenient way for working with Magpylib is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4 the following classes are implemented:
+The most convenient way for working with Magpylib is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4.0.0 the following classes are implemented:
 
 **Magnets**
 
-All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in units of millitesla. This is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in units of millitesla. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
 
 - **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
 
@@ -106,11 +109,11 @@ for obj in [src1, src2, src3, src4, src5, src6, src7, src8, sens, col]:
     print(obj)
 ```
 
-(docu-position-and-orientation)=
+(intro-position-and-orientation)=
 
 ## Position and orientation
 
-All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy `ndarray, shape (3,) or (m,3)` and denotes `(x,y,z)` coordinates in units of millimeter. By default every object is created at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html). By default the orientation of a Magpylib object is the unit rotation, generated by `orientation=None`.
+All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and denotes the coordinates $(x,y,z)$ in units of millimeter. By default every object is created at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and denotes the object rotation (relative to its initial state), e.g. in terms of Euler angles $(\phi, \psi, \theta)$. By default the orientation of a Magpylib object is the unit rotation, generated by `orientation=None`.
 
 ```{note}
 The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**.
@@ -126,7 +129,7 @@ print(sens.position)
 print(sens.orientation.as_euler('xyz', degrees=True))
 ```
 
-Set and manipulate position and orientation at object initialization,
+Set `position` and `orientation` attributes at object initialization,
 
 ```{code-cell} ipython3
 sens = magpy.Sensor(position=[(1,1,1), (2,2,2), (3,3,3)])
@@ -135,7 +138,7 @@ print(sens.position)
 print(sens.orientation.as_euler('xyz', degrees=True))
 ```
 
-or after initialization using the setter methods,
+or after initialization using the setter methods:
 
 ```{code-cell} ipython3
 sens = magpy.Sensor()
@@ -145,10 +148,9 @@ print(sens.position)
 print(sens.orientation.as_euler('xyz', degrees=True))
 ```
 
-or by making use of the `move` and `rotate` methods:
+Add relative position and orientation to the existing path with the `move` and `rotate` methods:
 
 ```{code-cell} ipython3
-sens = magpy.Sensor()
 sens.move((1,2,3))
 sens.rotate_from_angax(45, 'z')
 
@@ -159,10 +161,10 @@ print(sens.orientation.as_euler('xyz', degrees=True))
 Notice that, when one of the `position` and `orientation` attributes is manipulated, the other is automatically adjusted to the same size.
 
 ```{note}
-The underlying Magpylib logic is to always pad the edge entries of a path when the length is increased, and to slice from the end of the path when the length is reduced by an operation.
+The underlying Magpylib logic is to always pad the edge entries of a path when the length is increased, and to slice from the end of the path when the length is reduced by an operation. More details can be found in the example gallery {ref}`examples-edge-padding-end-slicing`.
 ```
 
-The **`move()`** and **`rotate()`** methods provide a lot of additional functionality that makes it easy to move objects around and to generate more complex paths. They obey the following rules:
+The **`move`** and **`rotate`** methods provide a lot of additional functionality that makes it easy to move objects around and to generate more complex paths. They obey the following rules:
 
 ```{note}
 - Scalar input is applied to the whole object path, starting with path index `start`. With the default `start='auto'` the index is set to `start=0` and the functionality is *moving objects around*.
@@ -171,124 +173,160 @@ The **`move()`** and **`rotate()`** methods provide a lot of additional function
 
 The following example demonstrates this functionality (works similarly for rotations):
 
-```{code-cell} ipython3
+```python
 import magpylib as magpy
 
-sens = magpy.Sensor(position=((0,0,0), (1,1,1)))
+sens = magpy.Sensor()
 
-# scalar input is by default applied to the whole path
-sens.move((1,1,1))
-print(f"{sens.position}\n")
+sens.move((1,1,1))                                      # scalar input is by default applied
+print(sens.position)                                    # to the whole path
+# out: [1. 1. 1.]
 
-# vector input is by default appended
-sens.move([(1,1,1)])
-print(f"{sens.position}\n")
+sens.move([(1,1,1), (2,2,2)])                           # vector input is by default appended
+print(sens.position)                                    # to the existing path
+# out: [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
 
-# scalar input and start=1 is applied to whole path starting at index 1
-sens.move((1,1,1), start=1)
-print(f"{sens.position}\n")
+sens.move((1,1,1), start=1)                             # scalar input and start=1 is applied
+print(sens.position)                                    # to whole path starting at index 1
+# out: [[1. 1. 1.]  [3. 3. 3.]  [4. 4. 4.]]
 
-# vector input and start=1 merges the input with the existing path starting at index 1
-sens.move([(0,0,10)]*3, start=1)
-print(sens.position)
+sens.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
+print(sens.position)                                    # the input with the existing path
+# out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]    # starting at index 1.
 ```
 
-A more detailed example how complex paths are generated through merging, slicing and padding is given in **EXAMPLE_PATH_MERGE_SLICE_PAD**.
+Deeper insights into how paths are generated through merging, slicing and padding are given in the example gallery {ref}`examples-paths`.
 
-(docu-graphic-output)=
+(intro-graphic-output)=
 
 ## Graphic output
 
-When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the Matplotlib and Plotly graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Matplotlib comes with Magpylib installation, Plotly must be installed by hand.
+When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the **Matplotlib** and **Plotly** graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Matplotlib comes with Magpylib installation, Plotly must be installed by hand, see {ref}`plotly-installation`. Details on how to switch between graphic backends using the `backend` setting is given in the example gallery {ref}`examples-backend`.
+
+When `show` is called, it generates a new figure which is then automatically displayed. To bring the output to a given, user-defined figure, the `canvas` kwarg can be used. This is explained in detail in the example gallery {ref}`examples-canvas`.
+
+The following example shows the graphical representation of various Magpylib objects and their paths using the default Matplotlib graphic backend.
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
-src1 = magpy.magnet.Cuboid(magnetization=(-100,0,0), dimension=(1,1,1), position=(0,0,-7))
+src1 = magpy.magnet.Cuboid(magnetization=(0,100,0), dimension=(1,1,1), position=(-7,0,0))
 src2 = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(1,1), position=(-5,0,0))
 src3 = magpy.magnet.CylinderSegment(magnetization=(0,0,100), dimension=(.3,1,1,0,140), position=(-3,0,0))
 src4 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1, position=(-1,0,0))
 src5 = magpy.current.Loop(current=1, diameter=1, position=(1,0,0))
-src6 = magpy.current.Line(current=1, vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)], position=(3,0,7))
+src6 = magpy.current.Line(current=1, vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)], position=(3,0,0))
 src7 = magpy.misc.Dipole(moment=(0,0,100), position=(5,0,0))
 sens = magpy.Sensor(pixel=[(0,0,z) for z in (-.5,0,.5)], position=(7,0,0))
 
-src6.move(np.linspace((0,0,0), (0,0,-7), 20))
-src1.rotate_from_angax(np.linspace(0, 90, 20), 'y', anchor=0)
+src6.move(np.linspace((0,0,0), (0,0,7), 20))
+src1.rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0)
 
 magpy.show(src1, src2, src3, src4, src5, src6, src7, sens)
 ```
 
-Objects can be styled individually by:
+Notice that, objects and their paths are automatically assigned different colors, the magnetization vector, current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.
+
+How objects are represented graphically (color, line thickness, ect.) is defined by the `style` properties. An exhaustive review of object styling can be found in the example gallery {ref}`examples-graphic-styles`. What you see above is the **default style**, with all settings stored in `magpy.defaults.display.style`.
+
+It is possible to set **individual styles** for each object by:
 1. Providing a style dictionary at object initialization.
 2. Making use of style underscore_magic at initialization.
-3. Manipulating the style properties.
+3. Manipulating the object style properties.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
+# using a style dictionary
 src1 = magpy.magnet.Sphere((0,0,1), 1, (0,0,0), style={'color':'r'})
+
+# using style underscore_magic
 src2 = magpy.magnet.Sphere((0,0,1), 1, (1,0,0), style_color='g')
+
+# manipulating the object style properties
 src3 = magpy.magnet.Sphere((0,0,1), 1, (2,0,0))
 src3.style.color='b'
 
 magpy.show(src1, src2, src3)
 ```
 
-There are multiple hierarchy levels that descide about the final object style that is displayed:
+A list of all style attribues can be found in {ref}`examples-list-of-styles`.
+```{note}
+For practical purposes make use of the Magpylib error messages that will tell you which style arguments are allowed when an unknown input is provided.
+```
+
+There is a strict **style hierarchy** that descide about the final graphic object representation:
 1. When no input is given, the default style from `magpy.defaults.display.style` will be applied.
 2. Individual object styles will take precedence over the default values.
-3. Setting a global style in `show()` will overwrite all other inputs.
+3. Setting a global style in `show()` will override all other inputs.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# default
+src1 = magpy.magnet.Sphere((0,0,1), 1, [(0,0,0), (0,0,2)])
+src2 = magpy.magnet.Sphere((0,0,1), 1, [(1,0,0), (1,0,2)])
+src3 = magpy.magnet.Sphere((0,0,1), 1, [(2,0,0), (2,0,2)])
+
+# default style
 magpy.defaults.display.style.base.color='red'
 magpy.defaults.display.style.base.path.line.style=':'
 
-# individual styles
-src1 = magpy.magnet.Sphere((0,0,1), 1, [(0,0,0), (0,0,2)])
-src2 = magpy.magnet.Sphere((0,0,1), 1, [(1,0,0), (1,0,2)], style_path_line_style='-')
-src3 = magpy.magnet.Sphere((0,0,1), 1, [(2,0,0), (2,0,2)], style_color='g')
+# individual style
+src1.style.color = 'g'
+src2.style.path.line.style = '-'
 
-# overwrite globally
+# global style override
 magpy.show(src1, src2, src3, style_path_line_style='--')
 ```
 
-Detailed information on the show features including how to animate paths and how to set up the more powerful plotly graphic backend can be found in example gallery [**XXXX**](examples/02_display_features).
+Finally, the remaining arguments of `show(*objects, zoom=0, animation=False, markers=None, backend=None, canvas=None, **kwargs)` include,
 
+- `zoom` which is a positive number that defines the figure zoom level.
+- `markers` which displays position markers, given as array_like of shape (n,3).
+- `animation` which enables path animation when using the Plotly backend, see {ref}`examples-animation`.
+- `kwargs` which are handed directly to the respective graphic backends.
 
-(docu-grouping-objects)=
+More information on graphic output can be found in the example gallery {ref}`example-gallery-show`.
+
+(intro-collections)=
 
 ## Collections
 
-The top level class `magpylib.Collection` allows a user to group sources for common manipulation. All operations acting on a collection are individually applied to all child objects.
+The top level class `magpylib.Collection` allows users to group sources by reference for common manipulation. Objects that are part of a collection are called **children** of that collection. All operations acting on a collection are individually applied to its children.
 
 ```python
 import magpylib as magpy
 
-src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
-src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
+src1 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1, position=(2,0,0))
+src2 = magpy.current.Loop(current=1, diameter=1, position=(-2,0,0))
 col = magpy.Collection(src1, src2)
+
+print(src1.position)   # out: [ 2.  0.  0.]
+print(src2.position)   # out: [-2.  0.  0.]
+print(col.position)    # out: [ 0.  0.  0.]
+
 col.move(((0,0,2)))
-print(src1.position)   # out: [2. 0. 2.]
+
+print(src1.position)   # out: [ 2.  0.  2.]
 print(src2.position)   # out: [-2.  0.  2.]
-print(col.position)    # out: [0. 0. 2.]
+print(col.position)    # out: [ 0.  0.  2.]
 ```
 
-Collections function as **groups**: Objects can be part of multiple collections, and after being added to a collection, it is still possible to manipulate the individual objects by name, and also by collection index:
+Collections function primarily like **groups**. Magpylib objects can be part of multiple collections. After being added to a collection, it is still possible to manipulate the individual objects by reference, and also by collection index:
 
 ```python
 src1.move((2,0,0))
 col[1].move((-2,0,0))
-print(src1.position)   # out: [4. 0. 2.]
+
+print(src1.position)   # out: [ 4.  0.  2.]
 print(src2.position)   # out: [-4.  0.  2.]
-print(col.position)    # out: [0. 0. 2.]
+print(col.position)    # out: [ 0.  0.  2.]
 ```
 
-But collections also function as **compound objects**: For magnetic field computation a collection that contains sources functions like a single source (that returns the total field of all children). Collections have their own `position` and `orientation` attributes. Geometric operations (`move`and `rotate` methods, `position` and `orientation` setter) acting on a collection object are individually applied to all child objects - but in such a way that the geometric compound sturcture is maintained. For example, `rotate()` with `anchor=None` rotates all children about `collection.position` (instead of each individual child position) which is demonstrated below:
+A detailed review of collection properties and construction is provided in the example gallery {ref}`examples-collections-construction`.
+
+For advanced applications, collections also follow the **compound object** philosophy, which means that a collection behaves itself like a single object. Notice in the examples above, that `col` has its own `position` and `orientation` attributes. Geometric operations acting on a collection object are individually applied to all child objects - but in such a way that the geometric compound structure is maintained. For example, applying `rotate` with `anchor=None` rotates all children about `collection.position` instead of the individual child positions. This is demonstrated in the following example:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -296,19 +334,17 @@ import magpylib as magpy
 
 src1 = magpy.magnet.Cuboid((0,0,1), (1,1,1), (2,0,0))
 src2 = src1.copy(position=(-2,0,0))
-
 col = src1 + src2
+
 col.move(np.linspace((0,0,0), (0,2,0), 30))
 col.rotate_from_angax(np.linspace(0, 180, 30), 'y')
+
 col.show(animation=True, style_path_show=False, backend='plotly')
 ```
 
-Here we have used the powerful `backend='plotly'` graphic library to animate the path. Notice also, that when Magpylib objects are added up they will form a collection. Similarly objects can be subtracted from a Collection.
+Here the Plotly graphic backend is used to animate the path. It should be noted that collections have their own `style` attributes. Their paths are displayed in `show` and all children are automatically given their parent color. More insights on the collection compound functionality is provided in the example gallery {ref}`examples-collections-compound`.
 
-To better understand the capabilities and usefulness of the `Collection` class consider to study **EXAMPLE_COLLECTION_MANIPULATION** and **EXAMPLE_COMPOUND**.
-
-
-(docu-field-computation)=
+(intro-field-computation)=
 
 ## Magnetic field computation
 
@@ -388,6 +424,8 @@ print(B.shape)
 
 In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations (no slow loops) when `getB` and `getH` are called. For maximal performance try to make all field computations with only a single function call.
 
+(intro-direct-interface)=
+
 ## Direct interface
 
 The direct interface is for users who work with complex inputs, favor a more functional programming paradigm or simply try to avoid the object oriented interface for performance reasons.
@@ -417,7 +455,7 @@ print(B)
 
 The direct inteface is typically faster than the object oriented one, but it requires that users know how to generate the inputs efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 
-(docu-direct-access)=
+(intro-core-functions)=
 
 ## Core functions
 
