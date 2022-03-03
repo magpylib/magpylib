@@ -1,7 +1,7 @@
 """Magnet Cylinder class code
 DOCSTRINGS V4 READY
 """
-
+import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
@@ -110,3 +110,30 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     def dimension(self, dim):
         """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), [mm, deg]."""
         self._dimension = check_format_input_cylinder_segment(dim)
+
+    @property
+    def _barycenter(self):
+        """Unsqueezed Object barycenter. Always has dim (n,3) depending on object path."""
+        return self._get_barycenter(self._position, self._orientation, self.dimension)
+
+    @property
+    def barycenter(self):
+        """Object barycenter. Output shape is matches position and orientation."""
+        return np.squeeze(self._barycenter)
+
+    @staticmethod
+    def _get_barycenter(position, orientation, dimension):
+        """Returns the barycenter of a cylinder segment.
+        Input checks should make sure:
+            -360 < phi1 < phi2 < 360 and 0 < r1 < r2
+        """
+        r1,r2,_,phi1,phi2 = dimension
+        alpha = np.deg2rad((phi2 - phi1)/2)
+        phi = np.deg2rad((phi1 + phi2)/2)
+        # get centroid x for unrotated annular sector
+        centroid_x = 2/3*np.sin(alpha)/alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
+        # get centroid for rotated annular sector
+        x, y, z = centroid_x*np.cos(phi), centroid_x*np.sin(phi), 0
+        centroid = np.array([x,y,z])
+        barycenter = orientation.apply(centroid) + position
+        return barycenter
