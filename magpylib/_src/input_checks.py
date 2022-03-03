@@ -123,15 +123,12 @@ def validate_field_lambda(val, bh):
             raise MagpylibBadUserInput(
                 f"Input parameter `field_{bh}_lambda` must be a callable."
             )
-        out = val(np.array([4, 5, 6]))
-        out_shape = np.array(out).shape
-        case1 = out_shape!=(3,)
 
         out = val(np.array([[1, 2, 3], [4, 5, 6]]))
         out_shape = np.array(out).shape
         case2 = out_shape!=(2, 3)
 
-        if case1 | case2:
+        if case2:
             raise MagpylibBadUserInput(
                 f"Input parameter `field_{bh}_lambda` must be a callable function"
                 " and return a field ndarray of shape (3,) or (n,3) when its `observer`"

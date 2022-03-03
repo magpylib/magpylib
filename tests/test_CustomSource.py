@@ -9,16 +9,14 @@ from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
 def constant_Bfield(position=(0,0,0)):
     """ constant field"""
     position = np.array(position)
-    if position.ndim==1:
-        return np.array([1,2,3])
-    return np.array([[1, 2, 3]] * len(position))
+    length = 1 if position.ndim==1 else len(position)
+    return np.array([[1, 2, 3]] * length)
 
 def constant_Hfield(position=(0, 0, 0)):
     """ constant field - no idea why we need this """
     position = np.array(position)
-    if position.ndim==1:
-        return np.array([1, 2, 3])
-    return np.array([[1, 2, 3]] * len(position))
+    length = 1 if position.ndim==1 else len(position)
+    return np.array([[1, 2, 3]] * length)
 
 def bad_Bfield_func(position):
     """ another constant function without docstring"""
