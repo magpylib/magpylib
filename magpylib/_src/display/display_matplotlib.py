@@ -295,7 +295,8 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     ]
     path_traces_extra = {}
     points = []
-    for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
+    rots, poss, _ = get_rot_pos_from_path(obj, show_path)
+    for orient, pos in zip(rots, poss):
         for extr in extra_model3d_traces:
             obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
