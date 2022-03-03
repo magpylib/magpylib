@@ -567,7 +567,8 @@ def get_plotly_traces(
         extra_model3d_traces = [
             t for t in extra_model3d_traces if t.backend == "plotly"
         ]
-        for orient, pos in zip(*get_rot_pos_from_path(input_obj, style.path.frames)):
+        rots, poss, _ = get_rot_pos_from_path(input_obj, style.path.frames)
+        for orient, pos in zip(rots, poss):
             if style.model3d.showdefault and make_func is not None:
                 path_traces.append(
                     make_func(position=pos, orientation=orient, **kwargs)
