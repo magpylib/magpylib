@@ -11,9 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Custom Source
-
-+++
+# FEM field interpolation
 
 The Magpylib library provides a custom class which enables the user to define its own source with an arbitrary field function. The user field function must return a position-dependent value in the local coordinate system of the source. The custom source instance is then treated the same as any other built-in source and can be moved or rotated while coordinate transformations are taken care of by the library. The field values in the global coordinate system can be obtained with `getB` or `getH` as long as a respective field function has been provided.
 

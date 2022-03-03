@@ -53,31 +53,31 @@ Magpylib only provides solutions for simple geometric forms (cuboids, clinders, 
 
 ## The Magpylib objects
 
-The most convenient way for working with Magpylib is through the object oriented interface. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. With Version 4.0.0 the following classes are implemented:
+The most convenient way for working with Magpylib is through the **object oriented interface**. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. The following classes are implemented:
 
 **Magnets**
 
-All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in units of millitesla. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in units of \[mT\]. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
 
-- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
+- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of \[mm\]. By default (`position=(0,0,0)`, `orientation=None`) the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
 
-- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of \[mm\]. By default (`position=(0,0,0)`, `orientation=None`) the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of milimeters and the two section angles $\varphi_1<\varphi_2$ in degrees. By default (`position=(0,0,0)`, `orientation=None`) the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of \[mm\] and the two section angles $\varphi_1<\varphi_2$ in \[deg\]. By default (`position=(0,0,0)`, `orientation=None`) the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the center of the sphere lies in the origin of the global coordinates.
+- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of \[mm\]. By default (`position=(0,0,0)`, `orientation=None`) the center of the sphere lies in the origin of the global coordinates.
 
 **Currents**
 
-All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of Ampere. All currents can be used as Magpylib `sources` input.
+All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of \[A\]. All currents can be used as Magpylib `sources` input.
 
-- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of millimeters. By default (`position=(0,0,0)`, `orientation=None`) the loop lies in the xy-plane with its center in the origin of the global coordinates.
+- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of \[mm\]. By default (`position=(0,0,0)`, `orientation=None`) the loop lies in the xy-plane with its center in the origin of the global coordinates.
 
 - **`Line`**`(current, vertices, position, orientation, style)` represents electrical current segments that flow in a straight line from vertex to vertex. By default (`position=(0,0,0)`, `orientation=None`) the locally defined vertices have the same position in the global coordinates.
 
 **Other**
 
-- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in $mT\times mm^3$. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
+- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in \[mT mm³]. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
 
 - **`CustomSource`**`(field_B_lambda, field_H_lambda, position, orientation, style)` can be used to create user defined custom sources. Can be used as Magpylib `sources` input.
 
@@ -201,7 +201,7 @@ Deeper insights into how paths are generated through merging, slicing and paddin
 
 ## Graphic output
 
-When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the **Matplotlib** and **Plotly** graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Matplotlib comes with Magpylib installation, Plotly must be installed by hand, see {ref}`plotly-installation`. Details on how to switch between graphic backends using the `backend` setting is given in the example gallery {ref}`examples-backend`.
+When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the **Matplotlib** and **Plotly** graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Matplotlib comes with Magpylib installation, Plotly must be installed by hand. Details on how to switch between graphic backends using the `backend` setting is given in the example gallery {ref}`examples-backend`.
 
 When `show` is called, it generates a new figure which is then automatically displayed. To bring the output to a given, user-defined figure, the `canvas` kwarg can be used. This is explained in detail in the example gallery {ref}`examples-canvas`.
 
@@ -300,33 +300,33 @@ import magpylib as magpy
 
 src1 = magpy.magnet.Sphere(magnetization=(1,2,3), diameter=1, position=(2,0,0))
 src2 = magpy.current.Loop(current=1, diameter=1, position=(-2,0,0))
-col = magpy.Collection(src1, src2)
+coll = magpy.Collection(src1, src2)
 
 print(src1.position)   # out: [ 2.  0.  0.]
 print(src2.position)   # out: [-2.  0.  0.]
-print(col.position)    # out: [ 0.  0.  0.]
+print(coll.position)    # out: [ 0.  0.  0.]
 
-col.move(((0,0,2)))
+coll.move(((0,0,2)))
 
 print(src1.position)   # out: [ 2.  0.  2.]
 print(src2.position)   # out: [-2.  0.  2.]
-print(col.position)    # out: [ 0.  0.  2.]
+print(coll.position)    # out: [ 0.  0.  2.]
 ```
 
 Collections function primarily like **groups**. Magpylib objects can be part of multiple collections. After being added to a collection, it is still possible to manipulate the individual objects by reference, and also by collection index:
 
 ```python
 src1.move((2,0,0))
-col[1].move((-2,0,0))
+coll[1].move((-2,0,0))
 
 print(src1.position)   # out: [ 4.  0.  2.]
 print(src2.position)   # out: [-4.  0.  2.]
-print(col.position)    # out: [ 0.  0.  2.]
+print(coll.position)    # out: [ 0.  0.  2.]
 ```
 
 A detailed review of collection properties and construction is provided in the example gallery {ref}`examples-collections-construction`.
 
-For advanced applications, collections also follow the **compound object** philosophy, which means that a collection behaves itself like a single object. Notice in the examples above, that `col` has its own `position` and `orientation` attributes. Geometric operations acting on a collection object are individually applied to all child objects - but in such a way that the geometric compound structure is maintained. For example, applying `rotate` with `anchor=None` rotates all children about `collection.position` instead of the individual child positions. This is demonstrated in the following example:
+For advanced applications, collections also follow the **compound object** philosophy, which means that a collection behaves itself like a single object. Notice in the examples above, that `coll` has its own `position` and `orientation` attributes. Geometric operations acting on a collection object are individually applied to all child objects - but in such a way that the geometric compound structure is maintained. For example, applying `rotate` with `anchor=None` rotates all children about `collection.position` instead of the individual child positions. This is demonstrated in the following example:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -334,12 +334,12 @@ import magpylib as magpy
 
 src1 = magpy.magnet.Cuboid((0,0,1), (1,1,1), (2,0,0))
 src2 = src1.copy(position=(-2,0,0))
-col = src1 + src2
+coll = src1 + src2
 
-col.move(np.linspace((0,0,0), (0,2,0), 30))
-col.rotate_from_angax(np.linspace(0, 180, 30), 'y')
+coll.move(np.linspace((0,0,0), (0,2,0), 30))
+coll.rotate_from_angax(np.linspace(0, 180, 30), 'y')
 
-col.show(animation=True, style_path_show=False, backend='plotly')
+coll.show(animation=True, style_path_show=False, backend='plotly')
 ```
 
 Here the Plotly graphic backend is used to animate the path. It should be noted that collections have their own `style` attributes. Their paths are displayed in `show` and all children are automatically given their parent color. More insights on the collection compound functionality is provided in the example gallery {ref}`examples-collections-compound`.
@@ -353,7 +353,11 @@ Magnetic field computation in Magpylib is achieved through:
 - **`getB`**`(sources, observers)` computes the B-field seen by `observers` generated by `sources` in units of \[mT\]
 - **`getH`**`(sources, observers)` computes the H-field seen by `observers` generated by `sources` in units of \[kA/m\]
 
-The argument `sources` can be any Magpylib source object or a list thereof. The argument `observers` can be an array_like of position vectors with shape $(n_1,n_2,n_3,...,3)$, Magpylib observer objects or a list thereof. `getB()` and `getH()` are top-level functions, but can also be called as Magpylib object methods.
+The argument `sources` can be any Magpylib **source object** or a list thereof. The argument `observers` can be an array_like of position vectors with shape $(n_1,n_2,n_3,...,3)$, any Magpylib **observer object** or a list thereof. `getB` and `getH` will automatically determine all source-position combinations, where positions will depend on all objects and their attributes (paths, pixels), compute the field and return it in the input format.
+
+```{note}
+The output of the most general field computation `getB(sources, observers)` is an ndarray of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the maximal object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of a position vector input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
+```
 
 A most fundamental field computation example is shown below where the B-field generated by a cylinder magnet is computed at position $(1,2,3)$:
 
@@ -361,18 +365,17 @@ A most fundamental field computation example is shown below where the B-field ge
 import magpylib as magpy
 
 src = magpy.magnet.Cylinder(magnetization=(222,333,444), dimension=(2,2))
-B = src.getB((1,2,3))
+B = magpy.getB(src, (1,2,3))
 print(B)
 ```
 
-When dealing with multiple observer positions, `getB` and `getH` will return the field in the shape of the observer input. In the following example B- and H-field of a cuboid magnet are computed on a grid and displayed using Matplotlib:
+When dealing with multiple observer positions, `getB` and `getH` will return the field in the shape of the observer input. In the following example B- and H-field of a cuboid magnet are computed on a grid with single function calls, and then displayed using Matplotlib:
 
 ```{code-cell} ipython3
 import numpy as np
 import matplotlib.pyplot as plt
 import magpylib as magpy
 
-# define pyplot figure
 fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(10,5))
 
 # create an observer grid in the xz-symmetry plane
@@ -399,11 +402,8 @@ plt.tight_layout()
 plt.show()
 ```
 
-```{note}
-The output of the most general field computation `getB(sources, observers)` is an ndarray of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the maximal object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of a position vector input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
-```
 
-When input objects have different path lengths, all shorter paths are padded (= objects remain "static") beyond their end. In the following example we compute the field of three sources, one with length 11 path and two sensors with pixel shape (4,5):
+When input objects have different path lengths, all shorter paths are padded (= objects remain "static") beyond their end, following the {ref}`examples-edge-padding-end-slicing` logic. In the following example we compute the field of three sources, one with a length 11 path, and two sensors, each with pixel shape (4,5):
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -411,32 +411,37 @@ import magpylib as magpy
 # 3 sources, one with length 11 path
 s1 = magpy.misc.Dipole(moment=(0,0,100), position=[(1,1,1)]*11)
 s2 = magpy.current.Loop(current=1, diameter=3)
-col = s1 + s2
+coll = s1 + s2
 
 # 2 observers with 4x5 pixel
 pix = [[(1,2,3)]*4]*5
 sens1 = magpy.Sensor(pixel=pix)
 sens2 = magpy.Sensor(pixel=pix)
 
-B = magpy.getB([s1,s2,col], [sens1, sens2])
+B = magpy.getB([s1,s2,coll], [sens1, sens2])
 print(B.shape)
 ```
 
-In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations (no slow loops) when `getB` and `getH` are called. For maximal performance try to make all field computations with only a single function call.
+In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the compuation time dramically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
+
+Finally, the remaining arguments of the field computation functions are
+- `sumup=False` which allows users to sum over the field of all sources.
+- `squeeze=True` which will squeeze output dimensions of size 1 rather than returning the complete shape (l,m,k,n1,n2...,3).
+
 
 (intro-direct-interface)=
 
 ## Direct interface
 
-The direct interface is for users who work with complex inputs, favor a more functional programming paradigm or simply try to avoid the object oriented interface for performance reasons.
-
-The direct interface works by providing the top-level functions `magpy.getB()` and `magpy.getH()` with 
+The direct interface allows users to bypass the object oriented functionality of Magpylib. The magnetic field is computed for a set of arbitrary input instances by providing the top level functions `getB` and `getH` with 
 
 1. a string denoting the source type for the `sources` argument,
-2. an array like of shape (3,) or (n,3) giving the positions for the `observers` argument,
+2. an array_like of shape (3,) or (n,3) giving the positions for the `observers` argument,
 3. a dictionary with array_likes of shape (x,) or (n,x) for all other inputs.
 
-All scalar inputs of shape (x,) will be tiled up to shape (n,x), and for every of the n given instances the field is computed and returned with shape (n,3). The allowed source types are similar to the Magpylib source class names, and the required dictionary inputs are the respective class inputs. Detailes can be found in the docstrings.
+All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x), and for every of the n given instances the field is computed and returned with shape (n,3). The allowed source types are similar to the Magpylib source class names, and the required dictionary inputs are the respective class inputs. Details can be found in the respective docstrings.
+
+In the following example we compute the cuboid field for 5 different position and dimension input instances and "constant" magnetization:
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -453,13 +458,13 @@ B = magpy.getB(
 print(B)
 ```
 
-The direct inteface is typically faster than the object oriented one, but it requires that users know how to generate the inputs efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
+The direct interface is convenient for users who work with complex inputs or favor a more functional programming paradigm. It is typically faster than the object oriented interface, but it also requires that users know how to generate the inputs efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 
 (intro-core-functions)=
 
 ## Core functions
 
-At the heart of Magpylib lies a set of core functions that are our implementations of the analytical field expressions, see **PHYSICS & COMPUTATION**. For users who are not interested in the position/orientation interface, the `magpylib.core` subpackage gives direct access to these functions. Inputs are ndarrays of shape (n,x). Details can be found in the respective function docstrings.
+At the heart of Magpylib lies a set of core functions that are our implementations of the analytical field expressions, see {ref}`physcomp`. For users who are not interested in the position/orientation interface, the `magpylib.core` subpackage gives direct access to these functions. Inputs are ndarrays of shape (n,x). Details can be found in the respective function docstrings.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -467,8 +472,8 @@ import magpylib as magpy
 
 mag = np.array([(100,0,0)]*5)
 dim = np.array([(1,2,3,45,90)]*5)
-obs_pos = np.array([(0,0,0)]*5)
+pos = np.array([(0,0,0)]*5)
 
-B = magpy.core.magnet_cylinder_segment_field(mag, dim, obs_pos, field='B')
+B = magpy.core.magnet_cylinder_segment_field(mag, dim, pos, field='B')
 print(B)
 ```

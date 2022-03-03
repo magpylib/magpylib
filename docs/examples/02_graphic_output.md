@@ -26,5 +26,6 @@ Graphic Output
 
 examples_11_backends_canvas.md
 examples_12_styles.md
-examples_13_animation.md
+examples_13_3d_models.md
+examples_14_animation.md
 ```

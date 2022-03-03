@@ -20,7 +20,7 @@ Fundamentals
 :caption: Fundamentals
 :maxdepth: 2
 
-examples_01_complex_forms.md
 examples_02_paths.md
 examples_03_collections.md
+examples_01_complex_forms.md
 ```

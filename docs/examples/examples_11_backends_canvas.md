@@ -105,8 +105,8 @@ src2.rotate_from_angax(np.linspace(0, 300, 41)[1:], 'z', anchor=0)
 
 # compute field and plot in 2D-axis
 B = magpy.getB([src1, src2], (0,0,0), sumup=True)
-for i in range(3):
-    fig.add_trace(go.Scatter(x=np.linspace(0,1,40), y=B[:,i]))
+for i,lab in enumerate(['Bx', 'By', 'Bz']):
+    fig.add_trace(go.Scatter(x=np.linspace(0,1,40), y=B[:,i], name=lab))
 
 # display show() output in 3D-axis
 temp_fig = go.Figure()

@@ -26,33 +26,33 @@ import magpylib as magpy
 loop = magpy.current.Loop()
 sens = magpy.Sensor()
 
-col = magpy.Collection(loop, sens)
+coll = magpy.Collection(loop, sens)
 
-print(f"children: {col.children}")
-print(f"sources:  {col.sources}")
-print(f"sensors:  {col.sensors}")
+print(f"children: {coll.children}")
+print(f"sources:  {coll.sources}")
+print(f"sensors:  {coll.sensors}")
 ```
 
 To manipulate existing collections, one can use the `add` and `remove` methods:
 
 ```{code-cell} ipython3
-col.add(magpy.magnet.Cuboid())
-col.remove(sens)
+coll.add(magpy.magnet.Cuboid())
+coll.remove(sens)
 
-print(f"children: {col.children}")
-print(f"sources:  {col.sources}")
-print(f"sensors:  {col.sensors}")
+print(f"children: {coll.children}")
+print(f"sources:  {coll.sources}")
+print(f"sensors:  {coll.sensors}")
 ```
 
 The operators `+` and `-` provide a similar functionality,
 
 ```{code-cell} ipython3
-col = col - loop
-col = col + magpy.magnet.Cylinder()
+coll = coll - loop
+coll = coll + magpy.magnet.Cylinder()
 
-print(f"children: {col.children}")
-print(f"sources:  {col.sources}")
-print(f"sensors:  {col.sensors}")
+print(f"children: {coll.children}")
+print(f"sources:  {coll.sources}")
+print(f"sensors:  {coll.sensors}")
 ```
 
 However, it must be noted that using `+` and `-` results in copies of the Collection, while `add` and `remove` does not.
@@ -67,14 +67,14 @@ print(what_is_it)
 Collections have `__getitem__` through the attribute `children` defined. This allows using collections as iterators,
 
 ```{code-cell} ipython3
-for child in col:
+for child in coll:
     print(child)
 ```
 
 and makes it possible to directly reference to a child object:
 
 ```{code-cell} ipython3
-print(col[0])
+print(coll[0])
 ```
 
 Finally, it is worth mentioning that collections do not allow duplicate sources. They will automatically be removed. However, sources can be part of multiple collections.

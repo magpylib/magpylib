@@ -11,7 +11,9 @@ kernelspec:
   name: python3
 ---
 
-# Complex extra 3d-model
+(examples-adding-CAD-model)=
+
+# Adding a CAD model
 
 With the `model3d.data` style property, it is possible to attach an extra 3D-model representation for any Magpylib object, as long as it is supported by the chosen plotting backend. With a little helper function and the third-party `numpy-stl` package, a CAD file can be imported and transformed into a mesh object, displayable by both `matplotlib` and `plotly` backends.
 

@@ -21,5 +21,7 @@ Application Examples
 :caption: Application Examples
 :maxdepth: 2
 
-plot_06_modeling_a_coil.md
+examples_30_field_of_a_coil.md
+examples_31_end_of_shaft.md
+examples_32_fem_interpolation.md
 ```

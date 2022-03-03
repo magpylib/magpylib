@@ -58,9 +58,8 @@ _pages/*
 
 examples/01_fundamentals.md
 examples/02_graphic_output.md
-examples/03_advanced_features.md
+examples/03_advanced.md
 examples/04_application_examples.md
-
 ```
 
 ```{toctree}

@@ -206,11 +206,3 @@ magpy.show(src1, src2, src3, backend="plotly", style_magnetization_show=False)
 # back to default styles
 magpy.show(src1, src2, src3, backend="plotly")
 ```
-
-(examples-list-of-styles)=
-
-## List of styles
-
-```{code-cell} ipython3
-magpy.defaults.display.style.as_dict(flatten=True, separator='.')
-```

@@ -12,10 +12,6 @@ Magpylib works with Python 3.7 or later ! The following packages will be automat
 
 (plotly-installation)=
 
-## Plotly installation
-
-**HOW TO**
-
 ## Using a package manager
 
 Magpylib works with PyPI and conda-forge repositories.
