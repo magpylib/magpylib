@@ -11,8 +11,11 @@ kernelspec:
   name: python3
 ---
 
+(examples-3d-models)=
+
 # 3D-models
 
+(examples-own-3d-models)=
 ## Own 3D models
 
 Each Magpylib object has a default 3D representation which is displayed with `show`. Through the style attributes `style.model3d.add_trace(trace, backend)` method it is possible to add a user defined 3D model to any object. The input `trace` is any dictionary that can be interpreted by the defined graphic `backend`.
@@ -122,25 +125,25 @@ obj = magpy.misc.CustomSource()
 # add prism trace
 trace_prism = magpy.display.plotly.make_BasePrism(
     base_vertices=6,
-    diameter=1,
-    height=2,
-    position=(-6,0,0),
+    diameter=2,
+    height=1,
+    position=(-3,0,0),
 )
 obj.style.model3d.add_trace(trace_prism, backend='plotly')
 
 # add cone trace
 trace_cone = magpy.display.plotly.make_BaseCone(
-    base_vertices=6,
+    base_vertices=30,
     diameter=2,
     height=1,
-    position=(-4,0,0)
+    position=(3,0,0)
 )
 obj.style.model3d.add_trace(trace_cone, backend='plotly')
 
 # add cuboid trace
 trace_cuboid = magpy.display.plotly.make_BaseCuboid(
-    dimension=(1,1,1),
-    position=(-2,0,0),
+    dimension=(2,2,2),
+    position=(0,3,0),
 )
 obj.style.model3d.add_trace(trace_cuboid, backend='plotly')
 
@@ -152,15 +155,15 @@ trace_cylinder_segment = magpy.display.plotly.make_BaseCylinderSegment(
     phi1=140,
     phi2=220,
     vert=50,
-    position=(3,0,0),
+    position=(1,0,-3),
 )
 obj.style.model3d.add_trace(trace_cylinder_segment, backend='plotly')
 
 # add ellipsoid trace
 trace_ellipsoid = magpy.display.plotly.make_BaseEllipsoid(
-    dimension=(1,1,2),
+    dimension=(2,2,1),
     vert=50,
-    position=(4,0,0),
+    position=(0,0,3),
 )
 obj.style.model3d.add_trace(trace_ellipsoid, backend='plotly')
 
@@ -169,7 +172,7 @@ trace_arrow = magpy.display.plotly.make_BaseArrow(
     base_vertices=30,
     diameter=0.6,
     height=2,
-    position=(6,0,0),
+    position=(0,-3,0),
 )
 obj.style.model3d.add_trace(trace_arrow, backend='plotly')
 

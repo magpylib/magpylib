@@ -29,7 +29,7 @@ Detailed package, class, method and function documentations are found in the lib
 - {ref}`intro-field-computation`
 - {ref}`intro-direct-interface`
 - {ref}`intro-core-functions`
-
+- {ref}`intro-customization`
 
 (intro-idea)=
 
@@ -201,7 +201,7 @@ Deeper insights into how paths are generated through merging, slicing and paddin
 
 ## Graphic output
 
-When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the **Matplotlib** and **Plotly** graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Matplotlib comes with Magpylib installation, Plotly must be installed by hand. Details on how to switch between graphic backends using the `backend` setting is given in the example gallery {ref}`examples-backend`.
+When all Magpylib objects and their paths have been created, `show()` provides a convenient way to graphically display the geometric arrangement using the **Matplotlib** and **Plotly** graphic libraries. By installation default, objects are displayed with the Matplotlib backend. Details on how to switch between graphic backends using the `backend` setting is given in the example gallery {ref}`examples-backend`.
 
 When `show` is called, it generates a new figure which is then automatically displayed. To bring the output to a given, user-defined figure, the `canvas` kwarg can be used. This is explained in detail in the example gallery {ref}`examples-canvas`.
 
@@ -259,7 +259,7 @@ For practical purposes make use of the Magpylib error messages that will tell yo
 There is a strict **style hierarchy** that descide about the final graphic object representation:
 1. When no input is given, the default style from `magpy.defaults.display.style` will be applied.
 2. Individual object styles will take precedence over the default values.
-3. Setting a global style in `show()` will override all other inputs.
+3. Setting a local style in `show()` will override any other style.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -276,7 +276,7 @@ magpy.defaults.display.style.base.path.line.style=':'
 src1.style.color = 'g'
 src2.style.path.line.style = '-'
 
-# global style override
+# local style override
 magpy.show(src1, src2, src3, style_path_line_style='--')
 ```
 
@@ -287,7 +287,7 @@ Finally, the remaining arguments of `show(*objects, zoom=0, animation=False, mar
 - `animation` which enables path animation when using the Plotly backend, see {ref}`examples-animation`.
 - `kwargs` which are handed directly to the respective graphic backends.
 
-More information on graphic output can be found in the example gallery {ref}`example-gallery-show`.
+A detailed review on graphic output possibilities can be found in the example gallery {ref}`example-gallery-graphic-output`.
 
 (intro-collections)=
 
@@ -476,4 +476,61 @@ pos = np.array([(0,0,0)]*5)
 
 B = magpy.core.magnet_cylinder_segment_field(mag, dim, pos, field='B')
 print(B)
+```
+
+(intro-customization)=
+
+## Customization
+
+**User-defined 3D models** (traces) that will be displayed with `show` can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly or `plot` and `plot_trisurf` in Matplotlib, and where to find some pre-defined models.
+
+**User-defined source classes** are easily realized through the `magpy.misc.CustomSource` class. Such a custom source object can be provided with user-defined field computation functions, that are stored in the attributes `field_B_lambda` and `field_H_lambda`, and will be used when `getB` and `getH` are called. The provided functions must accept position arrays with shape (n,3), and return the field with a similar shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
+
+While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
+
+```{code-cell} ipython3
+import numpy as np
+import plotly.graph_objects as go
+import magpylib as magpy
+
+# define B-field function for custom source
+def custom_field(pos):
+    """ easter field"""
+    dist = np.linalg.norm(pos)
+    return np.tile((0,0,1/dist), (len(pos),1))
+
+# create custom source
+egg = magpy.misc.CustomSource(
+    field_B_lambda=custom_field,
+    position=(0,0,0.75),
+    style=dict(color='orange', model3d_showdefault=False, label='The Egg'),
+)
+
+# add a custom 3D model
+egg.style.model3d.add_trace(
+    trace=magpy.display.plotly.make_BaseEllipsoid((1,1,1.5)),
+    backend='plotly',
+)
+
+# move around
+ts = np.linspace(0, 2, 70)
+egg.rotate_from_angax(
+    angle=50*np.cos(10*ts)*np.exp(-ts**2),
+    axis=(1,-1,0),
+    anchor=0,
+    start=0
+)
+
+# add sensor and compute field on path
+sens = magpy.Sensor(position=(0,0,2))
+B = sens.getB(egg)
+
+# animate path and plot field
+magpy.show(egg, sens, backend='plotly', animation=True, style_path_show=False)
+
+fig = go.Figure()
+for i,lab in enumerate(['Bx', 'By', 'Bz']):
+    fig.add_trace(go.Scatter(x=ts/2*3, y=B[:,i], name=lab))
+fig.update_layout(title='Field at sensor', xaxis_title='animation time [s]')
+fig.show()
 ```

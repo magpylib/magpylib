@@ -43,6 +43,8 @@ shaft_trace = magpy.display.plotly.make_BasePrism(
 shaft = magpy.misc.CustomSource(
     position=(0,0,7),
     style_color='.7',
+    style_model3d_showdefault=False,
+    style_label='Shaft'
 )
 shaft.style.model3d.add_trace(shaft_trace, backend='plotly')
 

@@ -27,7 +27,7 @@ There are multiple hierarchy levels that descide about the final graphical repre
 1. When no input is given, the **default style** will be applied.
 2. **Individual styles** of objects will take precedence over the default values.
 3. Collections will override the color property of all children.
-4. Setting a **global style** in `show()` will take precedence over all other settings.
+4. Setting a **local style** in `show()` will take precedence over all other settings.
 
 ## Setting the default style
 
@@ -185,11 +185,11 @@ col.set_children_styles(magnetization_color_south="blue")
 magpy.show(col, src3, backend="plotly")
 ```
 
-## Global style override
+## Local style override
 
-It is also possible to hand style input to the `show` function directly and globally override the given properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and object family specifier must be omitted. Naturally underscore magic is supported.
+It is also possible to hand style input to the `show` function directly and locally override the given properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and object family specifier must be omitted. Naturally underscore magic is supported.
 
-The following example demonstrates the global style override
+The following example demonstrates the local style override
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -200,9 +200,17 @@ src1 = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
 src2 = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
 src3 = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
 
-# use global style override
+# use local style override
 magpy.show(src1, src2, src3, backend="plotly", style_magnetization_show=False)
 
 # back to default styles
 magpy.show(src1, src2, src3, backend="plotly")
+```
+
+(examples-list-of-styles)=
+
+## List of styles
+
+```{code-cell} ipython3
+magpy.defaults.display.style.as_dict(flatten=True, separator='.')
 ```

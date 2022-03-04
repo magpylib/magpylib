@@ -11,7 +11,9 @@ kernelspec:
   name: python3
 ---
 
-# Creating a Compound Object
+(examples-own-dynamic-3d-model)=
+
+# Own dynamic 3D model
 
 +++
 
