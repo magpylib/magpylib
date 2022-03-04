@@ -27,7 +27,7 @@ This is a major update that includes
     - Added `matplotlib` pixel display ([#279](https://github.com/magpylib/magpylib/issues/279))
 - Documentation and Example codes now available on read the docs with binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
 - `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
-- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build compound objects. ([#444](https://github.com/magpylib/magpylib/issues/444))
+- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build **compound objects**. ([#444](https://github.com/magpylib/magpylib/issues/444))
 - All scipy Rotation forms are now also object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
 
 
@@ -46,7 +46,7 @@ This is a major update that includes
   - `size_direction` ➡️ `style_magnetization_size`
 - `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 - `show_path` in the `display` function is integrated in styling options with `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
-- Magpylib error message improvement. Msg will tell you what input is expected
+- Magpylib error message improvement. Msg will tell you what input is expected.
 
 ### Updated
 - Computation:
@@ -65,7 +65,7 @@ This is a major update that includes
 - Docs:
   - General docs improvements ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
   - [MATLAB example](https://magpylib.readthedocs.io/en/latest/_pages/3_MATLAB/#example) updated ([#346](https://github.com/magpylib/magpylib/issues/346), [#366](https://github.com/magpylib/magpylib/pull/366))
-
+- improved **position** and **orientation** setter methods in line with **move** and **rotate**
 ### Fixed
 - Computation:
   - Diametral Solid Cylinder Field singularity at the axis. ([#370](https://github.com/magpylib/magpylib/issues/370))
