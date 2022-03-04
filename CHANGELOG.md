@@ -15,16 +15,15 @@ This is a major update that includes
 - New sources classes:
   - New `CylinderSegment` computation with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
   - New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
-- New `display` (now `show`) features:
-  - 🚀 New `plotly` plotting backend: ([#396](https://github.com/magpylib/magpylib/pull/396), [#353](https://github.com/magpylib/magpylib/issues/353))
-    - `plotly` remains a optional dependency, needs extra installation ([#395](https://github.com/magpylib/magpylib/issues/395))
+- Major graphic output overhaul:
+  - All object now have the `style` attribute for graphical output customization
+    - Style defaults in `magpylib.defaults.display` ([#291](https://github.com/magpylib/magpylib/issues/291), [#396](https://github.com/magpylib/magpylib/pull/396))
+    - Ability to define extra 3d-model for any object. ([#416](https://github.com/magpylib/magpylib/pull/416))
+  - Complete overhaul of `display` (now `show`) functionality
     - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
-
-  - Display defaults can be now set in `magpylib.defaults.display` ([#291](https://github.com/magpylib/magpylib/issues/291), [#396](https://github.com/magpylib/magpylib/pull/396))
-  - Ability to define extra 3d-model for any object. ([#416](https://github.com/magpylib/magpylib/pull/416))
-  - Zoom option in display function.
-  - Display specific path positions.
-  - `matplotlib` plotting backend:
+    - 🚀 New `plotly` plotting backend: ([#396](https://github.com/magpylib/magpylib/pull/396), [#353](https://github.com/magpylib/magpylib/issues/353))
+    - `plotly` is now automatically installed with Magpylib ([#395](https://github.com/magpylib/magpylib/issues/395))
+    - Zoom option in display function.
     - Added `matplotlib` pixel display ([#279](https://github.com/magpylib/magpylib/issues/279))
 - Documentation and Example codes now available on read the docs with binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
 - `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
@@ -47,6 +46,7 @@ This is a major update that includes
   - `size_direction` ➡️ `style_magnetization_size`
 - `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 - `show_path` in the `display` function is integrated in styling options with `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
+- Magpylib error message improvement. Msg will tell you what input is expected
 
 ### Updated
 - Computation:
@@ -76,6 +76,7 @@ This is a major update that includes
 
 ### Removed
 - `config.ITERCYLINDER` is now obsolete. The iterative solution replaced by a new analytical expression.
+- `config.inputchekcs` is removed - input checks are always done.
 -  removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 
 
