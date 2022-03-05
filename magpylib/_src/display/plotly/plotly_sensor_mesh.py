@@ -9,6 +9,7 @@ def get_sensor_mesh(
     y_show=True,
     z_show=True,
     center_show=True,
+    colorize_tails=True,
 ):
     """
     returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
@@ -124,13 +125,24 @@ def get_sensor_mesh(
                     2.97695041e-01, -2.96093315e-01, -6.52671903e-02,  6.32795095e-02,
                     -1.29736937e-03,  2.30370149e-01, -2.22999811e-01,  8.99043754e-02,
                     -7.91054145e-02,  1.98500464e-16]),
-        'facecolor': np.concatenate([
-            [center_color]*12,
-            [x_color]*56,
-            [z_color]*56,
-            [y_color]*56
-        ]),
     }
+    x_color_tail = x_color
+    y_color_tail = y_color
+    z_color_tail = z_color
+    if colorize_tails:
+        x_color_tail = center_color
+        y_color_tail = center_color
+        z_color_tail = center_color
+    N, N2 = 56, 18
+    trace['facecolor'] = np.concatenate([
+            [center_color]*12,
+            [x_color_tail]*(N2),
+            [x_color]*(N-N2),
+            [y_color_tail]*(N2),
+            [y_color]*(N-N2),
+            [z_color_tail]*(N2),
+            [z_color]*(N-N2)
+        ])
     indices = ((0,12), (12,68), (68,124), (124,180))
     show = (center_show, x_show, z_show, y_show)
     for k in ('i','j','k','facecolor'):

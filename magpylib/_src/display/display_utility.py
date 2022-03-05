@@ -33,6 +33,7 @@ def place_and_orient_model3d(
     new_model_dict = {}
     if "args" in model_dict:
         new_model_dict["args"] = list(model_dict["args"])
+        coordsargs = dict(x="args[0]", y="args[1]", z="args[2]")     # matplotlib default
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}
@@ -50,13 +51,24 @@ def place_and_orient_model3d(
                 raise ValueError(
                     "Rotating/Moving of provided model failed, trace dictionary "
                     f"has no argument {k!r}, use `coordsargs` to specify the names of the "
-                    "coordinates to be used"
+                    "coordinates to be used.\n"
+                    "Matplotlib backends will set up coordsargs automatically if "
+                    "the `args=(xs,ys,zs)` argument is provided."
                 )
         vertices.append(v)
-    vertices = np.array(vertices).T
+
+    vertices = np.array(vertices)
+
+    # sometimes traces come as (n,m,3) shape
+    vert_shape = vertices.shape
+    vertices = np.reshape(vertices, (3,-1))
+
+    vertices = vertices.T
+
     if orientation is not None:
         vertices = orientation.apply(vertices)
     new_vertices = (vertices * scale + position).T
+    new_vertices = np.reshape(new_vertices, vert_shape)
     for i, k in enumerate("xyz"):
         key = coordsargs[k]
         if useargs:
@@ -403,6 +415,13 @@ def system_size(points):
     """compute system size for display"""
     # determine min/max from all to generate aspect=1 plot
     if points:
+
+        # bring (n,m,3) point dimensions (e.g. from plot_surface body)
+        #    to correct (n,3) shape
+        for i,p in enumerate(points):
+            if p.ndim==3:
+                points[i] = np.reshape(p,(-1,3))
+
         pts = np.vstack(points)
         xs = [np.amin(pts[:, 0]), np.amax(pts[:, 0])]
         ys = [np.amin(pts[:, 1]), np.amax(pts[:, 1])]

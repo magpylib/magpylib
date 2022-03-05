@@ -1,9 +1,9 @@
 import pytest
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.tri as mtri
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib._src.display.plotly.plotly_base_traces import make_BaseCuboid
 
 # pylint: disable=assignment-from-no-return
 
@@ -154,47 +154,67 @@ def test_matplotlib_animation_warning():
 
 def test_matplotlib_model3d_extra():
     """test display extra model3d"""
-    cuboid = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 0), dimension=(3, 3, 3), position=(10, 0, 0)
-    ).rotate_from_angax(np.linspace(72,360,5), "z", anchor=(0, 0, 0), start=0)
+
+    # using "plot"
+    xs,ys,zs = [(1,2)]*3
+    trace1 = dict(
+        type='plot',
+        args=(xs,ys,zs),
+        ls='-',
+    )
+    obj1 = magpy.misc.Dipole(moment=(0,0,1))
+    obj1.style.model3d.add_trace(trace=trace1, backend="matplotlib")
+
+    # using "plot_surface"
+    u, v = np.mgrid[0:2 * np.pi:6j, 0:np.pi:6j]
+    xs = np.cos(u) * np.sin(v)
+    ys = np.sin(u) * np.sin(v)
+    zs = np.cos(v)
+    trace2 = dict(
+        type='plot_surface',
+        args=(xs,ys,zs),
+        cmap=plt.cm.YlGnBu_r,
+    )
+    obj2 = magpy.Collection()
+    obj2.style.model3d.add_trace(trace=trace2, backend='matplotlib')
+
+    # using "plot_trisurf"
+    u, v = np.mgrid[0:2*np.pi:6j, -.5:.5:6j]
+    u, v = u.flatten(), v.flatten()
+    xs = (1 + 0.5 * v * np.cos(u / 2.0)) * np.cos(u)
+    ys = (1 + 0.5 * v * np.cos(u / 2.0)) * np.sin(u)
+    zs = 0.5 * v * np.sin(u / 2.0)
+    tri = mtri.Triangulation(u, v)
+    trace3 = dict(
+        type="plot_trisurf",
+        args=(xs,ys,zs),
+        triangles=tri.triangles,
+        cmap=plt.cm.Spectral,
+    )
+    obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
+    obj3.style.model3d.add_trace(trace=trace3, backend="matplotlib")
+
+    magpy.show(obj1, obj2, obj3)
+
     ax = plt.subplot(projection="3d")
-    cuboid.style.model3d.showdefault = False
-    cuboid.style.model3d.data = [
-        {
-            "backend": "matplotlib",
-            "trace": {
-                "type": "plot",
-                "xs": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
-                "ys": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
-                "zs": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
-                "ls": "-",
-            },
-            "show": True,
-        }
-    ]
-    with pytest.raises(ValueError): # should fail because of invalid coordsargs
-        x = cuboid.show(canvas=ax, style_path_frames=1)
-    cuboid.style.model3d.data[0].coordsargs = {"x": "xs", "y": "ys", "z": "zs"}
-    x = cuboid.show(canvas=ax, style_path_frames=1)
-
+    x = magpy.show(obj1, obj2, obj3, canvas=ax)
     assert x is None, "display test fail"
 
-    cube = make_BaseCuboid()
-    i,j,k = [cube[k] for k in 'ijk']
-    x,y,z = [cube[k] for k in 'xyz']
-    triangles = np.array([i, j, k]).T
-    trace = dict(type="plot_trisurf", args=(x, y, z), triangles=triangles)
-    cuboid.style.model3d.showdefault = False
-    cuboid.style.model3d.data = [
-        {
-            "backend": "matplotlib",
-            "coordsargs": {"x": "args[0]", "y": "args[1]", "z": "args[2]"},
-            "trace": trace,
-            "show": True,
-        }
-    ]
-    x = cuboid.show(canvas=ax, style_path_frames=1)
-    assert x is None, "display test fail"
+
+def test_matplotlib_model3d_extra_bad_input():
+    """test display extra model3d"""
+
+    xs,ys,zs = [(1,2)]*3
+    trace = dict(
+        type='plot',
+        argss=(xs,ys,zs),   # bad input
+        ls='-',
+    )
+    obj = magpy.misc.Dipole(moment=(0,0,1))
+    with pytest.raises(ValueError):
+        obj.style.model3d.add_trace(trace=trace, backend="matplotlib")
+        ax = plt.subplot(projection="3d")
+        obj.show(canvas=ax)
 
 
 def test_empty_display():
