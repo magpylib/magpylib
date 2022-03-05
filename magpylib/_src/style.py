@@ -383,9 +383,7 @@ class Trace3d(MagicProperties):
 
     @coordsargs.setter
     def coordsargs(self, val):
-        if val is None:
-            val = {"x": "x", "y": "y", "z": "z"}
-        assert isinstance(val, dict) and all(key in val for key in "xyz"), (
+        assert val is None or (isinstance(val, dict) and all(key in val for key in "xyz")), (
             f"The `coordsargs` property of {type(self).__name__} must be "
             f"a dictionary with `'x', 'y', 'z'` keys,\n"
             f"but received {repr(val)} instead."
