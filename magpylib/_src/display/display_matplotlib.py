@@ -37,7 +37,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
     for col, obj in zip(colors, faced_objects):
 
         # add src attributes position and orientation depending on show_path
-        rots, poss = get_rot_pos_from_path(obj, show_path)
+        rots, poss, inds = get_rot_pos_from_path(obj, show_path)
 
         # vector length, color and magnetization
         if obj._object_type in ("Cuboid", "Cylinder"):
@@ -50,19 +50,11 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
 
         # collect all draw positions and directions
         draw_pos, draw_direc = [], []
-        for rot, pos in zip(rots, poss):
-            if (
-                obj._object_type == "CylinderSegment"
-            ):  # change cylinder_tile draw_pos to geo center
-                odim = obj.dimension
-                r1, r2, _, phi1, phi2 = odim
-                phi_mid = (phi1 + phi2) / 2 * np.pi / 180
-                r_mid = (r2 + r1) / 2
-                shift = r_mid * np.array([np.cos(phi_mid), np.sin(phi_mid), 0])
-                shift = rot.apply(shift)
-                draw_pos += [pos + shift]
-            else:
-                draw_pos += [pos]
+        for rot, pos, ind in zip(rots, poss, inds):
+            if obj._object_type == "CylinderSegment":
+                # change cylinder_tile draw_pos to barycenter
+                pos = obj._barycenter[ind]
+            draw_pos += [pos]
             direc = mag / (np.linalg.norm(mag) + 1e-6)
             draw_direc += [rot.apply(direc)]
         draw_pos = np.array(draw_pos)
@@ -139,7 +131,7 @@ def draw_pixel(sensors, ax, col, pixel_col, pixel_size, pixel_symb, show_path):
     # collect sensor and pixel positions in global CS
     pos_sens, pos_pixel = [], []
     for sens in sensors:
-        rots, poss = get_rot_pos_from_path(sens, show_path)
+        rots, poss, _ = get_rot_pos_from_path(sens, show_path)
 
         pos_pixel_flat = np.reshape(sens.pixel, (-1, 3))
 
@@ -177,7 +169,7 @@ def draw_sensors(sensors, ax, sys_size, show_path, size, arrows_style):
     # collect plot data
     possis, exs, eys, ezs = [], [], [], []
     for sens in sensors:
-        rots, poss = get_rot_pos_from_path(sens, show_path)
+        rots, poss, _ = get_rot_pos_from_path(sens, show_path)
 
         for rot, pos in zip(rots, poss):
             possis += [pos]
@@ -216,7 +208,7 @@ def draw_dipoles(dipoles, ax, sys_size, show_path, size, color, pivot):
     # collect plot data
     possis, moms = [], []
     for dip in dipoles:
-        rots, poss = get_rot_pos_from_path(dip, show_path)
+        rots, poss, _ = get_rot_pos_from_path(dip, show_path)
 
         mom = dip.moment / np.linalg.norm(dip.moment)
 
@@ -254,7 +246,7 @@ def draw_circular(circulars, show_path, col, size, width, ax):
     for circ in circulars:
 
         # add src attributes position and orientation depending on show_path
-        rots, poss = get_rot_pos_from_path(circ, show_path)
+        rots, poss, _ = get_rot_pos_from_path(circ, show_path)
 
         # init orientation line positions
         vertices = draw_arrowed_circle(circ.current, circ.diameter, size, discret).T
@@ -278,7 +270,7 @@ def draw_line(lines, show_path, col, size, width, ax) -> list:
     for line in lines:
 
         # add src attributes position and orientation depending on show_path
-        rots, poss = get_rot_pos_from_path(line, show_path)
+        rots, poss, _ = get_rot_pos_from_path(line, show_path)
 
         # init orientation line positions
         if size != 0:
@@ -303,7 +295,8 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     ]
     path_traces_extra = {}
     points = []
-    for orient, pos in zip(*get_rot_pos_from_path(obj, show_path)):
+    rots, poss, _ = get_rot_pos_from_path(obj, show_path)
+    for orient, pos in zip(rots, poss):
         for extr in extra_model3d_traces:
             obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:

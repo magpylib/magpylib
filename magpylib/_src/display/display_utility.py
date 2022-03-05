@@ -186,7 +186,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.array([path_len - 1])
     rots = orient[inds]
     poss = pos[inds]
-    return rots, poss
+    return rots, poss, inds
 
 
 def faces_cuboid(src, show_path):
@@ -212,7 +212,7 @@ def faces_cuboid(src, show_path):
     )
     vert0 = vert0 - src.dimension / 2
 
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     faces = []
     for rot, pos in zip(rots, poss):
@@ -265,7 +265,7 @@ def faces_cylinder(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -346,7 +346,7 @@ def faces_cylinder_segment(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -400,7 +400,7 @@ def faces_sphere(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
