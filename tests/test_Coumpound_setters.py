@@ -1,4 +1,3 @@
-
 # pylint: disable=eval-used
 # pylint: disable=unused-import
 import os
@@ -36,10 +35,15 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     c.style.label = label
 
     trace = make_Prism(
-        base=Ncubes, diameter=diameter + height * 2, height=height * 0.5
+        'plotly',
+        base=Ncubes,
+        diameter=diameter + height * 2,
+        height=height * 0.5,
+        opacity=0.5,
+        color="blue",
     )
-    trace_plotly = {**trace, "opacity": 0.5, "color": "blue"}
-    c.style.model3d.data = [dict(backend="plotly", trace=trace_plotly)]
+
+    c.style.model3d.data = [trace]
     return c
 
 
@@ -54,8 +58,8 @@ def create_compound_set(show=False, **kwargs):
         magnetization_color_south="cyan",
     )
     c2 = make_wheel(label="Magnetic Wheel before")
-    c2.style.model3d.data[0].trace["color"] = "red"
-    c2.style.model3d.data[0].trace["opacity"] = 0.1
+    c2.style.model3d.data[0].kwargs["color"] = "red"
+    c2.style.model3d.data[0].kwargs["opacity"] = 0.1
     c2.set_children_styles(path_show=False, opacity=0.1)
     for k, v in kwargs.items():
         setattr(c1, k, eval(v))

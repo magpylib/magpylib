@@ -158,12 +158,13 @@ def test_matplotlib_model3d_extra():
     # using "plot"
     xs,ys,zs = [(1,2)]*3
     trace1 = dict(
-        type='plot',
+        backend='matplotlib',
+        constructor='plot',
         args=(xs,ys,zs),
-        ls='-',
+        kwargs=dict(ls='-'),
     )
     obj1 = magpy.misc.Dipole(moment=(0,0,1))
-    obj1.style.model3d.add_trace(trace=trace1, backend="matplotlib")
+    obj1.style.model3d.add_trace(**trace1)
 
     # using "plot_surface"
     u, v = np.mgrid[0:2 * np.pi:6j, 0:np.pi:6j]
@@ -171,12 +172,15 @@ def test_matplotlib_model3d_extra():
     ys = np.sin(u) * np.sin(v)
     zs = np.cos(v)
     trace2 = dict(
-        type='plot_surface',
-        args=(xs,ys,zs),
-        cmap=plt.cm.YlGnBu_r,
+        backend='matplotlib',
+        constructor='plot_surface',
+        kwargs=dict(
+            args=(xs,ys,zs),
+            cmap=plt.cm.YlGnBu_r,
+        )
     )
     obj2 = magpy.Collection()
-    obj2.style.model3d.add_trace(trace=trace2, backend='matplotlib')
+    obj2.style.model3d.add_trace(**trace2)
 
     # using "plot_trisurf"
     u, v = np.mgrid[0:2*np.pi:6j, -.5:.5:6j]
@@ -186,13 +190,16 @@ def test_matplotlib_model3d_extra():
     zs = 0.5 * v * np.sin(u / 2.0)
     tri = mtri.Triangulation(u, v)
     trace3 = dict(
-        type="plot_trisurf",
+        backend='matplotlib',
+        constructor='plot_trisurf',
         args=(xs,ys,zs),
-        triangles=tri.triangles,
-        cmap=plt.cm.Spectral,
+        kwargs=dict(
+            triangles=tri.triangles,
+            cmap=plt.cm.Spectral,
+        )
     )
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
-    obj3.style.model3d.add_trace(trace=trace3, backend="matplotlib")
+    obj3.style.model3d.add_trace(**trace3)
 
     magpy.show(obj1, obj2, obj3)
 
@@ -206,13 +213,14 @@ def test_matplotlib_model3d_extra_bad_input():
 
     xs,ys,zs = [(1,2)]*3
     trace = dict(
-        type='plot',
+        backend='matplotlib',
+        constructor='plot',
         argss=(xs,ys,zs),   # bad input
         ls='-',
     )
     obj = magpy.misc.Dipole(moment=(0,0,1))
-    with pytest.raises(ValueError):
-        obj.style.model3d.add_trace(trace=trace, backend="matplotlib")
+    with pytest.raises(TypeError):
+        obj.style.model3d.add_trace(**trace)
         ax = plt.subplot(projection="3d")
         obj.show(canvas=ax)
 
