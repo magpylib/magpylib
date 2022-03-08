@@ -295,15 +295,15 @@ def make_CylinderSegment(
     j5 = np.array([2 * N, 0])
     k5 = np.array([3 * N, 3 * N])
 
-    i = np.hstack(
-        [i1, i2, i1 + 2 * N, i2 + 2 * N, i3, i4, i3 + N, i4 + N, i5, i5 + N - 1]
-    )
-    j = np.hstack(
-        [j1, j2, k1 + 2 * N, k2 + 2 * N, j3, j4, k3 + N, k4 + N, j5, k5 + N - 1]
-    )
-    k = np.hstack(
-        [k1, k2, j1 + 2 * N, j2 + 2 * N, k3, k4, j3 + N, j4 + N, k5, j5 + N - 1]
-    )
+    i = [i1, i2, i1 + 2 * N, i2 + 2 * N, i3, i4, i3 + N, i4 + N]
+    j = [j1, j2, k1 + 2 * N, k2 + 2 * N, j3, j4, k3 + N, k4 + N]
+    k = [k1, k2, j1 + 2 * N, j2 + 2 * N, k3, k4, j3 + N, j4 + N]
+
+    if phi2-phi1!=360:
+        i.extend([i5, i5 + N - 1])
+        j.extend([k5, k5 + N - 1])
+        k.extend([j5, j5 + N - 1])
+    i,j,k = (np.hstack(l) for l in (i,j,k))
 
     trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
