@@ -15,13 +15,13 @@ kernelspec:
 
 # Animate paths
 
-With the powerful Plotly backend, Magpylib supports animation of the object paths through the `animation` kwarg of the `show` function. Animations can be fine-tuned with the following properties:
+With the Plotly backend, paths can automatically be animated with `show(animation=True)`. Animations can be fine-tuned with the following properties:
 
-1. `animation_time` must be a positive number that gives the animation time in seconds.
-2. `animation_slider` is boolean and sets if a slider should be displayed in addition.
-3. `animation_fps` sets the frames per second.
+1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
+2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed in addition.
+3. `animation_fps` (default=30), sets the maximal frames per second.
 
-Ideally, the animation will show all path steps, but when e.g. `time` and `fps` are too low, specific equidistant frames will be selected to adjust to the limited display possibilities. The `show` input `animation=15` will automatially set `animation=True` and `animation_time=15`.
+Ideally, the animation will show all path steps, but when e.g. `time` and `fps` are too low, specific equidistant frames will be selected to adjust to the limited display possibilities. For practicality, the input `animation=x` will automatially set `animation=True` and `animation_time=x`.
 
 The following example demonstrates the animation feature,
 

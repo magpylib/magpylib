@@ -77,9 +77,6 @@ def check_input_animation(inp):
 #################################################################
 # SIMPLE CHECKS
 
-#################################################################
-#################################################################
-# SIMPLE CHECKS
 
 def check_start_type(inp):
     """start input must be int or str"""
@@ -131,8 +128,8 @@ def validate_field_lambda(val, bh):
         if case2:
             raise MagpylibBadUserInput(
                 f"Input parameter `field_{bh}_lambda` must be a callable function"
-                " and return a field ndarray of shape (3,) or (n,3) when its `observer`"
-                " input is of shape (3,) or (n,3) respectively.\n"
+                " and return a field ndarray of shape (n,3) when its `observer`"
+                " input is of shape (n,3).\n"
                 f"Instead received shape {out_shape}.")
     return val
 

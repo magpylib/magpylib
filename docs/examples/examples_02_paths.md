@@ -15,9 +15,10 @@ kernelspec:
 
 # Paths
 
-## Assigning an object path
+(examples-assign-absolute-path)=
+## Assigning absolute paths
 
-When the user already knows the **absolute path** of an object in the form of a position array (shape (n,3)) and a scipy `Rotation` object (len n) he can assign this path to an object either at initialization, or by using the setter and getter methods:
+Absolute object paths are assigned at initialization or with the getter and setter methods.:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -26,7 +27,7 @@ import magpylib as magpy
 
 ts = np.linspace(0, 10, 51)
 pos = np.array([(t, 0, np.sin(t)) for t in ts])
-ori = R.from_rotvec(np.array([(0, -np.cos(t), 0) for t in ts]))
+ori = R.from_rotvec(np.array([(0, -np.cos(t)*0.785, 0) for t in ts]))
 
 # set path at initialization
 sens1 = magpy.Sensor(position=pos, orientation=ori)
@@ -39,37 +40,75 @@ sens2.orientation = ori
 magpy.show(sens1, sens2, style_path_frames=10)
 ```
 
-When the user wants apply a **relative path** with respect to the existing object path he should make use of the `move` and `rotate` methods. They are specifically useful when appending relative positions to an existing path:
+(examples-move-and-rotate)=
+## Move and rotate
+
+The attributes position and orientation can be either of “scalar” nature, i.e. a single position or a single rotation, or “vectors” when they are arrays of such scalars. The two attributes together define an object “path”.
+
+The move and rotate methods obey the following rules:
+
+- Scalar input is applied to the whole object path, starting with path index `start`. With the default `start='auto'` the index is set to `start=0` and the functionality is *moving objects around*.
+- Vector input of length $n$ applies the individual $n$ operations to $n$ object path entries, starting with path index `start`. Padding applies when the input exceeds the existing path. With the default `start='auto'` the index is set to `start=len(object path)` and the functionality is *appending paths*.
+
+The following example demonstrates this functionality (works similarly for rotations):
+
+```python
+import magpylib as magpy
+
+sens = magpy.Sensor()
+
+sens.move((1,1,1))                                      # scalar input is by default applied
+print(sens.position)                                    # to the whole path
+# out: [1. 1. 1.]
+
+sens.move([(1,1,1), (2,2,2)])                           # vector input is by default appended
+print(sens.position)                                    # to the existing path
+# out: [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
+
+sens.move((1,1,1), start=1)                             # scalar input and start=1 is applied
+print(sens.position)                                    # to whole path starting at index 1
+# out: [[1. 1. 1.]  [3. 3. 3.]  [4. 4. 4.]]
+
+sens.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
+print(sens.position)                                    # the input with the existing path
+# out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]    # starting at index 1.
+```
+
+(examples-relative-paths)=
+
+## Relative paths
+
+`move` and `rotate` input is interpreted relative to the existing path. Vector input is by default appended to the existing path. The combination leads to the following behavior,
 
 ```{code-cell} ipython3
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 
 pos1 = np.linspace((0,0,0), (10,0,0), 10)[1:]
 pos2 = np.linspace((0,0,0), (0,0,10), 10)[1:]
 
-# set path at initialization
-sens = magpy.Sensor(position=pos1)
+sens = magpy.Sensor()
 
-# append relative paths to the existing one
-sens.move(pos2)
-sens.move(pos1)
+for _ in range(3):
+    sens.move(pos1).move(pos2)
 
 magpy.show(sens)
 ```
 
+(examples-merging-paths)=
+
 ## Merging paths
 
-Complex paths can be created by merging multiple path operations using vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation after path index 20, to create a spiral path:
+Complex paths can be created by merging multiple path operations using vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation is applied about the origin, which creates a spiral motion.
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
 src =  magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(2,2,2))
-src.move(np.linspace((0,0,0), (10,0,0), 60)[1:])
-src.rotate_from_rotvec(np.linspace((0,0,0), (0,0,720), 60), anchor=0, start=20)
+src.position = np.linspace((0,0,0), (10,0,0), 60)
+src.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), start=0)
+src.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), anchor=0, start=30)
 
 src.show(backend='plotly', animation=True)
 ```

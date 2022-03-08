@@ -11,8 +11,7 @@ kernelspec:
   name: python3
 ---
 
-This section includes code examples that show how the library can be used and what it can be used for.
-Detailed package, class, method and function documentations are found in the library docstrings {ref}`genindex`. A technical introduction is given in {ref}`intro`.
+This section includes code examples. Detailed package, class, method and function documentations are found in the {ref}`modindex`. A technical introduction is given in {ref}`intro`.
 
 Application Examples
 ====================

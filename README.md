@@ -44,8 +44,8 @@
 
 ### What is magpylib ?
 - Python package for calculating 3D static magnetic fields of magnets, currents and other sources.
-- The fields are computed using analytical solutions (very fast computations, simple geometries and superpositions thereof).
-- The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to model relative positioning between sources and observers.
+- The fields are computed using analytical solutions (very fast, simple geometries).
+- The field computation is coupled to a geometry interface (position, orientation, paths) which makes it convenient to model relative movement between sources and observers.
 
 <p align="center">
     <img align='center' src=docs/_static/images/index/source_fundamentals.png>
@@ -54,28 +54,12 @@
 ---
 
 ### Dependencies:
-_Python3.7+_, _Numpy_, _Matplotlib_, _Scipy_, _Plotly_ (optional)
+_Python3.7+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
 
 ---
 
-### Docu & Install:
+### Documentation & Install:
 
 **Please check out our [documentation](https://magpylib.readthedocs.io/en/latest) for installation, examples and detailed information!**
 
-Installing this project using pip
-  ```
-  pip install magpylib
-  ```
-
-or conda
-  ```
-  conda install magpylib
-  ```
-
-Installing this project locally:
-- Clone this repository to your machine.
-- In the directory, run `pip install .` in your (conda) terminal.
-
-
-
-
+Magpylib is on PyPI and conda-forge. Install using **pip** (`pip install magpylib`) or **conda** (`conda install magpylib`) package managers.
