@@ -15,7 +15,7 @@ class MagpyMarkers:
         self.style = Markers()
         self.markers = np.array(markers)
 
-
+# pylint: disable=too-many-branches
 def place_and_orient_model3d(
     model_kwargs,
     model_args=None,
