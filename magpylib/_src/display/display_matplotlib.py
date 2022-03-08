@@ -298,9 +298,11 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     for orient, pos in zip(rots, poss):
         for extr in extra_model3d_traces:
             if extr.show:
+                kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+                args = extr.args() if callable(extr.args) else extr.args
                 kwargs, args, vertices = place_and_orient_model3d(
-                    model_kwargs=extr.kwargs,
-                    model_args=extr.args,
+                    model_kwargs=kwargs,
+                    model_args=args,
                     orientation=orient,
                     position=pos,
                     coordsargs=extr.coordsargs,

@@ -193,7 +193,7 @@ def test_matplotlib_model3d_extra():
     trace3 = dict(
         backend='matplotlib',
         constructor='plot_trisurf',
-        args=(xs,ys,zs),
+        args=lambda:(xs,ys,zs), # test callable args
         kwargs=dict(
             triangles=tri.triangles,
             cmap=plt.cm.Spectral,
@@ -201,8 +201,6 @@ def test_matplotlib_model3d_extra():
     )
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
     obj3.style.model3d.add_trace(**trace3)
-
-    magpy.show(obj1, obj2, obj3)
 
     ax = plt.subplot(projection="3d")
     x = magpy.show(obj1, obj2, obj3, canvas=ax)
