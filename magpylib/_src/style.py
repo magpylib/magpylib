@@ -270,36 +270,58 @@ class Model3d(MagicProperties):
             val = [val]
         m3 = []
         for v in val:
-            v = validate_property_class(v, "data", Trace3d, self)
+            if not isinstance(v, Trace3d):
+                v = validate_property_class(v, "data", Trace3d, self)
             m3.append(v)
         return m3
 
-    def add_trace(self, trace, show=True, backend="matplotlib", coordsargs=None, scale=1):
-        """Creates an additional user-defined 3d model object which is positioned relatively
-        to the main object to be displayed and moved automatically with it. This feature also allows
-        the user to replace the original 3d representation of the object.
+    def add_trace(
+        self,
+        backend=None,
+        constructor=None,
+        args=None,
+        kwargs=None,
+        show=None,
+        coordsargs=None,
+        scale=1,
+    ):
+        """Adds user-defined 3d model object which is positioned relatively to the main object to be
+        displayed and moved automatically with it. This feature also allows the user to replace the
+        original 3d representation of the object.
 
-        Properties
-        ----------
-        show : bool, default=None
-            Shows/hides model3d object based on provided trace.
-
-        trace: dict or callable, default=None
-            Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object.
-
-        backend: str, default='matplotlib'
+        backend: str
             Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+        constructor: str
+            Model constructor function or method to be called to build a 3D-model object
+            (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+
+        args: tuple, default=None
+            Tuple or callable returning a tuple containing positional arguments for building a
+            3D-model object.
+
+        kwargs: dict or callable, default=None
+            Dictionary or callable returning a dictionary containing the keys/values pairs for
+            building a 3D-model object.
 
         coordsargs: dict, default=None
             Tells magpylib the name of the coordinate arrays to be moved or rotated,
-            by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
+                by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
+
+        show: bool, default=None
+            Shows/hides model3d object based on provided trace.
 
         scale: float, default=1
             Scaling factor by which the trace vertices coordinates are multiplied.
         """
-
         new_trace = Trace3d(
-            trace=trace, show=show, scale=scale, backend=backend, coordsargs=coordsargs,
+            backend=backend,
+            constructor=constructor,
+            args=args,
+            kwargs=kwargs,
+            coordsargs=coordsargs,
+            show=show,
+            scale=scale,
         )
         self._data += self._validate_data(new_trace)
         return self
@@ -312,40 +334,103 @@ class Trace3d(MagicProperties):
 
     Parameters
     ----------
-    show : bool, default=None
-        Shows/hides model3d object based on provided trace.
-
-    trace: dict or callable, default=None
-        Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object.
-
-    scale: float, default=1
-        Scaling factor by which the trace vertices coordinates are multiplied.
-
-    backend: str, default='matplotlib'
+    backend: str
         Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+    constructor: str
+        Model constructor function or method to be called to build a 3D-model object
+        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+
+    args: tuple, default=None
+        Tuple or callable returning a tuple containing positional arguments for building a
+        3D-model object.
+
+    kwargs: dict or callable, default=None
+        Dictionary or callable returning a dictionary containing the keys/values pairs for
+        building a 3D-model object.
 
     coordsargs: dict, default=None
         Tells magpylib the name of the coordinate arrays to be moved or rotated,
             by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
+
+    show: bool, default=None
+        Shows/hides model3d object based on provided trace.
+
+    scale: float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
     """
 
     def __init__(
         self,
-        trace=None,
-        scale=1,
-        show=True,
-        backend="matplotlib",
+        backend=None,
+        constructor=None,
+        args=None,
+        kwargs=None,
         coordsargs=None,
-        **kwargs,
+        show=True,
+        scale=1,
+        **params,
     ):
         super().__init__(
-            trace=trace,
-            scale=scale,
-            show=show,
             backend=backend,
+            constructor=constructor,
+            args=args,
+            kwargs=kwargs,
             coordsargs=coordsargs,
-            **kwargs,
+            show=show,
+            scale=scale,
+            **params,
         )
+
+    @property
+    def args(self):
+        """Tuple or callable returning a tuple containing positional arguments for building a
+        3D-model object."""
+        return self._args
+
+    @args.setter
+    def args(self, val):
+        if val is not None:
+            test_val = val
+            if callable(val):
+                test_val = val()
+            assert isinstance(test_val, tuple), (
+                "The `trace` input must be a dictionary or a callable returning a dictionary,\n"
+                f"but received {type(val).__name__} instead."
+            )
+        self._args = val
+
+    @property
+    def kwargs(self):
+        """Dictionary or callable returning a dictionary containing the keys/values pairs for
+        building a 3D-model object."""
+        return self._kwargs
+
+    @kwargs.setter
+    def kwargs(self, val):
+        if val is not None:
+            test_val = val
+            if callable(val):
+                test_val = val()
+            assert isinstance(test_val, dict), (
+                "The `kwargs` input must be a dictionary or a callable returning a dictionary,\n"
+                f"but received {type(val).__name__} instead."
+            )
+        self._kwargs = val
+
+    @property
+    def constructor(self):
+        """Model constructor function or method to be called to build a 3D-model object
+        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend."""
+        return self._constructor
+
+    @constructor.setter
+    def constructor(self, val):
+        assert isinstance(val, str), (
+            f"The `constructor` property of {type(self).__name__} must be a string,"
+            f"\nbut received {repr(val)} instead."
+        )
+        self._constructor = val
 
     @property
     def show(self):
@@ -383,30 +468,14 @@ class Trace3d(MagicProperties):
 
     @coordsargs.setter
     def coordsargs(self, val):
-        assert val is None or (isinstance(val, dict) and all(key in val for key in "xyz")), (
+        assert val is None or (
+            isinstance(val, dict) and all(key in val for key in "xyz")
+        ), (
             f"The `coordsargs` property of {type(self).__name__} must be "
             f"a dictionary with `'x', 'y', 'z'` keys,\n"
             f"but received {repr(val)} instead."
         )
         self._coordsargs = val
-
-    @property
-    def trace(self):
-        """Dictionary containing the `x,y,z,i,j,k` keys/values pairs for a model3d object."""
-        return self._trace
-
-    @trace.setter
-    def trace(self, val):
-        if val is not None:
-            assert isinstance(val, dict) or callable(val), (
-                "The `trace` input must be a dictionary or a callable returning a dictionary,\n"
-                f"but received {type(val).__name__} instead."
-            )
-            test_val = val
-            if callable(val):
-                test_val = val()
-            assert "type" in test_val, "explicit trace `type` must be defined"
-        self._trace = val
 
     @property
     def backend(self):
@@ -722,6 +791,7 @@ class ArrowSingle(MagicProperties):
     color: color, default=None
         Valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
     """
+
     def __init__(self, show=True, color=None):
         super().__init__(show=show, color=color)
 

@@ -5,19 +5,19 @@ library.
 """
 
 __all__ = [
-    "make_BaseArrow",
-    "make_BaseEllipsoid",
-    "make_BaseCone",
-    "make_BaseCuboid",
-    "make_BaseCylinderSegment",
-    "make_BasePrism",
+    "make_Arrow",
+    "make_Ellipsoid",
+    "make_Pyramid",
+    "make_Cuboid",
+    "make_CylinderSegment",
+    "make_Prism",
 ]
 
-from magpylib._src.display.plotly.plotly_base_traces import (
-    make_BaseArrow,
-    make_BaseEllipsoid,
-    make_BaseCone,
-    make_BaseCuboid,
-    make_BaseCylinderSegment,
-    make_BasePrism,
+from magpylib._src.display.base_traces import (
+    make_Arrow,
+    make_Ellipsoid,
+    make_Pyramid,
+    make_Cuboid,
+    make_CylinderSegment,
+    make_Prism,
 )

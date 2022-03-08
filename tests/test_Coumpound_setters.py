@@ -8,7 +8,7 @@ from scipy.spatial.transform import Rotation as R
 import numpy as np
 import plotly.graph_objects as go
 import magpylib as magpy
-from magpylib._src.display.plotly.plotly_base_traces import make_BasePrism
+from magpylib._src.display.base_traces import make_Prism
 
 magpy.defaults.display.backend = "plotly"
 
@@ -35,8 +35,8 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     c.move(np.linspace((0, 0, 0), (0, 0, 200), path_len), start=0)
     c.style.label = label
 
-    trace = make_BasePrism(
-        base_vertices=Ncubes, diameter=diameter + height * 2, height=height * 0.5
+    trace = make_Prism(
+        base=Ncubes, diameter=diameter + height * 2, height=height * 0.5
     )
     trace_plotly = {**trace, "opacity": 0.5, "color": "blue"}
     c.style.model3d.data = [dict(backend="plotly", trace=trace_plotly)]
