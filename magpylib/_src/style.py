@@ -281,7 +281,7 @@ class Model3d(MagicProperties):
         constructor=None,
         args=None,
         kwargs=None,
-        show=None,
+        show=True,
         coordsargs=None,
         scale=1,
     ):
@@ -439,7 +439,7 @@ class Trace3d(MagicProperties):
 
     @show.setter
     def show(self, val):
-        assert val is None or isinstance(val, bool), (
+        assert isinstance(val, bool), (
             f"The `show` property of {type(self).__name__} must be "
             f"one of `[True, False]`,\n"
             f"but received {repr(val)} instead."

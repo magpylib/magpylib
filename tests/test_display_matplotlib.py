@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
+from magpylib.graphics.model import make_Cuboid
 
 # pylint: disable=assignment-from-no-return
 
@@ -174,8 +175,8 @@ def test_matplotlib_model3d_extra():
     trace2 = dict(
         backend='matplotlib',
         constructor='plot_surface',
+        args=(xs,ys,zs),
         kwargs=dict(
-            args=(xs,ys,zs),
             cmap=plt.cm.YlGnBu_r,
         )
     )
@@ -215,11 +216,11 @@ def test_matplotlib_model3d_extra_bad_input():
     trace = dict(
         backend='matplotlib',
         constructor='plot',
-        argss=(xs,ys,zs),   # bad input
-        ls='-',
+        kwargs={'xs':xs,'ys':ys,'zs':zs},
+        coordsargs={'x':'xs','y':'ys','z':'Z'}   # bad Z input
     )
     obj = magpy.misc.Dipole(moment=(0,0,1))
-    with pytest.raises(TypeError):
+    with pytest.raises(ValueError):
         obj.style.model3d.add_trace(**trace)
         ax = plt.subplot(projection="3d")
         obj.show(canvas=ax)
@@ -230,3 +231,11 @@ def test_empty_display():
     ax = plt.subplot(projection="3d")
     x = magpy.show(canvas=ax, backend="matplotlib")
     assert x is None, "empty display matplotlib test fail"
+
+def test_graphics_model_mpl():
+    """test base extra graphics with mpl"""
+    ax = plt.subplot(projection="3d")
+    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c.rotate_from_angax(33,'x', anchor=0)
+    c.style.model3d.add_trace(**make_Cuboid('matplotlib', position=(2, 0, 0)))
+    c.show(canvas=ax, style_path_frames=1, backend='matplotlib')
