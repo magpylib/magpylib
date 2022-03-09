@@ -354,7 +354,7 @@ class Trace3d(MagicProperties):
         Tells magpylib the name of the coordinate arrays to be moved or rotated,
             by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
 
-    show: bool, default=None
+    show: bool, default=True
         Shows/hides model3d object based on provided trace.
 
     scale: float, default=1

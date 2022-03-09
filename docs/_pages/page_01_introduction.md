@@ -495,37 +495,34 @@ import magpylib as magpy
 # define B-field function for custom source
 def custom_field(pos):
     """ easter field"""
-    dist = np.linalg.norm(pos)
-    return np.tile((0,0,1/dist), (len(pos),1))
+    dist = np.linalg.norm(pos, axis=1)
+    return np.c_[np.zeros((len(pos),2)), 1/dist**3]
 
 # create custom source
 egg = magpy.misc.CustomSource(
     field_B_lambda=custom_field,
-    position=(0,0,0.75),
     style=dict(color='orange', model3d_showdefault=False, label='The Egg'),
 )
 
 # add a custom 3D model
-egg.style.model3d.add_trace(
-    trace=magpy.display.plotly.make_BaseEllipsoid((1,1,1.5)),
+trace = magpy.graphics.model3d.make_Ellipsoid(
     backend='plotly',
+    dimension=(1,1,1.4),
 )
+egg.style.model3d.add_trace(trace)
 
-# move around
-ts = np.linspace(0, 2, 70)
-egg.rotate_from_angax(
-    angle=50*np.cos(10*ts)*np.exp(-ts**2),
-    axis=(1,-1,0),
-    anchor=0,
-    start=0
-)
+# move the egg
+ts = np.linspace(-2*np.pi, 2*np.pi, 70)
+ts = ts + 0.75*np.sin(ts-np.pi/8)**2
+egg.position = [(t/3, 0, -0.2*np.sin(t)**2) for t in ts]
+egg.rotate_from_euler(ts, 'y', start=0, degrees=False)
 
 # add sensor and compute field on path
-sens = magpy.Sensor(position=(0,0,2.5))
-B = sens.getB(egg)
+sensor = magpy.Sensor(position=(0,0,1.5))
+B = sensor.getB(egg, style_size=2)
 
 # animate path and plot field
-magpy.show(egg, sens, backend='plotly', animation=True, style_path_show=False)
+magpy.show(egg, sensor, backend='plotly', animation=True, style_path_show=False)
 
 fig = go.Figure()
 for i,lab in enumerate(['Bx', 'By', 'Bz']):
