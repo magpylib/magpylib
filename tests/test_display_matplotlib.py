@@ -223,6 +223,26 @@ def test_matplotlib_model3d_extra_bad_input():
         ax = plt.subplot(projection="3d")
         obj.show(canvas=ax)
 
+def test_matplotlib_model3d_extra_updatefunc():
+    """test display extra model3d"""
+    ax = plt.subplot(projection="3d")
+    obj = magpy.misc.Dipole(moment=(0,0,1))
+    updatefunc=lambda : make_Cuboid('matplotlib', position=(2, 0, 0))
+    obj.style.model3d.add_trace(updatefunc=updatefunc)
+    ax = plt.subplot(projection="3d")
+    obj.show(canvas=ax)
+
+    with pytest.raises(AssertionError):
+        updatefunc = 'not callable'
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
+
+    with pytest.raises(AssertionError):
+        updatefunc = lambda: 'bad output type'
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
+
+    with pytest.raises(AssertionError):
+        updatefunc = lambda: {'bad_key': 'some_value'}
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
 
 def test_empty_display():
     """should not fail if nothing to display"""

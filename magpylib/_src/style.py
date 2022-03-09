@@ -284,6 +284,7 @@ class Model3d(MagicProperties):
         show=True,
         coordsargs=None,
         scale=1,
+        updatefunc=None,
     ):
         """Adds user-defined 3d model object which is positioned relatively to the main object to be
         displayed and moved automatically with it. This feature also allows the user to replace the
@@ -313,6 +314,13 @@ class Model3d(MagicProperties):
 
         scale: float, default=1
             Scaling factor by which the trace vertices coordinates are multiplied.
+
+        updatefunc: callable, default=None
+            Callable object with no arguments. Should return a dictionary with keys from the
+            trace parameters. If provided, the function is called at `show` time and updates the
+            trace parameters with the output dictionary. This allows to update a trace dynamically
+            depending on class attributes, and postpone the trace construction to when the object is
+            displayed.
         """
         new_trace = Trace3d(
             backend=backend,
@@ -322,6 +330,7 @@ class Model3d(MagicProperties):
             coordsargs=coordsargs,
             show=show,
             scale=scale,
+            updatefunc=updatefunc,
         )
         self._data += self._validate_data(new_trace)
         return self
@@ -358,6 +367,13 @@ class Trace3d(MagicProperties):
 
     scale: float, default=1
         Scaling factor by which the trace vertices coordinates are multiplied.
+
+    updatefunc: callable, default=None
+        Callable object with no arguments. Should return a dictionary with keys from the
+        trace parameters. If provided, the function is called at `show` time and updates the
+        trace parameters with the output dictionary. This allows to update a trace dynamically
+        depending on class attributes, and postpone the trace construction to when the object is
+        displayed.
     """
 
     def __init__(
@@ -369,6 +385,7 @@ class Trace3d(MagicProperties):
         coordsargs=None,
         show=True,
         scale=1,
+        updatefunc=None,
         **params,
     ):
         super().__init__(
@@ -379,6 +396,7 @@ class Trace3d(MagicProperties):
             coordsargs=coordsargs,
             show=show,
             scale=scale,
+            updatefunc=updatefunc,
             **params,
         )
 
@@ -426,7 +444,7 @@ class Trace3d(MagicProperties):
 
     @constructor.setter
     def constructor(self, val):
-        assert isinstance(val, str), (
+        assert val is None or isinstance(val, str), (
             f"The `constructor` property of {type(self).__name__} must be a string,"
             f"\nbut received {repr(val)} instead."
         )
@@ -491,6 +509,39 @@ class Trace3d(MagicProperties):
             f"but received {repr(val)} instead."
         )
         self._backend = val
+
+    @property
+    def updatefunc(self):
+        """Callable object with no arguments. Should return a dictionary with keys from the
+        trace parameters. If provided, the function is called at `show` time and updates the
+        trace parameters with the output dictionary. This allows to update a trace dynamically
+        depending on class attributes, and postpone the trace construction to when the object is
+        displayed."""
+        return self._updatefunc
+
+    @updatefunc.setter
+    def updatefunc(self, val):
+        if val is None:
+            val = lambda: {}
+        msg = ""
+        valid_props = list(self._property_names_generator())
+        if not callable(val):
+            msg = f"Instead received {type(val)}"
+        else:
+            test_val = val()
+            if not isinstance(test_val, dict):
+                msg = f"but callable returned type {type(test_val)}."
+            else:
+                bad_keys = [k for k in test_val.keys() if k not in valid_props]
+                if bad_keys:
+                    msg = f"but invalid output dictionary keys received: {bad_keys}."
+
+        assert msg == "", (
+            f"The `updatefunc` property of {type(self).__name__} must be a callable returning a "
+            f"dictionary with a subset of following keys: {valid_props} keys.\n"
+            f"{msg}"
+        )
+        self._updatefunc = val
 
 
 class Magnetization(MagicProperties):

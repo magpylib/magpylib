@@ -575,9 +575,6 @@ def get_plotly_traces(
         extra_model3d_traces = (
             style.model3d.data if style.model3d.data is not None else []
         )
-        extra_model3d_traces = [
-            t for t in extra_model3d_traces if t.backend == "plotly"
-        ]
         rots, poss, _ = get_rot_pos_from_path(input_obj, style.path.frames)
         for orient, pos in zip(rots, poss):
             if style.model3d.showdefault and make_func is not None:
@@ -586,35 +583,37 @@ def get_plotly_traces(
                 )
             for extr in extra_model3d_traces:
                 if extr.show:
-                    trace3d = {}
-                    ttype = extr.constructor.lower()
-                    obj_extr_trace = (
-                        extr.kwargs() if callable(extr.kwargs) else extr.kwargs
-                    )
-                    obj_extr_trace = {"type": ttype, **obj_extr_trace}
-                    if ttype == "mesh3d":
-                        trace3d["showscale"] = False
-                        if "facecolor" in obj_extr_trace:
-                            ttype = "mesh3d_facecolor"
-                    if ttype == "scatter3d":
-                        trace3d["marker_color"] = kwargs["color"]
-                        trace3d["line_color"] = kwargs["color"]
-                    else:
-                        trace3d["color"] = kwargs["color"]
-                    trace3d.update(
-                        linearize_dict(
-                            place_and_orient_model3d(
-                                model_kwargs=obj_extr_trace,
-                                orientation=orient,
-                                position=pos,
-                                scale=extr.scale,
-                            ),
-                            separator="_",
+                    extr.update(extr.updatefunc())
+                    if extr.backend == "plotly":
+                        trace3d = {}
+                        ttype = extr.constructor.lower()
+                        obj_extr_trace = (
+                            extr.kwargs() if callable(extr.kwargs) else extr.kwargs
                         )
-                    )
-                    if ttype not in path_traces_extra:
-                        path_traces_extra[ttype] = []
-                    path_traces_extra[ttype].append(trace3d)
+                        obj_extr_trace = {"type": ttype, **obj_extr_trace}
+                        if ttype == "mesh3d":
+                            trace3d["showscale"] = False
+                            if "facecolor" in obj_extr_trace:
+                                ttype = "mesh3d_facecolor"
+                        if ttype == "scatter3d":
+                            trace3d["marker_color"] = kwargs["color"]
+                            trace3d["line_color"] = kwargs["color"]
+                        else:
+                            trace3d["color"] = kwargs["color"]
+                        trace3d.update(
+                            linearize_dict(
+                                place_and_orient_model3d(
+                                    model_kwargs=obj_extr_trace,
+                                    orientation=orient,
+                                    position=pos,
+                                    scale=extr.scale,
+                                ),
+                                separator="_",
+                            )
+                        )
+                        if ttype not in path_traces_extra:
+                            path_traces_extra[ttype] = []
+                        path_traces_extra[ttype].append(trace3d)
         trace = merge_traces(*path_traces)
         for ind, traces_extra in enumerate(path_traces_extra.values()):
             extra_model3d_trace = merge_traces(*traces_extra)
