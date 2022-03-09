@@ -156,7 +156,7 @@ print(sens.position)                                     # out: [0. 0. 0.]
 print(sens.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
 ```
 
-Set absolute object position/orientation at initialization or using the attribute setter methods. Add relative position/orientation with the `move` and `rotate` methods,
+Set absolute object position/orientation at initialization or through the properties directly. Add relative position/orientation with the `move` and `rotate` methods,
 
 ```python
 import magpylib as magpy
@@ -167,7 +167,7 @@ sens = magpy.Sensor(position=(1,1,1))
 print(sens.position)                                     # out: [1. 1. 1.]
 print(sens.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
 
-# set with setters
+# set properties directly
 sens.orientation = R.from_rotvec((0,0,45), degrees=True)
 print(sens.position)                                     # out: [1. 1. 1.]
 print(sens.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 45.]
@@ -481,9 +481,9 @@ print(B)
 
 ## Customization
 
-**User-defined 3D models** (traces) that will be displayed with `show` can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly or `plot` and `plot_trisurf` in Matplotlib, and where to find some pre-defined models.
+**User-defined 3D models** (traces) that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts vizualization.
 
-**User-defined source classes** are easily realized through the `magpy.misc.CustomSource` class. Such a custom source object can be provided with user-defined field computation functions, that are stored in the attributes `field_B_lambda` and `field_H_lambda`, and will be used when `getB` and `getH` are called. The provided functions must accept position arrays with shape (n,3), and return the field with a similar shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
+**User-defined source classes** are easily realized through the `CustomSource` class. Such a custom source object can be provided with user-defined field computation functions, that are stored in the attributes `field_B_lambda` and `field_H_lambda`, and will be used when `getB` and `getH` are called. The provided functions must accept position arrays with shape (n,3), and return the field with a similar shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
 
 While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
 

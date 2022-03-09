@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-own-dynamic-3d-model)=
 
-# Own dynamic 3D model
+# Dynamic custom 3D model
 
 +++
 
