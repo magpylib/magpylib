@@ -427,4 +427,4 @@ class MagicProperties:
 
     def copy(self):
         """returns a copy of the current class instance"""
-        return type(self)(**self.as_dict())
+        return deepcopy(self)
