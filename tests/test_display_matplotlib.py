@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
-from magpylib.graphics.model import make_Cuboid
+from magpylib.graphics.model3d import make_Cuboid
 
 # pylint: disable=assignment-from-no-return
 
