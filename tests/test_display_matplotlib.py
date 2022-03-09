@@ -4,6 +4,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import magpylib as magpy
 from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
+from magpylib.graphics.model3d import make_Cuboid
 
 # pylint: disable=assignment-from-no-return
 
@@ -158,12 +159,13 @@ def test_matplotlib_model3d_extra():
     # using "plot"
     xs,ys,zs = [(1,2)]*3
     trace1 = dict(
-        type='plot',
+        backend='matplotlib',
+        constructor='plot',
         args=(xs,ys,zs),
-        ls='-',
+        kwargs=dict(ls='-'),
     )
     obj1 = magpy.misc.Dipole(moment=(0,0,1))
-    obj1.style.model3d.add_trace(trace=trace1, backend="matplotlib")
+    obj1.style.model3d.add_trace(**trace1)
 
     # using "plot_surface"
     u, v = np.mgrid[0:2 * np.pi:6j, 0:np.pi:6j]
@@ -171,12 +173,15 @@ def test_matplotlib_model3d_extra():
     ys = np.sin(u) * np.sin(v)
     zs = np.cos(v)
     trace2 = dict(
-        type='plot_surface',
+        backend='matplotlib',
+        constructor='plot_surface',
         args=(xs,ys,zs),
-        cmap=plt.cm.YlGnBu_r,
+        kwargs=dict(
+            cmap=plt.cm.YlGnBu_r,
+        )
     )
     obj2 = magpy.Collection()
-    obj2.style.model3d.add_trace(trace=trace2, backend='matplotlib')
+    obj2.style.model3d.add_trace(**trace2)
 
     # using "plot_trisurf"
     u, v = np.mgrid[0:2*np.pi:6j, -.5:.5:6j]
@@ -186,15 +191,16 @@ def test_matplotlib_model3d_extra():
     zs = 0.5 * v * np.sin(u / 2.0)
     tri = mtri.Triangulation(u, v)
     trace3 = dict(
-        type="plot_trisurf",
-        args=(xs,ys,zs),
-        triangles=tri.triangles,
-        cmap=plt.cm.Spectral,
+        backend='matplotlib',
+        constructor='plot_trisurf',
+        args=lambda:(xs,ys,zs), # test callable args
+        kwargs=dict(
+            triangles=tri.triangles,
+            cmap=plt.cm.Spectral,
+        )
     )
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
-    obj3.style.model3d.add_trace(trace=trace3, backend="matplotlib")
-
-    magpy.show(obj1, obj2, obj3)
+    obj3.style.model3d.add_trace(**trace3)
 
     ax = plt.subplot(projection="3d")
     x = magpy.show(obj1, obj2, obj3, canvas=ax)
@@ -206,19 +212,52 @@ def test_matplotlib_model3d_extra_bad_input():
 
     xs,ys,zs = [(1,2)]*3
     trace = dict(
-        type='plot',
-        argss=(xs,ys,zs),   # bad input
-        ls='-',
+        backend='matplotlib',
+        constructor='plot',
+        kwargs={'xs':xs,'ys':ys,'zs':zs},
+        coordsargs={'x':'xs','y':'ys','z':'Z'}   # bad Z input
     )
     obj = magpy.misc.Dipole(moment=(0,0,1))
     with pytest.raises(ValueError):
-        obj.style.model3d.add_trace(trace=trace, backend="matplotlib")
+        obj.style.model3d.add_trace(**trace)
         ax = plt.subplot(projection="3d")
         obj.show(canvas=ax)
 
+def test_matplotlib_model3d_extra_updatefunc():
+    """test display extra model3d"""
+    ax = plt.subplot(projection="3d")
+    obj = magpy.misc.Dipole(moment=(0,0,1))
+    updatefunc=lambda : make_Cuboid('matplotlib', position=(2, 0, 0))
+    obj.style.model3d.data = updatefunc
+    ax = plt.subplot(projection="3d")
+    obj.show(canvas=ax)
+
+    with pytest.raises(ValueError):
+        updatefunc = 'not callable'
+        obj.style.model3d.add_trace(updatefunc)
+
+    with pytest.raises(AssertionError):
+        updatefunc = 'not callable'
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
+
+    with pytest.raises(AssertionError):
+        updatefunc = lambda: 'bad output type'
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
+
+    with pytest.raises(AssertionError):
+        updatefunc = lambda: {'bad_key': 'some_value'}
+        obj.style.model3d.add_trace(updatefunc=updatefunc)
 
 def test_empty_display():
     """should not fail if nothing to display"""
     ax = plt.subplot(projection="3d")
     x = magpy.show(canvas=ax, backend="matplotlib")
     assert x is None, "empty display matplotlib test fail"
+
+def test_graphics_model_mpl():
+    """test base extra graphics with mpl"""
+    ax = plt.subplot(projection="3d")
+    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c.rotate_from_angax(33,'x', anchor=0)
+    c.style.model3d.add_trace(**make_Cuboid('matplotlib', position=(2, 0, 0)))
+    c.show(canvas=ax, style_path_frames=1, backend='matplotlib')

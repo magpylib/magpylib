@@ -39,13 +39,13 @@ from magpylib._src.defaults.defaults_utility import (
 
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.utility import unit_prefix, format_obj_input
-from magpylib._src.display.plotly.plotly_base_traces import (
-    make_BaseCuboid,
-    make_BaseCylinderSegment,
-    make_BaseEllipsoid,
-    make_BasePrism,
-    # make_BaseCone,
-    make_BaseArrow,
+from magpylib._src.display.base_traces import (
+    make_Cuboid as make_BaseCuboid,
+    make_CylinderSegment as make_BaseCylinderSegment,
+    make_Ellipsoid as make_BaseEllipsoid,
+    make_Prism as make_BasePrism,
+    # make_Pyramid as make_BasePyramid,
+    make_Arrow as make_BaseArrow,
 )
 from magpylib._src.display.plotly.plotly_utility import (
     merge_mesh3d,
@@ -187,7 +187,7 @@ def make_Dipole(
     if autosize is not None:
         size *= autosize
     dipole = make_BaseArrow(
-        base_vertices=10, diameter=0.3 * size, height=size, pivot=style.pivot
+        "plotly-dict", base=10, diameter=0.3 * size, height=size, pivot=style.pivot
     )
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
@@ -219,7 +219,7 @@ def make_Cuboid(
     d = [unit_prefix(d / 1000) for d in dimension]
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     name, name_suffix = get_name_and_suffix("Cuboid", default_suffix, style)
-    cuboid = make_BaseCuboid(dimension=dimension)
+    cuboid = make_BaseCuboid("plotly-dict", dimension=dimension)
     return _update_mag_mesh(
         cuboid, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
@@ -227,7 +227,7 @@ def make_Cuboid(
 
 def make_Cylinder(
     mag=(0.0, 0.0, 1000.0),
-    base_vertices=50,
+    base=50,
     diameter=1.0,
     height=1.0,
     position=(0.0, 0.0, 0.0),
@@ -243,7 +243,7 @@ def make_Cylinder(
     default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     name, name_suffix = get_name_and_suffix("Cylinder", default_suffix, style)
     cylinder = make_BasePrism(
-        base_vertices=base_vertices, diameter=diameter, height=height,
+        "plotly-dict", base=base, diameter=diameter, height=height,
     )
     return _update_mag_mesh(
         cylinder, name, name_suffix, mag, orientation, position, style, **kwargs,
@@ -266,7 +266,9 @@ def make_CylinderSegment(
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
     default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     name, name_suffix = get_name_and_suffix("CylinderSegment", default_suffix, style)
-    cylinder_segment = make_BaseCylinderSegment(*dimension, vert=vert)
+    cylinder_segment = make_BaseCylinderSegment(
+        "plotly-dict", dimension=dimension, vert=vert
+    )
     return _update_mag_mesh(
         cylinder_segment,
         name,
@@ -295,7 +297,7 @@ def make_Sphere(
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     name, name_suffix = get_name_and_suffix("Sphere", default_suffix, style)
     vert = min(max(vert, 3), 20)
-    sphere = make_BaseEllipsoid(vert=vert, dimension=[diameter] * 3)
+    sphere = make_BaseEllipsoid("plotly-dict", vert=vert, dimension=[diameter] * 3)
     return _update_mag_mesh(
         sphere, name, name_suffix, mag, orientation, position, style, **kwargs,
     )
@@ -306,7 +308,10 @@ def make_Pixels(positions, size=1) -> dict:
     Creates the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
     """
-    pixels = [make_BaseCuboid(position=p, dimension=[size] * 3) for p in positions]
+    pixels = [
+        make_BaseCuboid("plotly-dict", position=p, dimension=[size] * 3)
+        for p in positions
+    ]
     return merge_mesh3d(*pixels)
 
 
@@ -336,7 +341,7 @@ def make_Sensor(
         else ""
     )
     name, name_suffix = get_name_and_suffix("Sensor", default_suffix, style)
-    style_arrows = style.arrows.as_dict(flatten=True, separator='_')
+    style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     sensor = get_sensor_mesh(**style_arrows, center_color=color)
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if color is not None:
@@ -373,7 +378,9 @@ def make_Sensor(
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
         hull_dim[hull_dim == 0] = pixel_dim / 2
-        hull_mesh = make_BaseCuboid(position=hull_pos, dimension=hull_dim)
+        hull_mesh = make_BaseCuboid(
+            "plotly-dict", position=hull_pos, dimension=hull_dim
+        )
         hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     sensor = merge_mesh3d(*meshes_to_merge)
@@ -415,7 +422,11 @@ def _update_mag_mesh(
                 vertices=vertices, axis=magnetization,
             )
     mesh_dict = place_and_orient_model3d(
-        mesh_dict, orientation, position, showscale=False, name=f"{name}{name_suffix}",
+        model_kwargs=mesh_dict,
+        orientation=orientation,
+        position=position,
+        showscale=False,
+        name=f"{name}{name_suffix}",
     )
     return {**mesh_dict, **kwargs}
 
@@ -519,12 +530,12 @@ def get_plotly_traces(
             )
             make_func = make_Cuboid
         elif isinstance(input_obj, Cylinder):
-            base_vertices = 50
+            base = 50
             kwargs.update(
                 mag=input_obj.magnetization,
                 diameter=input_obj.dimension[0],
                 height=input_obj.dimension[1],
-                base_vertices=base_vertices,
+                base=base,
             )
             make_func = make_Cylinder
         elif isinstance(input_obj, CylinderSegment):
@@ -564,9 +575,6 @@ def get_plotly_traces(
         extra_model3d_traces = (
             style.model3d.data if style.model3d.data is not None else []
         )
-        extra_model3d_traces = [
-            t for t in extra_model3d_traces if t.backend == "plotly"
-        ]
         rots, poss, _ = get_rot_pos_from_path(input_obj, style.path.frames)
         for orient, pos in zip(rots, poss):
             if style.model3d.showdefault and make_func is not None:
@@ -575,34 +583,37 @@ def get_plotly_traces(
                 )
             for extr in extra_model3d_traces:
                 if extr.show:
-                    trace3d = {}
-                    obj_extr_trace = (
-                        extr.trace() if callable(extr.trace) else extr.trace
-                    )
-                    ttype = obj_extr_trace["type"]
-                    if ttype == "mesh3d":
-                        trace3d["showscale"] = False
-                        if "facecolor" in obj_extr_trace:
-                            ttype = "mesh3d_facecolor"
-                    if ttype == "scatter3d":
-                        trace3d["marker_color"] = kwargs["color"]
-                        trace3d["line_color"] = kwargs["color"]
-                    else:
-                        trace3d["color"] = kwargs["color"]
-                    trace3d.update(
-                        linearize_dict(
-                            place_and_orient_model3d(
-                                obj_extr_trace,
-                                orientation=orient,
-                                position=pos,
-                                scale=extr.scale,
-                            ),
-                            separator="_",
+                    extr.update(extr.updatefunc())
+                    if extr.backend == "plotly":
+                        trace3d = {}
+                        ttype = extr.constructor.lower()
+                        obj_extr_trace = (
+                            extr.kwargs() if callable(extr.kwargs) else extr.kwargs
                         )
-                    )
-                    if ttype not in path_traces_extra:
-                        path_traces_extra[ttype] = []
-                    path_traces_extra[ttype].append(trace3d)
+                        obj_extr_trace = {"type": ttype, **obj_extr_trace}
+                        if ttype == "mesh3d":
+                            trace3d["showscale"] = False
+                            if "facecolor" in obj_extr_trace:
+                                ttype = "mesh3d_facecolor"
+                        if ttype == "scatter3d":
+                            trace3d["marker_color"] = kwargs["color"]
+                            trace3d["line_color"] = kwargs["color"]
+                        else:
+                            trace3d["color"] = kwargs["color"]
+                        trace3d.update(
+                            linearize_dict(
+                                place_and_orient_model3d(
+                                    model_kwargs=obj_extr_trace,
+                                    orientation=orient,
+                                    position=pos,
+                                    scale=extr.scale,
+                                ),
+                                separator="_",
+                            )
+                        )
+                        if ttype not in path_traces_extra:
+                            path_traces_extra[ttype] = []
+                        path_traces_extra[ttype].append(trace3d)
         trace = merge_traces(*path_traces)
         for ind, traces_extra in enumerate(path_traces_extra.values()):
             extra_model3d_trace = merge_traces(*traces_extra)
@@ -965,13 +976,7 @@ def animate_path(
     autosize = "return"
     for i, ind in enumerate(path_indices):
         kwargs["style_path_frames"] = [ind]
-        frame = draw_frame(
-            objs,
-            color_sequence,
-            zoom,
-            autosize=autosize,
-            **kwargs,
-        )
+        frame = draw_frame(objs, color_sequence, zoom, autosize=autosize, **kwargs,)
         if i == 0:  # get the dipoles and sensors autosize from first frame
             traces_dicts, autosize = frame
         else:

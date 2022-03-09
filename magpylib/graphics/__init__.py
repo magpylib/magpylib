@@ -3,6 +3,6 @@ The `magpylib.display` sub-package provides additional plotting
 features for independent use.
 """
 
-__all__ = ['plotly', 'style']
+__all__ = ['model3d', 'style']
 
-from magpylib.display import plotly, style
+from magpylib.graphics import model3d, style

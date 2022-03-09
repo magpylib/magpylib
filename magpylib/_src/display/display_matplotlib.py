@@ -290,37 +290,29 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     """positions, orients and draws extra 3d model including path positions
     returns True if at least one the traces is now new default"""
     extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
-    extra_model3d_traces = [
-        t for t in extra_model3d_traces if t.backend == "matplotlib"
-    ]
-    path_traces_extra = {}
     points = []
     rots, poss, _ = get_rot_pos_from_path(obj, show_path)
     for orient, pos in zip(rots, poss):
         for extr in extra_model3d_traces:
-            obj_extra_trace = extr.trace() if callable(extr.trace) else extr.trace
             if extr.show:
-                trace3d, vertices = place_and_orient_model3d(
-                    obj_extra_trace,
-                    orientation=orient,
-                    position=pos,
-                    coordsargs=extr.coordsargs,
-                    scale=extr.scale,
-                    return_vertices=True,
-                )
-                ttype = obj_extra_trace["type"]
-                if ttype not in path_traces_extra:
-                    path_traces_extra[ttype] = []
-                path_traces_extra[ttype].append(trace3d)
-                points.append(vertices.T)
-
-    for traces_extra in path_traces_extra.values():
-        for tr in traces_extra:
-            kwargs = {k: v for k, v in tr.items() if k not in ("type", "args")}
-            if "color" not in kwargs or kwargs["color"] is None:
-                kwargs.update(color=color)
-            args = tr.get("args", [])
-            getattr(ax, tr["type"])(*args, **kwargs)
+                extr.update(extr.updatefunc())
+                if extr.backend == "matplotlib":
+                    kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+                    args = extr.args() if callable(extr.args) else extr.args
+                    kwargs, args, vertices = place_and_orient_model3d(
+                        model_kwargs=kwargs,
+                        model_args=args,
+                        orientation=orient,
+                        position=pos,
+                        coordsargs=extr.coordsargs,
+                        scale=extr.scale,
+                        return_vertices=True,
+                        return_model_args=True,
+                    )
+                    points.append(vertices.T)
+                    if "color" not in kwargs or kwargs["color"] is None:
+                        kwargs.update(color=color)
+                    getattr(ax, extr.constructor)(*args, **kwargs)
     return points
 
 
