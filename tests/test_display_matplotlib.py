@@ -228,9 +228,13 @@ def test_matplotlib_model3d_extra_updatefunc():
     ax = plt.subplot(projection="3d")
     obj = magpy.misc.Dipole(moment=(0,0,1))
     updatefunc=lambda : make_Cuboid('matplotlib', position=(2, 0, 0))
-    obj.style.model3d.add_trace(updatefunc=updatefunc)
+    obj.style.model3d.data = updatefunc
     ax = plt.subplot(projection="3d")
     obj.show(canvas=ax)
+
+    with pytest.raises(ValueError):
+        updatefunc = 'not callable'
+        obj.style.model3d.add_trace(updatefunc)
 
     with pytest.raises(AssertionError):
         updatefunc = 'not callable'

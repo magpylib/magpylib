@@ -263,32 +263,33 @@ class Model3d(MagicProperties):
     def data(self, val):
         self._data = self._validate_data(val)
 
-    def _validate_data(self, val):
-        if val is None:
-            val = []
-        elif not isinstance(val, (list, tuple)):
-            val = [val]
-        m3 = []
-        for v in val:
-            if not isinstance(v, Trace3d):
-                v = validate_property_class(v, "data", Trace3d, self)
-            m3.append(v)
-        return m3
+    def _validate_data(self, traces, **kwargs):
+        if traces is None:
+            traces = []
+        elif not isinstance(traces, (list, tuple)):
+            traces = [traces]
+        new_traces = []
+        for trace in traces:
+            updatefunc = None
+            if not isinstance(trace, Trace3d) and callable(trace):
+                updatefunc = trace
+                trace = Trace3d()
+            if not isinstance(trace, Trace3d):
+                trace = validate_property_class(trace, "data", Trace3d, self)
+            if updatefunc is not None:
+                trace.updatefunc = updatefunc
+            trace = trace.update(kwargs)
+            new_traces.append(trace)
+        return new_traces
 
-    def add_trace(
-        self,
-        backend=None,
-        constructor=None,
-        args=None,
-        kwargs=None,
-        show=True,
-        coordsargs=None,
-        scale=1,
-        updatefunc=None,
-    ):
+    def add_trace(self, trace=None, **kwargs):
         """Adds user-defined 3d model object which is positioned relatively to the main object to be
         displayed and moved automatically with it. This feature also allows the user to replace the
         original 3d representation of the object.
+
+        trace: Trace3d instance, dict or callable
+            Trace object. Can be a `Trace3d` instance or an dictionay with equivalent key/values
+            pairs, or a callable returning the equivalent dictionary.
 
         backend: str
             Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
@@ -322,17 +323,7 @@ class Model3d(MagicProperties):
             depending on class attributes, and postpone the trace construction to when the object is
             displayed.
         """
-        new_trace = Trace3d(
-            backend=backend,
-            constructor=constructor,
-            args=args,
-            kwargs=kwargs,
-            coordsargs=coordsargs,
-            show=show,
-            scale=scale,
-            updatefunc=updatefunc,
-        )
-        self._data += self._validate_data(new_trace)
+        self._data += self._validate_data([trace], **kwargs)
         return self
 
 
