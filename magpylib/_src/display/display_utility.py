@@ -16,24 +16,30 @@ class MagpyMarkers:
         self.markers = np.array(markers)
 
 
+# pylint: disable=too-many-branches
 def place_and_orient_model3d(
-    model_dict,
+    model_kwargs,
+    model_args=None,
     orientation=None,
     position=None,
     coordsargs=None,
     scale=1,
     return_vertices=False,
+    return_model_args=False,
     **kwargs,
 ):
     """places and orients mesh3d dict"""
     if orientation is None and position is None:
-        return {**model_dict, **kwargs}
+        return {**model_kwargs, **kwargs}
     position = (0.0, 0.0, 0.0) if position is None else position
     position = np.array(position, dtype=float)
     new_model_dict = {}
-    if "args" in model_dict:
-        new_model_dict["args"] = list(model_dict["args"])
-        coordsargs = dict(x="args[0]", y="args[1]", z="args[2]")     # matplotlib default
+    if model_args is None:
+        model_args = ()
+    new_model_args = list(model_args)
+    if model_args:
+        if coordsargs is None:  # matplotlib default
+            coordsargs = dict(x="args[0]", y="args[1]", z="args[2]")
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}
@@ -43,10 +49,10 @@ def place_and_orient_model3d(
         if key.startswith("args"):
             useargs = True
             ind = int(key[5])
-            v = model_dict["args"][ind]
+            v = model_args[ind]
         else:
-            if key in model_dict:
-                v = model_dict[key]
+            if key in model_kwargs:
+                v = model_kwargs[key]
             else:
                 raise ValueError(
                     "Rotating/Moving of provided model failed, trace dictionary "
@@ -61,7 +67,7 @@ def place_and_orient_model3d(
 
     # sometimes traces come as (n,m,3) shape
     vert_shape = vertices.shape
-    vertices = np.reshape(vertices, (3,-1))
+    vertices = np.reshape(vertices, (3, -1))
 
     vertices = vertices.T
 
@@ -73,13 +79,17 @@ def place_and_orient_model3d(
         key = coordsargs[k]
         if useargs:
             ind = int(key[5])
-            new_model_dict["args"][ind] = new_vertices[i]
+            new_model_args[ind] = new_vertices[i]
         else:
             new_model_dict[key] = new_vertices[i]
-    new_dict = {**model_dict, **new_model_dict, **kwargs}
+    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
+
+    out = (new_model_kwargs,)
+    if return_model_args:
+        out += (new_model_args,)
     if return_vertices:
-        return new_dict, new_vertices
-    return new_dict
+        out += (new_vertices,)
+    return out[0] if len(out) == 1 else out
 
 
 def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
@@ -174,7 +184,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         orient = RotScipy.from_rotvec([[0, 0, 1]])
     pos = np.array([pos]) if pos.ndim == 1 else pos
     path_len = pos.shape[0]
-    if show_path is True or show_path is False or show_path==0:
+    if show_path is True or show_path is False or show_path == 0:
         inds = np.array([-1])
     elif isinstance(show_path, int):
         inds = np.arange(path_len, dtype=int)[::-show_path]
@@ -186,7 +196,7 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.array([path_len - 1])
     rots = orient[inds]
     poss = pos[inds]
-    return rots, poss
+    return rots, poss, inds
 
 
 def faces_cuboid(src, show_path):
@@ -212,7 +222,7 @@ def faces_cuboid(src, show_path):
     )
     vert0 = vert0 - src.dimension / 2
 
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     faces = []
     for rot, pos in zip(rots, poss):
@@ -265,7 +275,7 @@ def faces_cylinder(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -346,7 +356,7 @@ def faces_cylinder_segment(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -400,7 +410,7 @@ def faces_sphere(src, show_path):
     ]
 
     # add src attributes position and orientation depending on show_path
-    rots, poss = get_rot_pos_from_path(src, show_path)
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
 
     # all faces (incl. along path) adding pos and rot
     all_faces = []
@@ -418,9 +428,9 @@ def system_size(points):
 
         # bring (n,m,3) point dimensions (e.g. from plot_surface body)
         #    to correct (n,3) shape
-        for i,p in enumerate(points):
-            if p.ndim==3:
-                points[i] = np.reshape(p,(-1,3))
+        for i, p in enumerate(points):
+            if p.ndim == 3:
+                points[i] = np.reshape(p, (-1, 3))
 
         pts = np.vstack(points)
         xs = [np.amin(pts[:, 0]), np.amax(pts[:, 0])]

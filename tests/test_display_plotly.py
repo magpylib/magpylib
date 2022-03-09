@@ -200,8 +200,8 @@ def test_extra_model3d():
     cuboid.style.model3d.data = [
         {
             "backend": "plotly",
-            "trace": {
-                "type": "scatter3d",
+            "constructor": "Scatter3d",
+            "kwargs": {
                 "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
                 "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
                 "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
@@ -211,8 +211,8 @@ def test_extra_model3d():
         },
         {
             "backend": "plotly",
-            "trace": {
-                "type": "mesh3d",
+            "constructor": "Mesh3d",
+            "kwargs": {
                 "i": [7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7],
                 "j": [0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2],
                 "k": [3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6],
@@ -233,18 +233,18 @@ def test_extra_model3d():
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
     x = magpy.show(coll, canvas=fig, animation=True, style=dict(model3d_showdefault=False),)
-    my_callable_trace = lambda: {
-        "type": "scatter3d",
+    assert x is None, "display test fail"
+    my_callable_kwargs = lambda: {
         "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
         "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
         "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
         "mode": "lines",
     }
-    assert x is None, "display test fail"
     cuboid.style.model3d.add_trace(
         **{
             "backend": "plotly",
-            "trace": my_callable_trace,
+            "constructor": "Scatter3d",
+            "kwargs": my_callable_kwargs,
             "show": True,
         }
     )
