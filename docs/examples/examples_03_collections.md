@@ -11,7 +11,6 @@ kernelspec:
   name: python3
 ---
 
-
 # Collections
 
 (examples-collections-construction)=
