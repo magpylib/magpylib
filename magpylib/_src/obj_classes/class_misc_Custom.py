@@ -38,7 +38,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-        using style-underscore_magic, e.g. `style_color='red'`.
+        using style underscore magic, e.g. `style_color='red'`.
 
     Returns
     -------

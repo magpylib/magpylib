@@ -18,7 +18,7 @@ kernelspec:
 (examples-assign-absolute-path)=
 ## Assigning absolute paths
 
-Absolute object paths are assigned at initialization or with the getter and setter methods.:
+Absolute object paths are assigned at initialization or through the object properties:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -30,14 +30,14 @@ pos = np.array([(t, 0, np.sin(t)) for t in ts])
 ori = R.from_rotvec(np.array([(0, -np.cos(t)*0.785, 0) for t in ts]))
 
 # set path at initialization
-sens1 = magpy.Sensor(position=pos, orientation=ori)
+sensor = magpy.Sensor(position=pos, orientation=ori)
 
-# set path through setter methods
-sens2 = magpy.Sensor()
-sens2.position = pos + np.array((0,0,3))
-sens2.orientation = ori
+# set path through properties
+cube = magpy.magnet.Cuboid(magnetization=(0,0,1), dimension=(.5,.5,.5))
+cube.position = pos + np.array((0,0,3))
+cube.orientation = ori
 
-magpy.show(sens1, sens2, style_path_frames=10)
+magpy.show(sensor, cube, style_path_frames=10)
 ```
 
 (examples-move-and-rotate)=
@@ -50,27 +50,25 @@ The move and rotate methods obey the following rules:
 - Scalar input is applied to the whole object path, starting with path index `start`. With the default `start='auto'` the index is set to `start=0` and the functionality is *moving objects around*.
 - Vector input of length $n$ applies the individual $n$ operations to $n$ object path entries, starting with path index `start`. Padding applies when the input exceeds the existing path. With the default `start='auto'` the index is set to `start=len(object path)` and the functionality is *appending paths*.
 
-The following example demonstrates this functionality (works similarly for rotations):
-
 ```python
 import magpylib as magpy
 
-sens = magpy.Sensor()
+sensor = magpy.Sensor()
 
-sens.move((1,1,1))                                      # scalar input is by default applied
-print(sens.position)                                    # to the whole path
+sensor.move((1,1,1))                                      # scalar input is by default applied
+print(sensor.position)                                    # to the whole path
 # out: [1. 1. 1.]
 
-sens.move([(1,1,1), (2,2,2)])                           # vector input is by default appended
-print(sens.position)                                    # to the existing path
+sensor.move([(1,1,1), (2,2,2)])                           # vector input is by default appended
+print(sensor.position)                                    # to the existing path
 # out: [[1. 1. 1.]  [2. 2. 2.]  [3. 3. 3.]]
 
-sens.move((1,1,1), start=1)                             # scalar input and start=1 is applied
-print(sens.position)                                    # to whole path starting at index 1
+sensor.move((1,1,1), start=1)                             # scalar input and start=1 is applied
+print(sensor.position)                                    # to whole path starting at index 1
 # out: [[1. 1. 1.]  [3. 3. 3.]  [4. 4. 4.]]
 
-sens.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
-print(sens.position)                                    # the input with the existing path
+sensor.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
+print(sensor.position)                                    # the input with the existing path
 # out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]    # starting at index 1.
 ```
 
@@ -78,39 +76,39 @@ print(sens.position)                                    # the input with the exi
 
 ## Relative paths
 
-`move` and `rotate` input is interpreted relative to the existing path. Vector input is by default appended to the existing path. The combination leads to the following behavior,
+`move` and `rotate` input is interpreted relative to the existing path. Vector input is by default appended:
 
 ```{code-cell} ipython3
 import numpy as np
-import magpylib as magpy
+from magpylib.magnet import Sphere
 
-pos1 = np.linspace((0,0,0), (10,0,0), 10)[1:]
-pos2 = np.linspace((0,0,0), (0,0,10), 10)[1:]
+path1 = np.linspace((0,0,0), (10,0,0), 10)[1:]
+path2 = np.linspace((0,0,0), (0,0,10), 10)[1:]
 
-sens = magpy.Sensor()
+sphere = Sphere(magnetization=(0,0,1), diameter=3)
 
 for _ in range(3):
-    sens.move(pos1).move(pos2)
+    sphere.move(path1).move(path2)
 
-magpy.show(sens)
+sphere.show()
 ```
 
 (examples-merging-paths)=
 
 ## Merging paths
 
-Complex paths can be created by merging multiple path operations using vector input for the `move` and `rotate` methods and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation is applied about the origin, which creates a spiral motion.
+Complex paths can be created by merging multiple path operations. This is done with vector input for the `move` and `rotate` methods, and choosing values for `start` that will make the paths overlap. In the following example we combine a linear path with a rotation about self (`anchor=None`) until path index 30. Thereon, a second rotation about the origin is applied, creating a spiral motion.
 
 ```{code-cell} ipython3
 import numpy as np
-import magpylib as magpy
+from magpylib.magnet import Cuboid
 
-src =  magpy.magnet.Cuboid(magnetization=(0,0,100), dimension=(2,2,2))
-src.position = np.linspace((0,0,0), (10,0,0), 60)
-src.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), start=0)
-src.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), anchor=0, start=30)
+cube =  Cuboid(magnetization=(0,0,100), dimension=(2,2,2))
+cube.position = np.linspace((0,0,0), (10,0,0), 60)
+cube.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), start=0)
+cube.rotate_from_rotvec(np.linspace((0,0,0), (0,0,360), 30), anchor=0, start=30)
 
-src.show(backend='plotly', animation=True)
+cube.show(backend='plotly', animation=True)
 ```
 
 ## Reset path
@@ -121,14 +119,14 @@ The `reset_path()` method allows users to reset an object path to `position=(0,0
 import magpylib as magpy
 
 # create sensor object with complex path
-sens=magpy.Sensor()
-sens.rotate_from_angax([1,2,3,4,5], (1,2,3), anchor=(0,3,5))
+sensor=magpy.Sensor()
+sensor.rotate_from_angax([1,2,3,4,5], (1,2,3), anchor=(0,3,5))
 
 # reset path
-sens.reset_path()
+sensor.reset_path()
 
-print(sens.position)
-print(sens.orientation.as_quat())
+print(sensor.position)
+print(sensor.orientation.as_quat())
 ```
 
 (examples-edge-padding-end-slicing)=
@@ -145,37 +143,38 @@ In the following example the orientation attribute is padded by its edge value `
 from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 
-sens = magpy.Sensor(
+sensor = magpy.Sensor(
     position=[(0,0,0), (1,1,1)],
     orientation=R.from_rotvec([(0,0,.1), (0,0,.2)]),
 )
-sens.position=[(i,i,i) for i in range(4)]
-print(sens.position)
-print(sens.orientation.as_rotvec())
+sensor.position=[(i,i,i) for i in range(4)]
+print(sensor.position)
+print(sensor.orientation.as_rotvec())
 ```
 
-When the field is computed of `src1` with path length 4 and `src2` with path length 2, `src2` will remain in position (= edge padding) while the other object is still in motion.
+When the field is computed of `loop1` with path length 4 and `loop2` with path length 2, `loop2` will remain in position (= edge padding) while the other object is still in motion.
 
 ```{code-cell} ipython3
-import magpylib as magpy
+from magpylib.current import Loop
 
-src1 = magpy.current.Loop(current=1, diameter=1, position=[(0,0,i) for i in range(4)])
-src2 = magpy.current.Loop(current=1, diameter=1, position=[(0,0,i) for i in range(2)])
+loop1 = Loop(current=1, diameter=1, position=[(0,0,i) for i in range(4)])
+loop2 = Loop(current=1, diameter=1, position=[(0,0,i) for i in range(2)])
 
-print(magpy.getB([src1,src2], (0,0,0)))
+B = magpy.getB([loop1,loop2], (0,0,0))
+print(B)
 ```
 
 The idea behind **end-slicing** is that, whenever a path is automatically reduced in length, Magplyib will slice to keep the ending of the path. While this occurs rarely, the following example shows how the `orientation` attribute is automatically end-sliced, keeping the values `[(0,0,.3), (0,0,.4)]`, when the `position` attribute is reduced in length:
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R
-import magpylib as magpy
+from magpylib import Sensor
 
-sens = magpy.Sensor(
+sensor = Sensor(
     position=[(0,0,0), (1,1,1), (2,2,2), (3,3,3)],
     orientation=R.from_rotvec([(0,0,.1), (0,0,.2), (0,0,.3), (0,0,.4)]),
 )
-sens.position=[(1,2,3), (2,3,4)]
-print(sens.position)
-print(sens.orientation.as_rotvec())
+sensor.position=[(1,2,3), (2,3,4)]
+print(sensor.position)
+print(sensor.orientation.as_rotvec())
 ```

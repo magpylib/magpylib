@@ -28,12 +28,13 @@ The following example demonstrates the animation feature,
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 
 # define objects with paths
 coll = magpy.Collection(
-    magpy.magnet.Cuboid(magnetization=(0,1,0), dimension=(2,2,2)),
-    magpy.magnet.Cylinder(magnetization=(0,1,0), dimension=(2,2)),
-    magpy.magnet.Sphere(magnetization=(0,1,0), diameter=2),
+    Cuboid(magnetization=(0,1,0), dimension=(2,2,2)),
+    Cylinder(magnetization=(0,1,0), dimension=(2,2)),
+    Sphere(magnetization=(0,1,0), diameter=2),
 )
 
 start_positions = np.array([(1.414, 0, 1), (-1, -1, 1), (-1, 1, 1)])
@@ -42,11 +43,11 @@ for pos, src in zip(start_positions, coll):
     src.rotate_from_angax(np.linspace(0, 360, 50), 'z', anchor=0, start=0)
 
 ts = np.linspace(-0.6, 0.6, 5)
-sens = magpy.Sensor(pixel=[(x, y, 0) for x in ts for y in ts])
-sens.position = np.linspace((0,0,-5), (0,0,5), 20)
+sensor = magpy.Sensor(pixel=[(x, y, 0) for x in ts for y in ts])
+sensor.position = np.linspace((0,0,-5), (0,0,5), 20)
 
 # show with animation
-magpy.show(coll, sens,
+magpy.show(coll, sensor,
     animation=3,
     animation_fps=20,
     animation_slider=True,

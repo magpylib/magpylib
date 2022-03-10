@@ -23,9 +23,9 @@ The `Collection` class is a versatile way of grouping and manipulating Magpylib 
 import magpylib as magpy
 
 loop = magpy.current.Loop()
-sens = magpy.Sensor()
+sensor = magpy.Sensor()
 
-coll = magpy.Collection(loop, sens)
+coll = magpy.Collection(loop, sensor)
 
 print(f"children: {coll.children}")
 print(f"sources:  {coll.sources}")
@@ -36,7 +36,7 @@ To manipulate existing collections, one can use the `add` and `remove` methods:
 
 ```{code-cell} ipython3
 coll.add(magpy.magnet.Cuboid())
-coll.remove(sens)
+coll.remove(sensor)
 
 print(f"children: {coll.children}")
 print(f"sources:  {coll.sources}")
@@ -54,12 +54,12 @@ print(f"sources:  {coll.sources}")
 print(f"sensors:  {coll.sensors}")
 ```
 
-However, it must be noted that using `+` and `-` results in copies of the Collection, while `add` and `remove` does not.
+However, it must be noted that `+` and `-` result in copies of the collection, while `add` and `remove` do not.
 
 The `+` operator is defined for all Magpylib objects. Adding objects returns a collection.
 
 ```{code-cell} ipython3
-what_is_it = loop + sens
+what_is_it = loop + sensor
 print(what_is_it)
 ```
 
@@ -80,9 +80,9 @@ Finally, it is worth mentioning that collections do not allow duplicate sources.
 
 (examples-collections-compound)=
 
-## Collections as compounds
+## Compounds
 
-While collections work well as groups, they follow the *compound philisophy*. The idea is that a compound object, made up of multiple individual sources and sensors can be treated like single object itself. 
+Collections follow the *compound philisophy*. The idea is that a compound object, made up of multiple individual sources and sensors can be treated like single object itself. 
 
 For this purpose, the collection has itself `position` and `orientation` attributes that span a local coordinate reference frame. Whenever a child is added to the collection it has a `position` and `orientation` in the local frame. All operations acting on the collection will then only move the local frame around, and not change child positions within it. Operations acting directly on the child itself will move the child also in the local frame.
 
@@ -102,20 +102,17 @@ coil2 = coil1.copy(position = (0,0,5))
 helmholtz = coil1 + coil2
 
 # move the helmholz compound
-helmholtz.position = np.linspace((0,0,0), (20,0,0), 30)
-helmholtz.rotate_from_angax(np.linspace(0,360,30), 'x', start=0)
+helmholtz.position = np.linspace((0,0,0), (10,0,0), 30)
+helmholtz.rotate_from_angax(np.linspace(0,180,30), 'x', start=0)
 
-# move the coils
-coil1.move(np.linspace((0,0,0), (0,0,-5), 30))
-coil2.move(np.linspace((0,0,0), (0,0, 5), 30))
-#for coil in [coil1, coil2]:
-#    coil.rotate_from_angax(np.linspace(0,360,30), 'y', start=30)
-# UNCOMMENT THIS WHEN #488 IS RESOLVED !!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-
-# move the windings
+# move the winding objects
 for coil in [coil1, coil2]:
     for i,w in enumerate(coil):
-        w.move(np.linspace((0,0,0), (0,0,i-2), 20))
+        w.move(np.linspace((0,0,0), (0,0,2-i), 20))
+
+# move the modified coil compounds
+coil1.move(np.linspace((0,0,0), ( 5,0,0), 30))
+coil2.move(np.linspace((0,0,0), (-5,0,0), 30))
 
 helmholtz.show(backend='plotly', animation=4, style_path_show=False)
 ```
@@ -129,3 +126,5 @@ print(magpy.getB(helmholtz, (0,0,0)))
 print(magpy.getB(coil1, (0,0,0)))
 print(magpy.getB(coil2, (0,0,0)))
 ```
+
+Notice that, `helmholtz.reset_path()` sets the `helmholtz` object to position $(0,0,0)$, however, the final asymmetric structure (coils shifted left and right) remains, so that there is a finite x-component.

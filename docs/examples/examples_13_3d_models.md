@@ -26,10 +26,10 @@ The input `trace` is a dictionary which includes all necessary information for p
 2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
-5. `'coordsargs'`: Tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the Plotly backend and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
+5. `'coordsargs'`: tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the Plotly backend and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`: choose if this trace should be displayed or not
 7. `'scale'`: default 1, object geometic scaling factor
-8. `'updatefunc'`: default `None` XXXXXXXXXXXXXXXX
+8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.
 
 The following example shows how a **Plotly** trace is constructed with  `Mesh3d` and `Scatter3d`:
 
@@ -77,10 +77,11 @@ magpy.show(coll, dipole, backend='plotly')
 It is possible to have multiple user-defined traces that will be displayed at the same time. In addition, the following code shows how to quickly copy and manipulate trace dictionaries and `Trace3d` objects,
 
 ```{code-cell} ipython3
+import copy
 dipole.style.size=3
 
 # generate new trace from dictionary
-trace2 = trace_scatter3d.copy()
+trace2 = copy.deepcopy(trace_scatter3d)
 trace2['kwargs']['y'] = np.sin(ts)
 trace2['kwargs']['z'] = np.zeros(30)
 
@@ -170,7 +171,7 @@ Automatic trace generators are provided for several 3D models in `magpylib.graph
 import magpylib as magpy
 from magpylib.graphics import model3d
 
-# prism trace
+# prism trace ###################################
 trace_prism = model3d.make_Prism(
     backend='plotly',
     base=6,
@@ -181,7 +182,7 @@ trace_prism = model3d.make_Prism(
 obj0 = magpy.Sensor(style_model3d_showdefault=False, style_label='Prism')
 obj0.style.model3d.add_trace(trace_prism)
 
-# pyramid trace
+# pyramid trace #################################
 trace_pyramid = model3d.make_Pyramid(
     backend='plotly',
     base=30,
@@ -192,7 +193,7 @@ trace_pyramid = model3d.make_Pyramid(
 obj1 = magpy.Sensor(style_model3d_showdefault=False, style_label='Pyramid')
 obj1.style.model3d.add_trace(trace_pyramid)
 
-# cuboid trace
+# cuboid trace ##################################
 trace_cuboid = model3d.make_Cuboid(
     backend='plotly',
     dimension=(2,2,2),
@@ -201,7 +202,7 @@ trace_cuboid = model3d.make_Cuboid(
 obj2 = magpy.Sensor(style_model3d_showdefault=False, style_label='Cuboid')
 obj2.style.model3d.add_trace(trace_cuboid)
 
-# cylinder segment trace
+# cylinder segment trace ########################
 trace_cylinder_segment = model3d.make_CylinderSegment(
     backend='plotly',
     dimension=(1, 2, 1, 140, 220),
@@ -210,7 +211,7 @@ trace_cylinder_segment = model3d.make_CylinderSegment(
 obj3 = magpy.Sensor(style_model3d_showdefault=False, style_label='Cylinder Segment')
 obj3.style.model3d.add_trace(trace_cylinder_segment)
 
-# ellipsoid trace
+# ellipsoid trace ###############################
 trace_ellipsoid = model3d.make_Ellipsoid(
     backend='plotly',
     dimension=(2,2,2),
@@ -219,7 +220,7 @@ trace_ellipsoid = model3d.make_Ellipsoid(
 obj4 = magpy.Sensor(style_model3d_showdefault=False, style_label='Ellipsoid')
 obj4.style.model3d.add_trace(trace_ellipsoid)
 
-# arrow trace
+# arrow trace ###################################
 trace_arrow = model3d.make_Arrow(
     backend='plotly',
     base=30,

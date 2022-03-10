@@ -23,7 +23,6 @@ Graphic Output
 :caption: Graphic Output
 :maxdepth: 2
 
-examples_11_backends_canvas.md
 examples_12_styles.md
 examples_13_3d_models.md
 examples_14_animation.md

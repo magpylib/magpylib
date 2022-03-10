@@ -16,83 +16,69 @@ kernelspec:
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized in many ways.
 
-```{warning}
-Users should be aware that specifying style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).
-While this may not be noticeable for a small number of objects, it can become an issue when initializating a lot of objects or when repeatedly creating objects in a loop, e.g. in an optimization algorithm.
-If possible, avoid setting styles until it is plotting time.
-```
-
 There are multiple hierarchy levels that descide about the final graphical representation of the objects:
 
 1. When no input is given, the **default style** will be applied.
-2. **Individual styles** of objects will take precedence over the default values.
+2. Object **individual styles** will take precedence over the default values.
 3. Collections will override the color property of all children.
 4. Setting a **local style** in `show()` will take precedence over all other settings.
 
 ## Setting the default style
 
-The default style is stored in the magpylib defaults in the form of nested attributes of the `magpylib.defaults.display.style` class. The top style level, they are separated into the following families,
-
-- *base*: common properties for all families
-- *magnet*: `Cuboid`, `Cylinder`, `Sphere`, `CylinderSegment`
-- *current*: `Line`, `Loop`
-- *sensor*: `Sensor`
-- *markers*: markers in the `show` function
-
-and can be set with **dot notation**,
+The default style is stored in `magpylib.defaults.display.style`. Default styles can be set as properties,
 
 ```python
-import magpylib as magpy
 magpy.defaults.display.style.magnet.magnetization.show = True
-magpy.defaults.display.style.magnet.magnetization.color.middle = "grey"
-magpy.defaults.display.style.magnet.magnetization.color.mode = "bicolor"
+magpy.defaults.display.style.magnet.magnetization.color.middle = 'grey'
+magpy.defaults.display.style.magnet.magnetization.color.mode = 'bicolor'
 ```
 
-by assigning a **style dictionary** with equivalent keys,
+by assigning a style dictionary with equivalent keys,
 
 ```python
-import magpylib as magpy
 magpy.defaults.display.style.magnet = {
-    "magnetization": {"show": True, "color": {"middle": "grey", "mode": "tricolor"}}
+    'magnetization': {'show': True, 'color': {'middle': 'grey', 'mode': 'tricolor'}}
 }
 ```
 
-or by making use of the **`update` method**,
+or by making use of the `update` method:
 
 ```python
-import magpylib as magpy
 magpy.defaults.display.style.magnet.magnetization.update(
-    "show": True,
-    "color": {"middle"="grey", mode="tricolor",}
+    'show': True,
+    'color': {'middle'='grey', mode='tricolor',}
 )
 ```
 
-Once set, the library default can always be restored with the `magpylib.style.reset()` method. The following practical example demonstrates how to create and set a user defined magnetization style as default,
+All three examples result in the same default style.
+
+Once modified, the library default can always be restored with the `magpylib.style.reset()` method. The following practical example demonstrates how to create and set a user defined magnetization style as default,
 
 ```{code-cell} ipython3
 import magpylib as magpy
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-src1 = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-src2 = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-src3 = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
+sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
 
-print('Display before setting style defaults')
-magpy.show(src1, src2, src3, backend="plotly")
+print('Default magnetization style')
+magpy.show(cube, cylinder, sphere, backend="plotly")
 
 user_defined_style = {
-    "show": True,
-    "color": {
-        "transition": 1,
-        "mode": "tricolor",
-        "middle": "white",
-        "north": "magenta",
-        "south": "turquoise",
+    'show': True,
+    'color': {
+        'transition': 1,
+        'mode': 'tricolor',
+        'middle': 'white',
+        'north': 'magenta',
+        'south': 'turquoise',
     },
 }
 magpy.defaults.display.style.magnet.magnetization = user_defined_style
 
-print('Display after setting style defaults')
-magpy.show(src1, src2, src3, backend="plotly")
+print('Custom magnetization style')
+magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
 
@@ -106,9 +92,9 @@ With magic underscore notation, the previous examples can be written as,
 ```python
 import magpylib as magpy
 magpy.defaults.display.style.magnet = {
-    "magnetization_show": True,
-    "magnetization_color_middle": "grey",
-    "magnetization_color_mode": "tricolor",
+    'magnetization_show': True,
+    'magnetization_color_middle': 'grey',
+    'magnetization_color_mode': 'tricolor',
 }
 ```
 
@@ -118,93 +104,85 @@ or directly as kwargs in the `update` method as,
 import magpylib as magpy
 magpy.defaults.display.style.magnet.update(
     magnetization_show=True,
-    magnetization_color_middle="grey",
-    magnetization_color_mode="tricolor",
+    magnetization_color_middle='grey',
+    magnetization_color_mode='tricolor',
 )
 ```
 
 ## Setting individual styles
 
-Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called.
+Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be ommited.
 
-```{note}
-When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be ommited.
+```{warning}
+Users should be aware that specifying style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).
+While this may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
-The following example shows the difference between setting an individual and a default current arrow size,
-
-```python
-import magpylib as magpy
-
-# set default value
-magpy.defaults.display.style.current.arrow.size = 2
-
-# set individual object style
-loop = magpy.current.Loop(current=10, diameter=10)
-loop.style.arrow.size = 2
-```
-
-The following example demonstrates the application of individual styles for magnetization representation in Plotly
+In the following example the individual style of `cube` is set at initialization, the style of `cylinder` is the default one, and the individual style of `sphere` is set using the style properties.
 
 ```{code-cell} ipython3
 import magpylib as magpy
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-magpy.defaults.reset()  # omit when running as a standalone script
+magpy.defaults.reset() # reset defaults defined in previous example
 
-src1 = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-src2 = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-src3 = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = Cuboid(
+    magnetization=(1, 0, 0),
+    dimension=(1, 1, 1),
+    style_magnetization_color_mode='tricycle',
+)
+cylinder = Cylinder(
+    magnetization=(0, 1, 0),
+    dimension=(1, 1), position=(2,0,0),
+)
+sphere = Sphere(
+    magnetization=(0, 1, 1),
+    diameter=1,
+    position=(4,0,0),
+)
 
-#setting individual styles
-src1.style.update(magnetization_color_mode="tricycle")
-src2.style.magnetization.color = dict(mode="tricolor")
-src3.style.magnetization = {"color": {"mode":"bicolor"}}
+sphere.style.magnetization.color.mode='bicolor'
 
-magpy.show(src1, src2, src3, backend="plotly")
+magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
 ## Setting style via collections
 
-When displaying collections, the collection object `color` property will be automatically assigned to all its children and override default and individual styles. In addition, it is possible to modify the style of all children at the same time with the `set_children_styles` method. In this case, non-matching properties are simply ignored.
+When displaying collections, the collection object `color` property will be automatically assigned to all its children and override default and individual styles. An example that demonstrates this is {ref}`examples-union-operation`. In addition, it is possible to modify the style of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
 
 In the following example we show how the french magnetization style is applied to all children in a collection,
 
 ```{code-cell} ipython3
 import magpylib as magpy
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-magpy.defaults.reset()  # omit when running as a standalone script
+magpy.defaults.reset() # reset defaults defined in previous example
 
-src1 = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-src2 = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-src3 = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
+sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
 
-col = src1 + src2
+coll = cube + cylinder
 
-col.set_children_styles(magnetization_color_south="blue")
+coll.set_children_styles(magnetization_color_south="blue")
 
-magpy.show(col, src3, backend="plotly")
+magpy.show(coll, sphere, backend="plotly")
 ```
 
 ## Local style override
 
-It is also possible to hand style input to the `show` function directly and locally override the given properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and object family specifier must be omitted. Naturally underscore magic is supported.
-
-The following example demonstrates the local style override
+Finally it is possible to hand style input to the `show` function directly and locally override the given properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
 
 ```{code-cell} ipython3
 import magpylib as magpy
+from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-magpy.defaults.reset()  # omit when running as a standalone script
-
-src1 = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-src2 = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-src3 = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
+sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
 
 # use local style override
-magpy.show(src1, src2, src3, backend="plotly", style_magnetization_show=False)
-
-# back to default styles
-magpy.show(src1, src2, src3, backend="plotly")
+magpy.show(cube, cylinder, sphere, backend="plotly", style_magnetization_show=False)
 ```
 
 (examples-list-of-styles)=
