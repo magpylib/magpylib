@@ -15,112 +15,93 @@ kernelspec:
 
 # Adding a CAD model
 
-With the `model3d.data` style property, it is possible to attach an extra 3D-model representation for any Magpylib object, as long as it is supported by the chosen plotting backend. With a little helper function and the third-party `numpy-stl` package, a CAD file can be imported and transformed into a mesh object, displayable by both `matplotlib` and `plotly` backends.
+As shown in {ref}`examples-own-3d-models`, it is possible to attach custom 3D model representations to any Magpylib object. In the example below we show how a standard CAD model can be transformed into a Magpylib graphic trace, and displayed by both `matplotlib` and `plotly` backends.
 
 ```{note}
-In order to use this functionality the `numpy-stl` package needs to be installed, as it does not come with Magpylib by default.
+The code below requires installation of the `numpy-stl` package.
 ```
 
 ```{code-cell} ipython3
 import os
 import tempfile
-
-import magpylib as magpy
-import numpy as np
-import plotly.graph_objects as go
 import requests
-from stl import mesh  # needs numpy-stl installed
+import numpy as np
+from stl import mesh  # requires installation of numpy-stl
+import magpylib as magpy
 
 
-def get_stl_color(x, return_rgb_string=True):
+def get_stl_color(x):
+    """ transform stl_mesh attr to plotly color"""
     sb = f"{x:015b}"[::-1]
     r = int(255 / 31 * int(sb[:5], base=2))
     g = int(255 / 31 * int(sb[5:10], base=2))
     b = int(255 / 31 * int(sb[10:15], base=2))
-    if return_rgb_string:
-        color = f"rgb({r},{g},{b})"
-    else:
-        color = (r, g, b)
-    return color
+    return f"rgb({r},{g},{b})"
 
 
-# define stl to mesh3d function
-def stl2mesh3d(stl_file, recenter=False, backend="matplotlib"):
+def trace_from_stl(stl_file, backend='matplotlib'):
     """
-    an array of faces/triangles is read by numpy-stl from a stl file;
-    this function extracts the unique vertices and the triangulation values and
-    returns depending on the backend the corresponding dictionary for further
-    magpylib use as extra 3d-model.
-    The array stl_mesh.vectors.reshape(p*q, r) can contain multiple copies of
-    the same vertex; only unique vertices are extracted from all mesh triangles
+    Generates a Magpylib 3D model trace dictionary from an *.stl file.
+    backend: 'matplotlib' or 'plotly' 
     """
+    # load stl file
     stl_mesh = mesh.Mesh.from_file(stl_file)
-    p, q, r = stl_mesh.vectors.shape  # (p, 3, 3)
-    vertices, ixr = np.unique(
-        stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0
-    )
+
+    # extract vertices and triangulation
+    p, q, r = stl_mesh.vectors.shape
+    vertices, ixr = np.unique(stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0)
     i = np.take(ixr, [3 * k for k in range(p)])
     j = np.take(ixr, [3 * k + 1 for k in range(p)])
     k = np.take(ixr, [3 * k + 2 for k in range(p)])
-    if recenter:
-        vertices = vertices - 0.5 * (vertices.max(axis=0) + vertices.min(axis=0))
-    colors = stl_mesh.attr.flatten()
     x, y, z = vertices.T
-    model3d = {"backend": backend}
-    if backend == "matplotlib":
+
+    # generate and return Magpylib traces
+    if backend == 'matplotlib':
         triangles = np.array([i, j, k]).T
-        model3d.update(
-            trace=dict(type="plot_trisurf", args=(x, y, z), triangles=triangles),
-            coordsargs={"x": "args[0]", "y": "args[1]", "z": "args[2]"},
-        )
-    elif backend == "plotly":
-        facecolor = np.array(
-            [get_stl_color(x, return_rgb_string=True) for x in colors]
-        ).T
-        model3d.update(
-            trace=dict(
-                type="mesh3d",
-                x=x,
-                y=y,
-                z=z,
-                i=i,
-                j=j,
-                k=k,
-                facecolor=facecolor
-                # coordsargs is by default: {"x": "x", "y": "y", "z": "z"}
-            ),
-        )
+        trace = {
+            'backend': 'matplotlib',
+            'constructor': 'plot_trisurf',
+            'args': (x, y, z),
+            'kwargs': {'triangles': triangles},
+        }
+    elif backend == 'plotly':
+        colors = stl_mesh.attr.flatten()
+        facecolor = np.array([get_stl_color(c) for c in colors]).T
+        trace = {
+            'backend': 'plotly',
+            'constructor': 'Mesh3d',
+            'kwargs': dict(x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor),
+        }
     else:
-        raise ValueError(
-            """Backend type not understood, must be one of ['matplotlib', 'plotly']"""
-        )
-    return model3d
+        raise ValueError("Backend must be one of ['matplotlib', 'plotly'].")
+
+    return trace
 
 
-# import stl file
+# load stl file from online ressource
 url = "https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl"
 file = url.split("/")[-1]
-with tempfile.TemporaryDirectory() as tmpdirname:
-    fn = os.path.join(tmpdirname, file)
+with tempfile.TemporaryDirectory() as temp:
+    fn = os.path.join(temp, file)
     with open(fn, "wb") as f:
         response = requests.get(url)
         f.write(response.content)
 
-    # create mesh3d
-    model3d_matplotlib = stl2mesh3d(fn, backend="matplotlib")
-    model3d_plotly = stl2mesh3d(fn, backend="plotly")
-# create sensor, add extra 3d-model, create path
-sensor = magpy.Sensor(position=(-15, 0, -6))
-sensor.style = dict(model3d_data=[model3d_matplotlib, model3d_plotly])
-sensor.rotate_from_angax(np.linspace(0, 150, 33), "z", anchor=0, start=0)
-sensor.move(np.linspace((0, 0, 0), (0, 0, 15), 33), start=0)
-# create source, and Collection
-cuboid = magpy.magnet.Cylinder(magnetization=(0, 0, 1000), dimension=(20, 30))
-collection = sensor + cuboid
+    # create traces for both backends
+    trace_mpl = trace_from_stl(fn, backend='matplotlib')
+    trace_ply = trace_from_stl(fn, backend='plotly')
 
-# display animated system with matplotlib backend
-magpy.show(*collection, style_path_frames=8, style_magnetization_size=0.4, backend="matplotlib")
+# create sensor and add CAD model
+sensor = magpy.Sensor(style_label='PG-SSO-3 package')
+sensor.style.model3d.add_trace(trace_mpl)
+sensor.style.model3d.add_trace(trace_ply)
 
-# display animated system with plotly backend
-magpy.show(*collection, style_path_frames=8, backend="plotly")
+# create magnet and sensor path
+magnet = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(15,20))
+sensor.position = np.linspace((-15,0,8), (-15,0,-4), 21)
+sensor.rotate_from_angax(np.linspace(0, 200, 21), 'z', anchor=0, start=0)
+
+# display with both backends
+magpy.show(sensor, magnet, style_path_frames=5, style_magnetization_show=False)
+magpy.show(sensor, magnet, style_path_frames=5, backend="plotly")
 ```
