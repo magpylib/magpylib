@@ -59,7 +59,7 @@ def test_input_objects_pixel_good():
         ]
     for good in goods:
         sens = magpy.Sensor(pixel=good)
-        np.testing.assert_allclose(sens.pixel, np.squeeze(np.array(good)))
+        np.testing.assert_allclose(sens.pixel, good)
 
 
 def test_input_objects_pixel_bad():
@@ -578,6 +578,56 @@ def test_input_rotate_axis_bad():
         np.testing.assert_raises(MagpylibBadUserInput, x.rotate_from_angax, 10, bad)
 
 
+def test_input_observer_good():
+    """good observer inputs"""
+    pos_vec1 = (1,2,3)
+    pos_vec2 = [(1,2,3)]*2
+    pos_vec3 = [[(1,2,3)]*2]*3
+    sens1 = magpy.Sensor()
+    sens2 = magpy.Sensor()
+    sens3 = magpy.Sensor(pixel=pos_vec3)
+    coll1 = magpy.Collection(sens1)
+    coll2 = magpy.Collection(sens1, sens2)
+
+    goods = [
+        sens1,
+        coll1, coll2,
+        pos_vec1, pos_vec2, pos_vec3,
+        [sens1, coll1], [sens1, coll2], [sens1, pos_vec1], [sens3, pos_vec3],
+        [pos_vec1, coll1], [pos_vec1, coll2],
+        [sens1, coll1, pos_vec1],
+        [sens1, coll1, sens2, pos_vec1]
+    ]
+
+    src = magpy.misc.Dipole((1,2,3))
+    for good in goods:
+        B = src.getB(good)
+        assert isinstance(B, np.ndarray)
+
+
+def test_input_observer_bad():
+    """bad observer inputs"""
+    pos_vec1 = (1,2,3)
+    pos_vec2 = [(1,2,3)]*2
+    sens1 = magpy.Sensor()
+    coll1 = magpy.Collection(sens1)
+
+    bads = [
+        'a',
+        None,
+        [],
+        ('a','b','c'),
+        [('a','b','c')],
+        magpy.misc.Dipole((1,2,3)),
+        [pos_vec1, pos_vec2],
+        [sens1, pos_vec2],
+        [pos_vec2, coll1],
+        [magpy.Sensor(pixel=(1,2,3)), ('a','b','c')],
+    ]
+    src = magpy.misc.Dipole((1,2,3))
+    for bad in bads:
+        np.testing.assert_raises(MagpylibBadUserInput, src.getB, bad)
+
 ###########################################################
 ###########################################################
 # GET BH
@@ -613,4 +663,10 @@ def test_input_getBH_field_bad():
     for bad in bads:
         moms = np.array([[1,2,3]])
         obs = np.array([[1,2,3]])
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.core.dipole_field, moms, obs, field=bad)
+        np.testing.assert_raises(
+            MagpylibBadUserInput,
+            magpy.core.dipole_field,
+            moms,
+            obs,
+            field=bad,
+        )

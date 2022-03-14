@@ -209,7 +209,9 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar.
     sensors = check_format_input_observers(observers)
-    pix_shape = sensors[0]._pixel.shape
+    pix_shape = sensors[0].pixel.shape
+    if pix_shape == (3,):
+        pix_shape = (1,3)
 
     # check which sensors have unit roation
     #   so that they dont have to be rotated back later (performance issue)
@@ -256,7 +258,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pixel, 3)
     #   allows sensors with different pixel shapes <- relevant?
-    poso =[[r.apply(sens._pixel.reshape(-1,3)) + p
+    poso =[[r.apply(sens.pixel.reshape(-1,3)) + p
             for r,p in zip(sens._orientation, sens._position)]
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)

@@ -4,8 +4,6 @@ from math import log10
 from typing import Sequence
 import numpy as np
 from magpylib._src.exceptions import MagpylibBadUserInput
-#from magpylib import _src
-#from magpylib._src.input_checks import check_format_input_vector
 
 LIBRARY_SOURCES = (
     "Cuboid",
@@ -40,12 +38,12 @@ ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
 - Sensor object
 - Collection with at least one Sensor
-- 1D list thereof"""
+- 1D list of the above"""
 
 ALLOWED_SENSORS_MSG = """Sensors must be either
 - Sensor object
 - Collection with at least one Sensor
-- 1D list thereof"""
+- 1D list of the above"""
 
 
 def wrong_obj_msg(*objs, allow="sources"):
@@ -254,11 +252,6 @@ def test_path_format(inp):
     if not result:
         msg = "Bad path format (rot-pos with different lengths)"
         raise MagpylibBadUserInput(msg)
-
-
-def all_same(lst: list) -> bool:
-    """test if all list entries are the same"""
-    return lst[1:] == lst[:-1]
 
 
 def filter_objects(obj_list, allow="sources+sensors", warn=True):

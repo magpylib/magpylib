@@ -1,6 +1,6 @@
 import numpy as np
 import magpylib as magpy
-
+from magpylib import Sensor
 
 def test_sensor1():
     """ self-consistent test of the sensor class
@@ -71,3 +71,65 @@ def test_repr():
     """
     sens = magpy.Sensor()
     assert sens.__repr__()[:6]== 'Sensor', 'Sensor repr failed'
+
+
+def test_pixel1():
+    """
+    squeeze=False Bfield minimal shape is (1,1,1,1,3)
+    logic: single sensor, scalar path, single source all generate
+    1 for squeeze=False Bshape. Bare pixel should do the same
+    """
+    src = magpy.misc.Dipole((1,2,3))
+
+    # squeeze=False Bshape of nbare pixel must be (1,1,1,1,3)
+    np.testing.assert_allclose(
+        src.getB(Sensor(pixel=(1,2,3)), squeeze=False).shape,
+        (1,1,1,1,3),
+    )
+
+    # squeeze=False Bshape of [(1,2,3)] must then also be (1,1,1,1,3)
+    src = magpy.misc.Dipole((1,2,3))
+    np.testing.assert_allclose(
+        src.getB(Sensor(pixel=[(1,2,3)]), squeeze=False).shape,
+        (1,1,1,1,3),
+    )
+
+    # squeeze=False Bshape of [[(1,2,3)]] must be (1,1,1,1,1,3)
+    np.testing.assert_allclose(
+        src.getB(Sensor(pixel=[[(1,2,3)]]), squeeze=False).shape,
+        (1,1,1,1,1,3),
+    )
+
+
+def test_pixel2():
+    """
+    Sensor(pixel=pos_vec).pixel should always return pos_vec
+    """
+
+    p0 = (1,2,3)
+    p1 = [(1,2,3)]
+    p2 = [[(1,2,3)]]
+
+    # input pos_vec == Sensor(pixel=pos_vec)
+    for pos_vec in [p0,p1,p2]:
+        np.testing.assert_allclose(
+            Sensor(pixel=pos_vec).pixel,
+            pos_vec,
+        )
+
+
+def test_pixel3():
+    """
+    There should be complete equivalence between pos_vec and
+    Sensor(pixel=pos_vec) inputs
+    """
+    src = magpy.misc.Dipole((1,2,3))
+
+    p0 = (1,2,3)
+    p1 = [(1,2,3)]
+    p2 = [[(1,2,3)]]
+    for pos_vec in [p0,p1,p2]:
+        np.testing.assert_allclose(
+            src.getB(Sensor(pixel=pos_vec), squeeze=False),
+            src.getB(pos_vec, squeeze=False)
+        )

@@ -8,12 +8,19 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 from magpylib._src.defaults.defaults_classes import default_settings
-import magpylib as magpy
-from magpylib._src.utility import all_same
+from magpylib import _src
+from magpylib._src.utility import wrong_obj_msg
+
 
 #################################################################
 #################################################################
 # FUNDAMENTAL CHECKS
+
+
+def all_same(lst: list) -> bool:
+    """test if all list entries are the same"""
+    return lst[1:] == lst[:-1]
+
 
 def is_array_like(inp, msg:str):
     """ test if inp is array_like: type list, tuple or ndarray
@@ -278,8 +285,7 @@ def check_format_input_vector(inp,
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
-    squeeze=False,
-    extend_dim_to2=False):
+    ):
     """checks vector input and returns in formatted form
     - inp must be array_like
     - convert inp to ndarray with dtype float
@@ -311,11 +317,6 @@ def check_format_input_vector(inp,
             raise MagpylibBadUserInput(
                 f"Input parameter `{sig_name}` cannot have values <= 0."
             )
-    if squeeze:
-        return np.squeeze(inp)
-    if extend_dim_to2:
-        if inp.ndim == 1:
-            return np.array([inp])
     return inp
 
 
@@ -397,17 +398,17 @@ def check_format_input_observers(inp):
 
     # any good input must now be list/tuple/array
     if not isinstance(inp, (list, tuple, np.ndarray)):
-        raise MagpylibBadUserInput('ERR: bad input type')
+        raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
     # empty list
     if len(inp) == 0:
-        raise MagpylibBadUserInput('ERR: empty list')
+        raise MagpylibBadUserInput(wrong_obj_msg(inp, allow="observers"))
 
     # now inp can still be [pos_vec, sens, coll] or just a pos_vec
 
     try: # try if input is just a pos_vec
         inp = np.array(inp, dtype=float)
-        return [magpy.Sensor(pixel=inp)]
+        return [_src.obj_classes.Sensor(pixel=inp)]
     except (TypeError, ValueError): # if not, it must be [pos_vec, sens, coll]
         sensors=[]
         for obj in inp:
@@ -415,14 +416,14 @@ def check_format_input_observers(inp):
                 sensors.append(obj)
             elif getattr(obj, "_object_type", "") == "Collection":
                 if not obj.sensors:
-                    raise MagpylibBadUserInput('ERR: no sensors in collection')
+                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
                 sensors.extend(obj.sensors)
             else: # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
                     obj = np.array(obj, dtype=float)
-                    sensors.append(magpy.Sensor(pixel=obj))
+                    sensors.append(_src.obj_classes.Sensor(pixel=obj))
                 except Exception: # or some unwanted crap
-                    raise MagpylibBadUserInput('ERR: bad input type')
+                    raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
 
         # all pixel shapes must be the same
         pix_shapes = [s._pixel.shape for s in sensors]
