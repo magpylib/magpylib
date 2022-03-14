@@ -13,14 +13,13 @@ kernelspec:
 
 This section includes code examples. Detailed package, class, method and function documentations are found in the {ref}`modindex`. A technical introduction is given in {ref}`intro`.
 
-Advanced
-========
+Advanced Tutorials
+==================
 
 ```{toctree}
 :caption: Advanced Features
 :maxdepth: 2
 
-examples_21_custom_source.md
-examples_22_adding_cad_model.md
-examples_23_compound_class.md
+examples_21_compound_class.md
+examples_22_fem_interpolation.md
 ```
