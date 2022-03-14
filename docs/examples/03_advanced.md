@@ -13,8 +13,8 @@ kernelspec:
 
 This section includes code examples. Detailed package, class, method and function documentations are found in the {ref}`modindex`. A technical introduction is given in {ref}`intro`.
 
-Advanced Tutorials
-==================
+Advanced
+========
 
 ```{toctree}
 :caption: Advanced Features

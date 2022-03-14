@@ -24,18 +24,18 @@ import magpylib as magpy
 
 fig = plt.figure(figsize=(10,4))
 ax1 = fig.add_subplot(121, projection='3d')  # 3D-axis
-ax2 = fig.add_subplot(122,)                  # 2D-axis
+ax2 = fig.add_subplot(122)                   # 2D-axis
 
 # create coil compound object
 coil = magpy.Collection()
-for z in np.linspace(-2,2,10):
-    winding = magpy.current.Loop(current = 1, diameter = 5, position = (0,0,z))
+for z in np.linspace(-2, 2, 10):
+    winding = magpy.current.Loop(current=1, diameter=5, position=(0,0,z))
     coil.add(winding)
 
 # coil now behaves like a single object
-coil.rotate_from_angax(25, 'y')
+coil.rotate_from_angax(angle=25, axis='y')
 
-# display on ax1
+# display 3D model
 coil.show(canvas=ax1)
 
 # compute and display coil-field on grid

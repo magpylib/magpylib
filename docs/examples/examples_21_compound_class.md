@@ -13,82 +13,40 @@ kernelspec:
 
 (examples-own-dynamic-3d-model)=
 
-# Dynamic custom 3D model
+# Advanced compounds
 
-+++
+This tutorial brings the *compound philisopy* of collections to the next level by subclassing the `Collection` class and adding a dynamic 3D representation.
 
-The Magpylib `Collection` object class serves the purpose of grouping multiple sources and/or sensors in a single object. This bares the advantage of manipulating multiple objects with single commands such as `move` and `rotate`. It can for example be used to create a compound object that acts as a unique source.
-A `Collection` also have its own position and holds some basic styling properties that can be useful to modify the associated 3D-representation when plotting it with the `show` method.
+## Efficient 3D models
 
-+++
-
-## Minimal example
-
-+++
-
-In the following example we will create a linear arrangement of cuboid magnets with alternating polarity. When calling the `getB` method on the created `Collection`, the result is already the sum of the field produced by its children.
+The Matplotlib and Plotly libraries were not designed for complex 3D graphic outputs. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children. This is demonstrated in the following example,
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# create children
-cuboids = []
+# create collection
+coll = magpy.Collection()
 for index in range(10):
-    mag_sign = index % 2 * 2 - 1  # positive if index is od else even
     cuboid = magpy.magnet.Cuboid(
-        magnetization=(0, 0, 1000 * mag_sign),
-        dimension=(10, 10, 10),
-        position=(index * 10, 0, 0),
+        magnetization=(0, 0, 1000 * (index%2-.5)),
+        dimension=(10,10,10),
+        position=(index*10,0,0),
     )
-    cuboids.append(cuboid)
+    coll.add(cuboid)
 
-# group children into a `Collection`
-coll = magpy.Collection(cuboids[:-1])
-print(f"B-Field at position (0,0,0) → {coll.getB((0,0,0)).round(2)}")
-coll.show()
-```
+# add 3D-trace
+plotly_trace = magpy.graphics.model3d.make_Cuboid(
+    backend='plotly',
+    dimension=(104, 12, 12),
+    position=(45, 0, 0),
+)
+plotly_trace["kwargs"]["opacity"] = 0.5
+coll.style.model3d.add_trace(plotly_trace)
 
-## Add an extra 3D-model
-
-+++
-
-Lets now add a body emcompassing our linear arrangement. We can do so by adding a new 3D-model with the `style.model3d.add_trace` method. If we intend only to use the plotly backend to display the system, only a `plotly` trace is necessary.
-
-A model3d trace is a dictionary containing the necessary information to draw a plot type, depending on the chosen backend.
-
-The `add_trace` method has the following signature:
-
-```{code-cell} ipython3
-help(magpy.Collection().style.model3d.add_trace)
-```
-
-In the case of building a `Collection` of many objects, it can become quite computationally expensive to display every single children. To avoid this issue, it is possible to deactivate the default representation of every children using the `set_children_styles` method.
-
-```{code-cell} ipython3
-import magpylib as magpy
-from magpylib.display.plotly import make_BaseCuboid
-
-# create children
-cuboids = []
-for index in range(11):
-    mag_sign = index % 2 * 2 - 1  # positive if index is od else even
-    cuboid = magpy.magnet.Cuboid(
-        magnetization=(0, 0, 1000 * mag_sign),
-        dimension=(10, 10, 10),
-        position=(index * 10, 0, 0),
-    )
-    cuboids.append(cuboid)
-
-# group children into a `Collection`
-coll = magpy.Collection(cuboids[:-1], style_label='Collection with visible children')
-
-# add extra 3D-trace - the make_BaseCuboid function returns a dictionary
-plotly_trace = make_BaseCuboid(dimension=(104, 12, 12), position=(45, 0, 0))
-plotly_trace["opacity"] = 0.5
-coll.style.model3d.add_trace(trace=plotly_trace, backend="plotly")
+coll.style.label='Collection with visible children'
 coll.show(backend="plotly")
 
-# Hide the children 3D-model representation
+# hide the children deafult 3D representation
 coll.set_children_styles(model3d_showdefault=False)
 coll.style.label = 'Collection with hidden children'
 coll.show(backend="plotly")
@@ -98,72 +56,75 @@ coll.show(backend="plotly")
 The `Collection` position is set to (0,0,0) at creation time. Any added extra 3D-model will be bound to the local coordinate system of to the `Collection` and `rotated`/`moved` together with its parent object.
 ```
 
-+++
+## Subclassing collections
 
-```{warning}
-If no 3D-model as been assigned to a `Collection` and all children representation are hidden, you may end up with an empty plot.
-````
-
-+++
-
-## Subclassing `Collection`
-
-+++
-
-By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we build a _magnetic wheel_ object for which the `diameter`, `cube_size` and number of children `cubes` can be updated for each `MagneticWheel` instance directly.
+By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties and methods. In the following example we build a _magnetic ring_ object which is simply a ring of cuboid magnets. It has the `cubes` property which refers to the number of cuboids in the ring, and can be dynamically updated, while the `MagnetRing` object itself behaves like a native Magpylib source,
 
 ```{code-cell} ipython3
 import magpylib as magpy
-import numpy as np
 
+class MagnetRing(magpy.Collection):
+    """ A ring of cuboid magnets
 
-# define the new `Collection` subclass
-class MagneticWheel(magpy.Collection):
-    """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
+    Parameters
+    ----------
+    cubes: int, default=6
+        Number of cubes on ring
+    """
 
-    def __init__(self, cubes=6, cube_size=10, diameter=36, **style_kwargs):
+    def __init__(self, cubes=6, **style_kwargs):
         super().__init__(**style_kwargs)
-        self.update(cubes=cubes, cube_size=cube_size, diameter=diameter)
+        self._update(cubes)
 
-    def update(self, cubes=None, cube_size=None, diameter=None):
-        """updates the magnetic weel object"""
-        self.reset_path()
-        self.cubes = cubes if cubes is not None else self.cubes
-        self.cube_size = cube_size if cube_size is not None else self.cube_size
-        self.diameter = diameter if diameter is not None else self.diameter
-        create_cube = lambda: magpy.magnet.Cuboid(
-            magnetization=(1000, 0, 0),
-            dimension=[self.cube_size] * 3,
-            position=(self.diameter / 2, 0, 0),
-        )
-        ref_cube = create_cube().rotate_from_angax(
-            np.linspace(0.0, 360.0, self.cubes, endpoint=False),
-            "z",
-            anchor=(0, 0, 0),
-            start=0,
-        )
-        children = []
-        for ind in range(self.cubes):
-            s = create_cube()
-            s.position = ref_cube.position[ind]
-            s.orientation = ref_cube.orientation[ind]
-            children.append(s)
-        self.children = children
+    @property
+    def cubes(self):
+        """ Number of cubes"""
+        return self._cubes
+
+    @cubes.setter
+    def cubes(self, inp):
+        """ set cubes"""
+        self._update(inp)
+
+    def _update(self, cubes):
+        """updates the MagnetRing instance"""
+        self._cubes = cubes
+        ring_radius = cubes/3
+
+        # construct MagnetRing in temporary Collection
+        temp_coll = magpy.Collection()
+        for i in range(cubes):
+            child = magpy.magnet.Cuboid(
+                magnetization=(1000,0,0),
+                dimension=(1,1,1),
+                position=(ring_radius,0,0)
+            )
+            child.rotate_from_angax(360/cubes*i, 'z', anchor=0)
+            temp_coll.add(child)
+
+        # adjust position/orientation and replace children
+        temp_coll.position = self.position
+        temp_coll.orientation = self.orientation
+        self.children = temp_coll.children
+
         return self
 
+# add a sensor
+sensor = magpy.Sensor(position=(0, 0, 0))
 
-# create a `MagneticWeel` class instance
-wheel = MagneticWheel()
-sens = magpy.Sensor(position=(0, 0, 20))
-print(f"B-Field at position {sens.position} → {wheel.getB(sens).round(2)}")
-magpy.show(wheel, sens)
+# create a MagnetRing class instance
+ring = MagnetRing()
 
-# update wheel
-wheel.update(cube_size=5, diameter=50, cubes=10)
-print(
-    f"\nB-Field at position {sens.position} for updated wheel → {wheel.getB(sens).round(2)}"
-)
-magpy.show(wheel, sens)
+# treat the Magnetic ring like a native magpylib source object
+ring.position = (0,0,10)
+ring.rotate_from_angax(angle=45, axis=(1,-1,0))
+print(f"B-field at sensor → {ring.getB(sensor).round(2)}")
+magpy.show(ring, sensor)
+
+# modify object custom attribute
+ring.cubes=15
+print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(2)}")
+magpy.show(ring, sensor)
 ```
 
 ## Use dynamic extra 3D-model update

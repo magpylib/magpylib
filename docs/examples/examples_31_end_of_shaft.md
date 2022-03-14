@@ -11,14 +11,11 @@ kernelspec:
   name: python3
 ---
 
-# End of shaft
+# End of shaft angle sensor
 
-In this example we consider a typical end-of-shaft system where a diametral cylindrical magnet is mounted at the end of a rotating shaft. A magnetic field sensor is mounted centrally below with the purpose of detecting the angular position of the shaft.
+End of shaft angle sensing is a classical example for a magnetic position system. The goal is to determine the angular position of a rotating shaft. A magnet, typically a diametrally magnetized cylinder, is mounted at the end of the shaft. A 2D sensor is mounted below. When the shaft rotates the two sensor outputs will be $s_1=B_0 sin(\varphi)$ and $s_2=B_0 cos(\varphi)$, so that the angle is uniquely given by $\varphi = arctan(s_1/s_2)$.
 
-The purpose of this example is to
-1. compute and understand the fields at the sensor.
-1. include the influence of a magnet positioning error in the form of a small displacement from the central axis.
-2. show how complex systems and motions can be set up and demonstrated easily. For this 
+In the example below we show such a typical end-of-shaft system with a 2-pixel sensor, that is commonly used to eliminate external stray fields. In addition, we assume that the magnet is not perfectly mounted at the end of the shaft, but slightly displaced to the side, which results in a wobble motion. Such tolerances are easily implemented with Magpylib, they can be vizualized and their influence on the sensor output signal can be tested quickly.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -26,7 +23,7 @@ import plotly.graph_objects as go
 import magpylib as magpy
 
 # create magnet
-src = magpy.magnet.Cylinder(
+magnet = magpy.magnet.Cylinder(
     magnetization=(1000,0,0),
     dimension=(6,2),
     position=(0,0,1.5),
@@ -34,28 +31,29 @@ src = magpy.magnet.Cylinder(
     style_color='.7',
 )
 
-# add model3d to magnet for shaft visualization
-shaft_trace = magpy.display.plotly.make_BasePrism(
-    base_vertices=20,
-    diameter=10,
-    height=10,
-)
+# create shaft dummy with 3D model
 shaft = magpy.misc.CustomSource(
     position=(0,0,7),
     style_color='.7',
     style_model3d_showdefault=False,
     style_label='Shaft'
 )
-shaft.style.model3d.add_trace(shaft_trace, backend='plotly')
+shaft_trace = magpy.graphics.model3d.make_Prism(
+    backend='plotly',
+    base=20,
+    diameter=10,
+    height=10,
+)
+shaft.style.model3d.add_trace(shaft_trace)
 
-# magnet wobbles when shaft rotates
+# shaft rotation / magnet wobble motion
 displacement = 1
 angles = np.linspace(0, 360, 72)
-coll = src + shaft
-src.move((displacement, 0, 0))
+coll = magnet + shaft
+magnet.move((displacement, 0, 0))
 coll.rotate_from_angax(angles, 'z', anchor=0, start=0)
 
-# sensor
+# create sensor
 gap = 3
 sens = magpy.Sensor(
     position=(0,0,-gap),
@@ -64,15 +62,15 @@ sens = magpy.Sensor(
     style_size=1.5,
 )
 
-# show 3D animation with wobble motion
+# show 3D animation of wobble motion
 fig1 = go.Figure()
-magpy.show(src, sens, shaft, animation=True, backend='plotly', canvas=fig1)
+magpy.show(magnet, sens, shaft, animation=True, backend='plotly', canvas=fig1)
 fig1.update_layout(scene_camera_eye_z=-1.1)
 fig1.show()
 
 # show sensor output in plotly
 fig2 = go.Figure()
-B = sens.getB(src)
+B = sens.getB(magnet)
 for px,dash in zip([0,1], ['solid', 'dash']):
     for i,xy,col in zip([0,1], ['x','y'], ['red', 'green']):
         fig2.add_trace(go.Scatter(x=angles, y=B[:,px,i],
