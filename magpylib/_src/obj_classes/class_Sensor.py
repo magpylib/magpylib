@@ -2,6 +2,7 @@
 DOCSTRINGS V4 READY
 """
 
+import numpy as np
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.utility import format_star_input
@@ -92,7 +93,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pixel(self):
         """ Sensor pixel attribute getter and setter."""
-        return self._pixel
+        return np.squeeze(self._pixel)
 
     @pixel.setter
     def pixel(self, pix):
@@ -105,7 +106,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             shape_m1=3,
             sig_name='pixel',
             sig_type='array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)',
-            squeeze=True)
+            extend_dim_to2=True)
 
 
     def getB(self, *sources, sumup=False, squeeze=True):

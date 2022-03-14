@@ -1,11 +1,17 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.utility import (all_same, check_static_sensor_orient,
-    format_src_inputs, format_obs_inputs)
+from magpylib._src.utility import (
+    check_static_sensor_orient,
+    format_src_inputs,
+)
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib._src.input_checks import check_excitations, check_dimensions
+from magpylib._src.input_checks import (
+    check_excitations,
+    check_dimensions,
+    check_format_input_observers,
+)
 
 
 def tile_mag(group: list, n_pp: int):
@@ -199,18 +205,11 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     check_excitations(sources)
 
     # format observer inputs:
-    #   allow only bare sensor, possis, or a list/tuple thereof
-    #   create a list of sensor instances where possi inputs are moved to pixel
-    sensors = format_obs_inputs(observers)
-
-    # check if all sensor pixel shapes are similar.
-    #   Cannot accept different obs pos input shapes as this would lead to incomplete
-    #   axes in the return arrays.
-    pix_shapes = [sens.pixel.shape for sens in sensors]
-    if not all_same(pix_shapes):
-        raise MagpylibBadUserInput('Different observer input shapes not allowed.'+
-            ' All pixel and pos_obs input shapes must be similar !')
-    pix_shape = pix_shapes[0]
+    #   allow only bare sensor, collection, pos_vec or list thereof
+    #   transform input into an ordered list of sensors (pos_vec->pixel)
+    #   check if all pixel shapes are similar.
+    sensors = check_format_input_observers(observers)
+    pix_shape = sensors[0]._pixel.shape
 
     # check which sensors have unit roation
     #   so that they dont have to be rotated back later (performance issue)
@@ -257,7 +256,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     # combine information form all sensors to generate pos_obs with-------------
     #   shape (m * concat all sens flat pixel, 3)
     #   allows sensors with different pixel shapes <- relevant?
-    poso =[[r.apply(sens.pixel.reshape(-1,3)) + p
+    poso =[[r.apply(sens._pixel.reshape(-1,3)) + p
             for r,p in zip(sens._orientation, sens._position)]
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)

@@ -8,6 +8,8 @@ from magpylib._src.exceptions import (
     MagpylibMissingInput,
 )
 from magpylib._src.defaults.defaults_classes import default_settings
+import magpylib as magpy
+from magpylib._src.utility import all_same
 
 #################################################################
 #################################################################
@@ -276,7 +278,8 @@ def check_format_input_vector(inp,
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
-    squeeze=False):
+    squeeze=False,
+    extend_dim_to2=False):
     """checks vector input and returns in formatted form
     - inp must be array_like
     - convert inp to ndarray with dtype float
@@ -284,6 +287,7 @@ def check_format_input_vector(inp,
     - print error msg with signature arguments
     - if reshape=True: returns shape (n,3) - required for position init and setter
     - if allow_None: return None
+    - if extend_dim_to2: add a dimension if input is only (1,2,3) - required for sensor pixel
     """
     if allow_None:
         if inp is None:
@@ -309,6 +313,9 @@ def check_format_input_vector(inp,
             )
     if squeeze:
         return np.squeeze(inp)
+    if extend_dim_to2:
+        if inp.ndim == 1:
+            return np.array([inp])
     return inp
 
 
@@ -373,6 +380,58 @@ def check_format_input_backend(inp):
     raise MagpylibBadUserInput(
         "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
         f"Instead received {inp}.")
+
+
+def check_format_input_observers(inp):
+    """
+    checks observer input and returns a list of sensor objects
+    """
+    # pylint: disable=raise-missing-from
+    # pylint: disable=protected-access
+
+    # make bare Sensor, bare Collection into a list
+    if getattr(inp, "_object_type", "") in ("Collection", "Sensor"):
+        inp = (inp,)
+
+    # note: bare pixel is automatically made into a list by Sensor
+
+    # any good input must now be list/tuple/array
+    if not isinstance(inp, (list, tuple, np.ndarray)):
+        raise MagpylibBadUserInput('ERR: bad input type')
+
+    # empty list
+    if len(inp) == 0:
+        raise MagpylibBadUserInput('ERR: empty list')
+
+    # now inp can still be [pos_vec, sens, coll] or just a pos_vec
+
+    try: # try if input is just a pos_vec
+        inp = np.array(inp, dtype=float)
+        return [magpy.Sensor(pixel=inp)]
+    except (TypeError, ValueError): # if not, it must be [pos_vec, sens, coll]
+        sensors=[]
+        for obj in inp:
+            if getattr(obj, "_object_type", "") == "Sensor":
+                sensors.append(obj)
+            elif getattr(obj, "_object_type", "") == "Collection":
+                if not obj.sensors:
+                    raise MagpylibBadUserInput('ERR: no sensors in collection')
+                sensors.extend(obj.sensors)
+            else: # if its not a Sensor or a Collection it can only be a pos_vec
+                try:
+                    obj = np.array(obj, dtype=float)
+                    sensors.append(magpy.Sensor(pixel=obj))
+                except Exception: # or some unwanted crap
+                    raise MagpylibBadUserInput('ERR: bad input type')
+
+        # all pixel shapes must be the same
+        pix_shapes = [s._pixel.shape for s in sensors]
+        if not all_same(pix_shapes):
+            raise MagpylibBadUserInput(
+                'Different observer input detected.'
+                ' All sensor pixel and position vector inputs must'
+                ' be of similar shape !')
+        return sensors
 
 
 ############################################################################################
