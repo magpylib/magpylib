@@ -8,7 +8,7 @@ trigger:
 - feature-*
 
 pool:
-  vmImage: 'windows-2022'
+  vmImage: 'windows-latest'
 strategy:
   matrix:
     Python37:
