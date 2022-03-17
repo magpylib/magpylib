@@ -5,11 +5,10 @@ import magpylib as magpy
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
-from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInput,
-    MagpylibBadInputShape)
-from magpylib._src.utility import format_obj_input, format_src_inputs, format_obs_inputs
+from magpylib._src.exceptions import (MagpylibInternalError, MagpylibBadUserInput,)
+from magpylib._src.utility import format_obj_input, format_src_inputs
 from magpylib._src.utility import test_path_format as tpf
-
+from magpylib._src.input_checks import check_format_input_observers
 
 def getBHv_unknown_source_type():
     """ unknown source type """
@@ -168,7 +167,7 @@ def utility_format_obs_inputs():
     sens1 = magpy.Sensor()
     sens2 = magpy.Sensor()
     possis = [1,2,3]
-    format_obs_inputs([sens1,sens2,possis,'whatever'])
+    check_format_input_observers([sens1,sens2,possis,'whatever'])
 
 
 def utility_test_path_format():

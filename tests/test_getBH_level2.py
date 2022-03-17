@@ -240,6 +240,7 @@ def test_sensor_rotation3():
 def test_object_tiling():
     """ test if object tiling works when input paths are of various lengths
     """
+    # pylint: disable=no-member
     src1 = magpy.current.Loop(current=1, diameter=1)
     src1.rotate_from_angax(np.linspace(1,31,31), 'x', anchor=(0,1,0), start=-1)
 

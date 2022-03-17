@@ -105,7 +105,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             shape_m1=3,
             sig_name='pixel',
             sig_type='array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)',
-            squeeze=True)
+        )
 
 
     def getB(self, *sources, sumup=False, squeeze=True):
