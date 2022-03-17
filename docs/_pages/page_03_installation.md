@@ -10,6 +10,8 @@ Magpylib works with Python 3.7 or later ! The following packages will be automat
 - matplotlib
 - scipy (.spatial.transform, .special)
 
+(plotly-installation)=
+
 ## Using a package manager
 
 Magpylib works with PyPI and conda-forge repositories.

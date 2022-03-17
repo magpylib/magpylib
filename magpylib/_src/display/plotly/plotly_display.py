@@ -141,7 +141,7 @@ def make_DefaultTrace(
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
-    representation. The object will be reprensented by a scatter point and text above with object
+    representation. The object will be represented by a scatter point and text above with object
     name.
     """
 
@@ -181,7 +181,7 @@ def make_Dipole(
     provided arguments
     """
     moment_mag = np.linalg.norm(moment)
-    default_suffix = f" (moment={unit_prefix(moment_mag)}T/m³)"
+    default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
     name, name_suffix = get_name_and_suffix("Dipole", default_suffix, style)
     size = style.size
     if autosize is not None:

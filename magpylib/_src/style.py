@@ -289,7 +289,7 @@ class Model3d(MagicProperties):
         original 3d representation of the object.
 
         trace: Trace3d instance, dict or callable
-            Trace object. Can be a `Trace3d` instance or an dictionay with equivalent key/values
+            Trace object. Can be a `Trace3d` instance or an dictionary with equivalent key/values
             pairs, or a callable returning the equivalent dictionary.
 
         backend: str
@@ -354,7 +354,7 @@ class Trace3d(MagicProperties):
         Tells magpylib the name of the coordinate arrays to be moved or rotated,
             by default: `{"x": "x", "y": "y", "z": "z"}`, if False, object is not rotated.
 
-    show: bool, default=None
+    show: bool, default=True
         Shows/hides model3d object based on provided trace.
 
     scale: float, default=1

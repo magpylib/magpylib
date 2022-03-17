@@ -23,9 +23,8 @@ import os
 import setuptools
 from setuptools.command.install import install
 
-_magPyVersion = "4.0.0"
-
-_SphinxVersion = "4.2.0"
+_magPyVersion = "4.0.0rc0"
+_SphinxVersion = "4.4.0"
 _name = "magpylib"
 _description = "Free Python3 package to compute magnetic fields."
 _author_email = "magpylib@gmail.com"
@@ -64,25 +63,30 @@ setuptools.setup(
     packages=setuptools.find_packages(),
     zip_safe=False,  ## Gives the environment files so we can access docs,
     ## enables tooltips but may decrease performance
-    install_requires=["numpy>=1.20", "scipy>=1.7", "matplotlib>=3.3"],
+    install_requires=[
+        "numpy>=1.20",
+        "scipy>=1.7",
+        "matplotlib>=3.3",
+        "plotly>=5.3",
+    ],
     # kaleido, jupyterlab are needed for testing with display(renderer='json', backend='plotly')
     extras_require={
-        "testing": [
-            "numpy>=1.20",
-            "plotly>=5.3",
+        "dev": [
             "kaleido",
             "pytest",
             "coverage",
             "pylint",
             "jupyterlab>=3.2",
-            "sphinx==4.2.0",
+            "sphinx==4.4.0",
         ]
     },
     classifiers=[
         "Development Status :: 5 - Production/Stable",
+        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
-        "Programming Language :: Python :: 3",
+        "Programming Language :: Python :: 3.10",
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",

@@ -12,7 +12,6 @@ from magpylib._src.input_checks import (
     check_format_input_vector,
     )
 
-
 def show(
     *objects,
     zoom=0,
@@ -24,8 +23,8 @@ def show(
 ):
     """Display objects and paths graphically.
 
-    Global graphic styles can be set with kwargs as style-dictionary or using
-    style-underscore_magic.
+    Global graphic styles can be set with kwargs as style dictionary or using
+    style underscore magic.
 
     Parameters
     ----------
@@ -109,6 +108,16 @@ def show(
 
     # input checks
     backend = check_format_input_backend(backend)
+    check_input_zoom(zoom)
+    check_input_animation(animation)
+    check_format_input_vector(
+        markers,
+        dims=(2,),
+        shape_m1=3,
+        sig_name='markers',
+        sig_type='array_like of shape (n,3)',
+        allow_None=True)
+
     check_input_zoom(zoom)
     check_input_animation(animation)
     check_format_input_vector(
