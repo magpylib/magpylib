@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -19,7 +19,7 @@ This tutorial brings the *compound philisopy* of collections to the next level b
 
 ## Efficient 3D models
 
-The Matplotlib and Plotly libraries were not designed for complex 3D graphic outputs. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children. This is demonstrated in the following example,
+The Matplotlib and Plotly libraries were not designed for complex 3D graphic outputs. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections, is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children. This is demonstrated in the following example.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -36,20 +36,20 @@ for index in range(10):
 
 # add 3D-trace
 plotly_trace = magpy.graphics.model3d.make_Cuboid(
-    backend='plotly',
+    backend='matplotlib',
     dimension=(104, 12, 12),
     position=(45, 0, 0),
+    alpha=0.5,
 )
-plotly_trace["kwargs"]["opacity"] = 0.5
 coll.style.model3d.add_trace(plotly_trace)
 
 coll.style.label='Collection with visible children'
-coll.show(backend="plotly")
+coll.show()
 
 # hide the children deafult 3D representation
 coll.set_children_styles(model3d_showdefault=False)
 coll.style.label = 'Collection with hidden children'
-coll.show(backend="plotly")
+coll.show()
 ```
 
 ```{note}
@@ -58,7 +58,7 @@ The `Collection` position is set to (0,0,0) at creation time. Any added extra 3D
 
 ## Subclassing collections
 
-By subclassing the Magpylib `Collection` we can define special _compound_ objects that have their own new properties, methods and 3d trace. In the following example we build a _magnetic ring_ object which is simply a ring of cuboid magnets. It has the `cubes` property which refers to the number of cuboids in the ring, and can be dynamically updated. The `MagnetRing` object itself behaves like a native Magpylib source,
+By subclassing the Magpylib `Collection`, we can define special _compound_ objects that have their own new properties, methods and 3d trace. In the following example we build a _magnetic ring_ object which is simply a ring of cuboid magnets. It has the `cubes` property which refers to the number of cuboids in the ring and can be dynamically updated. The `MagnetRing` object itself behaves like a native Magpylib source.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -144,30 +144,16 @@ print(f"B-field at sensor for modified ring → {ring.getB(sensor).round(2)}")
 magpy.show(ring, sensor, backend='plotly')
 ```
 
-Finally, play around with our new `MagnetRing` class
-
-```{code-cell} ipython3
-import numpy as np
-
-rings = []
-for i,cub in zip([2,7,12,17,22], [20,16,12,8,4]):
-    ring = MagnetRing(cubes=cub)
-    ring.rotate_from_angax(angle=np.linspace(0,45,30), axis=(1,-1,0))
-    ring.move(np.linspace((0,0,0), (-i,-i,i), i))
-    rings.append(ring)
-
-magpy.show(rings, animation=2, backend='plotly', style_path_show=False)
-```
-
 ## Postponed trace construction
 
-Custom traces might be heavy to construct, and in the above example they are modified every time a parameter is changed. This can lead to quite some unwanted computational overhead, as the construction is only necessary once `show` is called.
+Custom traces might be computationally costly to construct, and in the above example they are recomputed every time a parameter is changed. This can lead to quite some unwanted overhead, as the construction is only necessary once `show` is called.
 
-To make your classes ready for heavy computation, it is possible to provide a callable as a trace, which will only be constructed when `show` is called. The following modification of the above example demonstrates this. All we do is to remove the trace from the `update` method, and instead provide `create_trace3d` as callable model3d:
+To make your classes ready for heavy computation, it is possible to provide a callable as a trace, which will only be constructed when `show` is called. The following modification of the above example demonstrates this. All we do is to remove the trace from the `update` method, and instead provide `create_trace3d` as callable `model3d`.
 
 ```{code-cell} ipython3
 from functools import partial
 import magpylib as magpy
+import numpy as np
 
 class MagnetRing(magpy.Collection):
     """ A ring of cuboid magnets
@@ -223,14 +209,18 @@ class MagnetRing(magpy.Collection):
         r2 = self.cubes/3 + 0.6
         trace = magpy.graphics.model3d.make_CylinderSegment(
             backend=backend,
-            dimension=(r1, r2, 1.1, 0, 360)
+            dimension=(r1, r2, 1.1, 0, 360),
+            **{('opacity' if backend=='plotly' else 'alpha') :0.5}
         )
-        if backend=='plotly':
-            trace['kwargs']['opacity'] = 0.5
         return trace
 
-# create a MagnetRing class instance
-ring = MagnetRing()
-ring.set_children_styles(model3d_showdefault=False)
-ring.show()
+# create multiple `MagnetRing` instances and animate paths
+rings = []
+for i,cub in zip([2,7,12,17,22], [20,16,12,8,4]):
+    ring = MagnetRing(cubes=cub, style_label=f'MagnetRing (x{cub})')
+    ring.rotate_from_angax(angle=np.linspace(0,45,10), axis=(1,-1,0))
+    ring.move(np.linspace((0,0,0), (-i,-i,i), i))
+    rings.append(ring)
+
+magpy.show(rings, animation=2, backend='plotly', style_path_show=False)
 ```

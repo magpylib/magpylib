@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -224,49 +224,51 @@ from magpylib.magnet import Cuboid, Cylinder, CylinderSegment, Sphere
 from magpylib.current import Loop, Line
 from magpylib.misc import Dipole
 
-source1 = Cuboid(
-    magnetization=(0,100,0),
-    dimension=(1,1,1),
-    position=(-7,0,0),
-)
-source2 = Cylinder(
-    magnetization=(0,0,100),
-    dimension=(1,1),
-    position=(-5,0,0),
-)
-source3 = CylinderSegment(
-    magnetization=(0,0,100),
-    dimension=(.3,1,1,0,140),
-    position=(-3,0,0),
-)
-source4 = Sphere(
-    magnetization=(0,0,100),
-    diameter=1,
-    position=(-1,0,0),
-)
-source5 = Loop(
-    current=1,
-    diameter=1,
-    position=(1,0,0),
-)
-source6 = Line(
-    current=1,
-    vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)],
-    position=(3,0,0),
-)
-source7 = Dipole(
-    moment=(0,0,100),
-    position=(5,0,0),
-)
+sources = [
+    Cuboid(
+        magnetization=(0,100,0),
+        dimension=(1,1,1),
+        position=(-7,0,0),
+    ),
+    Cylinder(
+        magnetization=(0,0,100),
+        dimension=(1,1),
+        position=(-5,0,0),
+    ),
+    CylinderSegment(
+        magnetization=(0,0,100),
+        dimension=(.3,1,1,0,140),
+        position=(-3,0,0),
+    ),
+    Sphere(
+        magnetization=(0,0,100),
+        diameter=1,
+        position=(-1,0,0),
+    ),
+    Loop(
+        current=1,
+        diameter=1,
+        position=(1,0,0),
+    ),
+    Line(
+        current=1,
+        vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)],
+        position=(3,0,0),
+    ),
+    Dipole(
+        moment=(0,0,100),
+        position=(5,0,0),
+    ),
+]
 sensor = magpy.Sensor(
     pixel=[(0,0,z) for z in (-.5,0,.5)],
     position=(7,0,0),
 )
 
-source6.move(np.linspace((0,0,0), (0,0,7), 20))
-source1.rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0)
+sources[5].move(np.linspace((0,0,0), (0,0,7), 20))
+sources[0].rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0)
 
-magpy.show(source1, source2, source3, source4, source5, source6, source7, sensor)
+magpy.show(sources, sensor)
 ```
 
 Notice that, objects and their paths are automatically assigned different colors, the magnetization vector, current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.

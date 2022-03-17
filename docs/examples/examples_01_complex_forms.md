@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -54,8 +54,8 @@ ring = CylinderSegment(magnetization=(0,0,100), dimension=(2,3,1,0,360))
 magpy.show(ring, sensor, canvas=ax2, style_magnetization_show=False)
 
 # compare field at sensor
-ax3.plot(sensor.getB(coll), label='from Cuboid')
-ax3.plot(sensor.getB(ring), ls='--', label='from CylinderSegment')
+ax3.plot(sensor.getB(coll).T[2], label='Bz from Cuboid')
+ax3.plot(sensor.getB(ring).T[2], ls='--', label='Bz from CylinderSegment')
 ax3.grid(color='.9')
 ax3.legend()
 
@@ -80,8 +80,14 @@ inner = Cylinder(magnetization=(0,0,-100), dimension=(4,1))
 outer = Cylinder(magnetization=(0,0, 100), dimension=(6,1))
 ring1 = inner + outer
 
-print(ring0.getB((1,2,3)))
-print(ring1.getB((1,2,3)))
+%time print('getB from Cylindersegment', ring0.getB((1,2,3)))
+%time print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
 ```
 
 Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time.
+
++++
+
+```note
+Cut-out operations cannot be displayed at the moment
+```

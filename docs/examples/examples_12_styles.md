@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -16,7 +16,7 @@ kernelspec:
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized in many ways.
 
-There are multiple hierarchy levels that descide about the final graphical representation of the objects:
+There are multiple hierarchy levels that decide about the final graphical representation of the objects:
 
 1. When no input is given, the **default style** will be applied.
 2. Object **individual styles** will take precedence over the default values.
@@ -80,7 +80,6 @@ magpy.defaults.display.style.magnet.magnetization = user_defined_style
 print('Custom magnetization style')
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
-
 
 ## Magic underscore notation
 <!-- +++ {"tags": [], "jp-MarkdownHeadingCollapsed": true} -->

@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -49,7 +49,7 @@ trace_mesh3d = {
         'i': (0, 0, 0, 1),
         'j': (1, 1, 2, 2),
         'k': (2, 3, 3, 3),
-        'opacity': 0.5,
+        #'opacity': 0.5,
     },
 }
 coll = magpy.Collection(position=(0,-3,0), style_label="'Mesh3d' trace")

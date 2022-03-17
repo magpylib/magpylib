@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.6
+    jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -43,6 +43,7 @@ shaft_trace = magpy.graphics.model3d.make_Prism(
     base=20,
     diameter=10,
     height=10,
+    opacity=0.3,
 )
 shaft.style.model3d.add_trace(shaft_trace)
 
@@ -78,8 +79,8 @@ for px,dash in zip([0,1], ['solid', 'dash']):
             line=dict(color=col, dash=dash),
         ))
 fig2.update_layout(
-    xaxis=dict(title='angle [deg]'),
-    yaxis=dict(title='field [mT]')
+    xaxis_title='angle [deg]',
+    yaxis_title='field [mT]'
 )
 fig2.show()
 ```
