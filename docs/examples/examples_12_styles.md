@@ -110,7 +110,7 @@ magpy.defaults.display.style.magnet.update(
 
 ## Setting individual styles
 
-Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be ommited.
+Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be omitted.
 
 ```{warning}
 Users should be aware that specifying style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).

@@ -78,7 +78,7 @@ The analytical solutions are exact when there is no material response and natura
 
 When magnet permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. The line current solutions give the exact same field as outside of a wire that carries a homogenous current. For more details check out the {ref}`physComp` section.
 
-Magpylib only provides solutions for simple geometric forms (cuboids, clinders, lines, ...). How complex shapes can be constructed from these simple base shapes is described in {ref}`examples-complex-forms`.
+Magpylib only provides solutions for simple geometric forms (cuboids, cylinders, lines, ...). How complex shapes can be constructed from these simple base shapes is described in {ref}`examples-complex-forms`.
 
 (intro-magpylib-objects)=
 
@@ -298,7 +298,7 @@ cube4 = cube1.copy(position=(9,0,0), style_color='linen')
 magpy.show(cube1, cube2, cube3, cube4, style_magnetization_show=False)
 ```
 
-A local style override is possible by passing style arguments directly to `show`. The hierarchy that descides about the final graphic object representation, a list of all styles and all other styling options for tuning the `show`-ouput are described in {ref}`examples-graphic-styles` and {ref}`examples-animation`.
+A local style override is possible by passing style arguments directly to `show`. The hierarchy that decides about the final graphic object representation, a list of all styles and all other styling options for tuning the `show`-output are described in {ref}`examples-graphic-styles` and {ref}`examples-animation`.
 
 (intro-field-computation)=
 
@@ -391,7 +391,7 @@ for i,plab in enumerate(['pixel1', 'pixel2']):
 fig.show()
 ```
 
-**Example 4:** The last example demonstrates the most general form of a `getB` computation with multiple source and sensor inputs. Specficifically, 3 sources, one with path length 11, and two sensors, each with pixel shape (4,5). Note that, when input objects have different path lengths, all shorter paths are padded (= objects remain "static") beyond their end.
+**Example 4:** The last example demonstrates the most general form of a `getB` computation with multiple source and sensor inputs. Specifically, 3 sources, one with path length 11, and two sensors, each with pixel shape (4,5). Note that, when input objects have different path lengths, all shorter paths are padded (= objects remain "static") beyond their end.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -410,13 +410,13 @@ B = magpy.getB([source1, source2, source3], [sensor1, sensor2])
 print(B.shape)
 ```
 
-In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the compuation time dramically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
+In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the computation time dramatically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
 
 (intro-direct-interface)=
 
 ## Direct interface and core
 
-The **direct interface** allows users to bypass the object oriented functionality of Magpylib. The magnetic field is computed for a set of arbitrary input instances by providing the top level functions `getB` and `getH` with 
+The **direct interface** allows users to bypass the object oriented functionality of Magpylib. The magnetic field is computed for a set of arbitrary input instances by providing the top level functions `getB` and `getH` with
 
 1. a string denoting the source type for the `sources` argument,
 2. an array_like of shape (3,) or (n,3) giving the positions for the `observers` argument,
@@ -515,7 +515,7 @@ It should be noted that collections have their own `style` attributes. Their pat
 
 ## Customization
 
-**User-defined 3D models** (traces) that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts vizualization.
+**User-defined 3D models** (traces) that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts visualization.
 
 **User-defined source classes** are easily realized through the `CustomSource` class. Such a custom source object can be provided with user-defined field computation functions, that are stored in the attributes `field_B_lambda` and `field_H_lambda`, and will be used when `getB` and `getH` are called. The provided functions must accept position arrays with shape (n,3), and return the field with a similar shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
 

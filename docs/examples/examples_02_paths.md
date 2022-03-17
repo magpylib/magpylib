@@ -133,7 +133,7 @@ print(sensor.orientation.as_quat())
 
 ## Edge-padding and end-slicing
 
-Magpylib will always make sure that object paths are in the right format, i.e. `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g. when computing the field, the shorter paths are adjusted in length to make the computation sensible. Internally, Magpylib follows a philosohpy of edge-padding and end-slicing when adjusting paths.
+Magpylib will always make sure that object paths are in the right format, i.e. `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g. when computing the field, the shorter paths are adjusted in length to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
 
 The idea behind **edge-padding** is, that whenever path entries beyond the existing path length are needed the edge-entries of the existing path are returned. This means that the object is considered to be "static" beyond its existing path.
 
@@ -164,7 +164,7 @@ B = magpy.getB([loop1,loop2], (0,0,0))
 print(B)
 ```
 
-The idea behind **end-slicing** is that, whenever a path is automatically reduced in length, Magplyib will slice to keep the ending of the path. While this occurs rarely, the following example shows how the `orientation` attribute is automatically end-sliced, keeping the values `[(0,0,.3), (0,0,.4)]`, when the `position` attribute is reduced in length:
+The idea behind **end-slicing** is that, whenever a path is automatically reduced in length, Magpylib will slice to keep the ending of the path. While this occurs rarely, the following example shows how the `orientation` attribute is automatically end-sliced, keeping the values `[(0,0,.3), (0,0,.4)]`, when the `position` attribute is reduced in length:
 
 ```{code-cell} ipython3
 from scipy.spatial.transform import Rotation as R

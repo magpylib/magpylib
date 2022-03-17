@@ -42,7 +42,7 @@ def get_stl_color(x):
 def trace_from_stl(stl_file, backend='matplotlib'):
     """
     Generates a Magpylib 3D model trace dictionary from an *.stl file.
-    backend: 'matplotlib' or 'plotly' 
+    backend: 'matplotlib' or 'plotly'
     """
     # load stl file
     stl_mesh = mesh.Mesh.from_file(stl_file)
@@ -78,7 +78,7 @@ def trace_from_stl(stl_file, backend='matplotlib'):
     return trace
 
 
-# load stl file from online ressource
+# load stl file from online resource
 url = "https://raw.githubusercontent.com/magpylib/magpylib-files/main/PG-SSO-3-2.stl"
 file = url.split("/")[-1]
 with tempfile.TemporaryDirectory() as temp:

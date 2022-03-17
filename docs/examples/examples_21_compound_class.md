@@ -15,7 +15,7 @@ kernelspec:
 
 # Advanced compounds
 
-This tutorial brings the *compound philisopy* of collections to the next level by subclassing the `Collection` class and adding a dynamic 3D representation.
+This tutorial brings the *compound philosophy* of collections to the next level by subclassing the `Collection` class and adding a dynamic 3D representation.
 
 ## Efficient 3D models
 
@@ -46,7 +46,7 @@ coll.style.model3d.add_trace(plotly_trace)
 coll.style.label='Collection with visible children'
 coll.show()
 
-# hide the children deafult 3D representation
+# hide the children default 3D representation
 coll.set_children_styles(model3d_showdefault=False)
 coll.style.label = 'Collection with hidden children'
 coll.show()

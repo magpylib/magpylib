@@ -15,7 +15,7 @@ kernelspec:
 
 # Complex forms
 
-The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses that would have been caused by each stimulus individually. This principle holds in Magnetostatics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields. 
+The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses that would have been caused by each stimulus individually. This principle holds in Magnetostatics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields.
 
 It is critical to understand that the superposition principle holds for the magnetization itself. When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations.
 
@@ -67,7 +67,7 @@ Construction of complex forms from base shapes is a powerful tool, however, ther
 
 ## Cut-out operation
 
-When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two cocentric cylinder shapes with opposite magnetizations, and compare the result to the `CylinderSegment` class solution.
+When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations, and compare the result to the `CylinderSegment` class solution.
 
 ```{code-cell} ipython3
 from magpylib.magnet import Cylinder, CylinderSegment

@@ -28,7 +28,7 @@ The input `trace` is a dictionary which includes all necessary information for p
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
 5. `'coordsargs'`: tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the Plotly backend and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`: choose if this trace should be displayed or not
-7. `'scale'`: default 1, object geometic scaling factor
+7. `'scale'`: default 1, object geometric scaling factor
 8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.
 
 The following example shows how a **Plotly** trace is constructed with  `Mesh3d` and `Scatter3d`:
