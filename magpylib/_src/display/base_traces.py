@@ -146,7 +146,7 @@ def make_Prism(
     j4 = j2
     k4 = k3 + 1
 
-    # k2&j2 and k3&j3 iverted because of face orientation
+    # k2&j2 and k3&j3 inverted because of face orientation
     i = np.concatenate([i1, i2, i3, i4])
     j = np.concatenate([j1, k2, k3, j4])
     k = np.concatenate([k1, j2, j3, k4])

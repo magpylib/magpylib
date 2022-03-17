@@ -33,7 +33,7 @@ def field_BH_line_from_vert(
     nvs = [len(vset)-1 for vset in vertex_sets] # length of vertex sets
     nseg = sum(nvs)                             # number of segments
 
-    # vertex_sets -> segements
+    # vertex_sets -> segments
     curr_tile = np.repeat(current, nvs)
     pos_start = np.concatenate([vert[:-1] for vert in vertex_sets])
     pos_end = np.concatenate([vert[1:] for vert in vertex_sets])

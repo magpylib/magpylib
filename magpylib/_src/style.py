@@ -289,7 +289,7 @@ class Model3d(MagicProperties):
         original 3d representation of the object.
 
         trace: Trace3d instance, dict or callable
-            Trace object. Can be a `Trace3d` instance or an dictionay with equivalent key/values
+            Trace object. Can be a `Trace3d` instance or an dictionary with equivalent key/values
             pairs, or a callable returning the equivalent dictionary.
 
         backend: str

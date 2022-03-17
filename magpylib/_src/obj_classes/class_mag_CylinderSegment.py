@@ -52,7 +52,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
     H-field [kA/m] of such a cylinder segment magnet with magnetization (100,200,300)
     in units of [mT], inner radius 1 [mm], outer radius 2 [mm], height 1 [mm], and
-    section anges 0 and 45 [deg] at the observer position (2,2,2) in units of [mm]:
+    section angles 0 and 45 [deg] at the observer position (2,2,2) in units of [mm]:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.CylinderSegment(magnetization=(100,200,300), dimension=(1,2,1,0,45))
@@ -113,7 +113,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @property
     def _barycenter(self):
-        """Unsqueezed Object barycenter. Always has dim (n,3) depending on object path."""
+        """Object barycenter. Always has dim (n,3) depending on object path."""
         return self._get_barycenter(self._position, self._orientation, self.dimension)
 
     @property

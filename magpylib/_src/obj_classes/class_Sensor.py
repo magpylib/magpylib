@@ -15,7 +15,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Can be used as `observers` input for magnetic field computation.
 
     When `position=(0,0,0)` and `orientation=None` local object coordinates
-    coincide with the gobal coordinate system.
+    coincide with the global coordinate system.
 
     A sensor is made up of pixel (sensing elements) where the magnetic field is evaluated.
 

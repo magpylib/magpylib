@@ -141,7 +141,7 @@ def make_DefaultTrace(
 ) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
-    representation. The object will be reprensented by a scatter point and text above with object
+    representation. The object will be represented by a scatter point and text above with object
     name.
     """
 

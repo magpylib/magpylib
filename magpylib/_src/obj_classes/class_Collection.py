@@ -208,7 +208,7 @@ class BaseCollection(BaseDisplayRepr):
         style_kwargs = validate_style_keys(arg)
         for src in self._children:
             # match properties false will try to apply properties from kwargs only if it finds it
-            # withoug throwing an error
+            # without throwing an error
             style_kwargs_specific = {
                 k: v
                 for k, v in style_kwargs.items()
@@ -350,7 +350,7 @@ class Collection(BaseGeo, BaseCollection):
     Collections function like compound-objects. They have their own `position` and
     `orientation` attributes. Move, rotate and setter operations acting on a
     `Collection` object are individually applied to all child objects so that the
-    geometric compound sturcture is maintained. For example, `rotate()` with
+    geometric compound structure is maintained. For example, `rotate()` with
     `anchor=None` rotates all children about `collection.position`.
 
     Parameters
