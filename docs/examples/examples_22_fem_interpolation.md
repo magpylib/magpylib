@@ -11,191 +11,127 @@ kernelspec:
   name: python3
 ---
 
-# FEM field interpolation
+# Field interpolation
 
-The Magpylib library provides a custom class which enables the user to define its own source with an arbitrary field function. The user field function must return a position-dependent value in the local coordinate system of the source. The custom source instance is then treated the same as any other built-in source and can be moved or rotated while coordinate transformations are taken care of by the library. The field values in the global coordinate system can be obtained with `getB` or `getH` as long as a respective field function has been provided.
+Working with complex magnet shapes can be cumbersome when a lot of base shapes are required, see {ref}`examples-complex-forms`. One way around this problem is to compute the field only a single time on a 3D grid, define an interpolation function, and use the interpolation function as `field_B_lambda` input of a custom source.
 
-The custom source class can for example be used recreate an external constant magnetic field. It can also be implemented to manipulate data originating from a 3d-vector field from measured or exported FEM data. In this case, the field function must be an interpolation function of the data. In the following example, the source data comes directly from the field calculation provided by magpylib itself, but the same procedure can be applied to aforementioned dataset types.
+This makes it possible to use the full Magpylib geometry interface, to move/rotate the complex source around, without having to recompute the total field at new observer positions. Of course this method would also allow it to integrate the field from a **finite element** computation or some **experimental data** into Magpylib.
+
+In the following example we show how this can be done. To improve readability, this example is constructed in the form of a Jupyter notebook.
+
+## Interpolation function
+
+We start by defining a 3D vector-field interpolation function relying on the scipy `RegularGridInterpolator` functionality.
 
 ```{code-cell} ipython3
 import numpy as np
-import plotly.graph_objects as go
 from scipy.interpolate import RegularGridInterpolator
 import magpylib as magpy
-```
 
-## Define interpolating function
-
-```{code-cell} ipython3
 def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.nan):
-    """ Creates a 3d-vector field interpolation of a rasterized data from a regular grid
+    """ Creates a 3D-vector field interpolation from regular grid data
 
     Parameters
     ----------
-    data: numpy.ndarray or array-like
-        array of shape (n,6). In order to be a regular grid, the first dimension n
-        corresponds to the product of the unique values in x,y,z-directions.
-        The second dimension must have the following ordering on the second axis:
-            `x, y, z, field_x, field_y, field_z`
+    data: array_like, shape (n,6)
+        The first dimension is a flattened regular grid, the second
+        dimension corresponds to positions x, y, z, then field Bx, By, Bz
+        in this order.
 
     method : str, optional
         The method of interpolation to perform. Supported are "linear" and
-        "nearest". This parameter will become the default for the object's
-        `__call__` method. Default is "linear".
+        "nearest". Default is "linear".
 
     bounds_error : bool, optional
         If True, when interpolated values are requested outside of the
-        domain of the input data, a ValueError is raised.
-        If False, then `fill_value` is used.
+        domain of the input data, a ValueError is raised. If False,
+        then `fill_value` is returned.
 
     fill_value : number, optional
-        If provided, the value to use for points outside of the
-        interpolation domain. If None, values outside
-        the domain are extrapolated.
+        Value returned when points outside the interpolation domain are
+        sampled.
 
     Returns
     -------
         callable: interpolating function for field values
     """
+    # condition input data
     data = np.array(data)
     idx = np.lexsort((data[:, 2], data[:, 1], data[:, 0]))  # sort data by x,y,z
     x, y, z, *field_vec = data[idx].T
     X, Y, Z = np.unique(x), np.unique(y), np.unique(z)
     nx, ny, nz = len(X), len(Y), len(Z)
-    kwargs = dict(bounds_error=bounds_error, fill_value=fill_value, method=method)
+
+    # construct interpolation with RegularGridInterpolator
     field_interp = []
-    for k, kn in zip((X, Y, Z), "xyz"):
-        assert (
-            np.unique(np.diff(k)).shape[0] == 1
-        ), f"not a regular grid in {kn}-direction"
+    kwargs = dict(bounds_error=bounds_error, fill_value=fill_value, method=method)
     for field in field_vec:
         rgi = RegularGridInterpolator((X, Y, Z), field.reshape(nx, ny, nz), **kwargs)
         field_interp.append(rgi)
     return lambda x: np.array([field(x) for field in field_interp]).T
 ```
 
-## Create virtual measured data
+## Custom source with interpolation field
 
-+++
-
-* create a source
+In the second step we create a custom source with an interpolated field as `get_B_lambda` input. In this example, the data for the interpolation is generated from a known cuboid field, which makes it easy to verify this approach afterwards.
 
 ```{code-cell} ipython3
-cube = magpy.magnet.Cuboid(
-    magnetization=(0, 0, 1000), position=(-20, 0, 0), dimension=(10, 10, 10)
-)
-dim = [4, 4, 4]
-Nelem = [2, 2, 2]
-slices = [slice(-d / 2, d / 2, N * 1j) for d, N in zip(dim, Nelem)]
-positions = np.mgrid[slices].reshape(len(slices), -1).T
-```
+# create data for interpolation
+cube = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(2,2,2))
+ts = np.linspace(-7, 7, 21)
+grid = np.array(np.meshgrid(ts,ts,ts)).T.reshape(-1,3)
+data = np.hstack((grid, cube.getB(grid)))
 
-* get data from a regular grid of positions
+# create custom source with nice 3D model
+custom = magpy.misc.CustomSource(field_B_lambda=interpolate_field(data))
 
-```{code-cell} ipython3
-Bcube = cube.getB(positions)
-Bdata = np.hstack([positions, Bcube])
-```
+xs = 1.1*np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])
+ys = 1.1*np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])
+zs = 1.1*np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])
 
-* check field function values vs magpylib Cuboid field values
-
-```{code-cell} ipython3
-field_B_lambda = interpolate_field(Bdata)
-print(Bcube)
-```
-
-```{code-cell} ipython3
-print(field_B_lambda(positions))
-```
-
-* create custom source with interpolation field
-
-```{code-cell} ipython3
-interp_cube = magpy.misc.CustomSource(field_B_lambda=field_B_lambda)
-```
-
-* add a graphical representation to the custom object, in this case a transparent cube
-
-```{code-cell} ipython3
-matplotlib_trace = {
-    'type':'plot',
-    'xs': np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])* 0.5 * dim[0],
-    'ys': np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])* 0.5 * dim[0],
-    'zs': np.array([-1, -1, -1, -1, -1,  1,  1, -1,  1,  1, -1,  1,  1, -1,  1,  1])* 0.5 * dim[0],
-    'ls': '-',
-}
-plotly_trace = {
-    "type": "mesh3d",
-    "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-    "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-    "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-    "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dim[0],
-    "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dim[1],
-    "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dim[2],
-    "opacity": 0.2,
-}
-
-# define user defined 3d representation for each plotting backend
-interp_cube.style.model3d.showdefault = False # hide default 3D-model
-interp_cube.style.model3d.add_trace(
+trace = dict(
     backend='matplotlib',
-    trace=matplotlib_trace,
-    show=True,
-    coordsargs={'x':'xs', 'y':'ys', 'z':'zs'}
+    constructor='plot',
+    args=(xs, ys, zs),
+    kwargs={'ls':'--', 'marker':'', 'lw':1, 'color':'k'},
 )
-interp_cube.style.model3d.add_trace(
-    backend='plotly',
-    trace=plotly_trace,
-    show=True
-)
-interp_cube.style.label = 'Interpolated cuboid field'
+custom.style.model3d.add_trace(trace)
+custom.style.model3d.showdefault=False
+
+# apply some geometric manipulation
+for src in [cube, custom]:
+    src.rotate_from_angax(angle=45, axis=(1,1,1))
+
+# add a sensor for testing
+sensor = magpy.Sensor(position=(-5,0,0))
+angs = np.linspace(3,150,49)
+sensor.rotate_from_angax(angle=angs, axis='y', anchor=0)
+
+magpy.show(cube, custom, sensor)
 ```
 
 ## Testing the accuracy of the interpolation
 
-+++
-
-```{warning}
-If `getB` gets called for positions outside the interpolated field boundaries, the interpolation function will return `np.nan`. Note that the edges of the domain are susceptible to floating point errors when manipulating an object by rotation and calling positions on the interpolation boundaries may yield `np.nan` values.
-```
-
-+++
-
-* define a sensor inside the interpolation boundaries
+Finally, we compare the "exact" field of the cuboid source with the interpolated field of the custom source. Naturally there is some error that can be reduced by increasing the interpolation grid finesse.
 
 ```{code-cell} ipython3
-sens = magpy.Sensor(pixel=positions * 0.5, style=dict(pixel_size=0.5))
-```
+import matplotlib.pyplot as plt
 
-* rotate all object by a common random rotation with common anchor
+# compute and plot fields
+B_cube = cube.getB(sensor)
+B_custom = custom.getB(sensor)
+for i,lab in enumerate(['Bx', 'By', 'Bz']):
+    plt.plot(B_cube[:,i], label=lab)
+    plt.plot(B_custom[:,i], ls='--', color='k')
 
-```{code-cell} ipython3
-rotation = dict(
-    angle=-35, axis=(-1, 5, 0.8), anchor=(1, 80, -4)
-)  # random rotation parameters
-interp_cube.rotate_from_angax(**rotation)
-sens.rotate_from_angax(**rotation)
-cube.rotate_from_angax(**rotation)
-```
+# Matplotlib figure styling
+plt.legend()
+plt.grid(color='.9')
+plt.gca().set(
+    title='Field at sensor - real (color), interpolated (dashed)',
+    xlabel='sensor rotation angle [deg]',
+    ylabel='[mT]',
+)
 
-* display system
-
-```{code-cell} ipython3
-magpy.show(cube, sens, interp_cube, backend='matplotlib')
-```
-
-```{code-cell} ipython3
-magpy.show(cube, sens, interp_cube, backend='plotly')
-```
-
-* compare the interpolated field with the original source
-
-```{code-cell} ipython3
-Bcube = sens.getB(cube)
-Binterp = sens.getB(interp_cube)
-print("Field interpolation error [%]:\n", ((Bcube - Binterp) / Bcube * 100).round(3))
-```
-
-```{note}
-The interpolation performance can be in fact arbitrary precise and in this example only 2 points per dimension, so that print outputs can be shown entirely.
+plt.show()
 ```
