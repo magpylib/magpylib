@@ -3,82 +3,87 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [Unreleased]
+## [4.0.0]
+
 This is a major update that includes
 
 - API changes
 - New features
 - Improved internal workings
-### Added
-- New computation core: ([#376](https://github.com/magpylib/magpylib/issues/376))
-  - top level subpackage `magpylib.core` where all field expression implementations can be accessed directly.
-- New sources classes:
-  - New `CylinderSegment` computation with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385))
-  - New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
-- Major graphic output overhaul:
-  - All object now have the `style` attribute for graphical output customization
-    - Style defaults in `magpylib.defaults.display` ([#291](https://github.com/magpylib/magpylib/issues/291), [#396](https://github.com/magpylib/magpylib/pull/396))
-    - Ability to define extra 3d-model for any object. ([#416](https://github.com/magpylib/magpylib/pull/416))
-  - Complete overhaul of `display` (now `show`) functionality
-    - Interactive `animation` feature with `animation_time` and `animation_fps` `display` arguments
-    - 🚀 New `plotly` plotting backend: ([#396](https://github.com/magpylib/magpylib/pull/396), [#353](https://github.com/magpylib/magpylib/issues/353))
-    - `plotly` is now automatically installed with Magpylib ([#395](https://github.com/magpylib/magpylib/issues/395))
-    - Zoom option in display function.
-    - Added `matplotlib` pixel display ([#279](https://github.com/magpylib/magpylib/issues/279))
-- Documentation and Example codes now available on read the docs with binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
-- `Collection` objects can now be composed of `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
-- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build **compound objects**. ([#444](https://github.com/magpylib/magpylib/issues/444))
-- All scipy Rotation forms are now also object methods ([#427](https://github.com/magpylib/magpylib/pull/427))
 
-
-### Changed
+### Magpylib class changes/fixes:
 - `Box` class renamed to `Cuboid`. ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`. ([#402](https://github.com/magpylib/magpylib/pull/402))
-- Magpylib objects can now be _initialized_ **without excitation** and **without dimension** attributes.
-- `magpylib.Config` parameters are now in `magpylib.defaults` ([#387](https://github.com/magpylib/magpylib/issues/387))
-- `getBv` and `getHv` are now integrated into `getB` and `getH` ([#449](https://github.com/magpylib/magpylib/pull/449))
-- `display` is renamed to `show` ([#453](https://github.com/magpylib/magpylib/pull/453), [#451](https://github.com/magpylib/magpylib/issues/451))
-- Renamed `show` (prev. `display`) arguments
-  - `axis` ➡️ `canvas`
-  - `show_direction` ➡️ `style_magnetization_show`
-  - `show_path` ➡️ `path`
-  - `size_sensors`&`size_dipoles` ➡️ `style_size`
-  - `size_direction` ➡️ `style_magnetization_size`
-- `move` and `rotate` methods have `start='auto'` instead of `start=-1`. Apply to full path if input is a scalar, append/merge if input is a vector ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
-- `show_path` in the `display` function is integrated in styling options with `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
-- Magpylib error message improvement. Msg will tell you what input is expected.
+- New `CylinderSegment` class with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385), [#484](https://github.com/magpylib/magpylib/pull/484), [#480](https://github.com/magpylib/magpylib/issues/480))
+- New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
+- All Magpylib objects can now be initialized without excitation and dimension attributes.
 
-### Updated
-- Computation:
-  - Improved field computations: ([#374](https://github.com/magpylib/magpylib/issues/374))
-    - Negative dimension input taken as absolute when only positive dimensions are allowed
-    - Scale invariant field evaluations
-    - Special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
-    - Supress numpy divide/invalid warnings. return np.nan as (0,0,0) (e.g. on magnet edges or on line currents) and allow return of np.inf.
-  - Updated `Cylinder` diametral magnetization computation with novel closed form implementation.
-    - Much faster (100-1000x)
-    - Numerically stable for small `r`.
-  - Improved performance of `getB` and `getH` functions and methods.
-  - Improved numerical stability of current Loop field. [#374](https://github.com/magpylib/magpylib/issues/374)
-- Other
-  - Added `__len__` dunder for `Collection` ([#383](https://github.com/magpylib/magpylib/issues/383))
-- Docs:
-  - General docs improvements ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
-  - [MATLAB example](https://magpylib.readthedocs.io/en/latest/_pages/3_MATLAB/#example) updated ([#346](https://github.com/magpylib/magpylib/issues/346), [#366](https://github.com/magpylib/magpylib/pull/366))
-- improved **position** and **orientation** setter methods in line with **move** and **rotate**
-### Fixed
-- Computation:
-  - Diametral Solid Cylinder Field singularity at the axis. ([#370](https://github.com/magpylib/magpylib/issues/370))
-  - `Collection` of `Lines` return incorret field ([#368](https://github.com/magpylib/magpylib/issues/368))
-  - Field array dimension wrongly reduced when `sumup=True` and `squeeze=False` ind `getB` and `getH` functions ([#425](https://github.com/magpylib/magpylib/issues/425), [#426](https://github.com/magpylib/magpylib/pull/426))
-- UI:
-  - Fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
+### Field computation changes/fixes:
+- New computation core. Added top level subpackage `magpylib.core` where all field implementations can be accessed directly without the position/orienation interface. ([#376](https://github.com/magpylib/magpylib/issues/376))
+- Direct interface functions `getBdict` and `getHdict` (previously `getBv` and `getHv`) are now integrated into `getB` and `getH`. See docu for details ([#449](https://github.com/magpylib/magpylib/pull/449))
+- Generally improved field expressions: ([#374](https://github.com/magpylib/magpylib/issues/374))
+  - Negative dimension input taken as absolute when only positive dimensions are allowed.
+  - Scale invariant field evaluations.
+  - Special cases caught within 1e-15 rtol and atol to account for numerical imprecision with positioning (e.g. object rotation).
+  - Supress numpy divide/invalid warnings. return `np.nan` as `(0,0,0)` (e.g. on magnet edges or on line currents) and allow return of `np.inf`.
+  - New closed form implementation for `Cylinder` with diametral magnetization is much faster (100-1000x) and numerically stable for small `r`. ([#404](https://github.com/magpylib/magpylib/issues/404), [#370](https://github.com/magpylib/magpylib/issues/370))
+  - Improved numerical stability of current loop field. Now 12-14 correct digits everywhere. ([#374](https://github.com/magpylib/magpylib/issues/374))
+  - Fixed `Collection` of `Lines` field computation error. ([#368](https://github.com/magpylib/magpylib/issues/368))
+- Object oriented interface fixes and modifications:
+  - Improved performance of `getB` and `getH`.
+  - Fixed array dimension wrongly reduced when `sumup=True` and `squeeze=False` ind `getB` and `getH` functions ([#425](https://github.com/magpylib/magpylib/issues/425), [#426](https://github.com/magpylib/magpylib/pull/426))
+  - Minimal non-squeeze output shape is (1,1,1,1,3), meaning that a single pixel is now also represented. ([#493](https://github.com/magpylib/magpylib/pull/493))
 
-### Removed
-- `config.ITERCYLINDER` is now obsolete. The iterative solution replaced by a new analytical expression.
-- `config.inputchekcs` is removed - input checks are always done.
--  removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
+### Major graphic output overhaul:
+- Styles:
+  - All object now have the `style` attribute for graphical output customization. Arguments can be passed as dictionaries, class attributes or with underscore magic.
+  - Style defaults stored in `magpylib.defaults.display`. ([#291](https://github.com/magpylib/magpylib/issues/291), [#396](https://github.com/magpylib/magpylib/pull/396))
+  - Possibility to add a custom 3D-model to any object. ([#416](https://github.com/magpylib/magpylib/pull/416))
+- `display` now called `show`, to be more in-line with standard graphic backends. Functionality completely overhauled to function with styles. ([#453](https://github.com/magpylib/magpylib/pull/453), [#451](https://github.com/magpylib/magpylib/issues/451))
+  - New `show` arguments replace previous ones. Some are now handed over through styles.
+    - `axis` ➡️ `canvas`
+    - `show_direction` ➡️ `style_magnetization_show`
+    - `show_path` ➡️ `style_path_show` ([#453](https://github.com/magpylib/magpylib/pull/453))
+    - `size_sensors`&`size_dipoles` ➡️ `style_size`
+    - `size_direction` ➡️ `style_magnetization_size`
+    - new `zoom` option
+- Plotly as new optional graphic backend. 🚀 ([#396](https://github.com/magpylib/magpylib/pull/396), [#353](https://github.com/magpylib/magpylib/issues/353))
+  - `plotly` is now automatically installed with Magpylib. ([#395](https://github.com/magpylib/magpylib/issues/395))
+  - Interactive path `animation` option in `show`. ([#453](https://github.com/magpylib/magpylib/pull/453))
+  - Automatic Matplotlib <-> Plotly style input translations ([#452](https://github.com/magpylib/magpylib/issues/452), [#454](https://github.com/magpylib/magpylib/pull/454))
+- Misc:
+  - Added `matplotlib` pixel display ([#279](https://github.com/magpylib/magpylib/issues/279))
+  - Sensors have their own color now ([#483](https://github.com/magpylib/magpylib/pull/483))
+  - UI fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
+  - Error msg when `show` is called without argument ([#448](https://github.com/magpylib/magpylib/issues/448))
 
+### New documentation: 
+- Completely new structure and layout. ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
+- Binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
+
+### Geometry interface modification
+- Added all scipy Rotation forms as rotation object methods. ([#427](https://github.com/magpylib/magpylib/pull/427))
+- `move` and `rotate` inputs differentiate between scalar and vector input. Scalar input is applied to the whole path vector input is merged. ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444), [#442](https://github.com/magpylib/magpylib/issues/443))
+- `move` and `rotate` methods have default `start='auto'` (scalar input: `start=0`-> applied to whole path, vector input: `start=len_path`-> append) instead of `start=-1`.
+- `move` and `rotate` methods maintain collection geometry when applied to a collection.
+- Improved `position` and `orientation` setter methods in line with `move` and `rotate` functionality and maintain `Collection` geometry.
+- Removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
+
+### Modifications to the `Collection` class
+- Collections can now have `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
+- Instead of `Collection.sources` there is now `Collection.children`, `Collection.sources` and `Collection.sensors`. ([#446](https://github.com/magpylib/magpylib/issues/446))
+- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build **compound objects**. ([#444](https://github.com/magpylib/magpylib/issues/444), [#461](https://github.com/magpylib/magpylib/issues/461))
+- Added `__len__` dunder for `Collection`, so that `Collection.children` length is returned. ([#383](https://github.com/magpylib/magpylib/issues/383))
+- Added `__radd__` dunder to build collections with `sum`. [#468](https://github.com/magpylib/magpylib/pull/468)
+- `move` and `rotate` methods maintain collection geometry when applied to a collection.
+
+### Other changes/fixes:  
+- Magpylib error message improvement. Msg will now tell you what input is expected.
+- Magpylib object `copy` method now works properly ([#477](https://github.com/magpylib/magpylib/pull/477), [#470](https://github.com/magpylib/magpylib/pull/470), [#476](https://github.com/magpylib/magpylib/issues/476))
+- Defaults and input checks ([#406](https://github.com/magpylib/magpylib/issues/406))
+  - `magpylib.Config` parameters are now in `magpylib.defaults`. ([#387](https://github.com/magpylib/magpylib/issues/387))
+  - `config.ITERCYLINDER` is now obsolete. The iterative solution replaced by a new analytical expression.
+  - `config.inputchecks` is removed - input checks are always performed.
 
 ---
 ## [3.0.4] - 2022-02-17
