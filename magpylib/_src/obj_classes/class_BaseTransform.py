@@ -316,14 +316,15 @@ class BaseTransform:
         #    applied to its BaseGeo and to each child.
 
         for child in getattr(self, 'children', []):
-            apply_move(child, displacement, start=start)
+            self.__class__.move(child, displacement, start=start)
 
+        #TODO avoid to apply move twice
         apply_move(self, displacement, start=start)
 
         return self
 
 
-    def rotate(self, rotation: R, anchor=None, start='auto'):
+    def rotate(self, rotation: R, anchor=None, start='auto', _parent_path=None):
         """Rotate object about a given anchor.
 
         Terminology for move/rotate methods:
@@ -404,13 +405,13 @@ class BaseTransform:
         # Idea: An operation applied to a Collection is individually
         #    applied to its BaseGeo and to each child.
         #  -> this automatically generates the rotate-Compound behavior
-
+        #TODO avoid to apply rotate twice
         for child in getattr(self, 'children', []):
-            apply_rotation(
-                child, rotation, anchor=anchor, start=start, parent_path=self._position
+            self.__class__.rotate(
+                child, rotation, anchor=anchor, start=start, _parent_path=self._position
             )
 
-        apply_rotation(self, rotation, anchor=anchor, start=start)
+        apply_rotation(self, rotation, anchor=anchor, start=start, parent_path=_parent_path)
 
         return self
 

@@ -5,8 +5,6 @@ DOCSTRING v4 READY
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
-    LIBRARY_SENSORS,
-    LIBRARY_SOURCES,
 )
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
@@ -39,33 +37,19 @@ class BaseCollection(BaseDisplayRepr):
     @children.setter
     def children(self, children):
         """Set Collection children."""
-        obj_list = format_obj_input(children, allow="sources+sensors")
         self._children = []
-        self.add(obj_list)
+        self.add(children)
 
     @property
     def sources(self):
         """Collection sources attribute getter and setter."""
         return self._sources
 
-    @sources.setter
-    def sources(self, sources):
-        """Set Collection sources."""
-        src_list = format_obj_input(sources, allow="sources")
-        self._children = [o for o in self._children if o not in self._sources]
-        self.add(src_list)
-
     @property
     def sensors(self):
         """Collection sensors attribute getter and setter."""
         return self._sensors
 
-    @sensors.setter
-    def sensors(self, sensors):
-        """Set Collection sensors."""
-        sens_list = format_obj_input(sensors, allow="sensors")
-        self._children = [o for o in self._children if o not in self._sensors]
-        self.add(sens_list)
 
     # dunders
     def __sub__(self, obj):
@@ -119,7 +103,7 @@ class BaseCollection(BaseDisplayRepr):
         [Sensor(id=2236606343584)]
         """
         # format input
-        obj_list = format_obj_input(children)
+        obj_list = format_obj_input(children, allow='sensors+sources+collections')
         # combine with original obj_list
         obj_list = self._children + obj_list
         # check and eliminate duplicates
@@ -132,12 +116,9 @@ class BaseCollection(BaseDisplayRepr):
     def _update_src_and_sens(self):
         # pylint: disable=protected-access
         """updates source and sensor list when a child is added or removed"""
-        self._sources = [
-            obj for obj in self._children if obj._object_type in LIBRARY_SOURCES
-        ]
-        self._sensors = [
-            obj for obj in self._children if obj._object_type in LIBRARY_SENSORS
-        ]
+        #TODO remove duplicates
+        self._sources = format_obj_input(self.children, allow='sources')
+        self._sensors = format_obj_input(self.children, allow='sensors')
 
     def remove(self, child):
         """Remove a specific child from the collection.
@@ -165,6 +146,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         []
         """
+        #TODO traverse children tree to find objs to remove
         self._children.remove(child)
         self._update_src_and_sens()
         return self
@@ -200,6 +182,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> magpy.show(col, src)
         ---> graphic output
         """
+        #TODO traverse children
 
         if arg is None:
             arg = {}

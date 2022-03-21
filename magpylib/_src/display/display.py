@@ -11,7 +11,7 @@ from magpylib._src.input_checks import (
     check_input_animation,
     check_format_input_vector,
     )
-
+#TODO allow for nested collections
 def show(
     *objects,
     zoom=0,
