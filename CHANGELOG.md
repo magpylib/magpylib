@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [4.0.0]
+## [4.0.0rc1]
 
 This is a major update that includes
 
@@ -57,7 +57,7 @@ This is a major update that includes
   - UI fix empty display ([#401](https://github.com/magpylib/magpylib/issues/401))
   - Error msg when `show` is called without argument ([#448](https://github.com/magpylib/magpylib/issues/448))
 
-### New documentation: 
+### New documentation:
 - Completely new structure and layout. ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
 - Binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
 
@@ -77,7 +77,7 @@ This is a major update that includes
 - Added `__radd__` dunder to build collections with `sum`. [#468](https://github.com/magpylib/magpylib/pull/468)
 - `move` and `rotate` methods maintain collection geometry when applied to a collection.
 
-### Other changes/fixes:  
+### Other changes/fixes:
 - Magpylib error message improvement. Msg will now tell you what input is expected.
 - Magpylib object `copy` method now works properly ([#477](https://github.com/magpylib/magpylib/pull/477), [#470](https://github.com/magpylib/magpylib/pull/470), [#476](https://github.com/magpylib/magpylib/issues/476))
 - Defaults and input checks ([#406](https://github.com/magpylib/magpylib/issues/406))
@@ -345,7 +345,7 @@ The first official release of the magpylib library.
 - Collection class
 
 ---
-[Unreleased]:https://github.com/magpylib/magpylib/compare/3.0.4...HEAD
+[4.0.0rc1]:https://github.com/magpylib/magpylib/compare/3.0.4...HEAD
 [3.0.4]:https://github.com/magpylib/magpylib/compare/3.0.3...3.0.4
 [3.0.3]:https://github.com/magpylib/magpylib/compare/3.0.2...3.0.3
 [3.0.2]:https://github.com/magpylib/magpylib/compare/3.0.1...3.0.2
