@@ -1,9 +1,11 @@
 """ Display function codes"""
 
+from itertools import cycle
 from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib._src.style import Markers
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 class MagpyMarkers:
@@ -456,3 +458,31 @@ def system_size(points):
     else:
         limx0, limx1, limy0, limy1, limz0, limz1 = -1, 1, -1, 1, -1, 1
     return limx0, limx1, limy0, limy1, limz0, limz1
+
+
+def get_flatten_objects_properties(
+    *obj_list_semi_flat, color_sequence=None, color_cycle=None, parent_color=None
+):
+    """returns a dict (obj, props) from nested collections"""
+    if color_sequence is None:
+        color_sequence = Config.display.colorsequence
+    if color_cycle is None:
+        color_cycle = cycle(color_sequence)
+    flat_objs = {}
+    for semi_flat_obj in obj_list_semi_flat:
+        color = parent_color
+        if parent_color is None:
+            color = next(color_cycle)
+        flat_objs[semi_flat_obj] = dict(color=color)
+        if getattr(semi_flat_obj, "children", None) is not None:
+            if semi_flat_obj.style.color is not None:
+                color = semi_flat_obj.style.color
+            flat_objs.update(
+                get_flatten_objects_properties(
+                    *semi_flat_obj.children,
+                    color_sequence=color_sequence,
+                    color_cycle=color_cycle,
+                    parent_color=color,
+                )
+            )
+    return flat_objs
