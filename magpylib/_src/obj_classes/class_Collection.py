@@ -5,6 +5,8 @@ DOCSTRING v4 READY
 from magpylib._src.utility import (
     format_obj_input,
     check_duplicates,
+    LIBRARY_SENSORS,
+    LIBRARY_SOURCES,
 )
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
@@ -13,19 +15,21 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
+
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
 
     def __init__(self, *children):
 
-        self._object_type = 'Collection'
+        self._object_type = "Collection"
 
         BaseDisplayRepr.__init__(self)
 
         self._children = []
         self._sources = []
         self._sensors = []
+        self._collections = []
         self.children = children
 
     # property getters and setters
@@ -45,11 +49,36 @@ class BaseCollection(BaseDisplayRepr):
         """Collection sources attribute getter and setter."""
         return self._sources
 
+    @sources.setter
+    def sources(self, sources):
+        """Set Collection sources."""
+        src_list = format_obj_input(sources, allow="sources")
+        self._children = [o for o in self._children if o not in self._sources]
+        self.add(src_list)
+
     @property
     def sensors(self):
         """Collection sensors attribute getter and setter."""
         return self._sensors
 
+    @sensors.setter
+    def sensors(self, sensors):
+        """Set Collection sensors."""
+        sens_list = format_obj_input(sensors, allow="sensors")
+        self._children = [o for o in self._children if o not in self._sensors]
+        self.add(sens_list)
+
+    @property
+    def collections(self):
+        """Collection sub-collections attribute getter and setter."""
+        return self._collections
+
+    @collections.setter
+    def collections(self, collections):
+        """Set Collection sub-collections."""
+        coll_list = format_obj_input(collections, allow="collections")
+        self._children = [o for o in self._children if o not in self._collections]
+        self.add(coll_list)
 
     # dunders
     def __sub__(self, obj):
@@ -69,11 +98,11 @@ class BaseCollection(BaseDisplayRepr):
         s = super().__repr__()
         if self._children:
             if not self._sources:
-                pref = 'Sensor'
+                pref = "Sensor"
             elif not self._sensors:
-                pref = 'Source'
+                pref = "Source"
             else:
-                pref = 'Mixed'
+                pref = "Mixed"
             return f"{pref}{s}"
         return s
 
@@ -103,7 +132,7 @@ class BaseCollection(BaseDisplayRepr):
         [Sensor(id=2236606343584)]
         """
         # format input
-        obj_list = format_obj_input(children, allow='sensors+sources+collections')
+        obj_list = format_obj_input(children, allow="sensors+sources+collections")
         # combine with original obj_list
         obj_list = self._children + obj_list
         # check and eliminate duplicates
@@ -116,9 +145,15 @@ class BaseCollection(BaseDisplayRepr):
     def _update_src_and_sens(self):
         # pylint: disable=protected-access
         """updates source and sensor list when a child is added or removed"""
-        #TODO remove duplicates
-        self._sources = list(dict.fromkeys(format_obj_input(self.children, allow='sources')))
-        self._sensors = list(dict.fromkeys(format_obj_input(self.children, allow='sensors')))
+        self._sources = [
+            obj for obj in self._children if obj._object_type in LIBRARY_SOURCES
+        ]
+        self._sensors = [
+            obj for obj in self._children if obj._object_type in LIBRARY_SENSORS
+        ]
+        self._collections = [
+            obj for obj in self._children if obj._object_type == "Collection"
+        ]
 
     def remove(self, child):
         """Remove a specific child from the collection.
@@ -146,11 +181,10 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         []
         """
-        #TODO traverse children tree to find objs to remove
+        # TODO traverse children tree to find objs to remove
         self._children.remove(child)
         self._update_src_and_sens()
         return self
-
 
     def set_children_styles(self, arg=None, **kwargs):
         """Set display style of all children in the collection. Only matching properties
@@ -182,7 +216,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> magpy.show(col, src)
         ---> graphic output
         """
-        #TODO traverse children
+        # TODO traverse children
 
         if arg is None:
             arg = {}
@@ -217,7 +251,6 @@ class BaseCollection(BaseDisplayRepr):
         elif not sensors:
             sources, sensors = self, children
         return sources, sensors
-
 
     def getB(self, *sources_observers, squeeze=True):
         """Compute B-field in [mT] for given sources and observer inputs.
@@ -267,8 +300,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*sources_observers)
 
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
-
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="B")
 
     def getH(self, *children, squeeze=True):
         """Compute H-field in [kA/m] for given sources and observer inputs.
@@ -318,7 +350,7 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='H')
+        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="H")
 
 
 class Collection(BaseGeo, BaseCollection):
@@ -407,6 +439,10 @@ class Collection(BaseGeo, BaseCollection):
     [ 0.00126232 -0.00093169 -0.00034448]
     """
 
-    def __init__(self, *args, position=(0,0,0), orientation=None, style=None, **kwargs):
-        BaseGeo.__init__(self, position=position, orientation=orientation, style=style, **kwargs)
+    def __init__(
+        self, *args, position=(0, 0, 0), orientation=None, style=None, **kwargs
+    ):
+        BaseGeo.__init__(
+            self, position=position, orientation=orientation, style=style, **kwargs
+        )
         BaseCollection.__init__(self, *args)
