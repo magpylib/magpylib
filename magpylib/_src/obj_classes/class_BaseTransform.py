@@ -318,7 +318,6 @@ class BaseTransform:
         for child in getattr(self, 'children', []):
             self.__class__.move(child, displacement, start=start)
 
-        #TODO avoid to apply move twice
         apply_move(self, displacement, start=start)
 
         return self
@@ -405,7 +404,6 @@ class BaseTransform:
         # Idea: An operation applied to a Collection is individually
         #    applied to its BaseGeo and to each child.
         #  -> this automatically generates the rotate-Compound behavior
-        #TODO avoid to apply rotate twice
         for child in getattr(self, 'children', []):
             self.__class__.rotate(
                 child, rotation, anchor=anchor, start=start, _parent_path=self._position
