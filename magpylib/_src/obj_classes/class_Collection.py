@@ -1,6 +1,7 @@
 """Collection class code
 DOCSTRING v4 READY
 """
+from collections import Counter
 
 from magpylib._src.utility import (
     format_obj_input,
@@ -94,17 +95,36 @@ class BaseCollection(BaseDisplayRepr):
         return len(self._children)
 
     def __repr__(self) -> str:
-        # pylint: disable=protected-access
         s = super().__repr__()
-        if self._children:
-            if not self._sources:
-                pref = "Sensor"
-            elif not self._sensors:
-                pref = "Source"
-            else:
-                pref = "Mixed"
-            return f"{pref}{s}"
         return s
+
+    def describe(self, labels_only=False, max_elems=10, return_list=False, indent=0):
+        """Returns a view of the nested Collection elements. If number of children is higher than
+        `max_elems` returns counters by object_type"""
+        # pylint: disable=protected-access
+        elems = []
+        if len(self.children) > max_elems:
+            counts = Counter([c._object_type for c in self._children])
+            elems.extend([" " * indent + f"{v}x{k}" for k, v in counts.items()])
+        else:
+            for child in self.children:
+                if labels_only and child.style.label:
+                    child_repr = f"{child.style.label}"
+                else:
+                    child_repr = f"{child}"
+                elems.append(" " * indent + child_repr)
+                if child in self._collections:
+                    children = self.__class__.describe(
+                        child,
+                        return_list=True,
+                        indent=indent + 2,
+                        labels_only=labels_only,
+                        max_elems=max_elems,
+                    )
+                    elems.extend(children)
+        if return_list:
+            return elems
+        print(("\n").join(elems))
 
     # methods -------------------------------------------------------
     def add(self, *children):
@@ -243,7 +263,7 @@ class BaseCollection(BaseDisplayRepr):
         for child in self._children:
             # match properties false will try to apply properties from kwargs only if it finds it
             # without throwing an error
-            if child._object_type=='Collection' and recursive:
+            if child._object_type == "Collection" and recursive:
                 self.__class__.set_children_styles(child, style_kwargs, _validate=False)
             style_kwargs_specific = {
                 k: v
