@@ -200,7 +200,6 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   out: sources = ordered list of sources
     #   out: src_list = ordered list of sources with flattened collections
     sources, src_list = format_src_inputs(sources)
-    print(sources, src_list)
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(sources)
