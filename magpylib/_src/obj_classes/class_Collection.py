@@ -155,7 +155,7 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    def remove(self, child):
+    def remove(self, child, recursive=True, _issearching=False):
         """Remove a specific child from the collection.
 
         Parameters
@@ -181,8 +181,22 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         []
         """
-        # TODO traverse children tree to find objs to remove
-        self._children.remove(child)
+        # _issearching is needed to tell if we are still looking through the nested children if the
+        # object to be removed is found.
+        isfound = False
+        if child in self._children or not recursive:
+            self._children.remove(child)
+            isfound = True
+        else:
+            for child_col in self._collections:
+                isfound = self.__class__.remove(child_col, child, _issearching=True)
+                if isfound:
+                    break
+            _issearching = False
+        if _issearching:
+            return isfound
+        if not isfound and not _issearching:
+            raise ValueError(f"""{self}.remove({child}) : {child!r} not found.""")
         self._update_src_and_sens()
         return self
 
