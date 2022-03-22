@@ -117,8 +117,8 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
         """updates source and sensor list when a child is added or removed"""
         #TODO remove duplicates
-        self._sources = format_obj_input(self.children, allow='sources')
-        self._sensors = format_obj_input(self.children, allow='sensors')
+        self._sources = list(dict.fromkeys(format_obj_input(self.children, allow='sources')))
+        self._sensors = list(dict.fromkeys(format_obj_input(self.children, allow='sensors')))
 
     def remove(self, child):
         """Remove a specific child from the collection.
