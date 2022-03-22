@@ -461,28 +461,40 @@ def system_size(points):
 
 
 def get_flatten_objects_properties(
-    *obj_list_semi_flat, color_sequence=None, color_cycle=None, parent_color=None
+    *obj_list_semi_flat, color_sequence=None, color_cycle=None, **parent_props,
 ):
-    """returns a dict (obj, props) from nested collections"""
+    """returns a flat dict -> (obj: display_props, ...) from nested collections"""
     if color_sequence is None:
         color_sequence = Config.display.colorsequence
     if color_cycle is None:
         color_cycle = cycle(color_sequence)
     flat_objs = {}
-    for semi_flat_obj in obj_list_semi_flat:
-        color = parent_color
-        if parent_color is None:
-            color = next(color_cycle)
-        flat_objs[semi_flat_obj] = dict(color=color)
-        if getattr(semi_flat_obj, "children", None) is not None:
-            if semi_flat_obj.style.color is not None:
-                color = semi_flat_obj.style.color
+    for subobj in obj_list_semi_flat:
+        isCollection = getattr(subobj, "children", None) is not None
+        props = {**parent_props}
+        if parent_props.get("color", None) is None:
+            props["color"] = next(color_cycle)
+        if parent_props.get("legendgroup", None) is None:
+            props["legendgroup"] = f"{subobj}"
+        if parent_props.get("showlegend", None) is None:
+            props["showlegend"] = True
+        if parent_props.get("legendtext", None) is None:
+            legendtext = None
+            if isCollection:
+                legendtext = getattr(getattr(subobj, "style", None), "label", None)
+                legendtext = f"{subobj!r}" if legendtext is None else legendtext
+            props["legendtext"] = legendtext
+        flat_objs[subobj] = props
+        #print(props)
+        if isCollection:
+            if subobj.style.color is not None:
+                flat_objs[subobj]["color"] = subobj.style.color
             flat_objs.update(
                 get_flatten_objects_properties(
-                    *semi_flat_obj.children,
+                    *subobj.children,
                     color_sequence=color_sequence,
                     color_cycle=color_cycle,
-                    parent_color=color,
+                    **flat_objs[subobj],
                 )
             )
     return flat_objs
