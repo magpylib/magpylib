@@ -16,7 +16,8 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-
+#TODO Forbid duplicates and forbid referencing itself
+#TODO Implement child-parent philosophy
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
