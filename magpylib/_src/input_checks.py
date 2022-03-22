@@ -9,7 +9,7 @@ from magpylib._src.exceptions import (
 )
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib import _src
-from magpylib._src.utility import wrong_obj_msg
+from magpylib._src.utility import format_obj_input, wrong_obj_msg
 
 
 #################################################################
@@ -411,9 +411,10 @@ def check_format_input_observers(inp):
             if getattr(obj, "_object_type", "") == "Sensor":
                 sensors.append(obj)
             elif getattr(obj, "_object_type", "") == "Collection":
-                if not obj.sensors:
+                child_sensors = format_obj_input(obj, allow='sensors')
+                if not child_sensors:
                     raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
-                sensors.extend(obj.sensors)
+                sensors.extend(child_sensors)
             else: # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
                     obj = np.array(obj, dtype=float)

@@ -1,5 +1,5 @@
 """ some utility functions"""
-#import numbers
+# import numbers
 from math import log10
 from typing import Sequence
 import numpy as np
@@ -91,26 +91,25 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     obj_list = []
     flatten_collection = not "collections" in allow.split("+")
     for obj in objects:
-        if isinstance(obj, (tuple, list)):
-            obj_list += format_obj_input(
-                *obj, allow=allow, warn=warn
-            )  # recursive flattening
-        else:
-            try:
-                if obj._object_type == "Collection":
-                    if flatten_collection:
-                        obj_list += obj.children
-                    else:
-                        obj_list += [obj]
-                elif obj._object_type in list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS):
+        try:
+            if getattr(obj, "_object_type", None) in list(LIBRARY_SOURCES) + list(
+                LIBRARY_SENSORS
+            ):
+                obj_list += [obj]
+            else:
+                if flatten_collection or isinstance(obj, (list, tuple)):
+                    obj_list += format_obj_input(
+                        *obj, allow=allow, warn=warn,
+                    )  # recursive flattening
+                else:
                     obj_list += [obj]
-            except Exception as error:
-                raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
+        except Exception as error:
+            raise MagpylibBadUserInput(wrong_obj_msg(obj, allow=allow)) from error
     obj_list = filter_objects(obj_list, allow=allow, warn=False)
     return obj_list
 
 
-def format_src_inputs(sources) -> list:
+def format_src_inputs(*sources) -> list:
     """
     - input: allow only bare src objects or 1D lists/tuple of src and col
     - out: sources, src_list
@@ -127,19 +126,17 @@ def format_src_inputs(sources) -> list:
     """
     # pylint: disable=protected-access
 
-    # if bare source make into list
-    if not isinstance(sources, (list, tuple)):
-        sources = [sources]
     # flatten collections
     src_list = []
     if not sources:
         raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
     for src in sources:
-        obj_type = getattr(src, "_object_type", None)
+        obj_type = getattr(src, "_object_type", "")
         if obj_type == "Collection":
-            if not src.sources:
+            child_sources = format_obj_input(src, allow="sources")
+            if not child_sources:
                 raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
-            src_list += src.sources
+            src_list += child_sources
         elif obj_type in LIBRARY_SOURCES:
             src_list += [src]
         else:
@@ -295,7 +292,7 @@ def add_iteration_suffix(name):
     m = re.search(r"\d+$", name)
     n = "00"
     endstr = None
-    midchar = "_" if name[-1]!= '_' else ""
+    midchar = "_" if name[-1] != "_" else ""
     if m is not None:
         midchar = ""
         n = m.group()

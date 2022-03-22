@@ -273,25 +273,26 @@ class BaseCollection(BaseDisplayRepr):
             child.style.update(**style_kwargs_specific, _match_properties=True)
         return self
 
-    def _validate_getBH_inputs(self, *children):
-        # pylint: disable=too-many-branches
+    def _validate_getBH_inputs(self, *inputs):
         """validate Collection.getBH inputs"""
         # pylint: disable=protected-access
-        sources, sensors = list(self._sources), list(self._sensors)
-        if self._sensors and self._sources:
+        # pylint: disable=too-many-branches
+        current_sources = format_obj_input(self, allow='sources')
+        current_sensors = format_obj_input(self, allow='sensors')
+        if current_sensors and current_sources:
             sources, sensors = self, self
-            if children:
+            if inputs:
                 raise MagpylibBadUserInput(
                     "Collections with sensors and sources do not allow `collection.getB()` inputs."
                     "Consider using `magpy.getB()` instead."
                 )
-        elif not sources:
-            sources, sensors = children, self
-        elif not sensors:
-            sources, sensors = self, children
+        elif not current_sources:
+            sources, sensors = inputs, self
+        elif not current_sensors:
+            sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *sources_observers, squeeze=True):
+    def getB(self, *inputs, squeeze=True):
         """Compute B-field in [mT] for given sources and observer inputs.
 
         Parameters
@@ -337,11 +338,10 @@ class BaseCollection(BaseDisplayRepr):
          [  0.           0.         166.66666667]]
         """
 
-        sources, sensors = self._validate_getBH_inputs(*sources_observers)
-
+        sources, sensors = self._validate_getBH_inputs(*inputs)
         return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="B")
 
-    def getH(self, *children, squeeze=True):
+    def getH(self, *inputs, squeeze=True):
         """Compute H-field in [kA/m] for given sources and observer inputs.
 
         Parameters
@@ -387,7 +387,7 @@ class BaseCollection(BaseDisplayRepr):
          [  0.           0.         66.31455962]]
         """
 
-        sources, sensors = self._validate_getBH_inputs(*children)
+        sources, sensors = self._validate_getBH_inputs(*inputs)
 
         return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="H")
 
