@@ -186,7 +186,7 @@ class BaseCollection(BaseDisplayRepr):
         self._update_src_and_sens()
         return self
 
-    def set_children_styles(self, arg=None, **kwargs):
+    def set_children_styles(self, arg=None, _validate=True, recursive=True, **kwargs):
         """Set display style of all children in the collection. Only matching properties
         will be applied. Input can be a style dict or style underscore magic.
 
@@ -216,22 +216,27 @@ class BaseCollection(BaseDisplayRepr):
         >>> magpy.show(col, src)
         ---> graphic output
         """
-        # TODO traverse children
+        # pylint: disable=protected-access
 
         if arg is None:
             arg = {}
         if kwargs:
             arg.update(kwargs)
-        style_kwargs = validate_style_keys(arg)
-        for src in self._children:
+        style_kwargs = arg
+        if _validate:
+            style_kwargs = validate_style_keys(arg)
+
+        for child in self._children:
             # match properties false will try to apply properties from kwargs only if it finds it
             # without throwing an error
+            if child._object_type=='Collection' and recursive:
+                self.__class__.set_children_styles(child, style_kwargs, _validate=False)
             style_kwargs_specific = {
                 k: v
                 for k, v in style_kwargs.items()
-                if k.split("_")[0] in src.style.as_dict()
+                if k.split("_")[0] in child.style.as_dict()
             }
-            src.style.update(**style_kwargs_specific, _match_properties=True)
+            child.style.update(**style_kwargs_specific, _match_properties=True)
         return self
 
     def _validate_getBH_inputs(self, *children):
