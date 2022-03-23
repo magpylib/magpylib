@@ -274,7 +274,7 @@ class BaseGeo(BaseTransform):
             obj1 = [self]
         if not iscol2:
             obj2 = [obj]
-            if obj._parent is None:
+            if getattr(obj, "_parent", None) is None:
                 override_parent=True
         elif iscol1 and iscol2:
             obj1, obj2 = [self], [obj]
