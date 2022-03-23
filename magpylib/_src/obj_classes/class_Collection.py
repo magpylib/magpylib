@@ -111,7 +111,18 @@ class BaseCollection(BaseDisplayRepr):
         return len(self._children)
 
     def __repr__(self) -> str:
+        # pylint: disable=protected-access
         s = super().__repr__()
+        if self._children:
+            if self._collections:
+                pref = "Nested"
+            elif not self._sources:
+                pref = "Sensor"
+            elif not self._sensors:
+                pref = "Source"
+            else:
+                pref = "Mixed"
+            return f"{pref}{s}"
         return s
 
     def describe(self, labels_only=False, max_elems=10, return_list=False, indent=0):
