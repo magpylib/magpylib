@@ -15,6 +15,7 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
+
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
@@ -181,7 +182,8 @@ class BaseCollection(BaseDisplayRepr):
                 obj._parent = self
             else:
                 raise ValueError(
-                    f"The object `{obj!r}` already has a parent `{obj._parent!r}`. "
+                    f"`{self!r}` cannot receive `{obj!r}`, as the child already has a parent "
+                    f"(`{obj._parent!r}`). "
                     "You can use the `.add(*children, override_parent=True)` method to ignore and "
                     "override the current object parent. Note that this will remove the object "
                     "from the previous parent collection."
@@ -512,9 +514,15 @@ class Collection(BaseGeo, BaseCollection):
     """
 
     def __init__(
-        self, *args, position=(0, 0, 0), orientation=None, style=None, **kwargs
+        self,
+        *args,
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        override_parent=False,
+        **kwargs,
     ):
         BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs
+            self, position=position, orientation=orientation, style=style, **kwargs,
         )
-        BaseCollection.__init__(self, *args)
+        BaseCollection.__init__(self, *args, override_parent=override_parent)
