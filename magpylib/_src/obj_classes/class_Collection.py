@@ -1,6 +1,5 @@
-"""Collection class code
-DOCSTRING v4 READY
-"""
+"""Collection class code"""
+
 from collections import Counter
 
 from magpylib._src.utility import (
@@ -16,13 +15,11 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-# TODO Forbid duplicates and forbid referencing itself
-# TODO Implement child-parent philosophy
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
 
-    def __init__(self, *children):
+    def __init__(self, *children, override_parent=False):
 
         self._object_type = "Collection"
 
@@ -32,7 +29,7 @@ class BaseCollection(BaseDisplayRepr):
         self._sources = []
         self._sensors = []
         self._collections = []
-        self.children = children
+        self.add(*children, override_parent=override_parent)
 
     # property getters and setters
     @property
@@ -43,8 +40,11 @@ class BaseCollection(BaseDisplayRepr):
     @children.setter
     def children(self, children):
         """Set Collection children."""
+        # pylint: disable=protected-access
+        for child in self._children:
+            child._parent = None
         self._children = []
-        self.add(children)
+        self.add(*children)
 
     @property
     def sources(self):
@@ -54,8 +54,15 @@ class BaseCollection(BaseDisplayRepr):
     @sources.setter
     def sources(self, sources):
         """Set Collection sources."""
+        # pylint: disable=protected-access
+        new_children = []
+        for child in self._children:
+            if child in self._sources:
+                child._parent = None
+            else:
+                new_children.append(child)
+        self._children = new_children
         src_list = format_obj_input(sources, allow="sources")
-        self._children = [o for o in self._children if o not in self._sources]
         self.add(src_list)
 
     @property
@@ -66,8 +73,15 @@ class BaseCollection(BaseDisplayRepr):
     @sensors.setter
     def sensors(self, sensors):
         """Set Collection sensors."""
+        # pylint: disable=protected-access
+        new_children = []
+        for child in self._children:
+            if child in self._sensors:
+                child._parent = None
+            else:
+                new_children.append(child)
+        self._children = new_children
         sens_list = format_obj_input(sensors, allow="sensors")
-        self._children = [o for o in self._children if o not in self._sensors]
         self.add(sens_list)
 
     @property
@@ -109,6 +123,7 @@ class BaseCollection(BaseDisplayRepr):
             else:
                 obj_repr = f"{obj}"
             return " " * indent + obj_repr
+
         elems = [repr_obj(self, indent=indent)]
         if len(self.children) > max_elems:
             counts = Counter([c._object_type for c in self._children])
@@ -116,12 +131,12 @@ class BaseCollection(BaseDisplayRepr):
         else:
             for child in self.children:
                 if child not in self._collections:
-                    elems.append(repr_obj(child, indent=indent+2))
+                    elems.append(repr_obj(child, indent=indent + 2))
                 else:
                     children = self.__class__.describe(
                         child,
                         return_list=True,
-                        indent=indent+2,
+                        indent=indent + 2,
                         labels_only=labels_only,
                         max_elems=max_elems,
                     )
@@ -131,7 +146,7 @@ class BaseCollection(BaseDisplayRepr):
         print(("\n").join(elems))
 
     # methods -------------------------------------------------------
-    def add(self, *children):
+    def add(self, *children, override_parent=False):
         """Add sources, sensors or collections.
 
         Parameters
@@ -155,12 +170,24 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         [Sensor(id=2236606343584)]
         """
+        # pylint: disable=protected-access
         # format input
         obj_list = format_obj_input(children, allow="sensors+sources+collections")
-        # combine with original obj_list
-        obj_list = self._children + obj_list
         # check and eliminate duplicates
         obj_list = check_duplicates(obj_list)
+        # assign parent
+        for obj in obj_list:
+            if obj._parent is None or override_parent:
+                obj._parent = self
+            else:
+                raise ValueError(
+                    f"The object `{obj!r}` already has a parent `{obj._parent!r}`. "
+                    "You can use the `.add(*children, override_parent=True)` method to ignore and "
+                    "override the current object parent. Note that this will remove the object "
+                    "from the previous parent collection."
+                )
+        # combine with original obj_list
+        obj_list = self._children + obj_list
         # set attributes
         self._children = obj_list
         self._update_src_and_sens()
@@ -205,11 +232,13 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         []
         """
+        # pylint: disable=protected-access
         # _issearching is needed to tell if we are still looking through the nested children if the
         # object to be removed is found.
         isfound = False
         if child in self._children or not recursive:
             self._children.remove(child)
+            child._parent = None
             isfound = True
         else:
             for child_col in self._collections:
