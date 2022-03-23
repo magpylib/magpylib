@@ -472,7 +472,10 @@ def get_flatten_objects_properties(
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
         props = {**parent_props}
-        if parent_props.get("color", None) is None:
+        parent_color = parent_props.get("color", '!!!missing!!!')
+        if parent_color is None:
+            props["color"] = parent_color
+        elif parent_color == "!!!missing!!!":
             props["color"] = next(color_cycle)
         if parent_props.get("legendgroup", None) is None:
             props["legendgroup"] = f"{subobj}"
@@ -485,7 +488,6 @@ def get_flatten_objects_properties(
                 legendtext = f"{subobj!r}" if legendtext is None else legendtext
             props["legendtext"] = legendtext
         flat_objs[subobj] = props
-        #print(props)
         if isCollection:
             if subobj.style.color is not None:
                 flat_objs[subobj]["color"] = subobj.style.color
