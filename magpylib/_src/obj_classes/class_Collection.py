@@ -16,6 +16,48 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
+def repr_obj(obj, labels=False):
+    """Returns obj repr based on label"""
+    if labels and obj.style.label:
+        return f"{obj.style.label}"
+    return f"{obj!r}"
+
+
+def collection_tree_generator(
+    dir_child,
+    prefix="",
+    space="    ",
+    branch="│   ",
+    tee="├── ",
+    last="└── ",
+    labels=False,
+    max_elems=20,
+):
+    """A recursive generator, given a collection child object
+    will yield a visual tree structure line by line
+    with each line prefixed by the same characters
+    """
+    # pylint: disable=protected-access
+    contents = getattr(dir_child, "children", [])
+    if len(contents) > max_elems:
+        counts = Counter([c._object_type for c in contents])
+        contents = [f"{v}x {k}s" for k, v in counts.items()]
+    # contents each get pointers that are ├── with a final └── :
+    pointers = [tee] * (len(contents) - 1) + [last]
+    for pointer, child in zip(pointers, contents):
+        child_repr = child if isinstance(child, str) else repr_obj(child, labels)
+        yield prefix + pointer + child_repr
+        if getattr(child, "children", False):  # extend the prefix and recurse:
+            extension = branch if pointer == tee else space
+            # i.e. space because last, └── , above so no more |
+            yield from collection_tree_generator(
+                child,
+                prefix=prefix + extension,
+                labels=labels,
+                max_elems=max_elems,
+            )
+
+
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
@@ -125,37 +167,22 @@ class BaseCollection(BaseDisplayRepr):
             return f"{pref}{s}"
         return s
 
-    def describe(self, labels_only=False, max_elems=10, return_list=False, indent=0):
-        """Returns a view of the nested Collection elements. If number of children is higher than
-        `max_elems` returns counters by object_type"""
-        # pylint: disable=protected-access
-        def repr_obj(obj, indent=0):
-            if labels_only and obj.style.label:
-                obj_repr = f"{obj.style.label}"
-            else:
-                obj_repr = f"{obj}"
-            return " " * indent + obj_repr
+    def describe(self, labels=False, max_elems=10):
+        """Returns a tree view of the nested collection elements.
 
-        elems = [repr_obj(self, indent=indent)]
-        if len(self.children) > max_elems:
-            counts = Counter([c._object_type for c in self._children])
-            elems.extend([" " * indent + f"{v}x{k}" for k, v in counts.items()])
-        else:
-            for child in self.children:
-                if child not in self._collections:
-                    elems.append(repr_obj(child, indent=indent + 2))
-                else:
-                    children = self.__class__.describe(
-                        child,
-                        return_list=True,
-                        indent=indent + 2,
-                        labels_only=labels_only,
-                        max_elems=max_elems,
-                    )
-                    elems.extend(children)
-        if return_list:
-            return elems
-        print(("\n").join(elems))
+        Parameters
+        ----------
+        labels: bool, default=False
+            If True, `object.style.label` is used if available, instead of `repr(object)`
+        max_elems:
+            If number of children at any level is higher than `max_elems`, elements are replaced by
+            counters by object type.
+        """
+        print(repr_obj(self, labels))
+        for line in collection_tree_generator(
+            self, labels=labels, max_elems=max_elems
+        ):
+            print(line)
 
     # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
