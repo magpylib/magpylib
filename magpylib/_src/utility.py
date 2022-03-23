@@ -109,7 +109,7 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     return obj_list
 
 
-def format_src_inputs(*sources) -> list:
+def format_src_inputs(sources) -> list:
     """
     - input: allow only bare src objects or 1D lists/tuple of src and col
     - out: sources, src_list
@@ -126,6 +126,9 @@ def format_src_inputs(*sources) -> list:
     """
     # pylint: disable=protected-access
 
+    # if bare source make into list
+    if not isinstance(sources, (list, tuple)):
+        sources = [sources]
     # flatten collections
     src_list = []
     if not sources:
