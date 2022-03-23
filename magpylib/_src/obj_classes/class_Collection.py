@@ -16,8 +16,8 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-#TODO Forbid duplicates and forbid referencing itself
-#TODO Implement child-parent philosophy
+# TODO Forbid duplicates and forbid referencing itself
+# TODO Implement child-parent philosophy
 class BaseCollection(BaseDisplayRepr):
     """ Collection base class without BaseGeo properties
     """
@@ -103,22 +103,25 @@ class BaseCollection(BaseDisplayRepr):
         """Returns a view of the nested Collection elements. If number of children is higher than
         `max_elems` returns counters by object_type"""
         # pylint: disable=protected-access
-        elems = []
+        def repr_obj(obj, indent=0):
+            if labels_only and obj.style.label:
+                obj_repr = f"{obj.style.label}"
+            else:
+                obj_repr = f"{obj}"
+            return " " * indent + obj_repr
+        elems = [repr_obj(self, indent=indent)]
         if len(self.children) > max_elems:
             counts = Counter([c._object_type for c in self._children])
             elems.extend([" " * indent + f"{v}x{k}" for k, v in counts.items()])
         else:
             for child in self.children:
-                if labels_only and child.style.label:
-                    child_repr = f"{child.style.label}"
+                if child not in self._collections:
+                    elems.append(repr_obj(child, indent=indent+2))
                 else:
-                    child_repr = f"{child}"
-                elems.append(" " * indent + child_repr)
-                if child in self._collections:
                     children = self.__class__.describe(
                         child,
                         return_list=True,
-                        indent=indent + 2,
+                        indent=indent+2,
                         labels_only=labels_only,
                         max_elems=max_elems,
                     )
@@ -278,8 +281,8 @@ class BaseCollection(BaseDisplayRepr):
         """validate Collection.getBH inputs"""
         # pylint: disable=protected-access
         # pylint: disable=too-many-branches
-        current_sources = format_obj_input(self, allow='sources')
-        current_sensors = format_obj_input(self, allow='sensors')
+        current_sources = format_obj_input(self, allow="sources")
+        current_sensors = format_obj_input(self, allow="sensors")
         if current_sensors and current_sources:
             sources, sensors = self, self
             if inputs:
