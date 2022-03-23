@@ -266,9 +266,20 @@ class BaseGeo(BaseTransform):
         # pylint: disable=import-outside-toplevel
         from magpylib._src.obj_classes.class_Collection import Collection
 
-        if getattr(self, "_object_type", "") == "Collection":
-            return self.add(obj)
-        return Collection(self, obj)
+        override_parent=False
+        obj1, obj2 = self, obj
+        iscol1 = getattr(self, "_object_type", "") == "Collection"
+        iscol2 = getattr(obj, "_object_type", "") == "Collection"
+        if not iscol1:
+            obj1 = [self]
+        if not iscol2:
+            obj2 = [obj]
+            if obj._parent is None:
+                override_parent=True
+        elif iscol1 and iscol2:
+            obj1, obj2 = [self], [obj]
+        coll = Collection(*obj1, *obj2, override_parent=override_parent)
+        return coll
 
     def __radd__(self, other):
         """Add up sources to a Collection object. Allows to use `sum(objects)`.
