@@ -325,7 +325,33 @@ class BaseTransform:
 
         return self
 
-    def rotate(self, rotation: R, anchor=None, start="auto", _parent_path=None):
+    def _rotate(self, rotation: R, anchor=None, start="auto", parent_path=None):
+        """Rotate object about a given anchor.
+
+        See `rotate` docstring for other parameters.
+
+        Parameters
+        ----------
+        parent_path: if there is no parent else parent._position
+            needs to be transmitted from the top level for nested collections, hence using a
+            private `_rotate` method to do so.
+
+        """
+        # Idea: An operation applied to a Collection is individually
+        #    applied to its BaseGeo and to each child.
+        #  -> this automatically generates the rotate-Compound behavior
+
+        # pylint: disable=no-member
+        for child in getattr(self, "children", []):
+            ppth = self._position if parent_path is None else parent_path
+            child._rotate(rotation, anchor=anchor, start=start, parent_path=ppth)
+
+        apply_rotation(
+            self, rotation, anchor=anchor, start=start, parent_path=parent_path
+        )
+        return self
+
+    def rotate(self, rotation: R, anchor=None, start="auto"):
         """Rotate object about a given anchor.
 
         Terminology for move/rotate methods:
@@ -401,21 +427,7 @@ class BaseTransform:
          [  0.   0. 135.]]
         """
 
-        # pylint: disable=no-member
-
-        # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child.
-        #  -> this automatically generates the rotate-Compound behavior
-        for child in getattr(self, "children", []):
-            child.rotate(
-                rotation, anchor=anchor, start=start, _parent_path=self._position
-            )
-
-        apply_rotation(
-            self, rotation, anchor=anchor, start=start, parent_path=_parent_path
-        )
-
-        return self
+        return self._rotate(rotation=rotation, anchor=anchor, start=start)
 
     def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
         """Rotates object using angle-axis input.
