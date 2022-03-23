@@ -3,7 +3,7 @@
 # pylint: disable=too-many-branches
 
 import numbers
-from itertools import cycle, combinations
+from itertools import combinations
 from typing import Tuple
 import warnings
 
