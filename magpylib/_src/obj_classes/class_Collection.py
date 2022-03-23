@@ -219,13 +219,53 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    def remove(self, child, recursive=True, _issearching=False):
+    @staticmethod
+    def _remove(parent, child, recursive=True, issearching=False):
+        """Remove a specific child from a parent collection.
+
+        Parameters
+        ----------
+        parent: parent collection object
+
+        child: child object
+
+        recursive: bool, default=True
+            If True, the method will also search in lower nested levels
+
+        issearching: bool, default=False
+            Tells the current searching status over the nested collection. This avoids the search,
+            to be stopped to early if the child has not been found yet
+        """
+        # pylint: disable=protected-access
+        isfound = False
+        if child in parent._children or not recursive:
+            parent._children.remove(child)
+            child._parent = None
+            isfound = True
+        else:
+            for child_col in parent._collections:
+                isfound = parent.__class__._remove(
+                    child_col, child, recursive=True, issearching=True
+                )
+                if isfound:
+                    break
+        if issearching:
+            return isfound
+        if isfound:
+            parent._update_src_and_sens()
+        elif not isfound:
+            raise ValueError(f"""{parent}.remove({child}) : {child!r} not found.""")
+
+    def remove(self, child, recursive=True):
         """Remove a specific child from the collection.
 
         Parameters
         ----------
         child: child object
             Remove the given child from the collection.
+
+        recursive: bool, default=True
+            If True, the method will also search in lower nested levels
 
         Returns
         -------
@@ -245,25 +285,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> print(col.children)
         []
         """
-        # pylint: disable=protected-access
-        # _issearching is needed to tell if we are still looking through the nested children if the
-        # object to be removed is found.
-        isfound = False
-        if child in self._children or not recursive:
-            self._children.remove(child)
-            child._parent = None
-            isfound = True
-        else:
-            for child_col in self._collections:
-                isfound = self.__class__.remove(child_col, child, _issearching=True)
-                if isfound:
-                    break
-            _issearching = False
-        if _issearching:
-            return isfound
-        if not isfound and not _issearching:
-            raise ValueError(f"""{self}.remove({child}) : {child!r} not found.""")
-        self._update_src_and_sens()
+        self._remove(self, child, recursive=recursive)
         return self
 
     def set_children_styles(self, arg=None, _validate=True, recursive=True, **kwargs):
