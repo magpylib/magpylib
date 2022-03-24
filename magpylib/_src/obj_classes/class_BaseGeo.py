@@ -12,9 +12,8 @@ from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.input_checks import (
     check_format_input_orientation,
     check_format_input_vector,
-    check_input_parent,
 )
-
+from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -142,14 +141,17 @@ class BaseGeo(BaseTransform):
 
     @parent.setter
     def parent(self, inp):
-        is_collection = check_input_parent(inp)
-
-        if self._parent is not None:
-            self._parent.remove(self)
+        if getattr(inp, "_object_type", "") == "Collection":
+            inp.add(self, override_parent=True)
+        elif inp is None:
+            if self._parent is not None:
+                self._parent.remove(self)
             self._parent = None
-
-        if is_collection:
-            inp.add(self)
+        else:
+            raise MagpylibBadUserInput(
+                "Input `parent` must be `None` or a `Collection` object."
+                f"Instead received {type(inp)}."
+            )
 
     @property
     def position(self):

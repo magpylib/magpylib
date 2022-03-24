@@ -193,6 +193,10 @@ class BaseCollection(BaseDisplayRepr):
         children: sources, sensors or collections or arbitrary lists thereof
             Add arbitrary sources, sensors or other collections to this collection.
 
+        override_parent: bool, default=`True`
+            Accept objects as children that already have parents. Automatically
+            removes objects from previous parent collection.
+
         Returns
         -------
         self: `Collection` object
@@ -209,27 +213,30 @@ class BaseCollection(BaseDisplayRepr):
         [Sensor(id=2236606343584)]
         """
         # pylint: disable=protected-access
-        # format input
+        # check and format input
         obj_list = format_obj_input(children, allow="sensors+sources+collections")
-        # check and eliminate duplicates
         obj_list = check_duplicates(obj_list)
+
         # assign parent
         for obj in obj_list:
-            if (obj._parent is None) or override_parent:
+            if obj._parent is None:
+                obj._parent = self
+            elif override_parent:
+                obj._parent.remove(obj)
                 obj._parent = self
             else:
-                raise ValueError(
-                    f"`{self!r}` cannot receive `{obj!r}`, as the child already has a parent "
-                    f"(`{obj._parent!r}`). "
-                    "You can use the `.add(*children, override_parent=True)` method to ignore and "
-                    "override the current object parent. Note that this will remove the object "
-                    "from the previous parent collection."
+                raise MagpylibBadUserInput(
+                    f"Cannot add {obj!r} to {self!r} because it already has a parent."
+                    "Consider using `override_parent=True`."
                 )
-        # combine with original obj_list
+
+        # add input to children
         obj_list = self._children + obj_list
+
         # set attributes
         self._children = obj_list
         self._update_src_and_sens()
+
         return self
 
     def _update_src_and_sens(self):
