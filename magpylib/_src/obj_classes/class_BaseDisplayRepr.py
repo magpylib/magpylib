@@ -16,7 +16,7 @@ UNITS = {
 
 
 class BaseDisplayRepr:
-    """Provides the display(self) and self.repr methods for all objects"""
+    """Provides the show and repr methods for all objects"""
 
     show = show
     _object_type = None
@@ -30,7 +30,13 @@ class BaseDisplayRepr:
         )
 
     def _get_description(self, exclude=None):
-        """Returns list of string describing the object properties"""
+        """Returns list of string describing the object properties.
+
+        Parameters
+        ----------
+        exclude: bool, default=("style",)
+            properties to be excluded in the description view.
+        """
         if exclude is None:
             exclude = ()
         params = list(self._property_names_generator())
@@ -57,7 +63,13 @@ class BaseDisplayRepr:
         return lines
 
     def describe(self, exclude=("style",)):
-        """Returns a view of the object properties"""
+        """Returns a view of the object properties.
+
+        Parameters
+        ----------
+        exclude: bool, default=("style",)
+            properties to be excluded in the description view.
+        """
         lines = self._get_description(exclude=exclude)
         print("\n".join(lines))
 
