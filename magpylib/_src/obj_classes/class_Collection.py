@@ -167,6 +167,17 @@ class BaseCollection(BaseDisplayRepr):
             return f"{pref}{s}"
         return s
 
+    def _repr_html_(self):
+        lines = []
+        labels = False
+        max_elems = 10
+        lines.append(repr_obj(self, labels))
+        for line in collection_tree_generator(
+            self, labels=labels, max_elems=max_elems
+        ):
+            lines.append(line)
+        return f"""<pre>{'<br>'.join(lines)}</pre>"""
+
     def describe(self, labels=False, max_elems=10):
         """Returns a tree view of the nested collection elements.
 
