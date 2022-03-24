@@ -38,7 +38,7 @@ class BaseDisplayRepr:
         for k in list(dict.fromkeys(list(UNITS) + list(params))):
             if k in params and k not in exclude:
                 unit = UNITS.get(k, None)
-                unit_str = f"[{unit}]" if unit else ""
+                unit_str = f"{unit}" if unit else ""
                 if k == "position":
                     val = getattr(self, "_position")
                     if val.shape[0] != 1:

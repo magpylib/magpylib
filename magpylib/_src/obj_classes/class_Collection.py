@@ -18,7 +18,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 def repr_obj(obj, labels=False):
     """Returns obj repr based on label"""
-    if labels and getattr(obj, "style.label", False):
+    if labels and getattr(getattr(obj, "style", False), "label", False):
         return f"{obj.style.label}"
     return f"{obj!r}"
 
@@ -41,17 +41,21 @@ def collection_tree_generator(
     # pylint: disable=protected-access
     # contents each get pointers that are ├── with a final └── :
     contents = []
+    children = getattr(dir_child, "children", [])
     desc_func = getattr(dir_child, "_get_description", False)
+    props = []
     if properties and desc_func:
         desc = desc_func(
             exclude=("children", "parent", "style", "sources", "sensors", "collections")
         )
-        contents.extend([d.strip() for d in desc[1:]])
-    if len(contents) > max_elems:
-        counts = Counter([c._object_type for c in contents])
-        contents.extend([f"{v}x {k}s" for k, v in counts.items()])
-    contents.extend(getattr(dir_child, "children", []))
+        props = [d.strip() for d in desc[1:]]
+    if len(children) > max_elems:
+        counts = Counter([c._object_type for c in children])
+        children = [f"{v}x {k}s" for k, v in counts.items()]
+    contents.extend(props)
+    contents.extend(children)
     pointers = [tee] * (len(contents) - 1) + [last]
+    pointers[:len(props)] = [branch if children else space]*len(props)
     for pointer, child in zip(pointers, contents):
         child_repr = child if isinstance(child, str) else repr_obj(child, labels)
         yield prefix + pointer + child_repr
