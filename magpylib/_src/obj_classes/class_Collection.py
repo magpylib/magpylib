@@ -140,9 +140,6 @@ class BaseCollection(BaseDisplayRepr):
         self.add(coll_list)
 
     # dunders
-    def __sub__(self, obj):
-        return self.remove(obj)
-
     def __iter__(self):
         yield from self._children
 
@@ -270,6 +267,7 @@ class BaseCollection(BaseDisplayRepr):
             to be stopped to early if the child has not been found yet
         """
         # pylint: disable=protected-access
+
         isfound = False
         if child in parent._children or not recursive:
             parent._children.remove(child)
