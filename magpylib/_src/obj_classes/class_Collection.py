@@ -190,9 +190,8 @@ class BaseCollection(BaseDisplayRepr):
 
         Parameters
         ----------
-        children: source, `Sensor` or `Collection` objects or arbitrary lists thereof
+        children: sources, sensors or collections or arbitrary lists thereof
             Add arbitrary sources, sensors or other collections to this collection.
-            Duplicate children will automatically be eliminated.
 
         Returns
         -------
@@ -216,7 +215,7 @@ class BaseCollection(BaseDisplayRepr):
         obj_list = check_duplicates(obj_list)
         # assign parent
         for obj in obj_list:
-            if obj._parent is None or override_parent:
+            if (obj._parent is None) or override_parent:
                 obj._parent = self
             else:
                 raise ValueError(
@@ -284,7 +283,7 @@ class BaseCollection(BaseDisplayRepr):
             raise ValueError(f"""{parent}.remove({child}) : {child!r} not found.""")
 
     def remove(self, child, recursive=True):
-        """Remove a specific child from the collection.
+        """Remove a specific object from the collection tree.
 
         Parameters
         ----------

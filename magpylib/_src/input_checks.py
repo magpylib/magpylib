@@ -143,6 +143,23 @@ def validate_field_lambda(val, bh):
     return val
 
 
+def check_input_parent(inp):
+    """
+    parent input must be None or Collection.
+    return - true if its a collection
+           - false if its None
+    raise error if neither
+    """
+    if (getattr(inp, "_object_type", "") == "Collection"):
+        return True
+    elif inp is None:
+        return False
+
+    raise MagpylibBadUserInput(
+        "Input `parent` must be `None` or a `Collection` object."
+        f"Instead received {type(inp)}."
+    )
+
 #################################################################
 #################################################################
 # CHECK - FORMAT
