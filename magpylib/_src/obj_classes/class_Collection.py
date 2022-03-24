@@ -18,7 +18,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 def repr_obj(obj, labels=False):
     """Returns obj repr based on label"""
-    if labels and obj.style.label:
+    if labels and getattr(obj, "style.label", False):
         return f"{obj.style.label}"
     return f"{obj!r}"
 
@@ -32,22 +32,32 @@ def collection_tree_generator(
     last="└── ",
     labels=False,
     max_elems=20,
+    properties=False,
 ):
     """A recursive generator, given a collection child object
     will yield a visual tree structure line by line
     with each line prefixed by the same characters
     """
     # pylint: disable=protected-access
-    contents = getattr(dir_child, "children", [])
+    # contents each get pointers that are ├── with a final └── :
+    contents = []
+    desc_func = getattr(dir_child, "_get_description", False)
+    if properties and desc_func:
+        desc = desc_func(
+            exclude=("children", "parent", "style", "sources", "sensors", "collections")
+        )
+        contents.extend([d.strip() for d in desc[1:]])
     if len(contents) > max_elems:
         counts = Counter([c._object_type for c in contents])
-        contents = [f"{v}x {k}s" for k, v in counts.items()]
-    # contents each get pointers that are ├── with a final └── :
+        contents.extend([f"{v}x {k}s" for k, v in counts.items()])
+    contents.extend(getattr(dir_child, "children", []))
     pointers = [tee] * (len(contents) - 1) + [last]
     for pointer, child in zip(pointers, contents):
         child_repr = child if isinstance(child, str) else repr_obj(child, labels)
         yield prefix + pointer + child_repr
-        if getattr(child, "children", False):  # extend the prefix and recurse:
+        if getattr(child, "children", False) or (
+            getattr(dir_child, "_get_description", False) and properties
+        ):  # extend the prefix and recurse:
             extension = branch if pointer == tee else space
             # i.e. space because last, └── , above so no more |
             yield from collection_tree_generator(
@@ -55,6 +65,7 @@ def collection_tree_generator(
                 prefix=prefix + extension,
                 labels=labels,
                 max_elems=max_elems,
+                properties=properties,
             )
 
 
@@ -170,15 +181,14 @@ class BaseCollection(BaseDisplayRepr):
     def _repr_html_(self):
         lines = []
         labels = False
-        max_elems = 10
         lines.append(repr_obj(self, labels))
         for line in collection_tree_generator(
-            self, labels=labels, max_elems=max_elems
+            self, labels=labels, max_elems=10, properties=False
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, labels=False, max_elems=10):
+    def describe(self, labels=False, max_elems=10, properties=False):
         """Returns a tree view of the nested collection elements.
 
         Parameters
@@ -191,7 +201,7 @@ class BaseCollection(BaseDisplayRepr):
         """
         print(repr_obj(self, labels))
         for line in collection_tree_generator(
-            self, labels=labels, max_elems=max_elems
+            self, labels=labels, max_elems=max_elems, properties=properties
         ):
             print(line)
 
