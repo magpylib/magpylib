@@ -55,7 +55,7 @@ def collection_tree_generator(
     contents.extend(props)
     contents.extend(children)
     pointers = [tee] * (len(contents) - 1) + [last]
-    pointers[:len(props)] = [branch if children else space]*len(props)
+    pointers[: len(props)] = [branch if children else space] * len(props)
     for pointer, child in zip(pointers, contents):
         child_repr = child if isinstance(child, str) else repr_obj(child, labels)
         yield prefix + pointer + child_repr
@@ -67,6 +67,10 @@ def collection_tree_generator(
             yield from collection_tree_generator(
                 child,
                 prefix=prefix + extension,
+                space=space,
+                branch=branch,
+                tee=tee,
+                last=last,
                 labels=labels,
                 max_elems=max_elems,
                 properties=properties,
@@ -74,8 +78,7 @@ def collection_tree_generator(
 
 
 class BaseCollection(BaseDisplayRepr):
-    """ Collection base class without BaseGeo properties
-    """
+    """Collection base class without BaseGeo properties"""
 
     def __init__(self, *children, override_parent=False):
 
@@ -193,6 +196,7 @@ class BaseCollection(BaseDisplayRepr):
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
     def describe(self, labels=False, max_elems=10, properties=False):
+        # pylint: disable=arguments-differ
         """Returns a tree view of the nested collection elements.
 
         Parameters
@@ -202,6 +206,8 @@ class BaseCollection(BaseDisplayRepr):
         max_elems:
             If number of children at any level is higher than `max_elems`, elements are replaced by
             counters by object type.
+        properties: bool, default=False
+            If True, adds object properties to the view
         """
         print(repr_obj(self, labels))
         for line in collection_tree_generator(
@@ -513,7 +519,7 @@ class BaseCollection(BaseDisplayRepr):
 
 
 class Collection(BaseGeo, BaseCollection):
-    """ Group multiple children (sources and sensors) in one Collection for
+    """Group multiple children (sources and sensors) in one Collection for
     common manipulation.
 
     Collections can be used as `sources` and `observers` input for magnetic field
@@ -608,6 +614,10 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs,
+            self,
+            position=position,
+            orientation=orientation,
+            style=style,
+            **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
