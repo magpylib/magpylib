@@ -7,6 +7,7 @@ from magpylib._src.utility import (
     check_duplicates,
     LIBRARY_SENSORS,
     LIBRARY_SOURCES,
+    rec_obj_remover,
 )
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
@@ -14,7 +15,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
-
+from magpylib._src.input_checks import check_format_input_obj
 
 def repr_obj(obj, labels=False):
     """Returns obj repr based on label"""
@@ -249,45 +250,7 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    @staticmethod
-    def _remove(parent, child, recursive=True, issearching=False):
-        """Remove a specific child from a parent collection.
-
-        Parameters
-        ----------
-        parent: parent collection object
-
-        child: child object
-
-        recursive: bool, default=True
-            If True, the method will also search in lower nested levels
-
-        issearching: bool, default=False
-            Tells the current searching status over the nested collection. This avoids the search,
-            to be stopped to early if the child has not been found yet
-        """
-        # pylint: disable=protected-access
-
-        isfound = False
-        if child in parent._children or not recursive:
-            parent._children.remove(child)
-            child._parent = None
-            isfound = True
-        else:
-            for child_col in parent._collections:
-                isfound = parent.__class__._remove(
-                    child_col, child, recursive=True, issearching=True
-                )
-                if isfound:
-                    break
-        if issearching:
-            return isfound
-        if isfound:
-            parent._update_src_and_sens()
-        elif not isfound:
-            raise ValueError(f"""{parent}.remove({child}) : {child!r} not found.""")
-
-    def remove(self, child, recursive=True):
+    def remove(self, child, recursive=True, raise_err=True):
         """Remove a specific object from the collection tree.
 
         Parameters
@@ -295,8 +258,11 @@ class BaseCollection(BaseDisplayRepr):
         child: child object
             Remove the given child from the collection.
 
-        recursive: bool, default=True
-            If True, the method will also search in lower nested levels
+        raise_err: bool, default=`True`
+            Raise error if child is not found.
+
+        recursive: bool, default=`True`
+            Continue search also in child collections.
 
         Returns
         -------
@@ -307,16 +273,33 @@ class BaseCollection(BaseDisplayRepr):
         In this example we remove a child from a Collection:
 
         >>> import magpylib as magpy
-        >>> sens = magpy.Sensor()
-        >>> col = magpy.Collection(sens)
-        >>> print(col.children)
-        [Sensor(id=2048351734560)]
+        >>> x1 = magpy.Sensor(style_label='x1')
+        >>> x2 = magpy.Sensor(style_label='x2')
+        >>> col = magpy.Collection(x1, x2, style_label='col')
+        >>> col.describe(labels=True)
+        col
+        ├── x1
+        └── x2
 
-        >>> col.remove(sens)
-        >>> print(col.children)
-        []
+        >>> col.remove(x1)
+        >>> col.describe(labels=True)
+        col
+        └── x2
         """
-        self._remove(self, child, recursive=recursive)
+        #pylint: disable=protected-access
+        all_objects = check_format_input_obj(
+            self,
+            allow='sensors+sources+collections',
+            recursive=recursive,
+        )
+        if child in all_objects:
+            rec_obj_remover(self, child)
+            child._parent = None
+        else:
+            if raise_err:
+                raise MagpylibBadUserInput(
+                    "Object not found."
+                )
         return self
 
     def set_children_styles(self, arg=None, _validate=True, recursive=True, **kwargs):
