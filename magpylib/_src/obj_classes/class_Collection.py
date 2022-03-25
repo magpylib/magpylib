@@ -250,7 +250,7 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    def remove(self, child, recursive=True, raise_err=True):
+    def remove(self, child, recursive=True, errors='raise'):
         """Remove a specific object from the collection tree.
 
         Parameters
@@ -258,8 +258,8 @@ class BaseCollection(BaseDisplayRepr):
         child: child object
             Remove the given child from the collection.
 
-        raise_err: bool, default=`True`
-            Raise error if child is not found.
+        errors: str, default=`'raise'`
+            Can be 'raise' or 'ignore'.
 
         recursive: bool, default=`True`
             Continue search also in child collections.
@@ -296,9 +296,14 @@ class BaseCollection(BaseDisplayRepr):
             rec_obj_remover(self, child)
             child._parent = None
         else:
-            if raise_err:
+            if errors == 'raise':
                 raise MagpylibBadUserInput(
                     "Object not found."
+                )
+            elif errors != 'ignore':
+                raise MagpylibBadUserInput(
+                    "Input `errors` must be one of ('raise', 'ignore').\n"
+                    f"Instead received {errors}"
                 )
         return self
 
