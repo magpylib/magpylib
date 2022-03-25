@@ -434,17 +434,17 @@ def check_format_input_observers(inp):
 
 
 def check_format_input_obj(
-    *inp: Sequence,
+    inp: Sequence,
     allow: str,
-    recursive: bool,
+    recursive = True,
+    typechecks = False,
     ) -> list:
     """
-    Returns a flat list of all wanted objects in input
+    Returns a flat list of all wanted objects in input.
 
     Parameters
     ----------
-    input: can be objects (sources, sensors, collections), lists or tuples
-        thereof, arbitrarily nested
+    input: can be sources, sensor or collection objects
 
     allow: str
         Specify which object types are wanted, separate by +,
@@ -453,40 +453,43 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-    # pylint: disable=protected-access
-    # pylint: disable=import-outside-toplevel
-    from magpylib import Collection
 
     # select wanted
-    wanted = []
+    wanted_types = []
     if "sources" in allow.split("+"):
-        wanted += list(LIBRARY_SOURCES)
+        wanted_types += list(LIBRARY_SOURCES)
     if "sensors" in allow.split("+"):
-        wanted += list(LIBRARY_SENSORS)
+        wanted_types += list(LIBRARY_SENSORS)
     if "collections" in allow.split("+"):
-        wanted += ['Collection']
+        wanted_types += ['Collection']
 
-    # all_types = list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS) + ["Collection"]
+    if typechecks:
+        all_types = list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS) + ["Collection"]
 
     obj_list = []
     for obj in inp:
+        obj_type = getattr(obj, "_object_type", None)
+
         # add to list if wanted type
-        if getattr(obj, "_object_type", None) in wanted:
+        if obj_type in wanted_types:
             obj_list.append(obj)
 
         # recursion
-        if isinstance(obj, (Collection, tuple, list)):
-            if isinstance(obj, Collection) and not recursive:
-                continue
-            obj_list += check_format_input_obj(*obj, allow=allow, recursive=recursive)
+        if (obj_type == "Collection") and recursive:
+            obj_list += check_format_input_obj(
+                obj,
+                allow=allow,
+                recursive=recursive,
+                typechecks=typechecks,
+            )
 
-        # # check if allowed inputs
-        # if not getattr(obj, "_object_type", None) in all_types:
-        #     if not isinstance(obj, ( tuple, list)):
-        #         raise MagpylibBadUserInput(
-        #             f"Input objects must be {allow}, lists and tuples thereof."
-        #             f"Instead received {type(obj)}"
-        #         )
+        # typechecks
+        if typechecks:
+            if not obj_type in all_types:
+                raise MagpylibBadUserInput(
+                    f"Input objects must be {allow}.\n"
+                    f"Instead received {type(obj)}."
+                )
 
     return obj_list
 

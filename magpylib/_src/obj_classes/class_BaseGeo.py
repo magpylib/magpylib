@@ -263,7 +263,7 @@ class BaseGeo(BaseTransform):
         Collection: Collection
         """
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.obj_classes.class_Collection import Collection
+        from magpylib import Collection
         return Collection(self, obj)
 
     def __radd__(self, other):

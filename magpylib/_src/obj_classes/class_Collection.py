@@ -4,7 +4,6 @@ from collections import Counter
 
 from magpylib._src.utility import (
     format_obj_input,
-    check_duplicates,
     LIBRARY_SENSORS,
     LIBRARY_SOURCES,
     rec_obj_remover,
@@ -188,7 +187,7 @@ class BaseCollection(BaseDisplayRepr):
 
         Parameters
         ----------
-        children: sources, sensors or collections or arbitrary lists thereof
+        children: sources, sensors or collections
             Add arbitrary sources, sensors or other collections to this collection.
 
         override_parent: bool, default=`True`
@@ -212,8 +211,12 @@ class BaseCollection(BaseDisplayRepr):
         """
         # pylint: disable=protected-access
         # check and format input
-        obj_list = format_obj_input(children, allow="sensors+sources+collections")
-        obj_list = check_duplicates(obj_list)
+        obj_list = check_format_input_obj(
+            children,
+            allow="sensors+sources+collections",
+            recursive=False,
+            typechecks=True,
+        )
 
         # assign parent
         for obj in obj_list:
@@ -228,11 +231,8 @@ class BaseCollection(BaseDisplayRepr):
                     "Consider using `override_parent=True`."
                 )
 
-        # add input to children
-        obj_list = self._children + obj_list
-
         # set attributes
-        self._children = obj_list
+        self._children += obj_list
         self._update_src_and_sens()
 
         return self
@@ -300,7 +300,7 @@ class BaseCollection(BaseDisplayRepr):
                 raise MagpylibBadUserInput(
                     "Object not found."
                 )
-            elif errors != 'ignore':
+            if errors != 'ignore':
                 raise MagpylibBadUserInput(
                     "Input `errors` must be one of ('raise', 'ignore').\n"
                     f"Instead received {errors}"
