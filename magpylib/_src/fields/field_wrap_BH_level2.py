@@ -155,6 +155,8 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     - 'sumup' (bool): False returns [B1,B2,...] for every source, True returns sum(Bi)
         for all sources.
     - 'squeeze' (bool): True output is squeezed (axes of length 1 are eliminated)
+    - 'pixel_agg' : str: A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
+       which applies on pixel output values.
     - 'field' (str): 'B' computes B field, 'H' computes H-field
     - getBH_dict inputs
 
@@ -186,7 +188,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     kwargs_check = kwargs.copy()
-    for popit in ['field', 'sumup', 'squeeze']:
+    for popit in ['field', 'sumup', 'squeeze', 'pixel_agg']:
         kwargs_check.pop(popit)
     if kwargs_check:
         raise MagpylibBadUserInput(
@@ -322,9 +324,18 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     sens_px_shape = (k,) + pix_shape
     B = B.reshape((l0,m)+sens_px_shape)
 
-    #
+    # sumup over sources
     if kwargs['sumup']:
         B = np.sum(B, axis=0, keepdims=True)
+
+    # aggregate pixel values
+    pixel_agg = kwargs['pixel_agg']
+    if pixel_agg is not None:
+        B = getattr(np, pixel_agg)(B, axis=tuple(range(3-B.ndim,-1)))
+        if not kwargs['squeeze']:
+            # add missing dimension since `pixel_agg` reduces pixel
+            # dimensions to zero. Only needed if `squeeze is False``
+            B = np.expand_dims(B, axis=-2)
 
     # reduce all size-1 levels
     if kwargs['squeeze']:

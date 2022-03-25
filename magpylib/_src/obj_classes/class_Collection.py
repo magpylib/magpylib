@@ -15,13 +15,13 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
+
 class BaseCollection(BaseDisplayRepr):
-    """ Collection base class without BaseGeo properties
-    """
+    """Collection base class without BaseGeo properties"""
 
     def __init__(self, *children):
 
-        self._object_type = 'Collection'
+        self._object_type = "Collection"
 
         BaseDisplayRepr.__init__(self)
 
@@ -85,11 +85,11 @@ class BaseCollection(BaseDisplayRepr):
         s = super().__repr__()
         if self._children:
             if not self._sources:
-                pref = 'Sensor'
+                pref = "Sensor"
             elif not self._sensors:
-                pref = 'Source'
+                pref = "Source"
             else:
-                pref = 'Mixed'
+                pref = "Mixed"
             return f"{pref}{s}"
         return s
 
@@ -169,7 +169,6 @@ class BaseCollection(BaseDisplayRepr):
         self._update_src_and_sens()
         return self
 
-
     def set_children_styles(self, arg=None, **kwargs):
         """Set display style of all children in the collection. Only matching properties
         will be applied. Input can be a style dict or style underscore magic.
@@ -235,8 +234,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, children
         return sources, sensors
 
-
-    def getB(self, *sources_observers, squeeze=True):
+    def getB(self, *sources_observers, squeeze=True, pixel_agg=None):
         """Compute B-field in [mT] for given sources and observer inputs.
 
         Parameters
@@ -284,10 +282,16 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*sources_observers)
 
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='B')
+        return getBH_level2(
+            sources,
+            sensors,
+            sumup=False,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            field="B",
+        )
 
-
-    def getH(self, *children, squeeze=True):
+    def getH(self, *children, squeeze=True, pixel_agg=None):
         """Compute H-field in [kA/m] for given sources and observer inputs.
 
         Parameters
@@ -335,11 +339,18 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*children)
 
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field='H')
+        return getBH_level2(
+            sources,
+            sensors,
+            sumup=False,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            field="H",
+        )
 
 
 class Collection(BaseGeo, BaseCollection):
-    """ Group multiple children (sources and sensors) in one Collection for
+    """Group multiple children (sources and sensors) in one Collection for
     common manipulation.
 
     Collections can be used as `sources` and `observers` input for magnetic field
@@ -424,6 +435,10 @@ class Collection(BaseGeo, BaseCollection):
     [ 0.00126232 -0.00093169 -0.00034448]
     """
 
-    def __init__(self, *args, position=(0,0,0), orientation=None, style=None, **kwargs):
-        BaseGeo.__init__(self, position=position, orientation=orientation, style=style, **kwargs)
+    def __init__(
+        self, *args, position=(0, 0, 0), orientation=None, style=None, **kwargs
+    ):
+        BaseGeo.__init__(
+            self, position=position, orientation=orientation, style=style, **kwargs
+        )
         BaseCollection.__init__(self, *args)

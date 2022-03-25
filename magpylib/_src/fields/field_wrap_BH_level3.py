@@ -1,7 +1,9 @@
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 
 
-def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
+def getB(
+    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+):
     """Compute B-field in [mT] for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
@@ -33,6 +35,10 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     squeeze: bool, default=`True`
         If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
+
+    pixel_agg: str, default=`None`
+        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`) which applies on pixel
+        output values.
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -138,10 +144,20 @@ def getB(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
      [ 1.14713551  2.29427102 -0.22065346]
      [-2.48213467 -2.48213467 -0.79683487]]
     """
-    return getBH_level2(sources, observers, sumup=sumup, squeeze=squeeze, field='B', **kwargs)
+    return getBH_level2(
+        sources,
+        observers,
+        sumup=sumup,
+        squeeze=squeeze,
+        pixel_agg=pixel_agg,
+        field="B",
+        **kwargs
+    )
 
 
-def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
+def getH(
+    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+):
     """Compute H-field in [kA/m] for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
@@ -173,6 +189,10 @@ def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
     squeeze: bool, default=`True`
         If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
         a single sensor or only a single source) are eliminated.
+
+    pixel_agg: str, default=`None`
+        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`) which applies on pixel
+        output values.
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -278,4 +298,12 @@ def getH(sources=None, observers=None, sumup=False, squeeze=True, **kwargs):
      [ 0.91286143  1.82572286 -0.17559045]
      [-1.97522001 -1.97522001 -0.63410104]]
     """
-    return getBH_level2(sources, observers, sumup=sumup, squeeze=squeeze, field='H', **kwargs)
+    return getBH_level2(
+        sources,
+        observers,
+        sumup=sumup,
+        squeeze=squeeze,
+        pixel_agg=pixel_agg,
+        field="H",
+        **kwargs
+    )
