@@ -16,11 +16,18 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
-def repr_obj(obj, labels=False):
-    """Returns obj repr based on label"""
-    if labels and getattr(getattr(obj, "style", False), "label", False):
-        return f"{obj.style.label}"
-    return f"{obj!r}"
+def repr_obj(obj, desc="type+id+label"):
+    """Returns obj repr based on description paramter string"""
+    rp = ""
+    lbl = "label" in desc and getattr(getattr(obj, "style", False), "label", False)
+    if "type" in desc or not lbl:
+        rp += f"{type(obj).__name__}"
+    if lbl:
+        rp += f" {obj.style.label}"
+    if "id" in desc or not lbl:
+        id_str = f"id={id(obj)}"
+        rp += f" ({id_str})" if rp else id_str
+    return rp.strip()
 
 
 def collection_tree_generator(
@@ -30,7 +37,7 @@ def collection_tree_generator(
     branch="│   ",
     tee="├── ",
     last="└── ",
-    labels=False,
+    desc="type+id+label",
     max_elems=20,
     properties=False,
 ):
@@ -45,10 +52,10 @@ def collection_tree_generator(
     desc_func = getattr(dir_child, "_get_description", False)
     props = []
     if properties and desc_func:
-        desc = desc_func(
+        desc_out = desc_func(
             exclude=("children", "parent", "style", "sources", "sensors", "collections")
         )
-        props = [d.strip() for d in desc[1:]]
+        props = [d.strip() for d in desc_out[1:]]
     if len(children) > max_elems:
         counts = Counter([c._object_type for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
@@ -57,7 +64,7 @@ def collection_tree_generator(
     pointers = [tee] * (len(contents) - 1) + [last]
     pointers[: len(props)] = [branch if children else space] * len(props)
     for pointer, child in zip(pointers, contents):
-        child_repr = child if isinstance(child, str) else repr_obj(child, labels)
+        child_repr = child if isinstance(child, str) else repr_obj(child, desc)
         yield prefix + pointer + child_repr
         if getattr(child, "children", False) or (
             getattr(dir_child, "_get_description", False) and properties
@@ -71,7 +78,7 @@ def collection_tree_generator(
                 branch=branch,
                 tee=tee,
                 last=last,
-                labels=labels,
+                desc=desc,
                 max_elems=max_elems,
                 properties=properties,
             )
@@ -187,31 +194,30 @@ class BaseCollection(BaseDisplayRepr):
 
     def _repr_html_(self):
         lines = []
-        labels = False
-        lines.append(repr_obj(self, labels))
+        lines.append(repr_obj(self))
         for line in collection_tree_generator(
-            self, labels=labels, max_elems=10, properties=False
+            self, desc="type+label+id", max_elems=10, properties=False
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, labels=False, max_elems=10, properties=False):
+    def describe(self, desc="type+label+id", max_elems=10, properties=False):
         # pylint: disable=arguments-differ
         """Returns a tree view of the nested collection elements.
 
         Parameters
         ----------
-        labels: bool, default=False
-            If True, `object.style.label` is used if available, instead of `repr(object)`
+        desc: bool, default="type+label+id"
+            Object description.
         max_elems:
             If number of children at any level is higher than `max_elems`, elements are replaced by
             counters by object type.
         properties: bool, default=False
             If True, adds object properties to the view
         """
-        print(repr_obj(self, labels))
+        print(repr_obj(self, desc))
         for line in collection_tree_generator(
-            self, labels=labels, max_elems=max_elems, properties=properties
+            self, desc=desc, max_elems=max_elems, properties=properties
         ):
             print(line)
 
@@ -614,10 +620,6 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self,
-            position=position,
-            orientation=orientation,
-            style=style,
-            **kwargs,
+            self, position=position, orientation=orientation, style=style, **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
