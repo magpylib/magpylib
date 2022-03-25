@@ -235,7 +235,7 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    def remove(self, child, recursive=True, errors='raise'):
+    def remove(self, *children, recursive=True, errors='raise'):
         """Remove a specific object from the collection tree.
 
         Parameters
@@ -272,24 +272,33 @@ class BaseCollection(BaseDisplayRepr):
         └── x2
         """
         #pylint: disable=protected-access
-        all_objects = check_format_input_obj(
+        
+        # check and format input
+        remove_objects = check_format_input_obj(
+            children,
+            allow="sensors+sources+collections",
+            recursive=False,
+            typechecks=True,
+        )
+        self_objects = check_format_input_obj(
             self,
             allow='sensors+sources+collections',
             recursive=recursive,
         )
-        if child in all_objects:
-            rec_obj_remover(self, child)
-            child._parent = None
-        else:
-            if errors == 'raise':
-                raise MagpylibBadUserInput(
-                    "Object not found."
-                )
-            if errors != 'ignore':
-                raise MagpylibBadUserInput(
-                    "Input `errors` must be one of ('raise', 'ignore').\n"
-                    f"Instead received {errors}"
-                )
+        for child in remove_objects:
+            if child in self_objects:
+                rec_obj_remover(self, child)
+                child._parent = None
+            else:
+                if errors == 'raise':
+                    raise MagpylibBadUserInput(
+                        f"Cannot find and remove {child} from {self}."
+                    )
+                if errors != 'ignore':
+                    raise MagpylibBadUserInput(
+                        "Input `errors` must be one of ('raise', 'ignore').\n"
+                        f"Instead received {errors}."
+                    )
         return self
 
     def set_children_styles(self, arg=None, _validate=True, recursive=True, **kwargs):
