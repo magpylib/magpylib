@@ -17,6 +17,7 @@ This is a major update that includes
 - New `CylinderSegment` class with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385), [#484](https://github.com/magpylib/magpylib/pull/484), [#480](https://github.com/magpylib/magpylib/issues/480))
 - New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
 - All Magpylib objects can now be initialized without excitation and dimension attributes.
+- All classes now have the unique `parent` attribute to reference to a collection they are part of. An object can only have a single parent.
 
 ### Field computation changes/fixes:
 - New computation core. Added top level subpackage `magpylib.core` where all field implementations can be accessed directly without the position/orienation interface. ([#376](https://github.com/magpylib/magpylib/issues/376))
@@ -70,12 +71,15 @@ This is a major update that includes
 - Removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 
 ### Modifications to the `Collection` class
-- Collections can now have `sources`, `sensors` or both types. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
-- Instead of `Collection.sources` there is now `Collection.children`, `Collection.sources` and `Collection.sensors`. ([#446](https://github.com/magpylib/magpylib/issues/446))
-- `Collection` has it's own `position`, `orientation` and `style`. This is useful to build **compound objects**. ([#444](https://github.com/magpylib/magpylib/issues/444), [#461](https://github.com/magpylib/magpylib/issues/461))
+- Collections can now contain source, `Sensor` and other `Collection` objects. The `getB` and `getH` functions accommodate for all cases. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
+- Instead of the property `Collection.sources` there are now `Collection.children`, `Collection.sources`, `Collection.sensors` and `Collection.collections` properties. ([#446](https://github.com/magpylib/magpylib/issues/446), [#502](https://github.com/magpylib/magpylib/pull/502))
+- `Collection` has it's own `position`, `orientation` and `style`. ([#444](https://github.com/magpylib/magpylib/issues/444), [#461](https://github.com/magpylib/magpylib/issues/461))
 - Added `__len__` dunder for `Collection`, so that `Collection.children` length is returned. ([#383](https://github.com/magpylib/magpylib/issues/383))
-- Added `__radd__` dunder to build collections with `sum`. [#468](https://github.com/magpylib/magpylib/pull/468)
-- `move` and `rotate` methods maintain collection geometry when applied to a collection.
+- All methods applied to a collection maintain the relative child-position.
+- `-` operation was removed.
+- `+` operation now functions as `a + b = Collection(a, b)`.
+- Collection input is now only `*args` anymore. List inputs like `Collection([a,b,c])` will raise an error.
+- `add` and `remove` have been overhauled with additional functionality and both accept only `*args` as well.
 
 ### Other changes/fixes:
 - Magpylib error message improvement. Msg will now tell you what input is expected.
