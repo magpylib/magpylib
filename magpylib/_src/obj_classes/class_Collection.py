@@ -157,7 +157,7 @@ class BaseCollection(BaseDisplayRepr):
         return len(self._children)
 
     def describe(self, labels=False, max_elems=10):
-        """Returns a tree view of the nested collection elements.
+        """ Returns a tree view of the nested collection elements.
 
         Parameters
         ----------
@@ -175,7 +175,7 @@ class BaseCollection(BaseDisplayRepr):
 
     # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
-        """Add sources, sensors or collections.
+        """ Add sources, sensors or collections.
 
         Parameters
         ----------
@@ -184,7 +184,7 @@ class BaseCollection(BaseDisplayRepr):
 
         override_parent: bool, default=`True`
             Accept objects as children that already have parents. Automatically
-            removes objects from previous parent collection.
+            removes such objects from previous parent collection.
 
         Returns
         -------
@@ -251,18 +251,19 @@ class BaseCollection(BaseDisplayRepr):
         ]
 
     def remove(self, *children, recursive=True, errors='raise'):
-        """Remove a specific object from the collection tree.
+        """ Remove children from the collection tree.
 
         Parameters
         ----------
         children: child objects
             Remove the given children from the collection.
 
-        errors: str, default=`'raise'`
-            Can be `'raise'` or `'ignore'`.
-
         recursive: bool, default=`True`
-            Remove children also from child collections.
+            Remove children also when they are in child collections.
+
+        errors: str, default=`'raise'`
+            Can be `'raise'` or `'ignore'` to toggle error output when child is
+            not found for removal.
 
         Returns
         -------
@@ -316,9 +317,17 @@ class BaseCollection(BaseDisplayRepr):
                     )
         return self
 
-    def set_children_styles(self, arg=None, _validate=True, recursive=True, **kwargs):
-        """Set display style of all children in the collection. Only matching properties
-        will be applied. Input can be a style dict or style underscore magic.
+    def set_children_styles(self, arg=None, recursive=True, _validate=True, **kwargs):
+        """ Set display style of all children in the collection. Only matching properties
+        will be applied.
+
+        Parameters
+        ----------
+        arg: style dictionary or style underscore magic input
+            Style arguments to be applied.
+        
+        recursive: bool, default=`True`
+            Apply styles also to children of child collections.
 
         Returns
         -------
@@ -489,33 +498,31 @@ class BaseCollection(BaseDisplayRepr):
 
 
 class Collection(BaseGeo, BaseCollection):
-    """ Group multiple children (sources and sensors) in one Collection for
+    """ Group multiple children (sources, sensors and collections) in a collection for
     common manipulation.
+
+    Collections span a local reference frame. All objects in a collection are held to
+    that reference frame when an operation (e.g. move, rotate, setter, ...) is applied
+    to the collection.
 
     Collections can be used as `sources` and `observers` input for magnetic field
     computation. For magnetic field computation a collection that contains sources
-    functions like a single (compound) source. When the collection contains sensors
+    functions like a single source. When the collection contains sensors
     it functions like a list of all its sensors.
-
-    Collections function like compound-objects. They have their own `position` and
-    `orientation` attributes. Move, rotate and setter operations acting on a
-    `Collection` object are individually applied to all child objects so that the
-    geometric compound structure is maintained. For example, `rotate()` with
-    `anchor=None` rotates all children about `collection.position`.
 
     Parameters
     ----------
-    children: sources, sensors or collection objects
-        An ordered list of all children in collection.
+    children: sources, `Sensor` or `Collection objects
+        An ordered list of all children in the collection.
 
-    sensors: sensor objects
-        An ordered list of all sensor objects in collection.
+    sensors: `Sensor` objects
+        An ordered list of all sensor objects in the collection.
 
     sources: source objects
-        An ordered list of all source objects in collection.
+        An ordered list of all source objects`(magnets, currents, misc) in the collection.
 
-    collections: collection objects
-        An ordered list of all collection objects in collection.
+    collections: `Collection` objects
+        An ordered list of all collection objects in the collection.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -525,6 +532,9 @@ class Collection(BaseGeo, BaseCollection):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    parent: `Collection` object or `None`
+        The object is a child of it's parent collection.
 
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or

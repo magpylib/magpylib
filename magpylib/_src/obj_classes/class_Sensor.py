@@ -34,6 +34,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
+    parent: `Collection` object or `None`
+        The object is a child of it's parent collection.
+
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
