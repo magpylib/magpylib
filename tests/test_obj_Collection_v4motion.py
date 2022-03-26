@@ -250,7 +250,6 @@ def test_Collection_setter():
     # magpy.show(*col0)
     POS = []
     ORI = []
-    col0 = magpy.Collection()
     for poz, roz in zip(
         [(0, 0, 0), (0, 0, 5), (5, 0, 0), (5, 0, 5), (10, 0, 0), (10, 0, 5)],
         [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1), (1, 2, 3), (-2, -1, 3)],
@@ -259,11 +258,9 @@ def test_Collection_setter():
         for i in range(5):
             src = magpy.magnet.Cuboid((1, 0, 0), (0.5, 0.5, 0.5), (1, 0, 0))
             src.rotate_from_angax(72 * i, "z", (0, 0, 0))
-            col = col + src
+            col.add(src)
         col.position = poz
         col.orientation = R.from_rotvec(roz)
-
-        col0 = col0 + col
 
         POS += [[src.position for src in col]]
         ORI += [[src.orientation.as_rotvec() for src in col]]

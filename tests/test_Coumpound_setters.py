@@ -20,13 +20,12 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     s0 = cs_lambda().rotate_from_angax(
         np.linspace(0.0, 360.0, Ncubes, endpoint=False), "z", anchor=(0, 0, 0), start=0
     )
-    cs_list = []
+    c = magpy.Collection()
     for ind in range(Ncubes):
         s = cs_lambda()
         s.position = s0.position[ind]
         s.orientation = s0.orientation[ind]
-        cs_list.append(s)
-    c = magpy.Collection(cs_list)
+        c.add(s)
     c.rotate_from_angax(90, "x")
     c.rotate_from_angax(
         np.linspace(90, 360, path_len), axis="z", start=0, anchor=(80, 0, 0)

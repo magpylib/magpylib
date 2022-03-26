@@ -12,6 +12,7 @@ from magpylib._src.input_checks import (
     check_excitations,
     check_dimensions,
     check_format_input_observers,
+    check_format_input_obj
 )
 
 
@@ -196,7 +197,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         )
 
     # format sources input:
-    #   input: allow only bare src objects or 1D lists/tuple of src and col
+    #   input: allow only one bare src object or a 1D lists/tuple of src and col
     #   out: sources = ordered list of sources
     #   out: src_list = ordered list of sources with flattened collections
     sources, src_list = format_src_inputs(sources)

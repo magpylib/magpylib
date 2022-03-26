@@ -585,15 +585,16 @@ def test_input_observer_good():
     pos_vec3 = [[(1,2,3)]*2]*3
     sens1 = magpy.Sensor()
     sens2 = magpy.Sensor()
-    sens3 = magpy.Sensor(pixel=pos_vec3)
+    sens3 = magpy.Sensor()
+    sens4 = magpy.Sensor(pixel=pos_vec3)
     coll1 = magpy.Collection(sens1)
-    coll2 = magpy.Collection(sens1, sens2)
+    coll2 = magpy.Collection(sens2, sens3)
 
     goods = [
         sens1,
         coll1, coll2,
         pos_vec1, pos_vec2, pos_vec3,
-        [sens1, coll1], [sens1, coll2], [sens1, pos_vec1], [sens3, pos_vec3],
+        [sens1, coll1], [sens1, coll2], [sens1, pos_vec1], [sens4, pos_vec3],
         [pos_vec1, coll1], [pos_vec1, coll2],
         [sens1, coll1, pos_vec1],
         [sens1, coll1, sens2, pos_vec1]

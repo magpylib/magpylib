@@ -434,7 +434,7 @@ def check_format_input_observers(inp):
 
 
 def check_format_input_obj(
-    inp: Sequence,
+    inp,
     allow: str,
     recursive = True,
     typechecks = False,
@@ -453,7 +453,6 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
-
     # select wanted
     wanted_types = []
     if "sources" in allow.split("+"):

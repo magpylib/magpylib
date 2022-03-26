@@ -188,11 +188,18 @@ class BaseCollection(BaseDisplayRepr):
         In this example we add a sensor object to a collection:
 
         >>> import magpylib as magpy
-        >>> col = magpy.Collection()
-        >>> sens = magpy.Sensor()
-        >>> col.add(sens)
-        >>> print(col.children)
-        [Sensor(id=2236606343584)]
+        >>> x1 = magpy.Sensor(style_label='x1')
+        >>> coll = magpy.Collection(x1, style_label='coll')
+        >>> coll.describe(labels=True)
+        coll
+        └── x1
+
+        >>> x2 = magpy.Sensor(style_label='x2')
+        >>> coll.add(x2)
+        >>> coll.describe(labels=True)
+        coll
+        ├── x1
+        └── x2
         """
         # pylint: disable=protected-access
         # check and format input
@@ -240,14 +247,14 @@ class BaseCollection(BaseDisplayRepr):
 
         Parameters
         ----------
-        child: child object
-            Remove the given child from the collection.
+        children: child objects
+            Remove the given children from the collection.
 
         errors: str, default=`'raise'`
-            Can be 'raise' or 'ignore'.
+            Can be `'raise'` or `'ignore'`.
 
         recursive: bool, default=`True`
-            Continue search also in child collections.
+            Remove children also from child collections.
 
         Returns
         -------
@@ -272,7 +279,7 @@ class BaseCollection(BaseDisplayRepr):
         └── x2
         """
         #pylint: disable=protected-access
-        
+
         # check and format input
         remove_objects = check_format_input_obj(
             children,
@@ -490,8 +497,17 @@ class Collection(BaseGeo, BaseCollection):
 
     Parameters
     ----------
-    children: sources, sensors, collections or arbitrary lists thereof
-        Ordered list of all children.
+    children: sources, sensors or collection objects
+        An ordered list of all children in collection.
+
+    sensors: sensor objects
+        An ordered list of all sensor objects in collection.
+
+    sources: source objects
+        An ordered list of all source objects in collection.
+
+    collections: collection objects
+        An ordered list of all collection objects in collection.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the

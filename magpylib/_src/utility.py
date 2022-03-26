@@ -132,10 +132,10 @@ def format_src_inputs(sources) -> list:
     # if bare source make into list
     if not isinstance(sources, (list, tuple)):
         sources = [sources]
-    
+
     if not sources:
         raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
-    
+
     for src in sources:
         obj_type = getattr(src, "_object_type", "")
         if obj_type == "Collection":
