@@ -182,17 +182,17 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   all obj paths that are shorter than max-length are filled up with the last
     #   postion/orientation of the object (static paths)
     path_lengths = [len(obj._position) for obj in obj_list]
-    m = max(path_lengths)
+    max_path_len = max(path_lengths)
 
     # objects to tile up and reset below
-    mask_reset = [m!=pl for pl in path_lengths]
+    mask_reset = [max_path_len!=pl for pl in path_lengths]
     reset_obj = [obj for obj,mask in zip(obj_list,mask_reset) if mask]
     reset_obj_m0 = [pl for pl,mask in zip(path_lengths,mask_reset) if mask]
 
-    if m>1:
+    if max_path_len>1:
         for obj,m0 in zip(reset_obj, reset_obj_m0):
             # length to be tiled
-            m_tile = m-m0
+            m_tile = max_path_len-m0
             # tile up position
             tile_pos = np.tile(obj._position[-1], (m_tile,1))
             obj._position = np.concatenate((obj._position, tile_pos))
@@ -209,7 +209,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
            for sens in sensors]
     poso = np.concatenate(poso,axis=1).reshape(-1,3)
     n_pp = len(poso)
-    n_pix = int(n_pp/m)
+    n_pix = int(n_pp/max_path_len)
 
     # group similar source types----------------------------------------------
     groups = {}
@@ -224,13 +224,13 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         groups[group_key]['order'].append(ind)
 
     # evaluate each group in one vectorized step -------------------------------
-    B = np.empty((l,m,n_pix,3))                         # allocate B
+    B = np.empty((l,max_path_len,n_pix,3))                         # allocate B
     for group in groups.values():
         lg = len(group['sources'])
         gr = group['sources']
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(field=kwargs['field'], **src_dict)       # compute field
-        B_group = B_group.reshape((lg,m,n_pix,3))       # reshape (2% slower for large arrays)
+        B_group = getBH_level1(field=kwargs['field'], **src_dict)  # compute field
+        B_group = B_group.reshape((lg,max_path_len,n_pix,3))  # reshape (2% slower for large arrays)
         for i in range(lg):                             # put into dedicated positions in B
             B[group['order'][i]] = B_group[i]
 
@@ -252,13 +252,15 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
                 # select part where rot is applied
                 Bpart = B[:,:,i*k_pixel:(i+1)*k_pixel]
                 # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
-                Bpart_flat = np.reshape(Bpart, (k_pixel*l0*m,3))
+                Bpart_flat = np.reshape(Bpart, (k_pixel*l0*max_path_len,3))
                 # apply sensor rotation
                 Bpart_flat_rot = sens._orientation[0].inv().apply(Bpart_flat)
                 # overwrite Bpart in B
-                B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,m,k_pixel,3))
+                B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(
+                    Bpart_flat_rot, (l0,max_path_len,k_pixel,3)
+                )
             else:                         # general case: different rotations along path
-                for j in range(m): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
+                for j in range(max_path_len): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
                     Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
                     Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
                     Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotat
@@ -266,7 +268,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # rearrange sensor-pixel shape
     sens_px_shape = (k,) + pix_shape
-    B = B.reshape((l0,m)+sens_px_shape)
+    B = B.reshape((l0,max_path_len)+sens_px_shape)
 
     # sumup over sources
     if kwargs['sumup']:
