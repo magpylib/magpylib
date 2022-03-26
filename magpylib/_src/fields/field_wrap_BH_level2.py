@@ -198,6 +198,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
             obj._position = np.concatenate((obj._position, tile_pos))
             # tile up orientation
             tile_orient = np.tile(obj._orientation.as_quat()[-1], (m_tile,1))
+            # TODO use scipy.spatial.transfor.Rotation.concatenate() requires scipy>=1.8
             tile_orient = np.concatenate((obj._orientation.as_quat(), tile_orient))
             obj._orientation = R.from_quat(tile_orient)
 
@@ -231,40 +232,37 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
         B_group = getBH_level1(field=kwargs['field'], **src_dict)  # compute field
         B_group = B_group.reshape((lg,max_path_len,n_pix,3))  # reshape (2% slower for large arrays)
-        for i in range(lg):                             # put into dedicated positions in B
-            B[group['order'][i]] = B_group[i]
+        for si in range(lg):                             # put into dedicated positions in B
+            B[group['order'][si]] = B_group[si]
 
     # reshape output ----------------------------------------------------------------
     # rearrange B when there is at least one Collection with more than one source
     if l > l0:
-        for i,src in enumerate(sources):
+        for si,src in enumerate(sources):
             if src._object_type == 'Collection':
                 col_len = len(src.sources)
-                B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
-                B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
+                B[si] = np.sum(B[si:si+col_len],axis=0)    # set B[i] to sum of slice
+                B = np.delete(B,np.s_[si+1:si+col_len],0) # delete remaining part of slice
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
     #   note: replace by math.prod with python 3.8 or later
-    k_pixel = int(np.product(pix_shape[:-1])) # total number of pixel positions
-    for i,sens in enumerate(sensors):         # cycle through all sensors
-        if not unrotated_sensors[i]:          # apply operations only to rotated sensors
-            if static_sensor_rot[i]:          # special case: same rotation along path
-                # select part where rot is applied
-                Bpart = B[:,:,i*k_pixel:(i+1)*k_pixel]
-                # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
-                Bpart_flat = np.reshape(Bpart, (k_pixel*l0*max_path_len,3))
-                # apply sensor rotation
-                Bpart_flat_rot = sens._orientation[0].inv().apply(Bpart_flat)
-                # overwrite Bpart in B
-                B[:,:,i*k_pixel:(i+1)*k_pixel] = np.reshape(
-                    Bpart_flat_rot, (l0,max_path_len,k_pixel,3)
-                )
-            else:                         # general case: different rotations along path
-                for j in range(max_path_len): # THIS LOOP IS EXTREMELY SLOW !!!! github issue #283
-                    Bpart = B[:,j,i*k_pixel:(i+1)*k_pixel]           # select part
-                    Bpart_flat = np.reshape(Bpart, (k_pixel*l0,3))   # flatten for rot package
-                    Bpart_flat_rot = sens._orientation[j].inv().apply(Bpart_flat)  # apply rotat
-                    B[:,j,i*k_pixel:(i+1)*k_pixel] = np.reshape(Bpart_flat_rot, (l0,k_pixel,3))
+    pix_tot = int(np.product(pix_shape[:-1])) # total number of pixel positions
+    for si,sens in enumerate(sensors):         # cycle through all sensors
+        if not unrotated_sensors[si]:          # apply operations only to rotated sensors
+            # select part where rot is applied
+            Bpart = B[:,:,si*pix_tot:(si+1)*pix_tot]
+            # change shape from (l0,m,k_pixel,3) to (P,3) for rot package
+            Bpart_flat = np.reshape(Bpart, (pix_tot*l0*max_path_len,3))
+            # apply sensor rotation
+            if static_sensor_rot[si]:          # special case: same rotation along path
+                sens_orient = sens._orientation[0]
+            else:
+                sens_orient = R.concatenate([sens._orientation]*l0)
+            Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
+            # overwrite Bpart in B
+            B[:,:,si*pix_tot:(si+1)*pix_tot] = np.reshape(
+                Bpart_flat_rot, (l0,max_path_len,pix_tot,3)
+            )
 
     # rearrange sensor-pixel shape
     sens_px_shape = (k,) + pix_shape
