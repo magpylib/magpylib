@@ -198,7 +198,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
             obj._position = np.concatenate((obj._position, tile_pos))
             # tile up orientation
             tile_orient = np.tile(obj._orientation.as_quat()[-1], (m_tile,1))
-            # TODO use scipy.spatial.transfor.Rotation.concatenate() requires scipy>=1.8
+            # FUTURE use Rotation.concatenate() requires scipy>=1.8 and python 3.8
             tile_orient = np.concatenate((obj._orientation.as_quat(), tile_orient))
             obj._orientation = R.from_quat(tile_orient)
 
@@ -257,7 +257,9 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
             if static_sensor_rot[si]:          # special case: same rotation along path
                 sens_orient = sens._orientation[0]
             else:
-                sens_orient = R.concatenate([sens._orientation]*l0)
+                # FUTURE use R.concatenate() requires scipy>=1.8 and python 3.8
+                # sens_orient = R.concatenate([sens._orientation]*l0)
+                sens_orient = R.from_quat(np.concatenate([sens._orientation.as_quat()]*l0))
             Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
             # overwrite Bpart in B
             B[:,:,si*pix_tot:(si+1)*pix_tot] = np.reshape(
