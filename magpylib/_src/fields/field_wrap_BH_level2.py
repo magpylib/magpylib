@@ -14,60 +14,14 @@ from magpylib._src.input_checks import (
 )
 
 
-def tile_mag(group: list, n_pp: int):
-    """ tile up magnetizations of shape (3,)
-    """
-    mags = np.array([src.magnetization for src in group])
-    magv = np.tile(mags, n_pp).reshape((-1, 3))
-    return magv
-
-
-def tile_dim_cuboid(group: list, n_pp: int):
-    """ tile up cuboid dimension
-    """
-    dims = np.array([src.dimension for src in group])
-    dimv = np.tile(dims, n_pp).reshape((-1, 3))
-    return dimv
-
-
-def tile_dim_cylinder(group: list, n_pp: int):
-    """ tile up cylinder dimensions.
-    """
-    dims = np.array([src.dimension for src in group])
-    dimv = np.tile(dims, n_pp).reshape((-1, 2))
-    return dimv
-
-
-def tile_dim_cylinder_segment(group: list, n_pp: int):
-    """ tile up cylinder segment dimensions.
-    """
-    dims = np.array([src.dimension for src in group])
-    dimv = np.tile(dims, n_pp).reshape((-1, 5))
-    return dimv
-
-
-def tile_dia(group: list, n_pp: int):
-    """ tile up diameter
-    """
-    dims = np.array([src.diameter for src in group])
-    dimv = np.tile(dims, n_pp).flatten()
-    return dimv
-
-
-def tile_moment(group: list, n_pp: int):
-    """ tile up moments of shape (3,)
-    """
-    moms = np.array([src.moment for src in group])
-    momv = np.tile(moms, n_pp).reshape((-1, 3))
-    return momv
-
-
-def tile_current(group: list, n_pp: int):
-    """ tile up current inputs
-    """
-    currs = np.array([src.current for src in group])
-    currv = np.tile(currs, n_pp).flatten()
-    return currv
+def tile_group_property(group: list, n_pp: int, prop_name: str):
+    """ tile up group property"""
+    prop0 = getattr(group[0], prop_name)
+    out = np.array([getattr(src, prop_name) for src in group])
+    out = np.tile(out, n_pp)
+    if np.isscalar(prop0):
+        return out.flatten()
+    return out.reshape((-1, prop0.shape[0]))
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
@@ -94,33 +48,23 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
     kwargs = {'source_type': src_type, 'position': posv, 'observer': posov, 'orientation': rotobj}
 
-    if src_type == 'Sphere':
-        magv = tile_mag(group, n_pp)
-        diav = tile_dia(group, n_pp)
-        kwargs.update({'magnetization':magv, 'diameter':diav})
-
-    elif src_type == 'Cuboid':
-        magv = tile_mag(group, n_pp)
-        dimv = tile_dim_cuboid(group, n_pp)
-        kwargs.update({'magnetization':magv,  'dimension':dimv})
-
-    elif src_type == 'Cylinder':
-        magv = tile_mag(group, n_pp)
-        dimv = tile_dim_cylinder(group, n_pp)
-        kwargs.update({'magnetization':magv,  'dimension':dimv})
-
-    elif src_type == 'CylinderSegment':
-        magv = tile_mag(group, n_pp)
-        dimv = tile_dim_cylinder_segment(group, n_pp)
-        kwargs.update({'magnetization':magv,  'dimension':dimv})
+    if src_type in ('Sphere', 'Cuboid', 'Cylinder', 'CylinderSegment'):
+        magv = tile_group_property(group, n_pp, 'magnetization')
+        kwargs.update(magnetization=magv)
+        if src_type=="Sphere":
+            diav = tile_group_property(group, n_pp, 'diameter')
+            kwargs.update(diameter=diav)
+        else:
+            dimv = tile_group_property(group, n_pp, 'dimension')
+            kwargs.update(dimension=dimv)
 
     elif src_type == 'Dipole':
-        momv = tile_moment(group, n_pp)
+        momv = tile_group_property(group, n_pp, 'moment')
         kwargs.update({'moment':momv})
 
     elif src_type == 'Loop':
-        currv = tile_current(group, n_pp)
-        diav = tile_dia(group, n_pp)
+        currv = tile_group_property(group, n_pp, 'current')
+        diav = tile_group_property(group, n_pp, 'diameter')
         kwargs.update({'current':currv, 'diameter':diav})
 
     elif src_type == 'Line':
@@ -189,7 +133,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     kwargs_check = kwargs.copy()
     for popit in ['field', 'sumup', 'squeeze', 'pixel_agg']:
-        kwargs_check.pop(popit)
+        kwargs_check.pop(popit, None)
     if kwargs_check:
         raise MagpylibBadUserInput(
             f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
