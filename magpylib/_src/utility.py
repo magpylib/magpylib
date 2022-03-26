@@ -128,7 +128,7 @@ def format_src_inputs(sources) -> list:
 
     # store all sources here
     src_list = []
-    
+
     # if bare source make into list
     if not isinstance(sources, (list, tuple)):
         sources = [sources]

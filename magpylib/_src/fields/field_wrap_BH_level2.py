@@ -12,7 +12,6 @@ from magpylib._src.input_checks import (
     check_excitations,
     check_dimensions,
     check_format_input_observers,
-    check_format_input_obj
 )
 
 
