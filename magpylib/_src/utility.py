@@ -334,9 +334,13 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
 def rec_obj_remover(parent, child):
     """ remove known child from parent collection"""
     # pylint: disable=protected-access
+    print('tick')
     for obj in parent:
         if obj == child:
             parent._children.remove(child)
             parent._update_src_and_sens()
-        elif getattr(obj, "_object_type", "") == "Collection":
-            rec_obj_remover(obj, child)
+            return True
+        if getattr(obj, "_object_type", "") == "Collection":
+            if rec_obj_remover(obj, child):
+                break
+    return None

@@ -231,7 +231,8 @@ class BaseCollection(BaseDisplayRepr):
 
     def _update_src_and_sens(self):
         # pylint: disable=protected-access
-        """updates source and sensor list when a child is added or removed"""
+        """ updates sources, sensors and collections attributes from children
+        """
         self._sources = [
             obj for obj in self._children if obj._object_type in LIBRARY_SOURCES
         ]

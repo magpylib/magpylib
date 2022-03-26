@@ -1,7 +1,6 @@
 """ input checks code"""
 
 import numbers
-from typing import Sequence
 import numpy as np
 from scipy.spatial.transform import Rotation
 from magpylib._src.exceptions import (
