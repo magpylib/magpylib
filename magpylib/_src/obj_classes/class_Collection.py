@@ -106,7 +106,7 @@ class BaseCollection(BaseDisplayRepr):
                 new_children.append(child)
         self._children = new_children
         src_list = format_obj_input(sources, allow="sources")
-        self.add(src_list)
+        self.add(*src_list)
 
     @property
     def sensors(self):
@@ -125,7 +125,7 @@ class BaseCollection(BaseDisplayRepr):
                 new_children.append(child)
         self._children = new_children
         sens_list = format_obj_input(sensors, allow="sensors")
-        self.add(sens_list)
+        self.add(*sens_list)
 
     @property
     def collections(self):
@@ -134,10 +134,17 @@ class BaseCollection(BaseDisplayRepr):
 
     @collections.setter
     def collections(self, collections):
-        """Set Collection sub-collections."""
+        """Set Collection collections."""
+        # pylint: disable=protected-access
+        new_children = []
+        for child in self._children:
+            if child in self._collections:
+                child._parent = None
+            else:
+                new_children.append(child)
+        self._children = new_children
         coll_list = format_obj_input(collections, allow="collections")
-        self._children = [o for o in self._children if o not in self._collections]
-        self.add(coll_list)
+        self.add(*coll_list)
 
     # dunders
     def __iter__(self):

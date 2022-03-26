@@ -1,5 +1,6 @@
 import numpy as np
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 def test_parent_setter():
     """ setting and removing a parent"""
@@ -30,6 +31,90 @@ def test_parent_setter():
     assert x1.parent.style.label == 'c2'
     assert child_labels(c1) == []
     assert child_labels(c2) == ['x1']
+
+
+def test_children_setter():
+    """ setting new children and removing old parents"""
+    x1 = magpy.Sensor()
+    x2 = magpy.Sensor()
+    x3 = magpy.Sensor()
+    x4 = magpy.Sensor()
+
+    c = magpy.Collection(x1, x2)
+    c.children = [x3, x4]
+
+    # remove old parents
+    assert x1.parent is None
+    assert x2.parent is None
+    # new children
+    assert c[0] == x3
+    assert c[1] == x4
+
+
+def test_sensors_setter():
+    """ setting new sensors and removing old parents"""
+    x1 = magpy.Sensor()
+    x2 = magpy.Sensor()
+    x3 = magpy.Sensor()
+    x4 = magpy.Sensor()
+    s1 = magpy.magnet.CylinderSegment()
+
+    c = magpy.Collection(x1, x2, s1)
+    c.sensors = [x3, x4]
+
+    # remove old parents
+    assert x1.parent is None
+    assert x2.parent is None
+    # keep non-sensors
+    assert s1.parent == c
+    # new sensors
+    assert c[0] == s1
+    assert c.sensors[0] == x3
+    assert c.sensors[1] == x4
+
+
+def test_sources_setter():
+    """ setting new sources and removing old parents"""
+    s1 = magpy.magnet.Cylinder()
+    s2 = magpy.magnet.Cylinder()
+    s3 = magpy.magnet.Cylinder()
+    s4 = magpy.magnet.Cylinder()
+    x1 = magpy.Sensor()
+
+    c = magpy.Collection(x1, s1, s2)
+    c.sources = [s3, s4]
+
+    # old parents
+    assert s1.parent is None
+    assert s2.parent is None
+    # keep non-sources
+    assert x1.parent == c
+    # new children
+    assert c[0] == x1
+    assert c.sources[0] == s3
+    assert c[2] == s4
+
+
+def test_collections_setter():
+    """ setting new sources and removing old parents"""
+    c1 = magpy.Collection()
+    c2 = magpy.Collection()
+    c3 = magpy.Collection()
+    c4 = magpy.Collection()
+    x1 = magpy.Sensor()
+
+    c = magpy.Collection(c1, x1, c2)
+    c.collections = [c3, c4]
+
+    # old parents
+    assert c1.parent is None
+    assert c2.parent is None
+    # keep non-collections
+    assert x1.parent == c
+    # new children
+    assert c[0] == x1
+    assert c.collections[0] == c3
+    assert c[2] == c4
 
 
 def test_collection_inputs():
@@ -187,6 +272,10 @@ def test_collection_remove():
     c3.remove(x1, errors='ignore', recursive=False)
     assert child_labels(c3) == ['q1', 'c1']
     assert child_labels(c1) == ['x1', 'x2']
+
+    # attempt remove of non-existing child
+    with np.testing.assert_raises(MagpylibBadUserInput):
+        c3.remove(x1, errors='raise', recursive=False)
 
 
 def test_collection_nested_getBH():

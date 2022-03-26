@@ -366,3 +366,17 @@ def test_copy():
 
     # check if style is passed correctly
     assert bg2c.style.color == "orange"
+
+
+def test_copy_parents():
+    """ make sure that parents are not copied"""
+    x1 = magpy.Sensor()
+    x2 = magpy.Sensor()
+    x3 = magpy.Sensor()
+
+    c = x1 + x2 + x3
+
+    y = x1.copy()
+
+    assert x1.parent.parent == c
+    assert y.parent is None
