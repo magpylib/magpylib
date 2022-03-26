@@ -322,7 +322,14 @@ class BaseGeo(BaseTransform):
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
 
-        obj_copy = deepcopy(self)
+        if not self.parent is None:
+            parent = self.parent
+            self.parent = None
+            obj_copy = deepcopy(self)
+            self.parent = parent
+        else:
+            obj_copy = deepcopy(self)
+
         if getattr(self, "_style", None) is not None:
             label = self.style.label
             if label is None:
