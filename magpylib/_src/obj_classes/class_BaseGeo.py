@@ -254,6 +254,7 @@ class BaseGeo(BaseTransform):
             )
         return val
 
+
     # dunders -------------------------------------------------------
     def __add__(self, obj):
         """ Add up sources to a Collection object.
@@ -266,16 +267,6 @@ class BaseGeo(BaseTransform):
         from magpylib import Collection
         return Collection(self, obj)
 
-    def __radd__(self, other):
-        """Add up sources to a Collection object. Allows to use `sum(objects)`.
-
-        Returns
-        -------
-        Collection: Collection
-        """
-        if other == 0:
-            return self
-        return self.__add__(other)
 
     # methods -------------------------------------------------------
     def reset_path(self):
