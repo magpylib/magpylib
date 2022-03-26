@@ -77,7 +77,7 @@ class BaseCollection(BaseDisplayRepr):
     # property getters and setters
     @property
     def children(self):
-        """Collection children attribute getter and setter."""
+        """An ordered list of all children in the collection."""
         return self._children
 
     @children.setter
@@ -91,7 +91,7 @@ class BaseCollection(BaseDisplayRepr):
 
     @property
     def sources(self):
-        """Collection sources attribute getter and setter."""
+        """An ordered list of all source objects in the collection."""
         return self._sources
 
     @sources.setter
@@ -110,7 +110,7 @@ class BaseCollection(BaseDisplayRepr):
 
     @property
     def sensors(self):
-        """Collection sensors attribute getter and setter."""
+        """An ordered list of all sensor objects in the collection."""
         return self._sensors
 
     @sensors.setter
@@ -129,7 +129,7 @@ class BaseCollection(BaseDisplayRepr):
 
     @property
     def collections(self):
-        """Collection sub-collections attribute getter and setter."""
+        """An ordered list of all collection objects in the collection."""
         return self._collections
 
     @collections.setter
@@ -325,7 +325,7 @@ class BaseCollection(BaseDisplayRepr):
         ----------
         arg: style dictionary or style underscore magic input
             Style arguments to be applied.
-        
+
         recursive: bool, default=`True`
             Apply styles also to children of child collections.
 

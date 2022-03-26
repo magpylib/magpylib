@@ -18,9 +18,8 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Parameters
     ----------
     moment: array_like, shape (3,), unit [mT*mm^3], default=`None`
-        Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates
-        (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
-        holds.
+        Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates.
+        For homogeneous magnets the relation moment=magnetization*volume holds.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -94,7 +93,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     # property getters and setters
     @property
     def moment(self):
-        """Object moment attributes getter and setter."""
+        """Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates."""
         return self._moment
 
     @moment.setter

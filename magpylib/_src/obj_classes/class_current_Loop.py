@@ -100,7 +100,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     # property getters and setters
     @property
     def diameter(self):
-        """Object diameter attribute getter and setter."""
+        """Diameter of the loop in units of [mm]."""
         return self._diameter
 
     @diameter.setter

@@ -136,7 +136,7 @@ class BaseGeo(BaseTransform):
     # properties ----------------------------------------------------
     @property
     def parent(self):
-        """Object parent attribute getter and setter."""
+        """The object is a child of it's parent collection."""
         return self._parent
 
     @parent.setter
@@ -155,7 +155,10 @@ class BaseGeo(BaseTransform):
 
     @property
     def position(self):
-        """Object position attribute getter and setter."""
+        """
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+        """
         return np.squeeze(self._position)
 
     @position.setter
@@ -197,7 +200,11 @@ class BaseGeo(BaseTransform):
 
     @property
     def orientation(self):
-        """Object orientation attribute getter and setter."""
+        """
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+        """
         # cannot squeeze (its a Rotation object)
         if len(self._orientation) == 1:  # single path orientation - reduce dimension
             return self._orientation[0]
@@ -233,7 +240,10 @@ class BaseGeo(BaseTransform):
 
     @property
     def style(self):
-        """instance of MagpyStyle for display styling options"""
+        """
+        Object style in the form of a BaseStyle object. Input must be
+        in the form of a style dictionary.
+        """
         if not hasattr(self, "_style") or self._style is None:
             self._style = self._validate_style(val=None)
         return self._style

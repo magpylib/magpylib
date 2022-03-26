@@ -101,7 +101,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     # property getters and setters
     @property
     def dimension(self):
-        """Object dimension attribute getter and setter."""
+        """Dimension (d,h) denote diameter and height of the cylinder in units of [mm]."""
         return self._dimension
 
     @dimension.setter

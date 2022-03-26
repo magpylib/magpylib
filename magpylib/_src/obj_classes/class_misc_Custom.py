@@ -20,12 +20,12 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Parameters
     ----------
     field_B_lambda: callable, default=`None`
-        Field function for the B-field. must accept position input with format (n,3) and
-        return the B-field with similar shape.
+        Field function for the B-field. Must accept position input with format (n,3) and
+        return the B-field with similar shape in units of [mT].
 
     field_H_lambda: callable, default=`None`
-        Field function for the H-field. must accept position input with format (n,3) and
-        return the H-field with similar shape.
+        Field function for the H-field. Must accept position input with format (n,3) and
+        return the H-field with similar shape in units of [kA/m].
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -105,9 +105,9 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_B_lambda(self):
-        """Field function for B-field, should accept array_like positions of shape (n,3)
-        in units of [mm] and return a B-field array of same shape in the global
-        coordinate system in units of [mT].
+        """
+        Field function for the B-field. Must accept position input with format (n,3) and
+        return the B-field with similar shape in units of [mT].
         """
         return self._field_B_lambda
 
@@ -117,9 +117,9 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @property
     def field_H_lambda(self):
-        """Field function for H-field, should accept array_like positions of shape (n,3)
-        in units of [mm] and return a H-field array of same shape in the global
-        coordinate system in units of [kA/m].
+        """
+        Field function for the H-field. Must accept position input with format (n,3) and
+        return the H-field with similar shape in units of [kA/m].
         """
         return self._field_H_lambda
 

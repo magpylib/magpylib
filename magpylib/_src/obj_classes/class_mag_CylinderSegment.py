@@ -106,7 +106,12 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     # property getters and setters
     @property
     def dimension(self):
-        """Object dimension attribute getter and setter."""
+        """
+        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
+        where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
+        the cylinder section angles in units of [deg] and h is the cylinder height
+        in units of [mm].
+        """
         return self._dimension
 
     @dimension.setter
@@ -116,12 +121,12 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     @property
     def _barycenter(self):
-        """Object barycenter. Always has dim (n,3) depending on object path."""
+        """Object barycenter."""
         return self._get_barycenter(self._position, self._orientation, self.dimension)
 
     @property
     def barycenter(self):
-        """Object barycenter. Output shape is matches position and orientation."""
+        """Object barycenter."""
         return np.squeeze(self._barycenter)
 
     @staticmethod

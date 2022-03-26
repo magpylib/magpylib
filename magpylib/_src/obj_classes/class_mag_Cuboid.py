@@ -101,7 +101,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     # property getters and setters
     @property
     def dimension(self):
-        """Object dimension attribute getter and setter."""
+        """Length of the cuboid sides [a,b,c] in units of [mm]."""
         return self._dimension
 
     @dimension.setter

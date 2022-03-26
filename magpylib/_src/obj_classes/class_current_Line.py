@@ -105,7 +105,11 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     # property getters and setters
     @property
     def vertices(self):
-        """Object vertices attribute getter and setter."""
+        """
+        The current flows along the vertices which are given in units of [mm] in the
+        local object coordinates (move/rotate with object). At least two vertices
+        must be given.
+        """
         return self._vertices
 
     @vertices.setter
