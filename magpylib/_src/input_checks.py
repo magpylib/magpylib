@@ -379,7 +379,7 @@ def check_format_input_backend(inp):
         f"Instead received {inp}.")
 
 
-def check_format_input_observers(inp):
+def check_format_input_observers(inp, pixel_agg=None):
     """
     checks observer input and returns a list of sensor objects
     """
@@ -404,7 +404,8 @@ def check_format_input_observers(inp):
 
     try: # try if input is just a pos_vec
         inp = np.array(inp, dtype=float)
-        return [_src.obj_classes.Sensor(pixel=inp)]
+        pix_shapes = [(1, 3) if inp.shape == (3,) else inp.shape]
+        return [_src.obj_classes.Sensor(pixel=inp)], pix_shapes
     except (TypeError, ValueError): # if not, it must be [pos_vec, sens, coll]
         sensors=[]
         for obj in inp:
@@ -423,13 +424,14 @@ def check_format_input_observers(inp):
                     raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
 
         # all pixel shapes must be the same
-        pix_shapes = [s._pixel.shape for s in sensors]
-        if not all_same(pix_shapes):
+        pix_shapes = [(1, 3) if s.pixel.shape == (3,) else s.pixel.shape for s in sensors]
+        if pixel_agg is None and not all_same(pix_shapes):
             raise MagpylibBadUserInput(
-                'Different observer input detected.'
-                ' All sensor pixel and position vector inputs must'
-                ' be of similar shape !')
-        return sensors
+                "Different observer input detected."
+                " All sensor pixel and position vector inputs must"
+                " be of similar shape, unless a pixel aggregator is provided"
+                " (e.g. `pixel_agg='mean'`)!")
+        return sensors, pix_shapes
 
 
 def check_format_input_obj(
