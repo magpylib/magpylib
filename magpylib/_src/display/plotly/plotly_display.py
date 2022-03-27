@@ -696,6 +696,7 @@ def draw_frame(obj_list_semi_flat, color_sequence, zoom, autosize=None, **kwargs
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    # pylint: disable=protected-access
     return_autosize = False
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole

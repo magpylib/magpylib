@@ -35,6 +35,9 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
+    parent: `Collection` object or `None`
+        The object is a child of it's parent collection.
+
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
@@ -102,7 +105,11 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     # property getters and setters
     @property
     def vertices(self):
-        """Object vertices attribute getter and setter."""
+        """
+        The current flows along the vertices which are given in units of [mm] in the
+        local object coordinates (move/rotate with object). At least two vertices
+        must be given.
+        """
         return self._vertices
 
     @vertices.setter

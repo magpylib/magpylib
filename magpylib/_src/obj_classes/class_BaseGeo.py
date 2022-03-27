@@ -14,7 +14,6 @@ from magpylib._src.input_checks import (
     check_format_input_vector,
 )
 from magpylib._src.exceptions import MagpylibBadUserInput
-
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -137,26 +136,29 @@ class BaseGeo(BaseTransform):
     # properties ----------------------------------------------------
     @property
     def parent(self):
-        """Object parent attribute getter and setter."""
+        """The object is a child of it's parent collection."""
         return self._parent
 
     @parent.setter
     def parent(self, inp):
-        if inp is None:
+        if getattr(inp, "_object_type", "") == "Collection":
+            inp.add(self, override_parent=True)
+        elif inp is None:
             if self._parent is not None:
                 self._parent.remove(self)
-                self._parent = None
-        elif getattr(inp, "_object_type", "") == "Collection":
-            inp.add(inp)
+            self._parent = None
         else:
             raise MagpylibBadUserInput(
-                f"The `parent` property of {type(self).__name__} must be a Collection."
-                f"Instead received {inp!r} of type {type(inp).__name__}"
+                "Input `parent` must be `None` or a `Collection` object."
+                f"Instead received {type(inp)}."
             )
 
     @property
     def position(self):
-        """Object position attribute getter and setter."""
+        """
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+        """
         return np.squeeze(self._position)
 
     @position.setter
@@ -198,7 +200,11 @@ class BaseGeo(BaseTransform):
 
     @property
     def orientation(self):
-        """Object orientation attribute getter and setter."""
+        """
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+        """
         # cannot squeeze (its a Rotation object)
         if len(self._orientation) == 1:  # single path orientation - reduce dimension
             return self._orientation[0]
@@ -234,7 +240,10 @@ class BaseGeo(BaseTransform):
 
     @property
     def style(self):
-        """instance of MagpyStyle for display styling options"""
+        """
+        Object style in the form of a BaseStyle object. Input must be
+        in the form of a style dictionary.
+        """
         if not hasattr(self, "_style") or self._style is None:
             self._style = self._validate_style(val=None)
         return self._style
@@ -255,42 +264,19 @@ class BaseGeo(BaseTransform):
             )
         return val
 
+
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """Add up sources to a Collection object.
+        """ Add up sources to a Collection object.
 
         Returns
         -------
         Collection: Collection
         """
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.obj_classes.class_Collection import Collection
+        from magpylib import Collection
+        return Collection(self, obj)
 
-        override_parent=False
-        obj1, obj2 = self, obj
-        iscol1 = getattr(self, "_object_type", "") == "Collection"
-        iscol2 = getattr(obj, "_object_type", "") == "Collection"
-        if not iscol1:
-            obj1 = [self]
-        if not iscol2:
-            obj2 = [obj]
-            if getattr(obj, "_parent", None) is None:
-                override_parent=True
-        elif iscol1 and iscol2:
-            obj1, obj2 = [self], [obj]
-        coll = Collection(*obj1, *obj2, override_parent=override_parent)
-        return coll
-
-    def __radd__(self, other):
-        """Add up sources to a Collection object. Allows to use `sum(objects)`.
-
-        Returns
-        -------
-        Collection: Collection
-        """
-        if other == 0:
-            return self
-        return self.__add__(other)
 
     # methods -------------------------------------------------------
     def reset_path(self):
@@ -346,7 +332,14 @@ class BaseGeo(BaseTransform):
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
 
-        obj_copy = deepcopy(self)
+        if not self.parent is None:
+            parent = self.parent
+            self.parent = None
+            obj_copy = deepcopy(self)
+            self.parent = parent
+        else:
+            obj_copy = deepcopy(self)
+
         if getattr(self, "_style", None) is not None:
             label = self.style.label
             if label is None:

@@ -81,7 +81,7 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     - sources (sequence): input sources
 
     ### Returns:
-    - list: flattened, ordered list f sources
+    - list: flattened, ordered list of sources
 
     ### Info:
     - exits if invalid sources are given
@@ -126,13 +126,16 @@ def format_src_inputs(sources) -> list:
     """
     # pylint: disable=protected-access
 
+    # store all sources here
+    src_list = []
+
     # if bare source make into list
     if not isinstance(sources, (list, tuple)):
         sources = [sources]
-    # flatten collections
-    src_list = []
+
     if not sources:
         raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
+
     for src in sources:
         obj_type = getattr(src, "_object_type", "")
         if obj_type == "Collection":
@@ -326,3 +329,17 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
         By = Br * np.sin(phi)
 
     return Bx, By
+
+
+def rec_obj_remover(parent, child):
+    """ remove known child from parent collection"""
+    # pylint: disable=protected-access
+    for obj in parent:
+        if obj == child:
+            parent._children.remove(child)
+            parent._update_src_and_sens()
+            return True
+        if getattr(obj, "_object_type", "") == "Collection":
+            if rec_obj_remover(obj, child):
+                break
+    return None

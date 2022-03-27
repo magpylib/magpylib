@@ -346,13 +346,6 @@ def test_kwargs():
         bg = BaseGeo((0, 0, 0), None, styl_label="label_02")
 
 
-def test_bad_sum():
-    """test when adding bad objects"""
-    cuboid = magpy.magnet.Cuboid((1, 1, 1), (1, 1, 1))
-    with pytest.raises(MagpylibBadUserInput):
-        1 + cuboid
-
-
 def test_copy():
     """test copying object"""
     bg1 = BaseGeo((0, 0, 0), None, style_label='label1') #has style
@@ -373,3 +366,17 @@ def test_copy():
 
     # check if style is passed correctly
     assert bg2c.style.color == "orange"
+
+
+def test_copy_parents():
+    """ make sure that parents are not copied"""
+    x1 = magpy.Sensor()
+    x2 = magpy.Sensor()
+    x3 = magpy.Sensor()
+
+    c = x1 + x2 + x3
+
+    y = x1.copy()
+
+    assert x1.parent.parent == c
+    assert y.parent is None

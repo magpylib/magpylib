@@ -49,7 +49,7 @@ def test_Collection_basics():
     )
     mags, dims2, dims3, posos, angs, axs, anchs, movs, rvs, _ = data
 
-    B1, B2, B3 = [], [], []
+    B1, B2 = [], []
     for mag, dim2, dim3, ang, ax, anch, mov, poso, rv in zip(
         mags, dims2, dims3, angs, axs, anchs, movs, posos, rvs
     ):
@@ -69,14 +69,9 @@ def test_Collection_basics():
         pm5 = magpy.magnet.Cylinder(mag[4], dim2[1])
         pm6 = magpy.magnet.Cylinder(mag[5], dim2[2])
 
-        col1 = magpy.Collection(pm1, [pm2, pm3])
-        col1 += pm4
-        col2 = magpy.Collection(pm5, pm6)
-        col1 += col2
-        col1 - pm5 - pm4
-        col1.remove(pm1)
-        col3 = col1 + pm5 + pm4 + pm1
-        col1.add(pm5, pm4, pm1)
+        col1 = magpy.Collection(pm1, pm2, pm3)
+        col1.add(pm4, pm5, pm6)
+
 
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
@@ -87,14 +82,11 @@ def test_Collection_basics():
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]
-        B3 += [col3.getB(poso)]
 
     B1 = np.array(B1)
     B2 = np.array(B2)
-    B3 = np.array(B3)
 
-    assert np.allclose(B1, B2), "Collection testfail1"
-    assert np.allclose(B1, B3), "Collection testfail2"
+    np.testing.assert_allclose(B1, B2)
 
 
 @pytest.mark.parametrize(
@@ -264,35 +256,27 @@ def test_Collection_with_Dipole():
     assert np.allclose(B, Btest)
 
 
-def test_repr_collection():
-    """test __repr__"""
-    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
-    sens = magpy.Sensor()
-    col = magpy.Collection()
-    col.sources = pm1, pm2
-    assert "Source" in col.__repr__(), "Collection repr failed"
-    col.sensors = [sens]
-    assert "Mixed" in col.__repr__(), "Collection repr failed"
-    col.sources = []
-    assert "Sensor" in col.__repr__(), "Collection repr failed"
-
-
 def test_adding_sources():
     """test if all sources can be added"""
-    src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
-    src3 = magpy.magnet.Sphere((1, 2, 3), 1)
-    src4 = magpy.current.Loop(1, 1)
-    src5 = magpy.current.Line(1, [(1, 2, 3), (2, 3, 4)])
-    src6 = magpy.misc.Dipole((1, 2, 3))
-    col = src1 + src2 + src3 + src4 + src5 + src6
+    s1 = magpy.magnet.Cuboid()
+    s2 = magpy.magnet.Cylinder()
+    s3 = magpy.magnet.CylinderSegment()
+    s4 = magpy.magnet.Sphere()
+    s5 = magpy.current.Loop()
+    s6 = magpy.current.Line()
+    s7 = magpy.misc.Dipole()
+    x1 = magpy.Sensor()
+    c1 = magpy.Collection()
+    c2 = magpy.Collection()
+
+    for obj in [s1, s2, s3, s4, s5, s6, s7, x1, c1]:
+        c2.add(obj)
 
     strs = ""
-    for src in col:
+    for src in c2:
         strs += str(src)[:3]
 
-    assert strs == "CubCylSphLooLinDip"
+    assert strs == "CubCylCylSphLooLinDipSenCol"
 
 
 def test_set_children_styles():
@@ -311,13 +295,19 @@ def test_set_children_styles():
 
 def test_reprs():
     """test repr strings"""
-    s1 = magpy.magnet.Sphere((1,2,3), 5)
-    x1 = magpy.Sensor()
+
     c = magpy.Collection()
     assert repr(c)[:10]=='Collection'
+
+    s1 = magpy.magnet.Sphere((1,2,3), 5)
     c = magpy.Collection(s1)
-    assert repr(c)[:10]=='SourceColl'
+    assert repr(c)[:10]=='Collection'
+
+    x1 = magpy.Sensor()
     c = magpy.Collection(x1)
-    assert repr(c)[:10]=='SensorColl'
+    assert repr(c)[:10]=='Collection'
+
+    x1 = magpy.Sensor()
+    s1 = magpy.magnet.Sphere((1,2,3), 5)
     c = magpy.Collection(s1,x1)
-    assert repr(c)[:10]=='MixedColle'
+    assert repr(c)[:10]=='Collection'
