@@ -16,51 +16,9 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.input_checks import check_format_input_obj
 
-def repr_obj(obj, labels=False):
-    """Returns obj repr based on label"""
-    if labels and obj.style.label:
-        return f"{obj.style.label}"
-    return f"{obj!r}"
-
-
-def collection_tree_generator(
-    dir_child,
-    prefix="",
-    space="    ",
-    branch="│   ",
-    tee="├── ",
-    last="└── ",
-    labels=False,
-    max_elems=20,
-):
-    """A recursive generator, given a collection child object
-    will yield a visual tree structure line by line
-    with each line prefixed by the same characters
-    """
-    # pylint: disable=protected-access
-    contents = getattr(dir_child, "children", [])
-    if len(contents) > max_elems:
-        counts = Counter([c._object_type for c in contents])
-        contents = [f"{v}x {k}s" for k, v in counts.items()]
-    # contents each get pointers that are ├── with a final └── :
-    pointers = [tee] * (len(contents) - 1) + [last]
-    for pointer, child in zip(pointers, contents):
-        child_repr = child if isinstance(child, str) else repr_obj(child, labels)
-        yield prefix + pointer + child_repr
-        if getattr(child, "children", False):  # extend the prefix and recurse:
-            extension = branch if pointer == tee else space
-            # i.e. space because last, └── , above so no more |
-            yield from collection_tree_generator(
-                child,
-                prefix=prefix + extension,
-                labels=labels,
-                max_elems=max_elems,
-            )
-
 
 class BaseCollection(BaseDisplayRepr):
-    """ Collection base class without BaseGeo properties
-    """
+    """Collection base class without BaseGeo properties"""
 
     def __init__(self, *children, override_parent=False):
 
@@ -156,26 +114,9 @@ class BaseCollection(BaseDisplayRepr):
     def __len__(self):
         return len(self._children)
 
-    def describe(self, labels=False, max_elems=10):
-        """ Returns a tree view of the nested collection elements.
-
-        Parameters
-        ----------
-        labels: bool, default=False
-            If True, `object.style.label` is used if available, instead of `repr(object)`
-        max_elems:
-            If number of children at any level is higher than `max_elems`, elements are replaced by
-            counters by object type.
-        """
-        print(repr_obj(self, labels))
-        for line in collection_tree_generator(
-            self, labels=labels, max_elems=max_elems
-        ):
-            print(line)
-
     # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
-        """ Add sources, sensors or collections.
+        """Add sources, sensors or collections.
 
         Parameters
         ----------
@@ -238,8 +179,7 @@ class BaseCollection(BaseDisplayRepr):
 
     def _update_src_and_sens(self):
         # pylint: disable=protected-access
-        """ updates sources, sensors and collections attributes from children
-        """
+        """updates sources, sensors and collections attributes from children"""
         self._sources = [
             obj for obj in self._children if obj._object_type in LIBRARY_SOURCES
         ]
@@ -250,8 +190,8 @@ class BaseCollection(BaseDisplayRepr):
             obj for obj in self._children if obj._object_type == "Collection"
         ]
 
-    def remove(self, *children, recursive=True, errors='raise'):
-        """ Remove children from the collection tree.
+    def remove(self, *children, recursive=True, errors="raise"):
+        """Remove children from the collection tree.
 
         Parameters
         ----------
@@ -287,7 +227,7 @@ class BaseCollection(BaseDisplayRepr):
         col
         └── x2
         """
-        #pylint: disable=protected-access
+        # pylint: disable=protected-access
 
         # check and format input
         remove_objects = check_format_input_obj(
@@ -298,7 +238,7 @@ class BaseCollection(BaseDisplayRepr):
         )
         self_objects = check_format_input_obj(
             self,
-            allow='sensors+sources+collections',
+            allow="sensors+sources+collections",
             recursive=recursive,
         )
         for child in remove_objects:
@@ -306,11 +246,11 @@ class BaseCollection(BaseDisplayRepr):
                 rec_obj_remover(self, child)
                 child._parent = None
             else:
-                if errors == 'raise':
+                if errors == "raise":
                     raise MagpylibBadUserInput(
                         f"Cannot find and remove {child} from {self}."
                     )
-                if errors != 'ignore':
+                if errors != "ignore":
                     raise MagpylibBadUserInput(
                         "Input `errors` must be one of ('raise', 'ignore').\n"
                         f"Instead received {errors}."
@@ -318,7 +258,7 @@ class BaseCollection(BaseDisplayRepr):
         return self
 
     def set_children_styles(self, arg=None, recursive=True, _validate=True, **kwargs):
-        """ Set display style of all children in the collection. Only matching properties
+        """Set display style of all children in the collection. Only matching properties
         will be applied.
 
         Parameters
@@ -498,7 +438,7 @@ class BaseCollection(BaseDisplayRepr):
 
 
 class Collection(BaseGeo, BaseCollection):
-    """ Group multiple children (sources, sensors and collections) in a collection for
+    """Group multiple children (sources, sensors and collections) in a collection for
     common manipulation.
 
     Collections span a local reference frame. All objects in a collection are held to
@@ -603,6 +543,10 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs,
+            self,
+            position=position,
+            orientation=orientation,
+            style=style,
+            **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
