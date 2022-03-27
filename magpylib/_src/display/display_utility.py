@@ -488,7 +488,6 @@ def get_flatten_objects_properties(
         flat_objs[subobj] = props
         if isCollection:
             if subobj.style.color is not None:
-                print('asd')
                 flat_objs[subobj]["color"] = subobj.style.color
             flat_objs.update(
                 get_flatten_objects_properties(
