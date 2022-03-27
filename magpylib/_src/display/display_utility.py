@@ -1,9 +1,11 @@
 """ Display function codes"""
 
+from itertools import cycle
 from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 from magpylib._src.style import Markers
+from magpylib._src.defaults.defaults_classes import default_settings as Config
 
 
 class MagpyMarkers:
@@ -456,3 +458,43 @@ def system_size(points):
     else:
         limx0, limx1, limy0, limy1, limz0, limz1 = -1, 1, -1, 1, -1, 1
     return limx0, limx1, limy0, limy1, limz0, limz1
+
+
+def get_flatten_objects_properties(
+    *obj_list_semi_flat, color_sequence=None, color_cycle=None, **parent_props,
+):
+    """returns a flat dict -> (obj: display_props, ...) from nested collections"""
+    if color_sequence is None:
+        color_sequence = Config.display.colorsequence
+    if color_cycle is None:
+        color_cycle = cycle(color_sequence)
+    flat_objs = {}
+    for subobj in obj_list_semi_flat:
+        isCollection = getattr(subobj, "children", None) is not None
+        props = {**parent_props}
+        parent_color = parent_props.get("color", '!!!missing!!!')
+        if parent_color == "!!!missing!!!":
+            props["color"] = next(color_cycle)
+        if parent_props.get("legendgroup", None) is None:
+            props["legendgroup"] = f"{subobj}"
+        if parent_props.get("showlegend", None) is None:
+            props["showlegend"] = True
+        if parent_props.get("legendtext", None) is None:
+            legendtext = None
+            if isCollection:
+                legendtext = getattr(getattr(subobj, "style", None), "label", None)
+                legendtext = f"{subobj!r}" if legendtext is None else legendtext
+            props["legendtext"] = legendtext
+        flat_objs[subobj] = props
+        if isCollection:
+            if subobj.style.color is not None:
+                flat_objs[subobj]["color"] = subobj.style.color
+            flat_objs.update(
+                get_flatten_objects_properties(
+                    *subobj.children,
+                    color_sequence=color_sequence,
+                    color_cycle=color_cycle,
+                    **flat_objs[subobj],
+                )
+            )
+    return flat_objs

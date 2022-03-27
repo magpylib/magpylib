@@ -10,7 +10,7 @@ from magpylib._src.input_checks import (
     check_input_zoom,
     check_input_animation,
     check_format_input_vector,
-    )
+)
 
 def show(
     *objects,
@@ -114,9 +114,10 @@ def show(
         markers,
         dims=(2,),
         shape_m1=3,
-        sig_name='markers',
-        sig_type='array_like of shape (n,3)',
-        allow_None=True)
+        sig_name="markers",
+        sig_type="array_like of shape (n,3)",
+        allow_None=True,
+    )
 
     check_input_zoom(zoom)
     check_input_animation(animation)
@@ -124,14 +125,15 @@ def show(
         markers,
         dims=(2,),
         shape_m1=3,
-        sig_name='markers',
-        sig_type='array_like of shape (n,3)',
-        allow_None=True)
+        sig_name="markers",
+        sig_type="array_like of shape (n,3)",
+        allow_None=True,
+    )
 
     if backend == "matplotlib":
         if animation is not False:
             msg = "The matplotlib backend does not support animation at the moment.\n"
-            msg+= "Use `backend=plotly` instead."
+            msg += "Use `backend=plotly` instead."
             warnings.warn(msg)
             # animation = False
         display_matplotlib(

@@ -13,10 +13,10 @@ def test_getB_level2_input_simple():
     pm2 = magpy.magnet.Cuboid(mag,dim_cuboid)
     pm3 = magpy.magnet.Cylinder(mag,dim_cyl)
     pm4 = magpy.magnet.Cylinder(mag,dim_cyl)
-    col1 = magpy.Collection([pm1])
-    col2 = magpy.Collection([pm1,pm2])
-    col3 = magpy.Collection([pm1,pm2,pm3])
-    col4 = sum([pm1,pm2,pm3,pm4])
+    col1 = magpy.Collection(pm1.copy())
+    col2 = magpy.Collection(pm1.copy(),pm2.copy())
+    col3 = magpy.Collection(pm1.copy(),pm2.copy(),pm3.copy())
+    col4 = magpy.Collection(pm1.copy(),pm2.copy(),pm3.copy(),pm4.copy())
     pos_obs = (1,2,3)
     sens1 = magpy.Sensor(position=pos_obs)
     sens2 = magpy.Sensor(pixel=pos_obs)
@@ -61,20 +61,19 @@ def test_getB_level2_input_shape22():
     mag = (1,2,3)
     dim_cuboid = (1,2,3)
     dim_cyl = (1,2)
-    pm1 = magpy.magnet.Cuboid(mag,dim_cuboid)
-    pm2 = magpy.magnet.Cuboid(mag,dim_cuboid)
-    pm3 = magpy.magnet.Cylinder(mag,dim_cyl)
-    pm4 = magpy.magnet.Cylinder(mag,dim_cyl)
-    col1 = magpy.Collection([pm1])
-    col2 = magpy.Collection([pm1,pm2])
-    col3 = magpy.Collection([pm1,pm2,pm3])
-    col4 = magpy.Collection([pm1,pm2,pm3,pm4])
-    pos_obs = [[(1,2,3),(1,2,3)],[(1,2,3),(1,2,3)]]
+    pm1 = lambda: magpy.magnet.Cuboid(mag, dim_cuboid)
+    pm2 = lambda: magpy.magnet.Cuboid(mag, dim_cuboid)
+    pm3 = lambda: magpy.magnet.Cylinder(mag, dim_cyl)
+    pm4 = lambda: magpy.magnet.Cylinder(mag, dim_cyl)
+    col1 = magpy.Collection(pm1())
+    col2 = magpy.Collection(pm1(), pm2())
+    col3 = magpy.Collection(pm1(), pm2(), pm3())
+    col4 = magpy.Collection(pm1(), pm2(), pm3(), pm4())
+    pos_obs = [[(1,2,3), (1,2,3)], [(1,2,3), (1,2,3)]]
     sens1 = magpy.Sensor(pixel=pos_obs)
 
-    fb22 = magpy.getB(pm1,pos_obs)
-    fc22 = magpy.getB(pm3,pos_obs)
-
+    fb22 = magpy.getB(pm1(), pos_obs)
+    fc22 = magpy.getB(pm3(), pos_obs)
 
     for poso,fb,fc in zip([pos_obs,sens1,[sens1,sens1,sens1]],
         [fb22,fb22,[fb22,fb22,fb22]],
@@ -83,16 +82,16 @@ def test_getB_level2_input_shape22():
         fb = np.array(fb)
         fc = np.array(fc)
         src_obs_res = [
-            [pm1, poso, fb],
-            [pm3, poso, fc],
-            [[pm1,pm2], poso, [fb,fb]],
-            [[pm1,pm2,pm3], poso, [fb,fb,fc]],
+            [pm1(), poso, fb],
+            [pm3(), poso, fc],
+            [[pm1(),pm2()], poso, [fb,fb]],
+            [[pm1(),pm2(),pm3()], poso, [fb,fb,fc]],
             [col1, poso, fb],
             [col2, poso, 2*fb],
             [col3, poso, 2*fb+fc],
             [col4, poso, 2*fb+2*fc],
-            [[pm1,col1], poso, [fb, fb]],
-            [[pm1,col1,col2,pm2,col4], poso , [fb,fb,2*fb,fb,2*fb+2*fc]],
+            [[pm1(),col1], poso, [fb, fb]],
+            [[pm1(),col1,col2,pm2(),col4], poso , [fb,fb,2*fb,fb,2*fb+2*fc]],
             ]
 
         for sor in src_obs_res:

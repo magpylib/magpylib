@@ -107,9 +107,10 @@ def test_col_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    col = magpy.Collection(pm1, pm2)
-    x = col.show(canvas=fig)
+    pm2 = pm1.copy(position=(2,0,0))
+    pm3 = pm1.copy(position=(4,0,0))
+    nested_col = (pm1 + pm2 + pm3).set_children_styles(color='magenta')
+    x = nested_col.show(canvas=fig)
     assert x is None, "collection display test fail"
 
 

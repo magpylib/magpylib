@@ -66,7 +66,7 @@ def path_padding_param(scalar_input: bool, lenop: int, lenip: int, start: int):
     pad_behind = 0
 
     # start='auto': apply to all if scalar, append if vector
-    if start == 'auto':
+    if start == "auto":
         if scalar_input:
             start = 0
         else:
@@ -120,8 +120,8 @@ def path_padding(inpath, start, target_object):
     # pad old path depending on input
     padding, start = path_padding_param(scalar_input, len(ppath), lenip, start)
     if padding:
-        ppath = np.pad(ppath, (padding, (0, 0)), 'edge')
-        opath = np.pad(opath, (padding, (0, 0)), 'edge')
+        ppath = np.pad(ppath, (padding, (0, 0)), "edge")
+        opath = np.pad(opath, (padding, (0, 0)), "edge")
 
     # set end-index
     end = len(ppath) if scalar_input else start + lenip
@@ -129,7 +129,7 @@ def path_padding(inpath, start, target_object):
     return ppath, opath, start, end, bool(padding)
 
 
-def apply_move(target_object, displacement, start='auto'):
+def apply_move(target_object, displacement, start="auto"):
     """Implementation of the move() functionality.
 
     Parameters
@@ -154,11 +154,12 @@ def apply_move(target_object, displacement, start='auto'):
 
     # check and format inputs
     inpath = check_format_input_vector(
-            displacement,
-            dims=(1,2),
-            shape_m1=3,
-            sig_name='displacement',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)')
+        displacement,
+        dims=(1, 2),
+        shape_m1=3,
+        sig_name="displacement",
+        sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+    )
     check_start_type(start)
 
     # pad target_object path and compute start and end-index for rotation application
@@ -173,7 +174,9 @@ def apply_move(target_object, displacement, start='auto'):
     return target_object
 
 
-def apply_rotation(target_object, rotation: R, anchor=None, start='auto', parent_path=None):
+def apply_rotation(
+    target_object, rotation: R, anchor=None, start="auto", parent_path=None
+):
     """Implementation of the rotate() functionality.
 
     Parameters
@@ -248,7 +251,7 @@ def apply_rotation(target_object, rotation: R, anchor=None, start='auto', parent
 class BaseTransform:
     """Inherit this class to provide rotation() and move() methods."""
 
-    def move(self, displacement, start='auto'):
+    def move(self, displacement, start="auto"):
         """Move object by the displacement input.
 
         Terminology for move/rotate methods:
@@ -315,15 +318,40 @@ class BaseTransform:
         # Idea: An operation applied to a Collection is individually
         #    applied to its BaseGeo and to each child.
 
-        for child in getattr(self, 'children', []):
-            apply_move(child, displacement, start=start)
+        for child in getattr(self, "children", []):
+            child.move(displacement, start=start)
 
         apply_move(self, displacement, start=start)
 
         return self
 
+    def _rotate(self, rotation: R, anchor=None, start="auto", parent_path=None):
+        """Rotate object about a given anchor.
 
-    def rotate(self, rotation: R, anchor=None, start='auto'):
+        See `rotate` docstring for other parameters.
+
+        Parameters
+        ----------
+        parent_path: if there is no parent else parent._position
+            needs to be transmitted from the top level for nested collections, hence using a
+            private `_rotate` method to do so.
+
+        """
+        # Idea: An operation applied to a Collection is individually
+        #    applied to its BaseGeo and to each child.
+        #  -> this automatically generates the rotate-Compound behavior
+
+        # pylint: disable=no-member
+        for child in getattr(self, "children", []):
+            ppth = self._position if parent_path is None else parent_path
+            child._rotate(rotation, anchor=anchor, start=start, parent_path=ppth)
+
+        apply_rotation(
+            self, rotation, anchor=anchor, start=start, parent_path=parent_path
+        )
+        return self
+
+    def rotate(self, rotation: R, anchor=None, start="auto"):
         """Rotate object about a given anchor.
 
         Terminology for move/rotate methods:
@@ -399,23 +427,9 @@ class BaseTransform:
          [  0.   0. 135.]]
         """
 
-        # pylint: disable=no-member
+        return self._rotate(rotation=rotation, anchor=anchor, start=start)
 
-        # Idea: An operation applied to a Collection is individually
-        #    applied to its BaseGeo and to each child.
-        #  -> this automatically generates the rotate-Compound behavior
-
-        for child in getattr(self, 'children', []):
-            apply_rotation(
-                child, rotation, anchor=anchor, start=start, parent_path=self._position
-            )
-
-        apply_rotation(self, rotation, anchor=anchor, start=start)
-
-        return self
-
-
-    def rotate_from_angax(self, angle, axis, anchor=None, start='auto', degrees=True):
+    def rotate_from_angax(self, angle, axis, anchor=None, start="auto", degrees=True):
         """Rotates object using angle-axis input.
 
         Terminology for move/rotate methods:
@@ -514,8 +528,7 @@ class BaseTransform:
         rot = R.from_rotvec(axis)
         return self.rotate(rot, anchor, start)
 
-
-    def rotate_from_rotvec(self, rotvec, anchor=None, start='auto', degrees=True):
+    def rotate_from_rotvec(self, rotvec, anchor=None, start="auto", degrees=True):
         """Rotates object using rotation vector input.
 
         Terminology for move/rotate methods:
@@ -593,8 +606,7 @@ class BaseTransform:
         rot = R.from_rotvec(rotvec, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_euler(self, angle, seq, anchor=None, start='auto', degrees=True):
+    def rotate_from_euler(self, angle, seq, anchor=None, start="auto", degrees=True):
         """Rotates object using Euler angle input.
 
         Terminology for move/rotate methods:
@@ -677,8 +689,7 @@ class BaseTransform:
         rot = R.from_euler(seq, angle, degrees=degrees)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_matrix(self, matrix, anchor=None, start='auto'):
+    def rotate_from_matrix(self, matrix, anchor=None, start="auto"):
         """Rotates object using matrix input.
 
         Terminology for move/rotate methods:
@@ -739,7 +750,7 @@ class BaseTransform:
         rot = R.from_matrix(matrix)
         return self.rotate(rot, anchor=anchor, start=start)
 
-    def rotate_from_mrp(self, mrp, anchor=None, start='auto'):
+    def rotate_from_mrp(self, mrp, anchor=None, start="auto"):
         """Rotates object using Modified Rodrigues Parameters (MRPs) input.
 
         Terminology for move/rotate methods:
@@ -800,8 +811,7 @@ class BaseTransform:
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start)
 
-
-    def rotate_from_quat(self, quat, anchor=None, start='auto'):
+    def rotate_from_quat(self, quat, anchor=None, start="auto"):
         """Rotates object using quaternion input.
 
         Terminology for move/rotate methods:
