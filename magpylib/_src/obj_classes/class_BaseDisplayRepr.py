@@ -2,6 +2,7 @@
 READY FOR V4
 """
 
+import numpy as np
 from magpylib._src.display.display import show
 
 UNITS = {
@@ -57,6 +58,13 @@ class BaseDisplayRepr:
                     if len(val) != 1:
                         k = f"{k} (last)"
                     val = f"{val[-1]}"
+                elif k == 'pixel':
+                    val = getattr(self, "pixel")
+                    px_shape = val.shape[:-1]
+                    val_str = f"{int(np.product(px_shape))}"
+                    if val.ndim>2:
+                        val_str += f" ({'x'.join(str(p) for p in px_shape)})"
+                    val = val_str
                 else:
                     val = getattr(self, k)
                 lines.append(f"  • {k}: {val} {unit_str}")

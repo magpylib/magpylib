@@ -387,7 +387,7 @@ def test_describe():
     )
     s2 = lambda: magpy.magnet.Cylinder((0, 0, 1000), (1, 1), (2,0,0), style_label="cylinder1")
     s3 = magpy.magnet.Sphere((0, 0, 1000), 1, (4,0,0), style_label="sphere1")
-    sens1 = magpy.Sensor((1,0,2),style_label="sensor1")
+    sens1 = magpy.Sensor((1,0,2),style_label="sensor1", pixel=np.zeros((4,5,3)))
     sens2 = magpy.Sensor((3,0,2),style_label="sensor2")
     s3.move([[1,2,3]])
 
