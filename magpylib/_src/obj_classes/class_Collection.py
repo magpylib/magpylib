@@ -190,7 +190,7 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, desc="type+label+id", max_elems=10, properties=False):
+    def describe(self, *,  desc="type+label+id", max_elems=10, properties=False):
         # pylint: disable=arguments-differ
         """Returns a tree view of the nested collection elements.
 

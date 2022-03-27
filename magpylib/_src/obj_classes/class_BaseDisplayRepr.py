@@ -62,7 +62,7 @@ class BaseDisplayRepr:
                 lines.append(f"  • {k}: {val} {unit_str}")
         return lines
 
-    def describe(self, exclude=("style",)):
+    def describe(self, *, exclude=("style",)):
         """Returns a view of the object properties.
 
         Parameters
