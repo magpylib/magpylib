@@ -2,7 +2,6 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.exceptions import MagpylibBadUserInput
 import magpylib as magpy
 
 
@@ -383,14 +382,18 @@ def test_copy_parents():
 
 def test_describe():
     """testing descibe method"""
-    s1 = lambda: magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), (0,0,0), style_label="cuboid1", style_color='cyan')
+    s1 = lambda: magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), (0,0,0),
+        style_label="cuboid1", style_color='cyan'
+    )
     s2 = lambda: magpy.magnet.Cylinder((0, 0, 1000), (1, 1), (2,0,0), style_label="cylinder1")
     s3 = magpy.magnet.Sphere((0, 0, 1000), 1, (4,0,0), style_label="sphere1")
     sens1 = magpy.Sensor((1,0,2),style_label="sensor1")
     sens2 = magpy.Sensor((3,0,2),style_label="sensor2")
     s3.move([[1,2,3]])
 
-    src_col = magpy.Collection([s1() for _ in range(6)], s2(), style_label="src_col", style_color='orange')
+    src_col = magpy.Collection(*[s1() for _ in range(6)], s2(),
+        style_label="src_col", style_color='orange'
+    )
     sens_col = magpy.Collection(sens1, style_label="sens_col")
     mixed_col = magpy.Collection(s3, sens2, style_label="mixed_col")
     nested_col = magpy.Collection(src_col, sens_col, mixed_col, style_label="nested_col")

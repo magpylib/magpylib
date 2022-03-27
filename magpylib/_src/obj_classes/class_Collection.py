@@ -181,21 +181,6 @@ class BaseCollection(BaseDisplayRepr):
     def __len__(self):
         return len(self._children)
 
-    def __repr__(self) -> str:
-        # pylint: disable=protected-access
-        s = super().__repr__()
-        if self._children:
-            if self._collections:
-                pref = "Nested"
-            elif not self._sources:
-                pref = "Sensor"
-            elif not self._sensors:
-                pref = "Source"
-            else:
-                pref = "Mixed"
-            return f"{pref}{s}"
-        return s
-
     def _repr_html_(self):
         lines = []
         lines.append(repr_obj(self))

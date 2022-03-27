@@ -473,9 +473,7 @@ def get_flatten_objects_properties(
         isCollection = getattr(subobj, "children", None) is not None
         props = {**parent_props}
         parent_color = parent_props.get("color", '!!!missing!!!')
-        if parent_color is None:
-            props["color"] = parent_color
-        elif parent_color == "!!!missing!!!":
+        if parent_color == "!!!missing!!!":
             props["color"] = next(color_cycle)
         if parent_props.get("legendgroup", None) is None:
             props["legendgroup"] = f"{subobj}"
@@ -490,6 +488,7 @@ def get_flatten_objects_properties(
         flat_objs[subobj] = props
         if isCollection:
             if subobj.style.color is not None:
+                print('asd')
                 flat_objs[subobj]["color"] = subobj.style.color
             flat_objs.update(
                 get_flatten_objects_properties(
