@@ -1,7 +1,5 @@
 """Collection class code"""
 
-from collections import Counter
-
 from magpylib._src.utility import (
     format_obj_input,
     LIBRARY_SENSORS,
