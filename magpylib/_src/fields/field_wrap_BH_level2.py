@@ -300,10 +300,6 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         # aggregate pixel values
         if pixel_agg is not None:
             B = getattr(np, pixel_agg)(B, axis=tuple(range(3 - B.ndim, -1)))
-            if not kwargs["squeeze"]:
-                # add missing dimension since `pixel_agg` reduces pixel
-                # dimensions to zero. Only needed if `squeeze is False``
-                B = np.expand_dims(B, axis=-2)
     else:  # pixel_agg is not None when pix_all_same, checked with
         Bsplit = np.split(B, pix_inds[1:-1], axis=2)
         Bmeans = [getattr(np, pixel_agg)(b, axis=-2, keepdims=True) for b in Bsplit]
@@ -316,6 +312,10 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     # reduce all size-1 levels
     if kwargs["squeeze"]:
         B = np.squeeze(B)
+    elif pixel_agg is not None:
+        # add missing dimension since `pixel_agg` reduces pixel
+        # dimensions to zero. Only needed if `squeeze is False``
+        B = np.expand_dims(B, axis=-2)
 
     # reset tiled objects
     for obj, m0 in zip(reset_obj, reset_obj_m0):
