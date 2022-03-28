@@ -12,6 +12,7 @@ from magpylib._src.input_checks import (
     check_excitations,
     check_dimensions,
     check_format_input_observers,
+    check_pixel_agg,
 )
 
 
@@ -158,7 +159,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar.
-    pixel_agg = kwargs.get("pixel_agg", None)
+    pixel_agg = check_pixel_agg(kwargs.get("pixel_agg", None))
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [0] + [
         int(np.product(ps[:-1])) for ps in pix_shapes
