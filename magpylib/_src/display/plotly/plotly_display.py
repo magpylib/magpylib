@@ -336,7 +336,7 @@ def make_Sensor(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
-    pixel = np.array(pixel)
+    pixel = np.array(pixel).reshape((-1,3))
     default_suffix = (
         f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
         if pixel.ndim != 1
@@ -354,7 +354,7 @@ def make_Sensor(
     )
     if autosize is not None:
         dim *= autosize
-    if np.squeeze(pixel).ndim == 1:
+    if pixel.shape[0] == 1:
         dim_ext = dim
     else:
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
@@ -366,7 +366,7 @@ def make_Sensor(
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
-    if np.squeeze(pixel).ndim != 1:
+    if pixel.shape[0] != 1:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
         combs = np.array(list(combinations(pixel, 2)))
