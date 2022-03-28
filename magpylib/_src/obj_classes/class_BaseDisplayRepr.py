@@ -70,20 +70,32 @@ class BaseDisplayRepr:
                 lines.append(f"  • {k}: {val} {unit_str}")
         return lines
 
-    def describe(self, *, exclude=("style",)):
+
+    def describe(self, *, exclude=("style",), return_string=False):
         """Returns a view of the object properties.
 
         Parameters
         ----------
         exclude: bool, default=("style",)
-            properties to be excluded in the description view.
+            Properties to be excluded in the description view.
+
+        return_string: bool, default=`False`
+            If `False` print description with stdout, if `True` return as string.
         """
         lines = self._get_description(exclude=exclude)
-        print("\n".join(lines))
+        output = "\n".join(lines)
+
+        if return_string:
+            return output
+
+        print(output)
+        return None
+
 
     def _repr_html_(self):
         lines = self._get_description(exclude=("style",))
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
+
 
     def __repr__(self) -> str:
         name = getattr(self, "name", None)

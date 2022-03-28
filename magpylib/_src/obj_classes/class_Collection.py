@@ -1,5 +1,7 @@
 """Collection class code"""
 
+# pylint: disable=redefined-builtin
+
 from collections import Counter
 from magpylib._src.utility import (
     format_obj_input,
@@ -7,7 +9,6 @@ from magpylib._src.utility import (
     LIBRARY_SOURCES,
     rec_obj_remover,
 )
-
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
@@ -16,71 +17,100 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.input_checks import check_format_input_obj
 
 
-def repr_obj(obj, desc="type+id+label"):
-    """Returns obj repr based on description paramter string"""
-    rp = ""
-    lbl = "label" in desc and getattr(getattr(obj, "style", False), "label", False)
-    if "type" in desc or not lbl:
-        rp += f"{type(obj).__name__}"
-    if lbl:
-        rp += f" {obj.style.label}"
-    if "id" in desc or not lbl:
-        id_str = f"id={id(obj)}"
-        rp += f" ({id_str})" if rp else id_str
-    return rp.strip()
+def repr_obj(obj, format="type+id+label"):
+    """
+    Returns a string that describes the object depending on the chosen tag format.
+    """
+    # pylint: disable=protected-access
+    show_type = "type" in format
+    show_label = "label" in format
+    show_id = "id" in format
+
+    tag = ""
+    if show_type:
+        tag += f"{obj._object_type}"
+
+    if show_label:
+        if show_type:
+            tag += " "
+        label = getattr(getattr(obj, "style", None), "label", None)
+        if label is None:
+            label = "nolabel" if show_type else f"{obj._object_type}"
+        tag += label
+
+    if show_id:
+        if show_type or show_label:
+            tag += " "
+        tag += f"(id={id(obj)})"
+    return tag
 
 
 def collection_tree_generator(
-    dir_child,
-    prefix="",
-    space="    ",
-    branch="│   ",
-    tee="├── ",
-    last="└── ",
-    desc="type+id+label",
+    obj,
+    format="type+id+label",
     max_elems=20,
-    properties=False,
+    prefix = "",
+    space = "    ",
+    branch = "│   ",
+    tee = "├── ",
+    last = "└── ",
 ):
-    """A recursive generator, given a collection child object
-    will yield a visual tree structure line by line
-    with each line prefixed by the same characters
+    """
+    Recursively creates a generator that will yield a visual tree structure of
+    a collection object and all its children.
     """
     # pylint: disable=protected-access
-    # contents each get pointers that are ├── with a final └── :
+
+    # store children and properties of this branch
     contents = []
-    children = getattr(dir_child, "children", [])
-    desc_func = getattr(dir_child, "_get_description", False)
-    props = []
-    if properties and desc_func:
-        desc_out = desc_func(
-            exclude=("children", "parent", "style", "sources", "sensors", "collections")
-        )
-        props = [d.strip() for d in desc_out[1:]]
-    if len(children) > max_elems:
+
+    children = getattr(obj, "children", [])
+    if len(children) > max_elems: # replace with counter if too many
         counts = Counter([c._object_type for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
+
+    props = []
+    view_props = "properties" in format
+    if view_props:
+        desc = getattr(obj, "_get_description", False)
+        if desc:
+            desc_out = desc(exclude=(
+                "children",
+                "parent",
+                "style",
+                "sources",
+                "sensors",
+                "collections")
+            )
+            props = [d.strip() for d in desc_out[1:]]
+
     contents.extend(props)
     contents.extend(children)
+
+    # generate and store "pointer" structure for this branch
     pointers = [tee] * (len(contents) - 1) + [last]
     pointers[: len(props)] = [branch if children else space] * len(props)
+
+    # create branch entries
     for pointer, child in zip(pointers, contents):
-        child_repr = child if isinstance(child, str) else repr_obj(child, desc)
+        child_repr = child if isinstance(child, str) else repr_obj(child, format)
         yield prefix + pointer + child_repr
-        if getattr(child, "children", False) or (
-            getattr(dir_child, "_get_description", False) and properties
-        ):  # extend the prefix and recurse:
+
+        # recursion
+        has_child = getattr(child, "children", False)
+        if has_child or (view_props and desc):
+            # space because last, └── , above so no more |
             extension = branch if pointer == tee else space
-            # i.e. space because last, └── , above so no more |
+
             yield from collection_tree_generator(
                 child,
+                format=format,
+                max_elems=max_elems,
                 prefix=prefix + extension,
                 space=space,
                 branch=branch,
                 tee=tee,
                 last=last,
-                desc=desc,
-                max_elems=max_elems,
-                properties=properties,
             )
 
 
@@ -185,30 +215,42 @@ class BaseCollection(BaseDisplayRepr):
         lines = []
         lines.append(repr_obj(self))
         for line in collection_tree_generator(
-            self, desc="type+label+id", max_elems=10, properties=False
+            self,
+            format="type+label+id",
+            max_elems=10,
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, *,  desc="type+label+id", max_elems=10, properties=False):
+    def describe(self, format='type+label+id', max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
-        """Returns a tree view of the nested collection elements.
+        """Returns or prints a tree view of the collection.
 
         Parameters
         ----------
-        desc: bool, default="type+label+id"
-            Object description.
-        max_elems:
-            If number of children at any level is higher than `max_elems`, elements are replaced by
-            counters by object type.
-        properties: bool, default=False
-            If True, adds object properties to the view
+        format: bool, default='type+label+id'
+            Object description in tree view. Can be any combination of `'type'`, `'label'`
+            and `'id'` and `'properties'`.
+        max_elems: default=10
+            If number of children at any level is higher than `max_elems`, elements are
+            replaced by counters.
+        return_string: bool, default=`False`
+            If `False` print description with stdout, if `True` return as string.
         """
-        print(repr_obj(self, desc))
-        for line in collection_tree_generator(
-            self, desc=desc, max_elems=max_elems, properties=properties
-        ):
-            print(line)
+        tree = collection_tree_generator(
+            self,
+            format=format,
+            max_elems=max_elems,
+        )
+        output = [repr_obj(self, format)]
+        for t in tree:
+            output.append(t)
+        output = "\n".join(output)
+
+        if return_string:
+            return output
+        print(output)
+        return None
 
     # methods -------------------------------------------------------
     def add(self, *children, override_parent=False):
@@ -263,7 +305,7 @@ class BaseCollection(BaseDisplayRepr):
                 obj._parent = self
             else:
                 raise MagpylibBadUserInput(
-                    f"Cannot add {obj!r} to {self!r} because it already has a parent."
+                    f"Cannot add {obj!r} to {self!r} because it already has a parent.\n"
                     "Consider using `override_parent=True`."
                 )
 
