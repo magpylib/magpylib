@@ -258,6 +258,7 @@ def test_input_objects_magnetization_moment_bad():
     for bad in bads:
         with np.testing.assert_raises(MagpylibBadUserInput):
             magpy.magnet.Cuboid(magnetization=bad)
+        with np.testing.assert_raises(MagpylibBadUserInput):
             magpy.misc.Dipole(moment=bad)
 
 
@@ -750,7 +751,7 @@ def test_input_collection_remove_bad():
         (x2, s1),
         [s2, c1],
     ]
-    for bad in bads:        
+    for bad in bads:
         with np.testing.assert_raises(MagpylibBadUserInput):
             col.remove(bad)
 
@@ -789,7 +790,7 @@ def test_input_basegeo_parent_setter_bad():
     for bad in bads:
         with np.testing.assert_raises(MagpylibBadUserInput):
             x.parent=bad
-    
+
     # when obj is good but has already a parent
     x = magpy.Sensor()
     magpy.Collection(x)
