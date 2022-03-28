@@ -161,11 +161,10 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   check if all pixel shapes are similar.
     pixel_agg = check_pixel_agg(kwargs.get("pixel_agg", None))
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
-    pix_nums = [0] + [
+    pix_nums = [
         int(np.product(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
-    pix_tot = sum(pix_nums)
-    pix_inds = np.cumsum(pix_nums)  # cummulative indices of pixel for each sensor
+    pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
     # check which sensors have unit roation
@@ -267,18 +266,9 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
                 B = np.delete(
                     B, np.s_[src_ind + 1 : src_ind + col_len], 0
                 )  # delete remaining part of slice
+
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
     #   note: replace by math.prod with python 3.8 or later
-    print(
-        "B.shape: ",
-        B.shape,
-        "pix_shapes: ",
-        pix_shapes,
-        "pix_inds: ",
-        pix_inds,
-        "pix_tot: ",
-        pix_tot,
-    )
     for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
@@ -290,10 +280,13 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
             if static_sensor_rot[sens_ind]:  # special case: same rotation along path
                 sens_orient = sens._orientation[0]
             else:
-                # FUTURE use R.concatenate() requires scipy>=1.8 and python 3.8
-                # sens_orient = R.concatenate([sens._orientation]*l0)
                 sens_orient = R.from_quat(
-                    np.concatenate([sens._orientation.as_quat()] * num_of_sources)
+                    np.tile( # tile for each source from list
+                        np.repeat( # same orientation path index for all indices
+                            sens._orientation.as_quat(), pix_nums[sens_ind], axis=0
+                        ),
+                        (num_of_sources, 1),
+                    )
                 )
             Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
             # overwrite Bpart in B
@@ -303,8 +296,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # rearrange sensor-pixel shape
     if pix_all_same:
-        sens_px_shape = (num_of_sensors,) + pix_shapes[0]
-        B = B.reshape((num_of_sources, max_path_len) + sens_px_shape)
+        B = B.reshape((num_of_sources, max_path_len, num_of_sensors, *pix_shapes[0]))
         # aggregate pixel values
         if pixel_agg is not None:
             B = getattr(np, pixel_agg)(B, axis=tuple(range(3 - B.ndim, -1)))
