@@ -1,5 +1,6 @@
 import pickle
 import os
+import re
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 import pytest
@@ -295,6 +296,7 @@ def test_set_children_styles():
 
 def test_reprs():
     """test repr strings"""
+    # pylint: disable=protected-access
 
     c = magpy.Collection()
     assert repr(c)[:10]=='Collection'
@@ -311,3 +313,113 @@ def test_reprs():
     s1 = magpy.magnet.Sphere((1,2,3), 5)
     c = magpy.Collection(s1,x1)
     assert repr(c)[:10]=='Collection'
+
+    x1 = magpy.magnet.Cuboid(style_label='x1')
+    x2 = magpy.magnet.Cuboid(style_label='x2')
+    cc = x1 + x2
+    rep = cc._repr_html_()
+    rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)
+    test = "<pre>Collection nolabel (id=REGEX)<br>├── Cuboid x1"
+    test += " (id=REGEX)<br>└── Cuboid x2 (id=REGEX)</pre>"
+    assert rep == test
+
+
+def test_collection_describe():
+    """ test describe method"""
+
+    x = magpy.magnet.Cuboid(style_label='x')
+    y = magpy.magnet.Cuboid(style_label='y')
+    z = magpy.magnet.Cuboid(style_label='z')
+    u = magpy.magnet.Cuboid(style_label='u')
+    c = x + y + z + u
+
+    desc = c.describe(format="label, type", return_string=True).split("\n")
+    test = [
+        "Collection nolabel",
+        "├── Collection nolabel",
+        "│   ├── Collection nolabel",
+        "│   │   ├── Cuboid x",
+        "│   │   └── Cuboid y",
+        "│   └── Cuboid z",
+        "└── Cuboid u",
+    ]
+    assert test == desc
+
+    desc = c.describe(format="label", return_string=True).split("\n")
+    test = [
+        "Collection",
+        "├── Collection",
+        "│   ├── Collection",
+        "│   │   ├── x",
+        "│   │   └── y",
+        "│   └── z",
+        "└── u",
+    ]
+    assert test == desc
+
+    desc = c.describe(format="type", return_string=True).split("\n")
+    test = [
+        "Collection",
+        "├── Collection",
+        "│   ├── Collection",
+        "│   │   ├── Cuboid",
+        "│   │   └── Cuboid",
+        "│   └── Cuboid",
+        "└── Cuboid",
+    ]
+    assert test == desc
+
+    desc = c.describe(format="label,type,id", return_string=True).split("\n")
+    test = [
+        "Collection nolabel (id=REGEX)",
+        "├── Collection nolabel (id=REGEX)",
+        "│   ├── Collection nolabel (id=REGEX)",
+        "│   │   ├── Cuboid x (id=REGEX)",
+        "│   │   └── Cuboid y (id=REGEX)",
+        "│   └── Cuboid z (id=REGEX)",
+        "└── Cuboid u (id=REGEX)",
+    ]
+    assert "".join(test)==re.sub('id=*[0-9]*[0-9]', 'id=REGEX', "".join(desc))
+
+
+    #pylint: disable=unnecessary-lambda
+    x = lambda : magpy.magnet.Cuboid()
+    y = lambda : magpy.current.Loop()
+    z = lambda : magpy.misc.CustomSource()
+
+    c = magpy.Collection(*[x() for _ in range(100)])
+    c.add(*[y() for _ in range(50)])
+    c.add(*[z() for _ in range(25)])
+
+    desc = c.describe(format="type+label", return_string=True).split('\n')
+    test = [
+        "Collection nolabel",
+        "├── 100x Cuboids",
+        "├── 50x Loops",
+        "└── 25x CustomSources",
+    ]
+    assert test == desc
+
+    x = magpy.magnet.Cuboid(style_label='x')
+    y = magpy.magnet.Cuboid(style_label='y')
+    cc = x + y
+    desc = cc.describe(format="label, properties", return_string=True).split("\n")
+    test = [
+        "Collection",
+        "│   • position: [0. 0. 0.] mm",
+        "│   • orientation: [0. 0. 0.] degrees",
+        "├── x",
+        "│       • position: [0. 0. 0.] mm",
+        "│       • orientation: [0. 0. 0.] degrees",
+        "│       • dimension: None mm",
+        "│       • magnetization: None mT",
+        "└── y",
+        "        • position: [0. 0. 0.] mm",
+        "        • orientation: [0. 0. 0.] degrees",
+        "        • dimension: None mm",
+        "        • magnetization: None mT",
+    ]
+    assert desc == test
+
+    desc = cc.describe()
+    assert desc is None
