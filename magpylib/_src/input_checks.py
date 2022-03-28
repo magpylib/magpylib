@@ -558,9 +558,10 @@ def check_excitations(sources):
 
 def check_pixel_agg(pixel_agg):
     """check if pixel_agg input is acceptable"""
-    allowed_values = ("mean", "max", "min", "median")
+    allowed_values = (None, "mean", "max", "min", "median")
     if pixel_agg not in allowed_values:
         raise MagpylibBadUserInput(
             f"Pixel aggregator `pixel_agg` must be one of {allowed_values}.\n"
             f"Instead received {pixel_agg}."
         )
+    return pixel_agg
