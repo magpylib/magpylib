@@ -1,5 +1,7 @@
 import numpy as np
+import pytest
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 
 def test_getB_level2_input_simple():
@@ -295,3 +297,64 @@ def test_squeeze_sumup():
     B2 = magpy.getB(ss, s, squeeze=False, sumup=True)
 
     assert B1.shape == B2.shape
+
+def test_pixel_agg():
+    """test pixel aggregator"""
+    src1 = magpy.magnet.Cuboid((0,0,1000),(1,1,1)).move([[1,0,0]])
+    sens1 = magpy.Sensor(position=(0,0,1), pixel=np.zeros((4,5,3)), style_label='sens1 pixel(4,5)')
+    sens2 = sens1.copy(position=(0,0,2), style_label='sens2 pixel(4,5)')
+    sens3 = sens1.copy(position=(0,0,3), style_label='sens3 pixel(4,5)')
+    sens_col = magpy.Collection(sens1, sens2, sens3)
+    sources = src1,
+    sensors = sens_col,
+
+    B1 = magpy.getB(src1, sens_col, squeeze=False, pixel_agg=None)
+    np.testing.assert_array_equal(B1.shape, (1, 2, 3, 4, 5, 3))
+
+    B2 = magpy.getB(src1, sens_col, squeeze=False, pixel_agg='mean')
+    np.testing.assert_array_equal(B2.shape, (1, 2, 3, 1, 3))
+
+    B3 = magpy.getB(src1, sens_col, squeeze=True, pixel_agg=None)
+    np.testing.assert_array_equal(B3.shape, (2, 3, 4, 5, 3))
+
+    B4 = magpy.getB(src1, sens_col, squeeze=True, pixel_agg='mean')
+    np.testing.assert_array_equal(B4.shape, (2, 3, 3))
+
+
+def test_pixel_agg_heterogeneous_pixel_shapes():
+    """test pixel aggregator with heterogeneous pixel shapes"""
+    src1 = magpy.magnet.Cuboid((0,0,1000),(1,1,1))
+    sens1 = magpy.Sensor(position=(0,0,1), pixel=[0,0,0], style_label='sens1, pixel.shape = (3,)')
+    sens2 = sens1.copy(position=(0,0,2), pixel=[1,1,1], style_label='sens2,  pixel.shape = (3,)')
+    sens3 = sens1.copy(position=(0,0,3), pixel=[2,2,2],  style_label='sens3,  pixel.shape = (3,)')
+    sens4 = sens1.copy(style_label='sens4,  pixel.shape = (3,)')
+    sens5 = sens2.copy(pixel=np.zeros((4,5,3))+1, style_label='sens5,  pixel.shape = (3,)')
+    sens6 = sens3.copy(pixel=np.zeros((4,5,1,3))+2, style_label='sens6,  pixel.shape = (4,5,1,3)')
+    sens_col1 = magpy.Collection(sens1, sens2, sens3)
+    sens_col2 = magpy.Collection(sens4, sens5, sens6)
+    sens_col1.rotate_from_angax([45], 'z', anchor = (5,0,0))
+    sens_col2.rotate_from_angax([45], 'z', anchor = (5,0,0))
+
+    # different pixel shapes withoug pixel_agg should raise an error
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(src1, sens_col2, pixel_agg=None)
+
+    # bad pixexl_agg argument
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.getB(src1, sens_col2, pixel_agg='bad_aggregator')
+
+    B1 = magpy.getB(src1, sens_col1, squeeze=False, pixel_agg='max')
+    np.testing.assert_array_equal(B1.shape, (1, 2, 3, 1, 3))
+
+    B2 = magpy.getB(src1, sens_col2, squeeze=False, pixel_agg='max')
+    np.testing.assert_array_equal(B2.shape, (1, 2, 3, 1, 3))
+
+    B3 = magpy.getB(src1, sens_col1, squeeze=True)
+    np.testing.assert_array_equal(B3.shape, (2, 3, 3))
+
+    B4 = magpy.getB(src1, sens_col2, squeeze=True, pixel_agg='mean')
+    np.testing.assert_array_equal(B4.shape, (2, 3, 3))
+
+    # B3 and B4 should deliver the same results since pixel all have the same
+    # positions respectively for each sensor, so mean equals single value
+    np.testing.assert_allclose(B3, B4)
