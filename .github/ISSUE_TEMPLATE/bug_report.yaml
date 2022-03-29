@@ -1,5 +1,5 @@
-name: Bug Report
-description: File a bug report
+name: Report a problem 🐛
+description: Problem reports are for when something behaves incorrectly, or differently from how you'd expect.
 labels: ["bug"]
 body:
   - type: markdown

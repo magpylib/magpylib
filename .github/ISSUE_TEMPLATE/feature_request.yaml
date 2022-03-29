@@ -1,5 +1,5 @@
-name: Feature request
-description: File a bug report
+name: Request an enhancement 💡
+description: Suggest an idea for this project
 labels: ["feature-request"]
 body:
   - type: markdown
