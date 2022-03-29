@@ -6,7 +6,7 @@ from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
 
-def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
+def getBH_dict_level2(squeeze=True, **kwargs: dict) -> np.ndarray:
     """ Direct interface access to vectorized computation
 
     Parameters
@@ -55,8 +55,6 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
         # if no input set rot=unit
         rot = kwargs.get('orientation', R.from_quat((0,0,0,1)))
         tile_params['orientation'] = (rot.as_quat(),2)
-        # if no input set squeeze=True
-        squeeze = kwargs.get('squeeze', True)
 
         # mandatory class specific inputs -----------
         if src_type == 'Cuboid':

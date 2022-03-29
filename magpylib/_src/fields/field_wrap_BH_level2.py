@@ -94,7 +94,9 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     return kwargs
 
 
-def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
+def getBH_level2(
+    sources, observers, *, field, sumup, squeeze, pixel_agg, **kwargs
+) -> np.ndarray:
     """...
 
     Parameters
@@ -133,15 +135,18 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
-        return getBH_dict_level2(source_type=sources, observer=observers, **kwargs)
+        return getBH_dict_level2(
+            source_type=sources,
+            observer=observers,
+            field=field,
+            squeeze=squeeze,
+            **kwargs,
+        )
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
-    kwargs_check = kwargs.copy()
-    for popit in ["field", "sumup", "squeeze", "pixel_agg"]:
-        kwargs_check.pop(popit, None)
-    if kwargs_check:
+    if kwargs:
         raise MagpylibBadUserInput(
-            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
+            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source "
             "is defined by a string (e.g. sources='Cylinder')"
         )
 
@@ -159,7 +164,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar.
-    pixel_agg = check_pixel_agg(kwargs.get("pixel_agg", None))
+    pixel_agg = check_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
         int(np.product(ps[:-1])) for ps in pix_shapes
@@ -228,9 +233,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     groups = {}
     for ind, src in enumerate(src_list):
         if src._object_type == "CustomSource":
-            group_key = (
-                src.field_B_lambda if kwargs["field"] == "B" else src.field_H_lambda
-            )
+            group_key = src.field_B_lambda if field == "B" else src.field_H_lambda
         else:
             group_key = src._object_type
         if group_key not in groups:
@@ -248,7 +251,8 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(field=kwargs["field"], **src_dict)  # compute field
+        print("in lvl2: ", field)
+        B_group = getBH_level1(field=field, **src_dict)  # compute field
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
         )  # reshape (2% slower for large arrays)
@@ -281,8 +285,8 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
                 sens_orient = sens._orientation[0]
             else:
                 sens_orient = R.from_quat(
-                    np.tile( # tile for each source from list
-                        np.repeat( # same orientation path index for all indices
+                    np.tile(  # tile for each source from list
+                        np.repeat(  # same orientation path index for all indices
                             sens._orientation.as_quat(), pix_nums[sens_ind], axis=0
                         ),
                         (num_of_sources, 1),
@@ -306,11 +310,12 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         B = np.concatenate(Bmeans, axis=-2)
 
     # sumup over sources
-    if kwargs["sumup"]:
+    if sumup:
         B = np.sum(B, axis=0, keepdims=True)
 
     # reduce all size-1 levels
-    if kwargs["squeeze"]:
+    print(squeeze)
+    if squeeze:
         B = np.squeeze(B)
     elif pixel_agg is not None:
         # add missing dimension since `pixel_agg` reduces pixel

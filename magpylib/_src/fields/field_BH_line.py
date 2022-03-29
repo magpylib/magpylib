@@ -7,11 +7,13 @@ from numpy.linalg import norm
 from magpylib._src.input_checks import check_field_input
 
 
-def field_BH_line_from_vert(
+def current_vertices_field(
     current: np.ndarray,
-    vertex_sets: list,  # list of mix3 ndarrays
-    pos_obs: np.ndarray,
+    observer: np.ndarray,
     field: str,
+    vertices: list=None,
+    segment_start=None,  # list of mix3 ndarrays
+    segment_end=None,
     ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
@@ -27,42 +29,44 @@ def field_BH_line_from_vert(
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
+    if vertices is None:
+        return current_line_field(current, segment_start, segment_end, observer, field=field)
+    else:
+        nv = len(vertices)           # number of input vertex_sets
+        npp = int(observer.shape[0]/nv)  # number of position vectors
+        nvs = [len(vset)-1 for vset in vertices] # length of vertex sets
+        nseg = sum(nvs)                             # number of segments
 
-    nv = len(vertex_sets)           # number of input vertex_sets
-    npp = int(pos_obs.shape[0]/nv)  # number of position vectors
-    nvs = [len(vset)-1 for vset in vertex_sets] # length of vertex sets
-    nseg = sum(nvs)                             # number of segments
+        # vertex_sets -> segments
+        curr_tile = np.repeat(current, nvs)
+        pos_start = np.concatenate([vert[:-1] for vert in vertices])
+        pos_end = np.concatenate([vert[1:] for vert in vertices])
 
-    # vertex_sets -> segments
-    curr_tile = np.repeat(current, nvs)
-    pos_start = np.concatenate([vert[:-1] for vert in vertex_sets])
-    pos_end = np.concatenate([vert[1:] for vert in vertex_sets])
+        # create input for vectorized computation in one go
+        observer = np.reshape(observer, (nv, npp,3))
+        observer = np.repeat(observer, nvs, axis=0)
+        observer = np.reshape(observer, (-1, 3))
 
-    # create input for vectorized computation in one go
-    pos_obs = np.reshape(pos_obs, (nv, npp,3))
-    pos_obs = np.repeat(pos_obs, nvs, axis=0)
-    pos_obs = np.reshape(pos_obs, (-1, 3))
+        curr_tile = np.repeat(curr_tile, npp)
+        pos_start = np.repeat(pos_start, npp, axis=0)
+        pos_end = np.repeat(pos_end, npp, axis=0)
 
-    curr_tile = np.repeat(curr_tile, npp)
-    pos_start = np.repeat(pos_start, npp, axis=0)
-    pos_end = np.repeat(pos_end, npp, axis=0)
+        # compute field
+        field = current_line_field(curr_tile, pos_start, pos_end, observer, field=field)
+        field = np.reshape(field, (nseg, npp, 3))
 
-    # compute field
-    field = current_line_field(curr_tile, pos_start, pos_end, pos_obs, field=field)
-    field = np.reshape(field, (nseg, npp, 3))
+        # sum for each vertex set
+        ns_cum = [sum(nvs[:i]) for i in range(nv+1)]   # cumulative index positions
+        field_sum = np.array([np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,nv+1)])
 
-    # sum for each vertex set
-    ns_cum = [sum(nvs[:i]) for i in range(nv+1)]   # cumulative index positions
-    field_sum = np.array([np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,nv+1)])
-
-    return np.reshape(field_sum, (-1,3))
+        return np.reshape(field_sum, (-1,3))
 
 
 # ON INTERFACE
 def current_line_field(
     current: np.ndarray,
-    start: np.ndarray,
-    end: np.ndarray,
+    segment_start: np.ndarray,
+    segment_end: np.ndarray,
     observer: np.ndarray,
     field='B'
     ) -> np.ndarray:
@@ -124,7 +128,7 @@ def current_line_field(
     field_all = np.zeros((ntot,3))
 
     # Check for zero-length segments
-    mask0 = np.all(start==end, axis=1)
+    mask0 = np.all(segment_start==segment_end, axis=1)
     if np.all(mask0):
         return field_all
 
@@ -132,12 +136,12 @@ def current_line_field(
     if np.any(mask0):
         not_mask0 = ~mask0     # avoid multiple computation of ~mask
         current = current[not_mask0]
-        start = start[not_mask0]
-        end = end[not_mask0]
+        segment_start = segment_start[not_mask0]
+        segment_end = segment_end[not_mask0]
         observer = observer[not_mask0]
 
     # rename
-    p1,p2,po = start, end, observer
+    p1,p2,po = segment_start, segment_end, observer
 
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
