@@ -16,6 +16,7 @@ body:
         - 3.x
         - 2.x
         - 1.x
+        - Unreleased
     validations:
       required: true
   - type: textarea
