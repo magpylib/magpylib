@@ -39,7 +39,7 @@ body:
         cuboid = magpy.magnet.Cuboid((0,0,1000), (1,1,1))
         cuboid.move(np.linspace((0,0,0), (0,0,10), 11), start=0)
         cuboid.show()
-      render: python
+      render: Python
   - type: textarea
     id: addition-context
     attributes:
