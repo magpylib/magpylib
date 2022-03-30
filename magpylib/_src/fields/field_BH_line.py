@@ -31,35 +31,35 @@ def current_vertices_field(
     """
     if vertices is None:
         return current_line_field(current, segment_start, segment_end, observer, field=field)
-    else:
-        nv = len(vertices)           # number of input vertex_sets
-        npp = int(observer.shape[0]/nv)  # number of position vectors
-        nvs = [len(vset)-1 for vset in vertices] # length of vertex sets
-        nseg = sum(nvs)                             # number of segments
 
-        # vertex_sets -> segments
-        curr_tile = np.repeat(current, nvs)
-        pos_start = np.concatenate([vert[:-1] for vert in vertices])
-        pos_end = np.concatenate([vert[1:] for vert in vertices])
+    nv = len(vertices)           # number of input vertex_sets
+    npp = int(observer.shape[0]/nv)  # number of position vectors
+    nvs = [len(vset)-1 for vset in vertices] # length of vertex sets
+    nseg = sum(nvs)                             # number of segments
 
-        # create input for vectorized computation in one go
-        observer = np.reshape(observer, (nv, npp,3))
-        observer = np.repeat(observer, nvs, axis=0)
-        observer = np.reshape(observer, (-1, 3))
+    # vertex_sets -> segments
+    curr_tile = np.repeat(current, nvs)
+    pos_start = np.concatenate([vert[:-1] for vert in vertices])
+    pos_end = np.concatenate([vert[1:] for vert in vertices])
 
-        curr_tile = np.repeat(curr_tile, npp)
-        pos_start = np.repeat(pos_start, npp, axis=0)
-        pos_end = np.repeat(pos_end, npp, axis=0)
+    # create input for vectorized computation in one go
+    observer = np.reshape(observer, (nv, npp,3))
+    observer = np.repeat(observer, nvs, axis=0)
+    observer = np.reshape(observer, (-1, 3))
 
-        # compute field
-        field = current_line_field(curr_tile, pos_start, pos_end, observer, field=field)
-        field = np.reshape(field, (nseg, npp, 3))
+    curr_tile = np.repeat(curr_tile, npp)
+    pos_start = np.repeat(pos_start, npp, axis=0)
+    pos_end = np.repeat(pos_end, npp, axis=0)
 
-        # sum for each vertex set
-        ns_cum = [sum(nvs[:i]) for i in range(nv+1)]   # cumulative index positions
-        field_sum = np.array([np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,nv+1)])
+    # compute field
+    field = current_line_field(curr_tile, pos_start, pos_end, observer, field=field)
+    field = np.reshape(field, (nseg, npp, 3))
 
-        return np.reshape(field_sum, (-1,3))
+    # sum for each vertex set
+    ns_cum = [sum(nvs[:i]) for i in range(nv+1)]   # cumulative index positions
+    field_sum = np.array([np.sum(field[ns_cum[i-1]:ns_cum[i]], axis=0) for i in range(1,nv+1)])
+
+    return np.reshape(field_sum, (-1,3))
 
 
 # ON INTERFACE
