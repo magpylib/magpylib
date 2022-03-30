@@ -396,9 +396,7 @@ def test_input_objects_fiedBHlambda_bad():
         return 1
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f1)
 
-    def f2(observer):
-        """bad args"""
-        return
+    f2 = lambda observer: observer
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f2)
 
 
