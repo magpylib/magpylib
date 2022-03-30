@@ -15,7 +15,7 @@ kernelspec:
 
 # Complex forms
 
-The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses that would have been caused by each stimulus individually. This principle holds in Magnetostatics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields.
+The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magnetostatics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields.
 
 It is critical to understand that the superposition principle holds for the magnetization itself. When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations.
 
@@ -54,7 +54,7 @@ ring = CylinderSegment(magnetization=(0,0,100), dimension=(2,3,1,0,360))
 magpy.show(ring, sensor, canvas=ax2, style_magnetization_show=False)
 
 # compare field at sensor
-ax3.plot(sensor.getB(coll).T[2], label='Bz from Cuboid')
+ax3.plot(sensor.getB(coll).T[2], label='Bz from Cuboids')
 ax3.plot(sensor.getB(ring).T[2], ls='--', label='Bz from CylinderSegment')
 ax3.grid(color='.9')
 ax3.legend()
@@ -84,10 +84,4 @@ ring1 = inner + outer
 %time print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
 ```
 
-Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time.
-
-+++
-
-```note
-Cut-out operations cannot be displayed at the moment
-```
+Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.

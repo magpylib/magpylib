@@ -20,6 +20,6 @@ Advanced
 :caption: Advanced Features
 :maxdepth: 2
 
-examples_21_compound_class.md
-examples_22_fem_interpolation.md
+examples_21_compound.md
+examples_22_field_interpolation.md
 ```

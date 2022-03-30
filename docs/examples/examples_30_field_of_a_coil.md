@@ -13,9 +13,9 @@ kernelspec:
 
 # Field of a Coil
 
-A coil consists of large number of windings, each of which can be modeled using `Loop` sources. The individual loops are combined in a `Collection`  which can then be treated like a single magnetic field source itself, following the compound object paradigm, see {ref}`examples-collections-compound`.
+In this example we model the magnetic field of a coil. Teh coil consists of multiple circular current loops, the windings, each of which can be modeled using Magpylib `Loop` source objects. The individual windings are combined in a `Collection` which itself behaves like a single magnetic field source.
 
-One must be careful to take the line-current approximation into consideration. This means that the field diverges when approaching the current, while the field is correct outside a hypothetical wire with homogeneous current distribution.
+One must be careful to take the line-current approximation into consideration. This means that the field diverges when approaching the current line, while the field is correct outside a hypothetical wire with homogeneous current distribution.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -56,3 +56,5 @@ plt.colorbar(sp.lines, ax=ax2, label='[mT]')
 plt.tight_layout()
 plt.show()
 ```
+
+In {ref}`intro-collections` we show a similar example where a Helmholtz coil is modeled using nested collections.
