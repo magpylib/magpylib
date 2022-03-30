@@ -1,5 +1,6 @@
 """ input checks code"""
 
+import inspect
 import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -127,27 +128,36 @@ def check_field_input(inp, origin):
     )
 
 
-def validate_field_lambda(val, bh):
+def validate_field_func(val):
     """test if field function for custom source is valid
     - needs to be a callable
     - input and output shape must match
     """
     if val is not None:
+        msg = ""
         if not callable(val):
-            raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable."
-            )
+            msg = f"Instead received {type(val).__name__}."
+        else:
+            fn_args = inspect.getfullargspec(val).args
+            if fn_args[:2] != ["field", "observer"]:
+                msg = f"Instead received a callable, the first two args being: {fn_args[:2]}"
+            else:
+                out = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
+                out_shape = np.array(out).shape
+                if out_shape != (2, 3):
+                    msg = (
+                        "Function test call with observer of shape (2,3) failed, "
+                        f"instead received shape {out_shape}."
+                    )
 
-        out = val(np.array([[1, 2, 3], [4, 5, 6]]))
-        out_shape = np.array(out).shape
-        case2 = out_shape != (2, 3)
-
-        if case2:
+        if msg:
             raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable function"
-                " and return a field ndarray of shape (n,3) when its `observer`"
-                " input is of shape (n,3).\n"
-                f"Instead received shape {out_shape}."
+                "Input parameter `field_func` must be a callable "
+                "accepting the two positional arguments `field` and `observer` "
+                "(e.g. `def myfieldfunc(field, observer, ...): ...`. The `field` argument must "
+                "accept one of ('B','H') and the `observer` an ndarray of shape (n,3). "
+                "The returned field must be an ndarray matching the observer shape.\n"
+                + msg
             )
     return val
 

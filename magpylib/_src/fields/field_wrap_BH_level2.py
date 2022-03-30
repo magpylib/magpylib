@@ -81,12 +81,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         kwargs.update({"current": currv, "vertices": vert_list})
 
     elif src_type == "CustomSource":
-        kwargs.update(
-            {
-                "field_B_lambda": group[0].field_B_lambda,
-                "field_H_lambda": group[0].field_H_lambda,
-            }
-        )
+        kwargs.update(field_func=group[0].field_func)
 
     else:
         raise MagpylibInternalError("Bad source_type in get_src_dict")
@@ -228,9 +223,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     groups = {}
     for ind, src in enumerate(src_list):
         if src._object_type == "CustomSource":
-            group_key = (
-                src.field_B_lambda if kwargs["field"] == "B" else src.field_H_lambda
-            )
+            group_key = src.field_func
         else:
             group_key = src._object_type
         if group_key not in groups:

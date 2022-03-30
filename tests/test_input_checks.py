@@ -379,23 +379,23 @@ def test_input_objects_dimension_cylinderSegment_bad():
 
 
 def test_input_objects_fiedBHlambda_good():
-    """good input: magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)"""
-    def f(x):
+    """good input: magpy.misc.CustomSource(field_func=f)"""
+    def f(field, observer):
         """3 in 3 out"""
-        return x
-    src = magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)
+        return observer
+    src = magpy.misc.CustomSource(field_func=f)
 
     np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
     np.testing.assert_allclose(src.getH((1,2,3)), (1,2,3))
 
 
 def test_input_objects_fiedBHlambda_bad():
-    """bad input: magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)"""
-    def f(x):
+    """bad input: magpy.misc.CustomSource(field_func=f)"""
+    def f(field, observer):
         """bad fieldBH lambda"""
         return 1
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f)
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, field_H_lambda=f)
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f)
 
 
 

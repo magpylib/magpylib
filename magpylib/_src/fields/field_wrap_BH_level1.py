@@ -80,12 +80,11 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
             B = current_line_field(field, pos_rel_rot, current, pos_start, pos_end)
 
     elif src_type == 'CustomSource':
-        #bh_key = 'B' if bh else 'H'
-        if kwargs[f'field_{field}_lambda'] is not None:
-            B = kwargs[f'field_{field}_lambda'](pos_rel_rot)
+        if kwargs.get('field_func', None) is not None:
+            B = kwargs['field_func'](field, pos_rel_rot)
         else:
             raise MagpylibInternalError(
-                f'{field}-field calculation not implemented for CustomSource class'
+                'No field calculation not provided for CustomSource class'
             )
 
     else:
