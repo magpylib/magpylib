@@ -220,7 +220,7 @@ def test_cylinder_field1():
     eins = np.ones(N)
     d, h, _ = dim.T
     dim5 = np.array([nulll, d / 2, h, nulll, eins * 360]).T
-    B1 = magnet_cylinder_segment_field(magg, dim5, poso)
+    B1 = magnet_cylinder_segment_field('B', poso, magg, dim5)
 
     assert np.allclose(B1, B0)
 
@@ -450,10 +450,10 @@ def test_cylinder_diametral_small_r():
     test if the gneral case fluctuations are small
     """
     B = magpy.core.magnet_cylinder_field(
-        np.array([(1,1,0)]*1000),
-        np.array([(2,2)]*1000),
+        'B',
         np.array([(x,0,3) for x in np.logspace(-1.4,-1.2,1000)]),
-        field='B')
+        np.array([(1,1,0)]*1000),
+        np.array([(2,2)]*1000))
 
     dB = np.log(abs(B[1:]-B[:-1]))
     ddB = abs(dB[1:]-dB[:-1])

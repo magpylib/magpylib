@@ -814,7 +814,7 @@ def test_input_getBH_field_good():
     for good in goods:
         moms = np.array([[1,2,3]])
         obs = np.array([[1,2,3]])
-        B = magpy.core.dipole_field(moms, obs, field=good)
+        B = magpy.core.dipole_field(good, obs, moms)
         assert isinstance(B, np.ndarray)
 
 
@@ -838,7 +838,7 @@ def test_input_getBH_field_bad():
         np.testing.assert_raises(
             MagpylibBadUserInput,
             magpy.core.dipole_field,
-            moms,
+            bad,
             obs,
-            field=bad,
+            moms,
         )

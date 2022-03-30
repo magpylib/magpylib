@@ -7,9 +7,9 @@ from magpylib._src.input_checks import check_field_input
 
 
 def dipole_field(
-    moment: np.ndarray,
+    field: str,
     observer: np.ndarray,
-    field='B'
+    moment: np.ndarray,
     ) -> np.ndarray:
     """Magnetic field of a dipole moment.
 
@@ -17,15 +17,15 @@ def dipole_field(
 
     Parameters
     ----------
-    moment: ndarray, shape (n,3)
-        Dipole moment vector in units of [mT*mm^3].
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
 
     observer: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
+
+    moment: ndarray, shape (n,3)
+        Dipole moment vector in units of [mT*mm^3].
 
     Returns
     -------

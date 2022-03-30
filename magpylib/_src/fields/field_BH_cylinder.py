@@ -203,10 +203,10 @@ def fieldH_cylinder_diametral(
 
 # ON INTERFACE
 def magnet_cylinder_field(
+    field: str,
+    observer: np.ndarray,
     magnetization: np.ndarray,
     dimension: np.ndarray,
-    observer: np.ndarray,
-    field='B',
     ) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized cylinder.
 
@@ -215,6 +215,13 @@ def magnet_cylinder_field(
 
     Parameters
     ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observer: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 

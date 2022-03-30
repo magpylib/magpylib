@@ -8,10 +8,10 @@ from magpylib._src.input_checks import check_field_input
 
 
 def magnet_sphere_field(
+    field: str,
+    observer: np.ndarray,
     magnetization: np.ndarray,
     diameter: np.ndarray,
-    observer: np.ndarray,
-    field='B'
     )->np.ndarray:
     """Magnetic field of a homogeneously magnetized sphere.
 
@@ -19,18 +19,18 @@ def magnet_sphere_field(
 
     Parameters
     ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observer: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
     diameter: ndarray, shape (n,3)
         Sphere diameter in units of [mm].
-
-    observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
 
     Returns
     -------
