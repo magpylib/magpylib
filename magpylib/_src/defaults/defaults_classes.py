@@ -31,7 +31,7 @@ class DefaultConfig(MagicProperties):
     def reset(self):
         """Resets all nested properties to their hard coded default values"""
         self.update(get_defaults_dict(), _match_properties=False)
-        return self
+        # no return self !
 
     @property
     def display(self):
