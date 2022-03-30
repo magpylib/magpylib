@@ -18,12 +18,10 @@ from magpylib._src.input_checks import (
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
-    prop0 = getattr(group[0], prop_name)
     out = np.array([getattr(src, prop_name) for src in group])
-    out = np.tile(out, n_pp)
-    if np.isscalar(prop0):
-        return out.flatten()
-    return out.reshape((-1, prop0.shape[0]))
+    if np.isscalar(out[0]):
+        return np.repeat(out, n_pp)
+    return np.tile(out, (n_pp, 1))
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
@@ -274,8 +272,8 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
                 sens_orient = sens._orientation[0]
             else:
                 sens_orient = R.from_quat(
-                    np.tile( # tile for each source from list
-                        np.repeat( # same orientation path index for all indices
+                    np.tile(  # tile for each source from list
+                        np.repeat(  # same orientation path index for all indices
                             sens._orientation.as_quat(), pix_nums[sens_ind], axis=0
                         ),
                         (num_of_sources, 1),
