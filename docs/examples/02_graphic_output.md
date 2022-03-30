@@ -25,6 +25,5 @@ Graphic Output
 
 examples_12_styles.md
 examples_13_3d_models.md
-examples_14_adding_cad_model.md
 examples_15_animation.md
 ```

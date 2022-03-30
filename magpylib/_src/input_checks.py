@@ -472,7 +472,8 @@ def check_format_input_obj(inp, allow: str, recursive=True, typechecks=False,) -
 
     Parameters
     ----------
-    input: can be sources, sensor or collection objects
+    input: can be
+        - objects
 
     allow: str
         Specify which object types are wanted, separate by +,
@@ -511,7 +512,8 @@ def check_format_input_obj(inp, allow: str, recursive=True, typechecks=False,) -
         if typechecks:
             if not obj_type in all_types:
                 raise MagpylibBadUserInput(
-                    f"Input objects must be {allow}.\n" f"Instead received {type(obj)}."
+                    f"Input objects must be {allow} or a flat list thereof.\n"
+                    f"Instead received {type(obj)}."
                 )
 
     return obj_list

@@ -144,7 +144,7 @@ class BaseCollection(BaseDisplayRepr):
         for child in self._children:
             child._parent = None
         self._children = []
-        self.add(*children)
+        self.add(*children, override_parent=True)
 
     @property
     def sources(self):
@@ -163,7 +163,7 @@ class BaseCollection(BaseDisplayRepr):
                 new_children.append(child)
         self._children = new_children
         src_list = format_obj_input(sources, allow="sources")
-        self.add(*src_list)
+        self.add(*src_list, override_parent=True)
 
     @property
     def sensors(self):
@@ -182,7 +182,7 @@ class BaseCollection(BaseDisplayRepr):
                 new_children.append(child)
         self._children = new_children
         sens_list = format_obj_input(sensors, allow="sensors")
-        self.add(*sens_list)
+        self.add(*sens_list, override_parent=True)
 
     @property
     def collections(self):
@@ -201,7 +201,7 @@ class BaseCollection(BaseDisplayRepr):
                 new_children.append(child)
         self._children = new_children
         coll_list = format_obj_input(collections, allow="collections")
-        self.add(*coll_list)
+        self.add(*coll_list, override_parent=True)
 
     # dunders
     def __iter__(self):
@@ -290,6 +290,11 @@ class BaseCollection(BaseDisplayRepr):
         └── x2
         """
         # pylint: disable=protected-access
+
+        # allow flat lists as input
+        if len(children)==1 and isinstance(children[0], (list, tuple)):
+            children = children[0]
+
         # check and format input
         obj_list = check_format_input_obj(
             children,
@@ -368,6 +373,10 @@ class BaseCollection(BaseDisplayRepr):
         └── x2
         """
         # pylint: disable=protected-access
+
+        # allow flat lists as input
+        if len(children)==1 and isinstance(children[0], (list, tuple)):
+            children = children[0]
 
         # check and format input
         remove_objects = check_format_input_obj(
