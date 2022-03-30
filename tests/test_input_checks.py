@@ -391,11 +391,15 @@ def test_input_objects_fiedBHlambda_good():
 
 def test_input_objects_fiedBHlambda_bad():
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    def f(field, observer):
+    def f1(field, observer):
         """bad fieldBH lambda"""
         return 1
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f)
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f)
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f1)
+
+    def f2(observer):
+        """bad args"""
+        return
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f2)
 
 
 
