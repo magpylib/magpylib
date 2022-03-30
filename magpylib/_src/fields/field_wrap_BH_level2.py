@@ -271,7 +271,6 @@ def getBH_level2(
                 )  # delete remaining part of slice
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
-    #   note: replace by math.prod with python 3.8 or later
     for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
