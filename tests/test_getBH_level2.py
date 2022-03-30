@@ -324,12 +324,14 @@ def test_pixel_agg():
 def test_pixel_agg_heterogeneous_pixel_shapes():
     """test pixel aggregator with heterogeneous pixel shapes"""
     src1 = magpy.magnet.Cuboid((0,0,1000),(1,1,1))
+    src2 = magpy.magnet.Sphere((0,0,1000),1, position=(2,0,0))
     sens1 = magpy.Sensor(position=(0,0,1), pixel=[0,0,0], style_label='sens1, pixel.shape = (3,)')
     sens2 = sens1.copy(position=(0,0,2), pixel=[1,1,1], style_label='sens2,  pixel.shape = (3,)')
     sens3 = sens1.copy(position=(0,0,3), pixel=[2,2,2],  style_label='sens3,  pixel.shape = (3,)')
     sens4 = sens1.copy(style_label='sens4,  pixel.shape = (3,)')
     sens5 = sens2.copy(pixel=np.zeros((4,5,3))+1, style_label='sens5,  pixel.shape = (3,)')
     sens6 = sens3.copy(pixel=np.zeros((4,5,1,3))+2, style_label='sens6,  pixel.shape = (4,5,1,3)')
+    src_col = magpy.Collection(src1, src2)
     sens_col1 = magpy.Collection(sens1, sens2, sens3)
     sens_col2 = magpy.Collection(sens4, sens5, sens6)
     sens_col1.rotate_from_angax([45], 'z', anchor = (5,0,0))
@@ -358,3 +360,15 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     # B3 and B4 should deliver the same results since pixel all have the same
     # positions respectively for each sensor, so mean equals single value
     np.testing.assert_allclose(B3, B4)
+
+    # Testing autmatic vs manual aggregation (mean) with different pixel shapes
+    B_by_sens_agg_1 = magpy.getB(src_col, sens_col2, squeeze=False, pixel_agg='mean')
+    B_by_sens_agg_2 = []
+    for sens in sens_col2:
+        B = magpy.getB(src_col, sens, squeeze=False)
+        B = B.mean(axis=tuple(range(3 - B.ndim, -1)))
+        B = np.expand_dims(B, axis=-2)
+        B_by_sens_agg_2.append(B)
+    B_by_sens_agg_2 = np.concatenate(B_by_sens_agg_2, axis=2)
+
+    np.testing.assert_allclose(B_by_sens_agg_1, B_by_sens_agg_2)

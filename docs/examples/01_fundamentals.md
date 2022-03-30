@@ -21,6 +21,7 @@ Fundamentals
 :maxdepth: 2
 
 examples_02_paths.md
+examples_05_backend_canvas.md
 examples_03_collections.md
 examples_01_complex_forms.md
 examples_04_custom_source.md

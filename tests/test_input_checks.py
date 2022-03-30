@@ -658,6 +658,8 @@ def test_input_collection_good():
         [x()], [s()], [c()],
         [x(), s(), c()],
         [x(), x(), s(), s(), c(), c()],
+        [[x(), s(), c()]],
+        [(x(), s(), c())],
     ]
 
     for good in goods:
@@ -673,10 +675,8 @@ def test_input_collection_bad():
     c = lambda : magpy.Collection()
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x(), s(), c()],
+        'some_string', None, True, 1, np.array((1,2,3)),
         [x(), [s(), c()]],
-        (x(), s(), c()),
     ]
     for bad in bads:
         np.testing.assert_raises(MagpylibBadUserInput, magpy.Collection, bad)
@@ -693,6 +693,8 @@ def test_input_collection_add_good():
         [x()], [s()], [c()],
         [x(), s(), c()],
         [x(), x(), s(), s(), c(), c()],
+        [[x(), s(), c()]],
+        [(x(), s(), c())],
     ]
 
     for good in goods:
@@ -709,10 +711,8 @@ def test_input_collection_add_bad():
     c = lambda : magpy.Collection()
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x(), s(), c()],
+        'some_string', None, True, 1, np.array((1,2,3)),
         [x(), [s(), c()]],
-        (x(), s(), c()),
     ]
     for bad in bads:
         col = magpy.Collection()
@@ -728,13 +728,15 @@ def test_input_collection_remove_good():
     goods = [ #unpacked
         [x], [s], [c],
         [x, s, c],
+        [[x,s]],
+        [(x,s)],
     ]
 
     for good in goods:
         col = magpy.Collection(*good)
-        assert len(col.children) == len(good)
+        assert col.children == (list(good[0]) if isinstance(good[0], (tuple, list)) else good)
         col.remove(*good)
-        assert len(col.children) == 0
+        assert not col.children
 
 
 def test_input_collection_remove_bad():
@@ -748,10 +750,8 @@ def test_input_collection_remove_bad():
     col = magpy.Collection(x1, x2, s1, s2, c1)
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x1],
-        (x2, s1),
-        [s2, c1],
+        'some_string', None, True, 1, np.array((1,2,3)),
+        [x1, [x2]]
     ]
     for bad in bads:
         with np.testing.assert_raises(MagpylibBadUserInput):

@@ -14,9 +14,9 @@ kernelspec:
 (examples-custom-source-objects)=
 # Custom source objects
 
-The custom source class `CustomSource` allows users to integrate their own custom-objects into the Magpylib interface. The `field_func` argument can be provided and make the custom source compatible with the general `getB` and `getH` functions.
+The class `CustomSource` allows users to integrate their own custom-objects into the Magpylib interface. The `field_func` argument can be provided with a function that is called with `getB` and `getH`.
 
-The custom field function is treated like a core functions. It must accept a `field` argument (`'B'` or `'H'`), an `observer` argument (array_like, shape (n,3)) and return the respective field with a similar shape. A fundamental example how to create a custom source object is shown below:
+This custom field function is treated like a core functions. It must accept a `field` argument (`'B'` or `'H'`), an `observer` argument (array_like, shape (n,3)) and return the respective field with a similar shape. A fundamental example how to create a custom source object is shown below:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -26,7 +26,7 @@ import magpylib as magpy
 def custom_field(field, observer):
     """ user defined custom field
     position input: array_like, shape (n,3)
-    returns: ndarray, shape (n,3)
+    returns: B-field, ndarray, shape (n,3)
     """
     if field=='B':
         return np.array(observer)*2
