@@ -314,7 +314,6 @@ def getBH_level2(
         B = np.sum(B, axis=0, keepdims=True)
 
     # reduce all size-1 levels
-    print(squeeze)
     if squeeze:
         B = np.squeeze(B)
     elif pixel_agg is not None:
