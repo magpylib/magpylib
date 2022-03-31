@@ -65,7 +65,7 @@ def collection_tree_generator(
     contents = []
 
     children = getattr(obj, "children", [])
-    if len(children) > max_elems:  # replace with counter if too many
+    if len(children) > max_elems: # replace with counter if too many
         counts = Counter([c._object_type for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
 
@@ -501,6 +501,11 @@ class BaseCollection(BaseDisplayRepr):
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
 
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
+
         Returns
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
@@ -557,6 +562,11 @@ class BaseCollection(BaseDisplayRepr):
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------

@@ -325,8 +325,6 @@ def test_pixel_agg():
     sens2 = sens1.copy(position=(0,0,2), style_label='sens2 pixel(4,5)')
     sens3 = sens1.copy(position=(0,0,3), style_label='sens3 pixel(4,5)')
     sens_col = magpy.Collection(sens1, sens2, sens3)
-    sources = src1,
-    sensors = sens_col,
 
     B1 = magpy.getB(src1, sens_col, squeeze=False, pixel_agg=None)
     np.testing.assert_array_equal(B1.shape, (1, 2, 3, 4, 5, 3))
@@ -361,9 +359,13 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     with pytest.raises(MagpylibBadUserInput):
         magpy.getB(src1, sens_col2, pixel_agg=None)
 
-    # bad pixexl_agg argument
-    with pytest.raises(MagpylibBadUserInput):
+    # bad pixel_agg numpy reference
+    with pytest.raises(AttributeError):
         magpy.getB(src1, sens_col2, pixel_agg='bad_aggregator')
+
+    # good pixel_agg numpy reference, but non-reducing function
+    with pytest.raises(AttributeError):
+        magpy.getB(src1, sens_col2, pixel_agg='array')
 
     B1 = magpy.getB(src1, sens_col1, squeeze=False, pixel_agg='max')
     np.testing.assert_array_equal(B1.shape, (1, 2, 3, 1, 3))
@@ -392,3 +394,60 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     B_by_sens_agg_2 = np.concatenate(B_by_sens_agg_2, axis=2)
 
     np.testing.assert_allclose(B_by_sens_agg_1, B_by_sens_agg_2)
+
+
+def test_pixel_agg3():
+    """ test for various inputs"""
+    B1 = np.array([0.03122074, 0.03122074, 0.03122074])
+
+    e0 = np.array((1,1,1))
+    e1 = [(1,1,1)]
+    e2 = [(1,1,1)]*2
+    e3 = [(1,1,1)]*3
+
+    s0 = magpy.magnet.Cuboid(e0, e0)
+    c0 = magpy.Collection(s0)
+    s1 = magpy.magnet.Cuboid( e0, e0)
+    s2 = magpy.magnet.Cuboid(-e0, e0)
+    c1 = magpy.Collection(c0, s1, s2)
+
+    x0 = magpy.Sensor(pixel=e0)
+    x1 = magpy.Sensor(pixel=e1)
+    x2 = magpy.Sensor(pixel=e2)
+    x3 = magpy.Sensor(pixel=e3)
+
+    c2 = x0 + x1 + x2 + x3
+
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]],
+        [1, 1, 2, 1, 4]
+        ):
+        for obs, obs_sh in zip(
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1]*8 + [4,3]
+            ):
+            for px_agg in ['mean', 'average', 'min']:
+                np.testing.assert_allclose(
+                    magpy.getB(src, obs, pixel_agg=px_agg),
+                    np.squeeze(np.tile(B1, (src_sh,obs_sh,1))),
+                    rtol=1e-5,
+                    atol=1e-8
+                )
+
+    # same check with a path
+    s0.position = [(0,0,0)]*5
+    for src, src_sh in zip(
+        [s0, c0, [s0, c0], c1, [s0, c0, c1, s1]],
+        [1, 1, 2, 1, 4]
+        ):
+        for obs, obs_sh in zip(
+            [e0, e1, e2, e3, x0, x1, x2, x3, c2, [x0, x2, x3]],
+            [1]*8 + [4,3]
+            ):
+            for px_agg in ['mean', 'average', 'min']:
+                np.testing.assert_allclose(
+                    magpy.getB(src, obs, pixel_agg=px_agg),
+                    np.squeeze(np.tile(B1, (src_sh, 5, obs_sh, 1))),
+                    rtol=1e-5,
+                    atol=1e-8
+                )

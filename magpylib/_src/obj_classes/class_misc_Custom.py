@@ -102,8 +102,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @property
     def field_func(self):
         """
-        Field function for the B-field. Must accept position input with format (n,3) and
-        return the B-field with similar shape in units of [mT].
+        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
+        `observer` position input with format (n,3). The `field` argument must accept one of
+        `('B','H')` and the `observer` an ndarray of shape (n,3). The callable must return the field
+        in units of [mT] for `field='B'` and [kA/m] for `field='H'` and must match the observer
+        shape.
         """
         return self._field_func
 

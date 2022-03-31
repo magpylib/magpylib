@@ -12,7 +12,7 @@ from magpylib._src.input_checks import (
     check_excitations,
     check_dimensions,
     check_format_input_observers,
-    check_pixel_agg,
+    check_format_pixel_agg,
 )
 
 
@@ -148,11 +148,13 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     check_dimensions(sources)
     check_excitations(sources)
 
+
     # format observer inputs:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
-    #   check if all pixel shapes are similar.
-    pixel_agg = check_pixel_agg(kwargs.get("pixel_agg", None))
+    #   check if all pixel shapes are similar - or else if pixel_agg is given
+    pixel_agg = kwargs.get("pixel_agg", None)
+    pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
         int(np.product(ps[:-1])) for ps in pix_shapes
@@ -290,11 +292,11 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         B = B.reshape((num_of_sources, max_path_len, num_of_sensors, *pix_shapes[0]))
         # aggregate pixel values
         if pixel_agg is not None:
-            B = getattr(np, pixel_agg)(B, axis=tuple(range(3 - B.ndim, -1)))
+            B = pixel_agg_func(B, axis=tuple(range(3 - B.ndim, -1)))
     else:  # pixel_agg is not None when pix_all_same, checked with
         Bsplit = np.split(B, pix_inds[1:-1], axis=2)
-        Bmeans = [getattr(np, pixel_agg)(b, axis=-2, keepdims=True) for b in Bsplit]
-        B = np.concatenate(Bmeans, axis=-2)
+        Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
+        B = np.concatenate(Bagg, axis=2)
 
     # sumup over sources
     if kwargs["sumup"]:
