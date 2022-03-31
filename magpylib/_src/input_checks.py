@@ -458,10 +458,9 @@ def check_format_input_observers(inp, pixel_agg=None):
         ]
         if pixel_agg is None and not all_same(pix_shapes):
             raise MagpylibBadUserInput(
-                "Different observer input detected."
-                " All sensor pixel and position vector inputs must"
-                " be of similar shape, unless a pixel aggregator is provided"
-                " (e.g. `pixel_agg='mean'`)!"
+                "Different observer input shape detected."
+                " All observer inputs must be of similar shape, unless a"
+                " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
             )
         return sensors, pix_shapes
 
@@ -558,12 +557,30 @@ def check_excitations(sources):
                 raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
 
 
-def check_pixel_agg(pixel_agg):
-    """check if pixel_agg input is acceptable"""
-    allowed_values = (None, "mean", "max", "min", "median")
-    if pixel_agg not in allowed_values:
-        raise MagpylibBadUserInput(
-            f"Pixel aggregator `pixel_agg` must be one of {allowed_values}.\n"
-            f"Instead received {pixel_agg}."
-        )
-    return pixel_agg
+def check_format_pixel_agg(pixel_agg):
+    """
+    check if pixel_agg input is acceptable
+    return the respective numpy function
+    """
+
+    PIXEL_AGG_ERR_MSG = (
+        "Input `pixel_agg` must be a reference to a numpy callable that reduces" +
+        " an array shape like 'mean', 'std', 'median', 'min', ...\n" +
+        f"Instead received {pixel_agg}."
+    )
+
+    if pixel_agg is None:
+        return None
+
+    # test numpy reference
+    try:
+        pixel_agg_func = getattr(np, pixel_agg)
+    except AttributeError as err:
+        raise AttributeError(PIXEL_AGG_ERR_MSG) from err
+
+    # test pixel agg function reduce
+    x = np.array([[[(1,2,3)]*2]*3]*4)
+    if not isinstance(pixel_agg_func(x), numbers.Number):
+        raise AttributeError(PIXEL_AGG_ERR_MSG)
+
+    return pixel_agg_func
