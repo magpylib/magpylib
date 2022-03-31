@@ -156,7 +156,6 @@ def getBH_level2(
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar - or else if pixel_agg is given
-    pixel_agg = kwargs.get("pixel_agg", None)
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
