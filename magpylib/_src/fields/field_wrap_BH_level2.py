@@ -19,9 +19,7 @@ from magpylib._src.input_checks import (
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
     out = np.array([getattr(src, prop_name) for src in group])
-    if np.isscalar(out[0]):
-        return np.repeat(out, n_pp)
-    return np.tile(out, (n_pp, 1))
+    return np.repeat(out, n_pp, axis=0)
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
@@ -241,6 +239,8 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
+        for k in ('observer', 'magnetization'):
+            print(k+': ', src_dict.get(k, None))
         B_group = getBH_level1(field=kwargs["field"], **src_dict)  # compute field
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
