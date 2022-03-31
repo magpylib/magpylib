@@ -1,0 +1,26 @@
+name: Request an enhancement 💡
+description: Suggest an idea for this project
+labels: ["feature-request"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to fill out this feature request report!
+  - type: textarea
+    id: feature-wish
+    attributes:
+      label: Describe the feature you'd like
+      description: |
+        A clear and concise description of what the problem is and/or what you want to happen.
+      placeholder: I'm always frustrated when ..
+  - type: textarea
+    id: considered-options
+    attributes:
+      label: Alternatives or solutions considered
+      description: A clear and concise description of any alternative solutions or features you've considered.
+  - type: textarea
+    id: addition-context
+    attributes:
+      label: Additional context
+      description: Add any other context or screenshots about the feature request here.
+

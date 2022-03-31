@@ -37,8 +37,9 @@ def getB(
         a single sensor or only a single source) are eliminated.
 
     pixel_agg: str, default=`None`
-        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`) which applies on pixel
-        output values.
+        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+        With this option, observer inputs with different (pixel) shapes are allowed.
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -191,8 +192,9 @@ def getH(
         a single sensor or only a single source) are eliminated.
 
     pixel_agg: str, default=`None`
-        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`) which applies on pixel
-        output values.
+        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+        With this option, observer inputs with different (pixel) shapes are allowed.
 
     Other Parameters (Direct interface)
     -----------------------------------

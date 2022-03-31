@@ -555,7 +555,7 @@ def easter_field(field, observer):
     """ points in z-direction and decays with 1/r^3"""
     if field=='B':
         dist = np.linalg.norm(pos, axis=1)
-        return np.c_[np.zeros((len(pos),2)), 1/dist**3]
+        return np.c_[np.zeros((len(observer),2)), 1/dist**3]
 
 # create custom source
 egg = magpy.misc.CustomSource(

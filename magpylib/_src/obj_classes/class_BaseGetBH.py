@@ -24,6 +24,11 @@ class BaseGetBH:
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
 
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
+
         Returns
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
@@ -79,6 +84,11 @@ class BaseGetBH:
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------
