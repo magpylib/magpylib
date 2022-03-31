@@ -94,7 +94,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     # property getters and setters
     @property
     def pixel(self):
-        """Sensor pixel (=sensing elements) positions in the local object coordinates
+        """ Sensor pixel (=sensing elements) positions in the local object coordinates
         (rotate with object), in units of [mm].
         """
         return self._pixel

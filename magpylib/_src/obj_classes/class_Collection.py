@@ -49,11 +49,11 @@ def collection_tree_generator(
     obj,
     format="type+id+label",
     max_elems=20,
-    prefix="",
-    space="    ",
-    branch="│   ",
-    tee="├── ",
-    last="└── ",
+    prefix = "",
+    space = "    ",
+    branch = "│   ",
+    tee = "├── ",
+    last = "└── ",
 ):
     """
     Recursively creates a generator that will yield a visual tree structure of
@@ -65,7 +65,7 @@ def collection_tree_generator(
     contents = []
 
     children = getattr(obj, "children", [])
-    if len(children) > max_elems:  # replace with counter if too many
+    if len(children) > max_elems: # replace with counter if too many
         counts = Counter([c._object_type for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
 
@@ -74,15 +74,13 @@ def collection_tree_generator(
     if view_props:
         desc = getattr(obj, "_get_description", False)
         if desc:
-            desc_out = desc(
-                exclude=(
-                    "children",
-                    "parent",
-                    "style",
-                    "sources",
-                    "sensors",
-                    "collections",
-                )
+            desc_out = desc(exclude=(
+                "children",
+                "parent",
+                "style",
+                "sources",
+                "sensors",
+                "collections")
             )
             props = [d.strip() for d in desc_out[1:]]
 
@@ -224,7 +222,7 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, format="type+label+id", max_elems=10, return_string=False):
+    def describe(self, format='type+label+id', max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
 
