@@ -285,6 +285,26 @@ def test_object_tiling():
     assert src4.orientation.as_quat().shape == (31, 4), 'd4'
     assert sens.orientation.as_quat().shape == (4,), 'd5'
 
+def test_superposition_vs_tiling():
+    """test superposition vs tiling, see issue #507"""
+
+    loop_1 = magpy.current.Loop(current=10000, diameter=20, position=(1, 20, 10))
+    loop_1.rotate_from_angax([45,90], "x")
+
+    loop_2 = magpy.current.Loop(current=2000, diameter=40, position=(20, 10, 1))
+    loop_2.rotate_from_angax([45,90], "y")
+
+    loop_collection = magpy.Collection(loop_1, loop_2)
+
+    observer_positions = [[0, 0, 0], [1, 1, 1]]
+
+    B1 = magpy.getB(loop_1, observer_positions)
+    B2 = magpy.getB(loop_2, observer_positions)
+    superposed_B = B1 + B2
+
+    collection_B = magpy.getB(loop_collection, observer_positions)
+
+    np.testing.assert_allclose(superposed_B, collection_B)
 
 def test_squeeze_sumup():
     """ make sure that sumup does not lead to false output shape
