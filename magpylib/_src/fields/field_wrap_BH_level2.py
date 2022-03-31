@@ -239,8 +239,6 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        for k in ('observer', 'magnetization'):
-            print(k+': ', src_dict.get(k, None))
         B_group = getBH_level1(field=kwargs["field"], **src_dict)  # compute field
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
