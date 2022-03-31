@@ -30,7 +30,7 @@ def current_vertices_field(
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
     if vertices is None:
-        return current_line_field(current, segment_start, segment_end, observer, field=field)
+        return current_line_field(field, observer, current, segment_start, segment_end)
 
     nv = len(vertices)           # number of input vertex_sets
     npp = int(observer.shape[0]/nv)  # number of position vectors
