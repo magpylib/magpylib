@@ -298,6 +298,7 @@ def test_squeeze_sumup():
 
     assert B1.shape == B2.shape
 
+
 def test_pixel_agg():
     """test pixel aggregator"""
     src1 = magpy.magnet.Cuboid((0,0,1000),(1,1,1)).move([[1,0,0]])
@@ -305,8 +306,6 @@ def test_pixel_agg():
     sens2 = sens1.copy(position=(0,0,2), style_label='sens2 pixel(4,5)')
     sens3 = sens1.copy(position=(0,0,3), style_label='sens3 pixel(4,5)')
     sens_col = magpy.Collection(sens1, sens2, sens3)
-    sources = src1,
-    sensors = sens_col,
 
     B1 = magpy.getB(src1, sens_col, squeeze=False, pixel_agg=None)
     np.testing.assert_array_equal(B1.shape, (1, 2, 3, 4, 5, 3))
@@ -341,9 +340,13 @@ def test_pixel_agg_heterogeneous_pixel_shapes():
     with pytest.raises(MagpylibBadUserInput):
         magpy.getB(src1, sens_col2, pixel_agg=None)
 
-    # bad pixexl_agg argument
+    # bad pixel_agg numpy reference
     with pytest.raises(AttributeError):
         magpy.getB(src1, sens_col2, pixel_agg='bad_aggregator')
+
+    # good pixel_agg numpy reference, but non-reducing function
+    with pytest.raises(AttributeError):
+        magpy.getB(src1, sens_col2, pixel_agg='array')
 
     B1 = magpy.getB(src1, sens_col1, squeeze=False, pixel_agg='max')
     np.testing.assert_array_equal(B1.shape, (1, 2, 3, 1, 3))
