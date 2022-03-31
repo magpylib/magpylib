@@ -484,7 +484,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None):
         """Compute B-field in [mT] for given sources and observer inputs.
 
         Parameters
@@ -498,6 +498,11 @@ class BaseCollection(BaseDisplayRepr):
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------
@@ -531,9 +536,17 @@ class BaseCollection(BaseDisplayRepr):
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="B")
 
-    def getH(self, *inputs, squeeze=True):
+        return getBH_level2(
+            sources,
+            sensors,
+            sumup=False,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            field="B",
+        )
+
+    def getH(self, *inputs, squeeze=True, pixel_agg=None):
         """Compute H-field in [kA/m] for given sources and observer inputs.
 
         Parameters
@@ -547,6 +560,11 @@ class BaseCollection(BaseDisplayRepr):
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g.
             only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------
@@ -581,7 +599,14 @@ class BaseCollection(BaseDisplayRepr):
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
 
-        return getBH_level2(sources, sensors, sumup=False, squeeze=squeeze, field="H")
+        return getBH_level2(
+            sources,
+            sensors,
+            sumup=False,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            field="H",
+        )
 
 
 class Collection(BaseGeo, BaseCollection):

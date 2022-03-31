@@ -10,7 +10,7 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 
 
 class Sensor(BaseGeo, BaseDisplayRepr):
-    """ Magnetic field sensor.
+    """Magnetic field sensor.
 
     Can be used as `observers` input for magnetic field computation.
 
@@ -85,7 +85,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         # instance attributes
         self.pixel = pixel
-        self._object_type = 'Sensor'
+        self._object_type = "Sensor"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -101,19 +101,18 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     @pixel.setter
     def pixel(self, pix):
-        """ Set sensor pixel positions in the local sensor coordinates.
+        """Set sensor pixel positions in the local sensor coordinates.
         Must be an array_like, float compatible with shape (..., 3)
         """
         self._pixel = check_format_input_vector(
             pix,
-            dims=range(1,20),
+            dims=range(1, 20),
             shape_m1=3,
-            sig_name='pixel',
-            sig_type='array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)',
+            sig_name="pixel",
+            sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)",
         )
 
-
-    def getB(self, *sources, sumup=False, squeeze=True):
+    def getB(self, *sources, sumup=False, squeeze=True, pixel_agg=None):
         """Compute the B-field in units of [mT] as seen by the sensor.
 
         Parameters
@@ -128,6 +127,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
             a single sensor or only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------
@@ -165,10 +169,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
          [0.         1.01415383 1.01415383]]
         """
         sources = format_star_input(sources)
-        return getBH_level2(sources, self, sumup=sumup, squeeze=squeeze, field='B')
+        return getBH_level2(
+            sources, self, sumup=sumup, squeeze=squeeze, pixel_agg=pixel_agg, field="B"
+        )
 
-
-    def getH(self, *sources, sumup=False, squeeze=True):
+    def getH(self, *sources, sumup=False, squeeze=True, pixel_agg=None):
         """Compute the H-field in units of [kA/m] as seen by the sensor.
 
         Parameters
@@ -183,6 +188,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         squeeze: bool, default=`True`
             If `True`, the output is squeezed, i.e. all axes of length 1 in the output (e.g. only
             a single sensor or only a single source) are eliminated.
+
+        pixel_agg: str, default=`None`
+            Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+            which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+            With this option, observer inputs with different (pixel) shapes are allowed.
 
         Returns
         -------
@@ -220,4 +230,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
          [0.         0.80703798 0.80703798]]
         """
         sources = format_star_input(sources)
-        return getBH_level2(sources, self, sumup=sumup, squeeze=squeeze, field='H')
+        return getBH_level2(
+            sources, self, sumup=sumup, squeeze=squeeze, pixel_agg=pixel_agg, field="H"
+        )
