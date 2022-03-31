@@ -1,5 +1,6 @@
 """ input checks code"""
 
+import inspect
 import numbers
 import numpy as np
 from scipy.spatial.transform import Rotation
@@ -127,27 +128,36 @@ def check_field_input(inp, origin):
     )
 
 
-def validate_field_lambda(val, bh):
+def validate_field_func(val):
     """test if field function for custom source is valid
     - needs to be a callable
     - input and output shape must match
     """
     if val is not None:
+        msg = ""
         if not callable(val):
-            raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable."
-            )
+            msg = f"Instead received {type(val).__name__}."
+        else:
+            fn_args = inspect.getfullargspec(val).args
+            if fn_args[:2] != ["field", "observer"]:
+                msg = f"Instead received a callable, the first two args being: {fn_args[:2]}"
+            else:
+                out = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
+                out_shape = np.array(out).shape
+                if out_shape != (2, 3):
+                    msg = (
+                        "Function test call with observer of shape (2,3) failed, "
+                        f"instead received shape {out_shape}."
+                    )
 
-        out = val(np.array([[1, 2, 3], [4, 5, 6]]))
-        out_shape = np.array(out).shape
-        case2 = out_shape != (2, 3)
-
-        if case2:
+        if msg:
             raise MagpylibBadUserInput(
-                f"Input parameter `field_{bh}_lambda` must be a callable function"
-                " and return a field ndarray of shape (n,3) when its `observer`"
-                " input is of shape (n,3).\n"
-                f"Instead received shape {out_shape}."
+                "Input parameter `field_func` must be a callable "
+                "accepting the two positional arguments `field` and `observer` "
+                "(e.g. `def myfieldfunc(field, observer, ...): ...`. The `field` argument must "
+                "accept one of ('B','H') and the `observer` an ndarray of shape (n,3). "
+                "The returned field must be an ndarray matching the observer shape.\n"
+                + msg
             )
     return val
 
@@ -458,21 +468,26 @@ def check_format_input_observers(inp, pixel_agg=None):
         ]
         if pixel_agg is None and not all_same(pix_shapes):
             raise MagpylibBadUserInput(
-                "Different observer input detected."
-                " All sensor pixel and position vector inputs must"
-                " be of similar shape, unless a pixel aggregator is provided"
-                " (e.g. `pixel_agg='mean'`)!"
+                "Different observer input shape detected."
+                " All observer inputs must be of similar shape, unless a"
+                " numpy pixel aggregator is provided, e.g. `pixel_agg='mean'`!"
             )
         return sensors, pix_shapes
 
 
-def check_format_input_obj(inp, allow: str, recursive=True, typechecks=False,) -> list:
+def check_format_input_obj(
+    inp,
+    allow: str,
+    recursive = True,
+    typechecks = False,
+    ) -> list:
     """
     Returns a flat list of all wanted objects in input.
 
     Parameters
     ----------
-    input: can be sources, sensor or collection objects
+    input: can be
+        - objects
 
     allow: str
         Specify which object types are wanted, separate by +,
@@ -511,7 +526,8 @@ def check_format_input_obj(inp, allow: str, recursive=True, typechecks=False,) -
         if typechecks:
             if not obj_type in all_types:
                 raise MagpylibBadUserInput(
-                    f"Input objects must be {allow}.\n" f"Instead received {type(obj)}."
+                    f"Input objects must be {allow} or a flat list thereof.\n"
+                    f"Instead received {type(obj)}."
                 )
 
     return obj_list
@@ -556,12 +572,30 @@ def check_excitations(sources):
                 raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
 
 
-def check_pixel_agg(pixel_agg):
-    """check if pixel_agg input is acceptable"""
-    allowed_values = (None, "mean", "max", "min", "median")
-    if pixel_agg not in allowed_values:
-        raise MagpylibBadUserInput(
-            f"Pixel aggregator `pixel_agg` must be one of {allowed_values}.\n"
-            f"Instead received {pixel_agg}."
-        )
-    return pixel_agg
+def check_format_pixel_agg(pixel_agg):
+    """
+    check if pixel_agg input is acceptable
+    return the respective numpy function
+    """
+
+    PIXEL_AGG_ERR_MSG = (
+        "Input `pixel_agg` must be a reference to a numpy callable that reduces" +
+        " an array shape like 'mean', 'std', 'median', 'min', ...\n" +
+        f"Instead received {pixel_agg}."
+    )
+
+    if pixel_agg is None:
+        return None
+
+    # test numpy reference
+    try:
+        pixel_agg_func = getattr(np, pixel_agg)
+    except AttributeError as err:
+        raise AttributeError(PIXEL_AGG_ERR_MSG) from err
+
+    # test pixel agg function reduce
+    x = np.array([[[(1,2,3)]*2]*3]*4)
+    if not isinstance(pixel_agg_func(x), numbers.Number):
+        raise AttributeError(PIXEL_AGG_ERR_MSG)
+
+    return pixel_agg_func

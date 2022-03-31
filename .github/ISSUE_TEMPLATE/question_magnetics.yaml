@@ -1,0 +1,15 @@
+name: Questions or general discussion with the community 🌱
+description: This is for general conversations that aren't meant for actionable Issues. We try to answer your questions about magnetic Systems and Magpylib.
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for participating in the Magpylib community
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What is your question?
+      description: We try to answer your questions about magnetic Systems and Magpylib
+    validations:
+      required: true

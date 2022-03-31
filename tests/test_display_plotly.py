@@ -283,7 +283,7 @@ def test_display_warnings():
     with pytest.warns(UserWarning):  # max frames surpassed
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
     src = Cuboid((1, 2, 3), (1, 2, 3))
-    with pytest.warns(UserWarning):  # no objet path detected
+    with pytest.warns(UserWarning):  # no object path detected
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
 

@@ -12,18 +12,14 @@ from magpylib._src.input_checks import (
     check_excitations,
     check_dimensions,
     check_format_input_observers,
-    check_pixel_agg,
+    check_format_pixel_agg,
 )
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
-    prop0 = getattr(group[0], prop_name)
     out = np.array([getattr(src, prop_name) for src in group])
-    out = np.tile(out, n_pp)
-    if np.isscalar(prop0):
-        return out.flatten()
-    return out.reshape((-1, prop0.shape[0]))
+    return np.repeat(out, n_pp, axis=0)
 
 
 def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
@@ -81,12 +77,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         kwargs.update({"current": currv, "vertices": vert_list})
 
     elif src_type == "CustomSource":
-        kwargs.update(
-            {
-                "field_B_lambda": group[0].field_B_lambda,
-                "field_H_lambda": group[0].field_H_lambda,
-            }
-        )
+        kwargs.update(field_func=group[0].field_func)
 
     else:
         raise MagpylibInternalError("Bad source_type in get_src_dict")
@@ -160,11 +151,13 @@ def getBH_level2(
     check_dimensions(sources)
     check_excitations(sources)
 
+
     # format observer inputs:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
-    #   check if all pixel shapes are similar.
-    pixel_agg = check_pixel_agg(pixel_agg)
+    #   check if all pixel shapes are similar - or else if pixel_agg is given
+    pixel_agg = kwargs.get("pixel_agg", None)
+    pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
         int(np.product(ps[:-1])) for ps in pix_shapes
@@ -233,7 +226,7 @@ def getBH_level2(
     groups = {}
     for ind, src in enumerate(src_list):
         if src._object_type == "CustomSource":
-            group_key = src.field_B_lambda if field == "B" else src.field_H_lambda
+            group_key = src.field_func
         else:
             group_key = src._object_type
         if group_key not in groups:
@@ -301,11 +294,11 @@ def getBH_level2(
         B = B.reshape((num_of_sources, max_path_len, num_of_sensors, *pix_shapes[0]))
         # aggregate pixel values
         if pixel_agg is not None:
-            B = getattr(np, pixel_agg)(B, axis=tuple(range(3 - B.ndim, -1)))
+            B = pixel_agg_func(B, axis=tuple(range(3 - B.ndim, -1)))
     else:  # pixel_agg is not None when pix_all_same, checked with
         Bsplit = np.split(B, pix_inds[1:-1], axis=2)
-        Bmeans = [getattr(np, pixel_agg)(b, axis=-2, keepdims=True) for b in Bsplit]
-        B = np.concatenate(Bmeans, axis=-2)
+        Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
+        B = np.concatenate(Bagg, axis=2)
 
     # sumup over sources
     if sumup:

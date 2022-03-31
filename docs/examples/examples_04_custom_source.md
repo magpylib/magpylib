@@ -14,24 +14,25 @@ kernelspec:
 (examples-custom-source-objects)=
 # Custom source objects
 
-The custom source class `CustomSource` allows users to integrate their own custom-objects into the Magpylib interface. The `field_B_lambda` and `field_H_lambda` arguments can be provided with function that are called with `getB` and `getH`.
+The class `CustomSource` allows users to integrate their own custom-objects into the Magpylib interface. The `field_func` argument can be provided with a function that is called with `getB` and `getH`.
 
-These custom field functions are treated like core functions. they must accept position inputs (array_like, shape (n,3)) and return the respective field with a similar shape. A fundamental example how to create a custom source object is:
+This custom field function is treated like a core functions. It must accept a `field` argument (`'B'` or `'H'`), an `observer` argument (array_like, shape (n,3)) and return the respective field with a similar shape. A fundamental example how to create a custom source object is shown below:
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
 # define field function
-def custom_field(position):
+def custom_field(field, observer):
     """ user defined custom field
     position input: array_like, shape (n,3)
-    returns: ndarray, shape (n,3)
+    returns: B-field, ndarray, shape (n,3)
     """
-    return np.array(position)*2
+    if field=='B':
+        return np.array(observer)*2
 
 # custom source
-source = magpy.misc.CustomSource(field_B_lambda=custom_field)
+source = magpy.misc.CustomSource(field_func=custom_field)
 
 # compute field with 2-pixel sensor
 sensor = magpy.Sensor(pixel=((1,1,1), (2,2,2)))
@@ -65,15 +66,15 @@ trace_pole = magpy.graphics.model3d.make_Ellipsoid(
 # combine four monopole custom sources into a quadrupole collection
 def create_pole(charge):
     """ create a monopole object"""
-    field = lambda x: monopole_field( charge, x)
+    field = lambda field, observer: monopole_field(charge, observer)
     monopole = magpy.misc.CustomSource(
-        field_B_lambda=field,
+        field_func=field,
         style_model3d_showdefault=False,
     )
     monopole.style.model3d.add_trace(trace_pole)
     return monopole
 
-quadrupole = magpy.Collection([create_pole(q) for q in [1,1,-1,-1]])
+quadrupole = magpy.Collection(*[create_pole(q) for q in [1,1,-1,-1]])
 
 # move and color the pole objects
 pole_pos = np.array([(1,0,0), (-1,0,0), (0,0,1), (0,0,-1)])

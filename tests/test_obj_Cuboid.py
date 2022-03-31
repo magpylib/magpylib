@@ -98,8 +98,8 @@ def test_cuboid_object_vs_lib():
     mag = np.array([(10,20,30)])
     dim = np.array([(  a,  a,  a)])
     pos = np.array([(2*a,2*a,2*a)])
-    B0 = magpy.core.magnet_cuboid_field(mag, dim, pos)
-    H0 = magpy.core.magnet_cuboid_field(mag, dim, pos, field='H')
+    B0 = magpy.core.magnet_cuboid_field('B', pos, mag, dim)
+    H0 = magpy.core.magnet_cuboid_field('H', pos, mag, dim)
 
     src = magpy.magnet.Cuboid(mag[0], dim[0])
     B1 = src.getB(pos)

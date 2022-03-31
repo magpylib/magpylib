@@ -69,11 +69,9 @@ _autogen/magpylib
 _changelog.md
 ```
 
+--------------------------
+
 # Index
 
 - {ref}`genindex`
 - {ref}`modindex`
-
-```bash
-
-```

@@ -8,9 +8,9 @@ from magpylib._src.input_checks import check_field_input
 
 
 def current_vertices_field(
-    current: np.ndarray,
-    observer: np.ndarray,
     field: str,
+    observer: np.ndarray,
+    current: np.ndarray,
     vertices: list=None,
     segment_start=None,  # list of mix3 ndarrays
     segment_end=None,
@@ -52,7 +52,7 @@ def current_vertices_field(
     pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = current_line_field(curr_tile, pos_start, pos_end, observer, field=field)
+    field = current_line_field(field, observer, curr_tile, pos_start, pos_end)
     field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set
@@ -64,11 +64,11 @@ def current_vertices_field(
 
 # ON INTERFACE
 def current_line_field(
+    field: str,
+    observer: np.ndarray,
     current: np.ndarray,
     segment_start: np.ndarray,
     segment_end: np.ndarray,
-    observer: np.ndarray,
-    field='B'
     ) -> np.ndarray:
     """Magnetic field of line current segments.
 
@@ -77,6 +77,13 @@ def current_line_field(
 
     Parameters
     ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observer: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
     current: ndarray, shape (n,)
         Electrical current in units of [A].
 
@@ -85,13 +92,6 @@ def current_line_field(
 
     end: ndarray, shape (n,3)
         Line end positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
 
     Returns
     -------

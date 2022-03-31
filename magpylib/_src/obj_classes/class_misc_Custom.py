@@ -5,7 +5,7 @@ DOCSTRINGS V4 READY
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.input_checks import validate_field_lambda
+from magpylib._src.input_checks import validate_field_func
 
 
 # ON INTERFACE
@@ -19,13 +19,12 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     Parameters
     ----------
-    field_B_lambda: callable, default=`None`
-        Field function for the B-field. Must accept position input with format (n,3) and
-        return the B-field with similar shape in units of [mT].
-
-    field_H_lambda: callable, default=`None`
-        Field function for the H-field. Must accept position input with format (n,3) and
-        return the H-field with similar shape in units of [kA/m].
+    field_func: callable, default=`None`
+        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
+        `observer` position input with format (n,3). The `field` argument must accept one of
+        `('B','H')` and the `observer` an ndarray of shape (n,3). The callable must return the field
+        in units of [mT] for `field='B'` and [kA/m] for `field='H'` and must match the observer
+        shape.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -57,9 +56,8 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>>
-    >>> bfield = lambda observer: np.array([(100,0,0)]*len(observer))
-    >>> hfield = lambda observer: np.array([(80,0,0)]*len(observer))
-    >>> src = magpy.misc.CustomSource(field_B_lambda=bfield, field_H_lambda=hfield)
+    >>> funcBH = lambda field, observer: np.array([(100 if field=='B' else 80,0,0)]*len(observer))
+    >>> src = magpy.misc.CustomSource(field_func=funcBH)
     >>> H = src.getH((1,1,1))
     >>> print(H)
     [80.  0.  0.]
@@ -87,16 +85,14 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     def __init__(
         self,
-        field_B_lambda=None,
-        field_H_lambda=None,
+        field_func=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
         **kwargs,
     ):
         # instance attributes
-        self.field_B_lambda = field_B_lambda
-        self.field_H_lambda = field_H_lambda
+        self.field_func = field_func
         self._object_type = "CustomSource"
 
         # init inheritance
@@ -104,25 +100,16 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         BaseDisplayRepr.__init__(self)
 
     @property
-    def field_B_lambda(self):
+    def field_func(self):
         """
-        Field function for the B-field. Must accept position input with format (n,3) and
-        return the B-field with similar shape in units of [mT].
+        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
+        `observer` position input with format (n,3). The `field` argument must accept one of
+        `('B','H')` and the `observer` an ndarray of shape (n,3). The callable must return the field
+        in units of [mT] for `field='B'` and [kA/m] for `field='H'` and must match the observer
+        shape.
         """
-        return self._field_B_lambda
+        return self._field_func
 
-    @field_B_lambda.setter
-    def field_B_lambda(self, val):
-        self._field_B_lambda = validate_field_lambda(val, "B")
-
-    @property
-    def field_H_lambda(self):
-        """
-        Field function for the H-field. Must accept position input with format (n,3) and
-        return the H-field with similar shape in units of [kA/m].
-        """
-        return self._field_H_lambda
-
-    @field_H_lambda.setter
-    def field_H_lambda(self, val):
-        self._field_H_lambda = validate_field_lambda(val, "H")
+    @field_func.setter
+    def field_func(self, val):
+        self._field_func = validate_field_func(val)

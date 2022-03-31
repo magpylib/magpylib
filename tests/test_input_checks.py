@@ -379,23 +379,25 @@ def test_input_objects_dimension_cylinderSegment_bad():
 
 
 def test_input_objects_fiedBHlambda_good():
-    """good input: magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)"""
-    def f(x):
+    """good input: magpy.misc.CustomSource(field_func=f)"""
+    def f(field, observer):
         """3 in 3 out"""
-        return x
-    src = magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)
+        return observer
+    src = magpy.misc.CustomSource(field_func=f)
 
     np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
     np.testing.assert_allclose(src.getH((1,2,3)), (1,2,3))
 
 
 def test_input_objects_fiedBHlambda_bad():
-    """bad input: magpy.misc.CustomSource(field_B_lambda=f, field_H_lambda=f)"""
-    def f(x):
+    """bad input: magpy.misc.CustomSource(field_func=f)"""
+    def f1(field, observer):
         """bad fieldBH lambda"""
         return 1
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f)
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, field_H_lambda=f)
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f1)
+
+    f2 = lambda observer: observer
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f2)
 
 
 
@@ -656,6 +658,8 @@ def test_input_collection_good():
         [x()], [s()], [c()],
         [x(), s(), c()],
         [x(), x(), s(), s(), c(), c()],
+        [[x(), s(), c()]],
+        [(x(), s(), c())],
     ]
 
     for good in goods:
@@ -671,10 +675,8 @@ def test_input_collection_bad():
     c = lambda : magpy.Collection()
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x(), s(), c()],
+        'some_string', None, True, 1, np.array((1,2,3)),
         [x(), [s(), c()]],
-        (x(), s(), c()),
     ]
     for bad in bads:
         np.testing.assert_raises(MagpylibBadUserInput, magpy.Collection, bad)
@@ -691,6 +693,8 @@ def test_input_collection_add_good():
         [x()], [s()], [c()],
         [x(), s(), c()],
         [x(), x(), s(), s(), c(), c()],
+        [[x(), s(), c()]],
+        [(x(), s(), c())],
     ]
 
     for good in goods:
@@ -707,10 +711,8 @@ def test_input_collection_add_bad():
     c = lambda : magpy.Collection()
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x(), s(), c()],
+        'some_string', None, True, 1, np.array((1,2,3)),
         [x(), [s(), c()]],
-        (x(), s(), c()),
     ]
     for bad in bads:
         col = magpy.Collection()
@@ -726,13 +728,15 @@ def test_input_collection_remove_good():
     goods = [ #unpacked
         [x], [s], [c],
         [x, s, c],
+        [[x,s]],
+        [(x,s)],
     ]
 
     for good in goods:
         col = magpy.Collection(*good)
-        assert len(col.children) == len(good)
+        assert col.children == (list(good[0]) if isinstance(good[0], (tuple, list)) else good)
         col.remove(*good)
-        assert len(col.children) == 0
+        assert not col.children
 
 
 def test_input_collection_remove_bad():
@@ -746,10 +750,8 @@ def test_input_collection_remove_bad():
     col = magpy.Collection(x1, x2, s1, s2, c1)
 
     bads = [
-        'some_string', None, [], True, 1, np.array((1,2,3)),
-        [x1],
-        (x2, s1),
-        [s2, c1],
+        'some_string', None, True, 1, np.array((1,2,3)),
+        [x1, [x2]]
     ]
     for bad in bads:
         with np.testing.assert_raises(MagpylibBadUserInput):
@@ -814,7 +816,7 @@ def test_input_getBH_field_good():
     for good in goods:
         moms = np.array([[1,2,3]])
         obs = np.array([[1,2,3]])
-        B = magpy.core.dipole_field(moms, obs, field=good)
+        B = magpy.core.dipole_field(good, obs, moms)
         assert isinstance(B, np.ndarray)
 
 
@@ -838,7 +840,7 @@ def test_input_getBH_field_bad():
         np.testing.assert_raises(
             MagpylibBadUserInput,
             magpy.core.dipole_field,
-            moms,
+            bad,
             obs,
-            field=bad,
+            moms,
         )

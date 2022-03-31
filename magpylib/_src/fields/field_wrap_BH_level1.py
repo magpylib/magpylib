@@ -50,13 +50,13 @@ def getBH_level1(
     # collect dictionary inputs and compute field
     field_func = FIELD_FUNCTIONS.get(source_type, None)
 
-    if source_type == "CustomSource":
+    if source_type == 'CustomSource':
         field = kwargs["field"]
-        if kwargs[f"field_{field}_lambda"] is not None:
-            BH = kwargs[f"field_{field}_lambda"](pos_rel_rot)
+        if kwargs.get('field_func', None) is not None:
+            BH = kwargs['field_func'](field, pos_rel_rot)
         else:
             raise MagpylibInternalError(
-                f"{field}-field calculation not implemented for CustomSource class"
+                'No field calculation not provided for CustomSource class'
             )
     elif field_func is not None:
         BH = field_func(observer=pos_rel_rot, **kwargs)

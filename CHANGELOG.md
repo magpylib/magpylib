@@ -35,6 +35,7 @@ This is a major update that includes
   - Improved performance of `getB` and `getH`.
   - Fixed array dimension wrongly reduced when `sumup=True` and `squeeze=False` ind `getB` and `getH` functions ([#425](https://github.com/magpylib/magpylib/issues/425), [#426](https://github.com/magpylib/magpylib/pull/426))
   - Minimal non-squeeze output shape is (1,1,1,1,3), meaning that a single pixel is now also represented. ([#493](https://github.com/magpylib/magpylib/pull/493))
+- With the new kwarg `pixel_agg` it is now possible to apply a numpy function with reducing functionality (like `mean`, `min`, `average`) to the pixel output. In this case, it is allowed to provide `getB` and `getH` with different observer input shapes. ([#503](https://github.com/magpylib/magpylib/pull/503))
 
 ### Major graphic output overhaul:
 - Styles:
@@ -62,6 +63,8 @@ This is a major update that includes
 ### New documentation:
 - Completely new structure and layout. ([#399](https://github.com/magpylib/magpylib/issues/399), [#294](https://github.com/magpylib/magpylib/issues/294))
 - Binder links and live code. ([#389](https://github.com/magpylib/magpylib/issues/389))
+- Example galleries with practical user examples
+- Guidelines for advanced subclassing of `Collection` to form complex dynamic compound objects that seamlessly integrate into the MAgpylib interface.
 
 ### Geometry interface modification
 - Added all scipy Rotation forms as rotation object methods. ([#427](https://github.com/magpylib/magpylib/pull/427))
@@ -72,15 +75,15 @@ This is a major update that includes
 - Removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 
 ### Modifications to the `Collection` class
-- Collections can now contain source, `Sensor` and other `Collection` objects and can function as source and observer inputs in `getB` and `getH`. ([#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
-- Instead of the property `Collection.sources` there are now the `Collection.children`, `Collection.sources`, `Collection.sensors` and `Collection.collections` properties. ([#446](https://github.com/magpylib/magpylib/issues/446), [#502](https://github.com/magpylib/magpylib/pull/502))
+- Collections can now contain `Source`, `Sensor` and other `Collection` objects and can function as source and observer inputs in `getB` and `getH`. ([#502](https://github.com/magpylib/magpylib/pull/502), [#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
+- Instead of the property `Collection.sources` there are now the `Collection.children`, `Collection.sources`, `Collection.sensors` and `Collection.collections` properties. Setting these collection properties will automatically override parents. ([#446](https://github.com/magpylib/magpylib/issues/446), [#502](https://github.com/magpylib/magpylib/pull/502))
 - `Collection` has it's own `position`, `orientation` and `style`. ([#444](https://github.com/magpylib/magpylib/issues/444), [#461](https://github.com/magpylib/magpylib/issues/461))
-- All methods applied to a collection maintain the relative child-positions.
+- All methods applied to a collection maintain relative child-positions in the local reference frame.
 - Added `__len__` dunder for `Collection`, so that `Collection.children` length is returned. ([#383](https://github.com/magpylib/magpylib/issues/383))
 - `-` operation was removed.
-- `+` operation now functions as `a + b = Collection(a, b)`.
-- Collection input is now only `*args` anymore. List inputs like `Collection([a,b,c])` will raise an error.
-- `add` and `remove` have been overhauled with additional functionality and both accept only `*args` as well.
+- `+` operation now functions as `a + b = Collection(a, b)`. Warning: `a + b + c` now creates a nested collection !
+- Allowed `Collection`, `add` and  `remove` input is now only `*args` or a single flat list or tuple of Magpylib objects.
+- `add` and `remove` have some additional functionality related to child-parent relations.
 - The `describe` method gives a great Collection tree overview.
 
 ### Other changes/fixes:

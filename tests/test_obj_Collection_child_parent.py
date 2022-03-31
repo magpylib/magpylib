@@ -51,6 +51,24 @@ def test_children_setter():
     assert c[1] == x4
 
 
+def test_setter_parent_override():
+    """ all setter should override parents"""
+    x1 = magpy.Sensor()
+    s1 = magpy.magnet.Cuboid()
+    c1 = magpy.Collection()
+    coll = magpy.Collection(x1, s1, c1)
+
+    coll2 = magpy.Collection()
+    coll2.children = coll.children
+    assert coll2.children == [x1, s1, c1]
+
+    coll3 = magpy.Collection()
+    coll3.sensors = [x1]
+    coll3.sources = [s1]
+    coll3.collections = [c1]
+    assert coll3.children == [x1, s1, c1]
+
+
 def test_sensors_setter():
     """ setting new sensors and removing old parents"""
     x1 = magpy.Sensor()
