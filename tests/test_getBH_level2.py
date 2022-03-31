@@ -288,18 +288,18 @@ def test_object_tiling():
 def test_superposition_vs_tiling():
     """test superposition vs tiling, see issue #507"""
 
-    loop_1 = magpy.current.Loop(current=10000, diameter=20, position=(1, 20, 10))
-    loop_1.rotate_from_angax([45,90], "x")
+    loop = magpy.current.Loop(current=10000, diameter=20, position=(1, 20, 10))
+    loop.rotate_from_angax([45,90], "x")
 
-    loop_2 = magpy.current.Loop(current=2000, diameter=40, position=(20, 10, 1))
-    loop_2.rotate_from_angax([45,90], "y")
+    cube = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=40, position=(20, 10, 1))
+    cube.rotate_from_angax([45,90], "y")
 
-    loop_collection = magpy.Collection(loop_1, loop_2)
+    loop_collection = magpy.Collection(loop, cube)
 
     observer_positions = [[0, 0, 0], [1, 1, 1]]
 
-    B1 = magpy.getB(loop_1, observer_positions)
-    B2 = magpy.getB(loop_2, observer_positions)
+    B1 = magpy.getB(loop, observer_positions)
+    B2 = magpy.getB(cube, observer_positions)
     superposed_B = B1 + B2
 
     collection_B = magpy.getB(loop_collection, observer_positions)
