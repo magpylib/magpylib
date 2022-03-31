@@ -2,6 +2,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.utility import (
     check_static_sensor_orient,
+    format_obj_input,
     format_src_inputs,
 )
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
@@ -195,7 +196,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         )
 
     # format sources input:
-    #   input: allow only bare src objects or 1D lists/tuple of src and col
+    #   input: allow only one bare src object or a 1D list/tuple of src and col
     #   out: sources = ordered list of sources
     #   out: src_list = ordered list of sources with flattened collections
     sources, src_list = format_src_inputs(sources)
@@ -293,7 +294,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
     if l > l0:
         for i,src in enumerate(sources):
             if src._object_type == 'Collection':
-                col_len = len(src.sources)
+                col_len = len(format_obj_input(src, allow="sources"))
                 B[i] = np.sum(B[i:i+col_len],axis=0)    # set B[i] to sum of slice
                 B = np.delete(B,np.s_[i+1:i+col_len],0) # delete remaining part of slice
 

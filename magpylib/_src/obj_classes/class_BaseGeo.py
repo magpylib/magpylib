@@ -12,7 +12,8 @@ from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.input_checks import (
     check_format_input_orientation,
     check_format_input_vector,
-    )
+)
+from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -23,11 +24,12 @@ def pad_slice_path(path1, path2):
     return: path2 with format (N,x)
     """
     delta_path = len(path1) - len(path2)
-    if delta_path>0:
-        return np.pad(path2, ((0,delta_path), (0,0)), 'edge')
-    if delta_path<0:
+    if delta_path > 0:
+        return np.pad(path2, ((0, delta_path), (0, 0)), "edge")
+    if delta_path < 0:
         return path2[-delta_path:]
     return path2
+
 
 class BaseGeo(BaseTransform):
     """Initializes position and orientation properties
@@ -61,14 +63,17 @@ class BaseGeo(BaseTransform):
 
     """
 
-    def __init__(self, position=(0.,0.,0.,), orientation=None, style=None, **kwargs):
+    def __init__(
+        self, position=(0.0, 0.0, 0.0,), orientation=None, style=None, **kwargs
+    ):
 
+        self._parent = None
         # set _position and _orientation attributes
         self._init_position_orientation(position, orientation)
 
         # style
         self.style_class = self._get_style_class()
-        if style is not None or kwargs: #avoid style creation cost if not needed
+        if style is not None or kwargs:  # avoid style creation cost if not needed
             self.style = self._process_style_kwargs(style=style, **kwargs)
 
     @staticmethod
@@ -98,21 +103,22 @@ class BaseGeo(BaseTransform):
         # format position and orientation inputs
         pos = check_format_input_vector(
             position,
-            dims=(1,2),
+            dims=(1, 2),
             shape_m1=3,
-            sig_name='position',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)',
-            reshape=True)
+            sig_name="position",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            reshape=True,
+        )
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
         # padding logic: if one is longer than the other, edge-pad up the other
         len_pos = pos.shape[0]
         len_ori = oriQ.shape[0]
 
-        if len_pos>len_ori:
-            oriQ = np.pad(oriQ, ((0,len_pos-len_ori), (0,0)), 'edge')
-        elif len_pos<len_ori:
-            pos = np.pad(pos, ((0,len_ori-len_pos), (0,0)), 'edge')
+        if len_pos > len_ori:
+            oriQ = np.pad(oriQ, ((0, len_pos - len_ori), (0, 0)), "edge")
+        elif len_pos < len_ori:
+            pos = np.pad(pos, ((0, len_ori - len_pos), (0, 0)), "edge")
 
         # set attributes
         self._position = pos
@@ -129,8 +135,30 @@ class BaseGeo(BaseTransform):
 
     # properties ----------------------------------------------------
     @property
+    def parent(self):
+        """The object is a child of it's parent collection."""
+        return self._parent
+
+    @parent.setter
+    def parent(self, inp):
+        if getattr(inp, "_object_type", "") == "Collection":
+            inp.add(self, override_parent=True)
+        elif inp is None:
+            if self._parent is not None:
+                self._parent.remove(self)
+            self._parent = None
+        else:
+            raise MagpylibBadUserInput(
+                "Input `parent` must be `None` or a `Collection` object."
+                f"Instead received {type(inp)}."
+            )
+
+    @property
     def position(self):
-        """Object position attribute getter and setter."""
+        """
+        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
+        """
         return np.squeeze(self._position)
 
     @position.setter
@@ -151,11 +179,12 @@ class BaseGeo(BaseTransform):
         # check and set new position
         self._position = check_format_input_vector(
             inp,
-            dims=(1,2),
+            dims=(1, 2),
             shape_m1=3,
-            sig_name='position',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,) or (n,3)',
-            reshape=True)
+            sig_name="position",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
+            reshape=True,
+        )
 
         # pad/slice and set orientation path to same length
         oriQ = self._orientation.as_quat()
@@ -169,10 +198,13 @@ class BaseGeo(BaseTransform):
             # set child position (pad/slice orientation)
             child.position = self._position + rel_child_pos
 
-
     @property
     def orientation(self):
-        """Object orientation attribute getter and setter."""
+        """
+        Object orientation(s) in the global coordinates. `None` corresponds to
+        a unit-rotation. For m>1, the `position` and `orientation` attributes
+        together represent an object path.
+        """
         # cannot squeeze (its a Rotation object)
         if len(self._orientation) == 1:  # single path orientation - reduce dimension
             return self._orientation[0]
@@ -202,12 +234,16 @@ class BaseGeo(BaseTransform):
             child.position = pad_slice_path(self._position, child._position)
             # compute rotation and apply
             old_ori_pad = R.from_quat(np.squeeze(pad_slice_path(oriQ, old_oriQ)))
-            child.rotate(self.orientation*old_ori_pad.inv(), anchor=self._position, start=0)
-
+            child.rotate(
+                self.orientation * old_ori_pad.inv(), anchor=self._position, start=0
+            )
 
     @property
     def style(self):
-        """instance of MagpyStyle for display styling options"""
+        """
+        Object style in the form of a BaseStyle object. Input must be
+        in the form of a style dictionary.
+        """
         if not hasattr(self, "_style") or self._style is None:
             self._style = self._validate_style(val=None)
         return self._style
@@ -225,31 +261,22 @@ class BaseGeo(BaseTransform):
             raise ValueError(
                 f"Input parameter `style` must be of type {self.style_class}.\n"
                 f"Instead received type {type(val)}"
-                )
+            )
         return val
+
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """Add up sources to a Collection object.
+        """ Add up sources to a Collection object.
 
         Returns
         -------
         Collection: Collection
         """
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.obj_classes.class_Collection import Collection
+        from magpylib import Collection
         return Collection(self, obj)
 
-    def __radd__(self, other):
-        """Add up sources to a Collection object. Allows to use `sum(objects)`.
-
-        Returns
-        -------
-        Collection: Collection
-        """
-        if other==0:
-            return self
-        return self.__add__(other)
 
     # methods -------------------------------------------------------
     def reset_path(self):
@@ -277,7 +304,7 @@ class BaseGeo(BaseTransform):
         [0. 0. 0.]
         [0. 0. 0.]
         """
-        self.position = (0,0,0)
+        self.position = (0, 0, 0)
         self.orientation = None
         return self
 
@@ -304,8 +331,16 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
-        obj_copy = deepcopy(self)
-        if getattr(self, '_style', None) is not None:
+
+        if not self.parent is None:
+            parent = self.parent
+            self.parent = None
+            obj_copy = deepcopy(self)
+            self.parent = parent
+        else:
+            obj_copy = deepcopy(self)
+
+        if getattr(self, "_style", None) is not None:
             label = self.style.label
             if label is None:
                 label = f"{type(self).__name__}_01"
@@ -313,11 +348,11 @@ class BaseGeo(BaseTransform):
                 label = add_iteration_suffix(label)
             obj_copy.style.label = label
         style_kwargs = {}
-        for k,v in kwargs.items():
-            if k.startswith('style'):
+        for k, v in kwargs.items():
+            if k.startswith("style"):
                 style_kwargs[k] = v
             else:
-                setattr(obj_copy, k,v)
+                setattr(obj_copy, k, v)
         if style_kwargs:
             style_kwargs = self._process_style_kwargs(**style_kwargs)
             obj_copy.style.update(style_kwargs)

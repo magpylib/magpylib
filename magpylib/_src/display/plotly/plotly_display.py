@@ -3,7 +3,7 @@
 # pylint: disable=too-many-branches
 
 import numbers
-from itertools import cycle, combinations
+from itertools import combinations
 from typing import Tuple
 import warnings
 
@@ -31,6 +31,7 @@ from magpylib._src.display.display_utility import (
     draw_arrow_from_vertices,
     draw_arrowed_circle,
     place_and_orient_model3d,
+    get_flatten_objects_properties,
 )
 from magpylib._src.defaults.defaults_utility import (
     SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY,
@@ -52,6 +53,7 @@ from magpylib._src.display.plotly.plotly_utility import (
     merge_traces,
     getColorscale,
     getIntensity,
+    clean_legendgroups,
 )
 
 
@@ -334,7 +336,7 @@ def make_Sensor(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
-    pixel = np.array(pixel)
+    pixel = np.array(pixel).reshape((-1,3))
     default_suffix = (
         f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
         if pixel.ndim != 1
@@ -352,7 +354,7 @@ def make_Sensor(
     )
     if autosize is not None:
         dim *= autosize
-    if np.squeeze(pixel).ndim == 1:
+    if pixel.shape[0] == 1:
         dim_ext = dim
     else:
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
@@ -364,7 +366,7 @@ def make_Sensor(
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
-    if np.squeeze(pixel).ndim != 1:
+    if pixel.shape[0] != 1:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
         combs = np.array(list(combinations(pixel, 2)))
@@ -684,7 +686,7 @@ def make_path(input_obj, style, legendgroup, kwargs):
     return scatter_path
 
 
-def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
+def draw_frame(obj_list_semi_flat, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -694,6 +696,7 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
+    # pylint: disable=protected-access
     return_autosize = False
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
@@ -701,51 +704,18 @@ def draw_frame(objs, color_sequence, zoom, autosize=None, **kwargs) -> Tuple:
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
     traces_to_resize = {}
-    for obj, color in zip(objs, cycle(color_sequence)):
-        subobjs = [obj]
-        legendgroup = None
-        if getattr(obj, "children", None) is not None:
-            subobjs.extend(obj.children)
-            legendgroup = f"{obj}"
-            if getattr(obj, "position", None) is not None:
-                color = color if obj.style.color is None else obj.style.color
-        first_shown = False
-        for ind, subobj in enumerate(subobjs):
-            if legendgroup is not None:
-                if (
-                    subobj.style.model3d.showdefault or ind + 1 == len(subobjs)
-                ) and not first_shown:
-                    # take name of parent
-                    first_shown = True
-                    if getattr(subobj, "children", None) is not None:
-                        first_shown = any(m3.show for m3 in obj.style.model3d.data)
-                    showlegend = True
-                    legendtext = getattr(getattr(obj, "style", None), "label", None)
-                    legendtext = f"{obj!r}" if legendtext is None else legendtext
-                else:
-                    legendtext = None
-                    showlegend = False
-                # print(f"{ind+1:02d}/{len(subobjs):02d} {legendtext=}, {showlegend=}")
-            else:
-                showlegend = True
-                legendtext = None
-
-            params = {
-                **dict(
-                    color=color,
-                    legendgroup=legendgroup,
-                    showlegend=showlegend,
-                    legendtext=legendtext,
-                ),
-                **kwargs,
-            }
-            if isinstance(subobj, (Dipole, Sensor)):
-                traces_to_resize[subobj] = {**params}
-                # temporary coordinates to be able to calculate ranges
-                x, y, z = subobj.position.T
-                traces_dicts[subobj] = [dict(x=x, y=y, z=z)]
-            else:
-                traces_dicts[subobj] = get_plotly_traces(subobj, **params)
+    flat_objs_props = get_flatten_objects_properties(
+        *obj_list_semi_flat, color_sequence=color_sequence
+    )
+    for obj, params in flat_objs_props.items():
+        params.update(kwargs)
+        if isinstance(obj, (Dipole, Sensor)):
+            traces_to_resize[obj] = {**params}
+            # temporary coordinates to be able to calculate ranges
+            x, y, z = obj._position.T
+            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
+        else:
+            traces_dicts[obj] = get_plotly_traces(obj, **params)
     traces = [t for tr in traces_dicts.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     if autosize is None or autosize == "return":
@@ -1135,6 +1105,7 @@ def display_plotly(
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
             apply_fig_ranges(fig, zoom=zoom)
+        clean_legendgroups(fig)
         fig.update_layout(legend_itemsizing="constant")
     if show_fig:
         fig.show(renderer=renderer)

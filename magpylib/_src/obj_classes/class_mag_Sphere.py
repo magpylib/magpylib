@@ -34,6 +34,9 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
+    parent: `Collection` object or `None`
+        The object is a child of it's parent collection.
+
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
@@ -98,7 +101,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     # property getters and setters
     @property
     def diameter(self):
-        """Object diameter attribute getter and setter."""
+        """Diameter of the sphere in units of [mm]."""
         return self._diameter
 
     @diameter.setter

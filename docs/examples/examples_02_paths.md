@@ -69,7 +69,7 @@ print(sensor.position)                                    # to whole path starti
 
 sensor.move([(0,0,10), (0,0,20)], start=1)                # vector input and start=1 merges
 print(sensor.position)                                    # the input with the existing path
-# out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]    # starting at index 1.
+# out: [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]      # starting at index 1.
 ```
 
 (examples-relative-paths)=
@@ -82,13 +82,13 @@ print(sensor.position)                                    # the input with the e
 import numpy as np
 from magpylib.magnet import Sphere
 
-path1 = np.linspace((0,0,0), (10,0,0), 10)[1:]
-path2 = np.linspace((0,0,0), (0,0,10), 10)[1:]
+x_path = np.linspace((0,0,0), (10,0,0), 10)[1:]
+z_path = np.linspace((0,0,0), (0,0,10), 10)[1:]
 
 sphere = Sphere(magnetization=(0,0,1), diameter=3)
 
 for _ in range(3):
-    sphere.move(path1).move(path2)
+    sphere.move(x_path).move(z_path)
 
 sphere.show()
 ```
@@ -133,7 +133,7 @@ print(sensor.orientation.as_quat())
 
 ## Edge-padding and end-slicing
 
-Magpylib will always make sure that object paths are in the right format, i.e. `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g. when computing the field, the shorter paths are adjusted in length to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
+Magpylib will always make sure that object paths are in the right format, i.e. `position` and `orientation` attributes are of the same length. In addition, when objects with different path lengths are combined, e.g. when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
 
 The idea behind **edge-padding** is, that whenever path entries beyond the existing path length are needed the edge-entries of the existing path are returned. This means that the object is considered to be "static" beyond its existing path.
 

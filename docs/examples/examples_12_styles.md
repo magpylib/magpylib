@@ -19,8 +19,8 @@ The graphic styles define how Magpylib objects are displayed visually when calli
 There are multiple hierarchy levels that decide about the final graphical representation of the objects:
 
 1. When no input is given, the **default style** will be applied.
-2. Object **individual styles** will take precedence over the default values.
-3. Collections will override the color property of all children.
+2. Collections will override the color property of all children with their own color.
+3. Object **individual styles** will take precedence over these values.
 4. Setting a **local style** in `show()` will take precedence over all other settings.
 
 ## Setting the default style
@@ -113,11 +113,11 @@ magpy.defaults.display.style.magnet.update(
 Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be omitted.
 
 ```{warning}
-Users should be aware that specifying style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).
+Users should be aware that specifying individual style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).
 While this may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
-In the following example the individual style of `cube` is set at initialization, the style of `cylinder` is the default one, and the individual style of `sphere` is set using the style properties.
+In the following example the individual style of `cube` is set at initialization, the style of `cylinder` is the default one, and the individual style of `sphere` is set using the object style properties.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -147,7 +147,7 @@ magpy.show(cube, cylinder, sphere, backend="plotly")
 
 ## Setting style via collections
 
-When displaying collections, the collection object `color` property will be automatically assigned to all its children and override default and individual styles. An example that demonstrates this is {ref}`examples-union-operation`. In addition, it is possible to modify the style of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
+When displaying collections, the collection object `color` property will be automatically assigned to all its children and override the default style. An example that demonstrates this is {ref}`examples-union-operation`. In addition, it is possible to modify the individual style properties of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
 
 In the following example we show how the french magnetization style is applied to all children in a collection,
 

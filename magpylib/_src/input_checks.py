@@ -9,7 +9,7 @@ from magpylib._src.exceptions import (
 )
 from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib import _src
-from magpylib._src.utility import wrong_obj_msg
+from magpylib._src.utility import format_obj_input, wrong_obj_msg, LIBRARY_SOURCES, LIBRARY_SENSORS
 
 
 #################################################################
@@ -411,9 +411,10 @@ def check_format_input_observers(inp):
             if getattr(obj, "_object_type", "") == "Sensor":
                 sensors.append(obj)
             elif getattr(obj, "_object_type", "") == "Collection":
-                if not obj.sensors:
+                child_sensors = format_obj_input(obj, allow='sensors')
+                if not child_sensors:
                     raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
-                sensors.extend(obj.sensors)
+                sensors.extend(child_sensors)
             else: # if its not a Sensor or a Collection it can only be a pos_vec
                 try:
                     obj = np.array(obj, dtype=float)
@@ -429,6 +430,67 @@ def check_format_input_observers(inp):
                 ' All sensor pixel and position vector inputs must'
                 ' be of similar shape !')
         return sensors
+
+
+def check_format_input_obj(
+    inp,
+    allow: str,
+    recursive = True,
+    typechecks = False,
+    ) -> list:
+    """
+    Returns a flat list of all wanted objects in input.
+
+    Parameters
+    ----------
+    input: can be
+        - objects
+
+    allow: str
+        Specify which object types are wanted, separate by +,
+        e.g. sensors+collections+sources
+
+    recursive: bool
+        Flatten Collection objects
+    """
+    # select wanted
+    wanted_types = []
+    if "sources" in allow.split("+"):
+        wanted_types += list(LIBRARY_SOURCES)
+    if "sensors" in allow.split("+"):
+        wanted_types += list(LIBRARY_SENSORS)
+    if "collections" in allow.split("+"):
+        wanted_types += ['Collection']
+
+    if typechecks:
+        all_types = list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS) + ["Collection"]
+
+    obj_list = []
+    for obj in inp:
+        obj_type = getattr(obj, "_object_type", None)
+
+        # add to list if wanted type
+        if obj_type in wanted_types:
+            obj_list.append(obj)
+
+        # recursion
+        if (obj_type == "Collection") and recursive:
+            obj_list += check_format_input_obj(
+                obj,
+                allow=allow,
+                recursive=recursive,
+                typechecks=typechecks,
+            )
+
+        # typechecks
+        if typechecks:
+            if not obj_type in all_types:
+                raise MagpylibBadUserInput(
+                    f"Input objects must be {allow} or a flat list thereof.\n"
+                    f"Instead received {type(obj)}."
+                )
+
+    return obj_list
 
 
 ############################################################################################

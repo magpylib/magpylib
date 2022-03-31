@@ -1,6 +1,5 @@
 """ matplotlib draw-functionalities"""
 
-from itertools import cycle
 import numpy as np
 import matplotlib.pyplot as plt
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -15,6 +14,7 @@ from magpylib._src.display.display_utility import (
     system_size,
     faces_sphere,
     faces_cylinder_segment,
+    get_flatten_objects_properties,
 )
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
@@ -333,8 +333,6 @@ def display_matplotlib(
     # pylint: disable=too-many-statements
 
     # apply config default values if None
-    if color_sequence is None:
-        color_sequence = Config.display.colorsequence
     # create or set plotting axis
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8, 8))
@@ -351,108 +349,94 @@ def display_matplotlib(
     points = []
     dipoles = []
     sensors = []
-    faced_objects_color = []
-
-    for semi_flat_obj, color in zip(obj_list_semi_flat, cycle(color_sequence)):
-        flat_objs = [semi_flat_obj]
-        if getattr(semi_flat_obj, "children", None) is not None:
-            flat_objs.extend(semi_flat_obj.children)
-            if getattr(semi_flat_obj, "position", None) is not None:
-                color = (
-                    color
-                    if semi_flat_obj.style.color is None
-                    else semi_flat_obj.style.color
+    flat_objs_props = get_flatten_objects_properties(
+        *obj_list_semi_flat, color_sequence=color_sequence
+    )
+    for obj, props in flat_objs_props.items():
+        color = props["color"]
+        style = get_style(obj, Config, **kwargs)
+        path_frames = style.path.frames
+        if path_frames is None:
+            path_frames = True
+        obj_color = style.color if style.color is not None else color
+        lw = 0.25
+        faces = None
+        if obj.style.model3d.data:
+            pts = draw_model3d_extra(obj, style, path_frames, ax, obj_color)
+            points += pts
+        if obj.style.model3d.showdefault:
+            if obj._object_type == "Cuboid":
+                lw = 0.5
+                faces = faces_cuboid(obj, path_frames)
+            elif obj._object_type == "Cylinder":
+                faces = faces_cylinder(obj, path_frames)
+            elif obj._object_type == "CylinderSegment":
+                faces = faces_cylinder_segment(obj, path_frames)
+            elif obj._object_type == "Sphere":
+                faces = faces_sphere(obj, path_frames)
+            elif obj._object_type == "Line":
+                if style.arrow.show:
+                    check_excitations([obj])
+                arrow_size = style.arrow.size if style.arrow.show else 0
+                arrow_width = style.arrow.width
+                points += draw_line(
+                    [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                 )
-
-        for obj in flat_objs:
-            style = get_style(obj, Config, **kwargs)
-            path_frames = style.path.frames
-            if path_frames is None:
-                path_frames = True
-            obj_color = style.color if style.color is not None else color
-            lw = 0.25
-            faces = None
-            if obj.style.model3d.data:
-                pts = draw_model3d_extra(obj, style, path_frames, ax, obj_color)
-                points += pts
-            if obj.style.model3d.showdefault:
-                if obj._object_type == "Cuboid":
-                    lw = 0.5
-                    faces = faces_cuboid(obj, path_frames)
-                elif obj._object_type == "Cylinder":
-                    faces = faces_cylinder(obj, path_frames)
-                elif obj._object_type == "CylinderSegment":
-                    faces = faces_cylinder_segment(obj, path_frames)
-                elif obj._object_type == "Sphere":
-                    faces = faces_sphere(obj, path_frames)
-                elif obj._object_type == "Line":
-                    if style.arrow.show:
-                        check_excitations([obj])
-                    arrow_size = style.arrow.size if style.arrow.show else 0
-                    arrow_width = style.arrow.width
-                    points += draw_line(
-                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
-                    )
-                elif obj._object_type == "Loop":
-                    if style.arrow.show:
-                        check_excitations([obj])
-                    arrow_width = style.arrow.width
-                    arrow_size = style.arrow.size if style.arrow.show else 0
-                    points += draw_circular(
-                        [obj], path_frames, obj_color, arrow_size, arrow_width, ax
-                    )
-                elif obj._object_type == "Sensor":
-                    sensors.append((obj, obj_color))
-                    points += draw_pixel(
-                        [obj],
-                        ax,
-                        obj_color,
-                        style.pixel.color,
-                        style.pixel.size,
-                        style.pixel.symbol,
-                        path_frames,
-                    )
-                elif obj._object_type == "Dipole":
-                    dipoles.append((obj, obj_color))
-                    points += [obj.position]
-                elif obj._object_type == "CustomSource":
-                    draw_markers(
-                        np.array([obj.position]), ax, obj_color, symbol="*", size=10
-                    )
-                    label = (
-                        obj.style.label
-                        if obj.style.label is not None
-                        else str(type(obj).__name__)
-                    )
-                    ax.text(*obj.position, label, horizontalalignment="center")
-                    points += [obj.position]
-                if faces is not None:
-                    faced_objects_color += [obj_color]
-                    alpha = style.opacity
-                    pts = draw_faces(faces, obj_color, lw, alpha, ax)
-                    points += [np.vstack(pts).reshape(-1, 3)]
-                    if style.magnetization.show:
-                        check_excitations([obj])
-                        pts = draw_directs_faced(
-                            [obj],
-                            [obj_color],
-                            ax,
-                            path_frames,
-                            style.magnetization.size,
-                        )
-                        points += pts
-            if style.path.show:
-                marker, line = style.path.marker, style.path.line
-                points += draw_path(
-                    obj,
-                    obj_color,
-                    marker.symbol,
-                    marker.size,
-                    marker.color,
-                    line.style,
-                    line.width,
+            elif obj._object_type == "Loop":
+                if style.arrow.show:
+                    check_excitations([obj])
+                arrow_width = style.arrow.width
+                arrow_size = style.arrow.size if style.arrow.show else 0
+                points += draw_circular(
+                    [obj], path_frames, obj_color, arrow_size, arrow_width, ax
+                )
+            elif obj._object_type == "Sensor":
+                sensors.append((obj, obj_color))
+                points += draw_pixel(
+                    [obj],
                     ax,
+                    obj_color,
+                    style.pixel.color,
+                    style.pixel.size,
+                    style.pixel.symbol,
+                    path_frames,
                 )
+            elif obj._object_type == "Dipole":
+                dipoles.append((obj, obj_color))
+                points += [obj.position]
+            elif obj._object_type == "CustomSource":
+                draw_markers(
+                    np.array([obj.position]), ax, obj_color, symbol="*", size=10
+                )
+                label = (
+                    obj.style.label
+                    if obj.style.label is not None
+                    else str(type(obj).__name__)
+                )
+                ax.text(*obj.position, label, horizontalalignment="center")
+                points += [obj.position]
+            if faces is not None:
+                alpha = style.opacity
+                pts = draw_faces(faces, obj_color, lw, alpha, ax)
+                points += [np.vstack(pts).reshape(-1, 3)]
+                if style.magnetization.show:
+                    check_excitations([obj])
+                    pts = draw_directs_faced(
+                        [obj], [obj_color], ax, path_frames, style.magnetization.size,
+                    )
+                    points += pts
+        if style.path.show:
+            marker, line = style.path.marker, style.path.line
+            points += draw_path(
+                obj,
+                obj_color,
+                marker.symbol,
+                marker.size,
+                marker.color,
+                line.style,
+                line.width,
+                ax,
+            )
 
     # markers -------------------------------------------------------
     if markers is not None and markers:
