@@ -5,13 +5,12 @@ repos:
       - id: check-yaml
       - id: end-of-file-fixer
       - id: trailing-whitespace
-      - id: end-of-file-fixer
       - id: check-added-large-files
       - id: debug-statements
         language_version: python3
 
   - repo: https://github.com/psf/black
-    rev: 21.12b0
+    rev: 22.3
     hooks:
       - id: black
 
