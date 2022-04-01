@@ -2,7 +2,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 from magpylib._src.exceptions import (
     MagpylibBadUserInput,
-    MagpylibInternalError,
     MagpylibMissingInput,
 )
 import magpylib as magpy
@@ -389,20 +388,40 @@ def test_input_objects_field_func_good():
 
     # init empty = None
     src = magpy.misc.CustomSource()
-    np.testing.assert_raises(MagpylibInternalError, src.getB, (1,2,3))
-    np.testing.assert_raises(MagpylibInternalError, src.getH, (1,2,3))
+    np.testing.assert_raises(MagpylibMissingInput, src.getB, (1,2,3))
+    np.testing.assert_raises(MagpylibMissingInput, src.getH, (1,2,3))
 
     # None
     src = magpy.misc.CustomSource(field_func=None)
-    np.testing.assert_raises(MagpylibInternalError, src.getB, (1,2,3))
-    np.testing.assert_raises(MagpylibInternalError, src.getH, (1,2,3))
+    np.testing.assert_raises(MagpylibMissingInput, src.getB, (1,2,3))
+    np.testing.assert_raises(MagpylibMissingInput, src.getH, (1,2,3))
 
-    # acceptable func
+    # acceptable func with B and H return
     def f(field, observers):
         """3 in 3 out"""
         return observers
     src = magpy.misc.CustomSource(field_func=f)
     np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
+    np.testing.assert_allclose(src.getH((1,2,3)), (1,2,3))
+
+    # acceptable func with only B return
+    def ff(field, observers):
+        """3 in 3 out"""
+        if field == 'B':
+            return observers
+        return None
+    src = magpy.misc.CustomSource(field_func=ff)
+    np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
+    np.testing.assert_raises(MagpylibMissingInput, src.getH, (1,2,3))
+
+    # acceptable func with only B return
+    def fff(field, observers):
+        """3 in 3 out"""
+        if field == 'H':
+            return observers
+        return None
+    src = magpy.misc.CustomSource(field_func=fff)
+    np.testing.assert_raises(MagpylibMissingInput, src.getB, (1,2,3))
     np.testing.assert_allclose(src.getH((1,2,3)), (1,2,3))
 
 

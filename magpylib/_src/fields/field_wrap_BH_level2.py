@@ -148,8 +148,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(sources)
-    check_excitations(sources)
-
+    check_excitations(sources, kwargs['field'])
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof

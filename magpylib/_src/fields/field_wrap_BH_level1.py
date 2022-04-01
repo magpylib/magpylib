@@ -82,10 +82,6 @@ def getBH_level1(**kwargs:dict) -> np.ndarray:
     elif src_type == 'CustomSource':
         if kwargs.get('field_func', None) is not None:
             B = kwargs['field_func'](field, pos_rel_rot)
-        else:
-            raise MagpylibInternalError(
-                'No field calculation not provided for CustomSource class'
-            )
 
     else:
         raise MagpylibInternalError(f'Bad src input type "{src_type}" in level1')

@@ -550,7 +550,7 @@ import numpy as np
 import plotly.graph_objects as go
 import magpylib as magpy
 
-# define B-field function for custom source
+# define B/H field function for custom source
 def easter_field(field, observers):
     """ points in z-direction and decays with 1/r^3"""
     dist = np.linalg.norm(observers, axis=1)

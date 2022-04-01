@@ -1,7 +1,5 @@
-import pytest
 import numpy as np
 import magpylib as magpy
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=unused-argument
@@ -11,10 +9,6 @@ def constant_field(field, observers=(0,0,0)):
     position = np.array(observers)
     length = 1 if position.ndim==1 else len(position)
     return np.array([[1, 2, 3]] * length)
-
-def bad_Bfield_func(field, observers):
-    """ another constant function without docstring"""
-    return np.array([[1, 2, 3]])
 
 
 def test_CustomSource_basicB():
@@ -51,19 +45,6 @@ def test_CustomSource_basicH():
     H = external_field.getH([[1, 2, 3], [4, 5, 6]])
     Htest = np.array([[-0.70710678, 2.12132034, 3.0]] * 2)
     np.testing.assert_allclose(H, Htest)
-
-
-def test_CustomSource_bad_inputs():
-    """missing docstring"""
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.misc.CustomSource(field_func='not a callable')
-
-    with pytest.raises(MagpylibBadUserInput):
-        magpy.misc.CustomSource(field_func=bad_Bfield_func)
-
-    src = magpy.misc.CustomSource()
-    with pytest.raises(MagpylibInternalError):
-        src.getB([0,0,0])
 
 
 def test_repr():
