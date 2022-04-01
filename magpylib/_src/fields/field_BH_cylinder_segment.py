@@ -1351,7 +1351,7 @@ def magnet_cylinder_segment_core(
 
 def magnet_cylinder_segment_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     magnetization: np.ndarray,
     dimension: np.ndarray,
     ) -> np.ndarray:
@@ -1366,7 +1366,7 @@ def magnet_cylinder_segment_field(
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
 
-    observer: ndarray, shape (n,3)
+    observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     magnetization: ndarray, shape (n,3)
@@ -1415,7 +1415,7 @@ def magnet_cylinder_segment_field(
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
 
     # transform obs_pos to Cy CS --------------------------------------------
-    x, y, z = observer.T
+    x, y, z = observers.T
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
     pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 

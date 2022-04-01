@@ -9,7 +9,7 @@ from magpylib._src.input_checks import check_field_input
 
 def magnet_sphere_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     magnetization: np.ndarray,
     diameter: np.ndarray,
     )->np.ndarray:
@@ -23,7 +23,7 @@ def magnet_sphere_field(
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
 
-    observer: ndarray, shape (n,3)
+    observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     magnetization: ndarray, shape (n,3)
@@ -62,7 +62,7 @@ def magnet_sphere_field(
 
     # all special cases r0=0 and mag=0 automatically covered
 
-    x, y, z = np.copy(observer.T)
+    x, y, z = np.copy(observers.T)
     r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
     r0 = abs(diameter)/2
 
@@ -73,7 +73,7 @@ def magnet_sphere_field(
     mask_out = (r>=r0)
 
     mag1 = magnetization[mask_out]
-    obs1 = observer[mask_out]
+    obs1 = observers[mask_out]
     r1 = r[mask_out]
     r01 = r0[mask_out]
 

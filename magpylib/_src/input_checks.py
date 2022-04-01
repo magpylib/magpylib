@@ -133,34 +133,40 @@ def validate_field_func(val):
     - needs to be a callable
     - input and output shape must match
     """
-    if val is not None:
-        msg = ""
-        if not callable(val):
-            msg = f"Instead received {type(val).__name__}."
-        else:
-            fn_args = inspect.getfullargspec(val).args
-            if fn_args[:2] != ["field", "observer"]:
-                msg = f"Instead received a callable, the first two args being: {fn_args[:2]}"
-            else:
-                out = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
-                out_shape = np.array(out).shape
-                if out_shape != (2, 3):
-                    msg = (
-                        "Function test call with observer of shape (2,3) failed, "
-                        f"instead received shape {out_shape}."
-                    )
+    if val is None:
+        return None
 
-        if msg:
-            raise MagpylibBadUserInput(
-                "Input parameter `field_func` must be a callable "
-                "accepting the two positional arguments `field` and `observer` "
-                "(e.g. `def myfieldfunc(field, observer, ...): ...`. The `field` argument must "
-                "accept one of ('B','H') and the `observer` an ndarray of shape (n,3). "
-                "The returned field must be an ndarray matching the observer shape.\n"
-                + msg
-            )
-    return val
+    if not callable(val):
+        raise MagpylibBadUserInput(
+            "Input parameter `field_func` must be a callable.\n"
+            f"Instead received {type(val).__name__}."
+        )
 
+    fn_args = inspect.getfullargspec(val).args
+    if fn_args[:2] != ["field", "observers"]:
+        raise MagpylibBadUserInput(
+            "Input parameter `field_func` must have two positional args"
+            " called 'field' and 'observers'.\n"
+            f"Instead received a callable where the first two args are: {fn_args[:2]}"
+        )
+
+    for field in ['B', 'H']:
+        out = val(field, np.array([[1, 2, 3], [4, 5, 6]]))
+        if out is not None:
+            if not isinstance(out, np.ndarray):
+                raise MagpylibBadUserInput(
+                    "Input parameter `field_func` must be a callable that returns B- and H-field"
+                    "as numpy ndarray.\n"
+                    f"Instead it returns type {type(out)} for {field}-field."
+                )
+            if out.shape != (2, 3):
+                raise MagpylibBadUserInput(
+                    "Input parameter `field_func` must be a callable that returns B- and H-field"
+                    " as numpy ndarray with shape (n,3), when `observers` input is shape (n,3).\n"
+                    f"Instead it returns shape {out.shape} for {field}-field for input shape (2,3)"
+                )
+
+    return None
 
 #################################################################
 #################################################################
@@ -420,7 +426,7 @@ def check_format_input_backend(inp):
 
 def check_format_input_observers(inp, pixel_agg=None):
     """
-    checks observer input and returns a list of sensor objects
+    checks observers input and returns a list of sensor objects
     """
     # pylint: disable=raise-missing-from
     # pylint: disable=protected-access
@@ -554,7 +560,7 @@ def check_dimensions(sources):
                 raise MagpylibMissingInput(f"Parameter `vertices` of {s} must be set.")
 
 
-def check_excitations(sources):
+def check_excitations(sources, custom_field=None):
     """check if all sources have exitation initialized"""
     # pylint: disable=protected-access
     for s in sources:
@@ -570,6 +576,17 @@ def check_excitations(sources):
         elif obj_type == "Dipole":
             if s.moment is None:
                 raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
+        elif (obj_type == "CustomSource") and (custom_field is not None):
+            if s.field_func is None:
+                raise MagpylibMissingInput(
+                    f"Cannot compute {custom_field}-field because input parameter"
+                    f"`field_func` of {s} has undefined {custom_field}-field computation."
+                )
+            if s.field_func(custom_field, np.zeros((1,3))) is None:
+                raise MagpylibMissingInput(
+                    f"Cannot compute {custom_field}-field because input parameter"
+                    f"`field_func` of {s} has undefined {custom_field}-field computation."
+                )
 
 
 def check_format_pixel_agg(pixel_agg):

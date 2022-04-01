@@ -46,7 +46,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     kwargs = {
         "source_type": src_type,
         "position": posv,
-        "observer": posov,
+        "observers": posov,
         "orientation": rotobj,
     }
 
@@ -124,7 +124,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
-        return getBH_dict_level2(source_type=sources, observer=observers, **kwargs)
+        return getBH_dict_level2(source_type=sources, observers=observers, **kwargs)
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     kwargs_check = kwargs.copy()
@@ -144,10 +144,9 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(sources)
-    check_excitations(sources)
+    check_excitations(sources, kwargs['field'])
 
-
-    # format observer inputs:
+    # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar - or else if pixel_agg is given

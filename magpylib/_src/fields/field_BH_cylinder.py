@@ -204,7 +204,7 @@ def fieldH_cylinder_diametral(
 # ON INTERFACE
 def magnet_cylinder_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     magnetization: np.ndarray,
     dimension: np.ndarray,
     ) -> np.ndarray:
@@ -219,7 +219,7 @@ def magnet_cylinder_field(
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
 
-    observer: ndarray, shape (n,3)
+    observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     magnetization: ndarray, shape (n,3)
@@ -263,7 +263,7 @@ def magnet_cylinder_field(
     bh = check_field_input(field, 'magnet_cylinder_field()')
 
     # transform to Cy CS --------------------------------------------
-    r, phi, z = cart_to_cyl_coordinates(observer)
+    r, phi, z = cart_to_cyl_coordinates(observers)
     r0,z0 = dimension.T/2
 
     # scale invariance (make dimensionless)

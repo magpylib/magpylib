@@ -487,11 +487,11 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None):
-        """Compute B-field in [mT] for given sources and observer inputs.
+        """Compute B-field in [mT] for given sources and observers.
 
         Parameters
         ----------
-        sources_observers: source or observer inputs
+        inputs: source or observer objects
             Input can only be observers if the collection contains only sources. In this case the
             collection behaves like a single source.
             Input can only be sources if the collection contains only sensors. In this case the
@@ -504,7 +504,7 @@ class BaseCollection(BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------
@@ -549,11 +549,11 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None):
-        """Compute H-field in [kA/m] for given sources and observer inputs.
+        """Compute H-field in [kA/m] for given sources and observers.
 
         Parameters
         ----------
-        sources_observers: source or observer inputs
+        inputs: source or observer objects
             Input can only be observers if the collection contains only sources. In this case the
             collection behaves like a single source.
             Input can only be sources if the collection contains sensors. In this case the
@@ -566,7 +566,7 @@ class BaseCollection(BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------
