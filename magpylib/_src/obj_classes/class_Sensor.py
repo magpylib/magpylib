@@ -131,7 +131,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------
@@ -192,7 +192,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------

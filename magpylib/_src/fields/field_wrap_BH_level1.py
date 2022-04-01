@@ -24,7 +24,7 @@ def getBH_level1(
     source_type: str,
     position: np.ndarray,
     orientation: np.ndarray,
-    observer: np.ndarray,
+    observers: np.ndarray,
     **kwargs: dict,
 ) -> np.ndarray:
     """Vectorized field computation
@@ -45,19 +45,15 @@ def getBH_level1(
     # pylint: disable=too-many-branches
 
     # transform obs_pos into source CS
-    pos_rel_rot = orientation.apply(observer - position, inverse=True)
+    pos_rel_rot = orientation.apply(observers - position, inverse=True)
 
     # collect dictionary inputs and compute field
     field_func = FIELD_FUNCTIONS.get(source_type, None)
 
-    if source_type == 'CustomSource':
+    if source_type == "CustomSource":
         field = kwargs["field"]
-        if kwargs.get('field_func', None) is not None:
-            BH = kwargs['field_func'](field, pos_rel_rot)
-        else:
-            raise MagpylibInternalError(
-                'No field calculation not provided for CustomSource class'
-            )
+        if kwargs.get("field_func", None) is not None:
+            BH = kwargs["field_func"](field, pos_rel_rot)
     elif field_func is not None:
         BH = field_func(observer=pos_rel_rot, **kwargs)
     else:

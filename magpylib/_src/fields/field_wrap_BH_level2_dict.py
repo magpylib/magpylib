@@ -8,7 +8,7 @@ from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
 
 
 PARAM_TILE_DIMS = {
-    "observer": 2,
+    "observers": 2,
     "position": 2,
     "orientation": 2,
     "magnetization": 2,
@@ -23,7 +23,7 @@ PARAM_TILE_DIMS = {
 
 def getBH_dict_level2(
     source_type,
-    observer,
+    observers,
     *,
     field: str,
     position=(0, 0, 0),
@@ -31,7 +31,7 @@ def getBH_dict_level2(
     squeeze=True,
     **kwargs: dict,
 ) -> np.ndarray:
-    """ Direct interface access to vectorized computation
+    """Direct interface access to vectorized computation
 
     Parameters
     ----------
@@ -66,7 +66,7 @@ def getBH_dict_level2(
             " when using the direct interface."
         )
 
-    kwargs["observer"] = observer
+    kwargs["observers"] = observers
     kwargs["position"] = position
 
     # change orientation to Rotation numpy array for tiling
@@ -79,8 +79,7 @@ def getBH_dict_level2(
             val = np.array(val, dtype=float)
         except TypeError as err:
             raise MagpylibBadUserInput(
-                f"{key} input must be array-like.\n"
-                f"Instead received {val}"
+                f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
         tdim = PARAM_TILE_DIMS.get(key, 1)
         if val.ndim == tdim:

@@ -13,7 +13,7 @@ from magpylib._src.input_checks import check_field_input
 # ON INTERFACE
 def current_loop_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     current: np.ndarray,
     diameter: np.ndarray,
     ) -> np.ndarray:
@@ -27,7 +27,7 @@ def current_loop_field(
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
 
-    observer: ndarray, shape (n,3)
+    observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     current: ndarray, shape (n,)
@@ -75,7 +75,7 @@ def current_loop_field(
 
     bh = check_field_input(field, 'current_loop_field()')
 
-    r, phi, z = cart_to_cyl_coordinates(observer)
+    r, phi, z = cart_to_cyl_coordinates(observers)
     rad = np.abs(diameter/2)
     n = len(rad)
 

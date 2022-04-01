@@ -9,7 +9,7 @@ from magpylib._src.input_checks import check_field_input
 
 def current_vertices_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     current: np.ndarray,
     vertices: list=None,
     segment_start=None,  # list of mix3 ndarrays
@@ -30,10 +30,10 @@ def current_vertices_field(
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
     if vertices is None:
-        return current_line_field(field, observer, current, segment_start, segment_end)
+        return current_line_field(field, observers, current, segment_start, segment_end)
 
     nv = len(vertices)           # number of input vertex_sets
-    npp = int(observer.shape[0]/nv)  # number of position vectors
+    npp = int(observers.shape[0]/nv)  # number of position vectors
     nvs = [len(vset)-1 for vset in vertices] # length of vertex sets
     nseg = sum(nvs)                             # number of segments
 
@@ -43,16 +43,16 @@ def current_vertices_field(
     pos_end = np.concatenate([vert[1:] for vert in vertices])
 
     # create input for vectorized computation in one go
-    observer = np.reshape(observer, (nv, npp,3))
-    observer = np.repeat(observer, nvs, axis=0)
-    observer = np.reshape(observer, (-1, 3))
+    observers = np.reshape(observers, (nv, npp,3))
+    observers = np.repeat(observers, nvs, axis=0)
+    observers = np.reshape(observers, (-1, 3))
 
     curr_tile = np.repeat(curr_tile, npp)
     pos_start = np.repeat(pos_start, npp, axis=0)
     pos_end = np.repeat(pos_end, npp, axis=0)
 
     # compute field
-    field = current_line_field(field, observer, curr_tile, pos_start, pos_end)
+    field = current_line_field(field, observers, curr_tile, pos_start, pos_end)
     field = np.reshape(field, (nseg, npp, 3))
 
     # sum for each vertex set
@@ -65,7 +65,7 @@ def current_vertices_field(
 # ON INTERFACE
 def current_line_field(
     field: str,
-    observer: np.ndarray,
+    observers: np.ndarray,
     current: np.ndarray,
     segment_start: np.ndarray,
     segment_end: np.ndarray,
@@ -81,7 +81,7 @@ def current_line_field(
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
         in units of [kA/m].
 
-    observer: ndarray, shape (n,3)
+    observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
 
     current: ndarray, shape (n,)
@@ -138,10 +138,10 @@ def current_line_field(
         current = current[not_mask0]
         segment_start = segment_start[not_mask0]
         segment_end = segment_end[not_mask0]
-        observer = observer[not_mask0]
+        observers = observers[not_mask0]
 
     # rename
-    p1,p2,po = segment_start, segment_end, observer
+    p1,p2,po = segment_start, segment_end, observers
 
     # make dimensionless (avoid all large/small input problems) by introducing
     # the segment length as characteristic length scale.
@@ -154,7 +154,7 @@ def current_line_field(
     t = np.sum((po-p1)*(p1-p2), axis=1)
     p4 = p1 + (t*(p1-p2).T).T
 
-    # distance of observer from line
+    # distance of observers from line
     norm_o4 = norm(po - p4, axis=1)
 
     # separate on-line cases (-> B=0)

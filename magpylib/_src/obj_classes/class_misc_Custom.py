@@ -1,6 +1,4 @@
-"""Custom class code
-DOCSTRINGS V4 READY
-"""
+"""Custom class code """
 
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -8,7 +6,6 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.input_checks import validate_field_func
 
 
-# ON INTERFACE
 class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """User-defined custom source.
 
@@ -20,11 +17,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Parameters
     ----------
     field_func: callable, default=`None`
-        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
-        `observer` position input with format (n,3). The `field` argument must accept one of
-        `('B','H')` and the `observer` an ndarray of shape (n,3). The callable must return the field
-        in units of [mT] for `field='B'` and [kA/m] for `field='H'` and must match the observer
-        shape.
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -56,7 +53,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>>
-    >>> funcBH = lambda field, observer: np.array([(100 if field=='B' else 80,0,0)]*len(observer))
+    >>> funcBH = lambda field, observers: np.array([(100 if field=='B' else 80,0,0)]*len(obs))
     >>> src = magpy.misc.CustomSource(field_func=funcBH)
     >>> H = src.getH((1,1,1))
     >>> print(H)
@@ -102,14 +99,15 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @property
     def field_func(self):
         """
-        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
-        `observer` position input with format (n,3). The `field` argument must accept one of
-        `('B','H')` and the `observer` an ndarray of shape (n,3). The callable must return the field
-        in units of [mT] for `field='B'` and [kA/m] for `field='H'` and must match the observer
-        shape.
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
         """
         return self._field_func
 
     @field_func.setter
     def field_func(self, val):
-        self._field_func = validate_field_func(val)
+        validate_field_func(val)
+        self._field_func = val

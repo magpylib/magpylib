@@ -37,7 +37,7 @@ def getBH_level1_internal_error():
         source_type="woot",
         magnetization=x,
         dimension=x,
-        observer=x,
+        observers=x,
         position=x,
         orientation=rot,
     )

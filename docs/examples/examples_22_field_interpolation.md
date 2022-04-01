@@ -65,13 +65,12 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
     # construct interpolation with RegularGridInterpolator
     field_interp = []
     kwargs = dict(bounds_error=bounds_error, fill_value=fill_value, method=method)
-    for field in field_vec:
-        rgi = RegularGridInterpolator((X, Y, Z), field.reshape(nx, ny, nz), **kwargs)
+    for f in field_vec:
+        rgi = RegularGridInterpolator((X, Y, Z), f.reshape(nx, ny, nz), **kwargs)
         field_interp.append(rgi)
 
-    def field_func(field, observer):
-        if field=='B':
-            return np.array([field(observer) for field in field_interp]).T
+    def field_func(field, observers):
+        return np.array([f(observers) for f in field_interp]).T
     return field_func
 ```
 
