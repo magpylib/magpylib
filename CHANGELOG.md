@@ -15,7 +15,7 @@ This is a major update that includes
 - `Box` class renamed to `Cuboid`. ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`. ([#402](https://github.com/magpylib/magpylib/pull/402))
 - New `CylinderSegment` class with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385), [#484](https://github.com/magpylib/magpylib/pull/484), [#480](https://github.com/magpylib/magpylib/issues/480))
-- New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
+- New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411), [#506](https://github.com/magpylib/magpylib/pull/506))
 - All Magpylib objects can now be initialized without excitation and dimension attributes.
 - All classes now have the `parent` attribute to reference to a collection they are part of. Any object can only have a single parent.
 - All classes have the `describe` method which gives a quick object property overview.
