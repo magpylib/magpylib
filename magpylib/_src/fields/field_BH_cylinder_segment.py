@@ -1350,10 +1350,10 @@ def magnet_cylinder_segment_core(
 
 
 def magnet_cylinder_segment_field(
+    field: str,
+    observers: np.ndarray,
     magnetization: np.ndarray,
     dimension: np.ndarray,
-    observer: np.ndarray,
-    field='B',
     ) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized cylinder segment.
 
@@ -1362,19 +1362,19 @@ def magnet_cylinder_segment_field(
 
     Parameters
     ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observers: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,5)
         Cylinder segment dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
         height h in units of [mm] and the two segment angles phi1 and phi2 in units of [deg].
-
-    observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
 
     Returns
     -------
@@ -1415,7 +1415,7 @@ def magnet_cylinder_segment_field(
     dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
 
     # transform obs_pos to Cy CS --------------------------------------------
-    x, y, z = observer.T
+    x, y, z = observers.T
     r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
     pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 

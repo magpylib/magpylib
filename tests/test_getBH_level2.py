@@ -298,7 +298,6 @@ def test_squeeze_sumup():
 
     assert B1.shape == B2.shape
 
-
 def test_pixel_agg():
     """test pixel aggregator"""
     src1 = magpy.magnet.Cuboid((0,0,1000),(1,1,1)).move([[1,0,0]])

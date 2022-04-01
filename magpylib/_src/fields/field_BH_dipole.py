@@ -7,9 +7,9 @@ from magpylib._src.input_checks import check_field_input
 
 
 def dipole_field(
+    field: str,
+    observers: np.ndarray,
     moment: np.ndarray,
-    observer: np.ndarray,
-    field='B'
     ) -> np.ndarray:
     """Magnetic field of a dipole moment.
 
@@ -17,15 +17,15 @@ def dipole_field(
 
     Parameters
     ----------
-    moment: ndarray, shape (n,3)
-        Dipole moment vector in units of [mT*mm^3].
-
-    observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
     field: str, default=`'B'`
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+
+    observers: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
         in units of [kA/m].
+
+    moment: ndarray, shape (n,3)
+        Dipole moment vector in units of [mT*mm^3].
 
     Returns
     -------
@@ -49,12 +49,12 @@ def dipole_field(
     """
     bh = check_field_input(field, 'dipole_field()')
 
-    x, y, z = observer.T
+    x, y, z = observers.T
     r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
     with np.errstate(divide='ignore', invalid='ignore'):
         # 0/0 produces invalid warn and results in np.nan
         # x/0 produces divide warn and results in np.inf
-        B = (3*np.sum(moment*observer,axis=1)*observer.T/r**5 - moment.T/r**3).T/4/np.pi
+        B = (3*np.sum(moment*observers,axis=1)*observers.T/r**5 - moment.T/r**3).T/4/np.pi
 
     # when r=0 return np.inf in all non-zero moment directions
     mask1 = r==0

@@ -15,7 +15,7 @@ This is a major update that includes
 - `Box` class renamed to `Cuboid`. ([#350](https://github.com/magpylib/magpylib/issues/350))
 - `Circular` class renamed to `Loop`. ([#402](https://github.com/magpylib/magpylib/pull/402))
 - New `CylinderSegment` class with dimension `(r1,r2,h,phi1,phi2)` with the inner radius `r1`, the outer radius `r2` the height `h` and the cylinder section angles `phi1 < phi2`. ([#386](https://github.com/magpylib/magpylib/issues/386), [#385](https://github.com/magpylib/magpylib/issues/385), [#484](https://github.com/magpylib/magpylib/pull/484), [#480](https://github.com/magpylib/magpylib/issues/480))
-- New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411))
+- New `CustomSource` class for user defined field functions ([#349](https://github.com/magpylib/magpylib/issues/349), [#409](https://github.com/magpylib/magpylib/issues/409), [#411](https://github.com/magpylib/magpylib/pull/411), [#506](https://github.com/magpylib/magpylib/pull/506))
 - All Magpylib objects can now be initialized without excitation and dimension attributes.
 - All classes now have the `parent` attribute to reference to a collection they are part of. Any object can only have a single parent.
 - All classes have the `describe` method which gives a quick object property overview.
@@ -75,7 +75,7 @@ This is a major update that includes
 - Removed `increment` argument from `move` and `rotate` functions ([#438](https://github.com/magpylib/magpylib/discussions/438), [#444](https://github.com/magpylib/magpylib/issues/444))
 
 ### Modifications to the `Collection` class
-- Collections can now contain source, `Sensor` and other `Collection` objects and can function as source and observer inputs in `getB` and `getH`. ([#502](https://github.com/magpylib/magpylib/pull/502), [#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
+- Collections can now contain `Source`, `Sensor` and other `Collection` objects and can function as source and observer inputs in `getB` and `getH`. ([#502](https://github.com/magpylib/magpylib/pull/502), [#410](https://github.com/magpylib/magpylib/issues/410), [#415](https://github.com/magpylib/magpylib/pull/415), [#297](https://github.com/magpylib/magpylib/issues/297))
 - Instead of the property `Collection.sources` there are now the `Collection.children`, `Collection.sources`, `Collection.sensors` and `Collection.collections` properties. Setting these collection properties will automatically override parents. ([#446](https://github.com/magpylib/magpylib/issues/446), [#502](https://github.com/magpylib/magpylib/pull/502))
 - `Collection` has it's own `position`, `orientation` and `style`. ([#444](https://github.com/magpylib/magpylib/issues/444), [#461](https://github.com/magpylib/magpylib/issues/461))
 - All methods applied to a collection maintain relative child-positions in the local reference frame.

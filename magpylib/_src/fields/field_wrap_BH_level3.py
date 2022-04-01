@@ -39,7 +39,7 @@ def getB(
     pixel_agg: str, default=`None`
         Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observer inputs with different (pixel) shapes are allowed.
+        With this option, observers input with different (pixel) shapes is allowed.
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -112,7 +112,7 @@ def getB(
     [[6.23597388e+00 6.23597388e+00 2.66977810e+00]
      [8.01875374e-01 8.01875374e-01 1.48029737e-16]]
 
-    We can also use sensor objects as observer inputs:
+    We can also use sensor objects as observers input:
 
     >>> sens1 = magpy.Sensor(position=(1,1,1))
     >>> sens2 = sens1.copy(position=(1,1,-1))
@@ -267,7 +267,7 @@ def getH(
     [[4.96243034e+00 4.96243034e+00 2.12454191e+00]
      [6.38112147e-01 6.38112147e-01 1.17798322e-16]]
 
-    We can also use sensor objects as observer inputs:
+    We can also use sensor objects as observers input:
 
     >>> sens1 = magpy.Sensor(position=(1,1,1))
     >>> sens2 = sens1.copy(position=(1,1,-1))

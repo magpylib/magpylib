@@ -109,7 +109,7 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 - **`Dipole`**`(moment, position, orientation)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in \[mT mm³]. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
 
-- **`CustomSource`**`(field_B_lambda, field_H_lambda, position, orientation)` is used to create user defined custom sources with their own field functions. Can be used as Magpylib `sources` input.
+- **`CustomSource`**`(field_func, position, orientation)` is used to create user defined custom sources with their own field functions. Can be used as Magpylib `sources` input.
 
 - **`Sensor`**`(position, pixel, orientation)` represents a 3D magnetic field sensor. The field is evaluated at the given pixel positions. By default (`pixel=(0,0,0)`) the pixel position coincide in the local object coordinates and the global coordinates. Can be used as Magpylib `observers` input.
 
@@ -451,9 +451,9 @@ import magpylib as magpy
 
 mag = np.array([(100,0,0)]*5)
 dim = np.array([(1,2,3,45,90)]*5)
-pos = np.array([(0,0,0)]*5)
+obs = np.array([(0,0,0)]*5)
 
-B = magpy.core.magnet_cylinder_segment_field(mag, dim, pos, field='B')
+B = magpy.core.magnet_cylinder_segment_field('B', obs, mag, dim)
 print(B)
 ```
 
@@ -541,7 +541,7 @@ One central motivation behind the `Collection` class is enabling users to build 
 
 **User-defined 3D models** (traces) for any object that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts visualization.
 
-**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with user-defined field computation functions, that are stored in the attributes `field_B_lambda` and `field_H_lambda`, and will be used when `getB` and `getH` are called. The provided functions must accept position arrays with shape (n,3), and return the field with a similar shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
+**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with a user-defined field computation function, that is stored in the attribute `field_func` and is used when `getB` and `getH` are called. Similar to core functions, `field_func` must have the two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of \[mT\] and \[kA/m\] in the same shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
 
 While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
 
@@ -550,15 +550,15 @@ import numpy as np
 import plotly.graph_objects as go
 import magpylib as magpy
 
-# define B-field function for custom source
-def easter_field(pos):
+# define B/H field function for custom source
+def easter_field(field, observers):
     """ points in z-direction and decays with 1/r^3"""
-    dist = np.linalg.norm(pos, axis=1)
-    return np.c_[np.zeros((len(pos),2)), 1/dist**3]
+    dist = np.linalg.norm(observers, axis=1)
+    return np.c_[np.zeros((len(observers),2)), 1/dist**3]
 
 # create custom source
 egg = magpy.misc.CustomSource(
-    field_B_lambda=easter_field,
+    field_func=easter_field,
     style=dict(color='orange', model3d_showdefault=False, label='The Egg'),
 )
 

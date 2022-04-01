@@ -13,7 +13,7 @@ kernelspec:
 
 # Field interpolation
 
-Working with complex magnet shapes can be cumbersome when a lot of base shapes are required, see {ref}`examples-complex-forms`. One way around this problem is to compute the field only a single time on a 3D grid, define an interpolation function, and use the interpolation function as `field_B_lambda` input of a custom source.
+Working with complex magnet shapes can be cumbersome when a lot of base shapes are required, see {ref}`examples-complex-forms`. One way around this problem is to compute the field only a single time on a 3D grid, define an interpolation function, and use the interpolation function as `field_func` input of a custom source.
 
 This makes it possible to use the full Magpylib geometry interface, to move/rotate the complex source around, without having to recompute the total field at new observer positions. Of course this method would also allow it to integrate the field from a **finite element** computation or some **experimental data** into Magpylib.
 
@@ -65,10 +65,13 @@ def interpolate_field(data, method="linear", bounds_error=False, fill_value=np.n
     # construct interpolation with RegularGridInterpolator
     field_interp = []
     kwargs = dict(bounds_error=bounds_error, fill_value=fill_value, method=method)
-    for field in field_vec:
-        rgi = RegularGridInterpolator((X, Y, Z), field.reshape(nx, ny, nz), **kwargs)
+    for f in field_vec:
+        rgi = RegularGridInterpolator((X, Y, Z), f.reshape(nx, ny, nz), **kwargs)
         field_interp.append(rgi)
-    return lambda x: np.array([field(x) for field in field_interp]).T
+
+    def field_func(field, observers):
+        return np.array([f(observers) for f in field_interp]).T
+    return field_func
 ```
 
 ## Custom source with interpolation field
@@ -83,7 +86,7 @@ grid = np.array(np.meshgrid(ts,ts,ts)).T.reshape(-1,3)
 data = np.hstack((grid, cube.getB(grid)))
 
 # create custom source with nice 3D model
-custom = magpy.misc.CustomSource(field_B_lambda=interpolate_field(data))
+custom = magpy.misc.CustomSource(field_func=interpolate_field(data))
 
 xs = 1.1*np.array([-1, -1,  1,  1, -1, -1, -1, -1, -1,  1,  1,  1,  1, 1,  1, -1])
 ys = 1.1*np.array([-1,  1,  1, -1, -1, -1,  1,  1,  1,  1,  1,  1, -1, -1, -1, -1])

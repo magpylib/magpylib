@@ -49,11 +49,11 @@ def collection_tree_generator(
     obj,
     format="type+id+label",
     max_elems=20,
-    prefix = "",
-    space = "    ",
-    branch = "│   ",
-    tee = "├── ",
-    last = "└── ",
+    prefix="",
+    space="    ",
+    branch="│   ",
+    tee="├── ",
+    last="└── ",
 ):
     """
     Recursively creates a generator that will yield a visual tree structure of
@@ -74,13 +74,15 @@ def collection_tree_generator(
     if view_props:
         desc = getattr(obj, "_get_description", False)
         if desc:
-            desc_out = desc(exclude=(
-                "children",
-                "parent",
-                "style",
-                "sources",
-                "sensors",
-                "collections")
+            desc_out = desc(
+                exclude=(
+                    "children",
+                    "parent",
+                    "style",
+                    "sources",
+                    "sensors",
+                    "collections",
+                )
             )
             props = [d.strip() for d in desc_out[1:]]
 
@@ -222,7 +224,7 @@ class BaseCollection(BaseDisplayRepr):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
-    def describe(self, format='type+label+id', max_elems=10, return_string=False):
+    def describe(self, format="type+label+id", max_elems=10, return_string=False):
         # pylint: disable=arguments-differ
         """Returns or prints a tree view of the collection.
 
@@ -485,11 +487,11 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None):
-        """Compute B-field in [mT] for given sources and observer inputs.
+        """Compute B-field in [mT] for given sources and observers.
 
         Parameters
         ----------
-        sources_observers: source or observer inputs
+        inputs: source or observer objects
             Input can only be observers if the collection contains only sources. In this case the
             collection behaves like a single source.
             Input can only be sources if the collection contains only sensors. In this case the
@@ -502,7 +504,7 @@ class BaseCollection(BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------
@@ -547,11 +549,11 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None):
-        """Compute H-field in [kA/m] for given sources and observer inputs.
+        """Compute H-field in [kA/m] for given sources and observers.
 
         Parameters
         ----------
-        sources_observers: source or observer inputs
+        inputs: source or observer objects
             Input can only be observers if the collection contains only sources. In this case the
             collection behaves like a single source.
             Input can only be sources if the collection contains sensors. In this case the
@@ -564,7 +566,7 @@ class BaseCollection(BaseDisplayRepr):
         pixel_agg: str, default=`None`
             Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-            With this option, observer inputs with different (pixel) shapes are allowed.
+            With this option, observers input with different (pixel) shapes is allowed.
 
         Returns
         -------

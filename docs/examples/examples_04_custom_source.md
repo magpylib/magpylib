@@ -14,30 +14,32 @@ kernelspec:
 (examples-custom-source-objects)=
 # Custom source objects
 
-The class `CustomSource` allows users to integrate their own custom-objects into the Magpylib interface. The `field_B_lambda` and `field_H_lambda` arguments can be provided with function that are called with `getB` and `getH`.
-
-These custom field functions are treated like core functions. They must accept position inputs (array_like, shape (n,3)) and return the respective field with a similar shape. A fundamental example how to create a custom source object is:
+The class `CustomSource` allows users to integrate their own custom-object field computation into the Magpylib interface. For this, the argument `field_func` must be provided with a function that is then automatically called with `getB` and `getH`. This custom field function is treated like a core function. It must have the positional arguments `field` (with values `'B'` or `'H'`), and `observers` (must accept array_like, shape (n,3)) and return the B-field in units of \[mT\] and the H-field in units of \[kA/m\] with a similar shape. A fundamental example how to create a custom source object is shown below:
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
 # define field function
-def custom_field(position):
+def custom_field(field, observers):
     """ user defined custom field
     position input: array_like, shape (n,3)
     returns: B-field, ndarray, shape (n,3)
     """
-    return np.array(position)*2
+    if field=='B':
+        return np.array(observers)*2
+    return np.array(observers)
 
 # custom source
-source = magpy.misc.CustomSource(field_B_lambda=custom_field)
+source = magpy.misc.CustomSource(field_func=custom_field)
 
 # compute field with 2-pixel sensor
 sensor = magpy.Sensor(pixel=((1,1,1), (2,2,2)))
 
 B = magpy.getB(source, sensor)
 print(B)
+H = magpy.getH(source, sensor)
+print(H)
 ```
 
 Custom sources behave like native Magpylib objects. They can make full use of the geometry interface, have style properties, and can be part of collections and field computation together with all other source types. A custom 3D representation for display in `show` can be provided via the `style.model3d` attribute, see {ref}`examples-own-3d-models`.
@@ -65,15 +67,15 @@ trace_pole = magpy.graphics.model3d.make_Ellipsoid(
 # combine four monopole custom sources into a quadrupole collection
 def create_pole(charge):
     """ create a monopole object"""
-    field = lambda x: monopole_field( charge, x)
+    field = lambda field, observers: monopole_field(charge, observers)
     monopole = magpy.misc.CustomSource(
-        field_B_lambda=field,
+        field_func=field,
         style_model3d_showdefault=False,
     )
     monopole.style.model3d.add_trace(trace_pole)
     return monopole
 
-quadrupole = magpy.Collection([create_pole(q) for q in [1,1,-1,-1]])
+quadrupole = magpy.Collection(*[create_pole(q) for q in [1,1,-1,-1]])
 
 # move and color the pole objects
 pole_pos = np.array([(1,0,0), (-1,0,0), (0,0,1), (0,0,-1)])

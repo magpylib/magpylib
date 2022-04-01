@@ -17,7 +17,7 @@ def getBHv_unknown_source_type():
         magnetization=(1,0,0),
         dimension=(0,2,1,0,360),
         position=(0,0,-.5),
-        observer=(1.5,0,-.1),
+        observers=(1.5,0,-.1),
         field='B')
 
 def getBH_level1_internal_error():
@@ -25,7 +25,7 @@ def getBH_level1_internal_error():
     """
     x = np.array([(1,2,3)])
     rot = R.from_quat((0,0,0,1))
-    getBH_level1(field='B',source_type='woot', magnetization=x, dimension=x, observer=x,
+    getBH_level1(field='B',source_type='woot', magnetization=x, dimension=x, observers=x,
         position=x, orientation=rot)
 
 
@@ -62,18 +62,18 @@ def getBHv_missing_input1():
     """ missing bh
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(source_type='Cuboid', observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(source_type='Cuboid', observers=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input2():
     """ missing source_type
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, observers=x, magnetization=x, dimension=x)
 
 
 def getBHv_missing_input3():
-    """ missing observer
+    """ missing observers
     """
     x=np.array([(1,2,3)])
     getBH_dict_level2(bh=True, source_type='Cuboid', magnetization=x, dimension=x)
@@ -83,14 +83,14 @@ def getBHv_missing_input4_cuboid():
     """ missing Cuboid mag
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observers=x, dimension=x)
 
 
 def getBHv_missing_input5_cuboid():
     """ missing Cuboid dim
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observers=x, magnetization=x)
 
 
 def getBHv_missing_input4_cyl():
@@ -98,28 +98,28 @@ def getBHv_missing_input4_cyl():
     """
     x=np.array([(1,2,3)])
     y = np.array([(1,2)])
-    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, dimension=y)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observers=x, dimension=y)
 
 
 def getBHv_missing_input5_cyl():
     """ missing Cylinder dim
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Cylinder', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Cylinder', observers=x, magnetization=x)
 
 
 def getBHv_missing_input4_sphere():
     """ missing Sphere mag
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, dimension=1)
+    getBH_dict_level2(bh=True, source_type='Sphere', observers=x, dimension=1)
 
 
 def getBHv_missing_input5_sphere():
     """ missing Sphere dim
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Sphere', observer=x, magnetization=x)
+    getBH_dict_level2(bh=True, source_type='Sphere', observers=x, magnetization=x)
 
 # bad inputs -------------------------------------------------------------------
 def getBHv_bad_input1():
@@ -127,14 +127,14 @@ def getBHv_bad_input1():
     """
     x=np.array([(1,2,3)])
     x2=np.array([(1,2,3)]*2)
-    getBH_dict_level2(bh=True, source_type='Cuboid', observer=x, magnetization=x2, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observers=x, magnetization=x2, dimension=x)
 
 
 def getBHv_bad_input2():
     """ bad source_type string
     """
     x=np.array([(1,2,3)])
-    getBH_dict_level2(bh=True, source_type='Cubooid', observer=x, magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cubooid', observers=x, magnetization=x, dimension=x)
 
 
 def getBHv_bad_input3():
@@ -142,7 +142,7 @@ def getBHv_bad_input3():
     """
     x=np.array([(1,2,3)])
     s = magpy.Sensor()
-    getBH_dict_level2(bh=True, source_type='Cuboid', observer=s, magnetization=x, dimension=x)
+    getBH_dict_level2(bh=True, source_type='Cuboid', observers=s, magnetization=x, dimension=x)
 
 
 def utility_format_obj_input():

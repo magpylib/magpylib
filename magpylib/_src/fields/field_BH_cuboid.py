@@ -7,10 +7,10 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 
 def magnet_cuboid_field(
+    field: str,
+    observers: np.ndarray,
     magnetization: np.ndarray,
-    dimension: np.ndarray,
-    observer: np.ndarray,
-    field='B') -> np.ndarray:
+    dimension: np.ndarray) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized cuboid.
 
     The cuboid sides are parallel to the coordinate axes. The geometric center of the
@@ -18,18 +18,18 @@ def magnet_cuboid_field(
 
     Parameters
     ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observers: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
     dimension: ndarray, shape (n,3)
         Cuboid side lengths in units of [mm].
-
-    observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-
-    field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
 
     Returns
     -------
@@ -81,7 +81,7 @@ def magnet_cuboid_field(
 
     magx, magy, magz = magnetization.T
     a, b, c = np.abs(dimension.T)/2
-    x, y, z = observer.T
+    x, y, z = observers.T
 
     # This implementation is completely scale invariant as only observer/dimension
     # ratios appear in equations below.
@@ -123,7 +123,7 @@ def magnet_cuboid_field(
     if np.any(mask_gen):
         magx, magy, magz = magnetization[mask_gen].T
         a, b, c = dimension[mask_gen].T/2
-        x, y, z = np.copy(observer[mask_gen]).T
+        x, y, z = np.copy(observers[mask_gen]).T
 
 
         # avoid indeterminate forms by evaluating in bottQ4 only --------
