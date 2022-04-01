@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibMissingInput
+from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError, MagpylibMissingInput
 import magpylib as magpy
 
 ###########################################################
@@ -381,26 +381,67 @@ def test_input_objects_dimension_cylinderSegment_bad():
 def test_input_objects_field_func_good():
     """good input: magpy.misc.CustomSource(field_func=f)"""
     # pylint: disable=unused-argument
+
+    # init empty = None
+    src = magpy.misc.CustomSource()
+    np.testing.assert_raises(MagpylibInternalError, src.getB, (1,2,3))
+    np.testing.assert_raises(MagpylibInternalError, src.getH, (1,2,3))
+
+    # None
+    src = magpy.misc.CustomSource(field_func=None)
+    np.testing.assert_raises(MagpylibInternalError, src.getB, (1,2,3))
+    np.testing.assert_raises(MagpylibInternalError, src.getH, (1,2,3))
+
+    # acceptable func
     def f(field, observers):
         """3 in 3 out"""
         return observers
     src = magpy.misc.CustomSource(field_func=f)
-
     np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
     np.testing.assert_allclose(src.getH((1,2,3)), (1,2,3))
 
 
-def test_input_objects_fiedBHlambda_bad():
+def test_input_objects_field_func_bad():
     """bad input: magpy.misc.CustomSource(field_func=f)"""
     # pylint: disable=unused-argument
-    def f1(field, observers):
-        """bad fieldBH lambda"""
-        return 1
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f1)
 
-    f2 = lambda observers: observers
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f2)
+    # non callable
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, 1)
 
+    # bad arg names
+    def ff(fieldd, observers, whatever):
+        """ ff """
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, ff)
+
+    # no ndarray return on B
+    def fff(field, observers):
+        """ fff """
+        if field == 'B':
+            return 1
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, fff)
+
+    # no ndarray return on H
+    def ffff(field, observers):
+        """ ffff """
+        if field == 'H':
+            return 1
+        return observers
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, ffff)
+
+    # bad return shape on B
+    def g(field, observers):
+        """ g """
+        if field == 'B':
+            return np.array([1,2,3])
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, g)
+
+    # bad return shape on H
+    def gg(field, observers):
+        """ gg """
+        if field == 'H':
+            return np.array([1,2,3])
+        return observers
+    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, gg)
 
 
 ###########################################################

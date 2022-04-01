@@ -109,4 +109,5 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
 
     @field_func.setter
     def field_func(self, val):
-        self._field_func = validate_field_func(val)
+        validate_field_func(val)
+        self._field_func = val

@@ -133,44 +133,39 @@ def validate_field_func(val):
     - needs to be a callable
     - input and output shape must match
     """
-    if val is not None:
-        msg = ""
-        if not callable(val):
-            msg = (
-                "Input parameter `field_func` must be a callable.\n"
-                f"Instead received {type(val).__name__}."
-            )
-        else:
-            fn_args = inspect.getfullargspec(val).args
-            if fn_args[:2] != ["field", "observers"]:
-                msg = (
-                    "Input parameter `field_func` must have two positional args"
-                    " called 'field' and 'observers'.\n"
-                    f"Instead received a callable where the first two args are: {fn_args[:2]}"
-                )
-            else:
-                outB = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
-                outH = val("H", np.array([[1, 2, 3], [4, 5, 6]]))
-                outB_shape = np.array(outB).shape
-                outH_shape = np.array(outH).shape
-                if outB_shape != (2, 3):
-                    msg = (
-                        "Input parameter `field_func` must return field with shape (n,3) when"
-                        " `observers` input has shape (n,3).\n"
-                        f"Instead returns shape {outB_shape} for `field='B'` and `observers` input shape (2,3)"
-                    )
+    if val is None:
+        return None
 
-        if msg:
+    if not callable(val):
+        raise MagpylibBadUserInput(
+            "Input parameter `field_func` must be a callable.\n"
+            f"Instead received {type(val).__name__}."
+        )
+
+    fn_args = inspect.getfullargspec(val).args
+    if fn_args[:2] != ["field", "observers"]:
+        raise MagpylibBadUserInput(
+            "Input parameter `field_func` must have two positional args"
+            " called 'field' and 'observers'.\n"
+            f"Instead received a callable where the first two args are: {fn_args[:2]}"
+        )
+
+    for field in ['B', 'H']:
+        out = val(field, np.array([[1, 2, 3], [4, 5, 6]]))
+        if not isinstance(out, np.ndarray):
             raise MagpylibBadUserInput(
-                "Input parameter `field_func` must be a callable "
-                "accepting the two positional arguments `field` and `observers` "
-                "(e.g. `def myfieldfunc(field, observers, ...): ...`. The `field` argument must "
-                "accept one of ('B','H') and the `observers` an ndarray of shape (n,3). "
-                "The returned field must be an ndarray with shape (n,3).\n"
-                + msg
+                "Input parameter `field_func` must be a callable that returns B- and H-field"
+                "as numpy ndarray.\n"
+                f"Instead it returns type {type(out)} for {field}-field."
             )
-    return val
+        if out.shape != (2, 3):
+            raise MagpylibBadUserInput(
+                "Input parameter `field_func` must be a callable that returns B- and H-field"
+                " as numpy ndarray with shape (n,3), when `observers` input is shape (n,3).\n"
+                f"Instead it returns shape {out.shape} for {field}-field for input shape (2,3)"
+            )
 
+    return None
 
 #################################################################
 #################################################################
