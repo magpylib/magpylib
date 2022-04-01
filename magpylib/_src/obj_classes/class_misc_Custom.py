@@ -17,10 +17,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Parameters
     ----------
     field_func: callable, default=`None`
-        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
-        `observers` position input with format (n,3). The `field` argument must accept one of
-        `('B','H')` and the `observers` an ndarray of shape (n,3). The callable must return the
-        field in units of [mT] for `field='B'` and [kA/m] for `field='H'` with shape (n,3).
+        The core function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. When `field='B'`, the B-field in units of [mT], and when
+        `field='H'`, the H-field in units of [kA/m] must be returnd respectively. The
+        `observers` argument must accept numpy ndarray inputs of shape (n,3), in which case
+        the returned fields must be numpy ndarrays of shape (n,r) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -98,10 +99,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @property
     def field_func(self):
         """
-        Field function for the B-and-H-field. Must accept the two positional arguments `field` and
-        `observers` position input with format (n,3). The `field` argument must accept one of
-        `('B','H')` and the `observers` an ndarray of shape (n,3). The callable must return the
-        field in units of [mT] for `field='B'` and [kA/m] for `field='H'` with shape (n,3).
+        The core function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. When `field='B'`, the B-field in units of [mT], and when
+        `field='H'`, the H-field in units of [kA/m] must be returnd respectively. The
+        `observers` argument must accept numpy ndarray inputs of shape (n,3), in which case
+        the returned fields must be numpy ndarrays of shape (n,r) themselves.
         """
         return self._field_func
 

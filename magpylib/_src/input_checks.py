@@ -136,18 +136,28 @@ def validate_field_func(val):
     if val is not None:
         msg = ""
         if not callable(val):
-            msg = f"Instead received {type(val).__name__}."
+            msg = (
+                "Input parameter `field_func` must be a callable.\n"
+                f"Instead received {type(val).__name__}."
+            )
         else:
             fn_args = inspect.getfullargspec(val).args
             if fn_args[:2] != ["field", "observers"]:
-                msg = f"Instead received a callable, the first two args being: {fn_args[:2]}"
+                msg = (
+                    "Input parameter `field_func` must have two positional args"
+                    " called 'field' and 'observers'.\n"
+                    f"Instead received a callable where the first two args are: {fn_args[:2]}"
+                )
             else:
-                out = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
-                out_shape = np.array(out).shape
-                if out_shape != (2, 3):
+                outB = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
+                outH = val("H", np.array([[1, 2, 3], [4, 5, 6]]))
+                outB_shape = np.array(outB).shape
+                outH_shape = np.array(outH).shape
+                if outB_shape != (2, 3):
                     msg = (
-                        "Function test call with `observers` of shape (2,3) failed, "
-                        f"instead received shape {out_shape}."
+                        "Input parameter `field_func` must return field with shape (n,3) when"
+                        " `observers` input has shape (n,3).\n"
+                        f"Instead returns shape {outB_shape} for `field='B'` and `observers` input shape (2,3)"
                     )
 
         if msg:
