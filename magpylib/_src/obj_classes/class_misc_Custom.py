@@ -17,11 +17,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     Parameters
     ----------
     field_func: callable, default=`None`
-        The core function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. When `field='B'`, the B-field in units of [mT], and when
-        `field='H'`, the H-field in units of [kA/m] must be returnd respectively. The
-        `observers` argument must accept numpy ndarray inputs of shape (n,3), in which case
-        the returned fields must be numpy ndarrays of shape (n,r) themselves.
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -99,11 +99,11 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @property
     def field_func(self):
         """
-        The core function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. When `field='B'`, the B-field in units of [mT], and when
-        `field='H'`, the H-field in units of [kA/m] must be returnd respectively. The
-        `observers` argument must accept numpy ndarray inputs of shape (n,3), in which case
-        the returned fields must be numpy ndarrays of shape (n,r) themselves.
+        The function for B- and H-field computation must have the two positional arguments
+        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
+        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
+        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
+        be numpy ndarrays of shape (n,3) themselves.
         """
         return self._field_func
 
