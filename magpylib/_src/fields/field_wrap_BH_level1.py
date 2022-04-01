@@ -55,7 +55,7 @@ def getBH_level1(
         if kwargs.get("field_func", None) is not None:
             BH = kwargs["field_func"](field, pos_rel_rot)
     elif field_func is not None:
-        BH = field_func(observer=pos_rel_rot, **kwargs)
+        BH = field_func(observers=pos_rel_rot, **kwargs)
     else:
         raise MagpylibInternalError(f'Bad src input type "{source_type}" in level1')
 
