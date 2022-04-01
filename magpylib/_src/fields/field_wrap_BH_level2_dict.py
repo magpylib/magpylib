@@ -45,8 +45,8 @@ def getBH_dict_level2(**kwargs: dict) -> np.ndarray:
                 f"Input parameter `sources` must be one of {LIBRARY_BH_DICT_SOURCE_STRINGS}"
                 " when using the direct interface.")
 
-        poso = np.array(kwargs['observer'], dtype=float)
-        tile_params['observer'] = (poso,2)    # <-- (input,tdim)
+        poso = np.array(kwargs['observers'], dtype=float)
+        tile_params['observers'] = (poso,2)    # <-- (input,tdim)
 
         # optional general inputs -------------------
         # if no input set pos=0

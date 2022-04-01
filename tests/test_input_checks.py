@@ -378,11 +378,12 @@ def test_input_objects_dimension_cylinderSegment_bad():
             magpy.magnet.CylinderSegment(dimension=bad)
 
 
-def test_input_objects_fiedBHlambda_good():
+def test_input_objects_field_func_good():
     """good input: magpy.misc.CustomSource(field_func=f)"""
-    def f(field, observer):
+    # pylint: disable=unused-argument
+    def f(field, observers):
         """3 in 3 out"""
-        return observer
+        return observers
     src = magpy.misc.CustomSource(field_func=f)
 
     np.testing.assert_allclose(src.getB((1,2,3)), (1,2,3))
@@ -391,12 +392,13 @@ def test_input_objects_fiedBHlambda_good():
 
 def test_input_objects_fiedBHlambda_bad():
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    def f1(field, observer):
+    # pylint: disable=unused-argument
+    def f1(field, observers):
         """bad fieldBH lambda"""
         return 1
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f1)
 
-    f2 = lambda observer: observer
+    f2 = lambda observers: observers
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, f2)
 
 
@@ -595,8 +597,8 @@ def test_input_rotate_axis_bad():
         np.testing.assert_raises(MagpylibBadUserInput, x.rotate_from_angax, 10, bad)
 
 
-def test_input_observer_good():
-    """good observer inputs"""
+def test_input_observers_good():
+    """good observers input"""
     pos_vec1 = (1,2,3)
     pos_vec2 = [(1,2,3)]*2
     pos_vec3 = [[(1,2,3)]*2]*3
@@ -623,8 +625,8 @@ def test_input_observer_good():
         assert isinstance(B, np.ndarray)
 
 
-def test_input_observer_bad():
-    """bad observer inputs"""
+def test_input_observers_bad():
+    """bad observers input"""
     pos_vec1 = (1,2,3)
     pos_vec2 = [(1,2,3)]*2
     sens1 = magpy.Sensor()

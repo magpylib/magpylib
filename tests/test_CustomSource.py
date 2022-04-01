@@ -6,13 +6,13 @@ from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
 # pylint: disable=assignment-from-no-return
 # pylint: disable=unused-argument
 
-def constant_field(field, observer=(0,0,0)):
+def constant_field(field, observers=(0,0,0)):
     """ constant field"""
-    position = np.array(observer)
+    position = np.array(observers)
     length = 1 if position.ndim==1 else len(position)
     return np.array([[1, 2, 3]] * length)
 
-def bad_Bfield_func(field, observer):
+def bad_Bfield_func(field, observers):
     """ another constant function without docstring"""
     return np.array([[1, 2, 3]])
 

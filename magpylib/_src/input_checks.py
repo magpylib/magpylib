@@ -139,24 +139,24 @@ def validate_field_func(val):
             msg = f"Instead received {type(val).__name__}."
         else:
             fn_args = inspect.getfullargspec(val).args
-            if fn_args[:2] != ["field", "observer"]:
+            if fn_args[:2] != ["field", "observers"]:
                 msg = f"Instead received a callable, the first two args being: {fn_args[:2]}"
             else:
                 out = val("B", np.array([[1, 2, 3], [4, 5, 6]]))
                 out_shape = np.array(out).shape
                 if out_shape != (2, 3):
                     msg = (
-                        "Function test call with observer of shape (2,3) failed, "
+                        "Function test call with `observers` of shape (2,3) failed, "
                         f"instead received shape {out_shape}."
                     )
 
         if msg:
             raise MagpylibBadUserInput(
                 "Input parameter `field_func` must be a callable "
-                "accepting the two positional arguments `field` and `observer` "
-                "(e.g. `def myfieldfunc(field, observer, ...): ...`. The `field` argument must "
-                "accept one of ('B','H') and the `observer` an ndarray of shape (n,3). "
-                "The returned field must be an ndarray matching the observer shape.\n"
+                "accepting the two positional arguments `field` and `observers` "
+                "(e.g. `def myfieldfunc(field, observers, ...): ...`. The `field` argument must "
+                "accept one of ('B','H') and the `observers` an ndarray of shape (n,3). "
+                "The returned field must be an ndarray with shape (n,3).\n"
                 + msg
             )
     return val
@@ -420,7 +420,7 @@ def check_format_input_backend(inp):
 
 def check_format_input_observers(inp, pixel_agg=None):
     """
-    checks observer input and returns a list of sensor objects
+    checks observers input and returns a list of sensor objects
     """
     # pylint: disable=raise-missing-from
     # pylint: disable=protected-access
