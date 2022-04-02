@@ -278,13 +278,14 @@ class BaseCollection(BaseDisplayRepr):
         >>> import magpylib as magpy
         >>> x1 = magpy.Sensor(style_label='x1')
         >>> coll = magpy.Collection(x1, style_label='coll')
-        >>> coll.describe(labels=True)
+        >>> coll.describe(format='label')
         coll
         └── x1
 
         >>> x2 = magpy.Sensor(style_label='x2')
         >>> coll.add(x2)
-        >>> coll.describe(labels=True)
+        Collection(id=...)
+        >>> coll.describe(format='label')
         coll
         ├── x1
         └── x2
@@ -305,7 +306,11 @@ class BaseCollection(BaseDisplayRepr):
 
         # assign parent
         for obj in obj_list:
-            if obj._parent is None:
+            if obj is self:
+                raise MagpylibBadUserInput(
+                    f"Cannot add {obj!r} because a Collection must not reference itself."
+                )
+            elif obj._parent is None:
                 obj._parent = self
             elif override_parent:
                 obj._parent.remove(obj)
@@ -362,13 +367,14 @@ class BaseCollection(BaseDisplayRepr):
         >>> x1 = magpy.Sensor(style_label='x1')
         >>> x2 = magpy.Sensor(style_label='x2')
         >>> col = magpy.Collection(x1, x2, style_label='col')
-        >>> col.describe(labels=True)
+        >>> col.describe(format='label')
         col
         ├── x1
         └── x2
 
         >>> col.remove(x1)
-        >>> col.describe(labels=True)
+        Collection(id=...)
+        >>> col.describe(format='label')
         col
         └── x2
         """
@@ -427,22 +433,24 @@ class BaseCollection(BaseDisplayRepr):
         In this example we start by creating a collection from three sphere magnets:
 
         >>> import magpylib as magpy
-        >>> col = magpy.Collection()
-        >>> for i in range(3):
-        >>>     col = col + magpy.magnet.Sphere((0,0,1), 1, position=(i,0,0))
-
-        We apply styles using underscore magic for magnetization vector size and a style
-        dictionary for the color.
-
+        >>>
+        >>> col = magpy.Collection(
+        ...     [magpy.magnet.Sphere((0, 0, 1), 1, position=(i, 0, 0)) for i in range(3)]
+        ... )
+        >>> # We apply styles using underscore magic for magnetization vector size and a style
+        >>> # dictionary for the color.
+        >>>
         >>> col.set_children_styles(magnetization_size=0.5)
-        >>> col.set_children_styles({'color':'g'})
-
-        Finally we create a separate sphere magnet to demonstrate the default style and display
-        the collection and the separate magnet with Matplotlib:
-
-        >>> src = magpy.magnet.Sphere((0,0,1), 1, position=(3,0,0))
-        >>> magpy.show(col, src)
-        ---> graphic output
+        Collection(id=...)
+        >>> col.set_children_styles({"color": "g"})
+        Collection(id=...)
+        >>>
+        >>> # Finally we create a separate sphere magnet to demonstrate the default style
+        >>> # the collection and the separate magnet with Matplotlib:
+        >>>
+        >>> src = magpy.magnet.Sphere((0, 0, 1), 1, position=(3, 0, 0))
+        >>> magpy.show(col, src) # doctest: +SKIP
+        >>> # graphic output
         """
         # pylint: disable=protected-access
 
@@ -533,8 +541,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> B = magpy.getB([src1, src2], col)
         >>> B = magpy.getB([src1, src2], [sens1, sens2])
         >>> print(B)
-        [[  0.           0.         166.66666667]
-         [  0.           0.         166.66666667]]
+        [[[ 0.          0.         83.33333333]
+          [ 0.          0.         83.33333333]]
+        <BLANKLINE>
+         [[ 0.          0.         83.33333333]
+          [ 0.          0.         83.33333333]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -595,8 +606,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> H = magpy.getH([src1, src2], col)
         >>> H = magpy.getH([src1, src2], [sens1, sens2])
         >>> print(H)
-        [[  0.           0.         66.31455962]
-         [  0.           0.         66.31455962]]
+        [[[ 0.          0.         66.31455962]
+          [ 0.          0.         66.31455962]]
+        <BLANKLINE>
+         [[ 0.          0.         66.31455962]
+          [ 0.          0.         66.31455962]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -668,22 +682,25 @@ class Collection(BaseGeo, BaseCollection):
     >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
+    Collection(id=...)
     >>> print(src1.position)
-    >>> print(src2.position)
-    >>> print(col.position)
     [2. 0. 2.]
+    >>> print(src2.position)
     [-2.  0.  2.]
+    >>> print(col.position)
     [0. 0. 2.]
 
     We can still directly access individual objects by name and by index:
 
     >>> src1.move((2,0,0))
+    Sphere(id=...)
     >>> col[1].move((-2,0,0))
+    Loop(id=...)
     >>> print(src1.position)
-    >>> print(src2.position)
-    >>> print(col.position)
     [4. 0. 2.]
+    >>> print(src2.position)
     [-4.  0.  2.]
+    >>> print(col.position)
     [0. 0. 2.]
 
     The field can be computed at position (0,0,0) as if the collection was a single source:
@@ -696,8 +713,9 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> sens = magpy.Sensor()
     >>> col.add(sens)
+    Collection(id=...)
     >>> print(col.children)
-    [Sphere(id=2236606344304), Loop(id=2236606344256), Sensor(id=2236606343584)]
+    [Sphere(id=...), Loop(id=...), Sensor(id=...)]
 
     and can compute the field of the sources in the collection seen by the sensor with
     a single command:
