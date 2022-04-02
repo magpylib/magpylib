@@ -249,7 +249,7 @@ def magnet_cylinder_field(
     >>> mag = np.array([(0,0,1000), (100,0,100)])
     >>> dim = np.array([(1,1), (2,3)])
     >>> obs = np.array([(1,2,3), (1,2,3)])
-    >>> B = magpy.core.magnet_cylinder_field(mag, dim, obs)
+    >>> B = magpy.core.magnet_cylinder_field('B', obs, mag, dim)
     >>> print(B)
     [[ 0.77141782  1.54283565  1.10384481]
      [-0.15185713  2.90352915  2.23601722]]

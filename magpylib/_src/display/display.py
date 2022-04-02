@@ -65,12 +65,14 @@ def show(
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(magnetization=(0,0,1), diameter=1)
     >>> src.move([(0.1*x,0,0) for x in range(50)])
-    >>> src.rotate_from_angax(angle=range(0,400,10), axis='z', anchor=0, start=11)
+    Sphere...
+    >>> src.rotate_from_angax(angle=[*range(0,400,10)], axis='z', anchor=0, start=11)
+    Sphere...
     >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
     >>> magpy.show(src, sens)
     >>> magpy.show(src, sens, backend='plotly')
-    --> graphic output
+    >>> # graphic output
 
     Display output on your own canvas (here a Matplotlib 3d-axes):
 
@@ -81,7 +83,7 @@ def show(
     >>> sens = magpy.Sensor(position=(0,0,3))
     >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
     >>> plt.show()
-    --> graphic output
+    >>> # graphic output
 
     Use sophisticated figure styling options accessible from defaults, as individual object styles
     or as global style arguments in display.
@@ -92,7 +94,7 @@ def show(
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
     >>> magpy.show(src1, src2, style_color='r')
-    --> graphic output
+    >>> # graphic output
     """
 
     # flatten input

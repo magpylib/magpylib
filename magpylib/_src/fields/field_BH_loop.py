@@ -48,12 +48,12 @@ def current_loop_field(
     >>> import magpylib as magpy
     >>> cur = np.array([1,1,2])
     >>> dia = np.array([2,4,6])
-    >>> obs = np.array([(1,1), (2,2), (3,3)])
-    >>> B = magpy.core.current_loop_field(cur, dia, obs)
+    >>> obs = np.array([(1,1,1), (2,2,2), (3,3,3)])
+    >>> B = magpy.core.current_loop_field('B', obs, cur, dia)
     >>> print(B)
-    [[0.11433145 0.09648324]
-     [0.05716572 0.04824162]
-     [0.07622097 0.06432216]]
+    [[0.06235974 0.06235974 0.02669778]
+     [0.03117987 0.03117987 0.01334889]
+     [0.04157316 0.04157316 0.01779852]]
 
     Notes
     -----

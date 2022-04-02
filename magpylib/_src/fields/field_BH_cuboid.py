@@ -45,7 +45,7 @@ def magnet_cuboid_field(
     >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
     >>> dim = np.array([(1,1,1), (2,3,4), (1,2,3)])
     >>> obs = np.array([(1,2,3), (2,3,4), (0,0,0)])
-    >>> B = magpy.core.magnet_cuboid_B_Yang1999(mag, dim, obs)
+    >>> B = magpy.core.magnet_cuboid_field('B', obs, mag, dim)
     >>> print(B)
     [[ 0.49343022  1.15608356  1.65109312]
      [ 0.82221622  1.18511282  1.46945423]
