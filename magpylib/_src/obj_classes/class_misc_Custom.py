@@ -53,7 +53,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>>
-    >>> funcBH = lambda field, obs: np.array([(100 if field=='B' else 80,0,0)]*len(obs))
+    >>> funcBH = lambda field, observers: np.array([(100 if field=='B' else 80,0,0)]*len(obs))
     >>> src = magpy.misc.CustomSource(field_func=funcBH)
     >>> H = src.getH((1,1,1))
     >>> print(H)
