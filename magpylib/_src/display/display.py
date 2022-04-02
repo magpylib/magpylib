@@ -70,8 +70,8 @@ def show(
     Sphere...
     >>> ts = [-.4,0,.4]
     >>> sens = magpy.Sensor(position=(0,0,2), pixel=[(x,y,0) for x in ts for y in ts])
-    >>> magpy.show(src, sens)
-    >>> magpy.show(src, sens, backend='plotly')
+    >>> magpy.show(src, sens) # doctest: +SKIP
+    >>> magpy.show(src, sens, backend='plotly') # doctest: +SKIP
     >>> # graphic output
 
     Display output on your own canvas (here a Matplotlib 3d-axes):
@@ -82,7 +82,7 @@ def show(
     >>> magnet = magpy.magnet.Cuboid(magnetization=(1,1,1), dimension=(1,2,3))
     >>> sens = magpy.Sensor(position=(0,0,3))
     >>> magpy.show(magnet, sens, canvas=my_axis, zoom=1)
-    >>> plt.show()
+    >>> plt.show() # doctest: +SKIP
     >>> # graphic output
 
     Use sophisticated figure styling options accessible from defaults, as individual object styles
@@ -93,7 +93,7 @@ def show(
     >>> src2 = magpy.magnet.Sphere((1,1,1), 1, [(1,0,0), (1,0,3)], style_path_show=False)
     >>> magpy.defaults.display.style.magnet.magnetization.size = 2
     >>> src1.style.magnetization.size = 1
-    >>> magpy.show(src1, src2, style_color='r')
+    >>> magpy.show(src1, src2, style_color='r') # doctest: +SKIP
     >>> # graphic output
     """
 

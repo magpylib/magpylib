@@ -445,7 +445,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> # the collection and the separate magnet with Matplotlib:
         >>>
         >>> src = magpy.magnet.Sphere((0, 0, 1), 1, position=(3, 0, 0))
-        >>> magpy.show(col, src)
+        >>> magpy.show(col, src) # doctest: +SKIP
         >>> # graphic output
         """
         # pylint: disable=protected-access
