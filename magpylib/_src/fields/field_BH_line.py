@@ -105,7 +105,7 @@ def current_line_field(
     >>> start = np.array([(-1,0,0), (-1,0,0)])
     >>> end   = np.array([( 1,0,0), ( 2,0,0)])
     >>> obs   = np.array([( 0,0,1), ( 0,0,0)])
-    >>> B = magpy.lib.current_line_Bfield(curr, start, end, obs)
+    >>> B = magpy.core.current_line_Bfield(curr, start, end, obs)
     >>> print(B)
     [[ 0.         -0.14142136  0.        ]
      [ 0.          0.          0.        ]]

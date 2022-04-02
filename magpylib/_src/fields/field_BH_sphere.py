@@ -47,7 +47,7 @@ def magnet_sphere_field(
     >>> dia = np.array([1,5])
     >>> obs = np.array([(1,1,1), (1,1,1)])
     >>> mag = np.array([(1,2,3), (0,0,3)])
-    >>> B = magpy.lib.magnet_sphere_Bfield(mag, dia, obs)
+    >>> B = magpy.core.magnet_sphere_Bfield(mag, dia, obs)
     >>> print(B)
     [[0.04009377 0.03207501 0.02405626]
      [0.         0.         2.        ]]
