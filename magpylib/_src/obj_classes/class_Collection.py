@@ -310,7 +310,7 @@ class BaseCollection(BaseDisplayRepr):
                 raise MagpylibBadUserInput(
                     f"Cannot add {obj!r} because a Collection must not reference itself."
                 )
-            elif obj._parent is None:
+            if obj._parent is None:
                 obj._parent = self
             elif override_parent:
                 obj._parent.remove(obj)
