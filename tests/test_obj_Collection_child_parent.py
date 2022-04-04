@@ -206,9 +206,13 @@ def test_collections_add():
     assert child_labels(c4) == ['x7']
     assert x7.parent == c4
 
-    # add itself should fail
+    # set itself as parent should fail
     with np.testing.assert_raises(MagpylibBadUserInput):
         c2.parent = c2
+
+    # add itself, also nested, should fail
+    with np.testing.assert_raises(MagpylibBadUserInput):
+        c2.add(magpy.Collection(c2))
 
 
 def test_collection_plus():

@@ -65,7 +65,7 @@ def collection_tree_generator(
     contents = []
 
     children = getattr(obj, "children", [])
-    if len(children) > max_elems: # replace with counter if too many
+    if len(children) > max_elems:  # replace with counter if too many
         counts = Counter([c._object_type for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
 
@@ -149,7 +149,7 @@ class BaseCollection(BaseDisplayRepr):
     @property
     def children_all(self):
         """An ordered list of all child objects in the collection tree."""
-        return check_format_input_obj(self, 'collections+sensors+sources')
+        return check_format_input_obj(self, "collections+sensors+sources")
 
     @property
     def sources(self):
@@ -173,7 +173,7 @@ class BaseCollection(BaseDisplayRepr):
     @property
     def sources_all(self):
         """An ordered list of all source objects in the collection tree."""
-        return check_format_input_obj(self, 'sources')
+        return check_format_input_obj(self, "sources")
 
     @property
     def sensors(self):
@@ -197,7 +197,7 @@ class BaseCollection(BaseDisplayRepr):
     @property
     def sensors_all(self):
         """An ordered list of all sensor objects in the collection tree."""
-        return check_format_input_obj(self, 'sensors')
+        return check_format_input_obj(self, "sensors")
 
     @property
     def collections(self):
@@ -221,7 +221,7 @@ class BaseCollection(BaseDisplayRepr):
     @property
     def collections_all(self):
         """An ordered list of all collection objects in the collection tree."""
-        return check_format_input_obj(self, 'collections')
+        return check_format_input_obj(self, "collections")
 
     # dunders
     def __iter__(self):
@@ -237,9 +237,7 @@ class BaseCollection(BaseDisplayRepr):
         lines = []
         lines.append(repr_obj(self))
         for line in collection_tree_generator(
-            self,
-            format="type+label+id",
-            max_elems=10,
+            self, format="type+label+id", max_elems=10,
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
@@ -259,11 +257,7 @@ class BaseCollection(BaseDisplayRepr):
         return_string: bool, default=`False`
             If `False` print description with stdout, if `True` return as string.
         """
-        tree = collection_tree_generator(
-            self,
-            format=format,
-            max_elems=max_elems,
-        )
+        tree = collection_tree_generator(self, format=format, max_elems=max_elems,)
         output = [repr_obj(self, format)]
         for t in tree:
             output.append(t)
@@ -313,7 +307,7 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
 
         # allow flat lists as input
-        if len(children)==1 and isinstance(children[0], (list, tuple)):
+        if len(children) == 1 and isinstance(children[0], (list, tuple)):
             children = children[0]
 
         # check and format input
@@ -326,10 +320,12 @@ class BaseCollection(BaseDisplayRepr):
 
         # assign parent
         for obj in obj_list:
-            if obj is self:
-                raise MagpylibBadUserInput(
-                    f"Cannot add {obj!r} because a Collection must not reference itself."
-                )
+            if obj._object_type == "Collection":
+                # no need to check recursively with `collections_all` if obj is already self
+                if obj is self or self in obj.collections_all:
+                    raise MagpylibBadUserInput(
+                        f"Cannot add {obj!r} because a Collection must not reference itself."
+                    )
             if obj._parent is None:
                 obj._parent = self
             elif override_parent:
@@ -401,7 +397,7 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
 
         # allow flat lists as input
-        if len(children)==1 and isinstance(children[0], (list, tuple)):
+        if len(children) == 1 and isinstance(children[0], (list, tuple)):
             children = children[0]
 
         # check and format input
@@ -412,9 +408,7 @@ class BaseCollection(BaseDisplayRepr):
             typechecks=True,
         )
         self_objects = check_format_input_obj(
-            self,
-            allow="sensors+sources+collections",
-            recursive=recursive,
+            self, allow="sensors+sources+collections", recursive=recursive,
         )
         for child in remove_objects:
             if child in self_objects:
@@ -755,10 +749,6 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self,
-            position=position,
-            orientation=orientation,
-            style=style,
-            **kwargs,
+            self, position=position, orientation=orientation, style=style, **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)
