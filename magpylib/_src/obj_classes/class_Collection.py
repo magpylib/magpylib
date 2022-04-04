@@ -134,7 +134,7 @@ class BaseCollection(BaseDisplayRepr):
     # property getters and setters
     @property
     def children(self):
-        """An ordered list of all children in the collection."""
+        """An ordered list of top level child objects."""
         return self._children
 
     @children.setter
@@ -147,8 +147,13 @@ class BaseCollection(BaseDisplayRepr):
         self.add(*children, override_parent=True)
 
     @property
+    def children_all(self):
+        """An ordered list of all child objects in the collection tree."""
+        return check_format_input_obj(self, 'collections+sensors+sources')
+
+    @property
     def sources(self):
-        """An ordered list of all source objects in the collection."""
+        """An ordered list of top level source objects."""
         return self._sources
 
     @sources.setter
@@ -166,8 +171,13 @@ class BaseCollection(BaseDisplayRepr):
         self.add(*src_list, override_parent=True)
 
     @property
+    def sources_all(self):
+        """An ordered list of all source objects in the collection tree."""
+        return check_format_input_obj(self, 'sources')
+
+    @property
     def sensors(self):
-        """An ordered list of all sensor objects in the collection."""
+        """An ordered list of top level sensor objects."""
         return self._sensors
 
     @sensors.setter
@@ -185,8 +195,13 @@ class BaseCollection(BaseDisplayRepr):
         self.add(*sens_list, override_parent=True)
 
     @property
+    def sensors_all(self):
+        """An ordered list of all sensor objects in the collection tree."""
+        return check_format_input_obj(self, 'sensors')
+
+    @property
     def collections(self):
-        """An ordered list of all collection objects in the collection."""
+        """An ordered list of top level collection objects."""
         return self._collections
 
     @collections.setter
@@ -202,6 +217,11 @@ class BaseCollection(BaseDisplayRepr):
         self._children = new_children
         coll_list = format_obj_input(collections, allow="collections")
         self.add(*coll_list, override_parent=True)
+
+    @property
+    def collections_all(self):
+        """An ordered list of all collection objects in the collection tree."""
+        return check_format_input_obj(self, 'collections')
 
     # dunders
     def __iter__(self):
