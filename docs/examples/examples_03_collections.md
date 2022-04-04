@@ -137,6 +137,23 @@ and makes it possible to directly reference to a child object by index:
 print(coll[0])
 ```
 
+Collection nesting is powerful to create a self-consistent hierarchical structure, however, it is often in the way of simple construction and children access in nested trees. For this, the `children_all`, `sources_all`, `sensors_all` and `collections_all` read-only parameters, give quick access to all objects in the tree:
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+s1 = magpy.Sensor(style_label='s1')
+s2 = s1.copy()
+s3 = s2.copy()
+
+# this creates anested collection
+coll = s1 + s2 + s3
+coll.describe(format='label')
+
+# _all gives access to the whole tree
+print([s.style.label for s in coll.sensors_all])
+```
+
 How to work with collections in a practical way is demonstrated in the introduction section {ref}`intro-collections`.
 
 How to make complex compound objects is documented in {ref}`examples-compounds`.

@@ -313,3 +313,29 @@ def test_collection_nested_getBH():
     H1 = s1.getH(obs)
     H4 = coll.getH(obs)
     np.testing.assert_allclose(4*H1, H4)
+
+
+def test_collection_properties_all():
+    """ test _all properties"""
+    s1 = magpy.magnet.Cuboid()
+    s2 = magpy.magnet.Cylinder()
+    s3 = magpy.current.Loop()
+    s4 = magpy.current.Loop()
+    x1 = magpy.Sensor()
+    x2 = magpy.Sensor()
+    x3 = magpy.Sensor()
+    c1 = magpy.Collection(s2)
+    c3 = magpy.Collection(s4)
+    c2 = magpy.Collection(s3, x3, c3)
+
+    cc = magpy.Collection(s1, x1, c1, x2, c2)
+
+    assert cc.children == [s1, x1, c1, x2, c2]
+    assert cc.sources == [s1]
+    assert cc.sensors == [x1, x2]
+    assert cc.collections == [c1, c2]
+
+    assert cc.children_all == [s1,x1,c1,s2,x2,c2,s3,x3,c3,s4]
+    assert cc.sources_all == [s1,s2,s3,s4]
+    assert cc.sensors_all == [x1,x2,x3]
+    assert cc.collections_all == [c1, c2, c3]
