@@ -6,6 +6,7 @@ import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 
 def arctan_k_tan_2(k, phi):
     """
@@ -1399,81 +1400,99 @@ def magnet_cylinder_segment_field(
     -----
     Implementation based on [Slanovc2022].
     """
-    bh = check_field_input(field, 'magnet_cylinder_segment_field()')
-
-    BHfinal = np.zeros((len(magnetization),3))
-
     r1,r2,h,phi1,phi2 = dimension.T
     r1 = abs(r1)
     r2 = abs(r2)
     h = abs(h)
     z1, z2 = -h/2, h/2
 
-    # transform dim deg->rad
-    phi1 = phi1/180*np.pi
-    phi2 = phi2/180*np.pi
-    dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
+    BHfinal = np.zeros((len(magnetization),3))
 
-    # transform obs_pos to Cy CS --------------------------------------------
-    x, y, z = observers.T
-    r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
-    pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
+    # special case when full hollow cylinder - use cut-out method
+    fcm = phi2-phi1 == 360 # full cylinder mask
+    if fcm.any():
+        cyl_dim1 = np.array([r1[fcm]*2,h]).T
+        cyl_dim2 = np.array([r2[fcm]*2,h]).T
+        BH1 = magnet_cylinder_field(field, observers[fcm], -magnetization[fcm], cyl_dim1)
+        BH2 = magnet_cylinder_field(field, observers[fcm], magnetization[fcm], cyl_dim2)
+        BHfinal[fcm] = BH1 + BH2
 
-    # determine when points lie inside and on surface of magnet -------------
+    if not fcm.all():
+        # non full cylinder segment cases
+        bh = check_field_input(field, 'magnet_cylinder_segment_field()')
 
-    # phip1 in [-2pi,0], phio2 in [0,2pi]
-    phio1 = phi
-    phio2 = phi - np.sign(phi)*2*np.pi
+        # reduce input parameter sets to non full cylinder cases
+        r1, r2 = r1[~fcm], r2[~fcm]
+        h = h[~fcm]
+        z1, z2 = z1[~fcm], z2[~fcm]
+        observers = observers[~fcm]
 
-    # phi=phi1, phi=phi2
-    mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
-    mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
+        # transform dim deg->rad
+        phi1 = phi1/180*np.pi
+        phi2 = phi2/180*np.pi
+        dim = np.array([r1, r2, phi1, phi2, z1, z2]).T
 
-    # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
-    mask_r_in = (r1-1e-14<r) & (r<r2+1e-14)
-    mask_phi_in = (np.sign(phio1-phi1)!=np.sign(phio1-phi2)) | (np.sign(phio2-phi1)!=np.sign(phio2-phi2))
-    mask_z_in = (z1-1e-14<z) & (z<z2+1e-14)
+        # transform obs_pos to Cy CS --------------------------------------------
+        x, y, z = observers.T
+        r, phi = np.sqrt(x**2+y**2), np.arctan2(y, x)
+        pos_obs_cy = np.concatenate(((r,),(phi,),(z,)),axis=0).T
 
-    # on surface
-    mask_surf_z = (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in # top / bottom
-    mask_surf_r = (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in # in / out
-    mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in # in / out
-    mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
-    mask_not_on_surf = ~mask_on_surface
+        # determine when points lie inside and on surface of magnet -------------
 
-    # inside
-    mask_inside = mask_r_in & mask_phi_in & mask_z_in
+        # phip1 in [-2pi,0], phio2 in [0,2pi]
+        phio1 = phi
+        phio2 = phi - np.sign(phi)*2*np.pi
 
-    # return 0 when all points are on surface --------------------------------
-    if np.all(mask_on_surface):
-        return BHfinal
+        # phi=phi1, phi=phi2
+        mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
+        mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
 
-    # redefine input if there are some surface-points -------------------------
-    magg = magnetization[mask_not_on_surf]
-    dim = dim[mask_not_on_surf]
-    pos_obs_cy = pos_obs_cy[mask_not_on_surf]
-    phi = phi[mask_not_on_surf]
+        # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
+        mask_r_in = (r1-1e-14<r) & (r<r2+1e-14)
+        mask_phi_in = (np.sign(phio1-phi1)!=np.sign(phio1-phi2)) | (np.sign(phio2-phi1)!=np.sign(phio2-phi2))
+        mask_z_in = (z1-1e-14<z) & (z<z2+1e-14)
 
-    # transform mag to spherical CS -----------------------------------------
-    m = np.sqrt(magg[:,0]**2 + magg[:,1]**2 + magg[:,2]**2)
-    phi_m = np.arctan2(magg[:,1], magg[:,0])
-    th_m = np.arctan2(np.sqrt(magg[:,0]**2+magg[:,1]**2), magg[:,2])
-    mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
+        # on surface
+        mask_surf_z = (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in # top / bottom
+        mask_surf_r = (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in # in / out
+        mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in # in / out
+        mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
+        mask_not_on_surf = ~mask_on_surface
 
-    # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cylinder_segment_core(mag_sph, dim, pos_obs_cy)
-    Hr, Hphi, Hz = H_cy.T
-    Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
-    Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)
-    H = np.concatenate(((Hx,),(Hy,),(Hz,)),axis=0).T*10/4/np.pi
+        # inside
+        mask_inside = mask_r_in & mask_phi_in & mask_z_in
 
-    # return B or H --------------------------------------------------------
-    if not bh:
-        BHfinal[mask_not_on_surf] = H
-        return BHfinal
+        # return 0 when all points are on surface --------------------------------
+        if np.all(mask_on_surface):
+            return BHfinal
 
-    B = H/(10/4/np.pi) # kA/m -> mT
-    BHfinal[mask_not_on_surf] = B
-    maskX = mask_inside*mask_not_on_surf
-    BHfinal[maskX] += magnetization[maskX]
+        # redefine input if there are some surface-points -------------------------
+        magg = magnetization[mask_not_on_surf]
+        dim = dim[mask_not_on_surf]
+        pos_obs_cy = pos_obs_cy[mask_not_on_surf]
+        phi = phi[mask_not_on_surf]
+
+        # transform mag to spherical CS -----------------------------------------
+        m = np.sqrt(magg[:,0]**2 + magg[:,1]**2 + magg[:,2]**2)
+        phi_m = np.arctan2(magg[:,1], magg[:,0])
+        th_m = np.arctan2(np.sqrt(magg[:,0]**2+magg[:,1]**2), magg[:,2])
+        mag_sph = np.concatenate(((m,),(phi_m,),(th_m,)),axis=0).T
+
+        # compute H and transform to cart CS -------------------------------------
+        H_cy = magnet_cylinder_segment_core(mag_sph, dim, pos_obs_cy)
+        Hr, Hphi, Hz = H_cy.T
+        Hx = Hr*np.cos(phi) - Hphi*np.sin(phi)
+        Hy = Hr*np.sin(phi) + Hphi*np.cos(phi)
+        H = np.concatenate(((Hx,),(Hy,),(Hz,)),axis=0).T*10/4/np.pi
+
+        # return B or H --------------------------------------------------------
+        if not bh:
+            BHfinal[mask_not_on_surf&(~fcm)] = H
+            return BHfinal
+
+        B = H/(10/4/np.pi) # kA/m -> mT
+        BHfinal[mask_not_on_surf&(~fcm)] = B
+        maskX = mask_inside*mask_not_on_surf
+        BHfinal[maskX&(~fcm)] += magnetization[maskX&(~fcm)]
+
     return BHfinal
