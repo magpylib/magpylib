@@ -2,6 +2,8 @@
 # pylint: disable=line-too-long
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-name-in-module
+# pylint: disable=too-many-statements
+
 import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.special_el3 import el3_angle
