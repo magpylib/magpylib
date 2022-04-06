@@ -1409,23 +1409,38 @@ def magnet_cylinder_segment_field(
     BHfinal = np.zeros((len(magnetization),3))
 
     # special case when full hollow cylinder - use cut-out method
-    fcm = phi2-phi1 == 360 # full cylinder mask
-    if fcm.any():
-        cyl_dim1 = np.array([r1[fcm]*2,h]).T
-        cyl_dim2 = np.array([r2[fcm]*2,h]).T
-        BH1 = magnet_cylinder_field(field, observers[fcm], -magnetization[fcm], cyl_dim1)
-        BH2 = magnet_cylinder_field(field, observers[fcm], magnetization[fcm], cyl_dim2)
-        BHfinal[fcm] = BH1 + BH2
+    full_cyl_mask = phi2-phi1 == 360 # full cylinder mask
+    if full_cyl_mask.any():
+        cyl_dim1 = np.array([r1*2,h]).T
+        cyl_dim2 = np.array([r2*2,h]).T
+        BH2 = magnet_cylinder_field(
+            field,
+            observers[full_cyl_mask],
+            magnetization[full_cyl_mask],
+            cyl_dim2[full_cyl_mask]
+        )
+        BHfinal[full_cyl_mask] = BH2
+        # cut-out for cases where r1 != 0
+        r1not0 = r1 != 0
+        if r1not0.any():
+            BH1 = magnet_cylinder_field(field,
+                observers[full_cyl_mask&r1not0],
+                -magnetization[full_cyl_mask&r1not0],
+                cyl_dim1[full_cyl_mask&r1not0]
+            )
+            BHfinal[full_cyl_mask&r1not0] += BH1
 
-    if not fcm.all():
+    if not full_cyl_mask.all():
         # non full cylinder segment cases
         bh = check_field_input(field, 'magnet_cylinder_segment_field()')
 
         # reduce input parameter sets to non full cylinder cases
-        r1, r2 = r1[~fcm], r2[~fcm]
-        h = h[~fcm]
-        z1, z2 = z1[~fcm], z2[~fcm]
-        observers = observers[~fcm]
+        phi1, phi2 = phi1[~full_cyl_mask], phi2[~full_cyl_mask]
+        r1, r2 = r1[~full_cyl_mask], r2[~full_cyl_mask]
+        h = h[~full_cyl_mask]
+        z1, z2 = z1[~full_cyl_mask], z2[~full_cyl_mask]
+        observers = observers[~full_cyl_mask]
+        magnetization = magnetization[~full_cyl_mask]
 
         # transform dim deg->rad
         phi1 = phi1/180*np.pi
@@ -1487,12 +1502,12 @@ def magnet_cylinder_segment_field(
 
         # return B or H --------------------------------------------------------
         if not bh:
-            BHfinal[mask_not_on_surf&(~fcm)] = H
+            BHfinal[mask_not_on_surf&(~full_cyl_mask)] = H
             return BHfinal
 
         B = H/(10/4/np.pi) # kA/m -> mT
-        BHfinal[mask_not_on_surf&(~fcm)] = B
+        BHfinal[mask_not_on_surf&(~full_cyl_mask)] = B
         maskX = mask_inside*mask_not_on_surf
-        BHfinal[maskX&(~fcm)] += magnetization[maskX&(~fcm)]
+        BHfinal[maskX&(~full_cyl_mask)] += magnetization[maskX]
 
     return BHfinal
