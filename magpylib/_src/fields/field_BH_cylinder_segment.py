@@ -1437,7 +1437,6 @@ def magnet_cylinder_segment_field(
         # reduce input parameter sets to non full cylinder cases
         phi1, phi2 = phi1[~full_cyl_mask], phi2[~full_cyl_mask]
         r1, r2 = r1[~full_cyl_mask], r2[~full_cyl_mask]
-        h = h[~full_cyl_mask]
         z1, z2 = z1[~full_cyl_mask], z2[~full_cyl_mask]
         observers = observers[~full_cyl_mask]
         magnetization = magnetization[~full_cyl_mask]
