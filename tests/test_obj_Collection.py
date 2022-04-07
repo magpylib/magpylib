@@ -405,21 +405,25 @@ def test_collection_describe():
     cc = x + y
     desc = cc.describe(format="label, properties", return_string=True).split("\n")
     test = [
-        "Collection",
-        "│   • position: [0. 0. 0.] mm",
-        "│   • orientation: [0. 0. 0.] degrees",
-        "├── x",
-        "│       • position: [0. 0. 0.] mm",
-        "│       • orientation: [0. 0. 0.] degrees",
-        "│       • dimension: None mm",
-        "│       • magnetization: None mT",
-        "└── y",
-        "        • position: [0. 0. 0.] mm",
-        "        • orientation: [0. 0. 0.] degrees",
-        "        • dimension: None mm",
-        "        • magnetization: None mT",
+    "Collection",
+    "│   • position: [0. 0. 0.] mm",
+    "│   • orientation: [0. 0. 0.] degrees",
+    "│   • children_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
+    "│   • collections_all: []",
+    "│   • sensors_all: []",
+    "│   • sources_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
+    "├── x",
+    "│       • position: [0. 0. 0.] mm",
+    "│       • orientation: [0. 0. 0.] degrees",
+    "│       • dimension: None mm",
+    "│       • magnetization: None mT",
+    "└── y",
+    "        • position: [0. 0. 0.] mm",
+    "        • orientation: [0. 0. 0.] degrees",
+    "        • dimension: None mm",
+    "        • magnetization: None mT",
     ]
-    assert desc == test
+    assert "".join(test)==re.sub('id=*[0-9]*[0-9]', 'id=REGEX', "".join(desc))
 
     desc = cc.describe()
     assert desc is None
