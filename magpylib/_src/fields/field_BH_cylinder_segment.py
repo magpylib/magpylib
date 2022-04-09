@@ -1282,11 +1282,11 @@ def magnet_cylinder_segment_core(
 
     >>> import numpy as np
     >>> from numpy import pi
-    >>> import magpylib as magpy
+    >>> from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
     >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
     >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
     >>> obs = np.array([(.1,0,3), (1,pi,3)])
-    >>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, obs)
+    >>> B = magnet_cylinder_segment_core(mag, dim, obs)
     >>> print(B)
     [[-0.84506541 -0.9207606   1.48474874]
      [ 3.95719801  3.59131966  3.11703698]]
@@ -1390,7 +1390,7 @@ def magnet_cylinder_segment_field(
     >>> mag = np.array([(0,0,100), (50,50,0)])
     >>> dim = np.array([(0,1,2,0,90), (1,2,4,35,125)])
     >>> obs = np.array([(1,1,1), (1,1,1)])
-    >>> B = magpy.lib.magnet_cylinder_segment_field(mag, dim, obs)
+    >>> B = magpy.core.magnet_cylinder_segment_field('B', obs, mag, dim)
     >>> print(B)
     [[ 6.27410168  6.27410168 -1.20044166]
      [29.84602335 20.75731598  0.34961733]]
