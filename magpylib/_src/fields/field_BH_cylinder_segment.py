@@ -1382,8 +1382,6 @@ def magnet_cylinder_segment_field_internal(
     return BHfinal
 
 
-
-
 def magnet_cylinder_segment_field(
     field: str,
     observers: np.ndarray,
