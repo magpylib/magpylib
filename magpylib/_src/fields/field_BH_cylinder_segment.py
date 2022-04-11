@@ -1259,11 +1259,7 @@ def magnet_cylinder_segment_core(
     obs_pos: np.ndarray
     ) ->np.ndarray:
     """
-    H-field of Cylinder segment magnet with homogenous magnetization.
-    The full cylinder axis coincides with the z-axis of the CS.
-    The geometric center of the full Cylinder is in the origin.
-
-    Implementation from [Slanovc2021].
+    Put all solutions properly together (see paper Florian).
 
     Parameters
     ----------
@@ -1278,21 +1274,6 @@ def magnet_cylinder_segment_core(
     -------
     H-field: ndarray
         H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of [kA/m].
-
-    Examples
-    --------
-    Compute the field of three instances.
-
-    >>> import numpy as np
-    >>> from numpy import pi
-    >>> import magpylib as magpy
-    >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
-    >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
-    >>> obs = np.array([(.1,0,3), (1,pi,3)])
-    >>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, obs)
-    >>> print(B)
-    [[-0.84506541 -0.9207606   1.48474874]
-     [ 3.95719801  3.59131966  3.11703698]]
 
     Notes
     -----
@@ -1352,6 +1333,23 @@ def magnet_cylinder_segment_core(
     return result.T
 
 
+def magnet_cylinder_segment_field_internal(
+    field: str,
+    observers: np.ndarray,
+    magnetization: np.ndarray,
+    dimension: np.ndarray,
+    ) -> np.ndarray:
+    """
+    internal version of magnet_cylinder_segment_field used for object oriented interface.
+
+    Falls back to magnet_cylinder_field whenever the section angles describe the full
+    360° cylinder.
+    """
+
+
+
+
+
 def magnet_cylinder_segment_field(
     field: str,
     observers: np.ndarray,
@@ -1400,9 +1398,11 @@ def magnet_cylinder_segment_field(
 
     Notes
     -----
-    Implementation based on [Slanovc2022].
+    Implementation based on
+
+    Slanovc: Journal of Magnetism and Magnetic Materials, 2022 (in review)
     """
-    r1,r2,h,phi1,phi2 = dimension.T
+    r1, r2, h, phi1, phi2 = dimension.T
     r1 = abs(r1)
     r2 = abs(r2)
     h = abs(h)

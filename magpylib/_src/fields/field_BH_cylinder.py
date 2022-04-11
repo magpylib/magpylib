@@ -256,8 +256,16 @@ def magnet_cylinder_field(
 
     Notes
     -----
-    Axial implementation based on [Derby].
-    Diametral implementation based on [caciagli2018] and [rauber/leitner/ortner 2022 wip].
+
+    Axial implementation based on
+
+    Derby: American Journal of Physics 78.3 (2010): 229-235.
+
+    Diametral implementation based on
+
+    Caciagli: Journal of Magnetism and Magnetic Materials 456 (2018): 423-432.
+
+    Leitner/Rauber/Orter: WIP
     """
 
     bh = check_field_input(field, 'magnet_cylinder_field()')
