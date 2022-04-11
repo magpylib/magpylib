@@ -38,7 +38,7 @@ def dipole_field(
     >>> import magpylib as magpy
     >>> mom = np.array([(1,2,3), (0,0,1)])
     >>> obs = np.array([(1,1,1), (0,0,2)])
-    >>> B = magpy.lib.dipole_Bfield(mom, obs)
+    >>> B = magpy.core.dipole_field('B', obs, mom)
     >>> print(B)
     [[0.07657346 0.06125877 0.04594407]
      [0.         0.         0.01989437]]

@@ -293,12 +293,14 @@ class BaseTransform:
         >>> print(sens.position)
         [1. 1. 1.]
         >>> sens.move((1,1,1))
+        Sensor(id=...)
         >>> print(sens.position)
         [2. 2. 2.]
 
         Create len>1 object paths with vector input:
 
         >>> sens.move([(1,1,1),(2,2,2),(3,3,3)])
+        Sensor(id=...)
         >>> print(sens.position)
         [[2. 2. 2.]
          [3. 3. 3.]
@@ -308,6 +310,7 @@ class BaseTransform:
         Apply operations starting with a designated path index:
 
         >>> sens.move((0,0,2), start=2)
+        Sensor(id=...)
         >>> print(sens.position)
         [[2. 2. 2.]
          [3. 3. 3.]
@@ -399,6 +402,7 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate(R.from_euler('z', 45, degrees=True), anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -407,6 +411,7 @@ class BaseTransform:
         Rotate the object about itself:
 
         >>> sens.rotate(R.from_euler('z', 45, degrees=True))
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -414,12 +419,13 @@ class BaseTransform:
 
         Create a rotation path by rotating in several steps about an anchor:
 
-        >>> sens.rotateR.from_euler('z', (15,30,45), degrees=True, anchor=(0,0,0))
+        >>> sens.rotate(R.from_euler('z', (15,30,45), degrees=True), anchor=(0,0,0))
+        Sensor(id=...)
         >>> print(sens.position)
         [[ 7.07106781e-01  7.07106781e-01  0.00000000e+00]
          [ 5.00000000e-01  8.66025404e-01  0.00000000e+00]
          [ 2.58819045e-01  9.65925826e-01  0.00000000e+00]
-         [ 0.0             1.0             0.0           ]]
+         [-2.22044605e-16  1.00000000e+00  0.00000000e+00]]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
         [[  0.   0.  90.]
          [  0.   0. 105.]
@@ -480,27 +486,30 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_angax(45, axis='z', anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  45.]
+        [ 0.  0. 45.]
 
         Rotate the object about itself:
 
         >>> sens.rotate_from_angax(45, axis=(0,0,1))
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  90.]
+        [ 0.  0. 90.]
 
         Create a rotation path by rotating in several steps about an anchor:
 
         >>> sens.rotate_from_angax((15,30,45), axis='z', anchor=(0,0,0))
+        Sensor(id=...)
         >>> print(sens.position)
         [[ 7.07106781e-01  7.07106781e-01  0.00000000e+00]
          [ 5.00000000e-01  8.66025404e-01  0.00000000e+00]
          [ 2.58819045e-01  9.65925826e-01  0.00000000e+00]
-         [ 0.              1.              0.            ]]
+         [-2.22044605e-16  1.00000000e+00  0.00000000e+00]]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
         [[  0.   0.  90.]
          [  0.   0. 105.]
@@ -576,27 +585,30 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_rotvec((0,0,45), anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  45.]
+        [ 0.  0. 45.]
 
         Rotate the object about itself:
 
         >>> sens.rotate_from_rotvec((0,0,45))
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  90.]
+        [ 0.  0. 90.]
 
         Create a rotation path by rotating in several steps about an anchor:
 
         >>> sens.rotate_from_rotvec([(0,0,15), (0,0,30), (0,0,45)], anchor=(0,0,0))
+        Sensor(id=...)
         >>> print(sens.position)
         [[ 7.07106781e-01  7.07106781e-01  0.00000000e+00]
          [ 5.00000000e-01  8.66025404e-01  0.00000000e+00]
          [ 2.58819045e-01  9.65925826e-01  0.00000000e+00]
-         [ 0.              1.              0.            ]]
+         [-2.22044605e-16  1.00000000e+00  0.00000000e+00]]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
         [[  0.   0.  90.]
          [  0.   0. 105.]
@@ -659,27 +671,30 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_euler(45, 'z', anchor=0)
+        Sensor...
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  45.]
+        [ 0.  0. 45.]
 
         Rotate the object about itself:
 
         >>> sens.rotate_from_euler(45, 'z')
+        Sensor(id=...)
         >>> print(sens.position)
         [0.70710678 0.70710678 0.        ]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0.  0.  90.]
+        [ 0.  0. 90.]
 
         Create a rotation path by rotating in several steps about an anchor:
 
         >>> sens.rotate_from_euler((15,30,45), 'z', anchor=(0,0,0))
+        Sensor(id=...)
         >>> print(sens.position)
         [[ 7.07106781e-01  7.07106781e-01  0.00000000e+00]
          [ 5.00000000e-01  8.66025404e-01  0.00000000e+00]
          [ 2.58819045e-01  9.65925826e-01  0.00000000e+00]
-         [ 0.              1.              0.            ]]
+         [-2.22044605e-16  1.00000000e+00  0.00000000e+00]]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
         [[  0.   0.  90.]
          [  0.   0. 105.]
@@ -734,6 +749,7 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)], anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -742,6 +758,7 @@ class BaseTransform:
         Rotate the object about itself:
 
         >>> sens.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)])
+        Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -795,6 +812,7 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_mrp((0,0,1), anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [-1.  0.  0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -803,10 +821,11 @@ class BaseTransform:
         Rotate the object about itself:
 
         >>> sens.rotate_from_matrix([(0,-1,0),(1,0,0),(0,0,1)])
+        Sensor(id=...)
         >>> print(sens.position)
-        [-1.  1.  0.]
+        [-1.  0.  0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
-        [0. 0. 0.]
+        [  0.   0. -90.]
         """
         rot = R.from_mrp(mrp)
         return self.rotate(rot, anchor=anchor, start=start)
@@ -855,6 +874,7 @@ class BaseTransform:
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor(position=(1,0,0))
         >>> sens.rotate_from_quat((0,0,1,1), anchor=0)
+        Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))
@@ -863,6 +883,7 @@ class BaseTransform:
         Rotate the object about itself:
 
         >>> sens.rotate_from_quat((0,0,1,1))
+        Sensor(id=...)
         >>> print(sens.position)
         [0. 1. 0.]
         >>> print(sens.orientation.as_euler('xyz', degrees=True))

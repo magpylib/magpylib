@@ -61,6 +61,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    Cuboid(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[4.30496934 6.9363475  0.50728577]
@@ -72,6 +73,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Cuboid(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
     [[4.30496934 6.9363475  0.50728577]
