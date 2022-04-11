@@ -14,7 +14,7 @@
 
 <p align="center"> Documentation:
 <a href="https://magpylib.readthedocs.io/en/latest/"> <img align='center' src="https://readthedocs.org/projects/magpylib/badge/?version=latest"> </a>
-<a href="https://www.gnu.org/licenses/agpl-3.0"> <img align='center' src="https://img.shields.io/badge/License-AGPL%20v3-blue.svg"> </a>
+<a href="https://opensource.org/licenses/BSD-2-Clause"> <img align='center' src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg"> </a>
 </p>
 
 <p align="center"> Test Coverage:
