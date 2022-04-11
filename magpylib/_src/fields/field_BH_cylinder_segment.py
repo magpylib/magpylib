@@ -2,10 +2,13 @@
 # pylint: disable=line-too-long
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-name-in-module
+# pylint: disable=too-many-statements
+
 import numpy as np
 from scipy.special import ellipeinc, ellipkinc
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 
 def arctan_k_tan_2(k, phi):
     """
@@ -1256,11 +1259,7 @@ def magnet_cylinder_segment_core(
     obs_pos: np.ndarray
     ) ->np.ndarray:
     """
-    H-field of Cylinder segment magnet with homogenous magnetization.
-    The full cylinder axis coincides with the z-axis of the CS.
-    The geometric center of the full Cylinder is in the origin.
-
-    Implementation from [Slanovc2021].
+    Put all solutions properly together (see paper Florian).
 
     Parameters
     ----------
@@ -1275,21 +1274,6 @@ def magnet_cylinder_segment_core(
     -------
     H-field: ndarray
         H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of [kA/m].
-
-    Examples
-    --------
-    Compute the field of three instances.
-
-    >>> import numpy as np
-    >>> from numpy import pi
-    >>> import magpylib as magpy
-    >>> mag = np.array([(100,0,0), (200,.1,pi/4)])
-    >>> dim = np.array([(1,2,0,pi/2,-1,1), (.1,3,-.3,pi,0,1)])
-    >>> obs = np.array([(.1,0,3), (1,pi,3)])
-    >>> B = magpy.lib.magnet_cylinder_segment_core(mag, dim, obs)
-    >>> print(B)
-    [[-0.84506541 -0.9207606   1.48474874]
-     [ 3.95719801  3.59131966  3.11703698]]
 
     Notes
     -----
@@ -1349,6 +1333,55 @@ def magnet_cylinder_segment_core(
     return result.T
 
 
+def magnet_cylinder_segment_field_internal(
+    field: str,
+    observers: np.ndarray,
+    magnetization: np.ndarray,
+    dimension: np.ndarray,
+    ) -> np.ndarray:
+    """
+    internal version of magnet_cylinder_segment_field used for object oriented interface.
+
+    Falls back to magnet_cylinder_field whenever the section angles describe the full
+    360° cylinder.
+    """
+    n = len(magnetization)
+
+    BHfinal = np.zeros((n,3))
+
+    r1, r2, h, phi1, phi2 = dimension.T
+
+    # case1: segment
+    mask1 = (phi2 - phi1) < 360
+
+    BHfinal[mask1] = magnet_cylinder_segment_field(
+        field,
+        observers[mask1],
+        magnetization[mask1],
+        dimension[mask1],
+    )
+
+    # case2: full cylinder
+    mask1x = ~mask1
+    BHfinal[mask1x] = magnet_cylinder_field(
+        field,
+        observers[mask1x],
+        magnetization[mask1x],
+        np.c_[2*r2[mask1x], h[mask1x]],
+    )
+
+    # case2a: hollow cylinder <- should be vectorized together with above
+    mask2 = (r1 != 0) & mask1x
+    BHfinal[mask2] -= magnet_cylinder_field(
+        field,
+        observers[mask2],
+        magnetization[mask2],
+        np.c_[2*r1[mask2], h[mask2]],
+    )
+
+    return BHfinal
+
+
 def magnet_cylinder_segment_field(
     field: str,
     observers: np.ndarray,
@@ -1390,14 +1423,16 @@ def magnet_cylinder_segment_field(
     >>> mag = np.array([(0,0,100), (50,50,0)])
     >>> dim = np.array([(0,1,2,0,90), (1,2,4,35,125)])
     >>> obs = np.array([(1,1,1), (1,1,1)])
-    >>> B = magpy.lib.magnet_cylinder_segment_field(mag, dim, obs)
+    >>> B = magpy.core.magnet_cylinder_segment_field('B', obs, mag, dim)
     >>> print(B)
     [[ 6.27410168  6.27410168 -1.20044166]
      [29.84602335 20.75731598  0.34961733]]
 
     Notes
     -----
-    Implementation based on [Slanovc2022].
+    Implementation based on
+
+    Slanovc: Journal of Magnetism and Magnetic Materials, 2022 (in review)
     """
     bh = check_field_input(field, 'magnet_cylinder_segment_field()')
 

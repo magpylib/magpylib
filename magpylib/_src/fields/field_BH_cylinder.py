@@ -249,15 +249,23 @@ def magnet_cylinder_field(
     >>> mag = np.array([(0,0,1000), (100,0,100)])
     >>> dim = np.array([(1,1), (2,3)])
     >>> obs = np.array([(1,2,3), (1,2,3)])
-    >>> B = magpy.lib.magnet_cylinder_field(mag, dim, obs)
+    >>> B = magpy.core.magnet_cylinder_field('B', obs, mag, dim)
     >>> print(B)
     [[ 0.77141782  1.54283565  1.10384481]
      [-0.15185713  2.90352915  2.23601722]]
 
     Notes
     -----
-    Axial implementation based on [Derby].
-    Diametral implementation based on [caciagli2018] and [rauber/leitner/ortner 2022 wip].
+
+    Axial implementation based on
+
+    Derby: American Journal of Physics 78.3 (2010): 229-235.
+
+    Diametral implementation based on
+
+    Caciagli: Journal of Magnetism and Magnetic Materials 456 (2018): 423-432.
+
+    Leitner/Rauber/Orter: WIP
     """
 
     bh = check_field_input(field, 'magnet_cylinder_field()')
@@ -375,7 +383,7 @@ def magnet_cylinder_field(
 #     >>> tetta = np.zeros(3)
 #     >>> dim = np.array([(2,2), (2,3), (3,4)])
 #     >>> obs = np.array([(.1,0,2), (2,0.12,3), (4,0.2,1)])
-#     >>> B = magpy.lib.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
+#     >>> B = magpy.core.magnet_cyl_dia_H_Furlani1994(tetta, dim, obs, 1000)
 #     >>> print(B)
 #     [[-5.99240321e-02  1.41132875e-19  8.02440419e-03]
 #      [ 1.93282782e-03  2.19048077e-03  2.60408201e-02]

@@ -60,6 +60,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     We rotate the sensor by 45 degrees and compute the field again:
 
     >>> sens.rotate_from_rotvec((45,0,0))
+    Sensor(id=...)
     >>> B = sens.getB(loop)
     >>> print(B)
     [0.         0.88857659 0.88857659]
@@ -70,8 +71,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     >>> B = sens.getB(loop)
     >>> print(B)
     [[0.         0.88857659 0.88857659]
-        [0.         0.916274   0.916274  ]
-        [0.         1.01415383 1.01415383]]
+     [0.         0.916274   0.916274  ]
+     [0.         1.01415383 1.01415383]]
     """
 
     def __init__(
@@ -155,6 +156,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Then we rotate the sensor by 45 degrees and compute the field again:
 
         >>> sens.rotate_from_rotvec((45,0,0))
+        Sensor(id=...)
         >>> B = sens.getB(loop)
         >>> print(B)
         [0.         0.88857659 0.88857659]
@@ -216,6 +218,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Then we rotate the sensor by 45 degrees and compute the field again:
 
         >>> sens.rotate_from_rotvec((45,0,0))
+        Sensor(id=...)
         >>> H = sens.getH(loop)
         >>> print(H)
         [0.         0.70710678 0.70710678]

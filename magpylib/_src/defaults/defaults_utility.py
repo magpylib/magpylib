@@ -62,16 +62,13 @@ SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY = {
 
 
 def get_defaults_dict(arg=None) -> dict:
-    """returns default dict or sub-dict based on `arg`
+    """returns default dict or sub-dict based on `arg`.
+    (e.g. `get_defaults_dict('display.style')`)
 
     Returns
     -------
     dict
         default sub dict
-
-    Examples
-    --------
-    >>> get_default_dict('display.style')
     """
 
     dict_ = deepcopy(DEFAULTS)
@@ -174,17 +171,20 @@ def linearize_dict(kwargs, separator=".") -> dict:
 
     Examples
     --------
+    >>> from magpylib._src.defaults.defaults_utility import linearize_dict
+    >>> from pprint import pprint
     >>> mydict = {
-        'line': {'width': 1, 'style': 'solid', 'color': None},
-        'marker': {'size': 1, 'symbol': 'o', 'color': None}
-    }
-    >>> linearize_dict(mydict, separator='.')
-    {'line.width': 1,
+    ...     'line': {'width': 1, 'style': 'solid', 'color': None},
+    ...     'marker': {'size': 1, 'symbol': 'o', 'color': None}
+    ... }
+    >>> flat_dict = linearize_dict(mydict, separator='.')
+    >>> pprint(flat_dict)
+    {'line.color': None,
      'line.style': 'solid',
-     'line.color': None,
+     'line.width': 1,
+     'marker.color': None,
      'marker.size': 1,
-     'marker.symbol': 'o',
-     'marker.color': None}
+     'marker.symbol': 'o'}
     """
     assert isinstance(kwargs, dict), "kwargs must be a dictionary"
     assert isinstance(separator, str), "separator must be a string"

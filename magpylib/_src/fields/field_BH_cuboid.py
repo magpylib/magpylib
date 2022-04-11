@@ -45,7 +45,7 @@ def magnet_cuboid_field(
     >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
     >>> dim = np.array([(1,1,1), (2,3,4), (1,2,3)])
     >>> obs = np.array([(1,2,3), (2,3,4), (0,0,0)])
-    >>> B = magpy.lib.magnet_cuboid_B_Yang1999(mag, dim, obs)
+    >>> B = magpy.core.magnet_cuboid_field('B', obs, mag, dim)
     >>> print(B)
     [[ 0.49343022  1.15608356  1.65109312]
      [ 0.82221622  1.18511282  1.46945423]
@@ -56,11 +56,11 @@ def magnet_cuboid_field(
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
-    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
+    Yang: Superconductor Science and Technology 3(12):591 (1999)
 
     Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 
-    Yang: Superconductor Science and Technology 3(12):591 (1999)
+    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
 
     Avoiding indeterminate forms:
 

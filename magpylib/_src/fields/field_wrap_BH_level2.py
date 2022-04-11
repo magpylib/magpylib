@@ -86,23 +86,25 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
 
 def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
-    """...
+    """Compute field for given sources and observers.
 
     Parameters
     ----------
-    - bh (bool): True=getB, False=getH
-    - sources (src_obj or list): source object or 1D list of L sources/collections with similar
+    sources : src_obj or list
+        source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
-    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K
-        sensors with similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
-    kwargs:
-    - 'sumup' (bool): False returns [B1,B2,...] for every source, True returns sum(Bi)
-        for all sources.
-    - 'squeeze' (bool): True output is squeezed (axes of length 1 are eliminated)
-    - 'pixel_agg' : str: A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
-       which applies on pixel output values.
-    - 'field' (str): 'B' computes B field, 'H' computes H-field
-    - getBH_dict inputs
+    observers : sens_obj or list or pos_obs
+        pos_obs or sensor object or 1D list of K sensors with similar pathlength M
+        and/or 1 and sensor pixel of shape (N1,N2,...,3).
+    sumup : bool, default=False
+        returns [B1,B2,...] for every source, True returns sum(Bi) sfor all sources.
+    squeeze : bool, default=True:
+        If True output is squeezed (axes of length 1 are eliminated)
+    pixel_agg : str
+        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
+        which applies on pixel output values.
+    field : {'B', 'H'}
+        'B' computes B field, 'H' computes H-field
 
     Returns
     -------
