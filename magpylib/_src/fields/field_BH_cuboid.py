@@ -56,11 +56,11 @@ def magnet_cuboid_field(
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
-    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
+    Yang: Superconductor Science and Technology 3(12):591 (1999)
 
     Engel-Herbert: Journal of Applied Physics 97(7):074504 - 074504-4 (2005)
 
-    Yang: Superconductor Science and Technology 3(12):591 (1999)
+    Camacho: Revista Mexicana de Fisica E 59 (2013) 8–17
 
     Avoiding indeterminate forms:
 

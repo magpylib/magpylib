@@ -43,7 +43,7 @@ def test_repr2():
 
 def test_Cylinder_getBH():
     """
-    test Cylinder geB and getH with different inputs
+    test Cylinder getB and getH with different inputs
     vs the vectorized form
     """
     mag = (22,33,44)
@@ -66,7 +66,7 @@ def test_Cylinder_getBH():
         (-12,-13,-14)]
 
     dim2 = [(1,2), (2,3), (3,4)]
-    dim5 = [(0,.5,2,0,360), (0,1,3,0,360), (0,1.5,4,0,360)]
+    dim5 = [(0,.5,2,0,360), (0,1,3,0,360), (0.0000001,1.5,4,0,360)]
 
     for d2,d5 in zip(dim2,dim5):
 
