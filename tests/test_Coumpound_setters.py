@@ -34,7 +34,7 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     c.style.label = label
 
     trace = make_Prism(
-        'plotly',
+        "plotly",
         base=Ncubes,
         diameter=diameter + height * 2,
         height=height * 0.5,

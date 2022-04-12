@@ -12,6 +12,7 @@ from magpylib._src.input_checks import (
     check_format_input_vector,
 )
 
+
 def show(
     *objects,
     zoom=0,
@@ -139,7 +140,11 @@ def show(
             warnings.warn(msg)
             # animation = False
         display_matplotlib(
-            *obj_list_semi_flat, markers=markers, zoom=zoom, axis=canvas, **kwargs,
+            *obj_list_semi_flat,
+            markers=markers,
+            zoom=zoom,
+            axis=canvas,
+            **kwargs,
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel

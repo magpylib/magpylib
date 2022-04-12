@@ -12,14 +12,14 @@ def test_loop_field():
     """
     lop = magpy.current.Loop(1000, 1)
 
-    anch = (0,0,1)
+    anch = (0, 0, 1)
     B = []
     for _ in range(1000):
-        lop.rotate_from_angax(100, 'x', anchor=anch, start=-1)
+        lop.rotate_from_angax(100, "x", anchor=anch, start=-1)
         B += [lop.getB(anch)]
 
     B = np.array(B)
     normB = np.linalg.norm(B, axis=1)
-    norms = normB/normB[0]
+    norms = normB / normB[0]
 
     assert np.allclose(norms, np.ones(1000))

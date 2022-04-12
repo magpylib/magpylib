@@ -73,13 +73,14 @@ def test_Collection_basics():
         col1 = magpy.Collection(pm1, pm2, pm3)
         col1.add(pm4, pm5, pm6)
 
-
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
             for pm in [pm1b, pm2b, pm3b, pm4b, pm5b, pm6b]:
                 pm.move(mv).rotate_from_angax(a, aa, aaa).rotate(rot, aaa)
 
-            col1.move(mv).rotate_from_angax(a, aa, aaa, start=-1).rotate(rot, aaa, start=-1)
+            col1.move(mv).rotate_from_angax(a, aa, aaa, start=-1).rotate(
+                rot, aaa, start=-1
+            )
 
         B1 += [magpy.getB([pm1b, pm2b, pm3b, pm4b, pm5b, pm6b], poso, sumup=True)]
         B2 += [col1.getB(poso)]
@@ -113,7 +114,7 @@ def test_Collection_basics():
     ],
 )
 def test_col_getB(test_input, expected):
-    """ testing some Collection stuff with getB"""
+    """testing some Collection stuff with getB"""
     # pylint: disable=unused-variable
     # pylint: disable=eval-used
 
@@ -137,39 +138,39 @@ def test_col_getB(test_input, expected):
 @pytest.mark.parametrize(
     "test_input,expected",
     [
-        ('src1.getB()', pytest.raises(MagpylibBadUserInput)),
-        ('src1.getB(src1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(src1,src1)', pytest.raises(MagpylibBadUserInput)),
-        ('src1.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(src1,src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('sens1.getB()', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens1,src1)', pytest.raises(MagpylibBadUserInput)),
-        ('sens1.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens1,sens1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens1,mixed_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens1,src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('sens1.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens1,sens_col)', pytest.raises(MagpylibBadUserInput)),
-        ('mixed_col.getB(src1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(mixed_col,src1)', pytest.raises(MagpylibBadUserInput)),
-        ('mixed_col.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
-        ('mixed_col.getB(mixed_col)', pytest.raises(MagpylibBadUserInput)),
-        ('mixed_col.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(mixed_col,src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('mixed_col.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
-        ('src_col.getB()', pytest.raises(MagpylibBadUserInput)),
-        ('src_col.getB(src1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(src_col,src1)', pytest.raises(MagpylibBadUserInput)),
-        ('src_col.getB(src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(src_col,src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('sens_col.getB()', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens_col,src1)', pytest.raises(MagpylibBadUserInput)),
-        ('sens_col.getB(sens1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens_col,sens1)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens_col,mixed_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens_col,src_col)', pytest.raises(MagpylibBadUserInput)),
-        ('sens_col.getB(sens_col)', pytest.raises(MagpylibBadUserInput)),
-        ('magpy.getB(sens_col,sens_col)', pytest.raises(MagpylibBadUserInput)),
+        ("src1.getB()", pytest.raises(MagpylibBadUserInput)),
+        ("src1.getB(src1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(src1,src1)", pytest.raises(MagpylibBadUserInput)),
+        ("src1.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(src1,src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("sens1.getB()", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens1,src1)", pytest.raises(MagpylibBadUserInput)),
+        ("sens1.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens1,sens1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens1,mixed_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens1,src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("sens1.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens1,sens_col)", pytest.raises(MagpylibBadUserInput)),
+        ("mixed_col.getB(src1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(mixed_col,src1)", pytest.raises(MagpylibBadUserInput)),
+        ("mixed_col.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
+        ("mixed_col.getB(mixed_col)", pytest.raises(MagpylibBadUserInput)),
+        ("mixed_col.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(mixed_col,src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("mixed_col.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
+        ("src_col.getB()", pytest.raises(MagpylibBadUserInput)),
+        ("src_col.getB(src1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(src_col,src1)", pytest.raises(MagpylibBadUserInput)),
+        ("src_col.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(src_col,src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("sens_col.getB()", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens_col,src1)", pytest.raises(MagpylibBadUserInput)),
+        ("sens_col.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens_col,sens1)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens_col,mixed_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens_col,src_col)", pytest.raises(MagpylibBadUserInput)),
+        ("sens_col.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
+        ("magpy.getB(sens_col,sens_col)", pytest.raises(MagpylibBadUserInput)),
     ],
 )
 def test_bad_col_getB_inputs(test_input, expected):
@@ -178,10 +179,12 @@ def test_bad_col_getB_inputs(test_input, expected):
     # pylint: disable=eval-used
 
     src1 = magpy.magnet.Cuboid(
-        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0))
+        magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
+    )
 
     src2 = magpy.magnet.Cylinder(
-        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0))
+        magnetization=(0, 1, 0), dimension=(8, 5), position=(-15, 0, 0)
+    )
 
     sens1 = magpy.Sensor(position=(0, 0, 6))
     sens2 = magpy.Sensor(position=(0, 0, 6))
@@ -299,23 +302,23 @@ def test_reprs():
     # pylint: disable=protected-access
 
     c = magpy.Collection()
-    assert repr(c)[:10]=='Collection'
+    assert repr(c)[:10] == "Collection"
 
-    s1 = magpy.magnet.Sphere((1,2,3), 5)
+    s1 = magpy.magnet.Sphere((1, 2, 3), 5)
     c = magpy.Collection(s1)
-    assert repr(c)[:10]=='Collection'
+    assert repr(c)[:10] == "Collection"
 
     x1 = magpy.Sensor()
     c = magpy.Collection(x1)
-    assert repr(c)[:10]=='Collection'
+    assert repr(c)[:10] == "Collection"
 
     x1 = magpy.Sensor()
-    s1 = magpy.magnet.Sphere((1,2,3), 5)
-    c = magpy.Collection(s1,x1)
-    assert repr(c)[:10]=='Collection'
+    s1 = magpy.magnet.Sphere((1, 2, 3), 5)
+    c = magpy.Collection(s1, x1)
+    assert repr(c)[:10] == "Collection"
 
-    x1 = magpy.magnet.Cuboid(style_label='x1')
-    x2 = magpy.magnet.Cuboid(style_label='x2')
+    x1 = magpy.magnet.Cuboid(style_label="x1")
+    x2 = magpy.magnet.Cuboid(style_label="x2")
     cc = x1 + x2
     rep = cc._repr_html_()
     rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)
@@ -325,12 +328,12 @@ def test_reprs():
 
 
 def test_collection_describe():
-    """ test describe method"""
+    """test describe method"""
 
-    x = magpy.magnet.Cuboid(style_label='x')
-    y = magpy.magnet.Cuboid(style_label='y')
-    z = magpy.magnet.Cuboid(style_label='z')
-    u = magpy.magnet.Cuboid(style_label='u')
+    x = magpy.magnet.Cuboid(style_label="x")
+    y = magpy.magnet.Cuboid(style_label="y")
+    z = magpy.magnet.Cuboid(style_label="z")
+    u = magpy.magnet.Cuboid(style_label="u")
     c = x + y + z + u
 
     desc = c.describe(format="label, type", return_string=True).split("\n")
@@ -379,19 +382,18 @@ def test_collection_describe():
         "│   └── Cuboid z (id=REGEX)",
         "└── Cuboid u (id=REGEX)",
     ]
-    assert "".join(test)==re.sub('id=*[0-9]*[0-9]', 'id=REGEX', "".join(desc))
+    assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
-
-    #pylint: disable=unnecessary-lambda
-    x = lambda : magpy.magnet.Cuboid()
-    y = lambda : magpy.current.Loop()
-    z = lambda : magpy.misc.CustomSource()
+    # pylint: disable=unnecessary-lambda
+    x = lambda: magpy.magnet.Cuboid()
+    y = lambda: magpy.current.Loop()
+    z = lambda: magpy.misc.CustomSource()
 
     c = magpy.Collection(*[x() for _ in range(100)])
     c.add(*[y() for _ in range(50)])
     c.add(*[z() for _ in range(25)])
 
-    desc = c.describe(format="type+label", return_string=True).split('\n')
+    desc = c.describe(format="type+label", return_string=True).split("\n")
     test = [
         "Collection nolabel",
         "├── 100x Cuboids",
@@ -400,30 +402,30 @@ def test_collection_describe():
     ]
     assert test == desc
 
-    x = magpy.magnet.Cuboid(style_label='x')
-    y = magpy.magnet.Cuboid(style_label='y')
+    x = magpy.magnet.Cuboid(style_label="x")
+    y = magpy.magnet.Cuboid(style_label="y")
     cc = x + y
     desc = cc.describe(format="label, properties", return_string=True).split("\n")
     test = [
-    "Collection",
-    "│   • position: [0. 0. 0.] mm",
-    "│   • orientation: [0. 0. 0.] degrees",
-    "│   • children_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
-    "│   • collections_all: []",
-    "│   • sensors_all: []",
-    "│   • sources_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
-    "├── x",
-    "│       • position: [0. 0. 0.] mm",
-    "│       • orientation: [0. 0. 0.] degrees",
-    "│       • dimension: None mm",
-    "│       • magnetization: None mT",
-    "└── y",
-    "        • position: [0. 0. 0.] mm",
-    "        • orientation: [0. 0. 0.] degrees",
-    "        • dimension: None mm",
-    "        • magnetization: None mT",
+        "Collection",
+        "│   • position: [0. 0. 0.] mm",
+        "│   • orientation: [0. 0. 0.] degrees",
+        "│   • children_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
+        "│   • collections_all: []",
+        "│   • sensors_all: []",
+        "│   • sources_all: [Cuboid(id=REGEX, label='x'), Cuboid(id=REGEX, label='y')]",
+        "├── x",
+        "│       • position: [0. 0. 0.] mm",
+        "│       • orientation: [0. 0. 0.] degrees",
+        "│       • dimension: None mm",
+        "│       • magnetization: None mT",
+        "└── y",
+        "        • position: [0. 0. 0.] mm",
+        "        • orientation: [0. 0. 0.] degrees",
+        "        • dimension: None mm",
+        "        • magnetization: None mT",
     ]
-    assert "".join(test)==re.sub('id=*[0-9]*[0-9]', 'id=REGEX', "".join(desc))
+    assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
     desc = cc.describe()
     assert desc is None

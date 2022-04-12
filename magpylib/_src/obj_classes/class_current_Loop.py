@@ -8,6 +8,7 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.input_checks import check_format_input_scalar
 
+
 class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Circular current loop.
 
@@ -92,7 +93,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.diameter = diameter
-        self._object_type = 'Loop'
+        self._object_type = "Loop"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -110,7 +111,8 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         """Set Loop loop diameter, float, [mm]."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name='diameter',
-            sig_type='`None` or a positive number (int, float)',
+            sig_name="diameter",
+            sig_type="`None` or a positive number (int, float)",
             allow_None=True,
-            forbid_negative=True)
+            forbid_negative=True,
+        )

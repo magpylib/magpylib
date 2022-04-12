@@ -348,16 +348,16 @@ def test_kwargs():
 
 def test_copy():
     """test copying object"""
-    bg1 = BaseGeo((0, 0, 0), None, style_label='label1') #has style
-    bg2 = BaseGeo((1,2,3), None) # has no style
-    bg3 = BaseGeo((4,6,8), style_color='blue') # has style but label is None
+    bg1 = BaseGeo((0, 0, 0), None, style_label="label1")  # has style
+    bg2 = BaseGeo((1, 2, 3), None)  # has no style
+    bg3 = BaseGeo((4, 6, 8), style_color="blue")  # has style but label is None
     bg1c = bg1.copy()
-    bg2c = bg2.copy(position=(10, 0, 0), style=dict(color='red'), style_color='orange')
+    bg2c = bg2.copy(position=(10, 0, 0), style=dict(color="red"), style_color="orange")
     bg3c = bg3.copy()
 
     # original object should not be affected"
     np.testing.assert_allclose(bg1.position, (0, 0, 0))
-    np.testing.assert_allclose(bg2.position, (1 ,2, 3))
+    np.testing.assert_allclose(bg2.position, (1, 2, 3))
 
     # check if label suffix iterated correctly
     assert bg1c.style.label == "label2"
@@ -369,7 +369,7 @@ def test_copy():
 
 
 def test_copy_parents():
-    """ make sure that parents are not copied"""
+    """make sure that parents are not copied"""
     x1 = magpy.Sensor()
     x2 = magpy.Sensor()
     x3 = magpy.Sensor()
@@ -385,17 +385,19 @@ def test_copy_parents():
 def test_describe():
     """testing descibe method"""
     # pylint: disable=protected-access
-    x1 = magpy.magnet.Cuboid(style_label='x1')
-    x2 = magpy.magnet.Cylinder(style_label='x2', dimension=(1,3), magnetization=(2,3,4))
-    s1 = magpy.Sensor(position=[(1,2,3)]*3, pixel=[(1,2,3)]*15)
+    x1 = magpy.magnet.Cuboid(style_label="x1")
+    x2 = magpy.magnet.Cylinder(
+        style_label="x2", dimension=(1, 3), magnetization=(2, 3, 4)
+    )
+    s1 = magpy.Sensor(position=[(1, 2, 3)] * 3, pixel=[(1, 2, 3)] * 15)
 
     desc = x1.describe()
     assert desc is None
 
     test = (
-        "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • " +
-        "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • " +
-        "dimension: None mm<br>  • magnetization: None mT</pre>"
+        "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • "
+        + "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • "
+        + "dimension: None mm<br>  • magnetization: None mT</pre>"
     )
     rep = x1._repr_html_()
     rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)
@@ -404,89 +406,89 @@ def test_describe():
     magpy.Collection(x1, x2)
     test = [
         "Cuboid(id=REGEX, label='x1')",
-        "  • parent: Collection(id=REGEX) ", # INVISIBLE SPACE
+        "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
         "  • position: [0. 0. 0.] mm",
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: None mm",
         "  • magnetization: None mT",
     ]
     desc = x1.describe(return_string=True)
-    desc = re.sub('id=*[0-9]*[0-9]', 'id=REGEX', desc)
+    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert test == desc.split("\n")
 
     test = [
         "Cylinder(id=REGEX, label='x2')",
-        "  • parent: Collection(id=REGEX) ", # INVISIBLE SPACE
+        "  • parent: Collection(id=REGEX) ",  # INVISIBLE SPACE
         "  • position: [0. 0. 0.] mm",
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: [1. 3.] mm",
         "  • magnetization: [2. 3. 4.] mT",
     ]
     desc = x2.describe(return_string=True)
-    desc = re.sub('id=*[0-9]*[0-9]', 'id=REGEX', desc)
+    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert test == desc.split("\n")
 
     test = [
         "Sensor(id=REGEX)",
-        "  • parent: None ", # INVISIBLE SPACE
+        "  • parent: None ",  # INVISIBLE SPACE
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] mm",
         "  • orientation (last): [0. 0. 0.] degrees",
-        "  • pixel: 15 ", # INVISIBLE SPACE
+        "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
     desc = s1.describe(return_string=True)
-    desc = re.sub('id=*[0-9]*[0-9]', 'id=REGEX', desc)
+    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert test == desc.split("\n")
 
     # exclude=None test
     s = magpy.Sensor()
     desc = s.describe(exclude=None, return_string=True)
     test = (
-        "Sensor(id=REGEX)\n" +
-        "  • parent: None \n" +
-        "  • position: [0. 0. 0.] mm\n" +
-        "  • orientation: [0. 0. 0.] degrees\n" +
-        "  • pixel: 1 \n" +
-        "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), " +
-        "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True))," +
-        " color=None, description=Description(show=None, text=None), label=None, " +
-        "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None," +
-        " line=Line(color=None, style=None, width=None), marker=Marker(color=None," +
-        " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None," +
-        " size=1, symbol=None), size=None) "
+        "Sensor(id=REGEX)\n"
+        + "  • parent: None \n"
+        + "  • position: [0. 0. 0.] mm\n"
+        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • pixel: 1 \n"
+        + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
+        + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
+        + " color=None, description=Description(show=None, text=None), label=None, "
+        + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
+        + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
+        + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
+        + " size=1, symbol=None), size=None) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test
-    
+
     # exclude=None test
     s = magpy.Sensor()
     desc = s.describe(exclude=None, return_string=True)
     test = (
-        "Sensor(id=REGEX)\n" +
-        "  • parent: None \n" +
-        "  • position: [0. 0. 0.] mm\n" +
-        "  • orientation: [0. 0. 0.] degrees\n" +
-        "  • pixel: 1 \n" +
-        "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), " +
-        "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True))," +
-        " color=None, description=Description(show=None, text=None), label=None, " +
-        "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None," +
-        " line=Line(color=None, style=None, width=None), marker=Marker(color=None," +
-        " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None," +
-        " size=1, symbol=None), size=None) "
+        "Sensor(id=REGEX)\n"
+        + "  • parent: None \n"
+        + "  • position: [0. 0. 0.] mm\n"
+        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • pixel: 1 \n"
+        + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
+        + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
+        + " color=None, description=Description(show=None, text=None), label=None, "
+        + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
+        + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
+        + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
+        + " size=1, symbol=None), size=None) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test
 
     # lots of sensor pixel
-    s = magpy.Sensor(pixel=[[[(1,2,3)]*5]*5]*3)
+    s = magpy.Sensor(pixel=[[[(1, 2, 3)] * 5] * 5] * 3)
     desc = s.describe(return_string=True)
     test = (
-        "Sensor(id=REGEX)\n" +
-        "  • parent: None \n" +
-        "  • position: [0. 0. 0.] mm\n" +
-        "  • orientation: [0. 0. 0.] degrees\n" +
-        "  • pixel: 75 (3x5x5) "
+        "Sensor(id=REGEX)\n"
+        + "  • parent: None \n"
+        + "  • position: [0. 0. 0.] mm\n"
+        + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • pixel: 75 (3x5x5) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test

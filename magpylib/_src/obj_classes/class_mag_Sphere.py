@@ -8,6 +8,7 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.input_checks import check_format_input_scalar
 
+
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Spherical magnet with homogeneous magnetization.
 
@@ -111,7 +112,8 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """Set Sphere diameter, float, [mm]."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name='diameter',
-            sig_type='`None` or a positive number (int, float)',
+            sig_name="diameter",
+            sig_type="`None` or a positive number (int, float)",
             allow_None=True,
-            forbid_negative=True,)
+            forbid_negative=True,
+        )

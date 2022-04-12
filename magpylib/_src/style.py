@@ -489,8 +489,7 @@ class Trace3d(MagicProperties):
 
     @property
     def backend(self):
-        """Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
-        """
+        """Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`."""
         return self._backend
 
     @backend.setter

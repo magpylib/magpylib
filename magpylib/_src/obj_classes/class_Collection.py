@@ -237,7 +237,9 @@ class BaseCollection(BaseDisplayRepr):
         lines = []
         lines.append(repr_obj(self))
         for line in collection_tree_generator(
-            self, format="type+label+id", max_elems=10,
+            self,
+            format="type+label+id",
+            max_elems=10,
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
@@ -257,7 +259,11 @@ class BaseCollection(BaseDisplayRepr):
         return_string: bool, default=`False`
             If `False` print description with stdout, if `True` return as string.
         """
-        tree = collection_tree_generator(self, format=format, max_elems=max_elems,)
+        tree = collection_tree_generator(
+            self,
+            format=format,
+            max_elems=max_elems,
+        )
         output = [repr_obj(self, format)]
         for t in tree:
             output.append(t)
@@ -408,7 +414,9 @@ class BaseCollection(BaseDisplayRepr):
             typechecks=True,
         )
         self_objects = check_format_input_obj(
-            self, allow="sensors+sources+collections", recursive=recursive,
+            self,
+            allow="sensors+sources+collections",
+            recursive=recursive,
         )
         for child in remove_objects:
             if child in self_objects:
@@ -749,6 +757,10 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs,
+            self,
+            position=position,
+            orientation=orientation,
+            style=style,
+            **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)

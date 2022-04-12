@@ -3,20 +3,18 @@ import magpylib as magpy
 
 
 def test_Dipole_basicB():
-    """ Basic dipole class test
-    """
-    src = magpy.misc.Dipole(moment=(1,2,3),position=(1,2,3))
+    """Basic dipole class test"""
+    src = magpy.misc.Dipole(moment=(1, 2, 3), position=(1, 2, 3))
     sens = magpy.Sensor()
 
     B = src.getB(sens)
-    Btest = np.array([0.00303828,0.00607656,0.00911485])
+    Btest = np.array([0.00303828, 0.00607656, 0.00911485])
     assert np.allclose(B, Btest)
 
 
 def test_Dipole_basicH():
-    """ Basic dipole class test
-    """
-    src = magpy.misc.Dipole(moment=(1,2,3),position=(1,2,3))
+    """Basic dipole class test"""
+    src = magpy.misc.Dipole(moment=(1, 2, 3), position=(1, 2, 3))
     sens = magpy.Sensor()
     H = src.getH(sens)
     Htest = np.array([0.00241779, 0.00483558, 0.00725336])
@@ -24,18 +22,16 @@ def test_Dipole_basicH():
 
 
 def test_Dipole_zero_position():
-    """ Basic dipole class test
-    """
-    src = magpy.misc.Dipole(moment=(1,2,3))
+    """Basic dipole class test"""
+    src = magpy.misc.Dipole(moment=(1, 2, 3))
     sens = magpy.Sensor()
-    np.seterr(all='ignore')
-    B = magpy.getB(src,sens)
-    np.seterr(all='print')
+    np.seterr(all="ignore")
+    B = magpy.getB(src, sens)
+    np.seterr(all="print")
     assert all(np.isnan(B))
 
 
 def test_repr():
-    """ test __repr__
-    """
-    dip = magpy.misc.Dipole(moment=(1,2,3))
-    assert dip.__repr__()[:6] == 'Dipole', 'Dipole repr failed'
+    """test __repr__"""
+    dip = magpy.misc.Dipole(moment=(1, 2, 3))
+    assert dip.__repr__()[:6] == "Dipole", "Dipole repr failed"

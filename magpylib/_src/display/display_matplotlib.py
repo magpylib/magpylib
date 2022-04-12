@@ -118,7 +118,11 @@ def draw_path(
 def draw_faces(faces, col, lw, alpha, ax):
     """draw faces in respective color and return list of vertex-points"""
     cuboid_faces = Poly3DCollection(
-        faces, facecolors=col, linewidths=lw, edgecolors="k", alpha=alpha,
+        faces,
+        facecolors=col,
+        linewidths=lw,
+        edgecolors="k",
+        alpha=alpha,
     )
     ax.add_collection3d(cuboid_faces)
     return faces
@@ -317,7 +321,12 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
 
 
 def display_matplotlib(
-    *obj_list_semi_flat, axis=None, markers=None, zoom=0, color_sequence=None, **kwargs,
+    *obj_list_semi_flat,
+    axis=None,
+    markers=None,
+    zoom=0,
+    color_sequence=None,
+    **kwargs,
 ):
     """
     Display objects and paths graphically with the matplotlib backend.
@@ -422,7 +431,11 @@ def display_matplotlib(
                 if style.magnetization.show:
                     check_excitations([obj])
                     pts = draw_directs_faced(
-                        [obj], [obj_color], ax, path_frames, style.magnetization.size,
+                        [obj],
+                        [obj_color],
+                        ax,
+                        path_frames,
+                        style.magnetization.size,
                     )
                     points += pts
         if style.path.show:

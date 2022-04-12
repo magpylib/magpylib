@@ -262,11 +262,11 @@ html_js_files = [
 
 mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"
 mathjax2_config = {
-    'tex2jax': {
-        'inlineMath': [['$', '$'], ['\\(', '\\)']],
-        'processEscapes': True,
-        'ignoreClass': 'document',
-        'processClass': 'math|output_area',
+    "tex2jax": {
+        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
+        "processEscapes": True,
+        "ignoreClass": "document",
+        "processClass": "math|output_area",
     }
 }
 
@@ -275,4 +275,4 @@ mathjax_options = {
     "async": "async",
 }
 
-myst_update_mathjax=False
+myst_update_mathjax = False

@@ -64,7 +64,15 @@ class BaseGeo(BaseTransform):
     """
 
     def __init__(
-        self, position=(0.0, 0.0, 0.0,), orientation=None, style=None, **kwargs
+        self,
+        position=(
+            0.0,
+            0.0,
+            0.0,
+        ),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
 
         self._parent = None
@@ -264,10 +272,9 @@ class BaseGeo(BaseTransform):
             )
         return val
 
-
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """ Add up sources to a Collection object.
+        """Add up sources to a Collection object.
 
         Returns
         -------
@@ -275,8 +282,8 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from magpylib import Collection
-        return Collection(self, obj)
 
+        return Collection(self, obj)
 
     # methods -------------------------------------------------------
     def reset_path(self):

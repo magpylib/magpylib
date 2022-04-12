@@ -30,12 +30,25 @@ https://www.sciencedirect.com/science/article/pii/S2352711020300170
 """
 
 # module level dunders
-__version__ = '4.0.0rc1'
-__author__ =  'Michael Ortner & Alexandre Boisselet'
-__credits__ = 'The Magpylib community'
-__all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
-    'Sensor', 'Collection', 'show', 'defaults', '__version__',
-    '__author__', '__credits__', 'core', 'graphics']
+__version__ = "4.0.0rc1"
+__author__ = "Michael Ortner & Alexandre Boisselet"
+__credits__ = "The Magpylib community"
+__all__ = [
+    "magnet",
+    "current",
+    "misc",
+    "getB",
+    "getH",
+    "Sensor",
+    "Collection",
+    "show",
+    "defaults",
+    "__version__",
+    "__author__",
+    "__credits__",
+    "core",
+    "graphics",
+]
 
 # create interface to outside of package
 from magpylib import magnet, current, misc, core, graphics

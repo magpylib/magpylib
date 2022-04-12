@@ -4,12 +4,12 @@ DOCSTRINGS V4 READY
 
 from magpylib._src.input_checks import (
     check_format_input_scalar,
-    check_format_input_vector
+    check_format_input_vector,
 )
 
 
 class BaseHomMag:
-    """provides the magnetization attribute  for homogeneously magnetized magnets """
+    """provides the magnetization attribute  for homogeneously magnetized magnets"""
 
     def __init__(self, magnetization):
         self.magnetization = magnetization
@@ -26,13 +26,14 @@ class BaseHomMag:
             mag,
             dims=(1,),
             shape_m1=3,
-            sig_name='magnetization',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,)',
-            allow_None=True)
+            sig_name="magnetization",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,)",
+            allow_None=True,
+        )
 
 
 class BaseCurrent:
-    """provides scalar current attribute """
+    """provides scalar current attribute"""
 
     def __init__(self, current):
         self.current = current
@@ -48,6 +49,7 @@ class BaseCurrent:
         # input type and init check
         self._current = check_format_input_scalar(
             current,
-            sig_name='current',
-            sig_type='`None` or a number (int, float)',
-            allow_None=True)
+            sig_name="current",
+            sig_type="`None` or a number (int, float)",
+            allow_None=True,
+        )

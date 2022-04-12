@@ -62,7 +62,7 @@ def test_Cuboid_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     src = Cuboid((1, 2, 3), (1, 2, 3))
-    src.move(np.linspace((.1,.1,.1), (2,2,2), 20), start=-1)
+    src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     x = src.show(style_path_frames=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
 
@@ -79,8 +79,8 @@ def test_Sensor_display():
     x = sens_nopix.show(canvas=fig, style_description_text="mysensor")
     assert x is None, "display test fail"
     sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
-    sens.move(np.linspace((.4,.4,.4), (12.4,12.4,12.4), 33), start=-1)
-    sens.style.arrows.z.color = 'magenta'
+    sens.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
+    sens.style.arrows.z.color = "magenta"
     sens.style.arrows.z.show = False
     x = sens.show(canvas=fig, markers=[(100, 100, 100)], style_path_frames=15)
     assert x is None, "display test fail"
@@ -107,9 +107,9 @@ def test_col_display():
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
-    pm2 = pm1.copy(position=(2,0,0))
-    pm3 = pm1.copy(position=(4,0,0))
-    nested_col = (pm1 + pm2 + pm3).set_children_styles(color='magenta')
+    pm2 = pm1.copy(position=(2, 0, 0))
+    pm3 = pm1.copy(position=(4, 0, 0))
+    nested_col = (pm1 + pm2 + pm3).set_children_styles(color="magenta")
     x = nested_col.show(canvas=fig)
     assert x is None, "collection display test fail"
 
@@ -220,7 +220,7 @@ def test_extra_model3d():
                 "x": [-1, -1, 1, 1, -1, -1, 1, 1],
                 "y": [-1, 1, 1, -1, -1, 1, 1, -1],
                 "z": [-1, -1, -1, -1, 1, 1, 1, 1],
-                "facecolor": ['red']*12,
+                "facecolor": ["red"] * 12,
             },
             "show": True,
         },
@@ -233,7 +233,12 @@ def test_extra_model3d():
     assert x is None, "display test fail"
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
-    x = magpy.show(coll, canvas=fig, animation=True, style=dict(model3d_showdefault=False),)
+    x = magpy.show(
+        coll,
+        canvas=fig,
+        animation=True,
+        style=dict(model3d_showdefault=False),
+    )
     assert x is None, "display test fail"
     my_callable_kwargs = lambda: {
         "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
@@ -250,7 +255,11 @@ def test_extra_model3d():
         }
     )
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(canvas=fig, style_path_show=False, style=dict(model3d_showdefault=False),)
+    x = cuboid.show(
+        canvas=fig,
+        style_path_show=False,
+        style=dict(model3d_showdefault=False),
+    )
     assert x is None, "display test fail"
 
 

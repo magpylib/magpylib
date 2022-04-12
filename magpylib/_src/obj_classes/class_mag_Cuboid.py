@@ -8,6 +8,7 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.input_checks import check_format_input_vector
 
+
 class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cuboid magnet with homogeneous magnetization.
 
@@ -93,7 +94,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'Cuboid'
+        self._object_type = "Cuboid"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -109,11 +110,12 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @dimension.setter
     def dimension(self, dim):
         """Set Cuboid dimension (a,b,c), shape (3,), [mm]."""
-        self._dimension = check_format_input_vector(dim,
+        self._dimension = check_format_input_vector(
+            dim,
             dims=(1,),
             shape_m1=3,
-            sig_name='Cuboid.dimension',
-            sig_type='array_like (list, tuple, ndarray) of shape (3,) with positive values',
+            sig_name="Cuboid.dimension",
+            sig_type="array_like (list, tuple, ndarray) of shape (3,) with positive values",
             allow_None=True,
             forbid_negative0=True,
         )

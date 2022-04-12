@@ -29,48 +29,58 @@ import magpylib as magpy
 # pickle.dump(B, open('testdata_vs_mag2.p', 'wb'))
 # -------------------------------------------------------------
 
+
 def test_vs_mag2_linear():
-    """ test against magpylib v2
-    """
-    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[0]
-    poso = [(t,-t,t) for t in np.linspace(0,3,100)]
-    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
+    """test against magpylib v2"""
+    data = pickle.load(
+        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
+    )[0]
+    poso = [(t, -t, t) for t in np.linspace(0, 3, 100)]
+    pm = magpy.magnet.Cuboid(magnetization=(111, 222, 333), dimension=(1, 2, 3))
 
     B = magpy.getB(pm, poso)
-    assert np.allclose(B, data), 'vs mag2 - linear'
+    assert np.allclose(B, data), "vs mag2 - linear"
 
 
 def test_vs_mag2_rotation():
-    """ test against magpylib v2
-    """
-    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[1]
-    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3))
-    possis = [(3*np.sin(t/180*np.pi),3*np.cos(t/180*np.pi),0) for t in np.linspace(0,444,100)]
+    """test against magpylib v2"""
+    data = pickle.load(
+        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
+    )[1]
+    pm = magpy.magnet.Cuboid(magnetization=(111, 222, 333), dimension=(1, 2, 3))
+    possis = [
+        (3 * np.sin(t / 180 * np.pi), 3 * np.cos(t / 180 * np.pi), 0)
+        for t in np.linspace(0, 444, 100)
+    ]
     B = pm.getB(possis)
-    assert np.allclose(B, data), 'vs mag2 - rot'
+    assert np.allclose(B, data), "vs mag2 - rot"
 
 
 def test_vs_mag2_spiral():
-    """ test against magpylib v2
-    """
-    data = pickle.load(open(os.path.abspath('tests/testdata/testdata_vs_mag2.p'),'rb'))[2]
-    pm = magpy.magnet.Cuboid(magnetization=(111,222,333), dimension=(1,2,3), position=(3,0,0))
+    """test against magpylib v2"""
+    data = pickle.load(
+        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
+    )[2]
+    pm = magpy.magnet.Cuboid(
+        magnetization=(111, 222, 333), dimension=(1, 2, 3), position=(3, 0, 0)
+    )
 
-    angs = np.linspace(0,297,100)
-    pm.rotate_from_angax(angs, 'z', anchor=0, start=0)
-    possis = np.linspace((0,0,.1), (0,0,9.9), 99)
+    angs = np.linspace(0, 297, 100)
+    pm.rotate_from_angax(angs, "z", anchor=0, start=0)
+    possis = np.linspace((0, 0, 0.1), (0, 0, 9.9), 99)
     pm.move(possis, start=1)
-    B = pm.getB((0,0,0))
-    assert np.allclose(B, data), 'vs mag2 - rot'
+    B = pm.getB((0, 0, 0))
+    assert np.allclose(B, data), "vs mag2 - rot"
 
 
 def test_vs_mag2_line():
-    """ test line current vs mag2 results
-    """
-    Btest = np.array([ 1.47881931, -1.99789688,  0.2093811])
+    """test line current vs mag2 results"""
+    Btest = np.array([1.47881931, -1.99789688, 0.2093811])
 
-    src = magpy.current.Line(current=10, vertices=[(0,-5,0),(0,5,0),(3,3,3),
-        (-1,-2,-3),(1,1,1),(2,3,4)])
-    B = src.getB([1,2,3])
+    src = magpy.current.Line(
+        current=10,
+        vertices=[(0, -5, 0), (0, 5, 0), (3, 3, 3), (-1, -2, -3), (1, 1, 1), (2, 3, 4)],
+    )
+    B = src.getB([1, 2, 3])
 
     assert np.allclose(Btest, B)

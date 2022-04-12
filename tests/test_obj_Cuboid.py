@@ -34,19 +34,23 @@ from magpylib._src.obj_classes.class_Sensor import Sensor
 
 # # pickle.dump(inp, open(os.path.abspath('testdata_Cuboid.p'), 'wb'))
 
+
 def test_Cuboid_basics():
-    """ test Cuboid fundamentals
-    """
+    """test Cuboid fundamentals"""
     # data generated in comment above
-    data = pickle.load(open(os.path.abspath('./tests/testdata/testdata_Cuboid.p'), 'rb'))
-    mags,dims,posos,angs,axs,anchs,movs,B = data
+    data = pickle.load(
+        open(os.path.abspath("./tests/testdata/testdata_Cuboid.p"), "rb")
+    )
+    mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
-    for mag,dim,ang,ax,anch,mov,poso in zip(mags,dims,angs,axs,anchs,movs,posos):
-        pm = magpy.magnet.Cuboid(mag,np.abs(dim))
+    for mag, dim, ang, ax, anch, mov, poso in zip(
+        mags, dims, angs, axs, anchs, movs, posos
+    ):
+        pm = magpy.magnet.Cuboid(mag, np.abs(dim))
 
         # 18 subsequent operations
-        for a,aa,aaa,mv in zip(ang,ax,anch,mov):
+        for a, aa, aaa, mv in zip(ang, ax, anch, mov):
             pm.move(mv).rotate_from_angax(a, aa, aaa, start=-1)
 
         btest += [pm.getB(poso)]
@@ -56,37 +60,34 @@ def test_Cuboid_basics():
 
 
 def test_Cuboid_add():
-    """ testing __add__
-    """
-    src1 = Cuboid((1,2,3),(1,2,3))
-    src2 = Cuboid((1,2,3),(1,2,3))
+    """testing __add__"""
+    src1 = Cuboid((1, 2, 3), (1, 2, 3))
+    src2 = Cuboid((1, 2, 3), (1, 2, 3))
     col = src1 + src2
-    assert isinstance(col,magpy.Collection), 'adding cuboides fail'
+    assert isinstance(col, magpy.Collection), "adding cuboides fail"
 
 
 def test_Cuboid_squeeze():
-    """ testing squeeze output
-    """
-    src1 = Cuboid((1,1,1),(1,1,1))
-    sensor = Sensor(pixel=[(1,2,3),(1,2,3)])
+    """testing squeeze output"""
+    src1 = Cuboid((1, 1, 1), (1, 1, 1))
+    sensor = Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
-    assert B.shape==(2,3)
+    assert B.shape == (2, 3)
     H = src1.getH(sensor)
-    assert H.shape==(2,3)
+    assert H.shape == (2, 3)
 
-    B = src1.getB(sensor,squeeze=False)
-    assert B.shape==(1,1,1,2,3)
-    H = src1.getH(sensor,squeeze=False)
-    assert H.shape==(1,1,1,2,3)
+    B = src1.getB(sensor, squeeze=False)
+    assert B.shape == (1, 1, 1, 2, 3)
+    H = src1.getH(sensor, squeeze=False)
+    assert H.shape == (1, 1, 1, 2, 3)
 
 
 def test_repr_cuboid():
-    """ test __repr__
-    """
-    pm1 = Cuboid((1,2,3),(1,2,3))
-    pm1.style.label = 'cuboid_01'
-    assert pm1.__repr__()[:6] == 'Cuboid', 'Cuboid repr failed'
-    assert "label='cuboid_01'" in pm1.__repr__(), 'Cuboid repr failed'
+    """test __repr__"""
+    pm1 = Cuboid((1, 2, 3), (1, 2, 3))
+    pm1.style.label = "cuboid_01"
+    assert pm1.__repr__()[:6] == "Cuboid", "Cuboid repr failed"
+    assert "label='cuboid_01'" in pm1.__repr__(), "Cuboid repr failed"
 
 
 def test_cuboid_object_vs_lib():
@@ -95,11 +96,11 @@ def test_cuboid_object_vs_lib():
     """
 
     a = 1
-    mag = np.array([(10,20,30)])
-    dim = np.array([(  a,  a,  a)])
-    pos = np.array([(2*a,2*a,2*a)])
-    B0 = magpy.core.magnet_cuboid_field('B', pos, mag, dim)
-    H0 = magpy.core.magnet_cuboid_field('H', pos, mag, dim)
+    mag = np.array([(10, 20, 30)])
+    dim = np.array([(a, a, a)])
+    pos = np.array([(2 * a, 2 * a, 2 * a)])
+    B0 = magpy.core.magnet_cuboid_field("B", pos, mag, dim)
+    H0 = magpy.core.magnet_cuboid_field("H", pos, mag, dim)
 
     src = magpy.magnet.Cuboid(mag[0], dim[0])
     B1 = src.getB(pos)

@@ -2,75 +2,73 @@ import numpy as np
 import magpylib as magpy
 from magpylib import Sensor
 
+
 def test_sensor1():
-    """ self-consistent test of the sensor class
-    """
-    pm = magpy.magnet.Cuboid((11,22,33),(1,2,3))
-    angs = np.linspace(0,555,44)
-    possis = [(3*np.cos(t/180*np.pi),3*np.sin(t/180*np.pi),1) for t in angs]
+    """self-consistent test of the sensor class"""
+    pm = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    angs = np.linspace(0, 555, 44)
+    possis = [
+        (3 * np.cos(t / 180 * np.pi), 3 * np.sin(t / 180 * np.pi), 1) for t in angs
+    ]
     sens = magpy.Sensor()
-    sens.move((3,0,1))
-    sens.rotate_from_angax(angs, 'z', start=0, anchor=0)
-    sens.rotate_from_angax(-angs, 'z', start=0)
+    sens.move((3, 0, 1))
+    sens.rotate_from_angax(angs, "z", start=0, anchor=0)
+    sens.rotate_from_angax(-angs, "z", start=0)
 
     B1 = pm.getB(possis)
     B2 = sens.getB(pm)
 
-    assert B1.shape==B2.shape, 'FAIL sensor shape'
-    assert np.allclose(B1,B2), 'FAIL sensor values'
+    assert B1.shape == B2.shape, "FAIL sensor shape"
+    assert np.allclose(B1, B2), "FAIL sensor values"
 
 
 def test_sensor2():
-    """ self-consistent test of the sensor class
-    """
-    pm = magpy.magnet.Cuboid((11,22,33),(1,2,3))
-    poz = np.linspace(0,5,33)
-    poss1 = [(t,0,2) for t in poz]
-    poss2 = [(t,0,3) for t in poz]
-    poss3 = [(t,0,4) for t in poz]
-    B1 = np.array([pm.getB(poss) for poss in [poss1,poss2,poss3]])
-    B1 = np.swapaxes(B1,0,1)
+    """self-consistent test of the sensor class"""
+    pm = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
+    poz = np.linspace(0, 5, 33)
+    poss1 = [(t, 0, 2) for t in poz]
+    poss2 = [(t, 0, 3) for t in poz]
+    poss3 = [(t, 0, 4) for t in poz]
+    B1 = np.array([pm.getB(poss) for poss in [poss1, poss2, poss3]])
+    B1 = np.swapaxes(B1, 0, 1)
 
-    sens = magpy.Sensor(pixel=[(0,0,2),(0,0,3),(0,0,4)])
-    sens.move([(t,0,0) for t in poz], start=0)
+    sens = magpy.Sensor(pixel=[(0, 0, 2), (0, 0, 3), (0, 0, 4)])
+    sens.move([(t, 0, 0) for t in poz], start=0)
     B2 = sens.getB(pm)
 
-    assert B1.shape==B2.shape, 'FAIL sensor shape'
-    assert np.allclose(B1,B2), 'FAIL sensor values'
+    assert B1.shape == B2.shape, "FAIL sensor shape"
+    assert np.allclose(B1, B2), "FAIL sensor values"
 
 
 def test_Sensor_getB_specs():
-    """ test input of sens getB
-    """
-    sens1 = magpy.Sensor(pixel=(4,4,4))
-    pm1 = magpy.magnet.Cylinder((111,222,333),(1,2))
+    """test input of sens getB"""
+    sens1 = magpy.Sensor(pixel=(4, 4, 4))
+    pm1 = magpy.magnet.Cylinder((111, 222, 333), (1, 2))
 
     B1 = sens1.getB(pm1)
-    B2 = magpy.getB(pm1,sens1)
-    assert np.allclose(B1,B2), 'should be same'
+    B2 = magpy.getB(pm1, sens1)
+    assert np.allclose(B1, B2), "should be same"
 
 
 def test_Sensor_squeeze():
-    """ testing squeeze output
-    """
-    src = magpy.magnet.Sphere((1,1,1),1)
-    sensor = magpy.Sensor(pixel=[(1,2,3),(1,2,3)])
+    """testing squeeze output"""
+    src = magpy.magnet.Sphere((1, 1, 1), 1)
+    sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = sensor.getB(src)
-    assert B.shape==(2,3)
+    assert B.shape == (2, 3)
     H = sensor.getH(src)
-    assert H.shape==(2,3)
+    assert H.shape == (2, 3)
 
-    B = sensor.getB(src,squeeze=False)
-    assert B.shape==(1,1,1,2,3)
-    H = sensor.getH(src,squeeze=False)
-    assert H.shape==(1,1,1,2,3)
+    B = sensor.getB(src, squeeze=False)
+    assert B.shape == (1, 1, 1, 2, 3)
+    H = sensor.getH(src, squeeze=False)
+    assert H.shape == (1, 1, 1, 2, 3)
 
 
 def test_repr():
-    """ test __repr__
-    """
+    """test __repr__"""
     sens = magpy.Sensor()
-    assert sens.__repr__()[:6]== 'Sensor', 'Sensor repr failed'
+    assert sens.__repr__()[:6] == "Sensor", "Sensor repr failed"
 
 
 def test_pixel1():
@@ -79,25 +77,25 @@ def test_pixel1():
     logic: single sensor, scalar path, single source all generate
     1 for squeeze=False Bshape. Bare pixel should do the same
     """
-    src = magpy.misc.Dipole((1,2,3))
+    src = magpy.misc.Dipole((1, 2, 3))
 
     # squeeze=False Bshape of nbare pixel must be (1,1,1,1,3)
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=(1,2,3)), squeeze=False).shape,
-        (1,1,1,1,3),
+        src.getB(Sensor(pixel=(1, 2, 3)), squeeze=False).shape,
+        (1, 1, 1, 1, 3),
     )
 
     # squeeze=False Bshape of [(1,2,3)] must then also be (1,1,1,1,3)
-    src = magpy.misc.Dipole((1,2,3))
+    src = magpy.misc.Dipole((1, 2, 3))
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=[(1,2,3)]), squeeze=False).shape,
-        (1,1,1,1,3),
+        src.getB(Sensor(pixel=[(1, 2, 3)]), squeeze=False).shape,
+        (1, 1, 1, 1, 3),
     )
 
     # squeeze=False Bshape of [[(1,2,3)]] must be (1,1,1,1,1,3)
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=[[(1,2,3)]]), squeeze=False).shape,
-        (1,1,1,1,1,3),
+        src.getB(Sensor(pixel=[[(1, 2, 3)]]), squeeze=False).shape,
+        (1, 1, 1, 1, 1, 3),
     )
 
 
@@ -106,12 +104,12 @@ def test_pixel2():
     Sensor(pixel=pos_vec).pixel should always return pos_vec
     """
 
-    p0 = (1,2,3)
-    p1 = [(1,2,3)]
-    p2 = [[(1,2,3)]]
+    p0 = (1, 2, 3)
+    p1 = [(1, 2, 3)]
+    p2 = [[(1, 2, 3)]]
 
     # input pos_vec == Sensor(pixel=pos_vec)
-    for pos_vec in [p0,p1,p2]:
+    for pos_vec in [p0, p1, p2]:
         np.testing.assert_allclose(
             Sensor(pixel=pos_vec).pixel,
             pos_vec,
@@ -123,13 +121,13 @@ def test_pixel3():
     There should be complete equivalence between pos_vec and
     Sensor(pixel=pos_vec) inputs
     """
-    src = magpy.misc.Dipole((1,2,3))
+    src = magpy.misc.Dipole((1, 2, 3))
 
-    p0 = (1,2,3)
-    p1 = [(1,2,3)]
-    p2 = [[(1,2,3)]]
-    for pos_vec in [p0,p1,p2]:
+    p0 = (1, 2, 3)
+    p1 = [(1, 2, 3)]
+    p2 = [[(1, 2, 3)]]
+    for pos_vec in [p0, p1, p2]:
         np.testing.assert_allclose(
             src.getB(Sensor(pixel=pos_vec), squeeze=False),
-            src.getB(pos_vec, squeeze=False)
+            src.getB(pos_vec, squeeze=False),
         )

@@ -103,5 +103,7 @@ setuptools.setup(
             "source_dir": ("setup.py", "./docs"),
         }
     },
-    cmdclass={"verify": VerifyVersionCommand,},
+    cmdclass={
+        "verify": VerifyVersionCommand,
+    },
 )

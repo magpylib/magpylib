@@ -3,7 +3,7 @@ from magpylib._src.defaults.defaults_utility import (
     validate_property_class,
     color_validator,
     get_defaults_dict,
-    SUPPORTED_PLOTTING_BACKENDS
+    SUPPORTED_PLOTTING_BACKENDS,
 )
 from magpylib._src.style import DisplayStyle
 
@@ -97,12 +97,12 @@ class Display(MagicProperties):
     @property
     def colorsequence(self):
         """An iterable of color values used to cycle trough for every object displayed.
-        A color may be specified by
-      - a hex string (e.g. '#ff0000')
-      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - a named CSS color"""
+          A color may be specified by
+        - a hex string (e.g. '#ff0000')
+        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - a named CSS color"""
         return self._colorsequence
 
     @colorsequence.setter
@@ -223,6 +223,7 @@ class Animation(MagicProperties):
             f" integer but received {repr(val)} instead."
         )
         self._time = val
+
     @property
     def slider(self):
         """show/hide slider"""

@@ -9,8 +9,7 @@ from magpylib._src.utility import (
 
 
 def test_duplicates():
-    """ test duplicate elimination and sorting
-    """
+    """test duplicate elimination and sorting"""
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     src_list = [pm1, pm2, pm1]
@@ -19,8 +18,7 @@ def test_duplicates():
 
 
 def test_filter_objects():
-    """ tests elimination of unwanted types
-    """
+    """tests elimination of unwanted types"""
     pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     sens = magpy.Sensor()
@@ -30,8 +28,7 @@ def test_filter_objects():
 
 
 def test_format_getBH_class_inputs():
-    """ special case testing of different input formats
-    """
+    """special case testing of different input formats"""
     possis = [3, 3, 3]
     sens = magpy.Sensor(position=(3, 3, 3))
     pm1 = magpy.magnet.Cuboid((11, 22, 33), (1, 2, 3))
@@ -60,7 +57,12 @@ def test_format_getBH_class_inputs():
 
 @pytest.mark.parametrize(
     "name, expected",
-    [("col", "col_01"), ("col_", "col_01"), ("col1", "col2"), ("col_02", "col_03"),],
+    [
+        ("col", "col_01"),
+        ("col_", "col_01"),
+        ("col1", "col2"),
+        ("col_02", "col_03"),
+    ],
 )
 def test_add_iteration_suffix(name, expected):
     """check if iteration suffix works correctly"""

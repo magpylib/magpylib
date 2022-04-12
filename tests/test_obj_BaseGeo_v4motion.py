@@ -7,8 +7,9 @@ import magpylib as magpy
 ###############################################################################
 # NEW BASE GEO TESTS FROM v4
 
+
 def validate_pos_orient(obj, ppath, opath_as_rotvec):
-    """ test position (ppath) and orientation (opath) of BaseGeo object (obj) """
+    """test position (ppath) and orientation (opath) of BaseGeo object (obj)"""
     sp = obj.position
     so = obj.orientation
     ppath = np.array(ppath)
@@ -37,6 +38,7 @@ def validate_pos_orient(obj, ppath, opath_as_rotvec):
 # - if inputs are (N,3) and (3,) then the (3,) is tiled up to (N,3)
 # - if inputs are (N,3) and (M,3) then the smaller one is padded up
 # - None orientation input is interpreted as (0,0,0) rotvec == (0,0,0,1) quat
+
 
 def get_init_pos_orient_test_data():
     """
@@ -74,12 +76,14 @@ def get_init_pos_orient_test_data():
 @pytest.mark.parametrize(
     "init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec",
     get_init_pos_orient_test_data(),
-    ids=[f"{ind+1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],)
+    ids=[f"{ind+1:02d}" for ind, t in enumerate(get_init_pos_orient_test_data())],
+)
 def test_BaseGeo_init(
     init_position,
     init_orientation_rotvec,
     expected_position,
-    expected_orientation_rotvec,):
+    expected_orientation_rotvec,
+):
     """test position and orientation initialization"""
     # print(init_position, init_orientation_rotvec, expected_position, expected_orientation_rotvec)
     if init_orientation_rotvec is None:
@@ -88,16 +92,16 @@ def test_BaseGeo_init(
         (1, 0, 0),
         (1, 1, 1),
         position=init_position,
-        orientation=R.from_rotvec(init_orientation_rotvec),)
+        orientation=R.from_rotvec(init_orientation_rotvec),
+    )
     validate_pos_orient(src, expected_position, expected_orientation_rotvec)
-
-
 
 
 ############################################################################
 ############################################################################
 # BASEGEO POS/ORI SETTER TESTING
 # when pos/ori is set then ori/pos is edge-padded / end-sliced to similar shape.
+
 
 def get_data_object_setter(inp):
     """
@@ -106,69 +110,81 @@ def get_data_object_setter(inp):
     init_pos, init_ori, test_pos, test_ori
     """
     # test positions
-    p1 = (1,2,3)
-    p3 = [(2,3,4), (3,4,5), (4,5,6)]
+    p1 = (1, 2, 3)
+    p3 = [(2, 3, 4), (3, 4, 5), (4, 5, 6)]
 
     # test orientations
-    o1 = (.1,.2,.3)
-    o3 = [(.1,.2,.3), (.2,.3,.4), (.3,.4,.5)]
+    o1 = (0.1, 0.2, 0.3)
+    o3 = [(0.1, 0.2, 0.3), (0.2, 0.3, 0.4), (0.3, 0.4, 0.5)]
 
     # init states
-    P1 = (1,1,1)
-    O1 = (.1,.1,.1)
-    P2 = [(2,2,2), (3,3,3)]
-    O2 = [(.2,.2,.2), (.3,.3,.3)]
-    P3 = [(2,2,2), (3,3,3), (4,4,4)]
-    O3 = [(.2,.2,.2), (.3,.3,.3), (.4,.4,.4)]
-    P4 = [(2,2,2), (3,3,3), (4,4,4), (5,5,5)]
-    O4 = [(.2,.2,.2), (.3,.3,.3), (.4,.4,.4), (.5,.5,.5)]
+    P1 = (1, 1, 1)
+    O1 = (0.1, 0.1, 0.1)
+    P2 = [(2, 2, 2), (3, 3, 3)]
+    O2 = [(0.2, 0.2, 0.2), (0.3, 0.3, 0.3)]
+    P3 = [(2, 2, 2), (3, 3, 3), (4, 4, 4)]
+    O3 = [(0.2, 0.2, 0.2), (0.3, 0.3, 0.3), (0.4, 0.4, 0.4)]
+    P4 = [(2, 2, 2), (3, 3, 3), (4, 4, 4), (5, 5, 5)]
+    O4 = [(0.2, 0.2, 0.2), (0.3, 0.3, 0.3), (0.4, 0.4, 0.4), (0.5, 0.5, 0.5)]
 
     test_data_pos = [
         # position init, orientation init, set/test position, test orientation
         (P1, O1, p1, O1),
-        (P1, O1, p3, [O1]*3),            # edge-pad
-        (P2, O2, p1, O2[1]),             # end-slice
-        (P2, O2, p3, O2 + [(.3,.3,.3)]), # edge-pad
-        (P3, O3, p1, O3[2]),             # end-slice
+        (P1, O1, p3, [O1] * 3),  # edge-pad
+        (P2, O2, p1, O2[1]),  # end-slice
+        (P2, O2, p3, O2 + [(0.3, 0.3, 0.3)]),  # edge-pad
+        (P3, O3, p1, O3[2]),  # end-slice
         (P3, O3, p3, O3),
-        (P4, O4, p1, O4[3]),             # end-slice
-        (P4, O4, p3, O4[1:]),            # end-slice
+        (P4, O4, p1, O4[3]),  # end-slice
+        (P4, O4, p3, O4[1:]),  # end-slice
     ]
 
     test_data_ori = [
         # position init, orientation init, set/test position, test orientation
         (P1, O1, P1, o1),
-        (P1, O1, [P1]*3, o3),            # edge-pad
-        (P2, O2, P2[1], o1),             # end-slice
-        (P2, O2, P2+[P2[1]], o3),        # edge-pad
-        (P3, O3, P3[-1], o1),            # end-slice
+        (P1, O1, [P1] * 3, o3),  # edge-pad
+        (P2, O2, P2[1], o1),  # end-slice
+        (P2, O2, P2 + [P2[1]], o3),  # edge-pad
+        (P3, O3, P3[-1], o1),  # end-slice
         (P3, O3, P3, o3),
-        (P4, O4, P4[-1], o1),            # end-slice
-        (P4, O4, P4[1:], o3),            # end-slice
+        (P4, O4, P4[-1], o1),  # end-slice
+        (P4, O4, P4[1:], o3),  # end-slice
     ]
-    if inp == 'pos':
+    if inp == "pos":
         return test_data_pos
     return test_data_ori
 
 
 @pytest.mark.parametrize(
     "init_pos, init_ori, test_pos, test_ori",
-    get_data_object_setter('pos'),
-    ids=[f'{ind+1:02d}' for ind, _ in enumerate(get_data_object_setter('pos'))],)
-def test_BaseGeo_setting_position(init_pos, init_ori, test_pos, test_ori,):
+    get_data_object_setter("pos"),
+    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_object_setter("pos"))],
+)
+def test_BaseGeo_setting_position(
+    init_pos,
+    init_ori,
+    test_pos,
+    test_ori,
+):
     """test position and orientation initialization"""
-    src = magpy.magnet.Cuboid((1,0,0), (1,1,1), init_pos, R.from_rotvec(init_ori))
+    src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), init_pos, R.from_rotvec(init_ori))
     src.position = test_pos
     validate_pos_orient(src, test_pos, test_ori)
 
 
 @pytest.mark.parametrize(
     "init_pos, init_ori, test_pos, test_ori",
-    get_data_object_setter('ori'),
-    ids=[f'{ind+1:02d}' for ind, _ in enumerate(get_data_object_setter('ori'))],)
-def test_BaseGeo_setting_orientation(init_pos, init_ori, test_pos, test_ori,):
+    get_data_object_setter("ori"),
+    ids=[f"{ind+1:02d}" for ind, _ in enumerate(get_data_object_setter("ori"))],
+)
+def test_BaseGeo_setting_orientation(
+    init_pos,
+    init_ori,
+    test_pos,
+    test_ori,
+):
     """test position and orientation initialization"""
-    src = magpy.magnet.Cuboid((1,0,0), (1,1,1), init_pos, R.from_rotvec(init_ori))
+    src = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), init_pos, R.from_rotvec(init_ori))
     src.orientation = R.from_rotvec(test_ori)
     validate_pos_orient(src, test_pos, test_ori)
 
@@ -176,6 +192,7 @@ def test_BaseGeo_setting_orientation(init_pos, init_ori, test_pos, test_ori,):
 ###############################################################################
 ###############################################################################
 # BASEGEO MULTI-ANCHOR ROTATION TESTING
+
 
 def get_data_BaseGeo_multianchor_rotation():
     """get test data as dictionaries for multi anchor testing"""

@@ -7,6 +7,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.input_checks import check_format_input_vector
 
+
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """Magnetic dipole moment.
 
@@ -86,7 +87,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ):
         # instance attributes
         self.moment = moment
-        self._object_type = 'Dipole'
+        self._object_type = "Dipole"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -101,9 +102,11 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @moment.setter
     def moment(self, mom):
         """Set dipole moment vector, shape (3,), unit [mT*mm^3]."""
-        self._moment = check_format_input_vector(mom,
+        self._moment = check_format_input_vector(
+            mom,
             dims=(1,),
             shape_m1=3,
-            sig_name='moment',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,)',
-            allow_None=True)
+            sig_name="moment",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,)",
+            allow_None=True,
+        )
