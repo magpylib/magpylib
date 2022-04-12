@@ -31,7 +31,7 @@ _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"
 _release = "release"
-_license = "GNU Affero General Public License v3 or later (AGPLv3+) (AGPL-3.0-or-later)"
+_license = "2-Clause BSD License, Simplified BSD License, FreeBSD License"
 
 with open("README.md", "r") as fh:
     long_description = fh.read()
@@ -90,7 +90,7 @@ setuptools.setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
-        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
     python_requires="~=3.7",
