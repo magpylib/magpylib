@@ -4,15 +4,12 @@ repos:
     hooks:
       - id: check-yaml
       - id: end-of-file-fixer
+        types: [file, python]
       - id: trailing-whitespace
+        types: [file, python]
       - id: check-added-large-files
       - id: debug-statements
         language_version: python3
-
-  - repo: https://github.com/psf/black
-    rev: "22.3.0"
-    hooks:
-      - id: black
 
   - repo: https://github.com/asottile/reorder_python_imports
     rev: v3.0.1
@@ -25,6 +22,12 @@ repos:
     hooks:
       - id: pyupgrade
         args: [--py37-plus]
+
+
+  - repo: https://github.com/psf/black
+    rev: "22.3.0"
+    hooks:
+      - id: black
 
 
   # - repo: local
