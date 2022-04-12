@@ -2,10 +2,11 @@
 # pylint: disable=unused-import
 import os
 
-import pytest
-from scipy.spatial.transform import Rotation as R
 import numpy as np
 import plotly.graph_objects as go
+import pytest
+from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 from magpylib._src.display.base_traces import make_Prism
 

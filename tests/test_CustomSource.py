@@ -1,4 +1,5 @@
 import numpy as np
+
 import magpylib as magpy
 
 # pylint: disable=assignment-from-no-return

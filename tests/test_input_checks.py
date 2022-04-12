@@ -1,10 +1,9 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.exceptions import (
-    MagpylibBadUserInput,
-    MagpylibMissingInput,
-)
+
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibMissingInput
 
 
 ###########################################################

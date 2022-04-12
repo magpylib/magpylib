@@ -1,11 +1,10 @@
 """ plotly draw-functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
-
 import numbers
+import warnings
 from itertools import combinations
 from typing import Tuple
-import warnings
 
 try:
     import plotly.graph_objects as go

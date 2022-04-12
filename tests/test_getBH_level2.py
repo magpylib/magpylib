@@ -1,5 +1,6 @@
 import numpy as np
 import pytest
+
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 

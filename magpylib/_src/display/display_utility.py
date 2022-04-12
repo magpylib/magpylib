@@ -1,11 +1,12 @@
 """ Display function codes"""
-
 from itertools import cycle
 from typing import Tuple
+
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
-from magpylib._src.style import Markers
+
 from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.style import Markers
 
 
 class MagpyMarkers:

@@ -3,12 +3,13 @@
 # pylint: disable=missing-function-docstring
 # pylint: disable=no-name-in-module
 # pylint: disable=too-many-statements
-
 import numpy as np
-from scipy.special import ellipeinc, ellipkinc
+from scipy.special import ellipeinc
+from scipy.special import ellipkinc
+
+from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 
 
 def arctan_k_tan_2(k, phi):

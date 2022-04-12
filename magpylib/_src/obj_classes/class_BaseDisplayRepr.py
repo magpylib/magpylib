@@ -1,8 +1,8 @@
 """BaseGeo class code
 READY FOR V4
 """
-
 import numpy as np
+
 from magpylib._src.display.display import show
 
 UNITS = {

@@ -1,14 +1,12 @@
 """
 Testing all cases against a large set of pre-computed values
 """
-
-import pytest
 import numpy as np
-from magpylib._src.fields.field_BH_cylinder_segment import (
-    magnet_cylinder_segment_core,
-    magnet_cylinder_segment_field,
-)
+import pytest
+
 import magpylib as magpy
+from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
+from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 
 
 # creating test data

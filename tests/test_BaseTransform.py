@@ -1,8 +1,10 @@
-import pytest
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseTransform import apply_rotation, apply_move
+from magpylib._src.obj_classes.class_BaseTransform import apply_move
+from magpylib._src.obj_classes.class_BaseTransform import apply_rotation
 
 
 @pytest.mark.parametrize(

@@ -3,12 +3,14 @@ Implementations of analytical expressions for the magnetic field of
 homogeneously magnetized Cylinders. Computation details in function docstrings.
 """
 # pylint: disable = no-name-in-module
-
 import numpy as np
-from scipy.special import ellipk, ellipe
+from scipy.special import ellipe
+from scipy.special import ellipk
+
 from magpylib._src.fields.special_cel import cel
-from magpylib._src.utility import cyl_field_to_cart, cart_to_cyl_coordinates
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import cart_to_cyl_coordinates
+from magpylib._src.utility import cyl_field_to_cart
 
 
 def fieldB_cylinder_axial(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:

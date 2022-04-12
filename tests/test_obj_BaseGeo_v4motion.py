@@ -1,6 +1,7 @@
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 
 ###############################################################################

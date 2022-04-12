@@ -1,19 +1,16 @@
 """BaseGeo class code
 DOCSTRING v4 READY
 """
-
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
-from magpylib._src.input_checks import (
-    check_format_input_orientation,
-    check_format_input_vector,
-)
+
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.input_checks import check_format_input_orientation
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.utility import add_iteration_suffix
 
 

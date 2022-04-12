@@ -3,12 +3,13 @@ Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
 # pylint: disable=no-name-in-module # reason scipy.special.ellipe import
-
 import numpy as np
 from scipy.special import ellipe
+
 from magpylib._src.fields.special_cel import cel_loop_stable
-from magpylib._src.utility import cart_to_cyl_coordinates, cyl_field_to_cart
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import cart_to_cyl_coordinates
+from magpylib._src.utility import cyl_field_to_cart
 
 # ON INTERFACE
 def current_loop_field(

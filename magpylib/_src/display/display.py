@@ -1,16 +1,15 @@
 """ Display function codes"""
-
 import warnings
-from magpylib._src.utility import format_obj_input, test_path_format
+
 from magpylib._src.display.display_matplotlib import display_matplotlib
-from magpylib._src.input_checks import (
-    check_dimensions,
-    check_excitations,
-    check_format_input_backend,
-    check_input_zoom,
-    check_input_animation,
-    check_format_input_vector,
-)
+from magpylib._src.input_checks import check_dimensions
+from magpylib._src.input_checks import check_excitations
+from magpylib._src.input_checks import check_format_input_backend
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_input_animation
+from magpylib._src.input_checks import check_input_zoom
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import test_path_format
 
 
 def show(

@@ -1,11 +1,8 @@
 """BaseHomMag class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.input_checks import (
-    check_format_input_scalar,
-    check_format_input_vector,
-)
+from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.input_checks import check_format_input_vector
 
 
 class BaseHomMag:

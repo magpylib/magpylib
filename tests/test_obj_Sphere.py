@@ -1,9 +1,11 @@
 import os
 import pickle
+
 import numpy as np
-from magpylib.magnet import Sphere
-from magpylib import Collection
+
 import magpylib as magpy
+from magpylib import Collection
+from magpylib.magnet import Sphere
 
 # # """data generation for test_Sphere()"""
 

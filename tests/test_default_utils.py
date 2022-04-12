@@ -1,14 +1,14 @@
 from copy import deepcopy
+
 import pytest
-from magpylib._src.defaults.defaults_utility import (
-    MagicProperties,
-    color_validator,
-    get_defaults_dict,
-    update_nested_dict,
-    magic_to_dict,
-    linearize_dict,
-    COLORS_MATPLOTLIB_TO_PLOTLY,
-)
+
+from magpylib._src.defaults.defaults_utility import color_validator
+from magpylib._src.defaults.defaults_utility import COLORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import get_defaults_dict
+from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.defaults.defaults_utility import magic_to_dict
+from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import update_nested_dict
 
 
 def test_update_nested_dict():

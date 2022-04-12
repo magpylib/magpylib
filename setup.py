@@ -3,7 +3,6 @@
 # distributable package information with setuptools.
 # More information: https://packaging.python.org/tutorials/packaging-projects/
 ###
-
 ###
 # Local install:
 #   Create virtual environment:
@@ -16,10 +15,9 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-
-
-import sys
 import os
+import sys
+
 import setuptools
 from setuptools.command.install import install
 

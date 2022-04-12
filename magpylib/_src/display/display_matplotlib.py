@@ -1,24 +1,22 @@
 """ matplotlib draw-functionalities"""
-
-import numpy as np
 import matplotlib.pyplot as plt
+import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
+
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.display_utility import (
-    get_rot_pos_from_path,
-    draw_arrow_from_vertices,
-    draw_arrowed_circle,
-    place_and_orient_model3d,
-    faces_cuboid,
-    faces_cylinder,
-    system_size,
-    faces_sphere,
-    faces_cylinder_segment,
-    get_flatten_objects_properties,
-)
+from magpylib._src.display.display_utility import draw_arrow_from_vertices
+from magpylib._src.display.display_utility import draw_arrowed_circle
+from magpylib._src.display.display_utility import faces_cuboid
+from magpylib._src.display.display_utility import faces_cylinder
+from magpylib._src.display.display_utility import faces_cylinder_segment
+from magpylib._src.display.display_utility import faces_sphere
+from magpylib._src.display.display_utility import get_flatten_objects_properties
+from magpylib._src.display.display_utility import get_rot_pos_from_path
+from magpylib._src.display.display_utility import MagpyMarkers
+from magpylib._src.display.display_utility import place_and_orient_model3d
+from magpylib._src.display.display_utility import system_size
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
-from magpylib._src.display.display_utility import MagpyMarkers
 
 
 def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):

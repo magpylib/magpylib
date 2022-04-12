@@ -1,9 +1,11 @@
 import re
+
 import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+
 import magpylib as magpy
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 
 
 def test_BaseGeo_basics():

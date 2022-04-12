@@ -1,6 +1,8 @@
 import sys
 from unittest import mock
+
 import pytest
+
 import magpylib as magpy
 
 

@@ -1,5 +1,7 @@
 import numpy as np
-from magpylib.magnet import Cuboid, Cylinder
+
+from magpylib.magnet import Cuboid
+from magpylib.magnet import Cylinder
 
 
 def test_path_old_new_move():

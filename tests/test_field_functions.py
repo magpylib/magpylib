@@ -1,14 +1,13 @@
 import numpy as np
 from numpy.testing import assert_allclose
+
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_line import current_line_field
+from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
 from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_line import (
-    current_line_field,
-    field_BH_line_from_vert,
-)
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
 
 def test_magnet_cuboid_Bfield():

@@ -3,17 +3,15 @@
 # pylint: disable=too-many-instance-attributes
 import numpy as np
 
-from magpylib._src.defaults.defaults_utility import (
-    MagicProperties,
-    validate_property_class,
-    color_validator,
-    get_defaults_dict,
-    validate_style_keys,
-    SYMBOLS_MATPLOTLIB_TO_PLOTLY,
-    LINESTYLES_MATPLOTLIB_TO_PLOTLY,
-    MAGPYLIB_FAMILIES,
-    SUPPORTED_PLOTTING_BACKENDS,
-)
+from magpylib._src.defaults.defaults_utility import color_validator
+from magpylib._src.defaults.defaults_utility import get_defaults_dict
+from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import MAGPYLIB_FAMILIES
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
+from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import validate_property_class
+from magpylib._src.defaults.defaults_utility import validate_style_keys
 
 
 def get_style_class(obj):

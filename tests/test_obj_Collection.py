@@ -1,9 +1,11 @@
-import pickle
 import os
+import pickle
 import re
+
 import numpy as np
-from scipy.spatial.transform import Rotation as R
 import pytest
+from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 

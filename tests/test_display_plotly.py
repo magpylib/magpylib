@@ -1,10 +1,14 @@
 import numpy as np
 import plotly.graph_objects as go
 import pytest
+
 import magpylib as magpy
-from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
 from magpylib._src.display.plotly.plotly_display import get_plotly_traces
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib.magnet import Cuboid
+from magpylib.magnet import Cylinder
+from magpylib.magnet import CylinderSegment
+from magpylib.magnet import Sphere
 
 # pylint: disable=assignment-from-no-return
 

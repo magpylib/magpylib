@@ -1,21 +1,18 @@
 """ input checks code"""
-
 import inspect
 import numbers
+
 import numpy as np
 from scipy.spatial.transform import Rotation
-from magpylib._src.exceptions import (
-    MagpylibBadUserInput,
-    MagpylibMissingInput,
-)
-from magpylib._src.defaults.defaults_classes import default_settings
+
 from magpylib import _src
-from magpylib._src.utility import (
-    format_obj_input,
-    wrong_obj_msg,
-    LIBRARY_SOURCES,
-    LIBRARY_SENSORS,
-)
+from magpylib._src.defaults.defaults_classes import default_settings
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import LIBRARY_SENSORS
+from magpylib._src.utility import LIBRARY_SOURCES
+from magpylib._src.utility import wrong_obj_msg
 
 
 #################################################################

@@ -2,7 +2,9 @@
 # import numbers
 from math import log10
 from typing import Sequence
+
 import numpy as np
+
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 LIBRARY_SOURCES = (

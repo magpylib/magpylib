@@ -1,9 +1,11 @@
-import pickle
 import os
+import pickle
+
 import numpy as np
+
 import magpylib as magpy
-from magpylib.magnet import Cuboid
 from magpylib._src.obj_classes.class_Sensor import Sensor
+from magpylib.magnet import Cuboid
 
 
 # # # """data generation for test_Cuboid()"""

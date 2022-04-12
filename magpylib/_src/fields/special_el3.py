@@ -1,4 +1,5 @@
 import numpy as np
+
 from magpylib._src.fields.special_cel import cel
 
 

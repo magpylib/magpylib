@@ -1,12 +1,11 @@
 """Magnet Cuboid class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 
 
 class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):

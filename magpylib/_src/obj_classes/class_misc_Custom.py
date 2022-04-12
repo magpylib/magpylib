@@ -1,9 +1,8 @@
 """Custom class code """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.input_checks import validate_field_func
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 
 
 class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):

@@ -1,5 +1,4 @@
 # pylint: disable=line-too-long
-
 """
 Welcome to Magpylib !
 ---------------------
@@ -28,7 +27,6 @@ The original software publication (version 2):
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
-
 # module level dunders
 __version__ = "4.0.0rc1"
 __author__ = "Michael Ortner & Alexandre Boisselet"

@@ -1,10 +1,14 @@
-import pytest
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib
-from magpylib.magnet import Cuboid, Cylinder, Sphere
-from magpylib import getB, getH
+from magpylib import getB
+from magpylib import getH
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib.magnet import Cuboid
+from magpylib.magnet import Cylinder
+from magpylib.magnet import Sphere
 
 
 def test_getB_dict1():

@@ -1,9 +1,9 @@
 """
 Implementations of analytical expressions of line current segments
 """
-
 import numpy as np
 from numpy.linalg import norm
+
 from magpylib._src.input_checks import check_field_input
 
 

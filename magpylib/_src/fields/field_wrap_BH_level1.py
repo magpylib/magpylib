@@ -1,17 +1,16 @@
 import numpy as np
+
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
 )
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_line import current_line_field
+from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
 from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_line import (
-    current_line_field,
-    field_BH_line_from_vert,
-)
-from magpylib._src.exceptions import MagpylibInternalError
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
 
 def getBH_level1(**kwargs: dict) -> np.ndarray:

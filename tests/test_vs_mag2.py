@@ -1,6 +1,8 @@
-import pickle
 import os
+import pickle
+
 import numpy as np
+
 import magpylib as magpy
 
 # GENERATE TESTDATA ---------------------------------------

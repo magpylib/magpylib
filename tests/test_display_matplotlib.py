@@ -1,10 +1,14 @@
-import pytest
-import numpy as np
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
+import numpy as np
+import pytest
+
 import magpylib as magpy
-from magpylib.magnet import Cylinder, Cuboid, Sphere, CylinderSegment
 from magpylib.graphics.model3d import make_Cuboid
+from magpylib.magnet import Cuboid
+from magpylib.magnet import Cylinder
+from magpylib.magnet import CylinderSegment
+from magpylib.magnet import Sphere
 
 # pylint: disable=assignment-from-no-return
 
