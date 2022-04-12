@@ -23,7 +23,7 @@ def get_model(trace, *, backend, show, scale, kwargs):
 
     model = dict(constructor="Mesh3d", kwargs=trace, args=(), show=show, scale=scale)
     if backend == "matplotlib":
-        x, y, z, i, j, k = [trace[k] for k in "xyzijk"]
+        x, y, z, i, j, k = (trace[k] for k in "xyzijk")
         triangles = np.array([i, j, k]).T
         model.update(
             constructor="plot_trisurf", args=(x, y, z), kwargs={"triangles": triangles}

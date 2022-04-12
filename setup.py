@@ -33,7 +33,7 @@ _projectUrl = "https://github.com/magpylib/magpylib"
 _release = "release"
 _license = "2-Clause BSD License, Simplified BSD License, FreeBSD License"
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 
