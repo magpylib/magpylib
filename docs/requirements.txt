@@ -7,3 +7,4 @@ sphinx-panels
 sphinx-thebe
 jupytext
 numpy-stl
+pyvista
