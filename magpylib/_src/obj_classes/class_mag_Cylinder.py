@@ -1,12 +1,12 @@
 """Magnet Cylinder class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+
 
 class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cylinder magnet with homogeneous magnetization.
@@ -93,7 +93,7 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'Cylinder'
+        self._object_type = "Cylinder"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -109,11 +109,12 @@ class Cylinder(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @dimension.setter
     def dimension(self, dim):
         """Set Cylinder dimension (d,h) in units of [mm]."""
-        self._dimension = check_format_input_vector(dim,
+        self._dimension = check_format_input_vector(
+            dim,
             dims=(1,),
             shape_m1=2,
-            sig_name='Cylinder.dimension',
-            sig_type='array_like (list, tuple, ndarray) with shape (2,) with positive values',
+            sig_name="Cylinder.dimension",
+            sig_type="array_like (list, tuple, ndarray) with shape (2,) with positive values",
             allow_None=True,
             forbid_negative0=True,
         )

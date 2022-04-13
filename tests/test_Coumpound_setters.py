@@ -2,10 +2,11 @@
 # pylint: disable=unused-import
 import os
 
-import pytest
-from scipy.spatial.transform import Rotation as R
 import numpy as np
 import plotly.graph_objects as go
+import pytest
+from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 from magpylib._src.display.base_traces import make_Prism
 
@@ -34,7 +35,7 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     c.style.label = label
 
     trace = make_Prism(
-        'plotly',
+        "plotly",
         base=Ncubes,
         diameter=diameter + height * 2,
         height=height * 0.5,

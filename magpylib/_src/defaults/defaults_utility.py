@@ -1,7 +1,7 @@
 """utilities for creating property classes"""
-
-from copy import deepcopy
 import collections.abc
+from copy import deepcopy
+
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
 

@@ -1,8 +1,10 @@
 """base traces building functions"""
 from functools import partial
+
 import numpy as np
-from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
+
 from magpylib._src.display.display_utility import place_and_orient_model3d
+from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
 
 
 def base_validator(name, value, conditions):
@@ -23,7 +25,7 @@ def get_model(trace, *, backend, show, scale, kwargs):
 
     model = dict(constructor="Mesh3d", kwargs=trace, args=(), show=show, scale=scale)
     if backend == "matplotlib":
-        x, y, z, i, j, k = [trace[k] for k in "xyzijk"]
+        x, y, z, i, j, k = (trace[k] for k in "xyzijk")
         triangles = np.array([i, j, k]).T
         model.update(
             constructor="plot_trisurf", args=(x, y, z), kwargs={"triangles": triangles}

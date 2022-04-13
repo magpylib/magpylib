@@ -1,17 +1,17 @@
 """ Definition of custom exceptions"""
 
+
 class MagpylibBadUserInput(Exception):
-    """ bad user input
-    """
+    """bad user input"""
+
 
 class MagpylibInternalError(Exception):
-    """ should never have reached this position in the code
-    """
+    """should never have reached this position in the code"""
+
 
 class MagpylibBadInputShape(Exception):
-    """ catching bad input shapes
-    """
+    """catching bad input shapes"""
+
 
 class MagpylibMissingInput(Exception):
-    """ catching missing user inputs
-    """
+    """catching missing user inputs"""

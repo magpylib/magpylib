@@ -1,19 +1,17 @@
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.utility import (
-    check_static_sensor_orient,
-    format_obj_input,
-    format_src_inputs,
-)
+
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib._src.input_checks import (
-    check_excitations,
-    check_dimensions,
-    check_format_input_observers,
-    check_format_pixel_agg,
-)
+from magpylib._src.input_checks import check_dimensions
+from magpylib._src.input_checks import check_excitations
+from magpylib._src.input_checks import check_format_input_observers
+from magpylib._src.input_checks import check_format_pixel_agg
+from magpylib._src.utility import check_static_sensor_orient
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import format_src_inputs
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -146,7 +144,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(sources)
-    check_excitations(sources, kwargs['field'])
+    check_excitations(sources, kwargs["field"])
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
