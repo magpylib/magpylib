@@ -1,21 +1,19 @@
 """BaseTransform class code
 DOCSTRING v4 READY
 """
-
 # pylint: disable=protected-access
-
 import numbers
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.input_checks import (
-    check_format_input_axis,
-    check_format_input_orientation,
-    check_format_input_anchor,
-    check_format_input_vector,
-    check_format_input_angle,
-    check_start_type,
-    check_degree_type,
-)
+
+from magpylib._src.input_checks import check_degree_type
+from magpylib._src.input_checks import check_format_input_anchor
+from magpylib._src.input_checks import check_format_input_angle
+from magpylib._src.input_checks import check_format_input_axis
+from magpylib._src.input_checks import check_format_input_orientation
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_start_type
 
 
 def multi_anchor_behavior(anchor, inrotQ, rotation):

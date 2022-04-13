@@ -1,6 +1,7 @@
-import pytest
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
 
 
@@ -10,7 +11,7 @@ import magpylib as magpy
 
 
 def validate_pos_orient(obj, ppath, opath_as_rotvec):
-    """ test position (ppath) and orientation (opath) of BaseGeo object (obj) """
+    """test position (ppath) and orientation (opath) of BaseGeo object (obj)"""
     sp = obj.position
     so = obj.orientation
     ppath = np.array(ppath)
@@ -311,7 +312,9 @@ def test_compound_motion_02():
     s1 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (1, 0, 1))
     s2 = magpy.magnet.Cuboid((1, 0, 0), (1, 1, 1), (-1, 0, -1))
     col = magpy.Collection(s1, s2, position=(3, 0, 3))
-    col.rotate_from_rotvec((0, 0, np.pi / 2), anchor=[(1, 0, 0), (2, 0, 0)], degrees=False)
+    col.rotate_from_rotvec(
+        (0, 0, np.pi / 2), anchor=[(1, 0, 0), (2, 0, 0)], degrees=False
+    )
     validate_pos_orient(
         s1,
         [(1, 0, 1), (1, 0, 1), (2, -1, 1)],
@@ -454,13 +457,19 @@ def test_compound_motion_10():
     col = magpy.Collection(s1, s2, position=((2, 0, 0), (1, 0, 0)))
     col.rotate_from_angax(90, "z", start=-4)
     validate_pos_orient(
-        s1, [(2, -1, 0), (2, -1, 0), (2, -1, 0), (1, 1, 0)], [(0, 0, np.pi / 2)] * 4,
+        s1,
+        [(2, -1, 0), (2, -1, 0), (2, -1, 0), (1, 1, 0)],
+        [(0, 0, np.pi / 2)] * 4,
     )
     validate_pos_orient(
-        s2, [(2, -3, 0), (2, -3, 0), (2, -3, 0), (1, -3, 0)], [(0, 0, np.pi / 2)] * 4,
+        s2,
+        [(2, -3, 0), (2, -3, 0), (2, -3, 0), (1, -3, 0)],
+        [(0, 0, np.pi / 2)] * 4,
     )
     validate_pos_orient(
-        col, [(2, 0, 0), (2, 0, 0), (2, 0, 0), (1, 0, 0)], [(0, 0, np.pi / 2)] * 4,
+        col,
+        [(2, 0, 0), (2, 0, 0), (2, 0, 0), (1, 0, 0)],
+        [(0, 0, np.pi / 2)] * 4,
     )
 
 

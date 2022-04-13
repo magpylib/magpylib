@@ -6,45 +6,44 @@ def cel0(kc, p, c, s):
     complete elliptic integral algorithm vom Kirby2009
     """
     if kc == 0:
-        raise RuntimeError('FAIL')
-    errtol = .000001
+        raise RuntimeError("FAIL")
+    errtol = 0.000001
     k = abs(kc)
     pp = p
     cc = c
     ss = s
-    em = 1.
+    em = 1.0
     if p > 0:
         pp = np.sqrt(p)
-        ss = s/pp
+        ss = s / pp
     else:
-        f = kc*kc
-        q = 1.-f
-        g = 1. - pp
+        f = kc * kc
+        q = 1.0 - f
+        g = 1.0 - pp
         f = f - pp
-        q = q*(ss - c*pp)
-        pp = np.sqrt(f/g)
-        cc = (c-ss)/g
-        ss = -q/(g*g*pp) + cc*pp
+        q = q * (ss - c * pp)
+        pp = np.sqrt(f / g)
+        cc = (c - ss) / g
+        ss = -q / (g * g * pp) + cc * pp
     f = cc
-    cc = cc + ss/pp
-    g = k/pp
-    ss = 2*(ss + f*g)
+    cc = cc + ss / pp
+    g = k / pp
+    ss = 2 * (ss + f * g)
     pp = g + pp
     g = em
     em = k + em
     kk = k
-    while abs(g-k) > g*errtol:
-        k = 2*np.sqrt(kk)
-        kk = k*em
+    while abs(g - k) > g * errtol:
+        k = 2 * np.sqrt(kk)
+        kk = k * em
         f = cc
-        cc = cc + ss/pp
-        g = kk/pp
-        ss = 2*(ss + f*g)
+        cc = cc + ss / pp
+        g = kk / pp
+        ss = 2 * (ss + f * g)
         pp = g + pp
         g = em
-        em = k+em
-    return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
-
+        em = k + em
+    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
 
 def celv(kc, p, c, s):
@@ -52,9 +51,9 @@ def celv(kc, p, c, s):
     vectorized version of the cel integral above
     """
 
-    #if kc == 0:
+    # if kc == 0:
     #    return NaN
-    errtol = .000001
+    errtol = 0.000001
     n = len(kc)
 
     k = np.abs(kc)
@@ -65,26 +64,26 @@ def celv(kc, p, c, s):
     ss = s.copy()
 
     # apply a mask for evaluation of respective cases
-    mask = p<=0
+    mask = p <= 0
 
-    #if p>0:
+    # if p>0:
     pp[~mask] = np.sqrt(p[~mask])
-    ss[~mask] = s[~mask]/pp[~mask]
+    ss[~mask] = s[~mask] / pp[~mask]
 
-    #else:
-    f = kc[mask]*kc[mask]
-    q = 1.-f
-    g = 1. - pp[mask]
+    # else:
+    f = kc[mask] * kc[mask]
+    q = 1.0 - f
+    g = 1.0 - pp[mask]
     f = f - pp[mask]
-    q = q*(ss[mask] - c[mask]*pp[mask])
-    pp[mask] = np.sqrt(f/g)
-    cc[mask] = (c[mask]-ss[mask])/g
-    ss[mask] = -q/(g*g*pp[mask]) + cc[mask]*pp[mask]
+    q = q * (ss[mask] - c[mask] * pp[mask])
+    pp[mask] = np.sqrt(f / g)
+    cc[mask] = (c[mask] - ss[mask]) / g
+    ss[mask] = -q / (g * g * pp[mask]) + cc[mask] * pp[mask]
 
     f = cc.copy()
-    cc = cc + ss/pp
-    g = k/pp
-    ss = 2*(ss + f*g)
+    cc = cc + ss / pp
+    g = k / pp
+    ss = 2 * (ss + f * g)
     pp = g + pp
     g = em.copy()
     em = k + em
@@ -94,23 +93,23 @@ def celv(kc, p, c, s):
     # non-converged entries are further iterated.
     mask = np.ones(n, dtype=bool)
     while np.any(mask):
-        k[mask] = 2*np.sqrt(kk[mask])
-        kk[mask] = np.copy(k[mask]*em[mask])
+        k[mask] = 2 * np.sqrt(kk[mask])
+        kk[mask] = np.copy(k[mask] * em[mask])
         f[mask] = cc[mask]
-        cc[mask] = cc[mask] + ss[mask]/pp[mask]
-        g[mask] = kk[mask]/pp[mask]
-        ss[mask] = 2*(ss[mask] + f[mask]*g[mask])
+        cc[mask] = cc[mask] + ss[mask] / pp[mask]
+        g[mask] = kk[mask] / pp[mask]
+        ss[mask] = 2 * (ss[mask] + f[mask] * g[mask])
         pp[mask] = g[mask] + pp[mask]
         g[mask] = em[mask]
-        em[mask] = k[mask]+em[mask]
+        em[mask] = k[mask] + em[mask]
 
         # redefine mask
-        mask = (np.abs(g-k) > g*errtol)
+        mask = np.abs(g - k) > g * errtol
 
-    return(np.pi/2)*(ss+cc*em)/(em*(em+pp))
+    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
 
-def cel(kcv:np.ndarray, pv:np.ndarray, cv:np.ndarray, sv:np.ndarray) ->np.ndarray:
+def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.ndarray:
     """
     combine vectorized and non-vectorized implementations for improved performance
 
@@ -126,7 +125,7 @@ def cel(kcv:np.ndarray, pv:np.ndarray, cv:np.ndarray, sv:np.ndarray) ->np.ndarra
     n_input = len(kcv)
 
     if n_input < 10:
-        return np.array([cel0(kc,p,c,s) for kc,p,c,s in zip(kcv,pv,cv,sv)])
+        return np.array([cel0(kc, p, c, s) for kc, p, c, s in zip(kcv, pv, cv, sv)])
 
     return celv(kcv, pv, cv, sv)
 
@@ -140,29 +139,29 @@ def cel_loop_stable(k2):
     """
     # if k2 == 0: return 0    # on axis
 
-    pp = 1-k2          # allocate pp and use temporarily for 1-k2
-    k  = np.sqrt(pp)
-    kk = 1+k           # allocate pp and use temporarily for 1+k
+    pp = 1 - k2  # allocate pp and use temporarily for 1-k2
+    k = np.sqrt(pp)
+    kk = 1 + k  # allocate pp and use temporarily for 1+k
 
-    g  = 1 if isinstance(k2,(float,int)) else np.ones(len(k2))
+    g = 1 if isinstance(k2, (float, int)) else np.ones(len(k2))
     cc = k2**2
-    ss = 2*cc*pp/(kk-k2)
+    ss = 2 * cc * pp / (kk - k2)
     pp = kk
     em = kk
     kk = k
 
-    errtol = .000001
-    while np.any(abs(g-k) > g*errtol):
-        k = 2*np.sqrt(kk)
-        kk = k*em
+    errtol = 0.000001
+    while np.any(abs(g - k) > g * errtol):
+        k = 2 * np.sqrt(kk)
+        kk = k * em
         f = cc
-        cc = cc + ss/pp
-        g = kk/pp
-        ss = 2*(ss + f*g)
+        cc = cc + ss / pp
+        g = kk / pp
+        ss = 2 * (ss + f * g)
         pp = g + pp
         g = em
-        em = k+em
-    return (np.pi/2)*(ss+cc*em)/(em*(em+pp))
+        em = k + em
+    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
 
 
 # def cel_loop_stable_old(k2):

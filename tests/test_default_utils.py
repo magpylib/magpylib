@@ -1,14 +1,14 @@
 from copy import deepcopy
+
 import pytest
-from magpylib._src.defaults.defaults_utility import (
-    MagicProperties,
-    color_validator,
-    get_defaults_dict,
-    update_nested_dict,
-    magic_to_dict,
-    linearize_dict,
-    COLORS_MATPLOTLIB_TO_PLOTLY,
-)
+
+from magpylib._src.defaults.defaults_utility import color_validator
+from magpylib._src.defaults.defaults_utility import COLORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import get_defaults_dict
+from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.defaults.defaults_utility import magic_to_dict
+from magpylib._src.defaults.defaults_utility import MagicProperties
+from magpylib._src.defaults.defaults_utility import update_nested_dict
 
 
 def test_update_nested_dict():
@@ -123,7 +123,7 @@ def test_good_colors(color, allow_None, color_expected):
         ((0, 0, 0, 0), False, ValueError),
         ((-1, 0, 0), False, ValueError),
         ((0, 0, 260), False, ValueError),
-        ((0, '0', 200), False, ValueError),
+        ((0, "0", 200), False, ValueError),
         ("rgb(a, 0, 260)", False, ValueError),
         ("2", False, ValueError),
         ("mybadcolor", False, ValueError),

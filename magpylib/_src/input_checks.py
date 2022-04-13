@@ -1,21 +1,18 @@
 """ input checks code"""
-
 import inspect
 import numbers
+
 import numpy as np
 from scipy.spatial.transform import Rotation
-from magpylib._src.exceptions import (
-    MagpylibBadUserInput,
-    MagpylibMissingInput,
-)
-from magpylib._src.defaults.defaults_classes import default_settings
+
 from magpylib import _src
-from magpylib._src.utility import (
-    format_obj_input,
-    wrong_obj_msg,
-    LIBRARY_SOURCES,
-    LIBRARY_SENSORS,
-)
+from magpylib._src.defaults.defaults_classes import default_settings
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import LIBRARY_SENSORS
+from magpylib._src.utility import LIBRARY_SOURCES
+from magpylib._src.utility import wrong_obj_msg
 
 
 #################################################################
@@ -29,7 +26,7 @@ def all_same(lst: list) -> bool:
 
 
 def is_array_like(inp, msg: str):
-    """ test if inp is array_like: type list, tuple or ndarray
+    """test if inp is array_like: type list, tuple or ndarray
     inp: test object
     msg: str, error msg
     """
@@ -150,7 +147,7 @@ def validate_field_func(val):
             f"Instead received a callable where the first two args are: {fn_args[:2]}"
         )
 
-    for field in ['B', 'H']:
+    for field in ["B", "H"]:
         out = val(field, np.array([[1, 2, 3], [4, 5, 6]]))
         if out is not None:
             if not isinstance(out, np.ndarray):
@@ -167,6 +164,7 @@ def validate_field_func(val):
                 )
 
     return None
+
 
 #################################################################
 #################################################################
@@ -204,7 +202,7 @@ def check_format_input_orientation(inp, init_format=False):
 
 
 def check_format_input_anchor(inp):
-    """ checks rotate anchor input and return in formatted form
+    """checks rotate anchor input and return in formatted form
     - input must be array_like or None or 0
     """
     if isinstance(inp, numbers.Number) and inp == 0:
@@ -484,9 +482,9 @@ def check_format_input_observers(inp, pixel_agg=None):
 def check_format_input_obj(
     inp,
     allow: str,
-    recursive = True,
-    typechecks = False,
-    ) -> list:
+    recursive=True,
+    typechecks=False,
+) -> list:
     """
     Returns a flat list of all wanted objects in input.
 
@@ -525,7 +523,10 @@ def check_format_input_obj(
         # recursion
         if (obj_type == "Collection") and recursive:
             obj_list += check_format_input_obj(
-                obj, allow=allow, recursive=recursive, typechecks=typechecks,
+                obj,
+                allow=allow,
+                recursive=recursive,
+                typechecks=typechecks,
             )
 
         # typechecks
@@ -582,7 +583,7 @@ def check_excitations(sources, custom_field=None):
                     f"Cannot compute {custom_field}-field because input parameter"
                     f"`field_func` of {s} has undefined {custom_field}-field computation."
                 )
-            if s.field_func(custom_field, np.zeros((1,3))) is None:
+            if s.field_func(custom_field, np.zeros((1, 3))) is None:
                 raise MagpylibMissingInput(
                     f"Cannot compute {custom_field}-field because input parameter"
                     f"`field_func` of {s} has undefined {custom_field}-field computation."
@@ -596,9 +597,9 @@ def check_format_pixel_agg(pixel_agg):
     """
 
     PIXEL_AGG_ERR_MSG = (
-        "Input `pixel_agg` must be a reference to a numpy callable that reduces" +
-        " an array shape like 'mean', 'std', 'median', 'min', ...\n" +
-        f"Instead received {pixel_agg}."
+        "Input `pixel_agg` must be a reference to a numpy callable that reduces"
+        + " an array shape like 'mean', 'std', 'median', 'min', ...\n"
+        + f"Instead received {pixel_agg}."
     )
 
     if pixel_agg is None:
@@ -611,7 +612,7 @@ def check_format_pixel_agg(pixel_agg):
         raise AttributeError(PIXEL_AGG_ERR_MSG) from err
 
     # test pixel agg function reduce
-    x = np.array([[[(1,2,3)]*2]*3]*4)
+    x = np.array([[[(1, 2, 3)] * 2] * 3] * 4)
     if not isinstance(pixel_agg_func(x), numbers.Number):
         raise AttributeError(PIXEL_AGG_ERR_MSG)
 

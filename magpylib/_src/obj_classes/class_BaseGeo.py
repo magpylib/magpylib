@@ -1,19 +1,16 @@
 """BaseGeo class code
 DOCSTRING v4 READY
 """
-
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
-from magpylib._src.input_checks import (
-    check_format_input_orientation,
-    check_format_input_vector,
-)
+
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.input_checks import check_format_input_orientation
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -64,7 +61,15 @@ class BaseGeo(BaseTransform):
     """
 
     def __init__(
-        self, position=(0.0, 0.0, 0.0,), orientation=None, style=None, **kwargs
+        self,
+        position=(
+            0.0,
+            0.0,
+            0.0,
+        ),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
 
         self._parent = None
@@ -264,10 +269,9 @@ class BaseGeo(BaseTransform):
             )
         return val
 
-
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """ Add up sources to a Collection object.
+        """Add up sources to a Collection object.
 
         Returns
         -------
@@ -275,8 +279,8 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from magpylib import Collection
-        return Collection(self, obj)
 
+        return Collection(self, obj)
 
     # methods -------------------------------------------------------
     def reset_path(self):
