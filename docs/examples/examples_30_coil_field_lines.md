@@ -124,9 +124,9 @@ The following example shows how to compute and display 3D field lines of `coil1`
 import pyvista as pv
 
 grid = pv.UniformGrid(
-    dims = (41, 41, 41),
-    spacing = (2, 2, 2),
-    origin = (-40, -40, -40),
+    dims=(41, 41, 41),
+    spacing=(2, 2, 2),
+    origin=(-40, -40, -40),
 )
 
 # compute B-field and add as data to grid
