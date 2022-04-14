@@ -15,7 +15,7 @@ build:
     # rust: "1.55"
     # golang: "1.17"
   jobs:
-    post_build:
+    pre_build:
       - sudo apt-get install xvfb
       - export DISPLAY=:99.0
       - export PYVISTA_OFF_SCREEN=true
