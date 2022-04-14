@@ -6,7 +6,7 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3
+  display_name: Python 3 (ipykernel)
   language: python
   name: python3
 ---
@@ -19,7 +19,7 @@ In this example we model the **magnetic field of a coil**, and show how to displ
 
 **Model 1:** The coil consists of multiple windings, each of which can be modeled with a circular current loop which is realized by the `Loop` class. The individual windings are combined into a `Collection` which itself behaves like a single magnetic field source.
 
-```{code-cell}
+```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
@@ -37,7 +37,7 @@ coil1.show()
 
 **Model 2:** The coil is in reality more like a spiral, which can be modeled using the `Line` class. However, a good spiral approximation requires many small line segments, which makes the computation slower.
 
-```{code-cell}
+```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
 
@@ -55,7 +55,7 @@ coil2.show()
 
 Streamplot from Matplotlib is a powerful tool to outline the field lines. However, it must be understood that streamplot shows only a projection of the field onto the observation plane. All field components that point out of the plane become invisible. In out example we choose symmetry planes, where the perpendicular component is negligible.
 
-```{code-cell}
+```{code-cell} ipython3
 import matplotlib.pyplot as plt
 
 fig, [ax1,ax2] = plt.subplots(1, 2, figsize=(13,5))
@@ -120,7 +120,7 @@ plt.show()
 
 The following example shows how to compute and display 3D field lines of `coil1` with Pyvista. To run this example, the user must install Pyvista (`pip install pyvista`). By removing the command `jupyter_backend='static'` in `show`, the 3D figure becomes interactive.
 
-```{raw-cell}
+```{code-cell} ipython3
 import pyvista as pv
 
 grid = pv.UniformGrid(
