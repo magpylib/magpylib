@@ -15,6 +15,11 @@
 import os
 import sys
 
+# This is for pyvista
+os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
+os.environ['DISPLAY'] = ':99'
+
+
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
 os.environ[

@@ -14,17 +14,6 @@ build:
     # nodejs: "16"
     # rust: "1.55"
     # golang: "1.17"
-  jobs:
-    post_install:
-      - set -x
-      - export DISPLAY=:99.0
-      - export PYVISTA_OFF_SCREEN=true
-      - export PYVISTA_USE_IPYVTK=true
-      - which Xvfb
-      - Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &
-      - sleep 3
-      - set +x
-      - exec "$@"
   apt_packages:
     # for pyvista
     - libgl1-mesa-dev
