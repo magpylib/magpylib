@@ -15,8 +15,7 @@ build:
     # rust: "1.55"
     # golang: "1.17"
   jobs:
-    pre_build:
-      - sudo apt-get install xvfb
+    post_install:
       - export DISPLAY=:99.0
       - export PYVISTA_OFF_SCREEN=true
       - export PYVISTA_USE_IPYVTK=true
