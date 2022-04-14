@@ -272,5 +272,3 @@ mathjax_options = {
 }
 
 myst_update_mathjax = False
-
-execution_timeout = 120
