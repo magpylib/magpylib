@@ -16,7 +16,7 @@ import os
 import sys
 
 # This is for pyvista
-os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
+os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &')
 os.environ['DISPLAY'] = ':99'
 
 # Location of Sphinx files
