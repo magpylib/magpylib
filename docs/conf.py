@@ -18,6 +18,8 @@ import sys
 # This is for pyvista
 os.system('/usr/bin/Xvfb :99 -screen 0 1024x768x24 &')
 os.environ['DISPLAY'] = ':99'
+os.environ['PYVISTA_OFF_SCREEN'] = 'true'
+os.environ['PYVISTA_USE_IPYVTK'] = 'true'
 
 
 # Location of Sphinx files
