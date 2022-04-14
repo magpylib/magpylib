@@ -114,7 +114,7 @@ plt.tight_layout()
 plt.show()
 ```
 
-## asdfPyvista streamlines
+## Pyvista streamlines
 
 [Pyvista](https://docs.pyvista.org/) is an incredible VTK based tool for 3D plotting and mesh analysis.
 
@@ -169,10 +169,4 @@ for z in np.linspace(-8, 8, 16):
 pl.camera.position=(160, 10, -10)
 pl.set_background("white")
 pl.show(jupyter_backend='static')
-```
-
-# TEST
-
-```{code-cell} ipython3
-print('test')
 ```
