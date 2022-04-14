@@ -170,3 +170,9 @@ pl.camera.position=(160, 10, -10)
 pl.set_background("white")
 pl.show(jupyter_backend='static')
 ```
+
+# TEST
+
+```{code-cell} ipython3
+print('test')
+```
