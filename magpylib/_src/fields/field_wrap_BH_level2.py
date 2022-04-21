@@ -1,3 +1,5 @@
+from itertools import product
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
@@ -9,6 +11,7 @@ from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.input_checks import check_format_pixel_agg
+from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
@@ -128,7 +131,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
     kwargs_check = kwargs.copy()
-    for popit in ["field", "sumup", "squeeze", "pixel_agg"]:
+    for popit in ["field", "sumup", "squeeze", "pixel_agg", "output"]:
         kwargs_check.pop(popit, None)
     if kwargs_check:
         raise MagpylibBadUserInput(
@@ -295,9 +298,33 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
         B = np.concatenate(Bagg, axis=2)
 
+    # reset tiled objects
+    for obj, m0 in zip(reset_obj, reset_obj_m0):
+        obj._position = obj._position[:m0]
+        obj._orientation = obj._orientation[:m0]
+
     # sumup over sources
     if kwargs["sumup"]:
         B = np.sum(B, axis=0, keepdims=True)
+
+    output = check_getBH_output_type(kwargs.get("output", "ndarray"))
+
+    if output == "dataframe":
+        # pylint: disable=import-outside-toplevel
+        import pandas as pd
+
+        if kwargs["sumup"] and len(sources) > 1:
+            src_ids = [f"sumup ({len(sources)})"]
+        else:
+            src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
+        sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
+        num_of_pixels = np.prod(pix_shapes[0][:-1])
+        df = pd.DataFrame(
+            data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),
+            columns=["source", "path", "sensor", "pixel"],
+        )
+        df[[kwargs["field"] + k for k in "xyz"]] = B.reshape(-1, 3)
+        return df
 
     # reduce all size-1 levels
     if kwargs["squeeze"]:
@@ -306,10 +333,5 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-
-    # reset tiled objects
-    for obj, m0 in zip(reset_obj, reset_obj_m0):
-        obj._position = obj._position[:m0]
-        obj._orientation = obj._orientation[:m0]
 
     return B
