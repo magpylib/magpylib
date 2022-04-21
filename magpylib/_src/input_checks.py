@@ -621,7 +621,7 @@ def check_format_pixel_agg(pixel_agg):
 
 def check_getBH_output_type(output):
     """check if getBH output is acceptable"""
-    acceptable = ("ndrarray", "dataframe")
+    acceptable = ("ndarray", "dataframe")
     if output not in acceptable:
         raise AttributeError(
             "The `output` argument must be one of {acceptable}."
