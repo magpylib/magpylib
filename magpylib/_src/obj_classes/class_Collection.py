@@ -513,7 +513,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True, pixel_agg=None):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute B-field in [mT] for given sources and observers.
 
         Parameters
@@ -533,9 +533,15 @@ class BaseCollection(BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+        B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             B-field at each path position (m) for each sensor (k) and each sensor pixel
             position (n1,n2,...) in units of [mT]. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
@@ -575,10 +581,11 @@ class BaseCollection(BaseDisplayRepr):
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
+            output=output,
             field="B",
         )
 
-    def getH(self, *inputs, squeeze=True, pixel_agg=None):
+    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute H-field in [kA/m] for given sources and observers.
 
         Parameters
@@ -598,9 +605,15 @@ class BaseCollection(BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+        H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             H-field at each path position (m) for each sensor (k) and each sensor pixel
             position (n1,n2,...) in units of [kA/m]. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
@@ -640,6 +653,7 @@ class BaseCollection(BaseDisplayRepr):
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
+            output=output,
             field="H",
         )
 
