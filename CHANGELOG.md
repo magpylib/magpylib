@@ -6,10 +6,14 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [3.0.5] - 2022-04-26
+
+- fix docs build
+
 ## [3.0.4] - 2022-02-17
 
 - fix `Collection` operation tests
--
+
 ---
 ## [3.0.3] - 2022-02-17
 
@@ -290,7 +294,8 @@ The first official release of the magpylib library.
 - Collection class
 
 ---
-[Unreleased]:https://github.com/magpylib/magpylib/compare/3.0.4...HEAD
+[Unreleased]:https://github.com/magpylib/magpylib/compare/3.0.5...HEAD
+[3.0.5]:https://github.com/magpylib/magpylib/compare/3.0.4...3.0.5
 [3.0.4]:https://github.com/magpylib/magpylib/compare/3.0.3...3.0.4
 [3.0.3]:https://github.com/magpylib/magpylib/compare/3.0.2...3.0.3
 [3.0.2]:https://github.com/magpylib/magpylib/compare/3.0.1...3.0.2
