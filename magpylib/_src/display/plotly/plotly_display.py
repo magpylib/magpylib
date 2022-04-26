@@ -783,24 +783,25 @@ def group_meshes(*traces):
     """Group and merge mesh traces with similar properties. This drastically improves
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
-    keys = ("type", "colorscale", "opacity", "legendgroup")
-    for t in traces:
-        gr = []
-        for k in keys:
+    common_keys = ["legendgroup", "opacity"]
+    spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line"]}
+    for tr in traces:
+        gr = [tr["type"]]
+        for k in common_keys + spec_keys[tr["type"]]:
             try:
-                v = t.get(k, "")
+                v = tr.get(k, "")
             except AttributeError:
-                v = getattr(t, k, "")
+                v = getattr(tr, k, "")
             gr.append(str(v))
         gr = "".join(gr)
         if gr not in mesh_groups:
             mesh_groups[gr] = []
-        mesh_groups[gr].append(t)
+        mesh_groups[gr].append(tr)
 
     traces = []
     for key, gr in mesh_groups.items():
-        if key.startswith("mesh3d"):
-            tr = [merge_mesh3d(*gr)]
+        if key.startswith("mesh3d") or key.startswith("scatter3d"):
+            tr = [merge_traces(*gr)]
         else:
             tr = gr
         traces.extend(tr)
