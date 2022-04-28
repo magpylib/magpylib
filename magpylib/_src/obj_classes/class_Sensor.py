@@ -1,12 +1,11 @@
 """Sensor class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.utility import format_star_input
-from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.utility import format_star_input
 
 
 class Sensor(BaseGeo, BaseDisplayRepr):
@@ -60,6 +59,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     We rotate the sensor by 45 degrees and compute the field again:
 
     >>> sens.rotate_from_rotvec((45,0,0))
+    Sensor(id=...)
     >>> B = sens.getB(loop)
     >>> print(B)
     [0.         0.88857659 0.88857659]
@@ -70,8 +70,8 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     >>> B = sens.getB(loop)
     >>> print(B)
     [[0.         0.88857659 0.88857659]
-        [0.         0.916274   0.916274  ]
-        [0.         1.01415383 1.01415383]]
+     [0.         0.916274   0.916274  ]
+     [0.         1.01415383 1.01415383]]
     """
 
     def __init__(
@@ -112,7 +112,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)",
         )
 
-    def getB(self, *sources, sumup=False, squeeze=True, pixel_agg=None):
+    def getB(
+        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+    ):
         """Compute the B-field in units of [mT] as seen by the sensor.
 
         Parameters
@@ -133,9 +135,15 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3)
+        B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             B-field of each source (l) at each path position (m) and each sensor pixel
             position (n1,n2,...) in units of [mT]. Paths of objects that are shorter than
             m will be considered as static beyond their end.
@@ -155,6 +163,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Then we rotate the sensor by 45 degrees and compute the field again:
 
         >>> sens.rotate_from_rotvec((45,0,0))
+        Sensor(id=...)
         >>> B = sens.getB(loop)
         >>> print(B)
         [0.         0.88857659 0.88857659]
@@ -170,10 +179,18 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """
         sources = format_star_input(sources)
         return getBH_level2(
-            sources, self, sumup=sumup, squeeze=squeeze, pixel_agg=pixel_agg, field="B"
+            sources,
+            self,
+            sumup=sumup,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            output=output,
+            field="B",
         )
 
-    def getH(self, *sources, sumup=False, squeeze=True, pixel_agg=None):
+    def getH(
+        self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
+    ):
         """Compute the H-field in units of [kA/m] as seen by the sensor.
 
         Parameters
@@ -194,9 +211,15 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3)
+        H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             H-field of each source (l) at each path position (m) and each sensor pixel
             position (n1,n2,...) in units of [kA/m]. Paths of objects that are shorter than
             m will be considered as static beyond their end.
@@ -216,6 +239,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Then we rotate the sensor by 45 degrees and compute the field again:
 
         >>> sens.rotate_from_rotvec((45,0,0))
+        Sensor(id=...)
         >>> H = sens.getH(loop)
         >>> print(H)
         [0.         0.70710678 0.70710678]
@@ -231,5 +255,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         """
         sources = format_star_input(sources)
         return getBH_level2(
-            sources, self, sumup=sumup, squeeze=squeeze, pixel_agg=pixel_agg, field="H"
+            sources,
+            self,
+            sumup=sumup,
+            squeeze=squeeze,
+            pixel_agg=pixel_agg,
+            output=output,
+            field="H",
         )

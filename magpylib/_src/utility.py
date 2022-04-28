@@ -2,7 +2,9 @@
 # import numbers
 from math import log10
 from typing import Sequence
+
 import numpy as np
+
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 LIBRARY_SOURCES = (
@@ -99,7 +101,9 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
             else:
                 if flatten_collection or isinstance(obj, (list, tuple)):
                     obj_list += format_obj_input(
-                        *obj, allow=allow, warn=warn,
+                        *obj,
+                        allow=allow,
+                        warn=warn,
                     )  # recursive flattening
                 else:
                     obj_list += [obj]
@@ -313,7 +317,7 @@ def cart_to_cyl_coordinates(observer):
     observer: ndarray, shape (n,3)
     """
     x, y, z = observer.T
-    r, phi = np.sqrt(x ** 2 + y ** 2), np.arctan2(y, x)
+    r, phi = np.sqrt(x**2 + y**2), np.arctan2(y, x)
     return r, phi, z
 
 
@@ -332,7 +336,7 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
 
 
 def rec_obj_remover(parent, child):
-    """ remove known child from parent collection"""
+    """remove known child from parent collection"""
     # pylint: disable=protected-access
     for obj in parent:
         if obj == child:

@@ -1,9 +1,9 @@
 """ getBHv wrapper codes"""
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
+
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
 
 

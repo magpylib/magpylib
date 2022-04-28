@@ -1,20 +1,17 @@
 """Collection class code"""
-
 # pylint: disable=redefined-builtin
-
 from collections import Counter
-from magpylib._src.utility import (
-    format_obj_input,
-    LIBRARY_SENSORS,
-    LIBRARY_SOURCES,
-    rec_obj_remover,
-)
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import LIBRARY_SENSORS
+from magpylib._src.utility import LIBRARY_SOURCES
+from magpylib._src.utility import rec_obj_remover
 
 
 def repr_obj(obj, format="type+id+label"):
@@ -237,7 +234,9 @@ class BaseCollection(BaseDisplayRepr):
         lines = []
         lines.append(repr_obj(self))
         for line in collection_tree_generator(
-            self, format="type+label+id", max_elems=10,
+            self,
+            format="type+label+id",
+            max_elems=10,
         ):
             lines.append(line)
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
@@ -257,7 +256,11 @@ class BaseCollection(BaseDisplayRepr):
         return_string: bool, default=`False`
             If `False` print description with stdout, if `True` return as string.
         """
-        tree = collection_tree_generator(self, format=format, max_elems=max_elems,)
+        tree = collection_tree_generator(
+            self,
+            format=format,
+            max_elems=max_elems,
+        )
         output = [repr_obj(self, format)]
         for t in tree:
             output.append(t)
@@ -408,7 +411,9 @@ class BaseCollection(BaseDisplayRepr):
             typechecks=True,
         )
         self_objects = check_format_input_obj(
-            self, allow="sensors+sources+collections", recursive=recursive,
+            self,
+            allow="sensors+sources+collections",
+            recursive=recursive,
         )
         for child in remove_objects:
             if child in self_objects:
@@ -508,7 +513,7 @@ class BaseCollection(BaseDisplayRepr):
             sources, sensors = self, inputs
         return sources, sensors
 
-    def getB(self, *inputs, squeeze=True, pixel_agg=None):
+    def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute B-field in [mT] for given sources and observers.
 
         Parameters
@@ -528,9 +533,15 @@ class BaseCollection(BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+        B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             B-field at each path position (m) for each sensor (k) and each sensor pixel
             position (n1,n2,...) in units of [mT]. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
@@ -570,10 +581,11 @@ class BaseCollection(BaseDisplayRepr):
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
+            output=output,
             field="B",
         )
 
-    def getH(self, *inputs, squeeze=True, pixel_agg=None):
+    def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
         """Compute H-field in [kA/m] for given sources and observers.
 
         Parameters
@@ -593,9 +605,15 @@ class BaseCollection(BaseDisplayRepr):
             which is applied to observer output values, e.g. mean of all sensor pixel outputs.
             With this option, observers input with different (pixel) shapes is allowed.
 
+        output: str, default='ndarray'
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+            installed).
+
         Returns
         -------
-        H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+        H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             H-field at each path position (m) for each sensor (k) and each sensor pixel
             position (n1,n2,...) in units of [kA/m]. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
@@ -635,6 +653,7 @@ class BaseCollection(BaseDisplayRepr):
             sumup=False,
             squeeze=squeeze,
             pixel_agg=pixel_agg,
+            output=output,
             field="H",
         )
 
@@ -749,6 +768,10 @@ class Collection(BaseGeo, BaseCollection):
         **kwargs,
     ):
         BaseGeo.__init__(
-            self, position=position, orientation=orientation, style=style, **kwargs,
+            self,
+            position=position,
+            orientation=orientation,
+            style=style,
+            **kwargs,
         )
         BaseCollection.__init__(self, *args, override_parent=override_parent)

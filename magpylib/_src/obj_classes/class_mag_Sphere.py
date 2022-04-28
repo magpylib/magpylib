@@ -1,12 +1,12 @@
 """Magnet Sphere class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.input_checks import check_format_input_scalar
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+
 
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Spherical magnet with homogeneous magnetization.
@@ -61,6 +61,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    Sphere(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[2.26804606 3.63693295 0.23486386]
@@ -71,6 +72,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Sphere(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
@@ -109,7 +111,8 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """Set Sphere diameter, float, [mm]."""
         self._diameter = check_format_input_scalar(
             dia,
-            sig_name='diameter',
-            sig_type='`None` or a positive number (int, float)',
+            sig_name="diameter",
+            sig_type="`None` or a positive number (int, float)",
             allow_None=True,
-            forbid_negative=True,)
+            forbid_negative=True,
+        )

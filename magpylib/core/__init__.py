@@ -3,13 +3,13 @@ The core sub-package gives direct access to our field implementations.
 """
 
 __all__ = [
-    'dipole_field',
-    'current_loop_field',
-    'current_line_field',
-    'magnet_sphere_field',
-    'magnet_cuboid_field',
-    'magnet_cylinder_field',
-    'magnet_cylinder_segment_field',
+    "dipole_field",
+    "current_loop_field",
+    "current_line_field",
+    "magnet_sphere_field",
+    "magnet_cuboid_field",
+    "magnet_cylinder_field",
+    "magnet_cylinder_segment_field",
 ]
 
 from magpylib._src.fields.field_BH_dipole import dipole_field

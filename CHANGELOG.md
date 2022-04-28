@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [4.0.0rc1]
+## [4.0.0]
 
 This is a major update that includes
 
@@ -354,7 +354,7 @@ The first official release of the magpylib library.
 - Collection class
 
 ---
-[4.0.0rc1]:https://github.com/magpylib/magpylib/compare/3.0.4...HEAD
+[4.0.0]:https://github.com/magpylib/magpylib/compare/3.0.4...4.0.0
 [3.0.4]:https://github.com/magpylib/magpylib/compare/3.0.3...3.0.4
 [3.0.3]:https://github.com/magpylib/magpylib/compare/3.0.2...3.0.3
 [3.0.2]:https://github.com/magpylib/magpylib/compare/3.0.1...3.0.2

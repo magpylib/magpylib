@@ -3,7 +3,6 @@
 # distributable package information with setuptools.
 # More information: https://packaging.python.org/tutorials/packaging-projects/
 ###
-
 ###
 # Local install:
 #   Create virtual environment:
@@ -16,14 +15,13 @@
 #   $ (packCondaTest) pip install .
 # The library is now in the packCondaTest environment.
 ##
-
-
-import sys
 import os
+import sys
+
 import setuptools
 from setuptools.command.install import install
 
-_magPyVersion = "4.0.0rc1"
+_magPyVersion = "4.0.0"
 _SphinxVersion = "4.4.0"
 _name = "magpylib"
 _description = "Free Python3 package to compute magnetic fields."
@@ -31,9 +29,9 @@ _author_email = "magpylib@gmail.com"
 _author = "Michael Ortner"
 _projectUrl = "https://github.com/magpylib/magpylib"
 _release = "release"
-_license = "GNU Affero General Public License v3 or later (AGPLv3+) (AGPL-3.0-or-later)"
+_license = "2-Clause BSD License, Simplified BSD License, FreeBSD License"
 
-with open("README.md", "r") as fh:
+with open("README.md") as fh:
     long_description = fh.read()
 
 
@@ -78,6 +76,7 @@ setuptools.setup(
             "pylint",
             "jupyterlab>=3.2",
             "sphinx==4.4.0",
+            "pandas",
         ]
     },
     classifiers=[
@@ -90,7 +89,7 @@ setuptools.setup(
         "Intended Audience :: Developers",
         "Intended Audience :: Science/Research",
         "Intended Audience :: Education",
-        "License :: OSI Approved :: GNU Affero General Public License v3 or later (AGPLv3+)",
+        "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
     python_requires="~=3.7",
@@ -103,5 +102,7 @@ setuptools.setup(
             "source_dir": ("setup.py", "./docs"),
         }
     },
-    cmdclass={"verify": VerifyVersionCommand,},
+    cmdclass={
+        "verify": VerifyVersionCommand,
+    },
 )

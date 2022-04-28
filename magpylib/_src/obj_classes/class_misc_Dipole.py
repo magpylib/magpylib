@@ -1,11 +1,11 @@
 """Dipole class code
 DOCSTRINGS V4 READY
 """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+
 
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """Magnetic dipole moment.
@@ -56,6 +56,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    Dipole(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[2.16582445 3.6972936  1.53146915]
@@ -66,6 +67,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Dipole(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
@@ -84,7 +86,7 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ):
         # instance attributes
         self.moment = moment
-        self._object_type = 'Dipole'
+        self._object_type = "Dipole"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -99,9 +101,11 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     @moment.setter
     def moment(self, mom):
         """Set dipole moment vector, shape (3,), unit [mT*mm^3]."""
-        self._moment = check_format_input_vector(mom,
+        self._moment = check_format_input_vector(
+            mom,
             dims=(1,),
             shape_m1=3,
-            sig_name='moment',
-            sig_type='array_like (list, tuple, ndarray) with shape (3,)',
-            allow_None=True)
+            sig_name="moment",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,)",
+            allow_None=True,
+        )

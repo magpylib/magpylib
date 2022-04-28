@@ -1,9 +1,8 @@
 """Custom class code """
-
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.input_checks import validate_field_func
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 
 
 class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
@@ -53,7 +52,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     >>> import numpy as np
     >>> import magpylib as magpy
     >>>
-    >>> funcBH = lambda field, observers: np.array([(100 if field=='B' else 80,0,0)]*len(obs))
+    >>> funcBH = lambda field, observers: np.array([(100 if field=='B' else 80,0,0)]*len(observers))
     >>> src = magpy.misc.CustomSource(field_func=funcBH)
     >>> H = src.getH((1,1,1))
     >>> print(H)
@@ -62,6 +61,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'z')
+    CustomSource(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[70.71067812 70.71067812  0.        ]
@@ -72,6 +72,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    CustomSource(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)

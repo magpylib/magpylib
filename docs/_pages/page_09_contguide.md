@@ -17,11 +17,11 @@
 
 ## Credits
 
-We want to thank a lot of ppl who have helped to realize and advance this project over the years. The project was supported by CTR-AG and is now supported by the [Silicon Austria Labs](https://silicon-austria-labs.com/) public research center.
+We want to thank a lot of ppl who have helped to realize and advance this project over the years. The project was initiated at CTR-AG and is now supported by the [Silicon Austria Labs](https://silicon-austria-labs.com/) public research center.
 
 ## Contributions
 
-We welcome any feedback (Bug reports, feature requests, comments, really anything 😃) via email [magpylib@gmail.com](mailto:magpylib@gmail.com) or through [gitHub](https://github.com/magpylib/magpylib/issues) channels.
+We welcome any feedback (Bug reports, feature requests, comments, ...) via email [magpylib@gmail.com](mailto:magpylib@gmail.com) or through [gitHub](https://github.com/magpylib/magpylib/issues) channels.
 
 ## Citation
 
@@ -42,4 +42,8 @@ doi = {10.1016/j.softx.2020.100466}
 
 ## License
 
-Magpylib is published under the open source [AGPL v3](https://www.gnu.org/licenses/agpl-3.0.de.html) license. If you are interested in a non-disclosure private license, please contact us at <mailto:magpylib@gmail.com>.
+Magpylib is published under the open source [FreeBSD](https://www.freebsd.org/copyright/freebsd-license/) license.
+
+- *Permissions:* Commercial use, Modification, Distribution, Private use
+- *Limitations:* Liability, Warranty
+- *Conditions:* License and copyright notice

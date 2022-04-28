@@ -2,7 +2,13 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 
 
 def getB(
-    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+    sources=None,
+    observers=None,
+    sumup=False,
+    squeeze=True,
+    pixel_agg=None,
+    output="ndarray",
+    **kwargs
 ):
     """Compute B-field in [mT] for given sources and observers.
 
@@ -41,6 +47,12 @@ def getB(
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
         With this option, observers input with different (pixel) shapes is allowed.
 
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
+
     Other Parameters (Direct interface)
     -----------------------------------
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
@@ -84,7 +96,7 @@ def getB(
 
     Returns
     -------
-    B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+    B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         B-field at each path position (m) for each sensor (k) and each sensor pixel
         position (n1, n2, ...) in units of [mT]. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
@@ -120,7 +132,7 @@ def getB(
     >>> print(B)
     [[[ 6.23597388e+00  6.23597388e+00  2.66977810e+00]
       [-6.23597388e+00 -6.23597388e+00  2.66977810e+00]]
-
+    <BLANKLINE>
      [[ 8.01875374e-01  8.01875374e-01  1.48029737e-16]
       [-8.01875374e-01 -8.01875374e-01  1.48029737e-16]]]
 
@@ -134,11 +146,13 @@ def getB(
 
     But also for a set of four completely different instances:
 
-    >>> B = magpy.getB('Loop',
-    >>>     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
-    >>>     current=(11, 22, 33, 44),
-    >>>     diameter=(1, 2, 3, 4),
-    >>>     position=((0,0,0), (0,0,1), (0,0,2), (0,0,3)))
+    >>> B = magpy.getB(
+    ...     'Loop',
+    ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
+    ...     current=(11, 22, 33, 44),
+    ...     diameter=(1, 2, 3, 4),
+    ...     position=((0,0,0), (0,0,1), (0,0,2), (0,0,3)),
+    ... )
     >>> print(B)
     [[ 0.17111325  0.17111325  0.01705189]
      [-0.38852048 -0.38852048  0.49400758]
@@ -151,13 +165,20 @@ def getB(
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
+        output=output,
         field="B",
         **kwargs
     )
 
 
 def getH(
-    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+    sources=None,
+    observers=None,
+    sumup=False,
+    squeeze=True,
+    pixel_agg=None,
+    output="ndarray",
+    **kwargs
 ):
     """Compute H-field in [kA/m] for given sources and observers.
 
@@ -196,6 +217,12 @@ def getH(
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
         With this option, observer inputs with different (pixel) shapes are allowed.
 
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
+
     Other Parameters (Direct interface)
     -----------------------------------
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
@@ -239,7 +266,7 @@ def getH(
 
     Returns
     -------
-    H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+    H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         H-field at each path position (m) for each sensor (k) and each sensor pixel
         position (n1, n2, ...) in units of [kA/m]. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
@@ -275,7 +302,7 @@ def getH(
     >>> print(H)
     [[[ 4.96243034e+00  4.96243034e+00  2.12454191e+00]
       [-4.96243034e+00 -4.96243034e+00  2.12454191e+00]]
-
+    <BLANKLINE>
      [[ 6.38112147e-01  6.38112147e-01  1.17798322e-16]
       [-6.38112147e-01 -6.38112147e-01  1.17798322e-16]]]
 
@@ -289,11 +316,13 @@ def getH(
 
     But also for a set of four completely different instances:
 
-    >>> H = magpy.getH('Loop',
-    >>>     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
-    >>>     current=(11, 22, 33, 44),
-    >>>     diameter=(1, 2, 3, 4),
-    >>>     position=((0,0,0), (0,0,1), (0,0,2), (0,0,3)))
+    >>> H = magpy.getH(
+    ...     'Loop',
+    ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
+    ...     current=(11, 22, 33, 44),
+    ...     diameter=(1, 2, 3, 4),
+    ...     position=((0,0,0), (0,0,1), (0,0,2), (0,0,3)),
+    ... )
     >>> print(H)
     [[ 0.1361676   0.1361676   0.01356947]
      [-0.30917477 -0.30917477  0.39311875]
@@ -306,6 +335,7 @@ def getH(
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
+        output=output,
         field="H",
         **kwargs
     )

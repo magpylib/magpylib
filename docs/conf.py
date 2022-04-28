@@ -1,13 +1,10 @@
-# -*- coding: utf-8 -*-
 #
 # Configuration file for the Sphinx documentation builder.
 #
 # This file does only contain a selection of the most common options. For a
 # full list see the documentation:
 # http://www.sphinx-doc.org/en/main/config
-
 # -- Path setup --------------------------------------------------------------
-
 # If extensions (or modules to document with autodoc) are in another directory,
 # add these directories to sys.path here. If the directory is relative to the
 # documentation root, use os.path.abspath to make it absolute, like shown here.
@@ -15,9 +12,15 @@
 # import os
 # import sys
 # sys.path.insert(0, os.path.abspath('.'))
-
 import os
 import sys
+
+# This is for pyvista
+os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
+os.environ["DISPLAY"] = ":99"
+os.environ["PYVISTA_OFF_SCREEN"] = "true"
+os.environ["PYVISTA_USE_IPYVTK"] = "true"
+
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
@@ -262,11 +265,11 @@ html_js_files = [
 
 mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"
 mathjax2_config = {
-    'tex2jax': {
-        'inlineMath': [['$', '$'], ['\\(', '\\)']],
-        'processEscapes': True,
-        'ignoreClass': 'document',
-        'processClass': 'math|output_area',
+    "tex2jax": {
+        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
+        "processEscapes": True,
+        "ignoreClass": "document",
+        "processClass": "math|output_area",
     }
 }
 
@@ -275,4 +278,4 @@ mathjax_options = {
     "async": "async",
 }
 
-myst_update_mathjax=False
+myst_update_mathjax = False

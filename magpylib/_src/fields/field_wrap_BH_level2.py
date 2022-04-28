@@ -1,19 +1,20 @@
+from itertools import product
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.utility import (
-    check_static_sensor_orient,
-    format_obj_input,
-    format_src_inputs,
-)
+
+from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
-from magpylib._src.exceptions import MagpylibBadUserInput, MagpylibInternalError
-from magpylib._src.input_checks import (
-    check_excitations,
-    check_dimensions,
-    check_format_input_observers,
-    check_format_pixel_agg,
-)
+from magpylib._src.input_checks import check_dimensions
+from magpylib._src.input_checks import check_excitations
+from magpylib._src.input_checks import check_format_input_observers
+from magpylib._src.input_checks import check_format_pixel_agg
+from magpylib._src.input_checks import check_getBH_output_type
+from magpylib._src.utility import check_static_sensor_orient
+from magpylib._src.utility import format_obj_input
+from magpylib._src.utility import format_src_inputs
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -86,25 +87,27 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
 
 
 def getBH_level2(
-    sources, observers, *, field, sumup, squeeze, pixel_agg, **kwargs
+    sources, observers, *, field, sumup, squeeze, pixel_agg, output, **kwargs
 ) -> np.ndarray:
-    """...
+    """Compute field for given sources and observers.
 
     Parameters
     ----------
-    - bh (bool): True=getB, False=getH
-    - sources (src_obj or list): source object or 1D list of L sources/collections with similar
+    sources : src_obj or list
+        source object or 1D list of L sources/collections with similar
         pathlength M and/or 1.
-    - observers (sens_obj or list or pos_obs): pos_obs or sensor object or 1D list of K
-        sensors with similar pathlength M and/or 1 and sensor pixel of shape (N1,N2,...,3).
-    kwargs:
-    - 'sumup' (bool): False returns [B1,B2,...] for every source, True returns sum(Bi)
-        for all sources.
-    - 'squeeze' (bool): True output is squeezed (axes of length 1 are eliminated)
-    - 'pixel_agg' : str: A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
-       which applies on pixel output values.
-    - 'field' (str): 'B' computes B field, 'H' computes H-field
-    - getBH_dict inputs
+    observers : sens_obj or list or pos_obs
+        pos_obs or sensor object or 1D list of K sensors with similar pathlength M
+        and/or 1 and sensor pixel of shape (N1,N2,...,3).
+    sumup : bool, default=False
+        returns [B1,B2,...] for every source, True returns sum(Bi) sfor all sources.
+    squeeze : bool, default=True:
+        If True output is squeezed (axes of length 1 are eliminated)
+    pixel_agg : str
+        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
+        which applies on pixel output values.
+    field : {'B', 'H'}
+        'B' computes B field, 'H' computes H-field
 
     Returns
     -------
@@ -298,9 +301,33 @@ def getBH_level2(
         Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
         B = np.concatenate(Bagg, axis=2)
 
+    # reset tiled objects
+    for obj, m0 in zip(reset_obj, reset_obj_m0):
+        obj._position = obj._position[:m0]
+        obj._orientation = obj._orientation[:m0]
+
     # sumup over sources
     if sumup:
         B = np.sum(B, axis=0, keepdims=True)
+
+    output = check_getBH_output_type(kwargs.get("output", "ndarray"))
+
+    if output == "dataframe":
+        # pylint: disable=import-outside-toplevel
+        import pandas as pd
+
+        if sumup and len(sources) > 1:
+            src_ids = [f"sumup ({len(sources)})"]
+        else:
+            src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
+        sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
+        num_of_pixels = np.prod(pix_shapes[0][:-1])
+        df = pd.DataFrame(
+            data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),
+            columns=["source", "path", "sensor", "pixel"],
+        )
+        df[[field + k for k in "xyz"]] = B.reshape(-1, 3)
+        return df
 
     # reduce all size-1 levels
     if squeeze:
@@ -309,10 +336,5 @@ def getBH_level2(
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
-
-    # reset tiled objects
-    for obj, m0 in zip(reset_obj, reset_obj_m0):
-        obj._position = obj._position[:m0]
-        obj._orientation = obj._orientation[:m0]
 
     return B

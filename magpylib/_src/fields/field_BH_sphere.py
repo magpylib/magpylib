@@ -2,8 +2,8 @@
 Implementations of analytical expressions for the magnetic field of homogeneously
 magnetized Spheres. Computation details in function docstrings.
 """
-
 import numpy as np
+
 from magpylib._src.input_checks import check_field_input
 
 
@@ -12,7 +12,7 @@ def magnet_sphere_field(
     observers: np.ndarray,
     magnetization: np.ndarray,
     diameter: np.ndarray,
-    )->np.ndarray:
+) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized sphere.
 
     The center of the sphere lies in the origin of the coordinate system.
@@ -47,7 +47,7 @@ def magnet_sphere_field(
     >>> dia = np.array([1,5])
     >>> obs = np.array([(1,1,1), (1,1,1)])
     >>> mag = np.array([(1,2,3), (0,0,3)])
-    >>> B = magpy.lib.magnet_sphere_Bfield(mag, dia, obs)
+    >>> B = magpy.core.magnet_sphere_field('B', obs, mag, dia)
     >>> print(B)
     [[0.04009377 0.03207501 0.02405626]
      [0.         0.         2.        ]]
@@ -58,32 +58,36 @@ def magnet_sphere_field(
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
 
-    bh = check_field_input(field, 'magnet_sphere_field()')
+    bh = check_field_input(field, "magnet_sphere_field()")
 
     # all special cases r0=0 and mag=0 automatically covered
 
     x, y, z = np.copy(observers.T)
-    r = np.sqrt(x**2+y**2+z**2)   # faster than np.linalg.norm
-    r0 = abs(diameter)/2
+    r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
+    r0 = abs(diameter) / 2
 
     # inside field & allocate
-    B = magnetization*2/3
+    B = magnetization * 2 / 3
 
     # overwrite outside field entries
-    mask_out = (r>=r0)
+    mask_out = r >= r0
 
     mag1 = magnetization[mask_out]
     obs1 = observers[mask_out]
     r1 = r[mask_out]
     r01 = r0[mask_out]
 
-    field_out = (3*(np.sum(mag1*obs1,axis=1)*obs1.T)/r1**5 - mag1.T/r1**3)*r01**3/3
+    field_out = (
+        (3 * (np.sum(mag1 * obs1, axis=1) * obs1.T) / r1**5 - mag1.T / r1**3)
+        * r01**3
+        / 3
+    )
     B[mask_out] = field_out.T
 
     if bh:
         return B
 
     # adjust and return H
-    B[~mask_out] = -magnetization[~mask_out]/3
-    H = B*10/4/np.pi
+    B[~mask_out] = -magnetization[~mask_out] / 3
+    H = B * 10 / 4 / np.pi
     return H

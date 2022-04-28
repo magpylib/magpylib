@@ -1,6 +1,7 @@
 """utility functions for plotly backend"""
 import numpy as np
 
+
 def merge_mesh3d(*traces):
     """Merges a list of plotly mesh3d dictionaries. The `i,j,k` index parameters need to cumulate
     the indices of each object in order to point to the right vertices in the concatenated
@@ -74,7 +75,7 @@ def getIntensity(vertices, axis) -> np.ndarray:
     p = np.array(vertices).T
     pos = np.mean(p, axis=1)
     norm = np.linalg.norm(axis)
-    m = (np.array(axis) / norm) if norm!=0 else (0,0,0)
+    m = (np.array(axis) / norm) if norm != 0 else (0, 0, 0)
     intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
     return intensity
 
@@ -126,6 +127,7 @@ def getColorscale(
             [1.0, color_north],
         ]
     return colorscale
+
 
 def clean_legendgroups(fig):
     """removes legend duplicates"""

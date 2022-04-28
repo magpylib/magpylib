@@ -1,19 +1,16 @@
 """BaseGeo class code
 DOCSTRING v4 READY
 """
-
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
-
 import numpy as np
 from scipy.spatial.transform import Rotation as R
-from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
-from magpylib._src.input_checks import (
-    check_format_input_orientation,
-    check_format_input_vector,
-)
+
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.input_checks import check_format_input_orientation
+from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -64,7 +61,15 @@ class BaseGeo(BaseTransform):
     """
 
     def __init__(
-        self, position=(0.0, 0.0, 0.0,), orientation=None, style=None, **kwargs
+        self,
+        position=(
+            0.0,
+            0.0,
+            0.0,
+        ),
+        orientation=None,
+        style=None,
+        **kwargs,
     ):
 
         self._parent = None
@@ -264,10 +269,9 @@ class BaseGeo(BaseTransform):
             )
         return val
 
-
     # dunders -------------------------------------------------------
     def __add__(self, obj):
-        """ Add up sources to a Collection object.
+        """Add up sources to a Collection object.
 
         Returns
         -------
@@ -275,8 +279,8 @@ class BaseGeo(BaseTransform):
         """
         # pylint: disable=import-outside-toplevel
         from magpylib import Collection
-        return Collection(self, obj)
 
+        return Collection(self, obj)
 
     # methods -------------------------------------------------------
     def reset_path(self):
@@ -293,15 +297,17 @@ class BaseGeo(BaseTransform):
         >>> import magpylib as magpy
         >>> obj = magpy.Sensor(position=(1,2,3))
         >>> obj.rotate_from_angax(45, 'z')
+        Sensor...
         >>> print(obj.position)
-        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [1. 2. 3.]
+        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [ 0.  0. 45.]
 
         >>> obj.reset_path()
+        Sensor(id=...)
         >>> print(obj.position)
-        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [0. 0. 0.]
+        >>> print(obj.orientation.as_euler('xyz', degrees=True))
         [0. 0. 0.]
         """
         self.position = (0, 0, 0)
@@ -322,12 +328,12 @@ class BaseGeo(BaseTransform):
         Create a `Sensor` object and copy to an another position:
 
         >>> import magpylib as magpy
-        >>> sens1 = magpy.Sensor()
-        >>> sens2 = sens1.copy(position=(2,6,10))
-        >>> print(f"Instance {sens1} with position {sens1.position}.")
-        >>> print(f"Instance {sens2} with position {sens2.position}.")
-        Instance Sensor(id=2756069642496) with position [0. 0. 0.].
-        Instance Sensor(id=2756171531744) with position [2. 6. 10.].
+        >>> sens1 = magpy.Sensor(style_label='sens1')
+        >>> sens2 = sens1.copy(position=(2,6,10), style_label='sens2')
+        >>> print(f"Instance {sens1.style.label} with position {sens1.position}.")
+        Instance sens1 with position [0. 0. 0.].
+        >>> print(f"Instance {sens2.style.label} with position {sens2.position}.")
+        Instance sens2 with position [ 2.  6. 10.].
         """
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy

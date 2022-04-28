@@ -1,7 +1,16 @@
 """_src.obj_classes"""
 
-__all__ = ['Cuboid', 'Cylinder', 'Sphere', 'Sensor',
-    'Dipole', 'Loop', 'Line', 'CylinderSegment','CustomSource']
+__all__ = [
+    "Cuboid",
+    "Cylinder",
+    "Sphere",
+    "Sensor",
+    "Dipole",
+    "Loop",
+    "Line",
+    "CylinderSegment",
+    "CustomSource",
+]
 
 # create interface to outside of package
 from magpylib._src.obj_classes.class_mag_Cuboid import Cuboid

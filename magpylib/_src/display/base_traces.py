@@ -1,8 +1,10 @@
 """base traces building functions"""
 from functools import partial
+
 import numpy as np
-from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
+
 from magpylib._src.display.display_utility import place_and_orient_model3d
+from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
 
 
 def base_validator(name, value, conditions):
@@ -23,7 +25,7 @@ def get_model(trace, *, backend, show, scale, kwargs):
 
     model = dict(constructor="Mesh3d", kwargs=trace, args=(), show=show, scale=scale)
     if backend == "matplotlib":
-        x, y, z, i, j, k = [trace[k] for k in "xyzijk"]
+        x, y, z, i, j, k = (trace[k] for k in "xyzijk")
         triangles = np.array([i, j, k]).T
         model.update(
             constructor="plot_trisurf", args=(x, y, z), kwargs={"triangles": triangles}
@@ -51,15 +53,28 @@ def make_Cuboid(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     dimension : 3-tuple, default=(1,1,1)
         Length of the cuboid sides `x,y,z`.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy `Rotation` object with length 1 or m, default=`identity`
+    orientation : scipy `Rotation` object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------
@@ -98,6 +113,9 @@ def make_Prism(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     base : int, default=6
         Number of vertices of the base in the xy-plane.
 
@@ -107,12 +125,22 @@ def make_Prism(
     height : float, default=1
         Prism height in the z-direction.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=`identity`
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------
@@ -173,18 +201,31 @@ def make_Ellipsoid(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     dimension : tuple, default=(1.0, 1.0, 1.0)
         Dimension in the `x,y,z` directions.
 
     vert : int, default=15
         Number of vertices along the circumference.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=`identity`
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------
@@ -240,6 +281,9 @@ def make_CylinderSegment(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
         where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
@@ -250,12 +294,22 @@ def make_CylinderSegment(
         Number of vertices along a the complete 360 degrees arc. The number along the phi1-phi2-arc
         is computed with `max(5, int(vert * abs(phi1 - phi2) / 360))`.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=`identity`
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------
@@ -328,6 +382,9 @@ def make_Pyramid(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     base : int, default=30
         Number of vertices of the cone base.
 
@@ -341,12 +398,22 @@ def make_Pyramid(
         The part of the cone that is anchored to the grid and about which it rotates.
         Can be one of `['tail', 'middle', 'tip']`.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=`identity`
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------
@@ -395,6 +462,9 @@ def make_Arrow(
 
     Parameters
     ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
     base : int, default=30
         Number of vertices of the arrow base.
 
@@ -408,12 +478,22 @@ def make_Arrow(
         The part of the arrow that is anchored to the grid and about which it rotates.
         Can be one of `['tail', 'middle', 'tip']`.
 
-    position: array_like, shape (3,), default=(0,0,0)
+    position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
         in the barycenter of the vertices.
 
-    orientation: scipy Rotation object with length 1 or m, default=`identity`
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
         Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
 
     Returns
     -------

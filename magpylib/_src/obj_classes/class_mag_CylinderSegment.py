@@ -2,11 +2,13 @@
 DOCSTRINGS V4 READY
 """
 import numpy as np
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
+
 from magpylib._src.input_checks import check_format_input_cylinder_segment
+from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
+from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
+from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+
 
 class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
@@ -66,6 +68,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    CylinderSegment(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-32.82849635  30.15882073 -16.32885658]
@@ -77,6 +80,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    CylinderSegment(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
     [[-32.82849635  30.15882073 -16.32885658]
@@ -96,7 +100,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = 'CylinderSegment'
+        self._object_type = "CylinderSegment"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -135,13 +139,15 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         Input checks should make sure:
             -360 < phi1 < phi2 < 360 and 0 < r1 < r2
         """
-        r1,r2,_,phi1,phi2 = dimension
-        alpha = np.deg2rad((phi2 - phi1)/2)
-        phi = np.deg2rad((phi1 + phi2)/2)
+        r1, r2, _, phi1, phi2 = dimension
+        alpha = np.deg2rad((phi2 - phi1) / 2)
+        phi = np.deg2rad((phi1 + phi2) / 2)
         # get centroid x for unrotated annular sector
-        centroid_x = 2/3*np.sin(alpha)/alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
+        centroid_x = (
+            2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
+        )
         # get centroid for rotated annular sector
-        x, y, z = centroid_x*np.cos(phi), centroid_x*np.sin(phi), 0
-        centroid = np.array([x,y,z])
+        x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
+        centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter

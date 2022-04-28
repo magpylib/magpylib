@@ -1,38 +1,52 @@
 # pylint: disable=line-too-long
-
 """
 Welcome to Magpylib !
 ---------------------
 
-Magpylib combines static 3D magnetic field computation for permanent magnets,
-currents and other sources. The computations are based on analytical expressions
-and are combined with an object oriented (magnet, current, sensor) position/orientation
-interface and graphical output to display the system geometry.
+Magpylib is a Python package for calculating 3D static magnetic fields of
+magnets, line currents and other sources. The computation is based on
+analytical expressions and therefore extremely fast. A user friendly
+geometry interface enables convenient relative positioning between sources
+and observers.
+
+Help us develop the packge further - we appreciate any feedback !
 
 Resources
 ---------
 
-Examples and documentation on Read-the-docs:
+Documentation and examples on Read-the-docs:
 
 https://magpylib.readthedocs.io/en/latest/
 
-Github repository:
+Our Github repository:
 
 https://github.com/magpylib/magpylib
 
-Original software publication (version 2):
+The original software publication (version 2):
 
 https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
-
 # module level dunders
-__version__ = '4.0.0rc1'
-__author__ =  'Michael Ortner & Alexandre Boisselet'
-__credits__ = 'The Magpylib community'
-__all__ = ['magnet', 'current', 'misc', 'getB', 'getH',
-    'Sensor', 'Collection', 'show', 'defaults', '__version__',
-    '__author__', '__credits__', 'core', 'graphics']
+__version__ = "4.0.0"
+__author__ = "Michael Ortner & Alexandre Boisselet"
+__credits__ = "The Magpylib community"
+__all__ = [
+    "magnet",
+    "current",
+    "misc",
+    "getB",
+    "getH",
+    "Sensor",
+    "Collection",
+    "show",
+    "defaults",
+    "__version__",
+    "__author__",
+    "__credits__",
+    "core",
+    "graphics",
+]
 
 # create interface to outside of package
 from magpylib import magnet, current, misc, core, graphics

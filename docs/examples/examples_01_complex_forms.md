@@ -15,7 +15,7 @@ kernelspec:
 
 # Complex forms
 
-The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magnetostatics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields.
+The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magneto statics when there is no material response, and simply means that the total field created by multiple magnets is the sum of the individual fields.
 
 It is critical to understand that the superposition principle holds for the magnetization itself. When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations.
 
@@ -80,8 +80,8 @@ inner = Cylinder(magnetization=(0,0,-100), dimension=(4,1))
 outer = Cylinder(magnetization=(0,0, 100), dimension=(6,1))
 ring1 = inner + outer
 
-%time print('getB from Cylindersegment', ring0.getB((1,2,3)))
-%time print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
+print('getB from Cylindersegment', ring0.getB((1,2,3)))
+print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
 ```
 
-Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.
+Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.

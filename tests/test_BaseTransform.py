@@ -1,12 +1,20 @@
-import pytest
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
+
 import magpylib as magpy
-from magpylib._src.obj_classes.class_BaseTransform import apply_rotation, apply_move
+from magpylib._src.obj_classes.class_BaseTransform import apply_move
+from magpylib._src.obj_classes.class_BaseTransform import apply_rotation
 
 
 @pytest.mark.parametrize(
-    ("description", "old_position", "displacement", "new_position", "start",),
+    (
+        "description",
+        "old_position",
+        "displacement",
+        "new_position",
+        "start",
+    ),
     [
         # SCALAR INPUT
         ("01_ with start='auto'", (0, 0, 0), (1, 2, 3), (1, 2, 3), "auto"),
@@ -73,7 +81,7 @@ from magpylib._src.obj_classes.class_BaseTransform import apply_rotation, apply_
     ],
 )
 def test_apply_move(description, old_position, displacement, new_position, start):
-    """ v4 path functionality tests """
+    """v4 path functionality tests"""
     print(description)
     s = magpy.Sensor(position=old_position)
     apply_move(s, displacement, start=start)
@@ -241,7 +249,7 @@ def test_apply_rotation(
     start,
     anchor,
 ):
-    """ v4 path functionality tests """
+    """v4 path functionality tests"""
     print(description)
     s = magpy.Sensor(
         position=old_position, orientation=R.from_rotvec(old_orientation_rotvec)
