@@ -25,6 +25,7 @@ def getBHv_unknown_source_type():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
         field="B",
     )
 
@@ -49,7 +50,13 @@ def getBH_level2_bad_input1():
     src = magpy.magnet.Cuboid((1, 1, 2), (1, 1, 1))
     sens = magpy.Sensor()
     getBH_level2(
-        [src, sens], (0, 0, 0), sumup=False, squeeze=True, pixel_agg=None, field="B"
+        [src, sens],
+        (0, 0, 0),
+        sumup=False,
+        squeeze=True,
+        pixel_agg=None,
+        field="B",
+        output="ndarray",
     )
 
 
@@ -83,6 +90,7 @@ def getBHv_missing_input1():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -97,6 +105,7 @@ def getBHv_missing_input2():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -111,6 +120,7 @@ def getBHv_missing_input3():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -125,6 +135,7 @@ def getBHv_missing_input4_cuboid():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -139,6 +150,7 @@ def getBHv_missing_input5_cuboid():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -154,6 +166,7 @@ def getBHv_missing_input4_cyl():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -168,6 +181,7 @@ def getBHv_missing_input5_cyl():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -182,6 +196,7 @@ def getBHv_missing_input4_sphere():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -196,6 +211,7 @@ def getBHv_missing_input5_sphere():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -213,6 +229,7 @@ def getBHv_bad_input1():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -228,6 +245,7 @@ def getBHv_bad_input2():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 
@@ -244,6 +262,7 @@ def getBHv_bad_input3():
         sumup=False,
         squeeze=True,
         pixel_agg=None,
+        output="ndarray",
     )
 
 

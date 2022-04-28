@@ -7,15 +7,14 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
 )
 from magpylib._src.fields.field_BH_dipole import dipole_field
-from magpylib._src.fields.field_BH_line import current_line_field
 from magpylib._src.fields.field_BH_line import current_vertices_field
-from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
 from magpylib._src.fields.field_BH_loop import current_loop_field
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
 FIELD_FUNCTIONS = {
     "Cuboid": magnet_cuboid_field,
     "Cylinder": magnet_cylinder_field,
-    "CylinderSegment": magnet_cylinder_segment_field,
+    "CylinderSegment": magnet_cylinder_segment_field_internal,
     "Sphere": magnet_sphere_field,
     "Dipole": dipole_field,
     "Loop": current_loop_field,
