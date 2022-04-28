@@ -771,7 +771,7 @@ def draw_frame(
         traces_out[obj] = get_plotly_traces(obj, autosize=autosize, **params)
     if output == "list":
         traces = [t for tr in traces_out.values() for t in tr]
-        traces_out = group_meshes(*traces)
+        traces_out = group_traces(*traces)
     if return_autosize:
         res = traces_out, autosize
     else:
@@ -779,7 +779,7 @@ def draw_frame(
     return res
 
 
-def group_meshes(*traces):
+def group_traces(*traces):
     """Group and merge mesh traces with similar properties. This drastically improves
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
