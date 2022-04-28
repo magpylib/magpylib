@@ -8,10 +8,9 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_line import current_line_field
+from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
 from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_line import current_vertices_field
-from magpylib._src.exceptions import MagpylibInternalError
 
 FIELD_FUNCTIONS = {
     "Cuboid": magnet_cuboid_field,

@@ -11,10 +11,10 @@ def current_vertices_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
-    vertices: list=None,
+    vertices: list = None,
     segment_start=None,  # list of mix3 ndarrays
     segment_end=None,
-    ) -> np.ndarray:
+) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
     input array for field_BH_line(), computes, sums and returns a single field for each

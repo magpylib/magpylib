@@ -8,17 +8,10 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
-from magpylib._src.exceptions import (
-    MagpylibInternalError,
-    MagpylibBadUserInput,
-)
-from magpylib._src.utility import format_obj_input, format_src_inputs
-from magpylib._src.utility import test_path_format as tpf
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import test_path_format as tpf
-
 
 
 def getBHv_unknown_source_type():

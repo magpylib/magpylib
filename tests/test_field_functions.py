@@ -5,10 +5,9 @@ from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_line import current_line_field
+from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
 from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_line import current_line_field
-from magpylib._src.fields.field_BH_line import current_vertices_field
 
 
 def test_magnet_cuboid_Bfield():
@@ -308,8 +307,8 @@ def test_field_line_from_vert():
     vert2 = np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)])
     vert3 = np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)])
 
-    pos_tiled = np.tile(p, (3,1))
-    B_vert = current_vertices_field('B', pos_tiled, curr, [vert1,vert2,vert3])
+    pos_tiled = np.tile(p, (3, 1))
+    B_vert = current_vertices_field("B", pos_tiled, curr, [vert1, vert2, vert3])
 
     B = []
     for i, vert in enumerate([vert1, vert2, vert3]):
