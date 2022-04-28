@@ -106,6 +106,11 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         which applies on pixel output values.
     field : {'B', 'H'}
         'B' computes B field, 'H' computes H-field
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
 
     Returns
     -------
