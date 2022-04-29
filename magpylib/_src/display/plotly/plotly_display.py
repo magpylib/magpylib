@@ -730,7 +730,7 @@ def make_path(input_obj, style, legendgroup, kwargs):
 
 
 def draw_frame(
-    obj_list_semi_flat, color_sequence, zoom, autosize=None, **kwargs
+    obj_list_semi_flat, color_sequence, zoom, autosize=None, output="dict", **kwargs
 ) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
@@ -745,7 +745,7 @@ def draw_frame(
     return_autosize = False
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
-    traces_dicts = {}
+    traces_out = {}
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
     traces_to_resize = {}
@@ -758,22 +758,54 @@ def draw_frame(
             traces_to_resize[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj._position.T
-            traces_dicts[obj] = [dict(x=x, y=y, z=z)]
+            traces_out[obj] = [dict(x=x, y=y, z=z)]
         else:
-            traces_dicts[obj] = get_plotly_traces(obj, **params)
-    traces = [t for tr in traces_dicts.values() for t in tr]
+            traces_out[obj] = get_plotly_traces(obj, **params)
+    traces = [t for tr in traces_out.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     if autosize is None or autosize == "return":
         if autosize == "return":
             return_autosize = True
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, params in traces_to_resize.items():
-        traces_dicts[obj] = get_plotly_traces(obj, autosize=autosize, **params)
+        traces_out[obj] = get_plotly_traces(obj, autosize=autosize, **params)
+    if output == "list":
+        traces = [t for tr in traces_out.values() for t in tr]
+        traces_out = group_traces(*traces)
     if return_autosize:
-        res = traces_dicts, autosize
+        res = traces_out, autosize
     else:
-        res = traces_dicts
+        res = traces_out
     return res
+
+
+def group_traces(*traces):
+    """Group and merge mesh traces with similar properties. This drastically improves
+    browser rendering performance when displaying a lot of mesh3d objects."""
+    mesh_groups = {}
+    common_keys = ["legendgroup", "opacity"]
+    spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line"]}
+    for tr in traces:
+        gr = [tr["type"]]
+        for k in common_keys + spec_keys[tr["type"]]:
+            try:
+                v = tr.get(k, "")
+            except AttributeError:
+                v = getattr(tr, k, "")
+            gr.append(str(v))
+        gr = "".join(gr)
+        if gr not in mesh_groups:
+            mesh_groups[gr] = []
+        mesh_groups[gr].append(tr)
+
+    traces = []
+    for key, gr in mesh_groups.items():
+        if key.startswith("mesh3d") or key.startswith("scatter3d"):
+            tr = [merge_traces(*gr)]
+        else:
+            tr = gr
+        traces.extend(tr)
+    return traces
 
 
 def apply_fig_ranges(fig, ranges=None, zoom=None):
@@ -996,13 +1028,13 @@ def animate_path(
             color_sequence,
             zoom,
             autosize=autosize,
+            output="list",
             **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame
-            traces_dicts, autosize = frame
+            traces, autosize = frame
         else:
-            traces_dicts = frame
-        traces = [t for tr in traces_dicts.values() for t in tr]
+            traces = frame
         frames.append(
             go.Frame(
                 data=traces,
@@ -1154,8 +1186,7 @@ def display_plotly(
                 **kwargs,
             )
         else:
-            traces_dicts = draw_frame(obj_list, color_sequence, zoom, **kwargs)
-            traces = [t for traces in traces_dicts.values() for t in traces]
+            traces = draw_frame(obj_list, color_sequence, zoom, output="list", **kwargs)
             fig.add_traces(traces)
             fig.update_layout(title_text=title)
             apply_fig_ranges(fig, zoom=zoom)
