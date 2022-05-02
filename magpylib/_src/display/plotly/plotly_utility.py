@@ -77,7 +77,9 @@ def getIntensity(vertices, axis) -> np.ndarray:
     m = np.array(axis)
     intensity = (p[0] - pos[0]) * m[0] + (p[1] - pos[1]) * m[1] + (p[2] - pos[2]) * m[2]
     # normalize to interval [0,1] (necessary for when merging mesh3d traces)
-    intensity = (intensity - np.min(intensity)) / np.ptp(intensity)
+    ptp = np.ptp(intensity)
+    ptp = ptp if ptp != 0 else 1
+    intensity = (intensity - np.min(intensity)) / ptp
     return intensity
 
 
