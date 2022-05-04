@@ -243,11 +243,20 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             pass
 
         if isinstance(color_input, (tuple, list)):
+
+            if len(color_input) == 4: # do not allow opacity values for now
+                color_input = color_input[:-1]
             if len(color_input) != 3:
-                msg = "When specifying a color with a tuple, it must have length 3"
-                raise ValueError(msg)
+                raise ValueError(
+                    "Input color must be of shape (3,) or (4,)."
+                    f"Instead received {color_input}"
+                )
+            # transform matplotlib colors scaled from 0-1 to rgb colors
+            if not isinstance(color_input[0], int):
+                color_input = [int(255*c) for c in color_input]
             c = tuple(color_input)
             color_input = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+
         if isinstance(color_input, str):
             color_input = color_input.replace(" ", "").lower()
             if color_input.startswith("rgb"):

@@ -106,6 +106,8 @@ def test_linearize_dict():
         ("0.5", True, "#7f7f7f"),
         ((127, 127, 127), True, "#7f7f7f"),
         ("rgb(127, 127, 127)", True, "#7f7f7f"),
+        ((0, 0, 0, 0), False, "#000000"),
+        ((.1, .2, .3), False, "#19334c"),
     ]
     + [(shortC, True, longC) for shortC, longC in COLORS_MATPLOTLIB_TO_PLOTLY.items()],
 )
@@ -120,8 +122,8 @@ def test_good_colors(color, allow_None, color_expected):
     [
         (None, False, ValueError),
         (-1, False, ValueError),
-        ((0, 0, 0, 0), False, ValueError),
         ((-1, 0, 0), False, ValueError),
+        ((1, 2), False, ValueError),
         ((0, 0, 260), False, ValueError),
         ((0, "0", 200), False, ValueError),
         ("rgb(a, 0, 260)", False, ValueError),
