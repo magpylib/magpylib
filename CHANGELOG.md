@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [4.0.2] - 2022-05-03
+## [4.0.2] - 2022-05-04
 
 * Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
 ## [4.0.1] - 2022-04-29
