@@ -6,6 +6,8 @@ All notable changes to magpylib are documented here.
 ## [4.0.2] - 2022-05-04
 
 * Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
+* Allow float color quadruples ([#529](https://github.com/magpylib/magpylib/pull/529))
+
 ## [4.0.1] - 2022-04-29
 
 * Graphic performance update for plotly when showing a large number of objects. ([#524](https://github.com/magpylib/magpylib/pull/524))
