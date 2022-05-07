@@ -30,6 +30,17 @@ PARAM_TILE_DIMS = {
     "segment_end": 2,
 }
 
+SOURCE_PROPERTIES = {
+    "Cuboid": ("magnetization", "dimension"),
+    "Cylinder": ("magnetization", "dimension"),
+    "CylinderSegment": ("magnetization", "dimension"),
+    "Sphere": ("magnetization", "diameter"),
+    "Dipole": ("moment",),
+    "Loop": ("current", "diameter"),
+    "Line": ("current", "vertices"),
+    "CustomSource": (),
+}
+
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
@@ -55,7 +66,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pos_obs
     posov = np.tile(poso, (len(group), 1))
 
-    # determine which group we are dealing with and tile up dim and excitation
+    # determine which group we are dealing with and tile up properties
     src_type = group[0]._object_type
 
     kwargs = {
@@ -65,37 +76,20 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "orientation": rotobj,
     }
 
-    if src_type in ("Sphere", "Cuboid", "Cylinder", "CylinderSegment"):
-        magv = tile_group_property(group, n_pp, "magnetization")
-        kwargs.update(magnetization=magv)
-        if src_type == "Sphere":
-            diav = tile_group_property(group, n_pp, "diameter")
-            kwargs.update(diameter=diav)
-        else:
-            dimv = tile_group_property(group, n_pp, "dimension")
-            kwargs.update(dimension=dimv)
+    try:
+        src_props = SOURCE_PROPERTIES[src_type]
+    except KeyError as err:
+        raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
-    elif src_type == "Dipole":
-        momv = tile_group_property(group, n_pp, "moment")
-        kwargs.update({"moment": momv})
-
-    elif src_type == "Loop":
-        currv = tile_group_property(group, n_pp, "current")
-        diav = tile_group_property(group, n_pp, "diameter")
-        kwargs.update({"current": currv, "diameter": diav})
-
-    elif src_type == "Line":
-        # get_BH_line_from_vert function tiles internally !
-        # currv = tile_current(group, n_pp)
+    if src_type == "Line":  # get_BH_line_from_vert function tiles internally !
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
         kwargs.update({"current": currv, "vertices": vert_list})
-
     elif src_type == "CustomSource":
         kwargs.update(field_func=group[0].field_func)
-
     else:
-        raise MagpylibInternalError("Bad source_type in get_src_dict")
+        for prop in src_props:
+            kwargs[prop] = tile_group_property(group, n_pp, prop)
 
     return kwargs
 
