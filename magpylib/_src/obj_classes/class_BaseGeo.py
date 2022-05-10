@@ -338,11 +338,13 @@ class BaseGeo(BaseTransform):
         # pylint: disable=import-outside-toplevel
         from copy import deepcopy
 
-        if not self.parent is None:
-            parent = self.parent
-            self.parent = None
+        # avoid deepcopying the deep dependency upwards the tree structure
+        if self.parent is not None:
+            # using private attributes to avoid triggering `.add` method (see #530 bug)
+            parent = self._parent
+            self._parent = None
             obj_copy = deepcopy(self)
-            self.parent = parent
+            self._parent = parent
         else:
             obj_copy = deepcopy(self)
 
