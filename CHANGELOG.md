@@ -3,6 +3,11 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+
+## [4.0.3] - 2022-05-13
+
+* Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
+
 ## [4.0.2] - 2022-05-04
 
 * Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
@@ -368,6 +373,7 @@ The first official release of the magpylib library.
 
 ---
 
+[4.0.3]:https://github.com/magpylib/magpylib/compare/4.0.2...4.0.3
 [4.0.2]:https://github.com/magpylib/magpylib/compare/4.0.1...4.0.2
 [4.0.1]:https://github.com/magpylib/magpylib/compare/4.0.0...4.0.1
 [4.0.0]:https://github.com/magpylib/magpylib/compare/3.0.4...4.0.0
