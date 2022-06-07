@@ -510,8 +510,7 @@ class Trace3d(MagicProperties):
 
     @updatefunc.setter
     def updatefunc(self, val):
-        if val is None:
-            val = lambda: {}
+        val = lambda: {} if val is None else val
         msg = ""
         valid_props = list(self._property_names_generator())
         if not callable(val):

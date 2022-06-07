@@ -231,7 +231,7 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
             new_list += [obj]
         else:
             if warn:
-                print(f"Warning, cannot add {obj.__repr__()} to Collection.")
+                print(f"Warning, cannot add {obj!r} to Collection.")
     return new_list
 
 
