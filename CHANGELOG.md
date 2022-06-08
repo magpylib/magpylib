@@ -4,7 +4,7 @@ All notable changes to magpylib are documented here.
 # Releases
 
 
-## [4.0.4] - 2022-06-08
+## [4.0.4] - 2022-06-09
 
 * Exclude redundant properties with `_all` suffix in the `.describe()` method ([#534](https://github.com/magpylib/magpylib/pull/534))
 * Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
