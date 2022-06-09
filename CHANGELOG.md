@@ -4,6 +4,11 @@ All notable changes to magpylib are documented here.
 # Releases
 
 
+## [4.0.4] - 2022-06-09
+
+* Exclude redundant properties with `_all` suffix in the `.describe()` method ([#534](https://github.com/magpylib/magpylib/pull/534))
+* Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
+
 ## [4.0.3] - 2022-05-13
 
 * Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
@@ -373,6 +378,7 @@ The first official release of the magpylib library.
 
 ---
 
+[4.0.4]:https://github.com/magpylib/magpylib/compare/4.0.3...4.0.4
 [4.0.3]:https://github.com/magpylib/magpylib/compare/4.0.2...4.0.3
 [4.0.2]:https://github.com/magpylib/magpylib/compare/4.0.1...4.0.2
 [4.0.1]:https://github.com/magpylib/magpylib/compare/4.0.0...4.0.1
