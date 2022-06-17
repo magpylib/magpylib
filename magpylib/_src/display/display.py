@@ -1,7 +1,7 @@
 """ Display function codes"""
 import warnings
 
-from magpylib._src.display.display_matplotlib import display_matplotlib
+from magpylib._src.display.matplotlib.matplotlib_display import display_matplotlib
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
