@@ -121,17 +121,6 @@ def show(
         allow_None=True,
     )
 
-    check_input_zoom(zoom)
-    check_input_animation(animation)
-    check_format_input_vector(
-        markers,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="markers",
-        sig_type="array_like of shape (n,3)",
-        allow_None=True,
-    )
-
     if backend == "matplotlib":
         if animation is not False:
             msg = "The matplotlib backend does not support animation at the moment.\n"
