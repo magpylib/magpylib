@@ -130,5 +130,6 @@ def show(
         markers=markers,
         zoom=zoom,
         canvas=canvas,
+        animation=animation,
         **kwargs,
     )
