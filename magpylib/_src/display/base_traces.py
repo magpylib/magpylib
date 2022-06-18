@@ -3,8 +3,8 @@ from functools import partial
 
 import numpy as np
 
+from magpylib._src.display.display_utility import merge_mesh3d
 from magpylib._src.display.display_utility import place_and_orient_model3d
-from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
 
 
 def base_validator(name, value, conditions):

@@ -3,7 +3,7 @@ import plotly.graph_objects as go
 import pytest
 
 import magpylib as magpy
-from magpylib._src.display.plotly.plotly_display import get_plotly_traces
+from magpylib._src.display.backend_generic import get_generic_traces
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder
@@ -183,14 +183,14 @@ def test_draw_unsupported_obj():
         orientation = None
 
     with pytest.raises(AttributeError):
-        get_plotly_traces(UnkwnownNoPosition())
+        get_generic_traces(UnkwnownNoPosition())
 
-    traces = get_plotly_traces(Unkwnown1DPosition)
+    traces = get_generic_traces(Unkwnown1DPosition)
     assert (
         traces[0]["type"] == "scatter3d"
     ), "make trace has failed, should be 'scatter3d'"
 
-    traces = get_plotly_traces(Unkwnown2DPosition)
+    traces = get_generic_traces(Unkwnown2DPosition)
     assert (
         traces[0]["type"] == "scatter3d"
     ), "make trace has failed, should be 'scatter3d'"

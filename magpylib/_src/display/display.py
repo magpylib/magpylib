@@ -1,7 +1,7 @@
 """ Display function codes"""
 import warnings
 
-from magpylib._src.display.matplotlib.matplotlib_display import display_matplotlib
+from magpylib._src.display.backend_matplotlib import display_matplotlib
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
@@ -136,7 +136,7 @@ def show(
         )
     elif backend == "plotly":
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.plotly.plotly_display import display_plotly
+        from magpylib._src.display.backend_plotly import display_plotly
 
         display_plotly(
             *obj_list_semi_flat,
