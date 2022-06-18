@@ -22,7 +22,7 @@ def generic_trace_to_pyvista(trace):
 
     traces_pv = []
     if trace["type"] == "mesh3d":
-        vertices = np.array([trace[k] for k in "xyz"]).T
+        vertices = np.array([trace[k] for k in "xyz"], dtype=float).T
         faces = np.array([trace[k] for k in "ijk"]).T.flatten()
         faces = np.insert(faces, range(0, len(faces), 3), 3)
         colorscale = trace.get("colorscale", None)
@@ -50,7 +50,7 @@ def generic_trace_to_pyvista(trace):
         if colorscale is not None:
             trace_pv["cmap"] = [v[1] for v in colorscale]
     elif trace["type"] == "scatter3d":
-        points = np.array([trace[k] for k in "xyz"]).T
+        points = np.array([trace[k] for k in "xyz"], dtype=float).T
         line = trace.get("line", {})
         line_color = line.get("color", trace.get("line_color", None))
         line_width = line.get("width", trace.get("line_width", None))
@@ -63,7 +63,7 @@ def generic_trace_to_pyvista(trace):
         traces_pv.append(trace_pv_line)
         marker = trace.get("marker", {})
         marker_color = marker.get("color", trace.get("marker_color", None))
-        marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
+        # marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
         marker_size = marker.get("size", trace.get("marker_size", None))
         trace_pv_marker = {
             "mesh": pv.PolyData(points),

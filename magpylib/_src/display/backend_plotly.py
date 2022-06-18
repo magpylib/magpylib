@@ -21,6 +21,9 @@ from magpylib._src.display.traces_generic import (
     apply_fig_ranges,
     MagpyMarkers,
 )
+from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 
 
 def animate_path(
@@ -194,7 +197,7 @@ def animate_path(
             traces = frame
         frames.append(
             go.Frame(
-                data=traces,
+                data=[generic_trace_to_plotly(trace) for trace in traces],
                 name=str(ind + 1),
                 layout=dict(title=f"""{title} - path index: {ind+1:0{exp}d}"""),
             )
@@ -223,6 +226,23 @@ def animate_path(
         sliders=[sliders_dict] if animation_slider else None,
     )
     apply_fig_ranges(fig, zoom=zoom)
+
+
+def generic_trace_to_plotly(trace):
+    print(trace)
+    """Transform a generic trace into a plotly trace"""
+    if trace["type"] == "scatter3d":
+        if "line_width" in trace:
+            trace["line_width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+        dash = trace.get("line_dash", None)
+        if dash is not None:
+            trace["line_dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+        symb = trace.get("marker_symbol", None)
+        if symb is not None:
+            trace["marker_symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+        if "marker_size" in trace:
+            trace["marker_size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+    return trace
 
 
 def display_plotly(
@@ -343,7 +363,10 @@ def display_plotly(
                 **kwargs,
             )
         else:
-            traces = draw_frame(obj_list, colorsequence, zoom, output="list", **kwargs)
+            generic_traces = draw_frame(
+                obj_list, colorsequence, zoom, output="list", **kwargs
+            )
+            traces = [generic_trace_to_plotly(trace) for trace in generic_traces]
             canvas.add_traces(traces)
             canvas.update_layout(title_text=title)
             apply_fig_ranges(canvas, zoom=zoom)

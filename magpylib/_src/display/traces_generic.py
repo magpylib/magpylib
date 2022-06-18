@@ -10,7 +10,6 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.display.display_utility import draw_arrow_from_vertices
 from magpylib._src.display.display_utility import draw_arrowed_circle
 from magpylib._src.display.display_utility import get_flatten_objects_properties
@@ -31,8 +30,6 @@ from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipso
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
-from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.utility import unit_prefix
 
 
@@ -64,7 +61,7 @@ def make_Line(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + position).T
-    line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line_width = style.arrow.width
     line = dict(
         type="scatter3d",
         x=x,
@@ -103,7 +100,7 @@ def make_Loop(
     if orientation is not None:
         vertices = orientation.apply(vertices.T).T
     x, y, z = (vertices.T + position).T
-    line_width = style.arrow.width * SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    line_width = style.arrow.width
     circular = dict(
         type="scatter3d",
         x=x,
@@ -517,10 +514,7 @@ def get_generic_traces(
     traces = []
     if isinstance(input_obj, MagpyMarkers):
         x, y, z = input_obj.markers.T
-        marker = style.as_dict()["marker"]
-        symb = marker["symbol"]
-        marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
-        marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+        marker = style.marker.as_dict()
         default_name = "Marker" if len(x) == 1 else "Markers"
         default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
         name, name_suffix = get_name_and_suffix(default_name, default_suffix, style)
@@ -684,15 +678,11 @@ def make_path(input_obj, style, legendgroup, kwargs):
         else {"mode": "markers+lines"}
     )
     marker = style.path.marker.as_dict()
-    symb = marker["symbol"]
-    marker["symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+    marker["symbol"] = marker["symbol"]
     marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
-    marker["size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
     line = style.path.line.as_dict()
-    dash = line["style"]
-    line["dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+    line["dash"] = line["style"]
     line["color"] = kwargs["color"] if line["color"] is None else line["color"]
-    line["width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
     line = {k: v for k, v in line.items() if k != "style"}
     scatter_path = dict(
         type="scatter3d",
@@ -702,8 +692,8 @@ def make_path(input_obj, style, legendgroup, kwargs):
         name=f"Path: {input_obj}",
         showlegend=False,
         legendgroup=legendgroup,
-        marker=marker,
-        line=line,
+        **{f"marker_{k}": v for k, v in marker.items()},
+        **{f"line_{k}": v for k, v in line.items()},
         **txt_kwargs,
         opacity=kwargs["opacity"],
     )
@@ -716,6 +706,7 @@ def draw_frame(
     zoom=0.0,
     autosize=None,
     output="dict",
+    return_ranges=False,
     **kwargs,
 ) -> Tuple:
     """
@@ -761,11 +752,12 @@ def draw_frame(
     if output == "list":
         traces = [t for tr in traces_out.values() for t in tr]
         traces_out = group_traces(*traces)
+    res = (traces_out,)
     if return_autosize:
-        res = traces_out, autosize
-    else:
-        res = traces_out
-    return res
+        res += (autosize,)
+    if return_ranges:
+        res += (ranges,)
+    return res[0] if len(res) == 1 else res
 
 
 def group_traces(*traces):
@@ -773,6 +765,7 @@ def group_traces(*traces):
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
+    # TODO grouping does not dectect line_width vs line=dict(with=...)
     spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line"]}
     for tr in traces:
         gr = [tr["type"]]

@@ -1,0 +1,133 @@
+import warnings
+
+import matplotlib.pyplot as plt
+import numpy as np
+
+from magpylib._src.display.display_utility import MagpyMarkers
+from magpylib._src.display.traces_generic import draw_frame
+
+# from magpylib._src.utility import format_obj_input
+
+
+def generic_trace_to_matplotlib(trace):
+    """Transform a generic trace into a matplotlib trace"""
+    if trace["type"] == "mesh3d":
+        x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
+        triangles = np.array([trace[k] for k in "ijk"]).T
+        trace_mpl = {
+            "constructor": "plot_trisurf",
+            "args": (x, y, z),
+            "kwargs": {
+                "triangles": triangles,
+                "alpha": trace.get("opacity", None),
+                "color": trace.get("color", None),
+            },
+        }
+    elif trace["type"] == "scatter3d":
+        x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
+        props = {
+            k[0]: trace.get(k[1], {}).get(k[2], trace.get(k, None))
+            for k in (
+                ("ls", "line", "dash"),
+                ("lw", "line", "width"),
+                ("color", "line", "color"),
+                ("marker", "marker", "symbol"),
+                ("mfc", "marker", "color"),
+                ("mec", "marker", "color"),
+                ("ms", "marker", "size"),
+            )
+        }
+        trace_mpl = {
+            "constructor": "plot",
+            "args": (x, y, z),
+            "kwargs": {
+                **{k: v for k, v in props.items() if v is not None},
+                "alpha": trace.get("opacity", None),
+            },
+        }
+    else:
+        raise ValueError(
+            f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+        )
+    return trace_mpl
+
+
+def display_matplotlib_auto(
+    *obj_list,
+    markers=None,
+    zoom=1,
+    canvas=None,
+    animation=False,
+    colorsequence=None,
+    **kwargs,
+):
+
+    """
+    Display objects and paths graphically using the matplotlib library.
+
+    Parameters
+    ----------
+    objects: sources, collections or sensors
+        Objects to be displayed.
+
+    markers: array_like, None, shape (N,3), default=None
+        Display position markers in the global CS. By default no marker is displayed.
+
+    zoom: float, default = 1
+        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
+
+    canvas: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d, default=None
+        Display graphical output in a given canvas
+        By default a new `Figure` is created and displayed.
+
+    title: str, default = "3D-Paths Animation"
+        When zoom=0 all objects are just inside the 3D-axes.
+
+    colorsequence: list or array_like, iterable, default=
+            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
+            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
+            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
+            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
+        An iterable of color values used to cycle trough for every object displayed.
+        A color and may be specified as:
+      - A hex string (e.g. '#ff0000')
+      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - A named CSS color
+    """
+
+    if animation is not False:
+        msg = "The matplotlib backend does not support animation at the moment.\n"
+        msg += "Use `backend=plotly` instead."
+        warnings.warn(msg)
+        # animation = False
+
+    # flat_obj_list = format_obj_input(obj_list)
+
+    show_canvas = False
+    if canvas is None:
+        show_canvas = True
+        fig = plt.figure(dpi=80, figsize=(8, 8))
+        canvas = fig.add_subplot(111, projection="3d")
+        canvas.set_box_aspect((1, 1, 1))
+
+    if markers is not None and markers:
+        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
+
+    generic_traces, ranges = draw_frame(
+        obj_list, colorsequence, zoom, output="list", return_ranges=True, **kwargs
+    )
+    for tr in generic_traces:
+        tr1 = generic_trace_to_matplotlib(tr)
+        constructor = tr1["constructor"]
+        args = tr1["args"]
+        kwargs = tr1["kwargs"]
+        getattr(canvas, constructor)(*args, **kwargs)
+    canvas.set(
+        **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+        **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+    )
+    # apply_fig_ranges(canvas, zoom=zoom)
+    if show_canvas:
+        plt.show()
