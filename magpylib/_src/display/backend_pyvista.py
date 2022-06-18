@@ -146,6 +146,9 @@ def display_pyvista(
             canvas.add_mesh(**tr1)
 
     # apply_fig_ranges(canvas, zoom=zoom)
-    canvas.remove_scalar_bar()
+    try:
+        canvas.remove_scalar_bar()
+    except IndexError:
+        pass
     if show_canvas:
         canvas.show()
