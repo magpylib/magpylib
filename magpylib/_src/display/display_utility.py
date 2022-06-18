@@ -463,15 +463,15 @@ def system_size(points):
 
 def get_flatten_objects_properties(
     *obj_list_semi_flat,
-    color_sequence=None,
+    colorsequence=None,
     color_cycle=None,
     **parent_props,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
-    if color_sequence is None:
-        color_sequence = Config.display.colorsequence
+    if colorsequence is None:
+        colorsequence = Config.display.colorsequence
     if color_cycle is None:
-        color_cycle = cycle(color_sequence)
+        color_cycle = cycle(colorsequence)
     flat_objs = {}
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
@@ -496,7 +496,7 @@ def get_flatten_objects_properties(
             flat_objs.update(
                 get_flatten_objects_properties(
                     *subobj.children,
-                    color_sequence=color_sequence,
+                    colorsequence=colorsequence,
                     color_cycle=color_cycle,
                     **flat_objs[subobj],
                 )

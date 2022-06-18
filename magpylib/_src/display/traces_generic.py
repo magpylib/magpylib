@@ -11,13 +11,6 @@ from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.display.base_traces import make_Arrow as make_BaseArrow
-from magpylib._src.display.base_traces import make_Cuboid as make_BaseCuboid
-from magpylib._src.display.base_traces import (
-    make_CylinderSegment as make_BaseCylinderSegment,
-)
-from magpylib._src.display.base_traces import make_Ellipsoid as make_BaseEllipsoid
-from magpylib._src.display.base_traces import make_Prism as make_BasePrism
 from magpylib._src.display.display_utility import draw_arrow_from_vertices
 from magpylib._src.display.display_utility import draw_arrowed_circle
 from magpylib._src.display.display_utility import get_flatten_objects_properties
@@ -29,6 +22,13 @@ from magpylib._src.display.display_utility import merge_mesh3d
 from magpylib._src.display.display_utility import merge_traces
 from magpylib._src.display.display_utility import place_and_orient_model3d
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
+from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
+from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
+from magpylib._src.display.traces_base import (
+    make_CylinderSegment as make_BaseCylinderSegment,
+)
+from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
+from magpylib._src.display.traces_base import make_Prism as make_BasePrism
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
@@ -711,7 +711,12 @@ def make_path(input_obj, style, legendgroup, kwargs):
 
 
 def draw_frame(
-    obj_list_semi_flat, color_sequence, zoom, autosize=None, output="dict", **kwargs
+    obj_list_semi_flat,
+    colorsequence=None,
+    zoom=0.0,
+    autosize=None,
+    output="dict",
+    **kwargs,
 ) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
@@ -723,6 +728,9 @@ def draw_frame(
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
     # pylint: disable=protected-access
+    if colorsequence is None:
+        colorsequence = Config.display.colorsequence
+
     return_autosize = False
     Sensor = _src.obj_classes.Sensor
     Dipole = _src.obj_classes.Dipole
@@ -731,7 +739,7 @@ def draw_frame(
     # autosize is calculated from the other traces overall scene range
     traces_to_resize = {}
     flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat, color_sequence=color_sequence
+        *obj_list_semi_flat, colorsequence=colorsequence
     )
     for obj, params in flat_objs_props.items():
         params.update(kwargs)

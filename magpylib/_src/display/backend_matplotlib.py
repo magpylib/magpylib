@@ -1,4 +1,6 @@
 """ matplotlib draw-functionalities"""
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -320,20 +322,21 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
 
 def display_matplotlib(
     *obj_list_semi_flat,
-    axis=None,
+    canvas=None,
     markers=None,
     zoom=0,
-    color_sequence=None,
+    colorsequence=None,
+    animation=False,
     **kwargs,
 ):
     """
     Display objects and paths graphically with the matplotlib backend.
 
-    - axis: matplotlib axis3d object
+    - canvas: matplotlib axis3d object
     - markers: list of marker positions
     - path: bool / int / list of ints
     - zoom: zoom level, 0=tight boundaries
-    - color_sequence: list of colors for object coloring
+    - colorsequence: list of colors for object coloring
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
@@ -341,6 +344,14 @@ def display_matplotlib(
 
     # apply config default values if None
     # create or set plotting axis
+
+    if animation is not False:
+        msg = "The matplotlib backend does not support animation at the moment.\n"
+        msg += "Use `backend=plotly` instead."
+        warnings.warn(msg)
+        # animation = False
+
+    axis = canvas
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8, 8))
         ax = fig.add_subplot(111, projection="3d")
@@ -357,7 +368,7 @@ def display_matplotlib(
     dipoles = []
     sensors = []
     flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat, color_sequence=color_sequence
+        *obj_list_semi_flat, colorsequence=colorsequence
     )
     for obj, props in flat_objs_props.items():
         color = props["color"]

@@ -1,7 +1,6 @@
 """ Display function codes"""
-import warnings
+from importlib import import_module
 
-from magpylib._src.display.backend_matplotlib import display_matplotlib
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
@@ -43,7 +42,7 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'` or `'plotly'`. If not
+        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'` or `'pyvista'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
         `'matplotlib'` by installation default.
 
@@ -51,6 +50,7 @@ def show(
         Display graphical output on a given canvas:
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.
 
     Returns
@@ -121,28 +121,14 @@ def show(
         allow_None=True,
     )
 
-    if backend == "matplotlib":
-        if animation is not False:
-            msg = "The matplotlib backend does not support animation at the moment.\n"
-            msg += "Use `backend=plotly` instead."
-            warnings.warn(msg)
-            # animation = False
-        display_matplotlib(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            axis=canvas,
-            **kwargs,
-        )
-    elif backend == "plotly":
-        # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.backend_plotly import display_plotly
-
-        display_plotly(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            fig=canvas,
-            animation=animation,
-            **kwargs,
-        )
+    # pylint: disable=import-outside-toplevel
+    display_func = getattr(
+        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
+    )
+    display_func(
+        *obj_list_semi_flat,
+        markers=markers,
+        zoom=zoom,
+        canvas=canvas,
+        **kwargs,
+    )

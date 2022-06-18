@@ -16,7 +16,7 @@ import numpy as np
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.utility import format_obj_input
 from magpylib._src.display.display_utility import clean_legendgroups
-from magpylib._src.display.backend_generic import (
+from magpylib._src.display.traces_generic import (
     draw_frame,
     apply_fig_ranges,
     MagpyMarkers,
@@ -26,7 +26,7 @@ from magpylib._src.display.backend_generic import (
 def animate_path(
     fig,
     objs,
-    color_sequence=None,
+    colorsequence=None,
     zoom=1,
     title="3D-Paths Animation",
     animation_time=3,
@@ -57,7 +57,7 @@ def animate_path(
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
 
-    color_sequence: list or array_like, iterable, default=
+    colorsequence: list or array_like, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
@@ -182,7 +182,7 @@ def animate_path(
         kwargs["style_path_frames"] = [ind]
         frame = draw_frame(
             objs,
-            color_sequence,
+            colorsequence,
             zoom,
             autosize=autosize,
             output="list",
@@ -229,10 +229,10 @@ def display_plotly(
     *obj_list,
     markers=None,
     zoom=1,
-    fig=None,
+    canvas=None,
     renderer=None,
     animation=False,
-    color_sequence=None,
+    colorsequence=None,
     **kwargs,
 ):
 
@@ -269,7 +269,7 @@ def display_plotly(
     title: str, default = "3D-Paths Animation"
         When zoom=0 all objects are just inside the 3D-axes.
 
-    color_sequence: list or array_like, iterable, default=
+    colorsequence: list or array_like, iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
             '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
             '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
@@ -289,10 +289,10 @@ def display_plotly(
 
     flat_obj_list = format_obj_input(obj_list)
 
-    show_fig = False
-    if fig is None:
-        show_fig = True
-        fig = go.Figure()
+    show_canvas = False
+    if canvas is None:
+        show_canvas = True
+        canvas = go.Figure()
 
     # set animation and animation_time
     if isinstance(animation, numbers.Number) and not isinstance(animation, bool):
@@ -328,26 +328,26 @@ def display_plotly(
     if markers is not None and markers:
         obj_list = list(obj_list) + [MagpyMarkers(*markers)]
 
-    if color_sequence is None:
-        color_sequence = Config.display.colorsequence
+    if colorsequence is None:
+        colorsequence = Config.display.colorsequence
 
-    with fig.batch_update():
+    with canvas.batch_update():
         if animation is not False:
             title = "3D-Paths Animation" if title is None else title
             animate_path(
-                fig=fig,
+                fig=canvas,
                 objs=obj_list,
-                color_sequence=color_sequence,
+                colorsequence=colorsequence,
                 zoom=zoom,
                 title=title,
                 **kwargs,
             )
         else:
-            traces = draw_frame(obj_list, color_sequence, zoom, output="list", **kwargs)
-            fig.add_traces(traces)
-            fig.update_layout(title_text=title)
-            apply_fig_ranges(fig, zoom=zoom)
-        clean_legendgroups(fig)
-        fig.update_layout(legend_itemsizing="constant")
-    if show_fig:
-        fig.show(renderer=renderer)
+            traces = draw_frame(obj_list, colorsequence, zoom, output="list", **kwargs)
+            canvas.add_traces(traces)
+            canvas.update_layout(title_text=title)
+            apply_fig_ranges(canvas, zoom=zoom)
+        clean_legendgroups(canvas)
+        canvas.update_layout(legend_itemsizing="constant")
+    if show_canvas:
+        canvas.show(renderer=renderer)
