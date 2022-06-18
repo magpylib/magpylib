@@ -125,7 +125,7 @@ def display_pyvista(
     """
 
     if animation is not False:
-        msg = "The matplotlib backend does not support animation at the moment.\n"
+        msg = "The pyvista backend does not support animation at the moment.\n"
         msg += "Use `backend=plotly` instead."
         warnings.warn(msg)
         # animation = False
