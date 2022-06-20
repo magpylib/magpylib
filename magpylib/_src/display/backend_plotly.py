@@ -229,7 +229,6 @@ def animate_path(
 
 
 def generic_trace_to_plotly(trace):
-    print(trace)
     """Transform a generic trace into a plotly trace"""
     if trace["type"] == "scatter3d":
         if "line_width" in trace:
