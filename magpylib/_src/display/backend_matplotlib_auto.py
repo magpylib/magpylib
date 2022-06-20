@@ -9,47 +9,77 @@ from magpylib._src.display.traces_generic import draw_frame
 # from magpylib._src.utility import format_obj_input
 
 
+def subdivide_mesh_by_facecolor(trace):
+    """Subdivide a mesh into a list of meshes based on facecolor"""
+    # TODO so far the function keeps all x,y,z coords for all subtraces, which is convienient since
+    # it does not require to recalculate the indices i,j,k. If many different colors, this is
+    # become inpractical.
+    facecolor = trace["facecolor"]
+    subtraces = []
+    last_ind = 0
+    prev_color = facecolor[0]
+    # pylint: disable=singleton-comparison
+    facecolor[facecolor == None] = "black"
+    for ind, color in enumerate(facecolor):
+        if color != prev_color or ind == len(facecolor) - 1:
+            new_trace = trace.copy()
+            for k in "ijk":
+                new_trace[k] = trace[k][last_ind:ind]
+            new_trace["color"] = prev_color
+            last_ind = ind
+            prev_color = color
+            subtraces.append(new_trace)
+    return subtraces
+
+
 def generic_trace_to_matplotlib(trace):
     """Transform a generic trace into a matplotlib trace"""
+    traces_mpl = []
     if trace["type"] == "mesh3d":
-        x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
-        triangles = np.array([trace[k] for k in "ijk"]).T
-        trace_mpl = {
-            "constructor": "plot_trisurf",
-            "args": (x, y, z),
-            "kwargs": {
-                "triangles": triangles,
-                "alpha": trace.get("opacity", None),
-                "color": trace.get("color", None),
-            },
-        }
+        subtraces = [trace]
+        if trace.get("facecolor", None) is not None:
+            subtraces = subdivide_mesh_by_facecolor(trace)
+        for subtrace in subtraces:
+            x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
+            triangles = np.array([subtrace[k] for k in "ijk"]).T
+            trace_mpl = {
+                "constructor": "plot_trisurf",
+                "args": (x, y, z),
+                "kwargs": {
+                    "triangles": triangles,
+                    "alpha": subtrace.get("opacity", None),
+                    "color": subtrace.get("color", None),
+                },
+            }
+            traces_mpl.append(trace_mpl)
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
         props = {
-            k[0]: trace.get(k[1], {}).get(k[2], trace.get(k, None))
-            for k in (
-                ("ls", "line", "dash"),
-                ("lw", "line", "width"),
-                ("color", "line", "color"),
-                ("marker", "marker", "symbol"),
-                ("mfc", "marker", "color"),
-                ("mec", "marker", "color"),
-                ("ms", "marker", "size"),
-            )
+            k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
+            for k, v in {
+                "ls": ("line", "dash"),
+                "lw": ("line", "width"),
+                "color": ("line", "color"),
+                "marker": ("marker", "symbol"),
+                "mfc": ("marker", "color"),
+                "mec": ("marker", "color"),
+                "ms": ("marker", "size"),
+            }.items()
         }
         trace_mpl = {
             "constructor": "plot",
             "args": (x, y, z),
             "kwargs": {
                 **{k: v for k, v in props.items() if v is not None},
-                "alpha": trace.get("opacity", None),
+                "alpha": trace.get("opacity", 1),
             },
         }
+        traces_mpl.append(trace_mpl)
     else:
         raise ValueError(
-            f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
+            f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
-    return trace_mpl
+    return traces_mpl
 
 
 def display_matplotlib_auto(
@@ -116,14 +146,20 @@ def display_matplotlib_auto(
         obj_list = list(obj_list) + [MagpyMarkers(*markers)]
 
     generic_traces, ranges = draw_frame(
-        obj_list, colorsequence, zoom, output="list", return_ranges=True, **kwargs
+        obj_list,
+        colorsequence,
+        zoom,
+        output="list",
+        return_ranges=True,
+        mag_arrows=True,
+        **kwargs,
     )
     for tr in generic_traces:
-        tr1 = generic_trace_to_matplotlib(tr)
-        constructor = tr1["constructor"]
-        args = tr1["args"]
-        kwargs = tr1["kwargs"]
-        getattr(canvas, constructor)(*args, **kwargs)
+        for tr1 in generic_trace_to_matplotlib(tr):
+            constructor = tr1["constructor"]
+            args = tr1["args"]
+            kwargs = tr1["kwargs"]
+            getattr(canvas, constructor)(*args, **kwargs)
     canvas.set(
         **{f"{k}label": f"{k} [mm]" for k in "xyz"},
         **{f"{k}lim": r for k, r in zip("xyz", ranges)},
