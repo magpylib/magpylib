@@ -1,6 +1,5 @@
 import warnings
 from functools import lru_cache
-from attr import frozen
 
 import numpy as np
 
