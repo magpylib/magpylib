@@ -1,4 +1,6 @@
 import warnings
+from functools import lru_cache
+from attr import frozen
 
 import numpy as np
 
@@ -11,15 +13,33 @@ except ImportError as missing_module:  # pragma: no cover
     ) from missing_module
 
 from pyvista.plotting.colors import Color
+from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import draw_frame
 from magpylib._src.display.display_utility import MagpyMarkers
 
 # from magpylib._src.utility import format_obj_input
 
 
+@lru_cache(maxsize=32)
+def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
+    """Create matplotlib colormap from plotly colorscale"""
+
+    cs_rgb = [(v[0], Color(v[1]).float_rgb) for v in colorscale]
+    cdict = {
+        rgb_col: [
+            (
+                v[0],
+                *[cs_rgb[i][1][rgb_ind]] * 2,
+            )
+            for i, v in enumerate(cs_rgb)
+        ]
+        for rgb_ind, rgb_col in enumerate(("red", "green", "blue"))
+    }
+    return LinearSegmentedColormap(name, cdict, N, gamma)
+
+
 def generic_trace_to_pyvista(trace):
     """Transform a generic trace into a pyvista trace"""
-
     traces_pv = []
     if trace["type"] == "mesh3d":
         vertices = np.array([trace[k] for k in "xyz"], dtype=float).T
@@ -48,7 +68,12 @@ def generic_trace_to_pyvista(trace):
             )
         traces_pv.append(trace_pv)
         if colorscale is not None:
-            trace_pv["cmap"] = [v[1] for v in colorscale]
+            if colorscale is not None:
+                # ipygany does not support custom colorsequences
+                if pv.global_theme.jupyter_backend == "ipygany":
+                    trace_pv["cmap"] = "PiYG"
+                else:
+                    trace_pv["cmap"] = colormap_from_colorscale(colorscale)
     elif trace["type"] == "scatter3d":
         points = np.array([trace[k] for k in "xyz"], dtype=float).T
         line = trace.get("line", {})
