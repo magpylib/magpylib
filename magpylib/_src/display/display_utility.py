@@ -96,7 +96,9 @@ def place_and_orient_model3d(
     return out[0] if len(out) == 1 else out
 
 
-def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
+def draw_arrowed_line(
+    vec, pos, sign=1, arrow_size=1, arrow_pos=0.5, pivot="middle"
+) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
     centered in x,y,z=(0,0,0). The arrow vertices are then turned in the direction of `vec` and
@@ -108,21 +110,30 @@ def draw_arrowed_line(vec, pos, sign=1, arrow_size=1) -> Tuple:
     cross = np.cross(nvec, yaxis)
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
+    arrow_shift = arrow_pos - 0.5
     if dot == -1:
         sign *= -1
     hy = sign * 0.1 * arrow_size
     hx = 0.06 * arrow_size
+    anchor = (
+        (0, -0.5, 0)
+        if pivot == "tip"
+        else (0, 0.5, 0)
+        if pivot == "tail"
+        else (0, 0, 0)
+    )
     arrow = (
         np.array(
             [
                 [0, -0.5, 0],
-                [0, 0, 0],
-                [-hx, 0 - hy, 0],
-                [0, 0, 0],
-                [hx, 0 - hy, 0],
-                [0, 0, 0],
+                [0, arrow_shift, 0],
+                [-hx, arrow_shift - hy, 0],
+                [0, arrow_shift, 0],
+                [hx, arrow_shift - hy, 0],
+                [0, arrow_shift, 0],
                 [0, 0.5, 0],
             ]
+            + np.array(anchor)
         )
         * norm
     )

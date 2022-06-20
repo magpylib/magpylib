@@ -10,7 +10,10 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
+from magpylib._src.display.display_utility import (
+    draw_arrow_from_vertices,
+    draw_arrowed_line,
+)
 from magpylib._src.display.display_utility import draw_arrowed_circle
 from magpylib._src.display.display_utility import get_flatten_objects_properties
 from magpylib._src.display.display_utility import get_rot_pos_from_path
@@ -458,6 +461,55 @@ def get_name_and_suffix(default_name, default_suffix, style):
     return name, name_suffix
 
 
+def make_mag_arrows(obj, style, legendgroup, kwargs):
+    """draw direction of magnetization of faced magnets
+
+    Parameters
+    ----------
+    - faced_objects(list of src objects): with magnetization vector to be drawn
+    - colors: colors of faced_objects
+    - show_path(bool or int): draw on every position where object is displayed
+    """
+    # pylint: disable=protected-access
+
+    # add src attributes position and orientation depending on show_path
+    rots, _, inds = get_rot_pos_from_path(obj, style.path.frames)
+
+    # vector length, color and magnetization
+    if obj._object_type in ("Cuboid", "Cylinder"):
+        length = 1.8 * np.amax(obj.dimension)
+    elif obj._object_type == "CylinderSegment":
+        length = 1.8 * np.amax(obj.dimension[:3])  # d1,d2,h
+    else:
+        length = 1.8 * obj.diameter  # Sphere
+    length *= style.magnetization.size
+    mag = obj.magnetization
+    # collect all draw positions and directions
+    points = []
+    for rot, ind in zip(rots, inds):
+        pos = getattr(obj, "_barycenter", obj._position)[ind]
+        direc = mag / (np.linalg.norm(mag) + 1e-6) * length
+        vec = rot.apply(direc)
+        pts = draw_arrowed_line(vec, pos, sign=1, arrow_pos=1, pivot="tail")
+        points.append(pts)
+    # insert empty point to avoid connecting line between arrows
+    points = np.array(points)
+    points = np.insert(points, points.shape[-1], np.nan, axis=2)
+    x, y, z = np.concatenate(points.swapaxes(1, 2)).T
+    trace = {
+        "type": "scatter3d",
+        "mode": "lines",
+        "line_color": kwargs["color"],
+        "opacity": kwargs["opacity"],
+        "x": x,
+        "y": y,
+        "z": z,
+        "legendgroup": legendgroup,
+        "showlegend": False,
+    }
+    return trace
+
+
 def get_generic_traces(
     input_obj,
     color=None,
@@ -465,6 +517,7 @@ def get_generic_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
+    mag_arrows=False,
     **kwargs,
 ) -> list:
     """
@@ -666,6 +719,9 @@ def get_generic_traces(
             scatter_path = make_path(input_obj, style, legendgroup, kwargs)
             traces.append(scatter_path)
 
+        if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
+            traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
+
     return traces
 
 
@@ -707,6 +763,7 @@ def draw_frame(
     autosize=None,
     output="dict",
     return_ranges=False,
+    mag_arrows=False,
     **kwargs,
 ) -> Tuple:
     """
@@ -740,7 +797,7 @@ def draw_frame(
             x, y, z = obj._position.T
             traces_out[obj] = [dict(x=x, y=y, z=z)]
         else:
-            traces_out[obj] = get_generic_traces(obj, **params)
+            traces_out[obj] = get_generic_traces(obj, mag_arrows=mag_arrows, **params)
     traces = [t for tr in traces_out.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     if autosize is None or autosize == "return":
@@ -748,7 +805,9 @@ def draw_frame(
             return_autosize = True
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, params in traces_to_resize.items():
-        traces_out[obj] = get_generic_traces(obj, autosize=autosize, **params)
+        traces_out[obj] = get_generic_traces(
+            obj, autosize=autosize, mag_arrows=mag_arrows, **params
+        )
     if output == "list":
         traces = [t for tr in traces_out.values() for t in tr]
         traces_out = group_traces(*traces)
@@ -766,7 +825,7 @@ def group_traces(*traces):
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
     # TODO grouping does not dectect line_width vs line=dict(with=...)
-    spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line"]}
+    spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line", "mode"]}
     for tr in traces:
         gr = [tr["type"]]
         for k in common_keys + spec_keys[tr["type"]]:
