@@ -5,7 +5,13 @@ from copy import deepcopy
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
 
-SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista", "matplotlib_auto")
+SUPPORTED_PLOTTING_BACKENDS = (
+    "matplotlib",
+    "plotly",
+    "pyvista",
+    "matplotlib_auto",
+    "mayavi",
+)
 
 MAGPYLIB_FAMILIES = {
     "Line": ("current",),
