@@ -1,6 +1,7 @@
 """ Display function codes"""
 from itertools import cycle
 from typing import Tuple
+from functools import lru_cache
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
@@ -585,12 +586,13 @@ def getIntensity(vertices, axis) -> np.ndarray:
     return intensity
 
 
+@lru_cache(maxsize=32)
 def getColorscale(
     color_transition=0,
     color_north="#E71111",  # 'red'
     color_middle="#DDDDDD",  # 'grey'
     color_south="#00B050",  # 'green'
-) -> list:
+) -> Tuple:
     """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
     containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
     color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.
@@ -616,21 +618,21 @@ def getColorscale(
         Colorscale as list of tuples.
     """
     if color_middle is False:
-        colorscale = [
-            [0.0, color_south],
-            [0.5 * (1 - color_transition), color_south],
-            [0.5 * (1 + color_transition), color_north],
-            [1, color_north],
-        ]
+        colorscale = (
+            (0.0, color_south),
+            (0.5 * (1 - color_transition), color_south),
+            (0.5 * (1 + color_transition), color_north),
+            (1, color_north),
+        )
     else:
-        colorscale = [
-            [0.0, color_south],
-            [0.2 - 0.2 * (color_transition), color_south],
-            [0.2 + 0.3 * (color_transition), color_middle],
-            [0.8 - 0.3 * (color_transition), color_middle],
-            [0.8 + 0.2 * (color_transition), color_north],
-            [1.0, color_north],
-        ]
+        colorscale = (
+            (0.0, color_south),
+            (0.2 - 0.2 * (color_transition), color_south),
+            (0.2 + 0.3 * (color_transition), color_middle),
+            (0.8 - 0.3 * (color_transition), color_middle),
+            (0.8 + 0.2 * (color_transition), color_north),
+            (1.0, color_north),
+        )
     return colorscale
 
 
