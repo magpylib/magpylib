@@ -1,7 +1,7 @@
 """ Display function codes"""
+from functools import lru_cache
 from itertools import cycle
 from typing import Tuple
-from functools import lru_cache
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy

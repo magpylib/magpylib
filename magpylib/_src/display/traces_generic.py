@@ -10,11 +10,9 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.display_utility import (
-    draw_arrow_from_vertices,
-    draw_arrowed_line,
-)
+from magpylib._src.display.display_utility import draw_arrow_from_vertices
 from magpylib._src.display.display_utility import draw_arrowed_circle
+from magpylib._src.display.display_utility import draw_arrowed_line
 from magpylib._src.display.display_utility import get_flatten_objects_properties
 from magpylib._src.display.display_utility import get_rot_pos_from_path
 from magpylib._src.display.display_utility import getColorscale
