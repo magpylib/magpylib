@@ -5,31 +5,9 @@ import numpy as np
 
 from magpylib._src.display.display_utility import MagpyMarkers
 from magpylib._src.display.traces_generic import draw_frame
+from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
-
-
-def subdivide_mesh_by_facecolor(trace):
-    """Subdivide a mesh into a list of meshes based on facecolor"""
-    # TODO so far the function keeps all x,y,z coords for all subtraces, which is convienient since
-    # it does not require to recalculate the indices i,j,k. If many different colors, this is
-    # become inpractical.
-    facecolor = trace["facecolor"]
-    subtraces = []
-    last_ind = 0
-    prev_color = facecolor[0]
-    # pylint: disable=singleton-comparison
-    facecolor[facecolor == None] = "black"
-    for ind, color in enumerate(facecolor):
-        if color != prev_color or ind == len(facecolor) - 1:
-            new_trace = trace.copy()
-            for k in "ijk":
-                new_trace[k] = trace[k][last_ind:ind]
-            new_trace["color"] = prev_color
-            last_ind = ind
-            prev_color = color
-            subtraces.append(new_trace)
-    return subtraces
 
 
 def generic_trace_to_matplotlib(trace):

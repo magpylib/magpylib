@@ -847,6 +847,29 @@ def group_traces(*traces):
     return traces
 
 
+def subdivide_mesh_by_facecolor(trace):
+    """Subdivide a mesh into a list of meshes based on facecolor"""
+    facecolor = trace["facecolor"]
+    subtraces = []
+    # pylint: disable=singleton-comparison
+    facecolor[facecolor == None] = "black"
+    for color in np.unique(facecolor):
+        mask = facecolor == color
+        new_trace = trace.copy()
+        uniq = np.unique(np.hstack([trace[k][mask] for k in "ijk"]))
+        new_inds = np.arange(len(uniq))
+        mapping_ar = np.zeros(uniq.max() + 1, dtype=new_inds.dtype)
+        mapping_ar[uniq] = new_inds
+        for k in "ijk":
+            new_trace[k] = mapping_ar[trace[k][mask]]
+        for k in "xyz":
+            new_trace[k] = new_trace[k][uniq]
+        new_trace["color"] = color
+        new_trace.pop("facecolor")
+        subtraces.append(new_trace)
+    return subtraces
+
+
 def apply_fig_ranges(fig, ranges=None, zoom=None):
     """This is a helper function which applies the ranges properties of the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
