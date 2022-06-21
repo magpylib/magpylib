@@ -1,10 +1,8 @@
-import warnings
-
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.display_utility import MagpyMarkers
-from magpylib._src.display.traces_generic import draw_frame
+from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
@@ -32,6 +30,7 @@ def generic_trace_to_matplotlib(trace):
             traces_mpl.append(trace_mpl)
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
+        mode = trace.get("mode", None)
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
             for k, v in {
@@ -44,6 +43,9 @@ def generic_trace_to_matplotlib(trace):
                 "ms": ("marker", "size"),
             }.items()
         }
+        if mode is not None and "lines" not in mode:
+            props["ls"] = ""
+
         trace_mpl = {
             "constructor": "plot",
             "args": (x, y, z),
@@ -62,10 +64,10 @@ def generic_trace_to_matplotlib(trace):
 
 def display_matplotlib_auto(
     *obj_list,
-    markers=None,
     zoom=1,
     canvas=None,
     animation=False,
+    repeat=False,
     colorsequence=None,
     **kwargs,
 ):
@@ -77,9 +79,6 @@ def display_matplotlib_auto(
     ----------
     objects: sources, collections or sensors
         Objects to be displayed.
-
-    markers: array_like, None, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -104,15 +103,20 @@ def display_matplotlib_auto(
       - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
       - A named CSS color
     """
+    data = get_frames(
+        objs=obj_list,
+        colorsequence=colorsequence,
+        zoom=zoom,
+        animation=animation,
+        **kwargs,
+    )
+    frames = data["frames"]
+    ranges = data["ranges"]
 
-    if animation is not False:
-        msg = "The matplotlib backend does not support animation at the moment.\n"
-        msg += "Use `backend=plotly` instead."
-        warnings.warn(msg)
-        # animation = False
-
-    # flat_obj_list = format_obj_input(obj_list)
-
+    for fr in frames:
+        fr["data"] = [
+            tr0 for tr1 in fr["data"] for tr0 in generic_trace_to_matplotlib(tr1)
+        ]
     show_canvas = False
     if canvas is None:
         show_canvas = True
@@ -120,28 +124,35 @@ def display_matplotlib_auto(
         canvas = fig.add_subplot(111, projection="3d")
         canvas.set_box_aspect((1, 1, 1))
 
-    if markers is not None and markers:
-        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
-
-    generic_traces, ranges = draw_frame(
-        obj_list,
-        colorsequence,
-        zoom,
-        output="list",
-        return_ranges=True,
-        mag_arrows=True,
-        **kwargs,
-    )
-    for tr in generic_traces:
-        for tr1 in generic_trace_to_matplotlib(tr):
-            constructor = tr1["constructor"]
-            args = tr1["args"]
-            kwargs = tr1["kwargs"]
+    def draw_frame(ind):
+        for tr in frames[ind]["data"]:
+            constructor = tr["constructor"]
+            args = tr["args"]
+            kwargs = tr["kwargs"]
             getattr(canvas, constructor)(*args, **kwargs)
-    canvas.set(
-        **{f"{k}label": f"{k} [mm]" for k in "xyz"},
-        **{f"{k}lim": r for k, r in zip("xyz", ranges)},
-    )
-    # apply_fig_ranges(canvas, zoom=zoom)
+        canvas.set(
+            **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+            **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+        )
+
+    def animate(ind):
+        plt.cla()
+        draw_frame(ind)
+        return [canvas]
+
+    if len(frames) == 1:
+        draw_frame(0)
+    else:
+        # call the animator.  blit=True means only re-draw the parts that have changed.
+
+        anim = FuncAnimation(  # pylint: disable=unused-variable
+            fig,
+            animate,
+            frames=range(len(frames)),
+            interval=100,
+            blit=False,
+            repeat=repeat,
+        )
+
     if show_canvas:
         plt.show()

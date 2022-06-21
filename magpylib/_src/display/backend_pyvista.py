@@ -14,7 +14,6 @@ except ImportError as missing_module:  # pragma: no cover
 from pyvista.plotting.colors import Color
 from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import draw_frame
-from magpylib._src.display.display_utility import MagpyMarkers
 
 # from magpylib._src.utility import format_obj_input
 
@@ -105,7 +104,6 @@ def generic_trace_to_pyvista(trace):
 
 def display_pyvista(
     *obj_list,
-    markers=None,
     zoom=1,
     canvas=None,
     animation=False,
@@ -120,9 +118,6 @@ def display_pyvista(
     ----------
     objects: sources, collections or sensors
         Objects to be displayed.
-
-    markers: array_like, None, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -160,9 +155,6 @@ def display_pyvista(
     if canvas is None:
         show_canvas = True
         canvas = pv.Plotter()
-
-    if markers is not None and markers:
-        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
 
     generic_traces = draw_frame(obj_list, colorsequence, zoom, output="list", **kwargs)
     for tr0 in generic_traces:

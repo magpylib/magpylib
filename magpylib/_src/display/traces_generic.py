@@ -1,6 +1,8 @@
-""" plotly draw-functionalities"""
+"""Generic trace drawing functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+import numbers
+import warnings
 from itertools import combinations
 from typing import Tuple
 
@@ -10,17 +12,6 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
-from magpylib._src.display.display_utility import draw_arrowed_circle
-from magpylib._src.display.display_utility import draw_arrowed_line
-from magpylib._src.display.display_utility import get_flatten_objects_properties
-from magpylib._src.display.display_utility import get_rot_pos_from_path
-from magpylib._src.display.display_utility import getColorscale
-from magpylib._src.display.display_utility import getIntensity
-from magpylib._src.display.display_utility import MagpyMarkers
-from magpylib._src.display.display_utility import merge_mesh3d
-from magpylib._src.display.display_utility import merge_traces
-from magpylib._src.display.display_utility import place_and_orient_model3d
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
@@ -29,8 +20,20 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import draw_arrowed_line
+from magpylib._src.display.traces_utility import get_flatten_objects_properties
+from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import getColorscale
+from magpylib._src.display.traces_utility import getIntensity
+from magpylib._src.display.traces_utility import MagpyMarkers
+from magpylib._src.display.traces_utility import merge_mesh3d
+from magpylib._src.display.traces_utility import merge_traces
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
+from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
 
 
@@ -870,38 +873,6 @@ def subdivide_mesh_by_facecolor(trace):
     return subtraces
 
 
-def apply_fig_ranges(fig, ranges=None, zoom=None):
-    """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a certain zoom level. All three space direction will be equal and match the
-    maximum of the ranges needed to display all objects, including their paths.
-
-    Parameters
-    ----------
-    ranges: array of dimension=(3,2)
-        min and max graph range
-
-    zoom: float, default = 1
-        When zoom=0 all objects are just inside the 3D-axes.
-
-    Returns
-    -------
-    None: NoneType
-    """
-    if ranges is None:
-        frames = fig.frames if fig.frames else [fig]
-        traces = [t for frame in frames for t in frame.data]
-        ranges = get_scene_ranges(*traces, zoom=zoom)
-    fig.update_scenes(
-        **{
-            f"{k}axis": dict(range=ranges[i], autorange=False, title=f"{k} [mm]")
-            for i, k in enumerate("xyz")
-        },
-        aspectratio={k: 1 for k in "xyz"},
-        aspectmode="manual",
-        camera_eye={"x": 1, "y": -1.5, "z": 1.4},
-    )
-
-
 def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     """
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
@@ -926,3 +897,186 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     else:
         ranges = np.array([[-1.0, 1.0]] * 3)
     return ranges
+
+
+def process_animation_kwargs(obj_list, animation=False, **kwargs):
+    """Update animation kwargs"""
+    markers = [o for o in obj_list if isinstance(o, MagpyMarkers)]
+    flat_obj_list = format_obj_input([o for o in obj_list if o not in markers])
+    flat_obj_list.extend(markers)
+    # set animation and animation_time
+    if isinstance(animation, numbers.Number) and not isinstance(animation, bool):
+        kwargs["animation_time"] = animation
+        animation = True
+    if (
+        not any(
+            getattr(obj, "position", np.array([])).ndim > 1 for obj in flat_obj_list
+        )
+        and animation is not False
+    ):  # check if some path exist for any object
+        animation = False
+        warnings.warn("No path to be animated detected, displaying standard plot")
+
+    anim_def = Config.display.animation.copy()
+    anim_def.update(kwargs)
+    animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
+    return kwargs, animation, animation_kwargs
+
+
+def clean_legendgroups(frames):
+    """removes legend duplicates for a plotly figure"""
+    for fr in frames:
+        legendgroups = []
+        for tr in fr["data"]:
+            lg = tr.get("legendgroup", None)
+            if lg is not None and lg not in legendgroups:
+                legendgroups.append(lg)
+            elif lg is not None:  # and tr.legendgrouptitle.text is None:
+                tr["showlegend"] = False
+
+
+def extract_animation_properties(
+    objs,
+    *,
+    animation_maxfps,
+    animation_time,
+    animation_fps,
+    animation_maxframes,
+    # pylint: disable=unused-argument
+    animation_slider,
+):
+    """Exctract animation properties"""
+    path_lengths = []
+    for obj in objs:
+        subobjs = [obj]
+        if getattr(obj, "_object_type", None) == "Collection":
+            subobjs.extend(obj.children)
+        for subobj in subobjs:
+            path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]
+            path_lengths.append(path_len)
+
+    max_pl = max(path_lengths)
+    if animation_fps > animation_maxfps:
+        warnings.warn(
+            f"The set `animation_fps` at {animation_fps} is greater than the max allowed of"
+            f" {animation_maxfps}. `animation_fps` will be set to"
+            f" {animation_maxfps}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxfps`"
+        )
+        animation_fps = animation_maxfps
+
+    maxpos = min(animation_time * animation_fps, animation_maxframes)
+
+    if max_pl <= maxpos:
+        path_indices = np.arange(max_pl)
+    else:
+        round_step = max_pl / (maxpos - 1)
+        ar = np.linspace(0, max_pl, max_pl, endpoint=False)
+        path_indices = np.unique(np.floor(ar / round_step) * round_step).astype(
+            int
+        )  # downsampled indices
+        path_indices[-1] = (
+            max_pl - 1
+        )  # make sure the last frame is the last path position
+
+    # calculate exponent of last frame index to avoid digit shift in
+    # frame number display during animation
+    exp = (
+        np.log10(path_indices.max()).astype(int) + 1
+        if path_indices.ndim != 0 and path_indices.max() > 0
+        else 1
+    )
+
+    frame_duration = int(animation_time * 1000 / path_indices.shape[0])
+    new_fps = int(1000 / frame_duration)
+    if max_pl > animation_maxframes:
+        warnings.warn(
+            f"The number of frames ({max_pl}) is greater than the max allowed "
+            f"of {animation_maxframes}. The `animation_fps` will be set to {new_fps}. "
+            f"You can modify the default value by setting it in "
+            "`magpylib.defaults.display.animation.maxframes`"
+        )
+
+    return path_indices, exp, frame_duration
+
+
+def get_frames(
+    objs,
+    colorsequence=None,
+    zoom=1,
+    title=None,
+    animation=False,
+    mag_arrows=False,
+    **kwargs,
+):
+    """This is a helper function which generates frames with generic traces to be provided to
+    the chosen backend. According to a certain zoom level, all three space direction will be equal
+    and match the maximum of the ranges needed to display all objects, including their paths.
+    """
+    # infer title if necessary
+    if objs:
+        style = getattr(objs[0], "style", None)
+        label = getattr(style, "label", None)
+        title = label if len(objs) == 1 else None
+    else:
+        title = "No objects to be displayed"
+
+    # make sure the number of frames does not exceed the max frames and max frame rate
+    # downsample if necessary
+    kwargs, animation, animation_kwargs = process_animation_kwargs(
+        objs, animation=animation, **kwargs
+    )
+    path_indices = [-1]
+    if animation:
+        path_indices, exp, frame_duration = extract_animation_properties(
+            objs, **animation_kwargs
+        )
+
+    # create frame for each path index or downsampled path index
+    frames = []
+    autosize = "return"
+    title_str = title
+    for i, ind in enumerate(path_indices):
+        if animation:
+            kwargs["style_path_frames"] = [ind]
+            title = "Animation 3D - " if title is None else title
+            title_str = f"""{title}path index: {ind+1:0{exp}d}"""
+        frame = draw_frame(
+            objs,
+            colorsequence,
+            zoom,
+            autosize=autosize,
+            output="list",
+            mag_arrows=mag_arrows,
+            **kwargs,
+        )
+        if i == 0:  # get the dipoles and sensors autosize from first frame
+            traces, autosize = frame
+        else:
+            traces = frame
+        frames.append(
+            dict(
+                data=traces,
+                name=str(ind + 1),
+                layout=dict(title=title_str),
+            )
+        )
+
+    clean_legendgroups(frames)
+    traces = [t for frame in frames for t in frame["data"]]
+    ranges = get_scene_ranges(*traces, zoom=zoom)
+    out = {
+        "frames": frames,
+        "ranges": ranges,
+    }
+    if animation:
+        out.update(
+            {
+                "frame_duration": frame_duration,
+                "path_indices": path_indices,
+                "animation_slider": animation_kwargs["animation_slider"],
+            }
+        )
+    return out

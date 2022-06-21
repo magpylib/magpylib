@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 

@@ -6,17 +6,17 @@ import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
-from magpylib._src.display.display_utility import draw_arrowed_circle
-from magpylib._src.display.display_utility import faces_cuboid
-from magpylib._src.display.display_utility import faces_cylinder
-from magpylib._src.display.display_utility import faces_cylinder_segment
-from magpylib._src.display.display_utility import faces_sphere
-from magpylib._src.display.display_utility import get_flatten_objects_properties
-from magpylib._src.display.display_utility import get_rot_pos_from_path
-from magpylib._src.display.display_utility import MagpyMarkers
-from magpylib._src.display.display_utility import place_and_orient_model3d
-from magpylib._src.display.display_utility import system_size
+from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import faces_cuboid
+from magpylib._src.display.traces_utility import faces_cylinder
+from magpylib._src.display.traces_utility import faces_cylinder_segment
+from magpylib._src.display.traces_utility import faces_sphere
+from magpylib._src.display.traces_utility import get_flatten_objects_properties
+from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import MagpyMarkers
+from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import system_size
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 
@@ -367,6 +367,8 @@ def display_matplotlib(
     points = []
     dipoles = []
     sensors = []
+    markers_list = [o for o in obj_list_semi_flat if isinstance(o, MagpyMarkers)]
+    obj_list_semi_flat = [o for o in obj_list_semi_flat if o not in markers_list]
     flat_objs_props = get_flatten_objects_properties(
         *obj_list_semi_flat, colorsequence=colorsequence
     )
@@ -461,10 +463,10 @@ def display_matplotlib(
             )
 
     # markers -------------------------------------------------------
-    if markers is not None and markers:
-        m = MagpyMarkers()
-        style = get_style(m, Config, **kwargs)
-        markers = np.array(markers)
+    if markers_list:
+        markers_instance = markers_list[0]
+        style = get_style(markers_instance, Config, **kwargs)
+        markers = np.array(markers_instance.markers)
         s = style.marker
         draw_markers(markers, ax, s.color, s.symbol, s.size)
         points += [markers]

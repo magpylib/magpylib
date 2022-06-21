@@ -645,18 +645,3 @@ def getColorscale(
             (1.0, color_north),
         )
     return colorscale
-
-
-def clean_legendgroups(fig):
-    """removes legend duplicates for a plotly figure"""
-    frames = [fig.data]
-    if fig.frames:
-        data_list = [f["data"] for f in fig.frames]
-        frames.extend(data_list)
-    for f in frames:
-        legendgroups = []
-        for t in f:
-            if t.legendgroup not in legendgroups and t.legendgroup is not None:
-                legendgroups.append(t.legendgroup)
-            elif t.legendgroup is not None and t.legendgrouptitle.text is None:
-                t.showlegend = False
