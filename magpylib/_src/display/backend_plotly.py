@@ -11,10 +11,7 @@ except ImportError as missing_module:  # pragma: no cover
     ) from missing_module
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.traces_generic import (
-    get_frames,
-    MagpyMarkers,
-)
+from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
@@ -154,7 +151,6 @@ def generic_trace_to_plotly(trace):
 
 def display_plotly(
     *obj_list,
-    markers=None,
     zoom=1,
     canvas=None,
     renderer=None,
@@ -170,9 +166,6 @@ def display_plotly(
     ----------
     objects: sources, collections or sensors
         Objects to be displayed.
-
-    markers: array_like, None, shape (N,3), default=None
-        Display position markers in the global CS. By default no marker is displayed.
 
     zoom: float, default = 1
         Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
@@ -218,9 +211,6 @@ def display_plotly(
     if canvas is None:
         show_canvas = True
         canvas = go.Figure()
-
-    if markers is not None and markers:
-        obj_list = list(obj_list) + [MagpyMarkers(*markers)]
 
     if colorsequence is None:
         colorsequence = Config.display.colorsequence

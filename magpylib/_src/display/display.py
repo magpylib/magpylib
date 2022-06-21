@@ -1,6 +1,7 @@
 """ Display function codes"""
 from importlib import import_module
 
+from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
@@ -125,9 +126,12 @@ def show(
     display_func = getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
     )
+
+    if markers is not None and markers:
+        obj_list_semi_flat = list(obj_list_semi_flat) + [MagpyMarkers(*markers)]
+
     display_func(
         *obj_list_semi_flat,
-        markers=markers,
         zoom=zoom,
         canvas=canvas,
         animation=animation,

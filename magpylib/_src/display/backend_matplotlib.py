@@ -367,6 +367,8 @@ def display_matplotlib(
     points = []
     dipoles = []
     sensors = []
+    markers_list = [o for o in obj_list_semi_flat if isinstance(o, MagpyMarkers)]
+    obj_list_semi_flat = [o for o in obj_list_semi_flat if o not in markers_list]
     flat_objs_props = get_flatten_objects_properties(
         *obj_list_semi_flat, colorsequence=colorsequence
     )
@@ -461,10 +463,10 @@ def display_matplotlib(
             )
 
     # markers -------------------------------------------------------
-    if markers is not None and markers:
-        m = MagpyMarkers()
-        style = get_style(m, Config, **kwargs)
-        markers = np.array(markers)
+    if markers_list:
+        markers_instance = markers_list[0]
+        style = get_style(markers_instance, Config, **kwargs)
+        markers = np.array(markers_instance.markers)
         s = style.marker
         draw_markers(markers, ax, s.color, s.symbol, s.size)
         points += [markers]
