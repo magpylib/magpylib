@@ -1,4 +1,4 @@
-""" plotly draw-functionalities"""
+"""Generic trace drawing functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 from itertools import combinations
@@ -10,17 +10,6 @@ from scipy.spatial.transform import Rotation as RotScipy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
-from magpylib._src.display.display_utility import draw_arrowed_circle
-from magpylib._src.display.display_utility import draw_arrowed_line
-from magpylib._src.display.display_utility import get_flatten_objects_properties
-from magpylib._src.display.display_utility import get_rot_pos_from_path
-from magpylib._src.display.display_utility import getColorscale
-from magpylib._src.display.display_utility import getIntensity
-from magpylib._src.display.display_utility import MagpyMarkers
-from magpylib._src.display.display_utility import merge_mesh3d
-from magpylib._src.display.display_utility import merge_traces
-from magpylib._src.display.display_utility import place_and_orient_model3d
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
@@ -29,6 +18,17 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import draw_arrowed_line
+from magpylib._src.display.traces_utility import get_flatten_objects_properties
+from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import getColorscale
+from magpylib._src.display.traces_utility import getIntensity
+from magpylib._src.display.traces_utility import MagpyMarkers
+from magpylib._src.display.traces_utility import merge_mesh3d
+from magpylib._src.display.traces_utility import merge_traces
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.utility import unit_prefix

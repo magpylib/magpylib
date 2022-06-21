@@ -15,7 +15,7 @@ except ImportError as missing_module:  # pragma: no cover
 import numpy as np
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.utility import format_obj_input
-from magpylib._src.display.display_utility import clean_legendgroups
+from magpylib._src.display.traces_utility import clean_legendgroups
 from magpylib._src.display.traces_generic import (
     draw_frame,
     apply_fig_ranges,

@@ -14,7 +14,7 @@ except ImportError as missing_module:  # pragma: no cover
 from pyvista.plotting.colors import Color
 from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import draw_frame
-from magpylib._src.display.display_utility import MagpyMarkers
+from magpylib._src.display.traces_utility import MagpyMarkers
 
 # from magpylib._src.utility import format_obj_input
 
