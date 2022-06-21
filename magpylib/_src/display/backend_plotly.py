@@ -17,7 +17,7 @@ from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 
 
-def apply_fig_ranges(fig, ranges, zoom=None):
+def apply_fig_ranges(fig, ranges):
     """This is a helper function which applies the ranges properties of the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
     maximum of the ranges needed to display all objects, including their paths.
