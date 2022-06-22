@@ -130,7 +130,7 @@ def show(
     if markers is not None and markers:
         obj_list_semi_flat = list(obj_list_semi_flat) + [MagpyMarkers(*markers)]
 
-    display_func(
+    return display_func(
         *obj_list_semi_flat,
         zoom=zoom,
         canvas=canvas,

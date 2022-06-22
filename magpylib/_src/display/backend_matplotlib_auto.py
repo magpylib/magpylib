@@ -69,6 +69,7 @@ def display_matplotlib_auto(
     animation=False,
     repeat=False,
     colorsequence=None,
+    return_animation=False,
     **kwargs,
 ):
 
@@ -108,6 +109,7 @@ def display_matplotlib_auto(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
+        mag_arrows=True,
         **kwargs,
     )
     frames = data["frames"]
@@ -143,9 +145,7 @@ def display_matplotlib_auto(
     if len(frames) == 1:
         draw_frame(0)
     else:
-        # call the animator.  blit=True means only re-draw the parts that have changed.
-
-        anim = FuncAnimation(  # pylint: disable=unused-variable
+        anim = FuncAnimation(
             fig,
             animate,
             frames=range(len(frames)),
@@ -153,6 +153,7 @@ def display_matplotlib_auto(
             blit=False,
             repeat=repeat,
         )
-
-    if show_canvas:
+    if return_animation and len(frames) != 1:
+        return anim
+    elif show_canvas:
         plt.show()
