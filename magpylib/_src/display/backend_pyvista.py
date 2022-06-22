@@ -111,37 +111,7 @@ def display_pyvista(
     **kwargs,
 ):
 
-    """
-    Display objects and paths graphically using the pyvista library.
-
-    Parameters
-    ----------
-    objects: sources, collections or sensors
-        Objects to be displayed.
-
-    zoom: float, default = 1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
-
-    canvas: pyvista Plotter, default=None
-        Display graphical output in a given canvas
-        By default a new `Figure` is created and displayed.
-
-    title: str, default = "3D-Paths Animation"
-        When zoom=0 all objects are just inside the 3D-axes.
-
-    colorsequence: list or array_like, iterable, default=
-            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
-            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
-            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
-            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-    """
+    """Display objects and paths graphically using the pyvista library."""
 
     if animation is not False:
         msg = "The pyvista backend does not support animation at the moment.\n"
