@@ -85,20 +85,6 @@ def facet_field(
     B-field or H-field: ndarray, shape (n,3)
         B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
-    Examples
-    --------
-    Compute the field of three different instances.
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
-    >>> vertices = np.array([[(1,1,1), (2,3,4), (1,2,3)], [(-4,5,6), (7,8,9), (1,2,3)], [(0,1,2), (3,-2,-5), (-5,2,3)]])
-    >>> obs = np.array([(0,0,0), (2,3,4), (-10,-20,-10)])
-    >>> B = magpy.core.facet_field('B', obs, mag, vertices)
-    >>> print(B)
-    [[-0.15809935 -0.22303138 -0.28796341]
-    [ 0.48742794  0.27597025  0.27597025]
-    [ 0.03048676  0.06523894  0.03161626]]
-
     Notes
     -----
     Field computations via publication:

@@ -90,20 +90,6 @@ def magnet_tetrahedron_field(
     B-field or H-field: ndarray, shape (n,3)
         B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
 
-    Examples
-    --------
-    Compute the field of three different instances.
-    >>> import numpy as np
-    >>> import magpylib as magpy
-    >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
-    >>> vertices = np.array([[(1,1,1), (2,-3,4), (1,2,3), (-1,-2,-3)], [(-4,5,6), (7,8,9), (1,2,3), (-10,-5,0)], [(0,1,2), (3,-2,-5), (-5,2,3), (3,6,9)]])
-    >>> obs = np.array([(0,0,0), (2,3,4), (-10,-20,-10)])
-    >>> B = magpy.core.magnet_tetrahedron_field('B', obs, mag, vertices)
-    >>> print(B)
-    [[ 2.09797687e+02  3.22359234e+02  5.54097897e+02]
-    [ 3.35521579e+01  4.26144490e+01  5.27267114e+01]
-    [ 3.03382140e-03  6.47059217e-03 -2.50174038e-03]]
-
     Notes
     -----
     The tetrahedron is built up via 4 facets.
