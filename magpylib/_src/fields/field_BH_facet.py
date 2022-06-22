@@ -91,8 +91,7 @@ def facet_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> mag = np.array([(222,333,555), (33,44,55), (0,0,100)])
-    >>> vertices = np.array([[(1,1,1), (2,3,4), (1,2,3)], \
-        [(-4,5,6), (7,8,9), (1,2,3)], [(0,1,2), (3,-2,-5), (-5,2,3)]])
+    >>> vertices = np.array([[(1,1,1), (2,3,4), (1,2,3)], [(-4,5,6), (7,8,9), (1,2,3)], [(0,1,2), (3,-2,-5), (-5,2,3)]])
     >>> obs = np.array([(0,0,0), (2,3,4), (-10,-20,-10)])
     >>> B = magpy.core.facet_field('B', obs, mag, vertices)
     >>> print(B)
