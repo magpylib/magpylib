@@ -1,6 +1,7 @@
 """Magnet Tetrahedron class code
 DOCSTRINGS V4 READY
 """
+import numpy as np
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
@@ -13,9 +14,9 @@ class Tetrahedron(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Can be used as `sources` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` the Tetrahedron sides are parallel
-    to the global coordinate basis vectors and the geometric center of the Tetrahedron
-    is located in the origin.
+    When `position=(0,0,0)` and `orientation=None` the Tetrahedron vertices coordinates
+    are the same as in the global coordinate system. The geometric center of the Tetrahedron
+    is determined by its vertices and is not necessarily located in the origin.
 
     Parameters
     ----------
@@ -51,14 +52,15 @@ class Tetrahedron(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Examples
     --------
     `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    cubical magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
-    at the observer position (1,1,1) given in units of [mm]:
+    tetrahedral magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
+    at the observer position (0,0,0) given in units of [mm]:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Tetrahedron(magnetization=(100,200,300), vertices=(1,1,1))
-    >>> H = src.getH((1,1,1))
+    >>> vertices = [(1,0,-1/2**0.5),(0,1,1/2**0.5),(-1,0,-1/2**0.5),(1,-1,1/2**0.5)]
+    >>> src = magpy.magnet.Tetrahedron((100,200,300), vertices=vertices)
+    >>> H = src.getH((0,0,0))
     >>> print(H)
-    [6.21116976 4.9689358  3.72670185]
+    [  3.42521345 -40.76504699 -70.06509857]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
@@ -66,21 +68,9 @@ class Tetrahedron(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     Tetrahedron(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
-    [[4.30496934 6.9363475  0.50728577]
-     [0.54127889 0.86827283 0.05653357]
-     [0.1604214  0.25726266 0.01664045]]
-
-    The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). Here we use a `Sensor` object as observer.
-
-    >>> sens = magpy.Sensor(position=(1,1,1))
-    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    Tetrahedron(id=...)
-    >>> B = src.getB(sens)
-    >>> print(B)
-    [[4.30496934 6.9363475  0.50728577]
-     [0.54127889 0.86827283 0.05653357]
-     [0.1604214  0.25726266 0.01664045]]
+    [[3.2653876  7.77807843 0.41141725]
+     [0.49253111 0.930953   0.0763492 ]
+     [0.1497206  0.26663798 0.02164654]]
     """
 
     def __init__(
@@ -111,12 +101,29 @@ class Tetrahedron(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @vertices.setter
     def vertices(self, dim):
         """Set Tetrahedron vertices (a,b,c), shape (3,), [mm]."""
-        # TODO check len=4
         self._vertices = check_format_input_vector(
             dim,
             dims=(2,),
             shape_m1=3,
+            length=4,
             sig_name="Tetrahedron.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (4,3) with positive values",
+            sig_type="array_like (list, tuple, ndarray) of shape (4,3)",
             allow_None=True,
         )
+
+    @property
+    def _barycenter(self):
+        """Object barycenter."""
+        return self._get_barycenter(self._position, self._orientation, self.vertices)
+
+    @property
+    def barycenter(self):
+        """Object barycenter."""
+        return np.squeeze(self._barycenter)
+
+    @staticmethod
+    def _get_barycenter(position, orientation, vertices):
+        """Returns the barycenter of a tetrahedron."""
+        centroid = np.mean(vertices, axis=0)
+        barycenter = orientation.apply(centroid) + position
+        return barycenter
