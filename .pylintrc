@@ -66,7 +66,6 @@ disable=R0801,                          # duplicate code from getB in different 
         too-many-arguments,             # complex field computation functions
         missing-module-docstring,       # pylint does not recognize module docstring
         invalid-name,                   # scientific software gannot go without x,y,z,...
-        bad-whitespace                  # eg. (0,0,0) is more readable than (0, 0, 0)
 
 # Enable the message, report, category or checker with the given id(s). You can
 # either give multiple identifier separated by comma (,) or put this option

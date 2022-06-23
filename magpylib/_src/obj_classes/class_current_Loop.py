@@ -15,7 +15,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
-    the origin.
+    the origin. The Loop class has a dipole moment of pi**2/10*diameter**2*current.
 
     Parameters
     ----------

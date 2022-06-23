@@ -79,6 +79,10 @@ def collection_tree_generator(
                     "sources",
                     "sensors",
                     "collections",
+                    "children_all",
+                    "sources_all",
+                    "sensors_all",
+                    "collections_all",
                 )
             )
             props = [d.strip() for d in desc_out[1:]]
