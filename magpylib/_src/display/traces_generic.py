@@ -20,6 +20,7 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
@@ -320,6 +321,30 @@ def make_Sphere(
         **kwargs,
     )
 
+def make_Tetrahedron(
+    mag=(0.0, 0.0, 1000.0),
+    vertices=None,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
+    provided arguments
+    """
+    name, name_suffix = get_name_and_suffix("Sphere", "", style)
+    sphere = make_BaseTetrahedron("plotly-dict", vertices=vertices)
+    return _update_mag_mesh(
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
+    )
 
 def make_Pixels(positions, size=1) -> dict:
     """
@@ -481,6 +506,10 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
         length = 1.8 * np.amax(obj.dimension)
     elif obj._object_type == "CylinderSegment":
         length = 1.8 * np.amax(obj.dimension[:3])  # d1,d2,h
+    elif obj._object_type == 'Tetrahedron':
+        v = obj.vertices
+        v = np.insert(v, 3, v[0], axis=0)
+        length = np.linalg.norm(np.diff(v, axis=0),axis=1).mean()
     else:
         length = 1.8 * obj.diameter  # Sphere
     length *= style.magnetization.size
@@ -544,6 +573,7 @@ def get_generic_traces(
     Cylinder = _src.obj_classes.Cylinder
     CylinderSegment = _src.obj_classes.CylinderSegment
     Sphere = _src.obj_classes.Sphere
+    Tetrahedron = _src.obj_classes.Tetrahedron
     Dipole = _src.obj_classes.Dipole
     Loop = _src.obj_classes.Loop
     Line = _src.obj_classes.Line
@@ -620,6 +650,12 @@ def get_generic_traces(
                 diameter=input_obj.diameter,
             )
             make_func = make_Sphere
+        elif isinstance(input_obj, Tetrahedron):
+            kwargs.update(
+                mag=input_obj.magnetization,
+                vertices=input_obj.vertices,
+            )
+            make_func = make_Tetrahedron
         elif isinstance(input_obj, Dipole):
             kwargs.update(
                 moment=input_obj.moment,

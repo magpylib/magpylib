@@ -526,3 +526,61 @@ def make_Arrow(
     trace = merge_mesh3d(cone, prism)
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
+
+def make_Tetrahedron(
+    backend,
+    vertices=None,
+    position=None,
+    orientation=None,
+    show=True,
+    scale=1,
+    **kwargs,
+) -> dict:
+    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
+
+    Parameters
+    ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+    vertices: ndarray, shape (4,3)
+        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
+        coordinate system of the tetrahedron.
+
+    position : array_like, shape (3,), default=(0,0,0)
+        Reference position of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
+
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
+        Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+
+    Returns
+    -------
+    3D-model: dict
+        A dictionary with necessary key/value pairs with the necessary information to construct
+        a 3D-model.
+    """
+    x,y,z = np.array(vertices).T
+    trace = dict(
+        i=np.array([0,0,1,2,]),
+        j=np.array([1,1,2,0]),
+        k=np.array([2,3,3,3]),
+        x=x,
+        y=y,
+        z=z,
+    )
+
+    trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
+    return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
