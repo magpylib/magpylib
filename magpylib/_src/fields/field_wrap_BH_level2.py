@@ -35,6 +35,7 @@ SOURCE_PROPERTIES = {
     "Cylinder": ("magnetization", "dimension"),
     "CylinderSegment": ("magnetization", "dimension"),
     "Sphere": ("magnetization", "diameter"),
+    "Tetrahedron": ("magnetization", "vertices"),
     "Dipole": ("moment",),
     "Loop": ("current", "diameter"),
     "Line": ("current", "vertices"),

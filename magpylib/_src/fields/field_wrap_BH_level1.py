@@ -2,6 +2,7 @@ import numpy as np
 
 from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
+from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
@@ -16,6 +17,7 @@ FIELD_FUNCTIONS = {
     "Cylinder": magnet_cylinder_field,
     "CylinderSegment": magnet_cylinder_segment_field_internal,
     "Sphere": magnet_sphere_field,
+    "Tetrahedron": magnet_tetrahedron_field,
     "Dipole": dipole_field,
     "Loop": current_loop_field,
     "Line": current_vertices_field,
