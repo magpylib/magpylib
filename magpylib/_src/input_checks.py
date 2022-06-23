@@ -46,7 +46,7 @@ def make_float_array(inp, msg: str):
     return inp_array
 
 
-def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg: str):
+def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, msg=""):
     """check if inp shape is allowed
     inp: test object
     dims: list, list of allowed dims
@@ -54,9 +54,12 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg: str):
     msg: str, error msg
     """
     if inp.ndim in dims:
-        if inp.shape[-1] == shape_m1:
-            return None
-        if shape_m1 == "any":
+        if length is None:
+            if inp.shape[-1] == shape_m1:
+                return None
+            if shape_m1 == "any":
+                return None
+        elif len(inp)==length:
             return None
     raise MagpylibBadUserInput(msg)
 
@@ -308,6 +311,7 @@ def check_format_input_vector(
     shape_m1,
     sig_name,
     sig_type,
+    length=None,
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
@@ -338,6 +342,7 @@ def check_format_input_vector(
         inp,
         dims=dims,
         shape_m1=shape_m1,
+        length=length,
         msg=(
             f"Input parameter `{sig_name}` must be {sig_type}.\n"
             f"Instead received array_like with shape {inp.shape}."
