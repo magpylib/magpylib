@@ -7,11 +7,13 @@ from numpy.linalg import norm
 from magpylib._src.input_checks import check_field_input
 
 
-def field_BH_line_from_vert(
+def current_vertices_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
-    vertices: list,  # list of mix3 ndarrays
+    vertices: list = None,
+    segment_start=None,  # list of mix3 ndarrays
+    segment_end=None,
 ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
@@ -27,6 +29,8 @@ def field_BH_line_from_vert(
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
+    if vertices is None:
+        return current_line_field(field, observers, current, segment_start, segment_end)
 
     nv = len(vertices)  # number of input vertex_sets
     npp = int(observers.shape[0] / nv)  # number of position vectors

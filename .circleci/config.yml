@@ -21,10 +21,10 @@ jobs:
       - image: python:3.9
     steps:
       - checkout
-      - run: 
+      - run:
           name: Install local magpylib
-          command: pip install .
-      - run: 
+          command: pip install .[dev]
+      - run:
           name: Set up testing tools and environment
           command: mkdir test-results && pip install tox && pip install pylint
       - run:
@@ -33,7 +33,7 @@ jobs:
       - run:
           name: Run code test coverage suite
           command: tox
-      
+
   deploy:
     docker:
       - image: python:3
