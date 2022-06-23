@@ -3,7 +3,26 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [4.0.0]
+
+## [4.0.4] - 2022-06-09
+
+* Exclude redundant properties with `_all` suffix in the `.describe()` method ([#534](https://github.com/magpylib/magpylib/pull/534))
+* Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
+
+## [4.0.3] - 2022-05-13
+
+* Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
+
+## [4.0.2] - 2022-05-04
+
+* Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
+* Allow float color quadruples ([#529](https://github.com/magpylib/magpylib/pull/529))
+
+## [4.0.1] - 2022-04-29
+
+* Graphic performance update for plotly when showing a large number of objects. ([#524](https://github.com/magpylib/magpylib/pull/524))
+
+## [4.0.0] - 2022-04-14
 
 This is a major update that includes
 
@@ -94,6 +113,10 @@ This is a major update that includes
   - `config.ITERCYLINDER` is now obsolete. The iterative solution replaced by a new analytical expression.
   - `config.inputchecks` is removed - input checks are always performed.
 
+---
+## [3.0.5] - 2022-04-26
+
+- fix docs build
 ---
 ## [3.0.4] - 2022-02-17
 
@@ -354,7 +377,13 @@ The first official release of the magpylib library.
 - Collection class
 
 ---
+
+[4.0.4]:https://github.com/magpylib/magpylib/compare/4.0.3...4.0.4
+[4.0.3]:https://github.com/magpylib/magpylib/compare/4.0.2...4.0.3
+[4.0.2]:https://github.com/magpylib/magpylib/compare/4.0.1...4.0.2
+[4.0.1]:https://github.com/magpylib/magpylib/compare/4.0.0...4.0.1
 [4.0.0]:https://github.com/magpylib/magpylib/compare/3.0.4...4.0.0
+[3.0.5]:https://github.com/magpylib/magpylib/compare/3.0.4...3.0.5
 [3.0.4]:https://github.com/magpylib/magpylib/compare/3.0.3...3.0.4
 [3.0.3]:https://github.com/magpylib/magpylib/compare/3.0.2...3.0.3
 [3.0.2]:https://github.com/magpylib/magpylib/compare/3.0.1...3.0.2

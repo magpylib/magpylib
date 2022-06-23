@@ -19,7 +19,8 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ----------
     moment: array_like, shape (3,), unit [mT*mm^3], default=`None`
         Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates.
-        For homogeneous magnets the relation moment=magnetization*volume holds.
+        For homogeneous magnets the relation moment=magnetization*volume holds. The dipole
+        moment of a Loop object is pi**2/10*diameter**2*current.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the

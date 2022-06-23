@@ -384,6 +384,25 @@ def test_copy_parents():
     assert y.parent is None
 
 
+def test_copy_order():
+    """Make sure copying objects of a collection does not affect order of children (#530)"""
+    from magpylib.magnet import Cuboid
+    from magpylib import Collection
+
+    thing1 = Cuboid(style_label="t1")
+    thing2 = Cuboid(style_label="t2")
+    thing3 = Cuboid(style_label="t3")
+    foo = Collection(thing1, thing2, thing3)
+
+    desc_before = foo.describe(format="label", return_string=True)
+
+    thing1.copy()
+
+    desc_after = foo.describe(format="label", return_string=True)
+
+    assert desc_after == desc_before
+
+
 def test_describe():
     """testing descibe method"""
     # pylint: disable=protected-access
