@@ -59,7 +59,7 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, 
                 return None
             if shape_m1 == "any":
                 return None
-        elif len(inp)==length:
+        elif len(inp) == length:
             return None
     raise MagpylibBadUserInput(msg)
 

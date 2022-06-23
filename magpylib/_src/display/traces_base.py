@@ -527,6 +527,7 @@ def make_Arrow(
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
+
 def make_Tetrahedron(
     backend,
     vertices=None,
@@ -572,11 +573,18 @@ def make_Tetrahedron(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-    x,y,z = np.array(vertices).T
+    x, y, z = np.array(vertices).T
     trace = dict(
-        i=np.array([0,0,1,2,]),
-        j=np.array([1,1,2,0]),
-        k=np.array([2,3,3,3]),
+        i=np.array(
+            [
+                0,
+                0,
+                1,
+                2,
+            ]
+        ),
+        j=np.array([1, 1, 2, 0]),
+        k=np.array([2, 3, 3, 3]),
         x=x,
         y=y,
         z=z,
