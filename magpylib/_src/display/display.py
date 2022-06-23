@@ -43,7 +43,7 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
+        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'` or `'pyvista'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
         `'matplotlib'` by installation default.
 
@@ -51,6 +51,7 @@ def show(
         Display graphical output on a given canvas:
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.
 
     Returns

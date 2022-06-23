@@ -98,7 +98,7 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
-    "display_backend": ("matplotlib", "plotly"),  # str typo
+    "display_backend": ("matplotlib", "plotly", "pyvista"),  # str typo
     "display_colorsequence": (
         ["#2E91E5", "#0D2A63"],
         ["blue", "red"],
