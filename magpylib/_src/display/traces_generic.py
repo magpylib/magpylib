@@ -321,6 +321,7 @@ def make_Sphere(
         **kwargs,
     )
 
+
 def make_Tetrahedron(
     mag=(0.0, 0.0, 1000.0),
     vertices=None,
@@ -345,6 +346,7 @@ def make_Tetrahedron(
         style,
         **kwargs,
     )
+
 
 def make_Pixels(positions, size=1) -> dict:
     """
@@ -506,10 +508,8 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
         length = 1.8 * np.amax(obj.dimension)
     elif obj._object_type == "CylinderSegment":
         length = 1.8 * np.amax(obj.dimension[:3])  # d1,d2,h
-    elif obj._object_type == 'Tetrahedron':
-        v = obj.vertices
-        v = np.insert(v, 3, v[0], axis=0)
-        length = np.linalg.norm(np.diff(v, axis=0),axis=1).mean()
+    elif hasattr(obj, "vertices"):
+        length = np.max(np.ptp(obj.vertices, axis=0))
     else:
         length = 1.8 * obj.diameter  # Sphere
     length *= style.magnetization.size
