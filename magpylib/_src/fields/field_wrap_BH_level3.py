@@ -2,7 +2,13 @@ from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
 
 
 def getB(
-    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+    sources=None,
+    observers=None,
+    sumup=False,
+    squeeze=True,
+    pixel_agg=None,
+    output="ndarray",
+    **kwargs
 ):
     """Compute B-field in [mT] for given sources and observers.
 
@@ -40,6 +46,12 @@ def getB(
         Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
         With this option, observers input with different (pixel) shapes is allowed.
+
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -84,7 +96,7 @@ def getB(
 
     Returns
     -------
-    B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+    B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         B-field at each path position (m) for each sensor (k) and each sensor pixel
         position (n1, n2, ...) in units of [mT]. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
@@ -153,13 +165,20 @@ def getB(
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
+        output=output,
         field="B",
         **kwargs
     )
 
 
 def getH(
-    sources=None, observers=None, sumup=False, squeeze=True, pixel_agg=None, **kwargs
+    sources=None,
+    observers=None,
+    sumup=False,
+    squeeze=True,
+    pixel_agg=None,
+    output="ndarray",
+    **kwargs
 ):
     """Compute H-field in [kA/m] for given sources and observers.
 
@@ -197,6 +216,12 @@ def getH(
         Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
         With this option, observer inputs with different (pixel) shapes are allowed.
+
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
 
     Other Parameters (Direct interface)
     -----------------------------------
@@ -241,7 +266,7 @@ def getH(
 
     Returns
     -------
-    H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3)
+    H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         H-field at each path position (m) for each sensor (k) and each sensor pixel
         position (n1, n2, ...) in units of [kA/m]. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
@@ -310,6 +335,7 @@ def getH(
         sumup=sumup,
         squeeze=squeeze,
         pixel_agg=pixel_agg,
+        output=output,
         field="H",
         **kwargs
     )

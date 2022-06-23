@@ -1,4 +1,5 @@
 -e .
+pandas
 sphinx==4.4.0
 sphinx-copybutton
 sphinx-book-theme
