@@ -618,3 +618,26 @@ def check_format_pixel_agg(pixel_agg):
         raise AttributeError(PIXEL_AGG_ERR_MSG)
 
     return pixel_agg_func
+
+
+def check_getBH_output_type(output):
+    """check if getBH output is acceptable"""
+    acceptable = ("ndarray", "dataframe")
+    if output not in acceptable:
+        raise AttributeError(
+            "The `output` argument must be one of {acceptable}."
+            f"\nInstead received {output}."
+        )
+    if output == "dataframe":
+        try:
+            # pylint: disable=import-outside-toplevel
+            # pylint: disable=unused-import
+            import pandas
+        except ImportError as missing_module:  # pragma: no cover
+            raise ModuleNotFoundError(
+                "In order to use the `dataframe` output type, you need to install pandas "
+                "via pip or conda, "
+                "see https://pandas.pydata.org/docs/getting_started/install.html"
+            ) from missing_module
+
+    return output

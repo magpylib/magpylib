@@ -1,17 +1,45 @@
+from itertools import product
+
 import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
-from magpylib._src.fields.field_wrap_BH_level2_dict import getBH_dict_level2
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.input_checks import check_format_pixel_agg
+from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
+from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
+
+
+PARAM_TILE_DIMS = {
+    "observers": 2,
+    "position": 2,
+    "orientation": 2,
+    "magnetization": 2,
+    "current": 1,
+    "moment": 2,
+    "dimension": 2,
+    "diameter": 1,
+    "segment_start": 2,
+    "segment_end": 2,
+}
+
+SOURCE_PROPERTIES = {
+    "Cuboid": ("magnetization", "dimension"),
+    "Cylinder": ("magnetization", "dimension"),
+    "CylinderSegment": ("magnetization", "dimension"),
+    "Sphere": ("magnetization", "diameter"),
+    "Dipole": ("moment",),
+    "Loop": ("current", "diameter"),
+    "Line": ("current", "vertices"),
+    "CustomSource": (),
+}
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -38,7 +66,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     # pos_obs
     posov = np.tile(poso, (len(group), 1))
 
-    # determine which group we are dealing with and tile up dim and excitation
+    # determine which group we are dealing with and tile up properties
     src_type = group[0]._object_type
 
     kwargs = {
@@ -48,42 +76,27 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "orientation": rotobj,
     }
 
-    if src_type in ("Sphere", "Cuboid", "Cylinder", "CylinderSegment"):
-        magv = tile_group_property(group, n_pp, "magnetization")
-        kwargs.update(magnetization=magv)
-        if src_type == "Sphere":
-            diav = tile_group_property(group, n_pp, "diameter")
-            kwargs.update(diameter=diav)
-        else:
-            dimv = tile_group_property(group, n_pp, "dimension")
-            kwargs.update(dimension=dimv)
+    try:
+        src_props = SOURCE_PROPERTIES[src_type]
+    except KeyError as err:
+        raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
-    elif src_type == "Dipole":
-        momv = tile_group_property(group, n_pp, "moment")
-        kwargs.update({"moment": momv})
-
-    elif src_type == "Loop":
-        currv = tile_group_property(group, n_pp, "current")
-        diav = tile_group_property(group, n_pp, "diameter")
-        kwargs.update({"current": currv, "diameter": diav})
-
-    elif src_type == "Line":
-        # get_BH_line_from_vert function tiles internally !
-        # currv = tile_current(group, n_pp)
+    if src_type == "Line":  # get_BH_line_from_vert function tiles internally !
         currv = np.array([src.current for src in group])
         vert_list = [src.vertices for src in group]
         kwargs.update({"current": currv, "vertices": vert_list})
-
     elif src_type == "CustomSource":
         kwargs.update(field_func=group[0].field_func)
-
     else:
-        raise MagpylibInternalError("Bad source_type in get_src_dict")
+        for prop in src_props:
+            kwargs[prop] = tile_group_property(group, n_pp, prop)
 
     return kwargs
 
 
-def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
+def getBH_level2(
+    sources, observers, *, field, sumup, squeeze, pixel_agg, output, **kwargs
+) -> np.ndarray:
     """Compute field for given sources and observers.
 
     Parameters
@@ -103,6 +116,11 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         which applies on pixel output values.
     field : {'B', 'H'}
         'B' computes B field, 'H' computes H-field
+    output: str, default='ndarray'
+        Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
+        dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
+        returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
+        installed).
 
     Returns
     -------
@@ -124,15 +142,18 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
-        return getBH_dict_level2(source_type=sources, observers=observers, **kwargs)
+        return getBH_dict_level2(
+            source_type=sources,
+            observers=observers,
+            field=field,
+            squeeze=squeeze,
+            **kwargs,
+        )
 
     # bad user inputs mixing getBH_dict kwargs with object oriented interface
-    kwargs_check = kwargs.copy()
-    for popit in ["field", "sumup", "squeeze", "pixel_agg"]:
-        kwargs_check.pop(popit, None)
-    if kwargs_check:
+    if kwargs:
         raise MagpylibBadUserInput(
-            f"Keyword arguments {tuple(kwargs_check.keys())} are only allowed when the source "
+            f"Keyword arguments {tuple(kwargs.keys())} are only allowed when the source "
             "is defined by a string (e.g. sources='Cylinder')"
         )
 
@@ -144,13 +165,12 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(sources)
-    check_excitations(sources, kwargs["field"])
+    check_excitations(sources, field)
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
     #   check if all pixel shapes are similar - or else if pixel_agg is given
-    pixel_agg = kwargs.get("pixel_agg", None)
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
@@ -238,7 +258,7 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(field=kwargs["field"], **src_dict)  # compute field
+        B_group = getBH_level1(field=field, **src_dict)  # compute field
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
         )  # reshape (2% slower for large arrays)
@@ -258,7 +278,6 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
                 )  # delete remaining part of slice
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
-    #   note: replace by math.prod with python 3.8 or later
     for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
@@ -295,21 +314,134 @@ def getBH_level2(sources, observers, **kwargs) -> np.ndarray:
         Bagg = [np.expand_dims(pixel_agg_func(b, axis=2), axis=2) for b in Bsplit]
         B = np.concatenate(Bagg, axis=2)
 
+    # reset tiled objects
+    for obj, m0 in zip(reset_obj, reset_obj_m0):
+        obj._position = obj._position[:m0]
+        obj._orientation = obj._orientation[:m0]
+
     # sumup over sources
-    if kwargs["sumup"]:
+    if sumup:
         B = np.sum(B, axis=0, keepdims=True)
 
+    output = check_getBH_output_type(kwargs.get("output", "ndarray"))
+
+    if output == "dataframe":
+        # pylint: disable=import-outside-toplevel
+        import pandas as pd
+
+        if sumup and len(sources) > 1:
+            src_ids = [f"sumup ({len(sources)})"]
+        else:
+            src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
+        sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
+        num_of_pixels = np.prod(pix_shapes[0][:-1])
+        df = pd.DataFrame(
+            data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),
+            columns=["source", "path", "sensor", "pixel"],
+        )
+        df[[field + k for k in "xyz"]] = B.reshape(-1, 3)
+        return df
+
     # reduce all size-1 levels
-    if kwargs["squeeze"]:
+    if squeeze:
         B = np.squeeze(B)
     elif pixel_agg is not None:
         # add missing dimension since `pixel_agg` reduces pixel
         # dimensions to zero. Only needed if `squeeze is False``
         B = np.expand_dims(B, axis=-2)
 
-    # reset tiled objects
-    for obj, m0 in zip(reset_obj, reset_obj_m0):
-        obj._position = obj._position[:m0]
-        obj._orientation = obj._orientation[:m0]
+    return B
 
+
+def getBH_dict_level2(
+    source_type,
+    observers,
+    *,
+    field: str,
+    position=(0, 0, 0),
+    orientation=R.identity(),
+    squeeze=True,
+    **kwargs: dict,
+) -> np.ndarray:
+    """Direct interface access to vectorized computation
+
+    Parameters
+    ----------
+    kwargs: dict that describes the computation.
+
+    Returns
+    -------
+    field: ndarray, shape (N,3), field at obs_pos in [mT] or [kA/m]
+
+    Info
+    ----
+    - check inputs
+
+    - secures input types (list/tuple -> ndarray)
+    - test if mandatory inputs are there
+    - sets default input variables (e.g. pos, rot) if missing
+    - tiles 1D inputs vectors to correct dimension
+    """
+    # pylint: disable=too-many-branches
+    # pylint: disable=too-many-statements
+
+    # generate dict of secured inputs for auto-tiling ---------------
+    #  entries in this dict will be tested for input length, and then
+    #  be automatically tiled up and stored back into kwargs for calling
+    #  getBH_level1().
+    #  To allow different input dimensions, the tdim argument is also given
+    #  which tells the program which dimension it should tile up.
+
+    if source_type not in LIBRARY_BH_DICT_SOURCE_STRINGS:
+        raise MagpylibBadUserInput(
+            f"Input parameter `sources` must be one of {LIBRARY_BH_DICT_SOURCE_STRINGS}"
+            " when using the direct interface."
+        )
+
+    kwargs["observers"] = observers
+    kwargs["position"] = position
+
+    # change orientation to Rotation numpy array for tiling
+    kwargs["orientation"] = orientation.as_quat()
+
+    # evaluation vector lengths
+    vec_lengths = []
+    for key, val in kwargs.items():
+        try:
+            val = np.array(val, dtype=float)
+        except TypeError as err:
+            raise MagpylibBadUserInput(
+                f"{key} input must be array-like.\n" f"Instead received {val}"
+            ) from err
+        tdim = PARAM_TILE_DIMS.get(key, 1)
+        if val.ndim == tdim:
+            vec_lengths.append(len(val))
+        kwargs[key] = val
+
+    if len(set(vec_lengths)) > 1:
+        raise MagpylibBadUserInput(
+            "Input array lengths must be 1 or of a similar length.\n"
+            f"Instead received {set(vec_lengths)}"
+        )
+    vec_len = max(vec_lengths, default=1)
+
+    # tile 1D inputs and replace original values in kwargs
+    for key, val in kwargs.items():
+        tdim = PARAM_TILE_DIMS.get(key, 1)
+        if val.ndim < tdim:
+            if tdim == 2:
+                kwargs[key] = np.tile(val, (vec_len, 1))
+            elif tdim == 1:
+                kwargs[key] = np.array([val] * vec_len)
+        else:
+            kwargs[key] = val
+
+    # change orientation back to Rotation object
+    kwargs["orientation"] = R.from_quat(kwargs["orientation"])
+
+    # compute and return B
+    B = getBH_level1(source_type=source_type, field=field, **kwargs)
+
+    if squeeze:
+        return np.squeeze(B)
     return B
