@@ -658,22 +658,27 @@ def get_generic_traces(
             for extr in extra_model3d_traces:
                 if extr.show:
                     extr.update(extr.updatefunc())
-                    if extr.backend == "plotly":
-                        trace3d = {}
+                    if extr.backend == "generic":
+                        trace3d = {"opacity": kwargs["opacity"]}
                         ttype = extr.constructor.lower()
                         obj_extr_trace = (
                             extr.kwargs() if callable(extr.kwargs) else extr.kwargs
                         )
                         obj_extr_trace = {"type": ttype, **obj_extr_trace}
-                        if ttype == "mesh3d":
-                            trace3d["showscale"] = False
+                        if ttype == "scatter3d":
+                            for k in ("marker", "line"):
+                                trace3d["{k}_color"] = trace3d.get(
+                                    f"{k}_color", kwargs["color"]
+                                )
+                        elif ttype == "mesh3d":
+                            trace3d["showscale"] = trace3d.get("showscale", False)
                             if "facecolor" in obj_extr_trace:
                                 ttype = "mesh3d_facecolor"
-                        if ttype == "scatter3d":
-                            trace3d["marker_color"] = kwargs["color"]
-                            trace3d["line_color"] = kwargs["color"]
+                            trace3d["color"] = trace3d.get("color", kwargs["color"])
                         else:
-                            trace3d["color"] = kwargs["color"]
+                            raise ValueError(
+                                f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                            )
                         trace3d.update(
                             linearize_dict(
                                 place_and_orient_model3d(
@@ -918,7 +923,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         warnings.warn("No path to be animated detected, displaying standard plot")
 
     anim_def = Config.display.animation.copy()
-    anim_def.update(kwargs)
+    anim_def.update({k[10:]: v for k, v in kwargs.items()})
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
     return kwargs, animation, animation_kwargs

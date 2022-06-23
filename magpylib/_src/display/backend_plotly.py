@@ -159,53 +159,7 @@ def display_plotly(
     **kwargs,
 ):
 
-    """
-    Display objects and paths graphically using the plotly library.
-
-    Parameters
-    ----------
-    objects: sources, collections or sensors
-        Objects to be displayed.
-
-    zoom: float, default = 1
-        Adjust plot zoom-level. When zoom=0 all objects are just inside the 3D-axes.
-
-    fig: plotly Figure, default=None
-        Display graphical output in a given figure:
-        - plotly.graph_objects.Figure
-        - plotly.graph_objects.FigureWidget
-        By default a new `Figure` is created and displayed.
-
-    renderer: str. default=None,
-        The renderers framework is a flexible approach for displaying plotly.py figures in a variety
-        of contexts.
-        Available renderers are:
-        ['plotly_mimetype', 'jupyterlab', 'nteract', 'vscode',
-         'notebook', 'notebook_connected', 'kaggle', 'azure', 'colab',
-         'cocalc', 'databricks', 'json', 'png', 'jpeg', 'jpg', 'svg',
-         'pdf', 'browser', 'firefox', 'chrome', 'chromium', 'iframe',
-         'iframe_connected', 'sphinx_gallery', 'sphinx_gallery_png']
-
-    title: str, default=None
-        Plot title.
-
-    colorsequence: list or array_like, iterable, default=
-            ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
-            '#B68100', '#750D86', '#EB663B', '#511CFB', '#00A08B', '#FB00D1',
-            '#FC0080', '#B2828D', '#6C7C32', '#778AAE', '#862A16', '#A777F1',
-            '#620042', '#1616A7', '#DA60CA', '#6C4516', '#0D2A63', '#AF0038']
-        An iterable of color values used to cycle trough for every object displayed.
-        A color and may be specified as:
-      - A hex string (e.g. '#ff0000')
-      - An rgb/rgba string (e.g. 'rgb(255,0,0)')
-      - An hsl/hsla string (e.g. 'hsl(0,100%,50%)')
-      - An hsv/hsva string (e.g. 'hsv(0,100%,100%)')
-      - A named CSS color
-
-    Returns
-    -------
-    None: NoneType
-    """
+    """Display objects and paths graphically using the plotly library."""
 
     show_canvas = False
     if canvas is None:

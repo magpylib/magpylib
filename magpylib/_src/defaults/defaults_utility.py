@@ -8,8 +8,7 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 SUPPORTED_PLOTTING_BACKENDS = (
     "matplotlib",
     "plotly",
-    "pyvista",
-    "matplotlib_auto",
+    "matplotlib_old",
     "mayavi",
 )
 

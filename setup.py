@@ -76,6 +76,7 @@ setuptools.setup(
             "pylint",
             "jupyterlab>=3.2",
             "sphinx==4.4.0",
+            "pandas",
         ]
     },
     classifiers=[
