@@ -52,26 +52,6 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
     Examples
     --------
-    `Facets` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    tetrahedral magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
-    at the observer position (0,0,0) given in units of [mm]:
-
-    >>> import magpylib as magpy
-    >>> vertices = [(1,0,-1/2**0.5),(0,1,1/2**0.5),(-1,0,-1/2**0.5),(1,-1,1/2**0.5)]
-    >>> src = magpy.magnet.Facets((100,200,300), vertices=vertices)
-    >>> H = src.getH((0,0,0))
-    >>> print(H)
-    [  3.42521345 -40.76504699 -70.06509857]
-
-    We rotate the source object, and compute the B-field, this time at a set of observer positions:
-
-    >>> src.rotate_from_angax(45, 'x')
-    Facets(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(B)
-    [[3.2653876  7.77807843 0.41141725]
-     [0.49253111 0.930953   0.0763492 ]
-     [0.1497206  0.26663798 0.02164654]]
     """
 
     def __init__(
@@ -172,8 +152,8 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         are the same as in the global coordinate system. The geometric center of the Facets
         is determined by its vertices and is not necessarily located in the origin.
 
-        In this case the vertices are calculated from points and triangles. If `triangles` is `None`
-        a `sciyp.spatial.ConvexHull` infers it."""
+        In this case the facets are constructed from `points` and `triangles`. If `triangles` is
+        `None`, a `sciyp.spatial.ConvexHull` infers it."""
 
         # pylint: disable=protected-access
         if points is None:
@@ -184,6 +164,7 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         if triangles is None:
             hull = ConvexHull(vertices)
             triangles = hull.simplices
+            # TODO ConvexHull does not guarantee that the facets are all pointing outwards
         triangles = np.array(triangles)
         facets = vertices[triangles]
         return cls(
