@@ -15,6 +15,7 @@ MAGPYLIB_FAMILIES = {
     "Sphere": ("magnet",),
     "CylinderSegment": ("magnet",),
     "Tetrahedron": ("magnet",),
+    "Facets": ("magnet",),
     "Sensor": ("sensor",),
     "Dipole": ("dipole",),
     "Marker": ("markers",),

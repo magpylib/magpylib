@@ -16,6 +16,7 @@ LIBRARY_SOURCES = (
     "Loop",
     "Line",
     "Tetrahedron",
+    "Facets",
     "CustomSource",
 )
 
@@ -28,6 +29,7 @@ LIBRARY_BH_DICT_SOURCE_STRINGS = (
     "Loop",
     "Line",
     "Tetrahedron",
+    "Facets",
 )
 
 LIBRARY_SENSORS = ("Sensor",)

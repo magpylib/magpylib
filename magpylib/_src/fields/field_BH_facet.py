@@ -66,7 +66,7 @@ def facet_field(
     field: str,
     observers: np.ndarray,
     magnetization: np.ndarray,
-    vertices: np.ndarray,
+    facets: np.ndarray,
 ) -> np.ndarray:
     """
     Code for the field calculation of a uniformly magnetized triangular facet
@@ -83,8 +83,8 @@ def facet_field(
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
-    vertices: ndarray, shape (n,3,3)
-        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3) of triangular facet
+    facets: ndarray, shape (n,3,3)
+        Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
 
     Returns
     -------
@@ -97,19 +97,18 @@ def facet_field(
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
     # pylint: disable=too-many-statements
-
     bh = check_field_input(field, "facet_field()")
 
     num_targets = observers.shape[0]
 
     B = np.zeros((num_targets, 3))
 
-    n = norm_vector(vertices)
+    n = norm_vector(facets)
     sigma = mydot(n, magnetization)
     R = []
     r = []
     for i in range(3):
-        R.append(vertices[:, i] - observers)
+        R.append(facets[:, i] - observers)
         r.append(np.linalg.norm(R[i], axis=1))
     inout = np.fabs(n[:, 0] * R[i][:, 0] + n[:, 1] * R[i][:, 1] + n[:, 2] * R[i][:, 2])
     solid_angle_results = np.where(
@@ -120,7 +119,7 @@ def facet_field(
     RR = np.zeros(num_targets)
     for i in range(3):
         ii = next_i(i)
-        L = vertices[:, ii] - vertices[:, i]
+        L = facets[:, ii] - facets[:, i]
         b = 2.0 * (R[i][:, 0] * L[:, 0] + R[i][:, 1] * L[:, 1] + R[i][:, 2] * L[:, 2])
         l = np.linalg.norm(L, axis=-1)
         bl = b / (2.0 * l)
@@ -148,3 +147,49 @@ def facet_field(
 
     H = B * 10 / 4 / np.pi  # mT -> kA/m
     return H
+
+
+def magnet_facets_field(
+    field: str,
+    observers: np.ndarray,
+    magnetization: np.ndarray,
+    facets: np.ndarray,
+) -> np.ndarray:
+    """
+    Code for the field calculation of a uniformly magnetized triangular facet
+
+    Parameters
+    ----------
+    field: str, default=`'B'`
+        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
+
+    observers: ndarray, shape (n,3)
+        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+
+    magnetization: ndarray, shape (n,3)
+        Homogeneous magnetization vector in units of [mT].
+
+    facets: ndarray, shape (n,n1,3,3)
+        Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
+
+    Returns
+    -------
+    B-field or H-field: ndarray, shape (n,3)
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+
+    Notes
+    -----
+    Field computations via publication:
+    Guptasarma: GEOPHYSICS 1999 64:1, 70-74
+    """
+    n0, n1, *_ = facets.shape
+    facets = facets.reshape(-1, 3, 3)
+    observers = np.repeat(observers, n1, axis=0)
+    magnetization = np.repeat(magnetization, n1, axis=0)
+    bh = facet_field(
+        field=field, observers=observers, magnetization=magnetization, facets=facets
+    )
+    bh = bh.reshape((n0, n1, 3))
+    bh = np.sum(bh, axis=1)
+    return bh

@@ -10,3 +10,4 @@ from magpylib._src.obj_classes.class_mag_Cylinder import Cylinder
 from magpylib._src.obj_classes.class_mag_Sphere import Sphere
 from magpylib._src.obj_classes.class_mag_CylinderSegment import CylinderSegment
 from magpylib._src.obj_classes.class_mag_Tetrahedron import Tetrahedron
+from magpylib._src.obj_classes.class_mag_Facets import Facets

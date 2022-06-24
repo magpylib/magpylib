@@ -2,6 +2,7 @@
 from functools import partial
 
 import numpy as np
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
@@ -590,5 +591,73 @@ def make_Tetrahedron(
         z=z,
     )
 
+    trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
+    return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
+
+
+def make_Facets(
+    backend,
+    vertices=None,
+    triangles=None,
+    position=None,
+    orientation=None,
+    show=True,
+    scale=1,
+    **kwargs,
+) -> dict:
+    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
+
+    Parameters
+    ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+    vertices: ndarray, shape (4,3)
+        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
+        coordinate system of the tetrahedron.
+
+    triangles: ndarray, shape (4,3)
+        For each triangle, the indices of the three points that make up the triangle, ordered in an
+        anticlockwise manner. If not specified, the Delaunay triangulation is calculated.
+
+    position : array_like, shape (3,), default=(0,0,0)
+        Reference position of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
+
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
+        Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+
+    Returns
+    -------
+    3D-model: dict
+        A dictionary with necessary key/value pairs with the necessary information to construct
+        a 3D-model.
+    """
+    vertices = np.array(vertices)
+    x, y, z = vertices.T
+    if triangles is None:
+        hull = ConvexHull(vertices)
+        triangles = hull.simplices
+    i, j, k = np.array(triangles).T
+    trace = dict(
+        i=i,
+        j=j,
+        k=k,
+        x=x,
+        y=y,
+        z=z,
+    )
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

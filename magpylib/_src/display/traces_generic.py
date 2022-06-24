@@ -19,6 +19,7 @@ from magpylib._src.display.traces_base import (
     make_CylinderSegment as make_BaseCylinderSegment,
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
+from magpylib._src.display.traces_base import make_Facets as make_BaseFacets
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
 from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
@@ -331,11 +332,38 @@ def make_Tetrahedron(
     **kwargs,
 ) -> dict:
     """
-    Creates the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments
     """
-    name, name_suffix = get_name_and_suffix("Sphere", "", style)
+    name, name_suffix = get_name_and_suffix("Tetrahedron", "", style)
     sphere = make_BaseTetrahedron("plotly-dict", vertices=vertices)
+    return _update_mag_mesh(
+        sphere,
+        name,
+        name_suffix,
+        mag,
+        orientation,
+        position,
+        style,
+        **kwargs,
+    )
+
+
+def make_Facets(
+    mag=(0.0, 0.0, 1000.0),
+    vertices=None,
+    triangles=None,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Facets Magnet in a dictionary based on the
+    provided arguments
+    """
+    name, name_suffix = get_name_and_suffix("Facets", "", style)
+    sphere = make_BaseFacets("plotly-dict", vertices=vertices, triangles=triangles)
     return _update_mag_mesh(
         sphere,
         name,
@@ -574,6 +602,7 @@ def get_generic_traces(
     CylinderSegment = _src.obj_classes.class_mag_CylinderSegment.CylinderSegment
     Sphere = _src.obj_classes.class_mag_Sphere.Sphere
     Tetrahedron = _src.obj_classes.class_mag_Tetrahedron.Tetrahedron
+    Facets = _src.obj_classes.class_mag_Facets.Facets
     Dipole = _src.obj_classes.class_misc_Dipole.Dipole
     Loop = _src.obj_classes.class_current_Loop.Loop
     Line = _src.obj_classes.class_current_Line.Line
@@ -656,6 +685,13 @@ def get_generic_traces(
                 vertices=input_obj.vertices,
             )
             make_func = make_Tetrahedron
+        elif isinstance(input_obj, Facets):
+            kwargs.update(
+                mag=input_obj.magnetization,
+                vertices=input_obj.vertices,
+                triangles=input_obj.triangles,
+            )
+            make_func = make_Facets
         elif isinstance(input_obj, Dipole):
             kwargs.update(
                 moment=input_obj.moment,
