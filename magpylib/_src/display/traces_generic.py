@@ -959,7 +959,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         warnings.warn("No path to be animated detected, displaying standard plot")
 
     anim_def = Config.display.animation.copy()
-    anim_def.update({k[10:]: v for k, v in kwargs.items()})
+    anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
     return kwargs, animation, animation_kwargs
