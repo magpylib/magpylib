@@ -496,7 +496,8 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     # insert empty point to avoid connecting line between arrows
     points = np.array(points)
     points = np.insert(points, points.shape[-1], np.nan, axis=2)
-    x, y, z = np.concatenate(points.swapaxes(1, 2)).T
+    # remove last nan after insert with [:-1]
+    x, y, z = np.concatenate(points.swapaxes(1, 2))[:-1].T
     trace = {
         "type": "scatter3d",
         "mode": "lines",
