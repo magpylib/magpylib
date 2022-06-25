@@ -861,7 +861,7 @@ def subdivide_mesh_by_facecolor(trace):
     facecolor = trace["facecolor"]
     subtraces = []
     # pylint: disable=singleton-comparison
-    facecolor[facecolor == None] = "black"
+    facecolor[facecolor == np.array(None)] = "black"
     for color in np.unique(facecolor):
         mask = facecolor == color
         new_trace = trace.copy()
