@@ -496,7 +496,8 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     # insert empty point to avoid connecting line between arrows
     points = np.array(points)
     points = np.insert(points, points.shape[-1], np.nan, axis=2)
-    x, y, z = np.concatenate(points.swapaxes(1, 2)).T
+    # remove last nan after insert with [:-1]
+    x, y, z = np.concatenate(points.swapaxes(1, 2))[:-1].T
     trace = {
         "type": "scatter3d",
         "mode": "lines",
@@ -860,7 +861,7 @@ def subdivide_mesh_by_facecolor(trace):
     facecolor = trace["facecolor"]
     subtraces = []
     # pylint: disable=singleton-comparison
-    facecolor[facecolor == None] = "black"
+    facecolor[facecolor == np.array(None)] = "black"
     for color in np.unique(facecolor):
         mask = facecolor == color
         new_trace = trace.copy()
