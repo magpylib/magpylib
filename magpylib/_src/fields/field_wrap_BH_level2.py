@@ -325,7 +325,7 @@ def getBH_level2(
     if sumup:
         B = np.sum(B, axis=0, keepdims=True)
 
-    output = check_getBH_output_type(kwargs.get("output", "ndarray"))
+    output = check_getBH_output_type(output)
 
     if output == "dataframe":
         # pylint: disable=import-outside-toplevel
