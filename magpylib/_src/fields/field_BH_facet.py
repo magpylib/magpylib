@@ -170,8 +170,9 @@ def magnet_facets_field(
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
-    facets: ndarray, shape (n,n1,3,3)
+    facets: ndarray, shape (n,n1,3,3) or ragged sequence
         Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
+        `facets` can be a ragged sequence of facet children with different lengths
 
     Returns
     -------
@@ -183,13 +184,25 @@ def magnet_facets_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    n0, n1, *_ = facets.shape
-    facets = facets.reshape(-1, 3, 3)
-    observers = np.repeat(observers, n1, axis=0)
-    magnetization = np.repeat(magnetization, n1, axis=0)
-    bh = facet_field(
-        field=field, observers=observers, magnetization=magnetization, facets=facets
-    )
-    bh = bh.reshape((n0, n1, 3))
-    bh = np.sum(bh, axis=1)
+    if facets.ndim != 1:  # all facets objects have same number of children
+        n0, n1, *_ = facets.shape
+        facets = facets.reshape(-1, 3, 3)
+        observers = np.repeat(observers, n1, axis=0)
+        magnetization = np.repeat(magnetization, n1, axis=0)
+        bh = facet_field(
+            field=field, observers=observers, magnetization=magnetization, facets=facets
+        )
+        bh = bh.reshape((n0, n1, 3))
+        bh = np.sum(bh, axis=1)
+    else:
+        nvs = [f.shape[0] for f in facets]  # length of vertex sets
+        split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
+        facets = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
+        observers = np.repeat(observers, nvs, axis=0)
+        magnetization = np.repeat(magnetization, nvs, axis=0)
+        bh = facet_field(
+            field=field, observers=observers, magnetization=magnetization, facets=facets
+        )
+        bh_split = np.split(bh, split_indices)
+        bh = np.array([np.sum(bh, axis=0) for bh in bh_split])
     return bh
