@@ -159,15 +159,6 @@ def test_circular_line_display():
     assert x is None, "display test fail"
 
 
-def test_matplotlib_animation_warning():
-    """animation=True with matplotlib should raise UserWarning"""
-    ax = plt.subplot(projection="3d")
-    sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
-    sens.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
-    with pytest.warns(UserWarning):
-        sens.show(canvas=ax, animation=True)
-
-
 def test_matplotlib_model3d_extra():
     """test display extra model3d"""
 

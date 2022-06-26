@@ -110,16 +110,19 @@ def display_matplotlib(
     if canvas is None:
         show_canvas = True
         fig = plt.figure(dpi=80, figsize=(8, 8))
-        canvas = fig.add_subplot(111, projection="3d")
-        canvas.set_box_aspect((1, 1, 1))
+        ax = fig.add_subplot(111, projection="3d")
+        ax.set_box_aspect((1, 1, 1))
+    else:
+        ax = canvas
+        fig = ax.get_figure()
 
     def draw_frame(ind):
         for tr in frames[ind]["data"]:
             constructor = tr["constructor"]
             args = tr["args"]
             kwargs = tr["kwargs"]
-            getattr(canvas, constructor)(*args, **kwargs)
-        canvas.set(
+            getattr(ax, constructor)(*args, **kwargs)
+        ax.set(
             **{f"{k}label": f"{k} [mm]" for k in "xyz"},
             **{f"{k}lim": r for k, r in zip("xyz", ranges)},
         )
@@ -127,7 +130,7 @@ def display_matplotlib(
     def animate(ind):
         plt.cla()
         draw_frame(ind)
-        return [canvas]
+        return [ax]
 
     if len(frames) == 1:
         draw_frame(0)
