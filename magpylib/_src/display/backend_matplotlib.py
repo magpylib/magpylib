@@ -7,6 +7,17 @@ from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
 
+SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
+
+LINE_STYLES = {
+    "solid": "-",
+    "dash": "--",
+    "dashdot": "-.",
+    "dot": (0, (1, 1)),
+    "longdash": "loosely dotted",
+    "longdashdot": "loosely dashdotted",
+}
+
 
 def generic_trace_to_matplotlib(trace):
     """Transform a generic trace into a matplotlib trace"""
@@ -43,9 +54,15 @@ def generic_trace_to_matplotlib(trace):
                 "ms": ("marker", "size"),
             }.items()
         }
-        if mode is not None and "lines" not in mode:
-            props["ls"] = ""
-
+        if "ls" in props:
+            props["ls"] = LINE_STYLES.get(props["ls"], "solid")
+        if "marker" in props:
+            props["marker"] = SYMBOLS.get(props["marker"], "x")
+        if mode is not None:
+            if "lines" not in mode:
+                props["ls"] = ""
+            if "markers" not in mode:
+                props["marker"] = None
         trace_mpl = {
             "constructor": "plot",
             "args": (x, y, z),
@@ -93,16 +110,19 @@ def display_matplotlib(
     if canvas is None:
         show_canvas = True
         fig = plt.figure(dpi=80, figsize=(8, 8))
-        canvas = fig.add_subplot(111, projection="3d")
-        canvas.set_box_aspect((1, 1, 1))
+        ax = fig.add_subplot(111, projection="3d")
+        ax.set_box_aspect((1, 1, 1))
+    else:
+        ax = canvas
+        fig = ax.get_figure()
 
     def draw_frame(ind):
         for tr in frames[ind]["data"]:
             constructor = tr["constructor"]
             args = tr["args"]
             kwargs = tr["kwargs"]
-            getattr(canvas, constructor)(*args, **kwargs)
-        canvas.set(
+            getattr(ax, constructor)(*args, **kwargs)
+        ax.set(
             **{f"{k}label": f"{k} [mm]" for k in "xyz"},
             **{f"{k}lim": r for k, r in zip("xyz", ranges)},
         )
@@ -110,7 +130,7 @@ def display_matplotlib(
     def animate(ind):
         plt.cla()
         draw_frame(ind)
-        return [canvas]
+        return [ax]
 
     if len(frames) == 1:
         draw_frame(0)
