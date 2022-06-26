@@ -2,7 +2,7 @@
 The `magpylib.magnet` subpackage contains all magnet classes.
 """
 
-__all__ = ["Cuboid", "Cylinder", "Sphere", "CylinderSegment", "Tetrahedron"]
+__all__ = ["Cuboid", "Cylinder", "Sphere", "CylinderSegment", "Tetrahedron", "Facets"]
 
 
 from magpylib._src.obj_classes.class_mag_Cuboid import Cuboid
