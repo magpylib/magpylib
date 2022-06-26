@@ -7,6 +7,17 @@ from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
 
+SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
+
+LINE_STYLES = {
+    "solid": "-",
+    "dash": "--",
+    "dashdot": "-.",
+    "dot": (0, (1, 1)),
+    "longdash": "loosely dotted",
+    "longdashdot": "loosely dashdotted",
+}
+
 
 def generic_trace_to_matplotlib(trace):
     """Transform a generic trace into a matplotlib trace"""
@@ -43,9 +54,15 @@ def generic_trace_to_matplotlib(trace):
                 "ms": ("marker", "size"),
             }.items()
         }
-        if mode is not None and "lines" not in mode:
-            props["ls"] = ""
-
+        if "ls" in props:
+            props["ls"] = LINE_STYLES.get(props["ls"], "solid")
+        if "marker" in props:
+            props["marker"] = SYMBOLS.get(props["marker"], "x")
+        if mode is not None:
+            if "lines" not in mode:
+                props["ls"] = ""
+            if "markers" not in mode:
+                props["marker"] = None
         trace_mpl = {
             "constructor": "plot",
             "args": (x, y, z),
