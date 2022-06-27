@@ -1,4 +1,3 @@
-
 import sys
 from unittest import mock
 
@@ -178,9 +177,10 @@ def test_getH_interfaces3():
     H_test = src.getH([sens, sens])
     np.testing.assert_allclose(H3, H_test)
 
+
 def test_dataframe_ouptut():
     """test pandas dataframe output"""
-    max_path_len =20
+    max_path_len = 20
     num_of_pix = 2
 
     sources = [
@@ -196,15 +196,29 @@ def test_dataframe_ouptut():
     sens2 = sens1.copy(position=(0, 0, 3), style_label="sens2")
     sens_col = magpy.Collection(sens1, sens2)
 
-    for field in 'BH':
+    for field in "BH":
         cols = [f"{field}{k}" for k in "xyz"]
-        df = getattr(magpy,f"get{field}")(sources, sens_col, sumup=False, output='dataframe')
-        BH = getattr(magpy,f"get{field}")(sources, sens_col, sumup=False, squeeze=False)
+        df = getattr(magpy, f"get{field}")(
+            sources, sens_col, sumup=False, output="dataframe"
+        )
+        BH = getattr(magpy, f"get{field}")(
+            sources, sens_col, sumup=False, squeeze=False
+        )
         for i in range(2):
-            np.testing.assert_array_equal(BH[i].reshape(-1,3), df[df['source']==df['source'].unique()[i]][cols])
-            np.testing.assert_array_equal(BH[:,i].reshape(-1,3), df[df['path']==df['path'].unique()[i]][cols])
-            np.testing.assert_array_equal(BH[:,:,i].reshape(-1,3), df[df['sensor']==df['sensor'].unique()[i]][cols])
-            np.testing.assert_array_equal(BH[:,:,:,i].reshape(-1,3), df[df['pixel']==df['pixel'].unique()[i]][cols])
+            np.testing.assert_array_equal(
+                BH[i].reshape(-1, 3), df[df["source"] == df["source"].unique()[i]][cols]
+            )
+            np.testing.assert_array_equal(
+                BH[:, i].reshape(-1, 3), df[df["path"] == df["path"].unique()[i]][cols]
+            )
+            np.testing.assert_array_equal(
+                BH[:, :, i].reshape(-1, 3),
+                df[df["sensor"] == df["sensor"].unique()[i]][cols],
+            )
+            np.testing.assert_array_equal(
+                BH[:, :, :, i].reshape(-1, 3),
+                df[df["pixel"] == df["pixel"].unique()[i]][cols],
+            )
 
 
 def test_dataframe_output_missing_pandas():
@@ -212,4 +226,4 @@ def test_dataframe_output_missing_pandas():
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     with mock.patch.dict(sys.modules, {"pandas": None}):
         with pytest.raises(ModuleNotFoundError):
-            src.getB((0,0,0), output='dataframe')
+            src.getB((0, 0, 0), output="dataframe")
