@@ -3,6 +3,8 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+# Unreleased
+* Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
 
 ## [4.0.4] - 2022-06-09
 
@@ -378,6 +380,7 @@ The first official release of the magpylib library.
 
 ---
 
+[Unreleased]:https://github.com/magpylib/magpylib/compare/4.0.4...HEAD
 [4.0.4]:https://github.com/magpylib/magpylib/compare/4.0.3...4.0.4
 [4.0.3]:https://github.com/magpylib/magpylib/compare/4.0.2...4.0.3
 [4.0.2]:https://github.com/magpylib/magpylib/compare/4.0.1...4.0.2
