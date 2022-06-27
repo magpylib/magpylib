@@ -145,5 +145,5 @@ def display_matplotlib(
         )
     if return_animation and len(frames) != 1:
         return anim
-    elif show_canvas:
+    if show_canvas:
         plt.show()
