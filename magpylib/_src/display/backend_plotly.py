@@ -161,7 +161,7 @@ def process_extra_trace(model):
     trace3d.update({"type": ttype, **trace_kwargs})
     if ttype == "scatter3d":
         for k in ("marker", "line"):
-            trace3d["{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
+            trace3d[f"{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
             trace3d.pop("color", None)
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
@@ -205,7 +205,7 @@ def display_plotly(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
-        return_extra_backend_traces="plotly",
+        extra_backend="plotly",
         **kwargs,
     )
     frames = data["frames"]
@@ -216,6 +216,7 @@ def display_plotly(
         for model in fr["extra_backend_traces"]:
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
+        fr.pop("extra_backend_traces", None)
     with canvas.batch_update():
         if len(frames) == 1:
             canvas.add_traces(frames[0]["data"])

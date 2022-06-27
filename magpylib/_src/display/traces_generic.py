@@ -520,7 +520,7 @@ def get_generic_traces(
     showlegend=None,
     legendtext=None,
     mag_arrows=False,
-    return_extra_backend_traces=False,
+    extra_backend=False,
     **kwargs,
 ) -> list:
     """
@@ -568,6 +568,7 @@ def get_generic_traces(
             check_excitations([input_obj])
 
     traces = []
+    path_traces_extra_specific_backend = []
     if isinstance(input_obj, MagpyMarkers):
         x, y, z = input_obj.markers.T
         marker = style.marker.as_dict()
@@ -646,14 +647,10 @@ def get_generic_traces(
             kwargs.update(obj=input_obj)
             make_func = make_DefaultTrace
 
-        label = (
-            input_obj.style.label
-            if input_obj.style.label is not None
-            else str(type(input_obj).__name__)
-        )
+        label = getattr(getattr(input_obj, "style", None), "label", None)
+        label = label if label is not None else str(type(input_obj).__name__)
         path_traces = []
         path_traces_extra_generic = {}
-        path_traces_extra_specific_backend = []
         extra_model3d_traces = (
             style.model3d.data if style.model3d.data is not None else []
         )
@@ -701,7 +698,7 @@ def get_generic_traces(
                         if ttype not in path_traces_extra_generic:
                             path_traces_extra_generic[ttype] = []
                         path_traces_extra_generic[ttype].append(trace3d)
-                    elif extr.backend == return_extra_backend_traces:
+                    elif extr.backend == extra_backend:
                         showleg = (
                             showlegend
                             and pos_orient_ind == 0
@@ -751,7 +748,7 @@ def get_generic_traces(
         if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
             traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
     out = (traces,)
-    if return_extra_backend_traces is not False:
+    if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
     return out[0] if len(out) == 1 else out
 
@@ -793,9 +790,8 @@ def draw_frame(
     zoom=0.0,
     autosize=None,
     output="dict",
-    return_ranges=False,
     mag_arrows=False,
-    return_extra_backend_traces=False,
+    extra_backend=False,
     **kwargs,
 ) -> Tuple:
     """
@@ -811,7 +807,6 @@ def draw_frame(
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
     extra_backend_traces = []
-    return_autosize = False
     Sensor = _src.obj_classes.class_Sensor.Sensor
     Dipole = _src.obj_classes.class_misc_Dipole.Dipole
     traces_out = {}
@@ -832,42 +827,33 @@ def draw_frame(
             out_traces = get_generic_traces(
                 obj,
                 mag_arrows=mag_arrows,
-                return_extra_backend_traces=return_extra_backend_traces,
+                extra_backend=extra_backend,
                 **params,
             )
-            if return_extra_backend_traces is not False:
+            if extra_backend is not False:
                 out_traces, ebt = out_traces
                 extra_backend_traces.extend(ebt)
             traces_out[obj] = out_traces
     traces = [t for tr in traces_out.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
     if autosize is None or autosize == "return":
-        if autosize == "return":
-            return_autosize = True
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
     for obj, params in traces_to_resize.items():
         out_traces = get_generic_traces(
             obj,
             autosize=autosize,
             mag_arrows=mag_arrows,
-            return_extra_backend_traces=return_extra_backend_traces,
+            extra_backend=extra_backend,
             **params,
         )
-        if return_extra_backend_traces is not False:
+        if extra_backend is not False:
             out_traces, ebt = out_traces
             extra_backend_traces.extend(ebt)
         traces_out[obj] = out_traces
     if output == "list":
         traces = [t for tr in traces_out.values() for t in tr]
         traces_out = group_traces(*traces)
-    res = (traces_out,)
-    if return_autosize:
-        res += (autosize,)
-    if return_ranges:
-        res += (ranges,)
-    if return_extra_backend_traces:
-        res += (extra_backend_traces, )
-    return res[0] if len(res) == 1 else res
+    return traces_out, autosize, ranges, extra_backend_traces
 
 
 def group_traces(*traces):
@@ -1074,7 +1060,7 @@ def get_frames(
     title=None,
     animation=False,
     mag_arrows=False,
-    return_extra_backend_traces=False,
+    extra_backend=False,
     **kwargs,
 ):
     """This is a helper function which generates frames with generic traces to be provided to
@@ -1110,22 +1096,18 @@ def get_frames(
             kwargs["style_path_frames"] = [ind]
             title = "Animation 3D - " if title is None else title
             title_str = f"""{title}path index: {ind+1:0{exp}d}"""
-        frame = draw_frame(
+        traces, autosize_init, ranges, extra_backend_traces = draw_frame(
             objs,
             colorsequence,
             zoom,
             autosize=autosize,
             output="list",
             mag_arrows=mag_arrows,
-            return_extra_backend_traces=return_extra_backend_traces,
+            extra_backend=extra_backend,
             **kwargs,
         )
-        if return_extra_backend_traces is not False:
-            *frame, extra_backend_traces = frame
         if i == 0:  # get the dipoles and sensors autosize from first frame
-            traces, autosize = frame
-        else:
-            traces = frame
+            autosize = autosize_init
         frames.append(
             dict(
                 data=traces,

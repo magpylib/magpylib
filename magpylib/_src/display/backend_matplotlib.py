@@ -2,9 +2,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 
 # from magpylib._src.utility import format_obj_input
 
@@ -86,19 +86,24 @@ def process_extra_trace(model):
     model_kwargs = {"color": model["kwargs"]["color"]}
     model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
     model_args = extr.args() if callable(extr.args) else extr.args
-    trace3d = {"constructor": extr.constructor, "kwargs":model_kwargs, "args":model_args}
+    trace3d = {
+        "constructor": extr.constructor,
+        "kwargs": model_kwargs,
+        "args": model_args,
+    }
     kwargs, args, = place_and_orient_model3d(
-                        model_kwargs=model_kwargs,
-                        model_args=model_args,
-                        orientation=model["orientation"],
-                        position=model["position"],
-                        coordsargs=extr.coordsargs,
-                        scale=extr.scale,
-                        return_model_args=True,
-                    )
+        model_kwargs=model_kwargs,
+        model_args=model_args,
+        orientation=model["orientation"],
+        position=model["position"],
+        coordsargs=extr.coordsargs,
+        scale=extr.scale,
+        return_model_args=True,
+    )
     trace3d["kwargs"].update(kwargs)
     trace3d["args"] = args
     return trace3d
+
 
 def display_matplotlib(
     *obj_list,
@@ -118,7 +123,7 @@ def display_matplotlib(
         zoom=zoom,
         animation=animation,
         mag_arrows=True,
-        return_extra_backend_traces="matplotlib",
+        extra_backend="matplotlib",
         **kwargs,
     )
     frames = data["frames"]
