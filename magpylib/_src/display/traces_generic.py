@@ -831,9 +831,24 @@ def group_traces(*traces):
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
-    # TODO grouping does not dectect line_width vs line=dict(with=...)
-    spec_keys = {"mesh3d": ["colorscale"], "scatter3d": ["marker", "line", "mode"]}
+    spec_keys = {
+        "mesh3d": ["colorscale"],
+        "scatter3d": [
+            "marker",
+            "line_dash",
+            "line_color",
+            "line_width",
+            "marker_color",
+            "marker_symbol",
+            "marker_size",
+            "mode",
+        ],
+    }
     for tr in traces:
+        tr = linearize_dict(
+            tr,
+            separator="_",
+        )
         gr = [tr["type"]]
         for k in common_keys + spec_keys[tr["type"]]:
             try:
