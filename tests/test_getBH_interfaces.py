@@ -221,9 +221,25 @@ def test_dataframe_ouptut():
             )
 
 
+def test_dataframe_ouptut_sumup():
+    """test pandas dataframe output when sumup is True"""
+    sources = [
+        magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)),
+        magpy.magnet.Cylinder((0, 1000, 0), (1, 1))
+    ]
+    magpy.getB(sources, (0,0,0), sumup=True, output="dataframe")
+
+
 def test_dataframe_output_missing_pandas():
     """test if pandas is installed when using dataframe output in `getBH`"""
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     with mock.patch.dict(sys.modules, {"pandas": None}):
         with pytest.raises(ModuleNotFoundError):
             src.getB((0, 0, 0), output="dataframe")
+
+
+def test_getBH_bad_output_type():
+    """test bad output in `getBH`"""
+    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    with pytest.raises(ValueError):
+        src.getB((0, 0, 0), output="bad_output_type")
