@@ -399,19 +399,45 @@ fig.show()
 import magpylib as magpy
 
 # 3 sources, one with length 11 path
-source1 = magpy.misc.Dipole(moment=(0,0,100), position=[(1,1,1)]*11)
-source2 = magpy.current.Loop(current=1, diameter=3)
+pos_path = [(i/5,0,1) for i in range(-5,5)]
+source1 = magpy.misc.Dipole(moment=(0,0,100), position=pos_path)
+source2 = magpy.current.Loop(current=10, diameter=3)
 source3 = source1 + source2
 
 # 2 observers, each with 4x5 pixel
-sensor1 = magpy.Sensor(pixel=[[(1,2,3)]*4]*5)
-sensor2 = sensor1.copy()
+pixel = [[[(i/10,j/10,0)] for i in range(4)] for j in range(5)]
+sensor1 = magpy.Sensor(pixel=pixel, position=(-1,0,-1))
+sensor2 = sensor1.copy().move((2,0,0))
 
+sources = [source1, source2, source3]
+sensors = [sensor1, sensor2]
 # compute field
-B = magpy.getB([source1, source2, source3], [sensor1, sensor2])
+B = magpy.getB(sources, sensors)
 print(B.shape)
 ```
 
+For convenience, the result can also be outputted as [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe).
+
+```{code-cell} ipython3
+B_as_df = magpy.getB(sources, sensors, output='dataframe')
+B_as_df
+```
+
+Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take nice advantage over this feature, as they can deal with `dataframes` directly.
+
+```{code-cell} ipython3
+import plotly.express as px
+
+px.line(
+    B_as_df,
+    x="path",
+    y="Bx",
+    color="pixel",
+    line_group="source",
+    facet_col="source",
+    symbol="sensor",
+)
+```
 In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the computation time dramatically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
 
 (intro-direct-interface)=
