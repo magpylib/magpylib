@@ -133,6 +133,33 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         triangles = tr.reshape((-1, 3))
         return vertices, triangles
 
+    @staticmethod
+    def _flip_facets_outwards(vertices, triangles, tol=1e-8):
+        """Flip facets pointing inwards"""
+
+        # pylint: disable=import-outside-toplevel
+        from magpylib._src.fields.field_BH_facet import mask_inside_facets_convexhull
+
+        facets = vertices[triangles]
+
+        facet_centers = facets.mean(axis=1)
+
+        # calculate vectors normal to the facets
+        a = facets[:, 0, :] - facets[:, 1, :]
+        b = facets[:, 1, :] - facets[:, 2, :]
+        facet_orient_vec = np.cross(a, b)
+        facet_orient_vec_norm = np.linalg.norm(facet_orient_vec, axis=0)
+
+        # move vertices from facet centers towards face orientation
+        check_points = facet_centers + facet_orient_vec * tol / facet_orient_vec_norm
+
+        # find points which are now inside
+        inside_mask = mask_inside_facets_convexhull(check_points, vertices)
+
+        # flip triangles which point inside
+        triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
+        return triangles
+
     @classmethod
     def from_points(
         cls,
@@ -164,7 +191,9 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         if triangles is None:
             hull = ConvexHull(vertices)
             triangles = hull.simplices
-            # TODO ConvexHull does not guarantee that the facets are all pointing outwards
+            # apply facet flip since ConvexHull does not guarantee that the facets are all
+            # pointing outwards
+            triangles = cls._flip_facets_outwards(vertices, triangles)
         triangles = np.array(triangles)
         facets = vertices[triangles]
         return cls(
