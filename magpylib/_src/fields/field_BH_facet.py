@@ -3,6 +3,7 @@ Implementations of analytical expressions for the magnetic field of a triangular
 Computation details in function docstrings.
 """
 import numpy as np
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.input_checks import check_field_input
 
@@ -57,6 +58,39 @@ def next_i(i):
         return 0
     else:
         return i + 1
+
+
+def mask_inside_enclosing_box(points, vertices, tol=1e-15):
+    """Return a mask for `points` which truth value tells if inside the
+    bounding box"""
+    xmin, ymin, zmin = np.min(vertices, axis=0)
+    xmax, ymax, zmax = np.max(vertices, axis=0)
+    x, y, z = points.T
+    # within cuboid dimension with positive tolerance
+    mx = (x - xmax < tol) & (xmin - x < tol)
+    my = (y - ymax < tol) & (ymin - y < tol)
+    mz = (x - zmax < tol) & (zmin - z < tol)
+    return mx & my & mz
+
+
+def mask_inside_facets_convexhull(points, vertices):
+    """Return a mask for `points` which truth value tells if inside the
+    convexhulls build from provided `vertices`."""
+    # check first if points are in enclosing box, to save costly convexhull computation
+    inside_enclosing_box = mask_inside_enclosing_box(points, vertices)
+    hull = ConvexHull(vertices, incremental=True)
+    simplices_init = hull.simplices
+    for ind, pt in enumerate(points):
+        if inside_enclosing_box[ind]:
+            hull.add_points([pt])
+            if hull.simplices.shape != simplices_init.shape or not np.all(
+                hull.simplices == simplices_init
+            ):
+                inside_enclosing_box[ind] = False
+                hull.close()
+                hull = ConvexHull(vertices, incremental=True)
+    hull.close()
+    return inside_enclosing_box
 
 
 #############
@@ -154,6 +188,7 @@ def magnet_facets_field(
     observers: np.ndarray,
     magnetization: np.ndarray,
     facets: np.ndarray,
+    in_out="auto",
 ) -> np.ndarray:
     """
     Code for the field calculation of a uniformly magnetized triangular facet
@@ -174,6 +209,13 @@ def magnet_facets_field(
         Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
         `facets` can be a ragged sequence of facet children with different lengths
 
+    in_out: {'auto', 'inside', 'outside'}
+        Defines if the points are inside or outside the enclosing facets for the correct B/H-field
+        calculation. By default `in_out='auto'` and the inside/outside mask is generated
+        automatically using a convex hull algorithm over the vertices to determine which observers
+        are inside and which are outside. For performance reasons, one can define `in_out='outside'`
+        or `in_out='inside'` if it is known that all observers satisfy the same condition.
+
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
@@ -184,6 +226,7 @@ def magnet_facets_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
+    # TODO implement in_out
     if facets.ndim != 1:  # all facets objects have same number of children
         n0, n1, *_ = facets.shape
         facets = facets.reshape(-1, 3, 3)
