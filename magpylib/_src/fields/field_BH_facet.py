@@ -227,25 +227,43 @@ def magnet_facets_field(
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
     # TODO implement in_out
+    # TODO avoid for loop
+
+    nvs = [f.shape[0] for f in facets]  # length of vertex set
     if facets.ndim != 1:  # all facets objects have same number of children
         n0, n1, *_ = facets.shape
-        facets = facets.reshape(-1, 3, 3)
-        observers = np.repeat(observers, n1, axis=0)
-        magnetization = np.repeat(magnetization, n1, axis=0)
-        bh = facet_field(
-            field=field, observers=observers, magnetization=magnetization, facets=facets
+        facets_tiled = facets.reshape(-1, 3, 3)
+        observers_tiled = np.repeat(observers, n1, axis=0)
+        magnetization_tiled = np.repeat(magnetization, n1, axis=0)
+        B = facet_field(
+            field='B',
+            observers=observers_tiled,
+            magnetization=magnetization_tiled,
+            facets=facets_tiled,
         )
-        bh = bh.reshape((n0, n1, 3))
-        bh = np.sum(bh, axis=1)
+        B = B.reshape((n0, n1, 3))
+        B = np.sum(B, axis=1)
     else:
-        nvs = [f.shape[0] for f in facets]  # length of vertex sets
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        facets = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
-        observers = np.repeat(observers, nvs, axis=0)
+        facets_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
+        observers_tiled = np.repeat(observers, nvs, axis=0)
         magnetization = np.repeat(magnetization, nvs, axis=0)
-        bh = facet_field(
-            field=field, observers=observers, magnetization=magnetization, facets=facets
+        B = facet_field(
+            field='B',
+            observers=observers_tiled,
+            magnetization=magnetization_tiled,
+            facets=facets_tiled,
         )
-        bh_split = np.split(bh, split_indices)
-        bh = np.array([np.sum(bh, axis=0) for bh in bh_split])
-    return bh
+        b_split = np.split(B, split_indices)
+        B = np.array([np.sum(bh, axis=0) for bh in b_split])
+    if field=='B':
+        for i,_ in enumerate(B):
+            vertices = np.unique(facets[i].reshape(-1,3), axis=0)
+            inside = mask_inside_facets_convexhull(np.array([observers[i]]), vertices)[0]
+            # if inside magnet add magnetization vector
+            if inside:
+                B[i] += magnetization[i]
+        return B
+
+    H = B * 10 / 4 / np.pi  # mT -> kA/m
+    return H
