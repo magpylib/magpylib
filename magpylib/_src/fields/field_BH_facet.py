@@ -236,7 +236,7 @@ def magnet_facets_field(
         observers_tiled = np.repeat(observers, n1, axis=0)
         magnetization_tiled = np.repeat(magnetization, n1, axis=0)
         B = facet_field(
-            field='B',
+            field="B",
             observers=observers_tiled,
             magnetization=magnetization_tiled,
             facets=facets_tiled,
@@ -247,19 +247,21 @@ def magnet_facets_field(
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
         facets_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
         observers_tiled = np.repeat(observers, nvs, axis=0)
-        magnetization = np.repeat(magnetization, nvs, axis=0)
+        magnetization_tiled = np.repeat(magnetization, nvs, axis=0)
         B = facet_field(
-            field='B',
+            field="B",
             observers=observers_tiled,
             magnetization=magnetization_tiled,
             facets=facets_tiled,
         )
         b_split = np.split(B, split_indices)
         B = np.array([np.sum(bh, axis=0) for bh in b_split])
-    if field=='B':
-        for i,_ in enumerate(B):
-            vertices = np.unique(facets[i].reshape(-1,3), axis=0)
-            inside = mask_inside_facets_convexhull(np.array([observers[i]]), vertices)[0]
+    if field == "B":
+        for i, _ in enumerate(B):
+            vertices = np.unique(facets[i].reshape(-1, 3), axis=0)
+            inside = mask_inside_facets_convexhull(np.array([observers[i]]), vertices)[
+                0
+            ]
             # if inside magnet add magnetization vector
             if inside:
                 B[i] += magnetization[i]
