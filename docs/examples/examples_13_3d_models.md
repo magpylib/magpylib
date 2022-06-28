@@ -18,20 +18,20 @@ kernelspec:
 (examples-own-3d-models)=
 ## Custom 3D models
 
-Each Magpylib object has a default 3D representation that is displayed with `show`. Users can add a custom 3D model to any Magpylib object with help of the `style.model3d.add_trace` method. The new trace is stored in `style.model3d.data`. User-defined traces move with the object just like the default models do. The default trace can be hidden with the command `obj.model3d.showdefault=False`.
+Each Magpylib object has a default 3D representation that is displayed with `show`. Users can add a custom 3D model to any Magpylib object with help of the `style.model3d.add_trace` method. The new trace is stored in `style.model3d.data`. User-defined traces move with the object just like the default models do. The default trace can be hidden with the command `obj.model3d.showdefault=False`. When using the `'generic'` backend, custom traces are automatically translated into any other backend. If a specific backend is used, it will only show when called with the corresponding backend.
 
 The input `trace` is a dictionary which includes all necessary information for plotting or a `magpylib.graphics.Trace3d` object. A `trace` dictionary has the following keys:
 
-1. `'backend'`: `'matplotlib'` or `'plotly'`
+1. `'backend'`: `'generic'`, `'matplotlib'` or `'plotly'`
 2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
-5. `'coordsargs'`: tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the Plotly backend and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
+5. `'coordsargs'`: tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`, toggle if this trace should be displayed
 7. `'scale'`: default 1, object geometric scaling factor
 8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.
 
-The following example shows how a **Plotly** trace is constructed with  `Mesh3d` and `Scatter3d`:
+The following example shows how a **generic** trace is constructed with  `Mesh3d` and `Scatter3d`:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -40,7 +40,7 @@ import magpylib as magpy
 # Mesh3d trace #########################
 
 trace_mesh3d = {
-    'backend': 'plotly',
+    'backend': 'generic',
     'constructor': 'Mesh3d',
     'kwargs': {
         'x': (1, 0, -1, 0),
@@ -59,7 +59,7 @@ coll.style.model3d.add_trace(trace_mesh3d)
 
 ts = np.linspace(0, 2*np.pi, 30)
 trace_scatter3d = {
-    'backend': 'plotly',
+    'backend': 'generic',
     'constructor': 'Scatter3d',
     'kwargs': {
         'x': np.cos(ts),
@@ -68,7 +68,7 @@ trace_scatter3d = {
         'mode': 'lines',
     }
 }
-dipole = magpy.misc.Dipole(moment=(0,0,1), style_label="'Scatter3d' trace")
+dipole = magpy.misc.Dipole(moment=(0,0,1), style_label="'Scatter3d' trace", style_size=6)
 dipole.style.model3d.add_trace(trace_scatter3d)
 
 magpy.show(coll, dipole, backend='plotly')
@@ -94,7 +94,7 @@ trace3.kwargs['z'] = np.cos(ts)
 
 dipole.style.model3d.add_trace(trace3)
 
-dipole.show(dipole, backend='plotly')
+dipole.show(dipole, backend='matplotlib')
 ```
 
 **Matplotlib** plotting functions often use positional arguments for $(x,y,z)$ input, that are handed over from `args=(x,y,z)` in `trace`. The following examples show how to construct traces with `plot`, `plot_surface` and `plot_trisurf`:
@@ -160,12 +160,12 @@ trace_trisurf = {
 mobius = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
 mobius.style.model3d.add_trace(trace_trisurf)
 
-magpy.show(magnet, ball, mobius)
+magpy.show(magnet, ball, mobius, zoom=2)
 ```
 
 ## Pre-defined 3D models
 
-Automatic trace generators are provided for several 3D models in `magpylib.graphics.model3d`. They can be used as follows,
+Automatic trace generators are provided for several basic 3D models in `magpylib.graphics.model3d`. If no backend is specified, it defaults back to `'generic'`. They can be used as follows,
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -173,7 +173,6 @@ from magpylib.graphics import model3d
 
 # prism trace ###################################
 trace_prism = model3d.make_Prism(
-    backend='plotly',
     base=6,
     diameter=2,
     height=1,
@@ -184,7 +183,6 @@ obj0.style.model3d.add_trace(trace_prism)
 
 # pyramid trace #################################
 trace_pyramid = model3d.make_Pyramid(
-    backend='plotly',
     base=30,
     diameter=2,
     height=1,
@@ -195,7 +193,6 @@ obj1.style.model3d.add_trace(trace_pyramid)
 
 # cuboid trace ##################################
 trace_cuboid = model3d.make_Cuboid(
-    backend='plotly',
     dimension=(2,2,2),
     position=(0,3,0),
 )
@@ -204,7 +201,6 @@ obj2.style.model3d.add_trace(trace_cuboid)
 
 # cylinder segment trace ########################
 trace_cylinder_segment = model3d.make_CylinderSegment(
-    backend='plotly',
     dimension=(1, 2, 1, 140, 220),
     position=(1,0,-3),
 )
@@ -213,7 +209,6 @@ obj3.style.model3d.add_trace(trace_cylinder_segment)
 
 # ellipsoid trace ###############################
 trace_ellipsoid = model3d.make_Ellipsoid(
-    backend='plotly',
     dimension=(2,2,2),
     position=(0,0,3),
 )
@@ -222,7 +217,6 @@ obj4.style.model3d.add_trace(trace_ellipsoid)
 
 # arrow trace ###################################
 trace_arrow = model3d.make_Arrow(
-    backend='plotly',
     base=30,
     diameter=0.6,
     height=2,
@@ -238,7 +232,7 @@ magpy.show(obj0, obj1, obj2, obj3, obj4, obj5, backend='plotly')
 
 ## Adding a CAD model
 
-As shown in {ref}`examples-3d-models`, it is possible to attach custom 3D model representations to any Magpylib object. In the example below we show how a standard CAD model can be transformed into a Magpylib graphic trace, and displayed by both `matplotlib` and `plotly` backends.
+As shown in {ref}`examples-3d-models`, it is possible to attach custom 3D model representations to any Magpylib object. In the example below we show how a standard CAD model can be transformed into a generic Magpylib graphic trace, and displayed by both `matplotlib` and `plotly` backends.
 
 ```{note}
 The code below requires installation of the `numpy-stl` package.
@@ -251,18 +245,20 @@ import requests
 import numpy as np
 from stl import mesh  # requires installation of numpy-stl
 import magpylib as magpy
+from matplotlib.colors import to_hex
 
 
-def get_stl_color(x):
-    """ transform stl_mesh attr to plotly color"""
+def bin_color_to_hex(x):
+    """ transform binary rgb into hex color"""
     sb = f"{x:015b}"[::-1]
-    r = int(255 / 31 * int(sb[:5], base=2))
-    g = int(255 / 31 * int(sb[5:10], base=2))
-    b = int(255 / 31 * int(sb[10:15], base=2))
-    return f"rgb({r},{g},{b})"
+    r = int(sb[:5], base=2)/31
+    g = int(sb[5:10], base=2)/31
+    b = int(sb[10:15], base=2)/31
+    return to_hex((r,g,b))
+    
 
 
-def trace_from_stl(stl_file, backend='matplotlib'):
+def trace_from_stl(stl_file):
     """
     Generates a Magpylib 3D model trace dictionary from an *.stl file.
     backend: 'matplotlib' or 'plotly'
@@ -278,26 +274,14 @@ def trace_from_stl(stl_file, backend='matplotlib'):
     k = np.take(ixr, [3 * k + 2 for k in range(p)])
     x, y, z = vertices.T
 
-    # generate and return Magpylib traces
-    if backend == 'matplotlib':
-        triangles = np.array([i, j, k]).T
-        trace = {
-            'backend': 'matplotlib',
-            'constructor': 'plot_trisurf',
-            'args': (x, y, z),
-            'kwargs': {'triangles': triangles},
-        }
-    elif backend == 'plotly':
-        colors = stl_mesh.attr.flatten()
-        facecolor = np.array([get_stl_color(c) for c in colors]).T
-        trace = {
-            'backend': 'plotly',
-            'constructor': 'Mesh3d',
-            'kwargs': dict(x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor),
-        }
-    else:
-        raise ValueError("Backend must be one of ['matplotlib', 'plotly'].")
-
+    # generate and return a generic trace which can be translated into any backend
+    colors = stl_mesh.attr.flatten()
+    facecolor = np.array([bin_color_to_hex(c) for c in colors]).T
+    trace = {
+        'backend': 'generic',
+        'constructor': 'mesh3d',
+        'kwargs': dict(x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor),
+    }
     return trace
 
 
@@ -311,21 +295,20 @@ with tempfile.TemporaryDirectory() as temp:
         f.write(response.content)
 
     # create traces for both backends
-    trace_mpl = trace_from_stl(fn, backend='matplotlib')
-    trace_ply = trace_from_stl(fn, backend='plotly')
+    trace = trace_from_stl(fn)
 
 # create sensor and add CAD model
 sensor = magpy.Sensor(style_label='PG-SSO-3 package')
-sensor.style.model3d.add_trace(trace_mpl)
-sensor.style.model3d.add_trace(trace_ply)
+sensor.style.model3d.add_trace(trace)
 
 # create magnet and sensor path
 magnet = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(15,20))
 sensor.position = np.linspace((-15,0,8), (-15,0,-4), 21)
-sensor.rotate_from_angax(np.linspace(0, 200, 21), 'z', anchor=0, start=0)
+sensor.rotate_from_angax(np.linspace(0, 180, 21), 'z', anchor=0, start=0)
 
-# display with both backends
-magpy.show(sensor, magnet, style_path_frames=5, style_magnetization_show=False)
-magpy.show(sensor, magnet, style_path_frames=5, backend="plotly")
+# display with matplotlib and plotly backends
+args = (sensor, magnet)
+kwargs = dict(style_path_frames=5)
+magpy.show(args, **kwargs,  backend="matplotlib")
+magpy.show(args, **kwargs, backend="plotly")
 ```
-
