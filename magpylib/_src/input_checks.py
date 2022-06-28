@@ -629,7 +629,7 @@ def check_getBH_output_type(output):
     """check if getBH output is acceptable"""
     acceptable = ("ndarray", "dataframe")
     if output not in acceptable:
-        raise AttributeError(
+        raise ValueError(
             "The `output` argument must be one of {acceptable}."
             f"\nInstead received {output}."
         )

@@ -4,6 +4,7 @@ from matplotlib.animation import FuncAnimation
 
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 
 # from magpylib._src.utility import format_obj_input
 
@@ -79,6 +80,31 @@ def generic_trace_to_matplotlib(trace):
     return traces_mpl
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    extr = model["model3d"]
+    model_kwargs = {"color": model["kwargs"]["color"]}
+    model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
+    model_args = extr.args() if callable(extr.args) else extr.args
+    trace3d = {
+        "constructor": extr.constructor,
+        "kwargs": model_kwargs,
+        "args": model_args,
+    }
+    kwargs, args, = place_and_orient_model3d(
+        model_kwargs=model_kwargs,
+        model_args=model_args,
+        orientation=model["orientation"],
+        position=model["position"],
+        coordsargs=extr.coordsargs,
+        scale=extr.scale,
+        return_model_args=True,
+    )
+    trace3d["kwargs"].update(kwargs)
+    trace3d["args"] = args
+    return trace3d
+
+
 def display_matplotlib(
     *obj_list,
     zoom=1,
@@ -97,15 +123,20 @@ def display_matplotlib(
         zoom=zoom,
         animation=animation,
         mag_arrows=True,
+        extra_backend="matplotlib",
         **kwargs,
     )
     frames = data["frames"]
     ranges = data["ranges"]
 
     for fr in frames:
-        fr["data"] = [
-            tr0 for tr1 in fr["data"] for tr0 in generic_trace_to_matplotlib(tr1)
-        ]
+        new_data = []
+        for tr in fr["data"]:
+            new_data.extend(generic_trace_to_matplotlib(tr))
+        for model in fr["extra_backend_traces"]:
+            new_data.append(process_extra_trace(model))
+        fr["data"] = new_data
+
     show_canvas = False
     if canvas is None:
         show_canvas = True
@@ -145,5 +176,5 @@ def display_matplotlib(
         )
     if return_animation and len(frames) != 1:
         return anim
-    elif show_canvas:
+    if show_canvas:
         plt.show()
