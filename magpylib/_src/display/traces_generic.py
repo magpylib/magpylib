@@ -25,13 +25,13 @@ from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import MagpyMarkers
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
@@ -180,10 +180,13 @@ def make_Dipole(
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
-    dot = np.dot(nvec, zaxis)
     n = np.linalg.norm(cross)
+    if n == 0:
+        n = 1
+        cross = np.array([-np.sign(nvec[-1]), 0, 0])
+    dot = np.dot(nvec, zaxis)
     t = np.arccos(dot)
-    vec = -t * cross / n if n != 0 else (0, 0, 0)
+    vec = -t * cross / n
     mag_orient = RotScipy.from_rotvec(vec)
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
