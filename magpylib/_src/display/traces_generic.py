@@ -33,6 +33,7 @@ from magpylib._src.display.traces_utility import MagpyMarkers
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
@@ -744,7 +745,7 @@ def get_generic_traces(
                         obj_extr_trace = {"type": ttype, **obj_extr_trace}
                         if ttype == "scatter3d":
                             for k in ("marker", "line"):
-                                trace3d["{k}_color"] = trace3d.get(
+                                trace3d[f"{k}_color"] = trace3d.get(
                                     f"{k}_color", kwargs["color"]
                                 )
                         elif ttype == "mesh3d":
@@ -994,32 +995,6 @@ def subdivide_mesh_by_facecolor(trace):
         new_trace.pop("facecolor")
         subtraces.append(new_trace)
     return subtraces
-
-
-def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
-    """
-    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
-    any plotly trace object or a dict, with x,y,z numbered parameters.
-    """
-    if traces:
-        ranges = {k: [] for k in "xyz"}
-        for t in traces:
-            for k, v in ranges.items():
-                v.extend(
-                    [
-                        np.nanmin(np.array(t[k], dtype=float)),
-                        np.nanmax(np.array(t[k], dtype=float)),
-                    ]
-                )
-        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
-        size = np.diff(r, axis=1)
-        size[size == 0] = 1
-        m = size.max() / 2
-        center = r.mean(axis=1)
-        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    else:
-        ranges = np.array([[-1.0, 1.0]] * 3)
-    return ranges
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
