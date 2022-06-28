@@ -530,7 +530,7 @@ def make_Arrow(
 
 
 def make_Tetrahedron(
-    backend,
+    backend='generic',
     vertices=None,
     position=None,
     orientation=None,
@@ -596,7 +596,7 @@ def make_Tetrahedron(
 
 
 def make_Facets(
-    backend,
+    backend='generic',
     vertices=None,
     triangles=None,
     position=None,
@@ -616,11 +616,12 @@ def make_Facets(
 
     vertices: ndarray, shape (4,3)
         Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
-        coordinate system of the tetrahedron.
+        coordinate system of the facets.
 
     triangles: ndarray, shape (4,3)
         For each triangle, the indices of the three points that make up the triangle, ordered in an
-        anticlockwise manner. If not specified, the Delaunay triangulation is calculated.
+        anticlockwise manner. If not specified, a `scipy.spatial.ConvexHull` triangulation is
+        calculated.
 
     position : array_like, shape (3,), default=(0,0,0)
         Reference position of the vertices in the global CS. The zero position is
