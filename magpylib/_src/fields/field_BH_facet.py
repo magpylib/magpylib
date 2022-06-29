@@ -7,15 +7,17 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.input_checks import check_field_input
 
-#############
+###########
 # constants
-#############
+###########
 EPS = 1.0e-12
-#############
 
-#############
-# help functions
-#############
+
+##################
+# helper functions
+##################
+
+
 def norm_vector(v):
     """
     Calculates normalized orthogonal vector on a plane defined by three vertices.
@@ -60,6 +62,11 @@ def next_i(i):
         return i + 1
 
 
+################
+# mask functions
+################
+
+
 def mask_inside_enclosing_box(points, vertices, tol=1e-15):
     """Return a mask for `points` which truth value tells if inside the
     bounding box"""
@@ -75,7 +82,7 @@ def mask_inside_enclosing_box(points, vertices, tol=1e-15):
 
 def mask_inside_facets_convexhull(points, vertices):
     """Return a mask for `points` which truth value tells if inside the
-    convexhulls build from provided `vertices`."""
+    convexhulls built from provided `vertices`."""
     # check first if points are in enclosing box, to save costly convexhull computation
     inside_enclosing_box = mask_inside_enclosing_box(points, vertices)
     hull = ConvexHull(vertices, incremental=True)
@@ -93,7 +100,66 @@ def mask_inside_facets_convexhull(points, vertices):
     return inside_enclosing_box
 
 
-#############
+def signed_volume(a, b, c, d):
+    """Computes the signed volume of a series of tetrahedrons defined by the vertices in
+    a, b c and d. The ouput is an SxT array which gives the signed volume of the tetrahedron
+    defined by the line segment 's' and two vertices of the triangle 't'."""
+
+    return np.sum((a - d) * np.cross(b - d, c - d), axis=2)
+
+
+def segments_intersect_triangles(s, t):
+    """For each line segment in 's', this function computes how many times it intersects
+    any of the triangles given in 't'."""
+    # compute the normals to each triangle
+    normals = np.cross(t[2] - t[0], t[2] - t[1])
+    normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
+
+    # get sign of each segment endpoint, if the sign changes then we know this segment crosses the
+    # plane which contains a triangle. If the value is zero the endpoint of the segment lies on the
+    # plane.
+    # s[i][:, np.newaxis] - t[j] -> S x T x 3 array
+    sign1 = np.sign(np.sum(normals * (s[0][:, np.newaxis] - t[2]), axis=2))  # S x T
+    sign2 = np.sign(np.sum(normals * (s[1][:, np.newaxis] - t[2]), axis=2))  # S x T
+
+    # determine segments which cross the plane of a triangle.
+    #  -> 1 if the sign of the end points of s is
+    # different AND one of end points of s is not a vertex of t
+    cross = (sign1 != sign2) * (sign1 != 0) * (sign2 != 0)  # S x T
+
+    # get signed volumes
+    v1 = np.sign(
+        signed_volume(t[0], t[1], s[0][:, np.newaxis], s[1][:, np.newaxis])
+    )  # S x T
+    v2 = np.sign(
+        signed_volume(t[1], t[2], s[0][:, np.newaxis], s[1][:, np.newaxis])
+    )  # S x T
+    v3 = np.sign(
+        signed_volume(t[2], t[0], s[0][:, np.newaxis], s[1][:, np.newaxis])
+    )  # S x T
+
+    same_volume = np.logical_and(
+        (v1 == v2), (v2 == v3)
+    )  # 1 if s and t have same sign in v1, v2 and v3
+
+    return np.sum(cross * same_volume, axis=1)
+
+
+def mask_inside_trimesh(points, facets):
+    """Return a boolean mask corresponding to the truth values of which points are inside
+    the triangular mesh defined by the provided facets, using the ray tracing method"""
+    # choose a start point that is fore sure outside the mesh
+    start_point = np.min(facets.reshape(-1, 3), axis=0) - 1.001
+    segments = np.tile(start_point, (points.shape[0], 1))
+    t = facets.swapaxes(0, 1)
+    s = np.concatenate([segments, points]).reshape(2, -1, 3)
+    sums = segments_intersect_triangles(s, t)
+    return sums % 2 != 0
+
+
+#####################
+# facets computations
+#####################
 
 
 def facet_field(
@@ -256,7 +322,7 @@ def magnet_facets_field(
         B = np.array([np.sum(bh, axis=0) for bh in b_split])
 
     if field == "B":
-        if in_out=='auto':
+        if in_out == "auto":
             prev_ind = 0
             # group similar facets
             for new_ind, _ in enumerate(B):
@@ -273,7 +339,7 @@ def magnet_facets_field(
                         inside_mask
                     ]
                     prev_ind = new_ind
-        elif in_out=='inside':
+        elif in_out == "inside":
             B += magnetization
         return B
 
