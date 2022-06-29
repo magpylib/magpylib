@@ -188,7 +188,7 @@ def magnet_facets_field(
     observers: np.ndarray,
     magnetization: np.ndarray,
     facets: np.ndarray,
-    in_out="auto",
+    in_out="outside",
 ) -> np.ndarray:
     """
     Code for the field calculation of a uniformly magnetized triangular facet
@@ -226,8 +226,6 @@ def magnet_facets_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    # TODO implement in_out
-    # TODO avoid for loop
 
     nvs = [f.shape[0] for f in facets]  # length of vertex set
     if facets.ndim != 1:  # all facets objects have same number of children
@@ -256,15 +254,27 @@ def magnet_facets_field(
         )
         b_split = np.split(B, split_indices)
         B = np.array([np.sum(bh, axis=0) for bh in b_split])
+
     if field == "B":
-        for i, _ in enumerate(B):
-            vertices = np.unique(facets[i].reshape(-1, 3), axis=0)
-            inside = mask_inside_facets_convexhull(np.array([observers[i]]), vertices)[
-                0
-            ]
-            # if inside magnet add magnetization vector
-            if inside:
-                B[i] += magnetization[i]
+        if in_out=='auto':
+            prev_ind = 0
+            # group similar facets
+            for new_ind, _ in enumerate(B):
+                if facets[new_ind].shape != facets[0].shape or not np.all(
+                    facets[new_ind] == facets[0]
+                ):
+                    sub_facets = np.concatenate(facets[prev_ind:new_ind])
+                    vertices = np.unique(sub_facets.reshape(-1, 3), axis=0)
+                    inside_mask = mask_inside_facets_convexhull(
+                        observers[prev_ind:new_ind], vertices
+                    )
+                    # if inside magnet add magnetization vector
+                    B[prev_ind:new_ind][inside_mask] += magnetization[prev_ind:new_ind][
+                        inside_mask
+                    ]
+                    prev_ind = new_ind
+        elif in_out=='inside':
+            B += magnetization
         return B
 
     H = B * 10 / 4 / np.pi  # mT -> kA/m
