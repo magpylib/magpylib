@@ -58,8 +58,7 @@ def next_i(i):
     """
     if i == 2:
         return 0
-    else:
-        return i + 1
+    return i + 1
 
 
 ################
