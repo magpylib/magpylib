@@ -154,7 +154,6 @@ def mask_inside_trimesh(points, facets):
 
     # choose a start point that is fore sure outside the mesh
     pts_ins_box = points[mask]
-    print(pts_ins_box.shape)
     start_point = np.min(vertices, axis=0) - 1.001
     segments = np.tile(start_point, (pts_ins_box.shape[0], 1))
     t = facets.swapaxes(0, 1)
