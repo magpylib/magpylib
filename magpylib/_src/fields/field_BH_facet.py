@@ -188,7 +188,7 @@ def magnet_facets_field(
     observers: np.ndarray,
     magnetization: np.ndarray,
     facets: np.ndarray,
-    in_out="outside",
+    in_out="auto",
 ) -> np.ndarray:
     """
     Code for the field calculation of a uniformly magnetized triangular facet
