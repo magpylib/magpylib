@@ -69,7 +69,7 @@ def mask_inside_enclosing_box(points, vertices, tol=1e-15):
     # within cuboid dimension with positive tolerance
     mx = (x - xmax < tol) & (xmin - x < tol)
     my = (y - ymax < tol) & (ymin - y < tol)
-    mz = (x - zmax < tol) & (zmin - z < tol)
+    mz = (z - zmax < tol) & (zmin - z < tol)
     return mx & my & mz
 
 
