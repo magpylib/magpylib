@@ -333,13 +333,13 @@ def magnet_facets_field(
             prev_ind = 0
             # group similar facets
             for new_ind, _ in enumerate(B):
-                if facets[new_ind].shape != facets[0].shape or not np.all(
-                    facets[new_ind] == facets[0]
+                if (
+                    new_ind == len(B) - 1
+                    or facets[new_ind].shape != facets[prev_ind].shape
+                    or not np.all(facets[new_ind] == facets[prev_ind])
                 ):
-                    sub_facets = np.concatenate(facets[prev_ind:new_ind])
-                    vertices = np.unique(sub_facets.reshape(-1, 3), axis=0)
-                    inside_mask = mask_inside_facets_convexhull(
-                        observers[prev_ind:new_ind], vertices
+                    inside_mask = mask_inside_trimesh(
+                        observers[prev_ind:new_ind], facets[prev_ind]
                     )
                     # if inside magnet add magnetization vector
                     B[prev_ind:new_ind][inside_mask] += magnetization[prev_ind:new_ind][
