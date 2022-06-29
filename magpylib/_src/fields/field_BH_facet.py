@@ -148,13 +148,21 @@ def segments_intersect_triangles(s, t):
 def mask_inside_trimesh(points, facets):
     """Return a boolean mask corresponding to the truth values of which points are inside
     the triangular mesh defined by the provided facets, using the ray tracing method"""
+    # compute only points outside enclosing box more efficiently
+    vertices = np.unique(facets.reshape((-1, 3)), axis=0)
+    mask = mask_inside_enclosing_box(points, vertices)
+
     # choose a start point that is fore sure outside the mesh
-    start_point = np.min(facets.reshape(-1, 3), axis=0) - 1.001
-    segments = np.tile(start_point, (points.shape[0], 1))
+    pts_ins_box = points[mask]
+    print(pts_ins_box.shape)
+    start_point = np.min(vertices, axis=0) - 1.001
+    segments = np.tile(start_point, (pts_ins_box.shape[0], 1))
     t = facets.swapaxes(0, 1)
-    s = np.concatenate([segments, points]).reshape(2, -1, 3)
+    s = np.concatenate([segments, pts_ins_box]).reshape((2, -1, 3))
     sums = segments_intersect_triangles(s, t)
-    return sums % 2 != 0
+    ray_tracing_mask = sums % 2 != 0
+    mask[mask] = ray_tracing_mask
+    return mask
 
 
 #####################
