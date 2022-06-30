@@ -225,9 +225,31 @@ def test_dataframe_ouptut_sumup():
     """test pandas dataframe output when sumup is True"""
     sources = [
         magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)),
-        magpy.magnet.Cylinder((0, 1000, 0), (1, 1))
+        magpy.magnet.Cylinder((0, 1000, 0), (1, 1)),
     ]
-    magpy.getB(sources, (0,0,0), sumup=True, output="dataframe")
+    df = magpy.getB(sources, (0, 0, 0), sumup=True, output="dataframe")
+    np.testing.assert_allclose(
+        df[["Bx", "By", "Bz"]].values,
+        np.array([[-2.16489014e-14, 6.46446609e02, 6.66666667e02]]),
+    )
+
+
+def test_dataframe_ouptut_pixel_agg():
+    """test pandas dataframe output when sumup is True"""
+    src1 = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    sens1 = magpy.Sensor(position=(0, 0, 1), pixel=np.zeros((4, 5, 3)))
+    sens2 = sens1.copy(position=(0, 0, 2))
+    sens3 = sens1.copy(position=(0, 0, 3))
+
+    sources = (src1,)
+    sensors = sens1, sens2, sens3
+    df = magpy.getB(sources, sensors, pixel_agg="mean", output="dataframe")
+    np.testing.assert_allclose(
+        df[["Bx", "By", "Bz"]].values,
+        np.array(
+            [[0.0, 0.0, 134.78238624], [0.0, 0.0, 19.63857207], [0.0, 0.0, 5.87908614]]
+        ),
+    )
 
 
 def test_dataframe_output_missing_pandas():
