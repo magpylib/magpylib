@@ -12,6 +12,9 @@ except ImportError as missing_module:  # pragma: no cover
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.traces_generic import get_frames
+from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
@@ -149,6 +152,35 @@ def generic_trace_to_plotly(trace):
     return trace
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    extr = model["model3d"]
+    kwargs = model["kwargs"]
+    trace3d = {**kwargs}
+    ttype = extr.constructor.lower()
+    trace_kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+    trace3d.update({"type": ttype, **trace_kwargs})
+    if ttype == "scatter3d":
+        for k in ("marker", "line"):
+            trace3d[f"{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
+            trace3d.pop("color", None)
+    elif ttype == "mesh3d":
+        trace3d["showscale"] = trace3d.get("showscale", False)
+        trace3d["color"] = trace3d.get("color", kwargs["color"])
+    trace3d.update(
+        linearize_dict(
+            place_and_orient_model3d(
+                model_kwargs=trace3d,
+                orientation=model["orientation"],
+                position=model["position"],
+                scale=extr.scale,
+            ),
+            separator="_",
+        )
+    )
+    return trace3d
+
+
 def display_plotly(
     *obj_list,
     zoom=1,
@@ -162,6 +194,7 @@ def display_plotly(
     """Display objects and paths graphically using the plotly library."""
 
     show_canvas = False
+    extra_data = False
     if canvas is None:
         show_canvas = True
         canvas = go.Figure()
@@ -174,12 +207,19 @@ def display_plotly(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
+        extra_backend="plotly",
         **kwargs,
     )
     frames = data["frames"]
     for fr in frames:
+        new_data = []
         for tr in fr["data"]:
-            tr = generic_trace_to_plotly(tr)
+            new_data.append(generic_trace_to_plotly(tr))
+        for model in fr["extra_backend_traces"]:
+            extra_data = True
+            new_data.append(process_extra_trace(model))
+        fr["data"] = new_data
+        fr.pop("extra_backend_traces", None)
     with canvas.batch_update():
         if len(frames) == 1:
             canvas.add_traces(frames[0]["data"])
@@ -192,7 +232,10 @@ def display_plotly(
                 data["frame_duration"],
                 animation_slider=animation_slider,
             )
-        apply_fig_ranges(canvas, data["ranges"])
+        ranges = data["ranges"]
+        if extra_data:
+            ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
+        apply_fig_ranges(canvas, ranges)
         canvas.update_layout(legend_itemsizing="constant")
     if show_canvas:
         canvas.show(renderer=renderer)

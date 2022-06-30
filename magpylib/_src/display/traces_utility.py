@@ -386,3 +386,29 @@ def getColorscale(
             (1.0, color_north),
         )
     return colorscale
+
+
+def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
+    """
+    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
+    any plotly trace object or a dict, with x,y,z numbered parameters.
+    """
+    if traces:
+        ranges = {k: [] for k in "xyz"}
+        for t in traces:
+            for k, v in ranges.items():
+                v.extend(
+                    [
+                        np.nanmin(np.array(t[k], dtype=float)),
+                        np.nanmax(np.array(t[k], dtype=float)),
+                    ]
+                )
+        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
+        size = np.diff(r, axis=1)
+        size[size == 0] = 1
+        m = size.max() / 2
+        center = r.mean(axis=1)
+        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    else:
+        ranges = np.array([[-1.0, 1.0]] * 3)
+    return ranges
