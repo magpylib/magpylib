@@ -13,7 +13,7 @@ except ImportError as missing_module:  # pragma: no cover
 
 from pyvista.plotting.colors import Color # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
-from magpylib._src.display.traces_generic import draw_frame
+from magpylib._src.display.traces_generic import get_frames
 
 # from magpylib._src.utility import format_obj_input
 
@@ -125,9 +125,18 @@ def display_pyvista(
     if canvas is None:
         show_canvas = True
         canvas = pv.Plotter()
+    data = get_frames(
+            objs=obj_list,
+            colorsequence=colorsequence,
+            zoom=zoom,
+            animation=animation,
+            extra_backend="pyvista",
+            **kwargs,
+        )
 
-    generic_traces = draw_frame(obj_list, colorsequence, zoom, output="list", **kwargs)
-    for tr0 in generic_traces:
+    frame = data["frames"][0] # select first, since no animation supported
+
+    for tr0 in frame["data"]:
         for tr1 in generic_trace_to_pyvista(tr0):
             canvas.add_mesh(**tr1)
 
