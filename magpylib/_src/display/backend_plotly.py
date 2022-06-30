@@ -14,6 +14,7 @@ from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
@@ -193,6 +194,7 @@ def display_plotly(
     """Display objects and paths graphically using the plotly library."""
 
     show_canvas = False
+    extra_data = False
     if canvas is None:
         show_canvas = True
         canvas = go.Figure()
@@ -214,6 +216,7 @@ def display_plotly(
         for tr in fr["data"]:
             new_data.append(generic_trace_to_plotly(tr))
         for model in fr["extra_backend_traces"]:
+            extra_data = True
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
         fr.pop("extra_backend_traces", None)
@@ -229,7 +232,10 @@ def display_plotly(
                 data["frame_duration"],
                 animation_slider=animation_slider,
             )
-        apply_fig_ranges(canvas, data["ranges"])
+        ranges = data["ranges"]
+        if extra_data:
+            ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
+        apply_fig_ranges(canvas, ranges)
         canvas.update_layout(legend_itemsizing="constant")
     if show_canvas:
         canvas.show(renderer=renderer)

@@ -25,6 +25,7 @@ from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import MagpyMarkers
@@ -179,10 +180,13 @@ def make_Dipole(
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
-    dot = np.dot(nvec, zaxis)
     n = np.linalg.norm(cross)
+    if n == 0:
+        n = 1
+        cross = np.array([-np.sign(nvec[-1]), 0, 0])
+    dot = np.dot(nvec, zaxis)
     t = np.arccos(dot)
-    vec = -t * cross / n if n != 0 else (0, 0, 0)
+    vec = -t * cross / n
     mag_orient = RotScipy.from_rotvec(vec)
     orientation = orientation * mag_orient
     mag = np.array((0, 0, 1))
@@ -672,7 +676,7 @@ def get_generic_traces(
                         obj_extr_trace = {"type": ttype, **obj_extr_trace}
                         if ttype == "scatter3d":
                             for k in ("marker", "line"):
-                                trace3d["{k}_color"] = trace3d.get(
+                                trace3d[f"{k}_color"] = trace3d.get(
                                     f"{k}_color", kwargs["color"]
                                 )
                         elif ttype == "mesh3d":
@@ -922,32 +926,6 @@ def subdivide_mesh_by_facecolor(trace):
         new_trace.pop("facecolor")
         subtraces.append(new_trace)
     return subtraces
-
-
-def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
-    """
-    Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
-    any plotly trace object or a dict, with x,y,z numbered parameters.
-    """
-    if traces:
-        ranges = {k: [] for k in "xyz"}
-        for t in traces:
-            for k, v in ranges.items():
-                v.extend(
-                    [
-                        np.nanmin(np.array(t[k], dtype=float)),
-                        np.nanmax(np.array(t[k], dtype=float)),
-                    ]
-                )
-        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
-        size = np.diff(r, axis=1)
-        size[size == 0] = 1
-        m = size.max() / 2
-        center = r.mean(axis=1)
-        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    else:
-        ranges = np.array([[-1.0, 1.0]] * 3)
-    return ranges
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):

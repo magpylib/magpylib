@@ -334,7 +334,7 @@ def getBH_level2(
         else:
             src_ids = [s.style.label if s.style.label else f"{s}" for s in sources]
         sens_ids = [s.style.label if s.style.label else f"{s}" for s in sensors]
-        num_of_pixels = np.prod(pix_shapes[0][:-1])
+        num_of_pixels = np.prod(pix_shapes[0][:-1]) if pixel_agg is None else 1
         df = pd.DataFrame(
             data=product(src_ids, range(max_path_len), sens_ids, range(num_of_pixels)),
             columns=["source", "path", "sensor", "pixel"],
