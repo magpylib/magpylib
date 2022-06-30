@@ -11,7 +11,7 @@ except ImportError as missing_module:  # pragma: no cover
         conda, see https://docs.pyvista.org/getting-started/installation.html"""
     ) from missing_module
 
-from pyvista.plotting.colors import Color
+from pyvista.plotting.colors import Color # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import draw_frame
 
@@ -26,10 +26,10 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
     cdict = {
         rgb_col: [
             (
-                v[0],
-                *[cs_rgb[i][1][rgb_ind]] * 2,
+                c[0],
+                *[c[1][rgb_ind]] * 2,
             )
-            for i, v in enumerate(cs_rgb)
+            for c in cs_rgb
         ]
         for rgb_ind, rgb_col in enumerate(("red", "green", "blue"))
     }
