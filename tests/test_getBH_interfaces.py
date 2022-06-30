@@ -1,3 +1,7 @@
+import sys
+from unittest import mock
+
+import pytest
 import numpy as np
 
 import magpylib as magpy
@@ -172,3 +176,92 @@ def test_getH_interfaces3():
 
     H_test = src.getH([sens, sens])
     np.testing.assert_allclose(H3, H_test)
+
+
+def test_dataframe_ouptut():
+    """test pandas dataframe output"""
+    max_path_len = 20
+    num_of_pix = 2
+
+    sources = [
+        magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)).move(
+            np.linspace((-4, 0, 0), (4, 0, 0), max_path_len), start=0
+        ),
+        magpy.magnet.Cylinder((0, 1000, 0), (1, 1), style_label="Cylinder1").move(
+            np.linspace((0, -4, 0), (0, 4, 0), max_path_len), start=0
+        ),
+    ]
+    pixel = np.linspace((0, 0, 0), (0, 3, 0), num_of_pix)
+    sens1 = magpy.Sensor(position=(0, 0, 1), pixel=pixel, style_label="sens1")
+    sens2 = sens1.copy(position=(0, 0, 3), style_label="sens2")
+    sens_col = magpy.Collection(sens1, sens2)
+
+    for field in "BH":
+        cols = [f"{field}{k}" for k in "xyz"]
+        df = getattr(magpy, f"get{field}")(
+            sources, sens_col, sumup=False, output="dataframe"
+        )
+        BH = getattr(magpy, f"get{field}")(
+            sources, sens_col, sumup=False, squeeze=False
+        )
+        for i in range(2):
+            np.testing.assert_array_equal(
+                BH[i].reshape(-1, 3), df[df["source"] == df["source"].unique()[i]][cols]
+            )
+            np.testing.assert_array_equal(
+                BH[:, i].reshape(-1, 3), df[df["path"] == df["path"].unique()[i]][cols]
+            )
+            np.testing.assert_array_equal(
+                BH[:, :, i].reshape(-1, 3),
+                df[df["sensor"] == df["sensor"].unique()[i]][cols],
+            )
+            np.testing.assert_array_equal(
+                BH[:, :, :, i].reshape(-1, 3),
+                df[df["pixel"] == df["pixel"].unique()[i]][cols],
+            )
+
+
+def test_dataframe_ouptut_sumup():
+    """test pandas dataframe output when sumup is True"""
+    sources = [
+        magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)),
+        magpy.magnet.Cylinder((0, 1000, 0), (1, 1)),
+    ]
+    df = magpy.getB(sources, (0, 0, 0), sumup=True, output="dataframe")
+    np.testing.assert_allclose(
+        df[["Bx", "By", "Bz"]].values,
+        np.array([[-2.16489014e-14, 6.46446609e02, 6.66666667e02]]),
+    )
+
+
+def test_dataframe_ouptut_pixel_agg():
+    """test pandas dataframe output when sumup is True"""
+    src1 = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    sens1 = magpy.Sensor(position=(0, 0, 1), pixel=np.zeros((4, 5, 3)))
+    sens2 = sens1.copy(position=(0, 0, 2))
+    sens3 = sens1.copy(position=(0, 0, 3))
+
+    sources = (src1,)
+    sensors = sens1, sens2, sens3
+    df = magpy.getB(sources, sensors, pixel_agg="mean", output="dataframe")
+    np.testing.assert_allclose(
+        df[["Bx", "By", "Bz"]].values,
+        np.array(
+            [[0.0, 0.0, 134.78238624], [0.0, 0.0, 19.63857207], [0.0, 0.0, 5.87908614]]
+        ),
+    )
+
+
+def test_dataframe_output_missing_pandas():
+    """test if pandas is installed when using dataframe output in `getBH`"""
+    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    with mock.patch.dict(sys.modules, {"pandas": None}):
+        with pytest.raises(ModuleNotFoundError):
+            src.getB((0, 0, 0), output="dataframe")
+
+
+def test_getBH_bad_output_type():
+    """test bad output in `getBH`"""
+    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    with pytest.raises(ValueError):
+        src.getB((0, 0, 0), output="bad_output_type")

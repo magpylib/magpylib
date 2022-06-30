@@ -313,7 +313,7 @@ Magnetic field computation in Magpylib is achieved through:
 
 The argument `sources` can be any Magpylib **source object** or a flat list thereof. The argument `observers` can be an array_like of position vectors with shape $(n_1,n_2,n_3,...,3)$, any Magpylib **observer object** or a flat list thereof. `getB` and `getH` return the field for all combinations of sources, observers and paths.
 
-The output of the most general field computation `getB(sources, observers)` is an ndarray of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position vector input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
+The output of a field computation `getB(sources, observers)` is a Numpy ndarray (alternatively a Pandas DataFrame, see below) of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of sensors, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position vector input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 
 **Example 1:** As expressed by the old v2 slogan *"The magnetic field is only three lines of code away"*, this example demonstrates the most fundamental field computation:
 
@@ -399,17 +399,69 @@ fig.show()
 import magpylib as magpy
 
 # 3 sources, one with length 11 path
-source1 = magpy.misc.Dipole(moment=(0,0,100), position=[(1,1,1)]*11)
-source2 = magpy.current.Loop(current=1, diameter=3)
+pos_path = [(i,0,1) for i in range(-1,1)]
+source1 = magpy.misc.Dipole(moment=(0,0,100), position=pos_path)
+source2 = magpy.current.Loop(current=10, diameter=3)
 source3 = source1 + source2
 
 # 2 observers, each with 4x5 pixel
-sensor1 = magpy.Sensor(pixel=[[(1,2,3)]*4]*5)
-sensor2 = sensor1.copy()
+pixel = [[[(i,j,0)] for i in range(4)] for j in range(5)]
+sensor1 = magpy.Sensor(pixel=pixel, position=(-1,0,-1))
+sensor2 = sensor1.copy().move((2,0,0))
 
+sources = [source1, source2, source3]
+sensors = [sensor1, sensor2]
 # compute field
-B = magpy.getB([source1, source2, source3], [sensor1, sensor2])
+B = magpy.getB(sources, sensors)
 print(B.shape)
+```
+
+Instead of a Numpy `ndarray`, the field computation can also return a [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) using the `output='dataframe'` kwarg.
+
+```{code-cell} ipython3
+import numpy as np
+import magpylib as magpy
+
+cube = magpy.magnet.Cuboid(
+    magnetization=(0, 0, 1000),
+    dimension=(1, 1, 1),
+    style_label='cube'
+)
+loop = magpy.current.Loop(
+    current=200,
+    diameter=2,
+    style_label='loop',
+)
+sens1 = magpy.Sensor(
+    pixel=[(0,0,0), (.5,0,0)],
+    position=np.linspace((-4, 0, 2), (4, 0, 2), 30),
+    style_label='sens1'
+)
+sens2 = sens1.copy(style_label='sens2').move((0,0,1))
+
+B_as_df = magpy.getB(
+    [cube, loop],
+    [sens1, sens2],
+    output='dataframe',
+)
+
+print(B_as_df)
+```
+
+Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of this feature, as they can deal with `dataframes` directly.
+
+```{code-cell} ipython3
+import plotly.express as px
+fig = px.line(
+    B_as_df,
+    x="path",
+    y="Bx",
+    color="pixel",
+    line_group="source",
+    facet_col="source",
+    symbol="sensor",
+)
+fig.show()
 ```
 
 In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the computation time dramatically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
