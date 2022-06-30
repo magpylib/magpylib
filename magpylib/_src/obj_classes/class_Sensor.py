@@ -136,10 +136,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             With this option, observers input with different (pixel) shapes is allowed.
 
         output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
-            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
-            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
-            installed).
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
+            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+            object is returned (the Pandas library must be installed).
 
         Returns
         -------
@@ -212,10 +211,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             With this option, observers input with different (pixel) shapes is allowed.
 
         output: str, default='ndarray'
-            Output type, which must be one of `('ndarray', 'dataframe')`. By default a multi-
-            dimensional array ('ndarray') is returned. If 'dataframe' is chosen, the function
-            returns a 2D-table as a `pandas.DataFrame` object (the Pandas library must be
-            installed).
+            Output type, which must be one of `('ndarray', 'dataframe')`. By default a
+            `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+            object is returned (the Pandas library must be installed).
 
         Returns
         -------
