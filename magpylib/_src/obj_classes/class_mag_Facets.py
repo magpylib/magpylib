@@ -60,21 +60,18 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         facets=None,
         position=(0, 0, 0),
         orientation=None,
+        reorient_facets=True,
         style=None,
         **kwargs,
     ):
 
         # instance attributes
-        self.facets = facets
         self._object_type = "Facets"
-        self._triangles = kwargs.pop("triangles", None)
-        self._vertices = kwargs.pop("vertices", None)
-        if self._triangles is None and self._vertices is None:
-            (
-                self._vertices,
-                self._triangles,
-            ) = self._get_vertices_and_triangles_from_facets(facets)
-
+        triangles = kwargs.pop("triangles", None)
+        vertices = kwargs.pop("vertices", None)
+        self._facets, self._triangles, self._vertices = self._validate_facets(
+            facets, vertices, triangles, reorient_facets=reorient_facets
+        )
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
         BaseDisplayRepr.__init__(self)
@@ -89,14 +86,30 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     @facets.setter
     def facets(self, val):
         """Set Facets facets (a,b,c), shape (3,), [mm]."""
-        self._facets = check_format_input_vector(
-            val,
+        self._facets, self._triangles, self._vertices = self._validate_facets(
+            facets=val, reorient_facets=True
+        )
+
+    def _validate_facets(
+        self, facets=None, vertices=None, triangles=None, reorient_facets=True
+    ):
+        """Validate facet input, reorient if necessary."""
+        facets = check_format_input_vector(
+            facets,
             dims=(3,),
             shape_m1=3,
             sig_name="Facets.facets",
             sig_type="array_like (list, tuple, ndarray) of shape (4,3)",
             allow_None=True,
         )
+        if facets is None and not reorient_facets:
+            facets = vertices[triangles]
+        elif facets is not None:
+            vertices, triangles = self._get_vertices_and_triangles_from_facets(facets)
+        if reorient_facets:
+            triangles = self._flip_facets_outwards(vertices, triangles)
+            facets = vertices[triangles]
+        return facets, triangles, vertices
 
     @property
     def vertices(self):
@@ -138,7 +151,7 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         """Flip facets pointing inwards"""
 
         # pylint: disable=import-outside-toplevel
-        from magpylib._src.fields.field_BH_facet import mask_inside_facets_convexhull
+        from magpylib._src.fields.field_BH_facet import mask_inside_trimesh
 
         facets = vertices[triangles]
 
@@ -154,7 +167,7 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         check_points = facet_centers + facet_orient_vec * tol / facet_orient_vec_norm
 
         # find points which are now inside
-        inside_mask = mask_inside_facets_convexhull(check_points, vertices)
+        inside_mask = mask_inside_trimesh(check_points, facets)
 
         # flip triangles which point inside
         triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
@@ -165,10 +178,11 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         cls,
         magnetization=None,
         points=None,
-        triangles=None,
+        triangles="ConvexHull",
         position=(0, 0, 0),
         orientation=None,
         style=None,
+        reorient_facets=True,
         **kwargs,
     ):
         """Facets magnet with homogeneous magnetization.
@@ -179,8 +193,9 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         are the same as in the global coordinate system. The geometric center of the Facets
         is determined by its vertices and is not necessarily located in the origin.
 
-        In this case the facets are constructed from `points` and `triangles`. If `triangles` is
-        `None`, a `sciyp.spatial.ConvexHull` infers it."""
+        In this case the facets are constructed from `points` and `triangles`. By default,
+        `triangles` are constructed via sciyp.spatial.ConvexHull`.
+        """
 
         # pylint: disable=protected-access
         if points is None:
@@ -188,12 +203,12 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
                 "Points must be defined as an array-like object of shape (n,3)"
             )
         vertices = np.array(points)
-        if triangles is None:
+        if isinstance(triangles, str) and triangles.lower() == "convexhull":
             hull = ConvexHull(vertices)
             triangles = hull.simplices
             # apply facet flip since ConvexHull does not guarantee that the facets are all
             # pointing outwards
-            triangles = cls._flip_facets_outwards(vertices, triangles)
+            reorient_facets = True
         triangles = np.array(triangles)
         facets = vertices[triangles]
         return cls(
@@ -204,5 +219,6 @@ class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             style=style,
             triangles=triangles,
             vertices=vertices,
+            reorient_facets=reorient_facets,
             **kwargs,
         )
