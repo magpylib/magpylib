@@ -16,7 +16,7 @@ from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
 from magpylib._src.display.traces_base import (
-    make_CylindserSegment as make_BaseCylinderSegment,
+    make_CylinderSegment as make_BaseCylinderSegment,
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
