@@ -40,7 +40,7 @@ def get_model(trace, *, backend, show, scale, kwargs):
 
 
 def make_Cuboid(
-    backend='generic',
+    backend="generic",
     dimension=(1.0, 1.0, 1.0),
     position=None,
     orientation=None,
@@ -97,7 +97,7 @@ def make_Cuboid(
 
 
 def make_Prism(
-    backend='generic',
+    backend="generic",
     base=3,
     diameter=1.0,
     height=1.0,
@@ -186,7 +186,7 @@ def make_Prism(
 
 
 def make_Ellipsoid(
-    backend='generic',
+    backend="generic",
     dimension=(1.0, 1.0, 1.0),
     vert=15,
     position=None,
@@ -266,7 +266,7 @@ def make_Ellipsoid(
 
 
 def make_CylinderSegment(
-    backend='generic',
+    backend="generic",
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
     vert=50,
     position=None,
@@ -365,7 +365,7 @@ def make_CylinderSegment(
 
 
 def make_Pyramid(
-    backend='generic',
+    backend="generic",
     base=3,
     diameter=1,
     height=1,
@@ -445,7 +445,7 @@ def make_Pyramid(
 
 
 def make_Arrow(
-    backend='generic',
+    backend="generic",
     base=3,
     diameter=0.3,
     height=1,

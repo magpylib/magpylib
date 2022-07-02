@@ -7,6 +7,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.style import Markers
 
 
@@ -412,3 +413,71 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     else:
         ranges = np.array([[-1.0, 1.0]] * 3)
     return ranges
+
+
+def group_traces(*traces):
+    """Group and merge mesh traces with similar properties. This drastically improves
+    browser rendering performance when displaying a lot of mesh3d objects."""
+    mesh_groups = {}
+    common_keys = ["legendgroup", "opacity"]
+    spec_keys = {
+        "mesh3d": ["colorscale"],
+        "scatter3d": [
+            "marker",
+            "line_dash",
+            "line_color",
+            "line_width",
+            "marker_color",
+            "marker_symbol",
+            "marker_size",
+            "mode",
+        ],
+    }
+    for tr in traces:
+        tr = linearize_dict(
+            tr,
+            separator="_",
+        )
+        gr = [tr["type"]]
+        for k in common_keys + spec_keys[tr["type"]]:
+            try:
+                v = tr.get(k, "")
+            except AttributeError:
+                v = getattr(tr, k, "")
+            gr.append(str(v))
+        gr = "".join(gr)
+        if gr not in mesh_groups:
+            mesh_groups[gr] = []
+        mesh_groups[gr].append(tr)
+
+    traces = []
+    for key, gr in mesh_groups.items():
+        if key.startswith("mesh3d") or key.startswith("scatter3d"):
+            tr = [merge_traces(*gr)]
+        else:
+            tr = gr
+        traces.extend(tr)
+    return traces
+
+
+def subdivide_mesh_by_facecolor(trace):
+    """Subdivide a mesh into a list of meshes based on facecolor"""
+    facecolor = trace["facecolor"]
+    subtraces = []
+    # pylint: disable=singleton-comparison
+    facecolor[facecolor == np.array(None)] = "black"
+    for color in np.unique(facecolor):
+        mask = facecolor == color
+        new_trace = trace.copy()
+        uniq = np.unique(np.hstack([trace[k][mask] for k in "ijk"]))
+        new_inds = np.arange(len(uniq))
+        mapping_ar = np.zeros(uniq.max() + 1, dtype=new_inds.dtype)
+        mapping_ar[uniq] = new_inds
+        for k in "ijk":
+            new_trace[k] = mapping_ar[trace[k][mask]]
+        for k in "xyz":
+            new_trace[k] = new_trace[k][uniq]
+        new_trace["color"] = color
+        new_trace.pop("facecolor")
+        subtraces.append(new_trace)
+    return subtraces
