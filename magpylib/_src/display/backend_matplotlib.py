@@ -3,8 +3,8 @@ import numpy as np
 from matplotlib.animation import FuncAnimation
 
 from magpylib._src.display.traces_generic import get_frames
-from magpylib._src.display.traces_generic import subdivide_mesh_by_facecolor
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
 
