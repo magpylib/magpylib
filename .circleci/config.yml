@@ -30,6 +30,7 @@ jobs:
       - run:
           name: Specific depedencies for pyvista
           command: |
+            apt update
             apt-get install -y libgl1-mesa-dev xvfb
       - run:
           name: Run pylint test
