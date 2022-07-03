@@ -28,6 +28,10 @@ jobs:
           name: Set up testing tools and environment
           command: mkdir test-results && pip install tox && pip install pylint
       - run:
+          name: Specific depedencies for pyvista
+          command: |
+            sudo apt-get install -y libgl1-mesa-dev xvfb
+      - run:
           name: Run pylint test
           command: pylint --rcfile='./.pylintrc' magpylib
       - run:
