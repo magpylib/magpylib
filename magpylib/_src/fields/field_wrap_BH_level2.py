@@ -44,7 +44,11 @@ SOURCE_PROPERTIES = {
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
-    out = np.array([getattr(src, prop_name) for src in group])
+    out = [getattr(src, prop_name) for src in group]
+    if not np.isscalar(out[0]) and any(o.shape != out[0].shape for o in out):
+        out = np.asarray(out, dtype="object")
+    else:
+        out = np.array(out)
     return np.repeat(out, n_pp, axis=0)
 
 
