@@ -11,7 +11,7 @@ def current_vertices_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
-    vertices: list = None,
+    vertices: np.ndarray = None,
     segment_start=None,  # list of mix3 ndarrays
     segment_end=None,
 ) -> np.ndarray:
@@ -32,36 +32,30 @@ def current_vertices_field(
     if vertices is None:
         return current_line_field(field, observers, current, segment_start, segment_end)
 
-    nv = len(vertices)  # number of input vertex_sets
-    npp = int(observers.shape[0] / nv)  # number of position vectors
-    nvs = [len(vset) - 1 for vset in vertices]  # length of vertex sets
-    nseg = sum(nvs)  # number of segments
-
-    # vertex_sets -> segments
-    curr_tile = np.repeat(current, nvs)
-    pos_start = np.concatenate([vert[:-1] for vert in vertices])
-    pos_end = np.concatenate([vert[1:] for vert in vertices])
-
-    # create input for vectorized computation in one go
-    observers = np.reshape(observers, (nv, npp, 3))
-    observers = np.repeat(observers, nvs, axis=0)
-    observers = np.reshape(observers, (-1, 3))
-
-    curr_tile = np.repeat(curr_tile, npp)
-    pos_start = np.repeat(pos_start, npp, axis=0)
-    pos_end = np.repeat(pos_end, npp, axis=0)
-
-    # compute field
-    field = current_line_field(field, observers, curr_tile, pos_start, pos_end)
-    field = np.reshape(field, (nseg, npp, 3))
-
-    # sum for each vertex set
-    ns_cum = [sum(nvs[:i]) for i in range(nv + 1)]  # cumulative index positions
-    field_sum = np.array(
-        [np.sum(field[ns_cum[i - 1] : ns_cum[i]], axis=0) for i in range(1, nv + 1)]
-    )
-
-    return np.reshape(field_sum, (-1, 3))
+    nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
+    if all(v == nvs[0] for v in nvs):  # if all vertices sets have the same lenghts
+        n0, n1, *_ = vertices.shape
+        BH = current_line_field(
+            field=field,
+            observers=np.repeat(observers, n1 - 1, axis=0),
+            current=np.repeat(current, n1 - 1, axis=0),
+            segment_start=vertices[:, :-1].reshape(-1, 3),
+            segment_end=vertices[:, 1:].reshape(-1, 3),
+        )
+        BH = BH.reshape((n0, n1 - 1, 3))
+        BH = np.sum(BH, axis=1)
+    else:
+        split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
+        BH = current_line_field(
+            field=field,
+            observers=np.repeat(observers, nvs - 1, axis=0),
+            current=np.repeat(current, nvs - 1, axis=0),
+            segment_start=np.concatenate([vert[:-1] for vert in vertices]),
+            segment_end=np.concatenate([vert[1:] for vert in vertices]),
+        )
+        bh_split = np.split(BH, split_indices)
+        BH = np.array([np.sum(bh, axis=0) for bh in bh_split])
+    return BH
 
 
 # ON INTERFACE
@@ -122,7 +116,6 @@ def current_line_field(
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements
-
     bh = check_field_input(field, "current_line_field()")
 
     # allocate for special case treatment

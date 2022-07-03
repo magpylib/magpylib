@@ -81,11 +81,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     except KeyError as err:
         raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
-    if src_type == "Line":  # get_BH_line_from_vert function tiles internally !
-        currv = np.array([src.current for src in group])
-        vert_list = [src.vertices for src in group]
-        kwargs.update({"current": currv, "vertices": vert_list})
-    elif src_type == "CustomSource":
+    if src_type == "CustomSource":
         kwargs.update(field_func=group[0].field_func)
     else:
         for prop in src_props:
