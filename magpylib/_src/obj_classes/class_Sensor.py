@@ -1,7 +1,7 @@
 """Sensor class code
 DOCSTRINGS V4 READY
 """
-from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo

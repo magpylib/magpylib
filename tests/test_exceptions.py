@@ -6,8 +6,7 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibInternalError
-from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
-from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
@@ -60,7 +59,7 @@ def getBH_level2_internal_error1():
     # pylint: disable=protected-access
     sens = magpy.Sensor()
     x = np.zeros((10, 3))
-    magpy._src.fields.field_wrap_BH_level2.get_src_dict([sens], 10, 10, x)
+    magpy._src.fields.field_wrap_BH.get_src_dict([sens], 10, 10, x)
 
 
 # getBHv missing inputs ------------------------------------------------------
