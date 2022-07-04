@@ -509,10 +509,10 @@ def get_plotly_traces(
     # pylint: disable=too-many-nested-blocks
 
     Sensor = _src.obj_classes.class_Sensor.Sensor
-    Cuboid = _src.obj_classes.class_mag_Cuboid.Cuboid
-    Cylinder = _src.obj_classes.class_mag_Cylinder.Cylinder
-    CylinderSegment = _src.obj_classes.class_mag_CylinderSegment.CylinderSegment
-    Sphere = _src.obj_classes.class_mag_Sphere.Sphere
+    Cuboid = _src.obj_classes.class_magnet_Cuboid.Cuboid
+    Cylinder = _src.obj_classes.class_magnet_Cylinder.Cylinder
+    CylinderSegment = _src.obj_classes.class_magnet_CylinderSegment.CylinderSegment
+    Sphere = _src.obj_classes.class_magnet_Sphere.Sphere
     Dipole = _src.obj_classes.class_misc_Dipole.Dipole
     Loop = _src.obj_classes.class_current_Loop.Loop
     Line = _src.obj_classes.class_current_Line.Line
