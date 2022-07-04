@@ -10,8 +10,7 @@ from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import LIBRARY_SENSORS
-from magpylib._src.utility import LIBRARY_SOURCES
+from magpylib._src.utility import Registered
 from magpylib._src.utility import wrong_obj_msg
 
 
@@ -503,14 +502,14 @@ def check_format_input_obj(
     # select wanted
     wanted_types = []
     if "sources" in allow.split("+"):
-        wanted_types += list(LIBRARY_SOURCES)
+        wanted_types += list(Registered.sources)
     if "sensors" in allow.split("+"):
-        wanted_types += list(LIBRARY_SENSORS)
+        wanted_types += list(Registered.sensors)
     if "collections" in allow.split("+"):
         wanted_types += ["Collection"]
 
     if typechecks:
-        all_types = list(LIBRARY_SOURCES) + list(LIBRARY_SENSORS) + ["Collection"]
+        all_types = list(Registered.sources) + list(Registered.sensors) + ["Collection"]
 
     obj_list = []
     for obj in inp:

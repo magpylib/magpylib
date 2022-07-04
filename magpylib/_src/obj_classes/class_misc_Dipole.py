@@ -6,8 +6,10 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(family="dipole", field_func=dipole_field)
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """Magnetic dipole moment.
 
@@ -88,8 +90,6 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ):
         # instance attributes
         self.moment = moment
-        self._object_type = "Dipole"
-        self._field_func = dipole_field
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -112,8 +112,3 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
-
-    @property
-    def field_func(self):
-        """The core function for B- and H-field computation"""
-        return self._field_func

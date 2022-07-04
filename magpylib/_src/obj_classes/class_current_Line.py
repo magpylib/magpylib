@@ -7,8 +7,10 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(family="current", field_func=current_vertices_field)
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Current flowing in straight lines from vertex to vertex.
 
@@ -99,8 +101,6 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.vertices = vertices
-        self._object_type = "Line"
-        self._field_func = current_vertices_field
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -121,8 +121,3 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     def vertices(self, vert):
         """Set Line vertices, array_like, [mm]."""
         self._vertices = check_format_input_vertices(vert)
-
-    @property
-    def field_func(self):
-        """The core function for B- and H-field computation"""
-        return self._field_func

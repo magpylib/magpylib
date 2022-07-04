@@ -11,8 +11,10 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(family="magnet", field_func=magnet_cylinder_segment_field_internal)
 class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
@@ -103,8 +105,6 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = "CylinderSegment"
-        self._field_func = magnet_cylinder_segment_field_internal
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -155,8 +155,3 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter
-
-    @property
-    def field_func(self):
-        """The core function for B- and H-field computation"""
-        return self._field_func

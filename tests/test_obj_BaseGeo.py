@@ -417,8 +417,8 @@ def test_describe():
 
     test = (
         "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • "
-        + "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • "
-        + "dimension: None mm<br>  • magnetization: None mT</pre>"
+        "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • "
+        "dimension: None mm<br>  • magnetization: None mT<br>  • family: magnet </pre>"
     )
     rep = x1._repr_html_()
     rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)
@@ -432,6 +432,7 @@ def test_describe():
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: None mm",
         "  • magnetization: None mT",
+        "  • family: magnet ",  # INVISIBLE SPACE
     ]
     desc = x1.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
@@ -444,6 +445,7 @@ def test_describe():
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: [1. 3.] mm",
         "  • magnetization: [2. 3. 4.] mT",
+        "  • family: magnet ",  # INVISIBLE SPACE
     ]
     desc = x2.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

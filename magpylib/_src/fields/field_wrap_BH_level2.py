@@ -5,15 +5,6 @@ from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibInternalError
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
-from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
-from magpylib._src.fields.field_BH_cylinder_segment import (
-    magnet_cylinder_segment_field_internal,
-)
-from magpylib._src.fields.field_BH_dipole import dipole_field
-from magpylib._src.fields.field_BH_line import current_vertices_field
-from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
@@ -23,17 +14,7 @@ from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
-from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
-
-FIELD_FUNCTIONS = {
-    "Cuboid": magnet_cuboid_field,
-    "Cylinder": magnet_cylinder_field,
-    "CylinderSegment": magnet_cylinder_segment_field_internal,
-    "Sphere": magnet_sphere_field,
-    "Dipole": dipole_field,
-    "Loop": current_loop_field,
-    "Line": current_vertices_field,
-}
+from magpylib._src.utility import Registered
 
 
 PARAM_TILE_DIMS = {
@@ -395,8 +376,7 @@ def getBH_dict_level2(
     - sets default input variables (e.g. pos, rot) if missing
     - tiles 1D inputs vectors to correct dimension
     """
-    # pylint: disable=too-many-branches
-    # pylint: disable=too-many-statements
+    # pylint: disable=protected-access
 
     # generate dict of secured inputs for auto-tiling ---------------
     #  entries in this dict will be tested for input length, and then
@@ -406,10 +386,10 @@ def getBH_dict_level2(
     #  which tells the program which dimension it should tile up.
 
     try:
-        field_func = FIELD_FUNCTIONS[source_type]
+        field_func = Registered.sources[source_type]._field_func
     except KeyError as err:
         raise MagpylibBadUserInput(
-            f"Input parameter `sources` must be one of {LIBRARY_BH_DICT_SOURCE_STRINGS}"
+            f"Input parameter `sources` must be one of {list(Registered.sources)}"
             " when using the direct interface."
         ) from err
 

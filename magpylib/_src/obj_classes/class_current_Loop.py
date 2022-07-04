@@ -7,8 +7,10 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(family="current", field_func=current_loop_field)
 class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Circular current loop.
 
@@ -93,8 +95,6 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.diameter = diameter
-        self._object_type = "Loop"
-        self._field_func = current_loop_field
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -117,8 +117,3 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             allow_None=True,
             forbid_negative=True,
         )
-
-    @property
-    def field_func(self):
-        """The core function for B- and H-field computation"""
-        return self._field_func

@@ -7,34 +7,59 @@ import numpy as np
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-LIBRARY_SOURCES = (
-    "Cuboid",
-    "Cylinder",
-    "CylinderSegment",
-    "Sphere",
-    "Dipole",
-    "Loop",
-    "Line",
-    "CustomSource",
-)
 
-LIBRARY_BH_DICT_SOURCE_STRINGS = (
-    "Cuboid",
-    "Cylinder",
-    "CylinderSegment",
-    "Sphere",
-    "Dipole",
-    "Loop",
-    "Line",
-)
+class Registered:
+    """Class decorator to register source class into LIBRARY_SOURCES
+    and to update field function of source class"""
 
-LIBRARY_SENSORS = ("Sensor",)
+    sensors = {"Sensor": None}
+    sources = {}
+    families = {
+        "Sensor": "sensor",
+        "Marker": "markers",
+    }
 
-ALLOWED_SOURCE_MSG = f"""Sources must be either
-- one of type {LIBRARY_SOURCES}
+    def __init__(self, *, family, field_func):
+        self.family = family
+        self.field_func = field_func
+
+    def __call__(self, klass):
+        if self.field_func is None:
+            setattr(klass, "_field_func", None)
+        else:
+            setattr(klass, "_field_func", staticmethod(self.field_func))
+            setattr(
+                klass,
+                "field_func",
+                property(
+                    lambda self: getattr(self, "_field_func"),
+                    doc="""The core function for B- and H-field computation""",
+                ),
+            )
+        setattr(klass, "_family", self.family)
+        setattr(
+            klass,
+            "family",
+            property(
+                lambda self: getattr(self, "_family"),
+                doc="""The source family (e.g. 'magnet', 'current', 'misc')""",
+            ),
+        )
+        name = klass.__name__
+        setattr(klass, "_object_type", name)
+        self.sources[name] = klass
+        self.families[name] = self.family
+        return klass
+
+
+def get_allowed_sources_msg():
+    "Return allowed source message"
+    return f"""Sources must be either
+- one of type {list(Registered.sources)}
 - Collection with at least one of the above
 - 1D list of the above
-- string {LIBRARY_BH_DICT_SOURCE_STRINGS}"""
+- string {list(Registered.sources)}"""
+
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
@@ -55,7 +80,7 @@ def wrong_obj_msg(*objs, allow="sources"):
     prefix = "No" if len(allowed) == 1 else "Bad"
     msg = f"{prefix} {'/'.join(allowed)} provided"
     if "sources" in allowed:
-        msg += "\n" + ALLOWED_SOURCE_MSG
+        msg += "\n" + get_allowed_sources_msg()
     if "observers" in allowed:
         msg += "\n" + ALLOWED_OBSERVER_MSG
     if "sensors" in allowed:
@@ -94,8 +119,8 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     flatten_collection = not "collections" in allow.split("+")
     for obj in objects:
         try:
-            if getattr(obj, "_object_type", None) in list(LIBRARY_SOURCES) + list(
-                LIBRARY_SENSORS
+            if getattr(obj, "_object_type", None) in list(Registered.sources) + list(
+                Registered.sensors
             ):
                 obj_list += [obj]
             else:
@@ -147,7 +172,7 @@ def format_src_inputs(sources) -> list:
             if not child_sources:
                 raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
             src_list += child_sources
-        elif obj_type in LIBRARY_SOURCES:
+        elif obj_type in list(Registered.sources):
             src_list += [src]
         else:
             raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
@@ -220,9 +245,9 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     allowed_list = []
     for allowed in allow.split("+"):
         if allowed == "sources":
-            allowed_list.extend(LIBRARY_SOURCES)
+            allowed_list.extend(list(Registered.sources))
         elif allowed == "sensors":
-            allowed_list.extend(LIBRARY_SENSORS)
+            allowed_list.extend(list(Registered.sensors))
         elif allowed == "collections":
             allowed_list.extend(["Collection"])
     new_list = []
