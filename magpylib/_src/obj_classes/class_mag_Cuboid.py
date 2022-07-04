@@ -1,6 +1,7 @@
 """Magnet Cuboid class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
@@ -94,6 +95,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # instance attributes
         self.dimension = dimension
         self._object_type = "Cuboid"
+        self._field_func = magnet_cuboid_field
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -118,3 +120,8 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
             allow_None=True,
             forbid_negative0=True,
         )
+
+    @property
+    def field_func(self):
+        """The core function for B- and H-field computation"""
+        return self._field_func

@@ -5,6 +5,15 @@ from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibInternalError
+from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
+from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
+from magpylib._src.fields.field_BH_cylinder_segment import (
+    magnet_cylinder_segment_field_internal,
+)
+from magpylib._src.fields.field_BH_dipole import dipole_field
+from magpylib._src.fields.field_BH_line import current_vertices_field
+from magpylib._src.fields.field_BH_loop import current_loop_field
+from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_wrap_BH_level1 import getBH_level1
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
@@ -15,6 +24,16 @@ from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import LIBRARY_BH_DICT_SOURCE_STRINGS
+
+FIELD_FUNCTIONS = {
+    "Cuboid": magnet_cuboid_field,
+    "Cylinder": magnet_cylinder_field,
+    "CylinderSegment": magnet_cylinder_segment_field_internal,
+    "Sphere": magnet_sphere_field,
+    "Dipole": dipole_field,
+    "Loop": current_loop_field,
+    "Line": current_vertices_field,
+}
 
 
 PARAM_TILE_DIMS = {
@@ -74,7 +93,6 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     src_type = group[0]._object_type
 
     kwargs = {
-        "source_type": src_type,
         "position": posv,
         "observers": posov,
         "orientation": rotobj,
@@ -85,11 +103,8 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     except KeyError as err:
         raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
-    if src_type == "CustomSource":
-        kwargs.update(field_func=group[0].field_func)
-    else:
-        for prop in src_props:
-            kwargs[prop] = tile_group_property(group, n_pp, prop)
+    for prop in src_props:
+        kwargs[prop] = tile_group_property(group, n_pp, prop)
 
     return kwargs
 
@@ -237,28 +252,26 @@ def getBH_level2(
     n_pix = int(n_pp / max_path_len)
 
     # group similar source types----------------------------------------------
-    groups = {}
+    field_func_groups = {}
     for ind, src in enumerate(src_list):
-        if src._object_type == "CustomSource":
-            group_key = src.field_func
-        else:
-            group_key = src._object_type
-        if group_key not in groups:
-            groups[group_key] = {
+        group_key = src.field_func
+        if group_key not in field_func_groups:
+            field_func_groups[group_key] = {
                 "sources": [],
                 "order": [],
-                "source_type": src._object_type,
             }
-        groups[group_key]["sources"].append(src)
-        groups[group_key]["order"].append(ind)
+        field_func_groups[group_key]["sources"].append(src)
+        field_func_groups[group_key]["order"].append(ind)
 
     # evaluate each group in one vectorized step -------------------------------
     B = np.empty((num_of_src_list, max_path_len, n_pix, 3))  # allocate B
-    for group in groups.values():
+    for field_func, group in field_func_groups.items():
         lg = len(group["sources"])
         gr = group["sources"]
         src_dict = get_src_dict(gr, n_pix, n_pp, poso)  # compute array dict for level1
-        B_group = getBH_level1(field=field, **src_dict)  # compute field
+        B_group = getBH_level1(
+            field_func=field_func, field=field, **src_dict
+        )  # compute field
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
         )  # reshape (2% slower for large arrays)
@@ -392,11 +405,13 @@ def getBH_dict_level2(
     #  To allow different input dimensions, the tdim argument is also given
     #  which tells the program which dimension it should tile up.
 
-    if source_type not in LIBRARY_BH_DICT_SOURCE_STRINGS:
+    try:
+        field_func = FIELD_FUNCTIONS[source_type]
+    except KeyError as err:
         raise MagpylibBadUserInput(
             f"Input parameter `sources` must be one of {LIBRARY_BH_DICT_SOURCE_STRINGS}"
             " when using the direct interface."
-        )
+        ) from err
 
     kwargs["observers"] = observers
     kwargs["position"] = position
@@ -440,7 +455,7 @@ def getBH_dict_level2(
     kwargs["orientation"] = R.from_quat(kwargs["orientation"])
 
     # compute and return B
-    B = getBH_level1(source_type=source_type, field=field, **kwargs)
+    B = getBH_level1(field=field, field_func=field_func, **kwargs)
 
     if squeeze:
         return np.squeeze(B)

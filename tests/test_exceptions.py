@@ -30,21 +30,6 @@ def getBHv_unknown_source_type():
     )
 
 
-def getBH_level1_internal_error():
-    """bad source_type input should not happen"""
-    x = np.array([(1, 2, 3)])
-    rot = R.from_quat((0, 0, 0, 1))
-    getBH_level1(
-        field="B",
-        source_type="woot",
-        magnetization=x,
-        dimension=x,
-        observers=x,
-        position=x,
-        orientation=rot,
-    )
-
-
 def getBH_level2_bad_input1():
     """test BadUserInput error at getBH_level2"""
     src = magpy.magnet.Cuboid((1, 1, 2), (1, 1, 1))
@@ -378,10 +363,6 @@ class TestExceptions(unittest.TestCase):
         self.assertRaises(MagpylibBadUserInput, getBHv_bad_input2)
         self.assertRaises(MagpylibBadUserInput, getBHv_bad_input3)
         self.assertRaises(MagpylibBadUserInput, getBHv_unknown_source_type)
-
-    def test_except_getBH_lev1(self):
-        """getBH_level1 exception testing"""
-        self.assertRaises(MagpylibInternalError, getBH_level1_internal_error)
 
     def test_except_getBH_lev2(self):
         """getBH_level2 exception testing"""

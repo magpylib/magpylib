@@ -1,6 +1,7 @@
 """Loop current class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -93,6 +94,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         # instance attributes
         self.diameter = diameter
         self._object_type = "Loop"
+        self._field_func = current_loop_field
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -115,3 +117,8 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
             allow_None=True,
             forbid_negative=True,
         )
+
+    @property
+    def field_func(self):
+        """The core function for B- and H-field computation"""
+        return self._field_func

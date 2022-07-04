@@ -3,6 +3,9 @@ DOCSTRINGS V4 READY
 """
 import numpy as np
 
+from magpylib._src.fields.field_BH_cylinder_segment import (
+    magnet_cylinder_segment_field_internal,
+)
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
@@ -101,6 +104,7 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         # instance attributes
         self.dimension = dimension
         self._object_type = "CylinderSegment"
+        self._field_func = magnet_cylinder_segment_field_internal
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -151,3 +155,8 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter
+
+    @property
+    def field_func(self):
+        """The core function for B- and H-field computation"""
+        return self._field_func

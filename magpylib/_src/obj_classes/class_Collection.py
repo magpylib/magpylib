@@ -76,6 +76,7 @@ def collection_tree_generator(
                     "children",
                     "parent",
                     "style",
+                    "field_func",
                     "sources",
                     "sensors",
                     "collections",
