@@ -1,20 +1,8 @@
 """
 The `magpylib.current` subpackage contains all electric current classes.
 """
-import importlib
-from pkgutil import iter_modules
 
-from magpylib._src import obj_classes
+__all__ = ["Loop", "Line"]
 
-classes = []
-
-for submodule in iter_modules(obj_classes.__path__):
-    if submodule.name.startswith("class_current"):
-        _, typ, cls_name = submodule.name.split("_")
-        classes.append(cls_name)
-        module = importlib.import_module(
-            f"{obj_classes.__name__}.{submodule.name}", cls_name
-        )
-        vars()[cls_name] = getattr(module, cls_name)
-
-__all__ = classes
+from magpylib._src.obj_classes.class_current_Loop import Loop
+from magpylib._src.obj_classes.class_current_Line import Line
