@@ -14,7 +14,11 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="magnet", field_func=magnet_cylinder_segment_field_internal)
+@Registered(
+    family="magnet",
+    field_func=magnet_cylinder_segment_field_internal,
+    properties={"magnetization": 2, "dimension": 2},
+)
 class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 

@@ -10,7 +10,11 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="current", field_func=current_loop_field)
+@Registered(
+    family="current",
+    field_func=current_loop_field,
+    properties={"current": 1, "diameter": 1},
+)
 class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Circular current loop.
 

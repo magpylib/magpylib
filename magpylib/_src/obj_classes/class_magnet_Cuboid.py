@@ -10,7 +10,11 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="magnet", field_func=magnet_cuboid_field)
+@Registered(
+    family="magnet",
+    field_func=magnet_cuboid_field,
+    properties={"magnetization": 2, "dimension": 2},
+)
 class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cuboid magnet with homogeneous magnetization.
 

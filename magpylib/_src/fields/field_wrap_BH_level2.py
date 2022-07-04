@@ -17,31 +17,6 @@ from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import Registered
 
 
-PARAM_TILE_DIMS = {
-    "observers": 2,
-    "position": 2,
-    "orientation": 2,
-    "magnetization": 2,
-    "current": 1,
-    "moment": 2,
-    "dimension": 2,
-    "diameter": 1,
-    "segment_start": 2,
-    "segment_end": 2,
-}
-
-SOURCE_PROPERTIES = {
-    "Cuboid": ("magnetization", "dimension"),
-    "Cylinder": ("magnetization", "dimension"),
-    "CylinderSegment": ("magnetization", "dimension"),
-    "Sphere": ("magnetization", "diameter"),
-    "Dipole": ("moment",),
-    "Loop": ("current", "diameter"),
-    "Line": ("current", "vertices"),
-    "CustomSource": (),
-}
-
-
 def tile_group_property(group: list, n_pp: int, prop_name: str):
     """tile up group property"""
     out = [getattr(src, prop_name) for src in group]
@@ -80,12 +55,17 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     }
 
     try:
-        src_props = SOURCE_PROPERTIES[src_type]
+        src_props = Registered.properties[src_type]
     except KeyError as err:
         raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
     for prop in src_props:
-        kwargs[prop] = tile_group_property(group, n_pp, prop)
+        if hasattr(group[0], prop) and prop not in (
+            "position",
+            "orientation",
+            "observers",
+        ):
+            kwargs[prop] = tile_group_property(group, n_pp, prop)
 
     return kwargs
 
@@ -408,7 +388,7 @@ def getBH_dict_level2(
             raise MagpylibBadUserInput(
                 f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
-        tdim = PARAM_TILE_DIMS.get(key, 1)
+        tdim = Registered.properties[source_type].get(key, 1)
         if val.ndim == tdim:
             vec_lengths.append(len(val))
         kwargs[key] = val
@@ -422,7 +402,7 @@ def getBH_dict_level2(
 
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
-        tdim = PARAM_TILE_DIMS.get(key, 1)
+        tdim = Registered.properties[source_type].get(key, 1)
         if val.ndim < tdim:
             if tdim == 2:
                 kwargs[key] = np.tile(val, (vec_len, 1))

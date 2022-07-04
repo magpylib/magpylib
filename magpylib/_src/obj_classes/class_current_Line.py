@@ -10,7 +10,11 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="current", field_func=current_vertices_field)
+@Registered(
+    family="current",
+    field_func=current_vertices_field,
+    properties={"current": 1, "vertices": 2, "segment_start": 2, "segment_end": 2},
+)
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Current flowing in straight lines from vertex to vertex.
 

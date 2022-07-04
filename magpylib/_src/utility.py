@@ -18,10 +18,12 @@ class Registered:
         "Sensor": "sensor",
         "Marker": "markers",
     }
+    properties = {}
 
-    def __init__(self, *, family, field_func):
+    def __init__(self, *, family, field_func, properties=None):
         self.family = family
         self.field_func = field_func
+        self.properties_new = {} if properties is None else properties
 
     def __call__(self, klass):
         if self.field_func is None:
@@ -49,6 +51,9 @@ class Registered:
         setattr(klass, "_object_type", name)
         self.sources[name] = klass
         self.families[name] = self.family
+        if name not in self.properties:
+            self.properties[name] = {"position": 2, "orientation": 2, "observers": 2}
+        self.properties[name].update(self.properties_new)
         return klass
 
 

@@ -10,7 +10,11 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="magnet", field_func=magnet_sphere_field)
+@Registered(
+    family="magnet",
+    field_func=magnet_sphere_field,
+    properties={"magnetization": 2, "diameter": 1},
+)
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Spherical magnet with homogeneous magnetization.
 
