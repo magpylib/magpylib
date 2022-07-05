@@ -46,7 +46,7 @@ def get_style(obj, default_settings, **kwargs):
 
     obj_style_default_dict = {
         **styles_by_family["base"],
-        **{k: v for k, v in styles_by_family.get(obj_family, {}).items()},
+        **dict(styles_by_family.get(obj_family, {}).items()),
     }
     style_kwargs = validate_style_keys(style_kwargs)
     # create style class instance and update based on precedence
