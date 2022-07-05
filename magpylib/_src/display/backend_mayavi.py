@@ -27,6 +27,7 @@ def generic_trace_to_mayavi(trace):
             color = colorConverter.to_rgb(color)
             trace_mvi = {
                 "constructor": "triangular_mesh",
+                "mlab_source_names": {"x": x, "y": y, "z": z, "triangles": triangles},
                 "args": (x, y, z, triangles),
                 "kwargs": {
                     # "scalars": subtrace.get("intensity", None),
@@ -44,6 +45,7 @@ def generic_trace_to_mayavi(trace):
         color = colorConverter.to_rgb(color)
         trace_mvi = {
             "constructor": "plot3d",
+            "mlab_source_names": {"x": x, "y": y, "z": z},
             "args": (x, y, z),
             "kwargs": {
                 "color": color,
@@ -69,12 +71,6 @@ def display_mayavi(
 
     """Display objects and paths graphically using the mayavi library."""
 
-    if animation is not False:
-        msg = "The mayavi backend does not support animation at the moment.\n"
-        msg += "Use `backend=plotly` instead."
-        warnings.warn(msg)
-        animation = False
-
     # flat_obj_list = format_obj_input(obj_list)
 
     show_canvas = True
@@ -96,15 +92,40 @@ def display_mayavi(
         mag_arrows=True,
         **kwargs,
     )
+    frames = data["frames"]
+    for fr in frames:
+        new_data = []
+        for tr in fr["data"]:
+            new_data.extend(generic_trace_to_mayavi(tr))
+        fr["data"] = new_data
 
-    frame = data["frames"][0]  # select first, since no animation supported
+    mayvi_traces = []
 
-    for tr0 in frame["data"]:
-        for tr1 in generic_trace_to_mayavi(tr0):
-            constructor = tr1["constructor"]
-            args = tr1["args"]
-            kwargs = tr1["kwargs"]
-            getattr(mlab, constructor)(*args, **kwargs)
+    def draw_frame(frame_ind):
+        for trace_ind, tr1 in enumerate(frames[frame_ind]["data"]):
+            if frame_ind == 0:
+                constructor = tr1["constructor"]
+                args = tr1["args"]
+                kwargs = tr1["kwargs"]
+                tr = getattr(mlab, constructor)(*args, **kwargs)
+                mayvi_traces.append(tr)
+            else:
+                mlab_source = getattr(mayvi_traces[trace_ind], "mlab_source")
+                mlab_source.trait_set(**tr1["mlab_source_names"])
+
+    draw_frame(0)
+
+    if animation:
+
+        @mlab.animate(delay=data["frame_duration"])
+        def anim():
+            while 1:
+                for frame_ind, _ in enumerate(frames):
+                    if frame_ind > 0:
+                        draw_frame(frame_ind)
+                    yield
+
+        anim()
 
     if show_canvas:
         mlab.show()
