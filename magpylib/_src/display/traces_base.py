@@ -54,7 +54,8 @@ def make_Cuboid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension : 3-tuple, default=(1,1,1)
         Length of the cuboid sides `x,y,z`.
@@ -114,7 +115,8 @@ def make_Prism(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=6
         Number of vertices of the base in the xy-plane.
@@ -202,7 +204,8 @@ def make_Ellipsoid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension : tuple, default=(1.0, 1.0, 1.0)
         Dimension in the `x,y,z` directions.
@@ -282,7 +285,8 @@ def make_CylinderSegment(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
@@ -383,7 +387,8 @@ def make_Pyramid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=30
         Number of vertices of the cone base.
@@ -463,7 +468,8 @@ def make_Arrow(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=30
         Number of vertices of the arrow base.
