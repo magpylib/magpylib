@@ -55,7 +55,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     }
 
     try:
-        src_props = Registered.properties[src_type]
+        src_props = Registered.source_kwargs_ndim[src_type]
     except KeyError as err:
         raise MagpylibInternalError("Bad source_type in get_src_dict") from err
 
@@ -424,7 +424,7 @@ def getBH_dict_level2(
             raise MagpylibBadUserInput(
                 f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
-        tdim = Registered.properties[source_type].get(key, 1)
+        tdim = Registered.source_kwargs_ndim[source_type].get(key, 1)
         if val.ndim == tdim:
             vec_lengths.append(len(val))
         kwargs[key] = val
@@ -438,7 +438,7 @@ def getBH_dict_level2(
 
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
-        tdim = Registered.properties[source_type].get(key, 1)
+        tdim = Registered.source_kwargs_ndim[source_type].get(key, 1)
         if val.ndim < tdim:
             if tdim == 2:
                 kwargs[key] = np.tile(val, (vec_len, 1))

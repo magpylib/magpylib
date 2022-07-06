@@ -11,9 +11,10 @@ from magpylib._src.utility import Registered
 
 
 @Registered(
+    kind="source",
     family="magnet",
     field_func=magnet_sphere_field,
-    properties={"magnetization": 2, "diameter": 1},
+    source_kwargs_ndim={"magnetization": 2, "diameter": 1},
 )
 class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Spherical magnet with homogeneous magnetization.

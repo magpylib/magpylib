@@ -9,7 +9,12 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="dipole", field_func=dipole_field, properties={"moment": 2})
+@Registered(
+    kind="source",
+    family="dipole",
+    field_func=dipole_field,
+    source_kwargs_ndim={"moment": 2},
+)
 class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """Magnetic dipole moment.
 

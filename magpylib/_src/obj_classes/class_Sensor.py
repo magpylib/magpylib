@@ -6,8 +6,10 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_star_input
+from magpylib._src.utility import Registered
 
 
+@Registered(kind="sensor", family="sensor")
 class Sensor(BaseGeo, BaseDisplayRepr):
     """Magnetic field sensor.
 
@@ -85,7 +87,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         # instance attributes
         self.pixel = pixel
-        self._object_type = "Sensor"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)

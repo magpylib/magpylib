@@ -457,6 +457,7 @@ def test_describe():
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] mm",
         "  • orientation (last): [0. 0. 0.] degrees",
+        "  • family: sensor ",  # INVISIBLE SPACE
         "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
     desc = s1.describe(return_string=True)
@@ -471,6 +472,7 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • family: sensor \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
@@ -491,6 +493,7 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • family: sensor \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
@@ -511,6 +514,7 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • family: sensor \n"
         + "  • pixel: 75 (3x5x5) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

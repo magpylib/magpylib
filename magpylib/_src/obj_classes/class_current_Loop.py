@@ -11,9 +11,10 @@ from magpylib._src.utility import Registered
 
 
 @Registered(
+    kind="source",
     family="current",
     field_func=current_loop_field,
-    properties={"current": 1, "diameter": 1},
+    source_kwargs_ndim={"current": 1, "diameter": 1},
 )
 class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Circular current loop.

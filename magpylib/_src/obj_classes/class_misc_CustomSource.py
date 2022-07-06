@@ -6,7 +6,7 @@ from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
-@Registered(family="misc", field_func=None)
+@Registered(kind="source", family="misc", field_func=None)
 class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
     """User-defined custom source.
 

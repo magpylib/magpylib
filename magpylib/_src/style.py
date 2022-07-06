@@ -43,12 +43,12 @@ def get_style(obj, default_settings, **kwargs):
     # construct object specific dictionary base on style family and default style
     obj_type = getattr(obj, "_object_type", None)
     obj_family = Registered.families.get(obj_type, None)
-
     obj_style_default_dict = {
         **styles_by_family["base"],
         **dict(styles_by_family.get(obj_family, {}).items()),
     }
     style_kwargs = validate_style_keys(style_kwargs)
+
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
     style = obj_style.copy() if obj_style is not None else BaseStyle()

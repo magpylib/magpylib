@@ -9,51 +9,60 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 
 
 class Registered:
-    """Class decorator to register source class into LIBRARY_SOURCES
-    and to update field function of source class"""
+    """Class decorator to register sources or sensors
+    - Sources get their field function assigned"""
 
-    sensors = {"Sensor": None}
+    sensors = {}
     sources = {}
-    families = {
-        "Sensor": "sensor",
-        "Marker": "markers",
-    }
-    properties = {}
+    families = {}
+    source_kwargs_ndim = {}
 
-    def __init__(self, *, family, field_func, properties=None):
+    def __init__(self, *, kind, family, field_func=None, source_kwargs_ndim=None):
+        self.kind = kind
         self.family = family
         self.field_func = field_func
-        self.properties_new = {} if properties is None else properties
+        self.source_kwargs_ndim_new = (
+            {} if source_kwargs_ndim is None else source_kwargs_ndim
+        )
 
     def __call__(self, klass):
-        if self.field_func is None:
-            setattr(klass, "_field_func", None)
-        else:
-            setattr(klass, "_field_func", staticmethod(self.field_func))
-            setattr(
-                klass,
-                "field_func",
-                property(
-                    lambda self: getattr(self, "_field_func"),
-                    doc="""The core function for B- and H-field computation""",
-                ),
-            )
+        name = klass.__name__
+        setattr(klass, "_object_type", name)
         setattr(klass, "_family", self.family)
         setattr(
             klass,
             "family",
             property(
                 lambda self: getattr(self, "_family"),
-                doc="""The source family (e.g. 'magnet', 'current', 'misc')""",
+                doc="""The object family (e.g. 'magnet', 'current', 'misc')""",
             ),
         )
-        name = klass.__name__
-        setattr(klass, "_object_type", name)
-        self.sources[name] = klass
         self.families[name] = self.family
-        if name not in self.properties:
-            self.properties[name] = {"position": 2, "orientation": 2, "observers": 2}
-        self.properties[name].update(self.properties_new)
+
+        if self.kind == "sensor":
+            self.sensors[name] = klass
+
+        elif self.kind == "source":
+            if self.field_func is None:
+                setattr(klass, "_field_func", None)
+            else:
+                setattr(klass, "_field_func", staticmethod(self.field_func))
+                setattr(
+                    klass,
+                    "field_func",
+                    property(
+                        lambda self: getattr(self, "_field_func"),
+                        doc="""The core function for B- and H-field computation""",
+                    ),
+                )
+            self.sources[name] = klass
+            if name not in self.source_kwargs_ndim:
+                self.source_kwargs_ndim[name] = {
+                    "position": 2,
+                    "orientation": 2,
+                    "observers": 2,
+                }
+            self.source_kwargs_ndim[name].update(self.source_kwargs_ndim_new)
         return klass
 
 
