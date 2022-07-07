@@ -31,7 +31,8 @@ jobs:
           name: Specific depedencies for pyvista or mayavi
           command: |
             apt update
-            apt-get install -y libgl1-mesa-dev xvfb ffmpeg libsm6 libxext6
+            apt-get install ffmpeg libsm6 libxext6  -y
+            apt-get install -y libgl1-mesa-dev xvfb
       - run:
           name: Run pylint test
           command: pylint --rcfile='./.pylintrc' magpylib
