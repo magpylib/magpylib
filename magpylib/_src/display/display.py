@@ -19,6 +19,7 @@ def show(
     markers=None,
     backend=None,
     canvas=None,
+    return_fig=False,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -53,9 +54,14 @@ def show(
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         By default a new canvas is created and immediately displayed.
 
+    canvas: bool, default=False
+        If True, the function call returns the figure object.
+        - with matplotlib: `matplotlib.figure.Figure`.
+        - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+
     Returns
     -------
-    `None`: NoneType
+    `None` or figure object
 
     Examples
     --------
@@ -134,5 +140,6 @@ def show(
         zoom=zoom,
         canvas=canvas,
         animation=animation,
+        return_fig=return_fig,
         **kwargs,
     )

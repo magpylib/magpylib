@@ -122,6 +122,7 @@ def display_matplotlib(
     animation=False,
     repeat=False,
     colorsequence=None,
+    return_fig=False,
     return_animation=False,
     **kwargs,
 ):
@@ -184,7 +185,13 @@ def display_matplotlib(
             blit=False,
             repeat=repeat,
         )
+    out = ()
+    if return_fig:
+        out += (fig,)
     if return_animation and len(frames) != 1:
-        return anim
+        out += (anim,)
     if show_canvas:
         plt.show()
+
+    if out:
+        return out[0] if len(out) == 1 else out
