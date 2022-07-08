@@ -13,7 +13,7 @@ __all__ = [
     "make_Prism",
 ]
 
-from magpylib._src.display.traces_base import (
+from magpylib._src.display.base_traces import (
     make_Arrow,
     make_Ellipsoid,
     make_Pyramid,

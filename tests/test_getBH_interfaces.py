@@ -1,8 +1,8 @@
 import sys
 from unittest import mock
 
-import numpy as np
 import pytest
+import numpy as np
 
 import magpylib as magpy
 

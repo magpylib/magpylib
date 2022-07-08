@@ -3,10 +3,8 @@ import pytest
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import DefaultConfig
 from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import DisplayStyle
-
 
 bad_inputs = {
     "display_autosizefactor": (0,),  # float>0
@@ -100,7 +98,7 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
-    "display_backend": tuple(SUPPORTED_PLOTTING_BACKENDS),  # str typo
+    "display_backend": ("matplotlib", "plotly"),  # str typo
     "display_colorsequence": (
         ["#2E91E5", "#0D2A63"],
         ["blue", "red"],

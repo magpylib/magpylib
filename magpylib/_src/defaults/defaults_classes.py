@@ -50,8 +50,7 @@ class Display(MagicProperties):
     ----------
     backend: str, default='matplotlib'
         Defines the plotting backend to be used by default, if not explicitly set in the `display`
-        function (e.g. 'matplotlib', 'plotly').
-        Supported backends are defined in magpylib.SUPPORTED_PLOTTING_BACKENDS
+        function. Can be one of `['matplotlib', 'plotly']`
 
     colorsequence: iterable, default=
             ['#2E91E5', '#E15F99', '#1CA71C', '#FB0D0D', '#DA16FF', '#222A2A',
@@ -81,8 +80,7 @@ class Display(MagicProperties):
     @property
     def backend(self):
         """plotting backend to be used by default, if not explicitly set in the `display`
-        function (e.g. 'matplotlib', 'plotly').
-        Supported backends are defined in magpylib.SUPPORTED_PLOTTING_BACKENDS"""
+        function. Can be one of `['matplotlib', 'plotly']`"""
         return self._backend
 
     @backend.setter
