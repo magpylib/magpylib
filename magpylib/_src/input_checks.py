@@ -7,12 +7,12 @@ from scipy.spatial.transform import Rotation
 
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import Registered
 from magpylib._src.utility import wrong_obj_msg
-
 
 #################################################################
 #################################################################
@@ -411,12 +411,13 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
+    backends = SUPPORTED_PLOTTING_BACKENDS
     if inp is None:
         inp = default_settings.display.backend
-    if inp in ("matplotlib", "plotly"):
+    if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
+        f"Input parameter `backend` must be one of `{backends+(None,)}`.\n"
         f"Instead received {inp}."
     )
 

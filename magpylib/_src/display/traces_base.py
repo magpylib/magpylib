@@ -3,8 +3,8 @@ from functools import partial
 
 import numpy as np
 
-from magpylib._src.display.display_utility import place_and_orient_model3d
-from magpylib._src.display.plotly.plotly_utility import merge_mesh3d
+from magpylib._src.display.traces_utility import merge_mesh3d
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 
 
 def base_validator(name, value, conditions):
@@ -40,7 +40,7 @@ def get_model(trace, *, backend, show, scale, kwargs):
 
 
 def make_Cuboid(
-    backend,
+    backend="generic",
     dimension=(1.0, 1.0, 1.0),
     position=None,
     orientation=None,
@@ -54,7 +54,8 @@ def make_Cuboid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension : 3-tuple, default=(1,1,1)
         Length of the cuboid sides `x,y,z`.
@@ -97,7 +98,7 @@ def make_Cuboid(
 
 
 def make_Prism(
-    backend,
+    backend="generic",
     base=3,
     diameter=1.0,
     height=1.0,
@@ -114,7 +115,8 @@ def make_Prism(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=6
         Number of vertices of the base in the xy-plane.
@@ -186,7 +188,7 @@ def make_Prism(
 
 
 def make_Ellipsoid(
-    backend,
+    backend="generic",
     dimension=(1.0, 1.0, 1.0),
     vert=15,
     position=None,
@@ -202,7 +204,8 @@ def make_Ellipsoid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension : tuple, default=(1.0, 1.0, 1.0)
         Dimension in the `x,y,z` directions.
@@ -266,7 +269,7 @@ def make_Ellipsoid(
 
 
 def make_CylinderSegment(
-    backend,
+    backend="generic",
     dimension=(1.0, 2.0, 1.0, 0.0, 90.0),
     vert=50,
     position=None,
@@ -282,7 +285,8 @@ def make_CylinderSegment(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
@@ -365,7 +369,7 @@ def make_CylinderSegment(
 
 
 def make_Pyramid(
-    backend,
+    backend="generic",
     base=3,
     diameter=1,
     height=1,
@@ -383,7 +387,8 @@ def make_Pyramid(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=30
         Number of vertices of the cone base.
@@ -445,7 +450,7 @@ def make_Pyramid(
 
 
 def make_Arrow(
-    backend,
+    backend="generic",
     base=3,
     diameter=0.3,
     height=1,
@@ -463,7 +468,8 @@ def make_Arrow(
     Parameters
     ----------
     backend : str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     base : int, default=30
         Number of vertices of the arrow base.
