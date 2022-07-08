@@ -259,6 +259,7 @@ def display_plotly(
             fig.update_layout(legend_itemsizing="constant")
         fig.update_layout(layout)
 
-    if not show_fig:
+    if return_fig and not show_fig:
         return fig
-    fig.show(renderer=renderer)
+    if show_fig:
+        fig.show(renderer=renderer)
