@@ -1,22 +1,278 @@
 """ matplotlib draw-functionalities"""
+import warnings
+
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.display_utility import draw_arrow_from_vertices
-from magpylib._src.display.display_utility import draw_arrowed_circle
-from magpylib._src.display.display_utility import faces_cuboid
-from magpylib._src.display.display_utility import faces_cylinder
-from magpylib._src.display.display_utility import faces_cylinder_segment
-from magpylib._src.display.display_utility import faces_sphere
-from magpylib._src.display.display_utility import get_flatten_objects_properties
-from magpylib._src.display.display_utility import get_rot_pos_from_path
-from magpylib._src.display.display_utility import MagpyMarkers
-from magpylib._src.display.display_utility import place_and_orient_model3d
-from magpylib._src.display.display_utility import system_size
+from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import get_flatten_objects_properties
+from magpylib._src.display.traces_utility import get_rot_pos_from_path
+from magpylib._src.display.traces_utility import MagpyMarkers
+from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
+
+
+def faces_cuboid(src, show_path):
+    """
+    compute vertices and faces of Cuboid input for plotting
+    takes Cuboid source
+    returns vert, faces
+    returns all faces when show_path=all
+    """
+    # pylint: disable=protected-access
+    a, b, c = src.dimension
+    vert0 = np.array(
+        (
+            (0, 0, 0),
+            (a, 0, 0),
+            (0, b, 0),
+            (0, 0, c),
+            (a, b, 0),
+            (a, 0, c),
+            (0, b, c),
+            (a, b, c),
+        )
+    )
+    vert0 = vert0 - src.dimension / 2
+
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
+
+    faces = []
+    for rot, pos in zip(rots, poss):
+        vert = rot.apply(vert0) + pos
+        faces += [
+            [vert[0], vert[1], vert[4], vert[2]],
+            [vert[0], vert[1], vert[5], vert[3]],
+            [vert[0], vert[2], vert[6], vert[3]],
+            [vert[7], vert[6], vert[2], vert[4]],
+            [vert[7], vert[6], vert[3], vert[5]],
+            [vert[7], vert[5], vert[1], vert[4]],
+        ]
+    return faces
+
+
+def faces_cylinder(src, show_path):
+    """
+    Compute vertices and faces of Cylinder input for plotting.
+
+    Parameters
+    ----------
+    - src (source object)
+    - show_path (bool or int)
+
+    Returns
+    -------
+    vert, faces (returns all faces when show_path=int)
+    """
+    # pylint: disable=protected-access
+    res = 15  # surface discretization
+
+    # generate cylinder faces
+    r, h2 = src.dimension / 2
+    hs = np.array([-h2, h2])
+    phis = np.linspace(0, 2 * np.pi, res)
+    phis2 = np.roll(np.linspace(0, 2 * np.pi, res), 1)
+    faces = [
+        np.array(
+            [
+                (r * np.cos(p1), r * np.sin(p1), h2),
+                (r * np.cos(p1), r * np.sin(p1), -h2),
+                (r * np.cos(p2), r * np.sin(p2), -h2),
+                (r * np.cos(p2), r * np.sin(p2), h2),
+            ]
+        )
+        for p1, p2 in zip(phis, phis2)
+    ]
+    faces += [
+        np.array([(r * np.cos(phi), r * np.sin(phi), h) for phi in phis]) for h in hs
+    ]
+
+    # add src attributes position and orientation depending on show_path
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
+
+    # all faces (incl. along path) adding pos and rot
+    all_faces = []
+    for rot, pos in zip(rots, poss):
+        for face in faces:
+            all_faces += [[rot.apply(f) + pos for f in face]]
+
+    return all_faces
+
+
+def faces_cylinder_segment(src, show_path):
+    """
+    Compute vertices and faces of CylinderSegment for plotting.
+
+    Parameters
+    ----------
+    - src (source object)
+    - show_path (bool or int)
+
+    Returns
+    -------
+    vert, faces (returns all faces when show_path=int)
+    """
+    # pylint: disable=protected-access
+    res = 15  # surface discretization
+
+    # generate cylinder segment faces
+    r1, r2, h, phi1, phi2 = src.dimension
+    res_tile = (
+        int((phi2 - phi1) / 360 * 2 * res) + 2
+    )  # resolution used for tile curved surface
+    phis = np.linspace(phi1, phi2, res_tile) / 180 * np.pi
+    phis2 = np.roll(phis, 1)
+    faces = [
+        np.array(
+            [  # inner curved surface
+                (r1 * np.cos(p1), r1 * np.sin(p1), h / 2),
+                (r1 * np.cos(p1), r1 * np.sin(p1), -h / 2),
+                (r1 * np.cos(p2), r1 * np.sin(p2), -h / 2),
+                (r1 * np.cos(p2), r1 * np.sin(p2), h / 2),
+            ]
+        )
+        for p1, p2 in zip(phis[1:], phis2[1:])
+    ]
+    faces += [
+        np.array(
+            [  # outer curved surface
+                (r2 * np.cos(p1), r2 * np.sin(p1), h / 2),
+                (r2 * np.cos(p1), r2 * np.sin(p1), -h / 2),
+                (r2 * np.cos(p2), r2 * np.sin(p2), -h / 2),
+                (r2 * np.cos(p2), r2 * np.sin(p2), h / 2),
+            ]
+        )
+        for p1, p2 in zip(phis[1:], phis2[1:])
+    ]
+    faces += [
+        np.array(
+            [  # sides
+                (r1 * np.cos(p), r1 * np.sin(p), h / 2),
+                (r2 * np.cos(p), r2 * np.sin(p), h / 2),
+                (r2 * np.cos(p), r2 * np.sin(p), -h / 2),
+                (r1 * np.cos(p), r1 * np.sin(p), -h / 2),
+            ]
+        )
+        for p in [phis[0], phis[-1]]
+    ]
+    faces += [
+        np.array(  # top surface
+            [(r1 * np.cos(p), r1 * np.sin(p), h / 2) for p in phis]
+            + [(r2 * np.cos(p), r2 * np.sin(p), h / 2) for p in phis[::-1]]
+        )
+    ]
+    faces += [
+        np.array(  # bottom surface
+            [(r1 * np.cos(p), r1 * np.sin(p), -h / 2) for p in phis]
+            + [(r2 * np.cos(p), r2 * np.sin(p), -h / 2) for p in phis[::-1]]
+        )
+    ]
+
+    # add src attributes position and orientation depending on show_path
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
+
+    # all faces (incl. along path) adding pos and rot
+    all_faces = []
+    for rot, pos in zip(rots, poss):
+        for face in faces:
+            all_faces += [[rot.apply(f) + pos for f in face]]
+
+    return all_faces
+
+
+def faces_sphere(src, show_path):
+    """
+    Compute vertices and faces of Sphere input for plotting.
+
+    Parameters
+    ----------
+    - src (source object)
+    - show_path (bool or int)
+
+    Returns
+    -------
+    vert, faces (returns all faces when show_path=int)
+    """
+    # pylint: disable=protected-access
+    res = 15  # surface discretization
+
+    # generate sphere faces
+    r = src.diameter / 2
+    phis = np.linspace(0, 2 * np.pi, res)
+    phis2 = np.roll(np.linspace(0, 2 * np.pi, res), 1)
+    ths = np.linspace(0, np.pi, res)
+    faces = [
+        r
+        * np.array(
+            [
+                (np.cos(p) * np.sin(t1), np.sin(p) * np.sin(t1), np.cos(t1)),
+                (np.cos(p) * np.sin(t2), np.sin(p) * np.sin(t2), np.cos(t2)),
+                (np.cos(p2) * np.sin(t2), np.sin(p2) * np.sin(t2), np.cos(t2)),
+                (np.cos(p2) * np.sin(t1), np.sin(p2) * np.sin(t1), np.cos(t1)),
+            ]
+        )
+        for p, p2 in zip(phis, phis2)
+        for t1, t2 in zip(ths[1:-2], ths[2:-1])
+    ]
+    faces += [
+        r
+        * np.array(
+            [(np.cos(p) * np.sin(th), np.sin(p) * np.sin(th), np.cos(th)) for p in phis]
+        )
+        for th in [ths[1], ths[-2]]
+    ]
+
+    # add src attributes position and orientation depending on show_path
+    rots, poss, _ = get_rot_pos_from_path(src, show_path)
+
+    # all faces (incl. along path) adding pos and rot
+    all_faces = []
+    for rot, pos in zip(rots, poss):
+        for face in faces:
+            all_faces += [[rot.apply(f) + pos for f in face]]
+
+    return all_faces
+
+
+def system_size(points):
+    """compute system size for display"""
+    # determine min/max from all to generate aspect=1 plot
+    if points:
+
+        # bring (n,m,3) point dimensions (e.g. from plot_surface body)
+        #    to correct (n,3) shape
+        for i, p in enumerate(points):
+            if p.ndim == 3:
+                points[i] = np.reshape(p, (-1, 3))
+
+        pts = np.vstack(points)
+        xs = [np.amin(pts[:, 0]), np.amax(pts[:, 0])]
+        ys = [np.amin(pts[:, 1]), np.amax(pts[:, 1])]
+        zs = [np.amin(pts[:, 2]), np.amax(pts[:, 2])]
+
+        xsize = xs[1] - xs[0]
+        ysize = ys[1] - ys[0]
+        zsize = zs[1] - zs[0]
+
+        xcenter = (xs[1] + xs[0]) / 2
+        ycenter = (ys[1] + ys[0]) / 2
+        zcenter = (zs[1] + zs[0]) / 2
+
+        size = max([xsize, ysize, zsize])
+
+        limx0 = xcenter + size / 2
+        limx1 = xcenter - size / 2
+        limy0 = ycenter + size / 2
+        limy1 = ycenter - size / 2
+        limz0 = zcenter + size / 2
+        limz1 = zcenter - size / 2
+    else:
+        limx0, limx1, limy0, limy1, limz0, limz1 = -1, 1, -1, 1, -1, 1
+    return limx0, limx1, limy0, limy1, limz0, limz1
 
 
 def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
@@ -318,29 +574,30 @@ def draw_model3d_extra(obj, style, show_path, ax, color):
     return points
 
 
-def display_matplotlib(
+def display_matplotlib_old(
     *obj_list_semi_flat,
-    axis=None,
+    canvas=None,
     markers=None,
     zoom=0,
-    color_sequence=None,
+    colorsequence=None,
+    animation=False,
     **kwargs,
 ):
-    """
-    Display objects and paths graphically with the matplotlib backend.
-
-    - axis: matplotlib axis3d object
-    - markers: list of marker positions
-    - path: bool / int / list of ints
-    - zoom: zoom level, 0=tight boundaries
-    - color_sequence: list of colors for object coloring
-    """
+    """Display objects and paths graphically with the matplotlib backend."""
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
     # apply config default values if None
     # create or set plotting axis
+
+    if animation is not False:
+        msg = "The matplotlib backend does not support animation at the moment.\n"
+        msg += "Use `backend=plotly` instead."
+        warnings.warn(msg)
+        # animation = False
+
+    axis = canvas
     if axis is None:
         fig = plt.figure(dpi=80, figsize=(8, 8))
         ax = fig.add_subplot(111, projection="3d")
@@ -356,8 +613,10 @@ def display_matplotlib(
     points = []
     dipoles = []
     sensors = []
+    markers_list = [o for o in obj_list_semi_flat if isinstance(o, MagpyMarkers)]
+    obj_list_semi_flat = [o for o in obj_list_semi_flat if o not in markers_list]
     flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat, color_sequence=color_sequence
+        *obj_list_semi_flat, colorsequence=colorsequence
     )
     for obj, props in flat_objs_props.items():
         color = props["color"]
@@ -450,10 +709,10 @@ def display_matplotlib(
             )
 
     # markers -------------------------------------------------------
-    if markers is not None and markers:
-        m = MagpyMarkers()
-        style = get_style(m, Config, **kwargs)
-        markers = np.array(markers)
+    if markers_list:
+        markers_instance = markers_list[0]
+        style = get_style(markers_instance, Config, **kwargs)
+        markers = np.array(markers_instance.markers)
         s = style.marker
         draw_markers(markers, ax, s.color, s.symbol, s.size)
         points += [markers]

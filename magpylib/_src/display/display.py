@@ -1,7 +1,7 @@
 """ Display function codes"""
-import warnings
+from importlib import import_module
 
-from magpylib._src.display.display_matplotlib import display_matplotlib
+from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
@@ -19,6 +19,7 @@ def show(
     markers=None,
     backend=None,
     canvas=None,
+    return_fig=False,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -43,7 +44,7 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'` or `'plotly'`. If not
+        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
         `'matplotlib'` by installation default.
 
@@ -53,9 +54,14 @@ def show(
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         By default a new canvas is created and immediately displayed.
 
+    canvas: bool, default=False
+        If True, the function call returns the figure object.
+        - with matplotlib: `matplotlib.figure.Figure`.
+        - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+
     Returns
     -------
-    `None`: NoneType
+    `None` or figure object
 
     Examples
     --------
@@ -121,39 +127,19 @@ def show(
         allow_None=True,
     )
 
-    check_input_zoom(zoom)
-    check_input_animation(animation)
-    check_format_input_vector(
-        markers,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="markers",
-        sig_type="array_like of shape (n,3)",
-        allow_None=True,
+    # pylint: disable=import-outside-toplevel
+    display_func = getattr(
+        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
     )
 
-    if backend == "matplotlib":
-        if animation is not False:
-            msg = "The matplotlib backend does not support animation at the moment.\n"
-            msg += "Use `backend=plotly` instead."
-            warnings.warn(msg)
-            # animation = False
-        display_matplotlib(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            axis=canvas,
-            **kwargs,
-        )
-    elif backend == "plotly":
-        # pylint: disable=import-outside-toplevel
-        from magpylib._src.display.plotly.plotly_display import display_plotly
+    if markers is not None and markers:
+        obj_list_semi_flat = list(obj_list_semi_flat) + [MagpyMarkers(*markers)]
 
-        display_plotly(
-            *obj_list_semi_flat,
-            markers=markers,
-            zoom=zoom,
-            fig=canvas,
-            animation=animation,
-            **kwargs,
-        )
+    return display_func(
+        *obj_list_semi_flat,
+        zoom=zoom,
+        canvas=canvas,
+        animation=animation,
+        return_fig=return_fig,
+        **kwargs,
+    )
