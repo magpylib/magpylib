@@ -263,3 +263,4 @@ def display_plotly(
         return fig
     if show_fig:
         fig.show(renderer=renderer)
+    return None
