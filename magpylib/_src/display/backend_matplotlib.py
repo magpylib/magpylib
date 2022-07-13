@@ -30,16 +30,17 @@ def generic_trace_to_matplotlib(trace):
         for subtrace in subtraces:
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
-            trace_mpl = {
-                "constructor": "plot_trisurf",
-                "args": (x, y, z),
-                "kwargs": {
-                    "triangles": triangles,
-                    "alpha": subtrace.get("opacity", None),
-                    "color": subtrace.get("color", None),
-                },
-            }
-            traces_mpl.append(trace_mpl)
+            traces_mpl.append(
+                {
+                    "constructor": "plot_trisurf",
+                    "args": (x, y, z),
+                    "kwargs": {
+                        "triangles": triangles,
+                        "alpha": subtrace.get("opacity", None),
+                        "color": subtrace.get("color", None),
+                    },
+                }
+            )
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
         mode = trace.get("mode", None)
@@ -64,15 +65,24 @@ def generic_trace_to_matplotlib(trace):
                 props["ls"] = ""
             if "markers" not in mode:
                 props["marker"] = None
-        trace_mpl = {
-            "constructor": "plot",
-            "args": (x, y, z),
-            "kwargs": {
-                **{k: v for k, v in props.items() if v is not None},
-                "alpha": trace.get("opacity", 1),
-            },
-        }
-        traces_mpl.append(trace_mpl)
+            if "text" in mode and trace.get("text", False):
+                for xs, ys, zs, txt in zip(x, y, z, trace["text"]):
+                    traces_mpl.append(
+                        {
+                            "constructor": "text",
+                            "args": (xs, ys, zs, txt),
+                        }
+                    )
+        traces_mpl.append(
+            {
+                "constructor": "plot",
+                "args": (x, y, z),
+                "kwargs": {
+                    **{k: v for k, v in props.items() if v is not None},
+                    "alpha": trace.get("opacity", 1),
+                },
+            }
+        )
     else:
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
@@ -112,6 +122,7 @@ def display_matplotlib(
     animation=False,
     repeat=False,
     colorsequence=None,
+    return_fig=False,
     return_animation=False,
     **kwargs,
 ):
@@ -150,8 +161,8 @@ def display_matplotlib(
     def draw_frame(ind):
         for tr in frames[ind]["data"]:
             constructor = tr["constructor"]
-            args = tr["args"]
-            kwargs = tr["kwargs"]
+            args = tr.get("args", ())
+            kwargs = tr.get("kwargs", {})
             getattr(ax, constructor)(*args, **kwargs)
         ax.set(
             **{f"{k}label": f"{k} [mm]" for k in "xyz"},
@@ -174,7 +185,13 @@ def display_matplotlib(
             blit=False,
             repeat=repeat,
         )
+    out = ()
+    if return_fig:
+        out += (fig,)
     if return_animation and len(frames) != 1:
-        return anim
+        out += (anim,)
     if show_canvas:
         plt.show()
+
+    if out:
+        return out[0] if len(out) == 1 else out
