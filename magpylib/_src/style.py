@@ -336,7 +336,7 @@ class Trace3d(MagicProperties):
     ----------
     backend: str
         Plotting backend corresponding to the trace. Can be one of
-        `['matplotlib', 'plotly', 'pyvista']`.
+        `['generic', 'matplotlib', 'plotly']`.
 
     constructor: str
         Model constructor function or method to be called to build a 3D-model object
@@ -490,7 +490,7 @@ class Trace3d(MagicProperties):
     @property
     def backend(self):
         """Plotting backend corresponding to the trace. Can be one of
-        `['matplotlib', 'plotly', 'pyvista']`."""
+        `['generic', 'matplotlib', 'plotly']`."""
         return self._backend
 
     @backend.setter
