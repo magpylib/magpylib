@@ -4,14 +4,13 @@ from collections import Counter
 
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.fields.field_wrap_BH_level2 import getBH_level2
+from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_obj
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import LIBRARY_SENSORS
-from magpylib._src.utility import LIBRARY_SOURCES
 from magpylib._src.utility import rec_obj_remover
+from magpylib._src.utility import Registered
 
 
 def repr_obj(obj, format="type+id+label"):
@@ -76,6 +75,7 @@ def collection_tree_generator(
                     "children",
                     "parent",
                     "style",
+                    "field_func",
                     "sources",
                     "sensors",
                     "collections",
@@ -354,10 +354,10 @@ class BaseCollection(BaseDisplayRepr):
         # pylint: disable=protected-access
         """updates sources, sensors and collections attributes from children"""
         self._sources = [
-            obj for obj in self._children if obj._object_type in LIBRARY_SOURCES
+            obj for obj in self._children if obj._object_type in Registered.sources
         ]
         self._sensors = [
-            obj for obj in self._children if obj._object_type in LIBRARY_SENSORS
+            obj for obj in self._children if obj._object_type in Registered.sensors
         ]
         self._collections = [
             obj for obj in self._children if obj._object_type == "Collection"

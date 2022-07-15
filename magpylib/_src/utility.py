@@ -7,34 +7,73 @@ import numpy as np
 
 from magpylib._src.exceptions import MagpylibBadUserInput
 
-LIBRARY_SOURCES = (
-    "Cuboid",
-    "Cylinder",
-    "CylinderSegment",
-    "Sphere",
-    "Dipole",
-    "Loop",
-    "Line",
-    "CustomSource",
-)
 
-LIBRARY_BH_DICT_SOURCE_STRINGS = (
-    "Cuboid",
-    "Cylinder",
-    "CylinderSegment",
-    "Sphere",
-    "Dipole",
-    "Loop",
-    "Line",
-)
+class Registered:
+    """Class decorator to register sources or sensors
+    - Sources get their field function assigned"""
 
-LIBRARY_SENSORS = ("Sensor",)
+    sensors = {}
+    sources = {}
+    families = {}
+    source_kwargs_ndim = {}
 
-ALLOWED_SOURCE_MSG = f"""Sources must be either
-- one of type {LIBRARY_SOURCES}
+    def __init__(self, *, kind, family, field_func=None, source_kwargs_ndim=None):
+        self.kind = kind
+        self.family = family
+        self.field_func = field_func
+        self.source_kwargs_ndim_new = (
+            {} if source_kwargs_ndim is None else source_kwargs_ndim
+        )
+
+    def __call__(self, klass):
+        name = klass.__name__
+        setattr(klass, "_object_type", name)
+        setattr(klass, "_family", self.family)
+        setattr(
+            klass,
+            "family",
+            property(
+                lambda self: getattr(self, "_family"),
+                doc="""The object family (e.g. 'magnet', 'current', 'misc')""",
+            ),
+        )
+        self.families[name] = self.family
+
+        if self.kind == "sensor":
+            self.sensors[name] = klass
+
+        elif self.kind == "source":
+            if self.field_func is None:
+                setattr(klass, "_field_func", None)
+            else:
+                setattr(klass, "_field_func", staticmethod(self.field_func))
+                setattr(
+                    klass,
+                    "field_func",
+                    property(
+                        lambda self: getattr(self, "_field_func"),
+                        doc="""The core function for B- and H-field computation""",
+                    ),
+                )
+            self.sources[name] = klass
+            if name not in self.source_kwargs_ndim:
+                self.source_kwargs_ndim[name] = {
+                    "position": 2,
+                    "orientation": 2,
+                    "observers": 2,
+                }
+            self.source_kwargs_ndim[name].update(self.source_kwargs_ndim_new)
+        return klass
+
+
+def get_allowed_sources_msg():
+    "Return allowed source message"
+    return f"""Sources must be either
+- one of type {list(Registered.sources)}
 - Collection with at least one of the above
 - 1D list of the above
-- string {LIBRARY_BH_DICT_SOURCE_STRINGS}"""
+- string {list(Registered.sources)}"""
+
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
 - array_like positions of shape (N1, N2, ..., 3)
@@ -55,7 +94,7 @@ def wrong_obj_msg(*objs, allow="sources"):
     prefix = "No" if len(allowed) == 1 else "Bad"
     msg = f"{prefix} {'/'.join(allowed)} provided"
     if "sources" in allowed:
-        msg += "\n" + ALLOWED_SOURCE_MSG
+        msg += "\n" + get_allowed_sources_msg()
     if "observers" in allowed:
         msg += "\n" + ALLOWED_OBSERVER_MSG
     if "sensors" in allowed:
@@ -78,13 +117,10 @@ def format_star_input(inp):
 
 def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
-
     ### Args:
     - sources (sequence): input sources
-
     ### Returns:
     - list: flattened, ordered list of sources
-
     ### Info:
     - exits if invalid sources are given
     """
@@ -94,8 +130,8 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     flatten_collection = not "collections" in allow.split("+")
     for obj in objects:
         try:
-            if getattr(obj, "_object_type", None) in list(LIBRARY_SOURCES) + list(
-                LIBRARY_SENSORS
+            if getattr(obj, "_object_type", None) in list(Registered.sources) + list(
+                Registered.sensors
             ):
                 obj_list += [obj]
             else:
@@ -117,14 +153,11 @@ def format_src_inputs(sources) -> list:
     """
     - input: allow only bare src objects or 1D lists/tuple of src and col
     - out: sources, src_list
-
     ### Args:
     - sources
-
     ### Returns:
     - sources: ordered list of sources
     - src_list: ordered list of sources with flattened collections
-
     ### Info:
     - raises an error if sources format is bad
     """
@@ -147,7 +180,7 @@ def format_src_inputs(sources) -> list:
             if not child_sources:
                 raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
             src_list += child_sources
-        elif obj_type in LIBRARY_SOURCES:
+        elif obj_type in list(Registered.sources):
             src_list += [src]
         else:
             raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
@@ -172,10 +205,8 @@ def check_static_sensor_orient(sensors):
 
 def check_duplicates(obj_list: Sequence) -> list:
     """checks for and eliminates source duplicates in a list of sources
-
     ### Args:
     - obj_list (list): list with source objects
-
     ### Returns:
     - list: obj_list with duplicates removed
     """
@@ -193,11 +224,9 @@ def check_duplicates(obj_list: Sequence) -> list:
 def test_path_format(inp):
     """check if each object path has same length
     of obj.pos and obj.rot
-
     Parameters
     ----------
     inp: single BaseGeo or list of BaseGeo objects
-
     Returns
     -------
     no return
@@ -220,9 +249,9 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     allowed_list = []
     for allowed in allow.split("+"):
         if allowed == "sources":
-            allowed_list.extend(LIBRARY_SOURCES)
+            allowed_list.extend(list(Registered.sources))
         elif allowed == "sensors":
-            allowed_list.extend(LIBRARY_SENSORS)
+            allowed_list.extend(list(Registered.sensors))
         elif allowed == "collections":
             allowed_list.extend(["Collection"])
     new_list = []
@@ -260,7 +289,6 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     """
     displays a number with given unit and precision and uses unit prefixes for the exponents from
     yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-
     Parameters
     ----------
     number : int, float
@@ -272,7 +300,6 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     char_between : str, optional
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
-
     Returns
     -------
     str

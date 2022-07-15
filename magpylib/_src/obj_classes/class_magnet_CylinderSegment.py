@@ -3,13 +3,23 @@ DOCSTRINGS V4 READY
 """
 import numpy as np
 
+from magpylib._src.fields.field_BH_cylinder_segment import (
+    magnet_cylinder_segment_field_internal,
+)
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(
+    kind="source",
+    family="magnet",
+    field_func=magnet_cylinder_segment_field_internal,
+    source_kwargs_ndim={"magnetization": 2, "dimension": 2},
+)
 class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
@@ -100,7 +110,6 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = "CylinderSegment"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
