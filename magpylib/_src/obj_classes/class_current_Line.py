@@ -16,7 +16,7 @@ from magpylib._src.utility import Registered
     field_func=current_vertices_field,
     source_kwargs_ndim={
         "current": 1,
-        "vertices": 2,
+        "vertices": 3,
         "segment_start": 2,
         "segment_end": 2,
     },

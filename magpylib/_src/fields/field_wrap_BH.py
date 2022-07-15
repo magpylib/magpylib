@@ -417,15 +417,20 @@ def getBH_dict_level2(
 
     # evaluation vector lengths
     vec_lengths = []
+    ragged_seq = {}
     for key, val in kwargs.items():
-        try:
+        if (
+            not np.isscalar(val)
+            and not np.isscalar(val[0])
+            and any(len(o) != len(val[0]) for o in val)
+        ):
+            ragged_seq[key] = True
+            val = np.array([np.array(v, dtype=float) for v in val], dtype="object")
+        else:
+            ragged_seq[key] = False
             val = np.array(val, dtype=float)
-        except TypeError as err:
-            raise MagpylibBadUserInput(
-                f"{key} input must be array-like.\n" f"Instead received {val}"
-            ) from err
-        tdim = Registered.source_kwargs_ndim[source_type].get(key, 1)
-        if val.ndim == tdim:
+        expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
+        if val.ndim == expected_dim:
             vec_lengths.append(len(val))
         kwargs[key] = val
 
@@ -438,12 +443,14 @@ def getBH_dict_level2(
 
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
-        tdim = Registered.source_kwargs_ndim[source_type].get(key, 1)
-        if val.ndim < tdim:
-            if tdim == 2:
-                kwargs[key] = np.tile(val, (vec_len, 1))
-            elif tdim == 1:
+        expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
+        if val.ndim < expected_dim:
+            if expected_dim == 1:
                 kwargs[key] = np.array([val] * vec_len)
+            elif ragged_seq[key]:
+                kwargs[key] = np.array([np.tile(v, (vec_len, 1)) for v in val], dtype='object')
+            else:
+                kwargs[key] = np.tile(val, (vec_len, 1))
         else:
             kwargs[key] = val
 
