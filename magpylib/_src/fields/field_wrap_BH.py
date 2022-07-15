@@ -1,3 +1,46 @@
+"""Field computation structure:
+
+level0:(field_BH_XXX.py files)
+    - pure vectorized field computations from literature
+    - all computations in source CS
+    - distinguish B/H
+
+level1(getBH_level1):
+    - apply transformation to global CS
+    - select correct level0 src_type computation
+    - input dict, no input checks !
+
+level2(getBHv_level2):  <--- DIRECT ACCESS TO FIELD COMPUTATION FORMULAS, INPUT = DICT OF ARRAYS
+    - input dict checks (unknowns)
+    - secure user inputs
+    - check input for mandatory information
+    - set missing input variables to default values
+    - tile 1D inputs
+
+level2(getBH_level2):   <--- COMPUTE FIELDS FROM SOURCES
+    - input dict checks (unknowns)
+    - secure user inputs
+    - group similar sources for combined computation
+    - generate vector input format for getBH_level1
+    - adjust Bfield output format to (pos_obs, path, sources) input format
+
+level3(getB, getH, getB_dict, getH_dict): <--- USER INTERFACE
+    - docstrings
+    - separated B and H
+    - transform input into dict for level2
+
+level4(src.getB, src.getH):       <--- USER INTERFACE
+    - docstrings
+    - calling level3 getB, getH directly from sources
+
+level3(getBH_from_sensor):
+    - adjust output format to (senors, path, sources) input format
+
+level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
+
+level5(sens.getB, sens.getH): <--- USER INTERFACE
+"""
+import numbers
 from itertools import product
 from typing import Callable
 
@@ -416,30 +459,35 @@ def getBH_dict_level2(
     kwargs["orientation"] = orientation.as_quat()
 
     # evaluation vector lengths
-    vec_lengths = []
+    vec_lengths = {}
     ragged_seq = {}
     for key, val in kwargs.items():
-        if (
-            not np.isscalar(val)
-            and not np.isscalar(val[0])
-            and any(len(o) != len(val[0]) for o in val)
-        ):
-            ragged_seq[key] = True
-            val = np.array([np.array(v, dtype=float) for v in val], dtype="object")
-        else:
-            ragged_seq[key] = False
-            val = np.array(val, dtype=float)
+        try:
+            if (
+                not isinstance(val, numbers.Number)
+                and not isinstance(val[0], numbers.Number)
+                and any(len(o) != len(val[0]) for o in val)
+            ):
+                ragged_seq[key] = True
+                val = np.array([np.array(v, dtype=float) for v in val], dtype="object")
+            else:
+                ragged_seq[key] = False
+                val = np.array(val, dtype=float)
+        except TypeError as err:
+            raise MagpylibBadUserInput(
+                f"{key} input must be array-like.\n" f"Instead received {val}"
+            ) from err
         expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
-        if val.ndim == expected_dim:
-            vec_lengths.append(len(val))
+        if val.ndim == expected_dim or ragged_seq[key]:
+            vec_lengths[key] = len(val)
         kwargs[key] = val
 
-    if len(set(vec_lengths)) > 1:
+    if len(set(vec_lengths.values())) > 1:
         raise MagpylibBadUserInput(
             "Input array lengths must be 1 or of a similar length.\n"
-            f"Instead received {set(vec_lengths)}"
+            f"Instead received lengths {vec_lengths}"
         )
-    vec_len = max(vec_lengths, default=1)
+    vec_len = max(vec_lengths.values(), default=1)
 
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
@@ -448,7 +496,9 @@ def getBH_dict_level2(
             if expected_dim == 1:
                 kwargs[key] = np.array([val] * vec_len)
             elif ragged_seq[key]:
-                kwargs[key] = np.array([np.tile(v, (vec_len, 1)) for v in val], dtype='object')
+                kwargs[key] = np.array(
+                    [np.tile(v, (vec_len, 1)) for v in val], dtype="object"
+                )
             else:
                 kwargs[key] = np.tile(val, (vec_len, 1))
         else:

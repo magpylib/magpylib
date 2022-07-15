@@ -107,7 +107,7 @@ def test_linearize_dict():
         ((127, 127, 127), True, "#7f7f7f"),
         ("rgb(127, 127, 127)", True, "#7f7f7f"),
         ((0, 0, 0, 0), False, "#000000"),
-        ((.1, .2, .3), False, "#19334c"),
+        ((0.1, 0.2, 0.3), False, "#19334c"),
     ]
     + [(shortC, True, longC) for shortC, longC in COLORS_MATPLOTLIB_TO_PLOTLY.items()],
 )

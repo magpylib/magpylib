@@ -12,6 +12,8 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
 from magpylib._src.utility import test_path_format as tpf
 
+GETBH_KWARGS = {"sumup": False, "squeeze": True, "pixel_agg": None, "output": "ndarray"}
+
 
 def getBHv_unknown_source_type():
     """unknown source type"""
@@ -21,11 +23,8 @@ def getBHv_unknown_source_type():
         magnetization=(1, 0, 0),
         dimension=(0, 2, 1, 0, 360),
         position=(0, 0, -0.5),
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
         field="B",
+        **GETBH_KWARGS
     )
 
 
@@ -67,74 +66,35 @@ def getBHv_missing_input1():
     """missing field"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cuboid",
-        observers=x,
-        magnetization=x,
-        dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Cuboid", observers=x, magnetization=x, dimension=x, **GETBH_KWARGS
     )
 
 
 def getBHv_missing_input2():
     """missing source_type"""
     x = np.array([(1, 2, 3)])
-    getBH_level2(
-        observers=x,
-        field="B",
-        magnetization=x,
-        dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
-    )
+    getBH_level2(observers=x, field="B", magnetization=x, dimension=x, **GETBH_KWARGS)
 
 
 def getBHv_missing_input3():
     """missing observer"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cuboid",
-        field="B",
-        magnetization=x,
-        dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Cuboid", field="B", magnetization=x, dimension=x, **GETBH_KWARGS
     )
 
 
 def getBHv_missing_input4_cuboid():
     """missing Cuboid mag"""
     x = np.array([(1, 2, 3)])
-    getBH_level2(
-        sources="Cuboid",
-        observers=x,
-        field="B",
-        dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
-    )
+    getBH_level2(sources="Cuboid", observers=x, field="B", dimension=x, **GETBH_KWARGS)
 
 
 def getBHv_missing_input5_cuboid():
     """missing Cuboid dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cuboid",
-        observers=x,
-        field="B",
-        magnetization=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Cuboid", observers=x, field="B", magnetization=x, **GETBH_KWARGS
     )
 
 
@@ -143,14 +103,7 @@ def getBHv_missing_input4_cyl():
     x = np.array([(1, 2, 3)])
     y = np.array([(1, 2)])
     getBH_level2(
-        sources="Cylinder",
-        observers=x,
-        field="B",
-        dimension=y,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Cylinder", observers=x, field="B", dimension=y, **GETBH_KWARGS
     )
 
 
@@ -158,44 +111,21 @@ def getBHv_missing_input5_cyl():
     """missing Cylinder dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Cylinder",
-        observers=x,
-        field="B",
-        magnetization=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Cylinder", observers=x, field="B", magnetization=x, **GETBH_KWARGS
     )
 
 
 def getBHv_missing_input4_sphere():
     """missing Sphere mag"""
     x = np.array([(1, 2, 3)])
-    getBH_level2(
-        sources="Sphere",
-        observers=x,
-        field="B",
-        dimension=1,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
-    )
+    getBH_level2(sources="Sphere", observers=x, field="B", dimension=1, **GETBH_KWARGS)
 
 
 def getBHv_missing_input5_sphere():
     """missing Sphere dim"""
     x = np.array([(1, 2, 3)])
     getBH_level2(
-        sources="Sphere",
-        observers=x,
-        field="B",
-        magnetization=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        sources="Sphere", observers=x, field="B", magnetization=x, **GETBH_KWARGS
     )
 
 
@@ -210,10 +140,7 @@ def getBHv_bad_input1():
         field="B",
         magnetization=x2,
         dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        **GETBH_KWARGS
     )
 
 
@@ -226,10 +153,7 @@ def getBHv_bad_input2():
         field="B",
         magnetization=x,
         dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        **GETBH_KWARGS
     )
 
 
@@ -243,10 +167,7 @@ def getBHv_bad_input3():
         field="B",
         magnetization=x,
         dimension=x,
-        sumup=False,
-        squeeze=True,
-        pixel_agg=None,
-        output="ndarray",
+        **GETBH_KWARGS
     )
 
 
