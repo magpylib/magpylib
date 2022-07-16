@@ -19,7 +19,9 @@ from magpylib._src.display.traces_base import (
     make_CylinderSegment as make_BaseCylinderSegment,
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
+from magpylib._src.display.traces_base import make_Facets as make_BaseFacets
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
@@ -312,6 +314,54 @@ def make_Sphere(
     )
 
 
+def make_Tetrahedron(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    trace = make_BaseTetrahedron("plotly-dict", vertices=obj.vertices, color=color)
+    update_trace_name(trace, "Tetrahedron", "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
+def make_Facets(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Facets Magnet in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    trace = make_BaseFacets(
+        "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
+    )
+    update_trace_name(trace, "Facets", "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
 def make_Pixels(positions, size=1) -> dict:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
@@ -484,12 +534,14 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
 
     # vector length, color and magnetization
     if obj._object_type in ("Cuboid", "Cylinder"):
-        length = 1.8 * np.amax(obj.dimension)
+        length = np.amax(obj.dimension)
     elif obj._object_type == "CylinderSegment":
-        length = 1.8 * np.amax(obj.dimension[:3])  # d1,d2,h
+        length = np.amax(obj.dimension[:3])  # d1,d2,h
+    elif hasattr(obj, "vertices"):
+        length = np.amax(np.ptp(obj.vertices, axis=0))
     else:
-        length = 1.8 * obj.diameter  # Sphere
-    length *= style.magnetization.size
+        length = obj.diameter  # Sphere
+    length *= 1.8 * style.magnetization.size
     mag = obj.magnetization
     # collect all draw positions and directions
     points = []
