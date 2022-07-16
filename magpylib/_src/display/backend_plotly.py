@@ -54,6 +54,7 @@ def animate_path(
     path_indices,
     frame_duration,
     animation_slider=False,
+    update_layout=True,
 ):
     """This is a helper function which attaches plotly frames to the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
@@ -128,9 +129,12 @@ def animate_path(
     frame0 = fig.frames[0]
     fig.add_traces(frame0.data)
     title = frame0.layout.title.text
+    if update_layout:
+        fig.update_layout(
+            height=None,
+            title=title,
+        )
     fig.update_layout(
-        height=None,
-        title=title,
         updatemenus=[buttons_dict],
         sliders=[sliders_dict] if animation_slider else None,
     )
@@ -181,6 +185,15 @@ def process_extra_trace(model):
     return trace3d
 
 
+def extract_layout_kwargs(kwargs):
+    """Extract layout kwargs"""
+    layout = kwargs.pop("layout", {})
+    layout_kwargs = {k[7:]: v for k, v in kwargs.items() if k.startswith("layout")}
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("layout")}
+    layout.update(layout_kwargs)
+    return layout, kwargs
+
+
 def display_plotly(
     *obj_list,
     zoom=1,
@@ -188,20 +201,25 @@ def display_plotly(
     renderer=None,
     animation=False,
     colorsequence=None,
+    return_fig=False,
+    update_layout=True,
     **kwargs,
 ):
 
     """Display objects and paths graphically using the plotly library."""
 
-    show_canvas = False
+    fig = canvas
+    show_fig = False
     extra_data = False
-    if canvas is None:
-        show_canvas = True
-        canvas = go.Figure()
+    if fig is None:
+        if not return_fig:
+            show_fig = True
+        fig = go.Figure()
 
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
 
+    layout, kwargs = extract_layout_kwargs(kwargs)
     data = get_frames(
         objs=obj_list,
         colorsequence=colorsequence,
@@ -220,22 +238,29 @@ def display_plotly(
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
         fr.pop("extra_backend_traces", None)
-    with canvas.batch_update():
+    with fig.batch_update():
         if len(frames) == 1:
-            canvas.add_traces(frames[0]["data"])
+            fig.add_traces(frames[0]["data"])
         else:
             animation_slider = data.get("animation_slider", False)
             animate_path(
-                canvas,
+                fig,
                 frames,
                 data["path_indices"],
                 data["frame_duration"],
                 animation_slider=animation_slider,
+                update_layout=update_layout,
             )
         ranges = data["ranges"]
         if extra_data:
             ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
-        apply_fig_ranges(canvas, ranges)
-        canvas.update_layout(legend_itemsizing="constant")
-    if show_canvas:
-        canvas.show(renderer=renderer)
+        if update_layout:
+            apply_fig_ranges(fig, ranges)
+            fig.update_layout(legend_itemsizing="constant")
+        fig.update_layout(layout)
+
+    if return_fig and not show_fig:
+        return fig
+    if show_fig:
+        fig.show(renderer=renderer)
+    return None

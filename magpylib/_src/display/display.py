@@ -19,6 +19,7 @@ def show(
     markers=None,
     backend=None,
     canvas=None,
+    return_fig=False,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -43,7 +44,7 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
+        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'` or `'pyvista'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
         `'matplotlib'` by installation default.
 
@@ -51,11 +52,17 @@ def show(
         Display graphical output on a given canvas:
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.
+
+    canvas: bool, default=False
+        If True, the function call returns the figure object.
+        - with matplotlib: `matplotlib.figure.Figure`.
+        - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
 
     Returns
     -------
-    `None`: NoneType
+    `None` or figure object
 
     Examples
     --------
@@ -134,5 +141,6 @@ def show(
         zoom=zoom,
         canvas=canvas,
         animation=animation,
+        return_fig=return_fig,
         **kwargs,
     )

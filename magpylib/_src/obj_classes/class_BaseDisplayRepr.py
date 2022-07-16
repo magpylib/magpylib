@@ -43,7 +43,7 @@ class BaseDisplayRepr:
         params = list(self._property_names_generator())
         lines = [f"{self!r}"]
         for k in list(dict.fromkeys(list(UNITS) + list(params))):
-            if k in params and k not in exclude:
+            if not k.startswith("_") and k in params and k not in exclude:
                 unit = UNITS.get(k, None)
                 unit_str = f"{unit}" if unit else ""
                 if k == "position":
@@ -70,7 +70,7 @@ class BaseDisplayRepr:
                 lines.append(f"  • {k}: {val} {unit_str}")
         return lines
 
-    def describe(self, *, exclude=("style",), return_string=False):
+    def describe(self, *, exclude=("style", "field_func"), return_string=False):
         """Returns a view of the object properties.
 
         Parameters
@@ -91,7 +91,7 @@ class BaseDisplayRepr:
         return None
 
     def _repr_html_(self):
-        lines = self._get_description(exclude=("style",))
+        lines = self._get_description(exclude=("style", "field_func"))
         return f"""<pre>{'<br>'.join(lines)}</pre>"""
 
     def __repr__(self) -> str:

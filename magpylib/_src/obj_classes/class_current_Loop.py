@@ -1,13 +1,21 @@
 """Loop current class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(
+    kind="source",
+    family="current",
+    field_func=current_loop_field,
+    source_kwargs_ndim={"current": 1, "diameter": 1},
+)
 class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Circular current loop.
 
@@ -92,7 +100,6 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.diameter = diameter
-        self._object_type = "Loop"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
