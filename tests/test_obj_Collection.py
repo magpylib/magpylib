@@ -417,11 +417,13 @@ def test_collection_describe():
         "│       • orientation: [0. 0. 0.] degrees",
         "│       • dimension: None mm",
         "│       • magnetization: None mT",
+        "│       • family: magnet",
         "└── y",
         "        • position: [0. 0. 0.] mm",
         "        • orientation: [0. 0. 0.] degrees",
         "        • dimension: None mm",
         "        • magnetization: None mT",
+        "        • family: magnet",
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 

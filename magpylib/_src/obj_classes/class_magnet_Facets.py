@@ -4,13 +4,21 @@ DOCSTRINGS V4 READY
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
+from magpylib._src.fields.field_BH_facet import magnet_facets_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(
+    kind="source",
+    family="magnet",
+    field_func=magnet_facets_field,
+    source_kwargs_ndim={"magnetization": 2, "facets": 3},
+)
 class Facets(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Facets magnet with homogeneous magnetization.
 

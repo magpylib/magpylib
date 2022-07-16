@@ -450,7 +450,7 @@ def make_Sensor(
     )
 
 
-def make_Marker(obj, color=None, style=None, **kwargs):
+def make_MagpyMarkers(obj, color=None, style=None, **kwargs):
     """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments."""
     style = obj.style if style is None else style
