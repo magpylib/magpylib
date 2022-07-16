@@ -3,13 +3,21 @@ DOCSTRINGS V4 READY
 """
 import numpy as np
 
+from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(
+    kind="source",
+    family="magnet",
+    field_func=magnet_tetrahedron_field,
+    source_kwargs_ndim={"magnetization": 1, "vertices": 3},
+)
 class Tetrahedron(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
     """Tetrahedron magnet with homogeneous magnetization.
 

@@ -1,27 +1,27 @@
 """Collection of classes for display styling."""
 # pylint: disable=C0302
 # pylint: disable=too-many-instance-attributes
+from collections import defaultdict
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import MagicProperties
-from magpylib._src.defaults.defaults_utility import MAGPYLIB_FAMILIES
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
+from magpylib._src.utility import Registered
 
 
 def get_style_class(obj):
     """Returns style instance based on object type. If object has no attribute `_object_type` or is
-    not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` instance.
+    not found in `Registered.famillies` returns `BaseStyle` instance.
     """
     obj_type = getattr(obj, "_object_type", None)
-    style_fam = MAGPYLIB_FAMILIES.get(obj_type, None)
-    if isinstance(style_fam, (list, tuple)):
-        style_fam = style_fam[0]
+    style_fam = Registered.families.get(obj_type, None)
     return STYLE_CLASSES.get(style_fam, BaseStyle)
 
 
@@ -44,17 +44,13 @@ def get_style(obj, default_settings, **kwargs):
 
     # construct object specific dictionary base on style family and default style
     obj_type = getattr(obj, "_object_type", None)
-    obj_families = MAGPYLIB_FAMILIES.get(obj_type, [])
-
+    obj_family = Registered.families.get(obj_type, None)
     obj_style_default_dict = {
         **styles_by_family["base"],
-        **{
-            k: v
-            for fam in obj_families
-            for k, v in styles_by_family.get(fam, {}).items()
-        },
+        **dict(styles_by_family.get(obj_family, {}).items()),
     }
     style_kwargs = validate_style_keys(style_kwargs)
+
     # create style class instance and update based on precedence
     obj_style = getattr(obj, "style", None)
     style = obj_style.copy() if obj_style is not None else BaseStyle()
@@ -1610,9 +1606,13 @@ class DisplayStyle(MagicProperties):
         self._markers = validate_property_class(val, "markers", Markers, self)
 
 
-STYLE_CLASSES = {
-    "magnet": MagnetStyle,
-    "current": CurrentStyle,
-    "dipole": DipoleStyle,
-    "sensor": SensorStyle,
-}
+STYLE_CLASSES = defaultdict(lambda: BaseStyle)
+STYLE_CLASSES.update(
+    {
+        "magnet": MagnetStyle,
+        "current": CurrentStyle,
+        "dipole": DipoleStyle,
+        "sensor": SensorStyle,
+        "markers": Markers,
+    }
+)

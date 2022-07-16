@@ -1,13 +1,26 @@
 """Line current class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.utility import Registered
 
 
+@Registered(
+    kind="source",
+    family="current",
+    field_func=current_vertices_field,
+    source_kwargs_ndim={
+        "current": 1,
+        "vertices": 3,
+        "segment_start": 2,
+        "segment_end": 2,
+    },
+)
 class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
     """Current flowing in straight lines from vertex to vertex.
 
@@ -98,7 +111,6 @@ class Line(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
 
         # instance attributes
         self.vertices = vertices
-        self._object_type = "Line"
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)

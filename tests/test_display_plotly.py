@@ -3,7 +3,6 @@ import plotly.graph_objects as go
 import pytest
 
 import magpylib as magpy
-from magpylib._src.display.traces_generic import get_generic_traces
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder

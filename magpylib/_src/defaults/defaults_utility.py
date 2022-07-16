@@ -5,21 +5,8 @@ from copy import deepcopy
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
 
-SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista", "matplotlib_old")
+SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
-MAGPYLIB_FAMILIES = {
-    "Line": ("current",),
-    "Loop": ("current",),
-    "Cuboid": ("magnet",),
-    "Cylinder": ("magnet",),
-    "Sphere": ("magnet",),
-    "CylinderSegment": ("magnet",),
-    "Tetrahedron": ("magnet",),
-    "Facets": ("magnet",),
-    "Sensor": ("sensor",),
-    "Dipole": ("dipole",),
-    "Marker": ("markers",),
-}
 
 SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
     ".": "circle",
