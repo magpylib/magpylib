@@ -436,6 +436,7 @@ def getBH_dict_level2(
     - tiles 1D inputs vectors to correct dimension
     """
     # pylint: disable=protected-access
+    # pylint: disable=too-many-branches
 
     # generate dict of secured inputs for auto-tiling ---------------
     #  entries in this dict will be tested for input length, and then
