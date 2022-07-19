@@ -500,11 +500,12 @@ def getBH_dict_level2(
                 kwargs[key] = np.array(
                     [np.tile(v, (vec_len, 1)) for v in val], dtype="object"
                 )
+            elif expected_dim == 3:
+                kwargs[key] = np.tile(val, (vec_len, 1, 1))
             else:
                 kwargs[key] = np.tile(val, (vec_len, 1))
         else:
             kwargs[key] = val
-
     # change orientation back to Rotation object
     kwargs["orientation"] = R.from_quat(kwargs["orientation"])
 
