@@ -29,7 +29,6 @@ def place_and_orient_model3d(
     position=None,
     coordsargs=None,
     scale=1,
-    return_vertices=False,
     return_model_args=False,
     **kwargs,
 ):
@@ -92,8 +91,6 @@ def place_and_orient_model3d(
     out = (new_model_kwargs,)
     if return_model_args:
         out += (new_model_args,)
-    if return_vertices:
-        out += (new_vertices,)
     return out[0] if len(out) == 1 else out
 
 
@@ -189,16 +186,8 @@ def get_rot_pos_from_path(obj, show_path=None):
     # pylint: disable=invalid-unary-operand-type
     if show_path is None:
         show_path = True
-    pos = getattr(obj, "_position", None)
-    if pos is None:
-        pos = obj.position
-    pos = np.array(pos)
-    orient = getattr(obj, "_orientation", None)
-    if orient is None:
-        orient = getattr(obj, "orientation", None)
-    if orient is None:
-        orient = RotScipy.from_rotvec([[0, 0, 1]])
-    pos = np.array([pos]) if pos.ndim == 1 else pos
+    pos = obj._position
+    orient = obj._orientation
     path_len = pos.shape[0]
     if show_path is True or show_path is False or show_path == 0:
         inds = np.array([-1])
@@ -222,8 +211,9 @@ def get_flatten_objects_properties(
     **parent_props,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
-    if colorsequence is None:
-        colorsequence = Config.display.colorsequence
+    colorsequence = (
+        Config.display.colorsequence if colorsequence is None else colorsequence
+    )
     if color_cycle is None:
         color_cycle = cycle(colorsequence)
     flat_objs = {}
@@ -440,10 +430,7 @@ def group_traces(*traces):
         )
         gr = [tr["type"]]
         for k in common_keys + spec_keys[tr["type"]]:
-            try:
-                v = tr.get(k, "")
-            except AttributeError:
-                v = getattr(tr, k, "")
+            v = tr.get(k, "")
             gr.append(str(v))
         gr = "".join(gr)
         if gr not in mesh_groups:
@@ -451,12 +438,8 @@ def group_traces(*traces):
         mesh_groups[gr].append(tr)
 
     traces = []
-    for key, gr in mesh_groups.items():
-        if key.startswith("mesh3d") or key.startswith("scatter3d"):
-            tr = [merge_traces(*gr)]
-        else:
-            tr = gr
-        traces.extend(tr)
+    for group in mesh_groups.values():
+        traces.extend([merge_traces(*group)])
     return traces
 
 
