@@ -1,3 +1,4 @@
+import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
@@ -22,20 +23,15 @@ def test_Cylinder_display():
     x = src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
     assert x is None, "path should revert to True"
     src.move(np.linspace((0.4, 0.4, 0.4), (12, 12, 12), 30), start=-1)
-    x = src.show(
-        canvas=ax, style_path_show=False, show_direction=True, backend="matplotlib"
-    )
+    x = src.show(canvas=ax, style_path_show=False, backend="matplotlib")
     assert x is None, "display test fail"
 
-    x = src.show(
-        canvas=ax, style_path_frames=[], show_direction=True, backend="matplotlib"
-    )
+    x = src.show(canvas=ax, style_path_frames=[], backend="matplotlib")
     assert x is None, "ind>path_len, should display last position"
 
     x = src.show(
         canvas=ax,
         style_path_frames=[1, 5, 6],
-        show_direction=True,
         backend="matplotlib",
     )
     assert x is None, "should display 1,5,6 position"
@@ -49,7 +45,7 @@ def test_CylinderSegment_display():
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
-    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False)
     assert x is None, "display test fail"
 
 
@@ -61,7 +57,7 @@ def test_Sphere_display():
     assert x is None, "path should revert to True"
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
-    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False)
     assert x is None, "display test fail"
 
 
@@ -70,12 +66,12 @@ def test_Cuboid_display():
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     plt.ion()
-    x = src.show(style_path_frames=5, show_direction=True)
+    x = src.show(style_path_frames=5)
     plt.close()
     assert x is None, "display test fail"
 
     ax = plt.subplot(projection="3d")
-    x = src.show(canvas=ax, style_path_show=False, show_direction=True)
+    x = src.show(canvas=ax, style_path_show=False)
     assert x is None, "display test fail"
 
 
@@ -183,7 +179,7 @@ def test_matplotlib_model3d_extra():
         constructor="plot_surface",
         args=(xs, ys, zs),
         kwargs=dict(
-            cmap=plt.cm.YlGnBu_r,
+            cmap=plt.cm.YlGnBu_r,  # pylint: disable=no-member
         ),
     )
     obj2 = magpy.Collection()
@@ -202,7 +198,7 @@ def test_matplotlib_model3d_extra():
         args=lambda: (xs, ys, zs),  # test callable args
         kwargs=dict(
             triangles=tri.triangles,
-            cmap=plt.cm.Spectral,
+            cmap=plt.cm.Spectral,  # pylint: disable=no-member
         ),
     )
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3, 0, 0))
@@ -270,3 +266,22 @@ def test_graphics_model_mpl():
     c.rotate_from_angax(33, "x", anchor=0)
     c.style.model3d.add_trace(**make_Cuboid("matplotlib", position=(2, 0, 0)))
     c.show(canvas=ax, style_path_frames=1, backend="matplotlib")
+
+
+def test_graphics_model_generic_to_mpl():
+    """test generic base extra graphics with mpl"""
+    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c.move([[i, 0, 0] for i in range(2)])
+    model3d = make_Cuboid(position=(2, 0, 0))
+    model3d["kwargs"]["facecolor"] = np.array(["blue"] * 12)
+    c.style.model3d.add_trace(**model3d)
+    fig = c.show(style_path_frames=1, backend="matplotlib", return_fig=True)
+    assert isinstance(fig, matplotlib.figure.Figure)
+
+
+def test_mpl_animation():
+    """test animation with matplotib"""
+    c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
+    c.move([[i, 0, 0] for i in range(2)])
+    anim = c.show(backend="matplotlib", animation=True, return_animation=True)
+    assert isinstance(anim, matplotlib.animation.FuncAnimation)
