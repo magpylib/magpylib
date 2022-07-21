@@ -710,7 +710,8 @@ def get_generic_traces(
         traces.append(scatter_path)
 
     if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
-        traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
+        if style.magnetization.show:
+            traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
