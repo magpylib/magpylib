@@ -480,7 +480,11 @@ def getBH_dict_level2(
             ) from err
         expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:
-            vec_lengths[key] = len(val)
+            if len(val) == 1:
+                val = np.squeeze(val)
+            else:
+                vec_lengths[key] = len(val)
+
         kwargs[key] = val
 
     if len(set(vec_lengths.values())) > 1:
@@ -489,21 +493,11 @@ def getBH_dict_level2(
             f"Instead received lengths {vec_lengths}"
         )
     vec_len = max(vec_lengths.values(), default=1)
-
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
         expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
-        if val.ndim < expected_dim:
-            if expected_dim == 1:
-                kwargs[key] = np.array([val] * vec_len)
-            elif ragged_seq[key]:
-                kwargs[key] = np.array(
-                    [np.tile(v, (vec_len, 1)) for v in val], dtype="object"
-                )
-            else:
-                kwargs[key] = np.tile(val, (vec_len, 1))
-        else:
-            kwargs[key] = val
+        if val.ndim < expected_dim and not ragged_seq[key]:
+            kwargs[key] = np.tile(val, (vec_len, *[1] * (expected_dim - 1)))
 
     # change orientation back to Rotation object
     kwargs["orientation"] = R.from_quat(kwargs["orientation"])

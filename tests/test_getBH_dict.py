@@ -240,6 +240,45 @@ def test_getBHv_line2():
     )
     assert np.allclose(B5, np.array([0, -x, 0]))
 
+    # "scalar" vertices tiling
+    B = getB(
+        "Line",
+        observers=[(0, 0, 0)] * 5,
+        current=1,
+        vertices=np.linspace((0, 5, 5), (5, 5, 5), 6),
+    )
+    np.testing.assert_allclose(
+        B, np.array([[0.0, 0.0057735, -0.0057735]] * 5), rtol=1e-6
+    )
+
+    # ragged sequence of vertices
+    observers = (1, 1, 1)
+    current = 1
+    vertices = [
+        [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)],
+        [(0, 0, 0), (3, 3, 3), (-3, 4, -5)],
+        [(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)],
+    ]
+    B1 = getB(
+        "Line",
+        observers=observers,
+        current=current,
+        vertices=vertices,
+    )
+    B2 = np.array(
+        [
+            getB(
+                "Line",
+                observers=observers,
+                current=current,
+                vertices=v,
+            )
+            for v in vertices
+        ]
+    )
+
+    np.testing.assert_allclose(B1, B2)
+
 
 def test_BHv_Cylinder_FEM():
     """test against FEM"""
