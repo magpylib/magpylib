@@ -132,7 +132,7 @@ def getBHv_missing_input5_sphere():
 # bad inputs -------------------------------------------------------------------
 def getBHv_bad_input1():
     """different input lengths"""
-    x = np.array([(1, 2, 3)])
+    x = np.array([(1, 2, 3)] * 3)
     x2 = np.array([(1, 2, 3)] * 2)
     getBH_level2(
         sources="Cuboid",
