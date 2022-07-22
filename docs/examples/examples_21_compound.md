@@ -6,7 +6,7 @@ jupytext:
     format_version: 0.13
     jupytext_version: 1.13.7
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -52,7 +52,7 @@ class MagnetRing(magpy.Collection):
         """updates the MagnetRing instance"""
         self._cubes = cubes
         ring_radius = cubes/3
-        
+
         # construct in temporary Collection for path transfer
         temp_coll = magpy.Collection()
         for i in range(cubes):
@@ -71,20 +71,18 @@ class MagnetRing(magpy.Collection):
 
         # add parameter-dependent 3d trace
         self.style.model3d.data = []
-        self.style.model3d.add_trace(self._custom_trace3d('plotly'))
-        self.style.model3d.add_trace(self._custom_trace3d('matplotlib'))
+        self.style.model3d.add_trace(self._custom_trace3d())
 
         return self
 
-    def _custom_trace3d(self, backend):
+    def _custom_trace3d(self):
         """ creates a parameter-dependent 3d model"""
         r1 = self.cubes/3 - .6
         r2 = self.cubes/3 + 0.6
         trace = magpy.graphics.model3d.make_CylinderSegment(
-            backend=backend,
             dimension=(r1, r2, 1.1, 0, 360),
             vert=150,
-            **{('opacity' if backend=='plotly' else 'alpha') :0.5}
+            opacity=0.5,
         )
         return trace
 ```
@@ -125,7 +123,6 @@ Custom traces can be computationally costly to construct. In the above example, 
 To make our compounds ready for heavy computation, it is possible to provide a callable as a trace, which will only be constructed when `show` is called. The following modification of the above example demonstrates this:
 
 ```{code-cell} ipython3
-from functools import partial
 import magpylib as magpy
 import numpy as np
 
@@ -143,8 +140,7 @@ class MagnetRingAdv(magpy.Collection):
         self._update(cubes)
 
         # hand trace over as callable
-        self.style.model3d.add_trace(partial(self._custom_trace3d, 'plotly'))
-        self.style.model3d.add_trace(partial(self._custom_trace3d, 'matplotlib'))
+        self.style.model3d.add_trace(self._custom_trace3d)
 
     @property
     def cubes(self):
@@ -160,7 +156,7 @@ class MagnetRingAdv(magpy.Collection):
         """updates the MagnetRing instance"""
         self._cubes = cubes
         ring_radius = cubes/3
-        
+
         # construct in temporary Collection for path transfer
         temp_coll = magpy.Collection()
         for i in range(cubes):
@@ -179,15 +175,14 @@ class MagnetRingAdv(magpy.Collection):
 
         return self
 
-    def _custom_trace3d(self, backend):
+    def _custom_trace3d(self):
         """ creates a parameter-dependent 3d model"""
         r1 = self.cubes/3 - .6
         r2 = self.cubes/3 + 0.6
         trace = magpy.graphics.model3d.make_CylinderSegment(
-            backend=backend,
             dimension=(r1, r2, 1.1, 0, 360),
             vert=150,
-            **{('opacity' if backend=='plotly' else 'alpha') :0.5}
+            opacity=0.5,
         )
         return trace
 ```
@@ -195,10 +190,10 @@ class MagnetRingAdv(magpy.Collection):
 All we have done is, to remove the trace construction from the `_update` method, and instead provide `_custom_trace3d` as callable in `__init__` with the help of `partial`.
 
 ```{code-cell} ipython3
-ring0 = MagnetRing() 
+ring0 = MagnetRing()
 %time for _ in range(100): ring0.cubes=10
 
-ring1 = MagnetRingAdv() 
+ring1 = MagnetRingAdv()
 %time for _ in range(100): ring1.cubes=10
 ```
 
@@ -214,5 +209,3 @@ for i,cub in zip([2,7,12,17,22], [20,16,12,8,4]):
 
 magpy.show(rings, animation=2, backend='plotly', style_path_show=False)
 ```
-
-

@@ -83,7 +83,7 @@ def generic_trace_to_matplotlib(trace):
                 },
             }
         )
-    else:
+    else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
@@ -169,7 +169,7 @@ def display_matplotlib(
             **{f"{k}lim": r for k, r in zip("xyz", ranges)},
         )
 
-    def animate(ind):
+    def animate(ind):  # pragma: no cover
         plt.cla()
         draw_frame(ind)
         return [ax]
@@ -187,6 +187,7 @@ def display_matplotlib(
         )
     out = ()
     if return_fig:
+        show_canvas = False
         out += (fig,)
     if return_animation and len(frames) != 1:
         out += (anim,)

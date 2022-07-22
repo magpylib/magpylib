@@ -12,6 +12,45 @@ from magpylib._src.display.traces_base import make_Prism
 
 magpy.defaults.display.backend = "plotly"
 
+# def create_compound_test_data(path=None):
+#     """creates tests data for compound setters testing"""
+#     setters = [
+#         ("orientation=None", dict(orientation="None")),
+#         ("shorter position path", dict(position="np.array([[50, 0, 100]] * 2)")),
+#         (
+#             "shorter orientation path",
+#             dict(orientation="R.from_rotvec([[90,0,0],[0,90,0]], degrees=True)"),
+#         ),
+#         (
+#             "longer position path",
+#             dict(position="np.array(np.linspace((280.,0.,0), (280.,0.,300), 8))"),
+#         ),
+#         (
+#             "longer orientation path",
+#             dict(
+#                 orientation="R.from_rotvec([[0,90*i,0] for i in range(6)], degrees=True)"
+#             ),
+#         ),
+#     ]
+#     data = {"test_names": [], "setters_inputs": [], "pos_orient_as_matrix_expected": []}
+#     for setter in setters:
+#         tname, kwargs = setter
+#         coll = create_compound_set(**kwargs)
+#         pos_orient = get_pos_orient_from_collection(coll)
+#         data["test_names"].append(tname)
+#         data["setters_inputs"].append(kwargs)
+#         data["pos_orient_as_matrix_expected"].append(pos_orient)
+#     if path is None:
+#         return data
+#     np.save(path, data)
+
+
+# def display_compound_test_data(path):
+#     """display compound test data from file"""
+#     data = np.load(path, allow_pickle=True).item()
+#     for kwargs in data["setters_inputs"]:
+#         create_compound_set(show=True, **kwargs)
+
 
 def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
@@ -63,11 +102,11 @@ def create_compound_set(show=False, **kwargs):
     c2.set_children_styles(path_show=False, opacity=0.1)
     for k, v in kwargs.items():
         setattr(c1, k, eval(v))
-    if show:
-        fig = go.Figure()
-        magpy.show(c2, c1, style_path_frames=1, canvas=fig)
-        fig.layout.title = ", ".join(f"c1.{k} = {v}" for k, v in kwargs.items())
-        fig.show()
+    # if show:
+    #     fig = go.Figure()
+    #     magpy.show(c2, c1, style_path_frames=1, canvas=fig)
+    #     fig.layout.title = ", ".join(f"c1.{k} = {v}" for k, v in kwargs.items())
+    #     fig.show()
     return c1
 
 
@@ -78,46 +117,6 @@ def get_pos_orient_from_collection(coll):
     for obj in [coll] + coll.children:
         pos_orient.append((obj.position, obj.orientation.as_matrix()))
     return pos_orient
-
-
-def create_compound_test_data(path=None):
-    """creates tests data for compound setters testing"""
-    setters = [
-        ("orientation=None", dict(orientation="None")),
-        ("shorter position path", dict(position="np.array([[50, 0, 100]] * 2)")),
-        (
-            "shorter orientation path",
-            dict(orientation="R.from_rotvec([[90,0,0],[0,90,0]], degrees=True)"),
-        ),
-        (
-            "longer position path",
-            dict(position="np.array(np.linspace((280.,0.,0), (280.,0.,300), 8))"),
-        ),
-        (
-            "longer orientation path",
-            dict(
-                orientation="R.from_rotvec([[0,90*i,0] for i in range(6)], degrees=True)"
-            ),
-        ),
-    ]
-    data = {"test_names": [], "setters_inputs": [], "pos_orient_as_matrix_expected": []}
-    for setter in setters:
-        tname, kwargs = setter
-        coll = create_compound_set(**kwargs)
-        pos_orient = get_pos_orient_from_collection(coll)
-        data["test_names"].append(tname)
-        data["setters_inputs"].append(kwargs)
-        data["pos_orient_as_matrix_expected"].append(pos_orient)
-    if path is None:
-        return data
-    np.save(path, data)
-
-
-def display_compound_test_data(path):
-    """display compound test data from file"""
-    data = np.load(path, allow_pickle=True).item()
-    for kwargs in data["setters_inputs"]:
-        create_compound_set(show=True, **kwargs)
 
 
 folder = "tests/testdata"

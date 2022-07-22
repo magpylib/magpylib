@@ -5,6 +5,8 @@ All notable changes to magpylib are documented here.
 
 # Unreleased
 * Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
+* Internal `getB`/`getH` refactoring. Like for the object oriented interface, the direct interface for `'Line'` current now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
+* Complete display backend rework to prepare for easy implementation of new plotting backends, with minimal maintenance. ([#539](https://github.com/magpylib/magpylib/pull/539))
 
 ## [4.0.4] - 2022-06-09
 

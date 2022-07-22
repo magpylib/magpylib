@@ -171,7 +171,7 @@ def test_extra_model3d():
     cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
         {
-            "backend": "plotly",
+            "backend": "generic",
             "constructor": "Scatter3d",
             "kwargs": {
                 "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
@@ -244,9 +244,8 @@ def test_CustomSource_display():
 
 def test_empty_display():
     """should not fail if nothing to display"""
-    fig = go.Figure()
-    x = magpy.show(canvas=fig, backend="plotly")
-    assert x is None, "empty display plotly test fail"
+    fig = magpy.show(backend="plotly", return_fig=True)
+    assert isinstance(fig, go.Figure), "empty display plotly test fail"
 
 
 def test_display_warnings():
