@@ -409,10 +409,9 @@ def make_MagpyMarkers(obj, color=None, style=None, **kwargs):
         f"marker_{k}": v
         for k, v in style.marker.as_dict(flatten=True, separator="_").items()
     }
-    if marker_kwargs["marker_color"] is None:
-        marker_kwargs["marker_color"] = (
-            style.color if style.color is not None else color
-        )
+    marker_kwargs["marker_color"] = (
+        style.marker.color if style.marker.color is not None else color
+    )
     trace = dict(
         type="scatter3d",
         x=x,
@@ -644,7 +643,7 @@ def get_generic_traces(
                         if "facecolor" in obj_extr_trace:
                             ttype = "mesh3d_facecolor"
                         trace3d["color"] = trace3d.get("color", kwargs["color"])
-                    else:
+                    else:  # pragma: no cover
                         raise ValueError(
                             f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
                         )
