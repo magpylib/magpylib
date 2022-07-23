@@ -1,13 +1,11 @@
 """Custom class code """
 from magpylib._src.input_checks import validate_field_func
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.utility import Registered
 
 
 @Registered(kind="source", family="misc", field_func=None)
-class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class CustomSource(BaseSource):
     """User-defined custom source.
 
     Can be used as `sources` input for magnetic field computation.
@@ -95,8 +93,7 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         self.field_func = field_func
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
+        super().__init__(position, orientation, style, **kwargs)
 
     @property
     def field_func(self):

@@ -3,10 +3,7 @@ DOCSTRINGS V4 READY
 """
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.input_checks import check_format_input_scalar
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
 from magpylib._src.utility import Registered
 
 
@@ -16,7 +13,7 @@ from magpylib._src.utility import Registered
     field_func=magnet_sphere_field,
     source_kwargs_ndim={"magnetization": 2, "diameter": 1},
 )
-class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class Sphere(BaseHomMag):
     """Spherical magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -103,9 +100,7 @@ class Sphere(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         self.diameter = diameter
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+        super().__init__(position, orientation, magnetization, style, **kwargs)
 
     # property getters and setters
     @property
