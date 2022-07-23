@@ -1,10 +1,9 @@
 """Custom class code """
-from magpylib._src.input_checks import validate_field_func
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.utility import Registered
 
 
-@Registered(kind="source", family="misc", field_func=None)
+@Registered(kind="source", family="misc")
 class CustomSource(BaseSource):
     """User-defined custom source.
 
@@ -81,6 +80,8 @@ class CustomSource(BaseSource):
      [70.71067812 70.71067812  0.        ]]
     """
 
+    _editable_field_func = True
+
     def __init__(
         self,
         field_func=None,
@@ -89,24 +90,5 @@ class CustomSource(BaseSource):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.field_func = field_func
-
         # init inheritance
-        super().__init__(position, orientation, style, **kwargs)
-
-    @property
-    def field_func(self):
-        """
-        The function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
-        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
-        be numpy ndarrays of shape (n,3) themselves.
-        """
-        return self._field_func
-
-    @field_func.setter
-    def field_func(self, val):
-        validate_field_func(val)
-        self._field_func = val
+        super().__init__(position, orientation, field_func, style, **kwargs)

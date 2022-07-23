@@ -10,7 +10,6 @@ from magpylib._src.utility import Registered
 @Registered(
     kind="source",
     family="magnet",
-    field_func=magnet_cuboid_field,
     source_kwargs_ndim={"magnetization": 2, "dimension": 2},
 )
 class Cuboid(BaseHomMag):
@@ -85,6 +84,8 @@ class Cuboid(BaseHomMag):
      [0.54127889 0.86827283 0.05653357]
      [0.1604214  0.25726266 0.01664045]]
     """
+
+    _field_func = staticmethod(magnet_cuboid_field)
 
     def __init__(
         self,

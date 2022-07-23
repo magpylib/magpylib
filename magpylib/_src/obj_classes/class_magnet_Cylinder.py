@@ -10,7 +10,6 @@ from magpylib._src.utility import Registered
 @Registered(
     kind="source",
     family="magnet",
-    field_func=magnet_cylinder_field,
     source_kwargs_ndim={"magnetization": 2, "dimension": 2},
 )
 class Cylinder(BaseHomMag):
@@ -85,6 +84,8 @@ class Cylinder(BaseHomMag):
      [0.42298405 0.67710536 0.04464932]
      [0.12571523 0.20144503 0.01312389]]
     """
+
+    _field_func = staticmethod(magnet_cylinder_field)
 
     def __init__(
         self,

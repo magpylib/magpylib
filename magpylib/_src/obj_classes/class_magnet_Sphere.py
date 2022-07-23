@@ -10,7 +10,6 @@ from magpylib._src.utility import Registered
 @Registered(
     kind="source",
     family="magnet",
-    field_func=magnet_sphere_field,
     source_kwargs_ndim={"magnetization": 2, "diameter": 1},
 )
 class Sphere(BaseHomMag):
@@ -85,6 +84,8 @@ class Sphere(BaseHomMag):
      [0.28350576 0.45461662 0.02935798]
      [0.08400171 0.13470122 0.00869866]]
     """
+
+    _field_func = staticmethod(magnet_sphere_field)
 
     def __init__(
         self,

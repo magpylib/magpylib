@@ -10,7 +10,6 @@ from magpylib._src.utility import Registered
 @Registered(
     kind="source",
     family="current",
-    field_func=current_vertices_field,
     source_kwargs_ndim={
         "current": 1,
         "vertices": 3,
@@ -95,6 +94,7 @@ class Line(BaseCurrent):
     """
 
     # pylint: disable=dangerous-default-value
+    _field_func = staticmethod(current_vertices_field)
 
     def __init__(
         self,

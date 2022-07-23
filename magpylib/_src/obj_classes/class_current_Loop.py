@@ -85,6 +85,8 @@ class Loop(BaseCurrent):
      [-3.55802727e-17  1.65201495e-01 -1.65201495e-01]]
     """
 
+    _field_func = staticmethod(current_loop_field)
+
     def __init__(
         self,
         current=None,

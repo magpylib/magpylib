@@ -10,7 +10,6 @@ from magpylib._src.utility import Registered
 @Registered(
     kind="source",
     family="dipole",
-    field_func=dipole_field,
     source_kwargs_ndim={"moment": 2},
 )
 class Dipole(BaseSource):
@@ -82,6 +81,8 @@ class Dipole(BaseSource):
      [0.27072806 0.4621617  0.19143364]
      [0.08021572 0.1369368  0.05672108]]
     """
+
+    _field_func = staticmethod(dipole_field)
 
     def __init__(
         self,

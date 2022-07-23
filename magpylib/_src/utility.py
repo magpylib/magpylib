@@ -43,18 +43,6 @@ class Registered:
             self.sensors[name] = klass
 
         elif self.kind == "source":
-            if self.field_func is None:
-                setattr(klass, "_field_func", None)
-            else:
-                setattr(klass, "_field_func", staticmethod(self.field_func))
-                setattr(
-                    klass,
-                    "field_func",
-                    property(
-                        lambda self: getattr(self, "_field_func"),
-                        doc="""The core function for B- and H-field computation""",
-                    ),
-                )
             self.sources[name] = klass
             if name not in self.source_kwargs_ndim:
                 self.source_kwargs_ndim[name] = {
