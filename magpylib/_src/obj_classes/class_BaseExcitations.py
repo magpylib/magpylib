@@ -1,6 +1,7 @@
 """BaseHomMag class code
 DOCSTRINGS V4 READY
 """
+# pylint: disable=cyclic-import
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.input_checks import check_format_input_vector

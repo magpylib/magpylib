@@ -1,5 +1,6 @@
 """ some utility functions"""
 # pylint: disable=import-outside-toplevel
+# pylint: disable=cyclic-import
 # import numbers
 from math import log10
 from typing import Sequence

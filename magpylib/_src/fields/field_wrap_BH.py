@@ -40,6 +40,7 @@ level4(getB_from_sensor, getH_from_sensor): <--- USER INTERFACE
 
 level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
+# pylint: disable=cyclic-import
 import numbers
 from itertools import product
 from typing import Callable

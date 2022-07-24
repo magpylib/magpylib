@@ -1,6 +1,7 @@
 """BaseGeo class code
 READY FOR V4
 """
+# pylint: disable=cyclic-import
 import numpy as np
 
 from magpylib._src.display.display import show

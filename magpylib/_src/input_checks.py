@@ -1,5 +1,6 @@
 """ input checks code"""
 # pylint: disable=import-outside-toplevel
+# pylint: disable=cyclic-import
 import inspect
 import numbers
 
