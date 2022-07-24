@@ -56,6 +56,7 @@ from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
+from magpylib._src.utility import get_registered_sources
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -443,10 +444,9 @@ def getBH_dict_level2(
     #  which tells the program which dimension it should tile up.
 
     # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
     try:
-        source_classes = {c.__name__: c for c in BaseSource.registry}
+        source_classes = get_registered_sources()
         field_func = source_classes[source_type]._field_func
         field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
         field_func_kwargs_ndim.update(

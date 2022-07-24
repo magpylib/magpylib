@@ -8,10 +8,9 @@ from magpylib._src.input_checks import validate_field_func
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_star_input
-from magpylib._src.utility import Registered
 
 
-class BaseSource(BaseGeo, BaseDisplayRepr, metaclass=Registered):
+class BaseSource(BaseGeo, BaseDisplayRepr):
     """Base class for all types of sources. Provides getB and getH methods for source objects
     and corresponding field function"""
 

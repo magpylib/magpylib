@@ -9,34 +9,10 @@ import numpy as np
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
-class Registered(type):
-    """Metaclass to register subclasses"""
-
-    def __init__(cls, name, bases, nmspc):
-        super().__init__(name, bases, nmspc)
-        if not hasattr(cls, "registry"):
-            cls.registry = set()
-        if not hasattr(cls, "registry_names"):
-            cls.registry_names = {}
-        cls.registry.add(cls)
-        cls.registry -= set(bases)  # Remove base classes
-
-    # Metamethods, called on class objects:
-    def __iter__(cls):
-        return iter(cls.registry)
-
-    def __str__(cls):
-        if cls in cls.registry:
-            return cls.__name__
-        # pylint: disable=not-an-iterable
-        return cls.__name__ + ": " + ", ".join([sc.__name__ for sc in cls])
-
-
 def get_allowed_sources_msg():
     "Return allowed source message"
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
-    srcs = [src.__name__ for src in BaseSource]
+    srcs = list(get_registered_sources())
     return f"""Sources must be either
 - one of type {srcs}
 - Collection with at least one of the above
@@ -360,3 +336,29 @@ def rec_obj_remover(parent, child):
             if rec_obj_remover(obj, child):
                 break
     return None
+
+
+def get_subclasses(cls, recursive=False):
+    """Return a dictionary of subclasses by name,"""
+    sub_cls = {}
+    for class_ in cls.__subclasses__():
+        sub_cls[class_.__name__] = class_
+        if recursive:
+            sub_cls.update(get_subclasses(class_, recursive=recursive))
+    return sub_cls
+
+
+def get_registered_sources():
+    """Return all registered sources"""
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.obj_classes.class_BaseExcitations import (
+        BaseCurrent,
+        BaseMagnet,
+        BaseSource,
+    )
+
+    return {
+        k: v
+        for k, v in get_subclasses(BaseSource, recursive=True).items()
+        if not v in (BaseCurrent, BaseMagnet, BaseSource)
+    }
