@@ -4,14 +4,9 @@ DOCSTRINGS V4 READY
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-from magpylib._src.utility import Registered
+from magpylib._src.style import DipoleStyle
 
 
-@Registered(
-    kind="source",
-    family="dipole",
-    source_kwargs_ndim={"moment": 2},
-)
 class Dipole(BaseSource):
     """Magnetic dipole moment.
 
@@ -83,6 +78,8 @@ class Dipole(BaseSource):
     """
 
     _field_func = staticmethod(dipole_field)
+    _field_func_kwargs_ndim = {"moment": 2}
+    _style_class = DipoleStyle
 
     def __init__(
         self,

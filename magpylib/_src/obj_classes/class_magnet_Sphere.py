@@ -3,16 +3,11 @@ DOCSTRINGS V4 READY
 """
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.input_checks import check_format_input_scalar
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.utility import Registered
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.style import MagnetStyle
 
 
-@Registered(
-    kind="source",
-    family="magnet",
-    source_kwargs_ndim={"magnetization": 2, "diameter": 1},
-)
-class Sphere(BaseHomMag):
+class Sphere(BaseMagnet):
     """Spherical magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -86,6 +81,8 @@ class Sphere(BaseHomMag):
     """
 
     _field_func = staticmethod(magnet_sphere_field)
+    _field_func_kwargs_ndim = {"magnetization": 2, "diameter": 1}
+    _style_class = MagnetStyle
 
     def __init__(
         self,

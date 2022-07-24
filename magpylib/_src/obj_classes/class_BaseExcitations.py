@@ -8,13 +8,15 @@ from magpylib._src.input_checks import validate_field_func
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_star_input
+from magpylib._src.utility import Registered
 
 
-class BaseSource(BaseGeo, BaseDisplayRepr):
+class BaseSource(BaseGeo, BaseDisplayRepr, metaclass=Registered):
     """Base class for all types of sources. Provides getB and getH methods for source objects
     and corresponding field function"""
 
     _field_func = None
+    _field_func_kwargs_ndim = {}
     _editable_field_func = False
 
     def __init__(self, position, orientation, field_func=None, style=None, **kwargs):
@@ -184,7 +186,7 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         )
 
 
-class BaseHomMag(BaseSource):
+class BaseMagnet(BaseSource):
     """provides the magnetization attribute  for homogeneously magnetized magnets"""
 
     def __init__(self, position, orientation, magnetization, style, **kwargs):

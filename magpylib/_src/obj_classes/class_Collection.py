@@ -1,5 +1,6 @@
 """Collection class code"""
 # pylint: disable=redefined-builtin
+# pylint: disable=import-outside-toplevel
 from collections import Counter
 
 from magpylib._src.defaults.defaults_utility import validate_style_keys
@@ -10,7 +11,6 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import rec_obj_remover
-from magpylib._src.utility import Registered
 
 
 def repr_obj(obj, format="type+id+label"):
@@ -24,14 +24,14 @@ def repr_obj(obj, format="type+id+label"):
 
     tag = ""
     if show_type:
-        tag += f"{obj._object_type}"
+        tag += f"{type(obj).__name__}"
 
     if show_label:
         if show_type:
             tag += " "
         label = getattr(getattr(obj, "style", None), "label", None)
         if label is None:
-            label = "nolabel" if show_type else f"{obj._object_type}"
+            label = "nolabel" if show_type else f"{type(obj).__name__}"
         tag += label
 
     if show_id:
@@ -62,7 +62,7 @@ def collection_tree_generator(
 
     children = getattr(obj, "children", [])
     if len(children) > max_elems:  # replace with counter if too many
-        counts = Counter([c._object_type for c in children])
+        counts = Counter([type(c).__name__ for c in children])
         children = [f"{v}x {k}s" for k, v in counts.items()]
 
     props = []
@@ -121,8 +121,6 @@ class BaseCollection(BaseDisplayRepr):
     """Collection base class without BaseGeo properties"""
 
     def __init__(self, *children, override_parent=False):
-
-        self._object_type = "Collection"
 
         BaseDisplayRepr.__init__(self)
 
@@ -327,7 +325,7 @@ class BaseCollection(BaseDisplayRepr):
 
         # assign parent
         for obj in obj_list:
-            if obj._object_type == "Collection":
+            if isinstance(obj, Collection):
                 # no need to check recursively with `collections_all` if obj is already self
                 if obj is self or self in obj.collections_all:
                     raise MagpylibBadUserInput(
@@ -351,16 +349,15 @@ class BaseCollection(BaseDisplayRepr):
         return self
 
     def _update_src_and_sens(self):
-        # pylint: disable=protected-access
         """updates sources, sensors and collections attributes from children"""
-        self._sources = [
-            obj for obj in self._children if obj._object_type in Registered.sources
-        ]
-        self._sensors = [
-            obj for obj in self._children if obj._object_type in Registered.sensors
-        ]
+        # pylint: disable=protected-access
+        from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+        from magpylib._src.obj_classes.class_Sensor import Sensor
+
+        self._sources = [obj for obj in self._children if isinstance(obj, BaseSource)]
+        self._sensors = [obj for obj in self._children if isinstance(obj, Sensor)]
         self._collections = [
-            obj for obj in self._children if obj._object_type == "Collection"
+            obj for obj in self._children if isinstance(obj, Collection)
         ]
 
     def remove(self, *children, recursive=True, errors="raise"):
@@ -488,7 +485,7 @@ class BaseCollection(BaseDisplayRepr):
         for child in self._children:
             # match properties false will try to apply properties from kwargs only if it finds it
             # without throwing an error
-            if child._object_type == "Collection" and recursive:
+            if isinstance(child, Collection) and recursive:
                 self.__class__.set_children_styles(child, style_kwargs, _validate=False)
             style_kwargs_specific = {
                 k: v

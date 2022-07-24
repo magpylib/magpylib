@@ -1,9 +1,7 @@
 """Custom class code """
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
-from magpylib._src.utility import Registered
 
 
-@Registered(kind="source", family="misc")
 class CustomSource(BaseSource):
     """User-defined custom source.
 

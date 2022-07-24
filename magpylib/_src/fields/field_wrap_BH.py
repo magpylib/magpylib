@@ -48,7 +48,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_observers
@@ -57,7 +56,6 @@ from magpylib._src.input_checks import check_getBH_output_type
 from magpylib._src.utility import check_static_sensor_orient
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import format_src_inputs
-from magpylib._src.utility import Registered
 
 
 def tile_group_property(group: list, n_pp: int, prop_name: str):
@@ -89,7 +87,6 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
     posov = np.tile(poso, (len(group), 1))
 
     # determine which group we are dealing with and tile up properties
-    src_type = group[0]._object_type
 
     kwargs = {
         "position": posv,
@@ -97,10 +94,7 @@ def get_src_dict(group: list, n_pix: int, n_pp: int, poso: np.ndarray) -> dict:
         "orientation": rotobj,
     }
 
-    try:
-        src_props = Registered.source_kwargs_ndim[src_type]
-    except KeyError as err:
-        raise MagpylibInternalError("Bad source_type in get_src_dict") from err
+    src_props = group[0]._field_func_kwargs_ndim
 
     for prop in src_props:
         if hasattr(group[0], prop) and prop not in (
@@ -194,6 +188,9 @@ def getBH_level2(
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
+    # pylint: disable=import-outside-toplevel
+
+    from magpylib._src.obj_classes.class_Collection import Collection
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -322,7 +319,7 @@ def getBH_level2(
     # rearrange B when there is at least one Collection with more than one source
     if num_of_src_list > num_of_sources:
         for src_ind, src in enumerate(sources):
-            if src._object_type == "Collection":
+            if isinstance(src, Collection):
                 col_len = len(format_obj_input(src, allow="sources"))
                 # set B[i] to sum of slice
                 B[src_ind] = np.sum(B[src_ind : src_ind + col_len], axis=0)
@@ -445,11 +442,19 @@ def getBH_dict_level2(
     #  To allow different input dimensions, the tdim argument is also given
     #  which tells the program which dimension it should tile up.
 
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+
     try:
-        field_func = Registered.sources[source_type]._field_func
+        source_classes = {c.__name__: c for c in BaseSource.registry}
+        field_func = source_classes[source_type]._field_func
+        field_func_kwargs_ndim = {"position": 2, "orientation": 2, "observers": 2}
+        field_func_kwargs_ndim.update(
+            source_classes[source_type]._field_func_kwargs_ndim
+        )
     except KeyError as err:
         raise MagpylibBadUserInput(
-            f"Input parameter `sources` must be one of {list(Registered.sources)}"
+            f"Input parameter `sources` must be one of {list(source_classes)}"
             " when using the direct interface."
         ) from err
 
@@ -478,7 +483,7 @@ def getBH_dict_level2(
             raise MagpylibBadUserInput(
                 f"{key} input must be array-like.\n" f"Instead received {val}"
             ) from err
-        expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
+        expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim == expected_dim or ragged_seq[key]:
             if len(val) == 1:
                 val = np.squeeze(val)
@@ -495,7 +500,7 @@ def getBH_dict_level2(
     vec_len = max(vec_lengths.values(), default=1)
     # tile 1D inputs and replace original values in kwargs
     for key, val in kwargs.items():
-        expected_dim = Registered.source_kwargs_ndim[source_type].get(key, 1)
+        expected_dim = field_func_kwargs_ndim.get(key, 1)
         if val.ndim < expected_dim and not ragged_seq[key]:
             kwargs[key] = np.tile(val, (vec_len, *[1] * (expected_dim - 1)))
 

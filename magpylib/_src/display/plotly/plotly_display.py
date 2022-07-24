@@ -922,7 +922,7 @@ def animate_path(
     path_lengths = []
     for obj in objs:
         subobjs = [obj]
-        if getattr(obj, "_object_type", None) == "Collection":
+        if hasattr(obj, "children"):
             subobjs.extend(obj.children)
         for subobj in subobjs:
             path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]

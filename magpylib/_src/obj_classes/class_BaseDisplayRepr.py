@@ -20,7 +20,6 @@ class BaseDisplayRepr:
     """Provides the show and repr methods for all objects"""
 
     show = show
-    _object_type = None
 
     def _property_names_generator(self):
         """returns a generator with class properties only"""
