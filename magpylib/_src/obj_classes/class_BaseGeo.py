@@ -11,6 +11,7 @@ from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.input_checks import check_format_input_orientation
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseTransform import BaseTransform
+from magpylib._src.style import BaseStyle
 from magpylib._src.utility import add_iteration_suffix
 
 
@@ -60,6 +61,8 @@ class BaseGeo(BaseTransform):
 
     """
 
+    _style_class = BaseStyle
+
     def __init__(
         self,
         position=(
@@ -76,8 +79,6 @@ class BaseGeo(BaseTransform):
         # set _position and _orientation attributes
         self._init_position_orientation(position, orientation)
 
-        # style
-        self.style_class = self._get_style_class()
         if style is not None or kwargs:  # avoid style creation cost if not needed
             self.style = self._process_style_kwargs(style=style, **kwargs)
 
@@ -129,15 +130,6 @@ class BaseGeo(BaseTransform):
         self._position = pos
         self._orientation = R.from_quat(oriQ)
 
-    def _get_style_class(self):
-        """returns style class based on object type. If class has no attribute `_object_type` or is
-        not found in `MAGPYLIB_FAMILIES` returns `BaseStyle` class.
-        """
-        # pylint: disable=import-outside-toplevel
-        from magpylib._src.style import get_style_class
-
-        return get_style_class(self)
-
     # properties ----------------------------------------------------
     @property
     def parent(self):
@@ -146,7 +138,10 @@ class BaseGeo(BaseTransform):
 
     @parent.setter
     def parent(self, inp):
-        if getattr(inp, "_object_type", "") == "Collection":
+        # pylint: disable=import-outside-toplevel
+        from magpylib._src.obj_classes.class_Collection import Collection
+
+        if isinstance(inp, Collection):
             inp.add(self, override_parent=True)
         elif inp is None:
             if self._parent is not None:
@@ -261,10 +256,10 @@ class BaseGeo(BaseTransform):
         if val is None:
             val = {}
         if isinstance(val, dict):
-            val = self.style_class(**val)
-        if not isinstance(val, self.style_class):
+            val = self._style_class(**val)
+        if not isinstance(val, self._style_class):
             raise ValueError(
-                f"Input parameter `style` must be of type {self.style_class}.\n"
+                f"Input parameter `style` must be of type {self._style_class}.\n"
                 f"Instead received type {type(val)}"
             )
         return val

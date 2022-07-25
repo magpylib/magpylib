@@ -396,3 +396,19 @@ def test_getB_dict_over_getB():
     dic["sources"] = pm
     with pytest.raises(MagpylibBadUserInput):
         magpylib.getB(**dic)
+
+
+def test_subclassing():
+    """Test side effects of suclasssing a source"""
+    # pylint: disable=unused-variable
+    class MyCuboid(magpylib.magnet.Cuboid):
+        """Test subclass"""
+
+    B1 = magpylib.getB(
+        "Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
+    )
+    B2 = magpylib.getB(
+        "MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
+    )
+
+    np.testing.assert_allclose(B1, B2)
