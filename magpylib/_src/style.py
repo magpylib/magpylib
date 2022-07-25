@@ -29,7 +29,7 @@ def get_style(obj, default_settings, **kwargs):
     )
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
     from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
-    from magpylib._src.display.display_utility import MagpyMarkers
+    from magpylib._src.display.traces_generic import MagpyMarkers
 
     families = {
         "magnet": MagpyMagnet,

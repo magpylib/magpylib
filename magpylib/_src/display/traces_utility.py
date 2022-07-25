@@ -8,17 +8,6 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.style import Markers
-from magpylib._src.utility import Registered
-
-
-@Registered(kind="nonmodel", family="markers")
-class MagpyMarkers:
-    """A class that stores markers 3D-coordinates"""
-
-    def __init__(self, *markers):
-        self.style = Markers()
-        self.markers = np.array(markers)
 
 
 # pylint: disable=too-many-branches

@@ -1,6 +1,7 @@
 """Magnet Sphere class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Sphere
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -83,6 +84,7 @@ class Sphere(BaseMagnet):
     _field_func = staticmethod(magnet_sphere_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "diameter": 1}
     _style_class = MagnetStyle
+    _draw_func = make_Sphere
 
     def __init__(
         self,
