@@ -1,6 +1,7 @@
 """Line current class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Line
 from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -92,6 +93,7 @@ class Line(BaseCurrent):
         "segment_end": 2,
     }
     _style_class = CurrentStyle
+    _draw_func = make_Line
 
     def __init__(
         self,
