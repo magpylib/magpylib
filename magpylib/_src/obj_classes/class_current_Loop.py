@@ -1,22 +1,14 @@
 """Loop current class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Loop
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.utility import Registered
+from magpylib._src.style import CurrentStyle
 
 
-@Registered(
-    kind="source",
-    family="current",
-    field_func=current_loop_field,
-    source_kwargs_ndim={"current": 1, "diameter": 1},
-)
-class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
+class Loop(BaseCurrent):
     """Circular current loop.
 
     Can be used as `sources` input for magnetic field computation.
@@ -88,6 +80,11 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
      [-3.55802727e-17  1.65201495e-01 -1.65201495e-01]]
     """
 
+    _field_func = staticmethod(current_loop_field)
+    _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
+    _style_class = CurrentStyle
+    _draw_func = make_Loop
+
     def __init__(
         self,
         current=None,
@@ -102,9 +99,7 @@ class Loop(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseCurrent):
         self.diameter = diameter
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
-        BaseCurrent.__init__(self, current)
+        super().__init__(position, orientation, current, style, **kwargs)
 
     # property getters and setters
     @property

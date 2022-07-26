@@ -755,7 +755,7 @@ def test_input_collection_good():
 
     for good in goods:
         col = magpy.Collection(*good)
-        assert getattr(col, "_object_type", "") == "Collection"
+        assert isinstance(col, magpy.Collection)
 
 
 def test_input_collection_bad():
@@ -797,7 +797,7 @@ def test_input_collection_add_good():
     for good in goods:
         col = magpy.Collection()
         col.add(*good)
-        assert getattr(col, "_object_type", "") == "Collection"
+        assert isinstance(col, magpy.Collection)
 
 
 def test_input_collection_add_bad():

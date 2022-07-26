@@ -4,7 +4,6 @@ import numpy as np
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibInternalError
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_observers
 from magpylib._src.utility import format_obj_input
@@ -52,18 +51,11 @@ def getBH_level2_bad_input2():
     magpy.getB(pm1, [sens1, sens2])
 
 
-def getBH_level2_internal_error1():
-    """somehow an unrecognized objects end up in get_src_dict"""
-    # pylint: disable=protected-access
-    sens = magpy.Sensor()
-    x = np.zeros((10, 3))
-    magpy._src.fields.field_wrap_BH.get_src_dict([sens], 10, 10, x)
-
-
 # getBHv missing inputs ------------------------------------------------------
 def getBHv_missing_input1():
     """missing field"""
     x = np.array([(1, 2, 3)])
+    # pylint: disable=missing-kwoa
     getBH_level2(
         sources="Cuboid", observers=x, magnetization=x, dimension=x, **GETBH_KWARGS
     )
@@ -287,7 +279,6 @@ class TestExceptions(unittest.TestCase):
         """getBH_level2 exception testing"""
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input1)
         self.assertRaises(MagpylibBadUserInput, getBH_level2_bad_input2)
-        self.assertRaises(MagpylibInternalError, getBH_level2_internal_error1)
 
     def test_except_bad_input_shape_basegeo(self):
         """BaseGeo bad input shapes"""

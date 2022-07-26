@@ -1,22 +1,14 @@
 """Magnet Cuboid class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
-from magpylib._src.utility import Registered
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.style import MagnetStyle
 
 
-@Registered(
-    kind="source",
-    family="magnet",
-    field_func=magnet_cuboid_field,
-    source_kwargs_ndim={"magnetization": 2, "dimension": 2},
-)
-class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class Cuboid(BaseMagnet):
     """Cuboid magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -89,6 +81,11 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
      [0.1604214  0.25726266 0.01664045]]
     """
 
+    _field_func = staticmethod(magnet_cuboid_field)
+    _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
+    _style_class = MagnetStyle
+    _draw_func = make_Cuboid
+
     def __init__(
         self,
         magnetization=None,
@@ -103,9 +100,7 @@ class Cuboid(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
         self.dimension = dimension
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+        super().__init__(position, orientation, magnetization, style, **kwargs)
 
     # property getters and setters
     @property

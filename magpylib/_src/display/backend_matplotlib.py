@@ -181,7 +181,7 @@ def display_matplotlib(
             fig,
             animate,
             frames=range(len(frames)),
-            interval=100,
+            interval=data["frame_duration"],
             blit=False,
             repeat=repeat,
         )

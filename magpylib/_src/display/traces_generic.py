@@ -31,16 +31,48 @@ from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
 from magpylib._src.display.traces_utility import getIntensity
 from magpylib._src.display.traces_utility import group_traces
-from magpylib._src.display.traces_utility import MagpyMarkers
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
+from magpylib._src.style import Markers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
 
-AUTOSIZE_OBJECTS = ("Sensor", "Dipole")
+
+class MagpyMarkers:
+    """A class that stores markers 3D-coordinates"""
+
+    def __init__(self, *markers):
+        self.style = Markers()
+        self.markers = np.array(markers)
+
+    def _draw_func(self, color=None, style=None, **kwargs):
+        """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
+        provided arguments."""
+        style = self.style if style is None else style
+        x, y, z = self.markers.T
+        marker_kwargs = {
+            f"marker_{k}": v
+            for k, v in style.marker.as_dict(flatten=True, separator="_").items()
+        }
+        marker_kwargs["marker_color"] = (
+            style.marker.color if style.marker.color is not None else color
+        )
+        trace = dict(
+            type="scatter3d",
+            x=x,
+            y=y,
+            z=z,
+            mode="markers",
+            **marker_kwargs,
+            **kwargs,
+        )
+        default_name = "Marker" if len(x) == 1 else "Markers"
+        default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
+        update_trace_name(trace, default_name, default_suffix, style)
+        return trace
 
 
 def make_DefaultTrace(
@@ -450,33 +482,6 @@ def make_Sensor(
     )
 
 
-def make_MagpyMarkers(obj, color=None, style=None, **kwargs):
-    """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
-    provided arguments."""
-    style = obj.style if style is None else style
-    x, y, z = obj.markers.T
-    marker_kwargs = {
-        f"marker_{k}": v
-        for k, v in style.marker.as_dict(flatten=True, separator="_").items()
-    }
-    marker_kwargs["marker_color"] = (
-        style.marker.color if style.marker.color is not None else color
-    )
-    trace = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        mode="markers",
-        **marker_kwargs,
-        **kwargs,
-    )
-    default_name = "Marker" if len(x) == 1 else "Markers"
-    default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
-    update_trace_name(trace, default_name, default_suffix, style)
-    return trace
-
-
 def update_magnet_mesh(mesh_dict, mag_style=None, magnetization=None):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
@@ -532,14 +537,12 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     rots, _, inds = get_rot_pos_from_path(obj, style.path.frames)
 
     # vector length, color and magnetization
-    if obj._object_type in ("Cuboid", "Cylinder"):
-        length = np.amax(obj.dimension)
-    elif obj._object_type == "CylinderSegment":
-        length = np.amax(obj.dimension[:3])  # d1,d2,h
+    if hasattr(obj, "diameter"):
+        length = obj.diameter  # Sphere
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))
-    else:
-        length = obj.diameter  # Sphere
+    else:  # Cuboid, Cylinder, CylinderSegment
+        length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size
     mag = obj.magnetization
     # collect all draw positions and directions
@@ -602,7 +605,6 @@ def make_path(input_obj, style, legendgroup, kwargs):
 
 def get_generic_traces(
     input_obj,
-    make_func=None,
     color=None,
     autosize=None,
     legendgroup=None,
@@ -629,6 +631,7 @@ def get_generic_traces(
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-nested-blocks
+    # pylint: disable=protected-access
 
     # parse kwargs into style and non style args
     style = get_style(input_obj, Config, **kwargs)
@@ -647,11 +650,9 @@ def get_generic_traces(
     label = getattr(getattr(input_obj, "style", None), "label", None)
     label = label if label is not None else str(type(input_obj).__name__)
 
-    object_type = getattr(input_obj, "_object_type", None)
-    if object_type != "Collection":
-        make_func = globals().get(f"make_{object_type}", make_DefaultTrace)
+    make_func = input_obj._draw_func
     make_func_kwargs = kwargs.copy()
-    if object_type in AUTOSIZE_OBJECTS:
+    if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
     traces = []
@@ -660,7 +661,7 @@ def get_generic_traces(
     path_traces_extra_specific_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     if not has_path:
-        traces = [make_func(input_obj, **make_func_kwargs)]
+        traces = [make_func(**make_func_kwargs)]
         out = (traces,)
         if extra_backend is not False:
             out += (path_traces_extra_specific_backend,)
@@ -671,9 +672,7 @@ def get_generic_traces(
     for pos_orient_ind, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
             path_traces.append(
-                make_func(
-                    input_obj, position=pos, orientation=orient, **make_func_kwargs
-                )
+                make_func(position=pos, orientation=orient, **make_func_kwargs)
             )
         for extr in extra_model3d_traces:
             if extr.show:

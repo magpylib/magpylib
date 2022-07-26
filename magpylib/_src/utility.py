@@ -1,4 +1,6 @@
 """ some utility functions"""
+# pylint: disable=import-outside-toplevel
+# pylint: disable=cyclic-import
 # import numbers
 from math import log10
 from typing import Sequence
@@ -8,71 +10,15 @@ import numpy as np
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
-class Registered:
-    """Class decorator to register sources or sensors
-    - Sources get their field function assigned"""
-
-    sensors = {}
-    sources = {}
-    families = {}
-    source_kwargs_ndim = {}
-
-    def __init__(self, *, kind, family, field_func=None, source_kwargs_ndim=None):
-        self.kind = kind
-        self.family = family
-        self.field_func = field_func
-        self.source_kwargs_ndim_new = (
-            {} if source_kwargs_ndim is None else source_kwargs_ndim
-        )
-
-    def __call__(self, klass):
-        name = klass.__name__
-        setattr(klass, "_object_type", name)
-        setattr(klass, "_family", self.family)
-        setattr(
-            klass,
-            "family",
-            property(
-                lambda self: getattr(self, "_family"),
-                doc="""The object family (e.g. 'magnet', 'current', 'misc')""",
-            ),
-        )
-        self.families[name] = self.family
-
-        if self.kind == "sensor":
-            self.sensors[name] = klass
-
-        elif self.kind == "source":
-            if self.field_func is None:
-                setattr(klass, "_field_func", None)
-            else:
-                setattr(klass, "_field_func", staticmethod(self.field_func))
-                setattr(
-                    klass,
-                    "field_func",
-                    property(
-                        lambda self: getattr(self, "_field_func"),
-                        doc="""The core function for B- and H-field computation""",
-                    ),
-                )
-            self.sources[name] = klass
-            if name not in self.source_kwargs_ndim:
-                self.source_kwargs_ndim[name] = {
-                    "position": 2,
-                    "orientation": 2,
-                    "observers": 2,
-                }
-            self.source_kwargs_ndim[name].update(self.source_kwargs_ndim_new)
-        return klass
-
-
 def get_allowed_sources_msg():
     "Return allowed source message"
+
+    srcs = list(get_registered_sources())
     return f"""Sources must be either
-- one of type {list(Registered.sources)}
+- one of type {srcs}
 - Collection with at least one of the above
 - 1D list of the above
-- string {list(Registered.sources)}"""
+- string {srcs}"""
 
 
 ALLOWED_OBSERVER_MSG = """Observers must be either
@@ -124,15 +70,14 @@ def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> 
     ### Info:
     - exits if invalid sources are given
     """
-    # pylint: disable=protected-access
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     obj_list = []
     flatten_collection = not "collections" in allow.split("+")
     for obj in objects:
         try:
-            if getattr(obj, "_object_type", None) in list(Registered.sources) + list(
-                Registered.sensors
-            ):
+            if isinstance(obj, (BaseSource, Sensor)):
                 obj_list += [obj]
             else:
                 if flatten_collection or isinstance(obj, (list, tuple)):
@@ -161,7 +106,9 @@ def format_src_inputs(sources) -> list:
     ### Info:
     - raises an error if sources format is bad
     """
-    # pylint: disable=protected-access
+
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+    from magpylib._src.obj_classes.class_Collection import Collection
 
     # store all sources here
     src_list = []
@@ -174,13 +121,12 @@ def format_src_inputs(sources) -> list:
         raise MagpylibBadUserInput(wrong_obj_msg(allow="sources"))
 
     for src in sources:
-        obj_type = getattr(src, "_object_type", "")
-        if obj_type == "Collection":
+        if isinstance(src, Collection):
             child_sources = format_obj_input(src, allow="sources")
             if not child_sources:
                 raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
             src_list += child_sources
-        elif obj_type in list(Registered.sources):
+        elif isinstance(src, BaseSource):
             src_list += [src]
         else:
             raise MagpylibBadUserInput(wrong_obj_msg(src, allow="sources"))
@@ -245,18 +191,21 @@ def filter_objects(obj_list, allow="sources+sensors", warn=True):
     """
     return only allowed objects - e.g. no sensors. Throw a warning when something is eliminated.
     """
-    # pylint: disable=protected-access
-    allowed_list = []
-    for allowed in allow.split("+"):
-        if allowed == "sources":
-            allowed_list.extend(list(Registered.sources))
-        elif allowed == "sensors":
-            allowed_list.extend(list(Registered.sensors))
-        elif allowed == "collections":
-            allowed_list.extend(["Collection"])
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_Collection import Collection
+
+    # select wanted
+    allowed_classes = ()
+    if "sources" in allow.split("+"):
+        allowed_classes += (BaseSource,)
+    if "sensors" in allow.split("+"):
+        allowed_classes += (Sensor,)
+    if "collections" in allow.split("+"):
+        allowed_classes += (Collection,)
     new_list = []
     for obj in obj_list:
-        if obj._object_type in allowed_list:
+        if isinstance(obj, allowed_classes):
             new_list += [obj]
         else:
             if warn:
@@ -365,12 +314,40 @@ def cyl_field_to_cart(phi, Br, Bphi=None):
 def rec_obj_remover(parent, child):
     """remove known child from parent collection"""
     # pylint: disable=protected-access
+    from magpylib._src.obj_classes.class_Collection import Collection
+
     for obj in parent:
         if obj == child:
             parent._children.remove(child)
             parent._update_src_and_sens()
             return True
-        if getattr(obj, "_object_type", "") == "Collection":
+        if isinstance(obj, Collection):
             if rec_obj_remover(obj, child):
                 break
     return None
+
+
+def get_subclasses(cls, recursive=False):
+    """Return a dictionary of subclasses by name,"""
+    sub_cls = {}
+    for class_ in cls.__subclasses__():
+        sub_cls[class_.__name__] = class_
+        if recursive:
+            sub_cls.update(get_subclasses(class_, recursive=recursive))
+    return sub_cls
+
+
+def get_registered_sources():
+    """Return all registered sources"""
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.obj_classes.class_BaseExcitations import (
+        BaseCurrent,
+        BaseMagnet,
+        BaseSource,
+    )
+
+    return {
+        k: v
+        for k, v in get_subclasses(BaseSource, recursive=True).items()
+        if not v in (BaseCurrent, BaseMagnet, BaseSource)
+    }

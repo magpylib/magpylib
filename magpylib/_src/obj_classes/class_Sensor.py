@@ -1,15 +1,15 @@
 """Sensor class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.style import SensorStyle
 from magpylib._src.utility import format_star_input
-from magpylib._src.utility import Registered
 
 
-@Registered(kind="sensor", family="sensor")
 class Sensor(BaseGeo, BaseDisplayRepr):
     """Magnetic field sensor.
 
@@ -75,6 +75,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
      [0.         0.916274   0.916274  ]
      [0.         1.01415383 1.01415383]]
     """
+
+    _style_class = SensorStyle
+    _autosize = True
+    _draw_func = make_Sensor
 
     def __init__(
         self,
