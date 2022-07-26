@@ -5,7 +5,6 @@ from magpylib._src.display.traces_generic import make_Loop
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.style import CurrentStyle
 
 
 class Loop(BaseCurrent):
@@ -82,7 +81,6 @@ class Loop(BaseCurrent):
 
     _field_func = staticmethod(current_loop_field)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
-    _style_class = CurrentStyle
     _draw_func = make_Loop
 
     def __init__(

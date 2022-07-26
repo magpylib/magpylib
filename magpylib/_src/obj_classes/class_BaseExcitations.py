@@ -8,6 +8,8 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import validate_field_func
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
+from magpylib._src.style import CurrentStyle
+from magpylib._src.style import MagnetStyle
 from magpylib._src.utility import format_star_input
 
 
@@ -189,6 +191,8 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
 class BaseMagnet(BaseSource):
     """provides the magnetization attribute  for homogeneously magnetized magnets"""
 
+    _style_class = MagnetStyle
+
     def __init__(self, position, orientation, magnetization, style, **kwargs):
         super().__init__(position, orientation, style=style, **kwargs)
         self.magnetization = magnetization
@@ -213,6 +217,8 @@ class BaseMagnet(BaseSource):
 
 class BaseCurrent(BaseSource):
     """provides scalar current attribute"""
+
+    _style_class = CurrentStyle
 
     def __init__(self, position, orientation, current, style, **kwargs):
         super().__init__(position, orientation, style=style, **kwargs)
