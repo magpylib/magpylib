@@ -44,7 +44,7 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'` or `'pyvista'`. If not
+        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
         `'matplotlib'` by installation default.
 

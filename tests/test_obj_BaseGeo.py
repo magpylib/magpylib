@@ -386,19 +386,17 @@ def test_copy_parents():
 
 def test_copy_order():
     """Make sure copying objects of a collection does not affect order of children (#530)"""
-    from magpylib.magnet import Cuboid
-    from magpylib import Collection
 
-    thing1 = Cuboid(style_label="t1")
-    thing2 = Cuboid(style_label="t2")
-    thing3 = Cuboid(style_label="t3")
-    foo = Collection(thing1, thing2, thing3)
+    thing1 = magpy.magnet.Cuboid(style_label="t1")
+    thing2 = magpy.magnet.Cuboid(style_label="t2")
+    thing3 = magpy.magnet.Cuboid(style_label="t3")
+    coll = magpy.Collection(thing1, thing2, thing3)
 
-    desc_before = foo.describe(format="label", return_string=True)
+    desc_before = coll.describe(format="label", return_string=True)
 
     thing1.copy()
 
-    desc_after = foo.describe(format="label", return_string=True)
+    desc_after = coll.describe(format="label", return_string=True)
 
     assert desc_after == desc_before
 
@@ -418,7 +416,7 @@ def test_describe():
     test = (
         "<pre>Cuboid(id=REGEX, label='x1')<br>  • parent: None <br>  • "
         "position: [0. 0. 0.] mm<br>  • orientation: [0. 0. 0.] degrees<br>  • "
-        "dimension: None mm<br>  • magnetization: None mT<br>  • family: magnet </pre>"
+        "dimension: None mm<br>  • magnetization: None mT</pre>"
     )
     rep = x1._repr_html_()
     rep = re.sub("id=[0-9]*[0-9]", "id=REGEX", rep)

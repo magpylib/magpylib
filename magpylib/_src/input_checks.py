@@ -1,4 +1,6 @@
 """ input checks code"""
+# pylint: disable=import-outside-toplevel
+# pylint: disable=cyclic-import
 import inspect
 import numbers
 
@@ -11,7 +13,6 @@ from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
-from magpylib._src.utility import Registered
 from magpylib._src.utility import wrong_obj_msg
 
 
@@ -433,10 +434,11 @@ def check_format_input_observers(inp, pixel_agg=None):
     checks observers input and returns a list of sensor objects
     """
     # pylint: disable=raise-missing-from
-    # pylint: disable=protected-access
+    from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_Sensor import Sensor
 
     # make bare Sensor, bare Collection into a list
-    if getattr(inp, "_object_type", "") in ("Collection", "Sensor"):
+    if isinstance(inp, (Collection, Sensor)):
         inp = (inp,)
 
     # note: bare pixel is automatically made into a list by Sensor
@@ -458,9 +460,9 @@ def check_format_input_observers(inp, pixel_agg=None):
     except (TypeError, ValueError):  # if not, it must be [pos_vec, sens, coll]
         sensors = []
         for obj in inp:
-            if getattr(obj, "_object_type", "") == "Sensor":
+            if isinstance(obj, Sensor):
                 sensors.append(obj)
-            elif getattr(obj, "_object_type", "") == "Collection":
+            elif isinstance(obj, Collection):
                 child_sensors = format_obj_input(obj, allow="sensors")
                 if not child_sensors:
                     raise MagpylibBadUserInput(wrong_obj_msg(obj, allow="observers"))
@@ -503,28 +505,31 @@ def check_format_input_obj(
     recursive: bool
         Flatten Collection objects
     """
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.obj_classes.class_Collection import Collection
+
     # select wanted
-    wanted_types = []
+    wanted_types = ()
     if "sources" in allow.split("+"):
-        wanted_types += list(Registered.sources)
+        wanted_types += (BaseSource,)
     if "sensors" in allow.split("+"):
-        wanted_types += list(Registered.sensors)
+        wanted_types += (Sensor,)
     if "collections" in allow.split("+"):
-        wanted_types += ["Collection"]
+        wanted_types += (Collection,)
 
     if typechecks:
-        all_types = list(Registered.sources) + list(Registered.sensors) + ["Collection"]
+        all_types = (BaseSource, Sensor, Collection)
 
     obj_list = []
     for obj in inp:
-        obj_type = getattr(obj, "_object_type", None)
 
         # add to list if wanted type
-        if obj_type in wanted_types:
+        if isinstance(obj, wanted_types):
             obj_list.append(obj)
 
         # recursion
-        if (obj_type == "Collection") and recursive:
+        if isinstance(obj, Collection) and recursive:
             obj_list += check_format_input_obj(
                 obj,
                 allow=allow,
@@ -533,12 +538,11 @@ def check_format_input_obj(
             )
 
         # typechecks
-        if typechecks:
-            if not obj_type in all_types:
-                raise MagpylibBadUserInput(
-                    f"Input objects must be {allow} or a flat list thereof.\n"
-                    f"Instead received {type(obj)}."
-                )
+        if typechecks and not isinstance(obj, all_types):
+            raise MagpylibBadUserInput(
+                f"Input objects must be {allow} or a flat list thereof.\n"
+                f"Instead received {type(obj)}."
+            )
 
     return obj_list
 
@@ -550,47 +554,60 @@ def check_format_input_obj(
 
 def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
-    # pylint: disable=protected-access
-    for s in sources:
-        obj_type = getattr(s, "_object_type", None)
-        if obj_type in ("Cuboid", "Cylinder", "CylinderSegment"):
-            if s.dimension is None:
-                raise MagpylibMissingInput(f"Parameter `dimension` of {s} must be set.")
-        elif obj_type in ("Sphere", "Loop"):
-            if s.diameter is None:
-                raise MagpylibMissingInput(f"Parameter `diameter` of {s} must be set.")
-        elif obj_type == "Line":
-            if s.vertices is None:
-                raise MagpylibMissingInput(f"Parameter `vertices` of {s} must be set.")
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_current_Line import Line
+    from magpylib._src.obj_classes.class_current_Loop import Loop
+
+    for src in sources:
+        if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
+            if src.dimension is None:
+                raise MagpylibMissingInput(
+                    f"Parameter `dimension` of {src} must be set."
+                )
+        elif isinstance(src, (Sphere, Loop)):
+            if src.diameter is None:
+                raise MagpylibMissingInput(
+                    f"Parameter `diameter` of {src} must be set."
+                )
+        elif isinstance(src, Line):
+            if src.vertices is None:
+                raise MagpylibMissingInput(
+                    f"Parameter `vertices` of {src} must be set."
+                )
 
 
 def check_excitations(sources, custom_field=None):
     """check if all sources have exitation initialized"""
-    # pylint: disable=protected-access
-    for s in sources:
-        obj_type = getattr(s, "_object_type", None)
-        if obj_type in ("Cuboid", "Cylinder", "Sphere", "CylinderSegment"):
-            if s.magnetization is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `magnetization` of {s} must be set."
-                )
-        elif obj_type in ("Loop", "Line"):
-            if s.current is None:
-                raise MagpylibMissingInput(f"Parameter `current` of {s} must be set.")
-        elif obj_type == "Dipole":
-            if s.moment is None:
-                raise MagpylibMissingInput(f"Parameter `moment` of {s} must be set.")
-        elif (obj_type == "CustomSource") and (custom_field is not None):
-            if s.field_func is None:
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet, BaseCurrent
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+
+    for src in sources:
+        if isinstance(src, CustomSource) and (custom_field is not None):
+            if src.field_func is None:
                 raise MagpylibMissingInput(
                     f"Cannot compute {custom_field}-field because input parameter"
-                    f"`field_func` of {s} has undefined {custom_field}-field computation."
+                    f"`field_func` of {src} has undefined {custom_field}-field computation."
                 )
-            if s.field_func(custom_field, np.zeros((1, 3))) is None:
+            if src.field_func(custom_field, np.zeros((1, 3))) is None:
                 raise MagpylibMissingInput(
                     f"Cannot compute {custom_field}-field because input parameter"
-                    f"`field_func` of {s} has undefined {custom_field}-field computation."
+                    f"`field_func` of {src} has undefined {custom_field}-field computation."
                 )
+        elif isinstance(src, BaseMagnet):
+            if src.magnetization is None:
+                raise MagpylibMissingInput(
+                    f"Parameter `magnetization` of {src} must be set."
+                )
+        elif isinstance(src, BaseCurrent):
+            if src.current is None:
+                raise MagpylibMissingInput(f"Parameter `current` of {src} must be set.")
+        elif isinstance(src, Dipole):
+            if src.moment is None:
+                raise MagpylibMissingInput(f"Parameter `moment` of {src} must be set.")
 
 
 def check_format_pixel_agg(pixel_agg):
