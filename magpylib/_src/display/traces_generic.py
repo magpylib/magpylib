@@ -489,6 +489,8 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
+    elif hasattr(obj, "vertices"):
+        length = np.amax(np.ptp(obj.vertices, axis=0))
     else:  # Cuboid, Cylinder, CylinderSegment
         length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size

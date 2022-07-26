@@ -11,7 +11,6 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import rec_obj_remover
-from magpylib._src.utility import Registered
 
 
 def repr_obj(obj, format="type+id+label"):

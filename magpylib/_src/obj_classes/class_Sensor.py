@@ -8,10 +8,8 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import SensorStyle
 from magpylib._src.utility import format_star_input
-from magpylib._src.utility import Registered
 
 
-@Registered(kind="sensor", family="sensor")
 class Sensor(BaseGeo, BaseDisplayRepr):
     """Magnetic field sensor.
 

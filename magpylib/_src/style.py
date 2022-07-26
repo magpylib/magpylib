@@ -12,7 +12,6 @@ from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
-from magpylib._src.utility import Registered
 
 
 def get_style(obj, default_settings, **kwargs):

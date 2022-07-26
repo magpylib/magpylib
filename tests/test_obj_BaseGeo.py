@@ -430,7 +430,6 @@ def test_describe():
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: None mm",
         "  • magnetization: None mT",
-        "  • family: magnet ",  # INVISIBLE SPACE
     ]
     desc = x1.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
@@ -443,7 +442,6 @@ def test_describe():
         "  • orientation: [0. 0. 0.] degrees",
         "  • dimension: [1. 3.] mm",
         "  • magnetization: [2. 3. 4.] mT",
-        "  • family: magnet ",  # INVISIBLE SPACE
     ]
     desc = x2.describe(return_string=True)
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
@@ -455,7 +453,6 @@ def test_describe():
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] mm",
         "  • orientation (last): [0. 0. 0.] degrees",
-        "  • family: sensor ",  # INVISIBLE SPACE
         "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
     desc = s1.describe(return_string=True)
@@ -470,7 +467,6 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
-        + "  • family: sensor \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
@@ -491,7 +487,6 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
-        + "  • family: sensor \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
@@ -512,7 +507,6 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
-        + "  • family: sensor \n"
         + "  • pixel: 75 (3x5x5) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
