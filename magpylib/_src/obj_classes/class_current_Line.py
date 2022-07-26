@@ -5,7 +5,6 @@ from magpylib._src.display.traces_generic import make_Line
 from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
-from magpylib._src.style import CurrentStyle
 
 
 class Line(BaseCurrent):
@@ -92,7 +91,6 @@ class Line(BaseCurrent):
         "segment_start": 2,
         "segment_end": 2,
     }
-    _style_class = CurrentStyle
     _draw_func = make_Line
 
     def __init__(
