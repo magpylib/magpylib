@@ -5,7 +5,7 @@ from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_line import current_line_field
-from magpylib._src.fields.field_BH_line import field_BH_line_from_vert
+from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
@@ -298,26 +298,29 @@ def test_field_line():
 
 def test_field_line_from_vert():
     """test the Line field from vertex input"""
-    p = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
-    curr = np.array([1, 5, -3])
+    observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
+    current = np.array([1, 5, -3])
 
-    vert1 = np.array(
-        [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
+    vertices = np.array(
+        [
+            np.array(
+                [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
+            ),
+            np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
+            np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
+        ],
+        dtype="object",
     )
-    vert2 = np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)])
-    vert3 = np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)])
 
-    pos_tiled = np.tile(p, (3, 1))
-    B_vert = field_BH_line_from_vert("B", pos_tiled, curr, [vert1, vert2, vert3])
+    B_vert = current_vertices_field("B", observers, current, vertices)
 
     B = []
-    for i, vert in enumerate([vert1, vert2, vert3]):
-        for pos in p:
-            p1 = vert[:-1]
-            p2 = vert[1:]
-            po = np.array([pos] * (len(vert) - 1))
-            cu = np.array([curr[i]] * (len(vert) - 1))
-            B += [np.sum(current_line_field("B", po, cu, p1, p2), axis=0)]
+    for obs, vert, curr in zip(observers, vertices, current):
+        p1 = vert[:-1]
+        p2 = vert[1:]
+        po = np.array([obs] * (len(vert) - 1))
+        cu = np.array([curr] * (len(vert) - 1))
+        B += [np.sum(current_line_field("B", po, cu, p1, p2), axis=0)]
     B = np.array(B)
 
     assert_allclose(B_vert, B)

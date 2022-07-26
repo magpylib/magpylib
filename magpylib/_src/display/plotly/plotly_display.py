@@ -508,14 +508,14 @@ def get_plotly_traces(
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-nested-blocks
 
-    Sensor = _src.obj_classes.Sensor
-    Cuboid = _src.obj_classes.Cuboid
-    Cylinder = _src.obj_classes.Cylinder
-    CylinderSegment = _src.obj_classes.CylinderSegment
-    Sphere = _src.obj_classes.Sphere
-    Dipole = _src.obj_classes.Dipole
-    Loop = _src.obj_classes.Loop
-    Line = _src.obj_classes.Line
+    Sensor = _src.obj_classes.class_Sensor.Sensor
+    Cuboid = _src.obj_classes.class_magnet_Cuboid.Cuboid
+    Cylinder = _src.obj_classes.class_magnet_Cylinder.Cylinder
+    CylinderSegment = _src.obj_classes.class_magnet_CylinderSegment.CylinderSegment
+    Sphere = _src.obj_classes.class_magnet_Sphere.Sphere
+    Dipole = _src.obj_classes.class_misc_Dipole.Dipole
+    Loop = _src.obj_classes.class_current_Loop.Loop
+    Line = _src.obj_classes.class_current_Line.Line
 
     # parse kwargs into style and non style args
     style = get_style(input_obj, Config, **kwargs)
@@ -743,8 +743,8 @@ def draw_frame(
     """
     # pylint: disable=protected-access
     return_autosize = False
-    Sensor = _src.obj_classes.Sensor
-    Dipole = _src.obj_classes.Dipole
+    Sensor = _src.obj_classes.class_Sensor.Sensor
+    Dipole = _src.obj_classes.class_misc_Dipole.Dipole
     traces_out = {}
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
@@ -922,7 +922,7 @@ def animate_path(
     path_lengths = []
     for obj in objs:
         subobjs = [obj]
-        if getattr(obj, "_object_type", None) == "Collection":
+        if hasattr(obj, "children"):
             subobjs.extend(obj.children)
         for subobj in subobjs:
             path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]

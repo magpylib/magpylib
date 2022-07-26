@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -47,6 +48,16 @@ def test_CustomSource_basicH():
     H = external_field.getH([[1, 2, 3], [4, 5, 6]])
     Htest = np.array([[-0.70710678, 2.12132034, 3.0]] * 2)
     np.testing.assert_allclose(H, Htest)
+
+
+def test_CustomSource_None():
+    "Set source field_func to None"
+    # pylint: disable=protected-access
+    external_field = magpy.misc.CustomSource(field_func=constant_field)
+    external_field.field_func = None
+    external_field._editable_field_func = False
+    with pytest.raises(AttributeError):
+        external_field.field_func = constant_field
 
 
 def test_repr():

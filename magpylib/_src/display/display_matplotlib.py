@@ -1,4 +1,5 @@
 """ matplotlib draw-functionalities"""
+# pylint: disable=import-outside-toplevel
 import matplotlib.pyplot as plt
 import numpy as np
 from mpl_toolkits.mplot3d.art3d import Poly3DCollection
@@ -31,6 +32,10 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
     """
     # pylint: disable=protected-access
     # pylint: disable=too-many-branches
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+
     points = []
     for col, obj in zip(colors, faced_objects):
 
@@ -38,9 +43,9 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
         rots, poss, inds = get_rot_pos_from_path(obj, show_path)
 
         # vector length, color and magnetization
-        if obj._object_type in ("Cuboid", "Cylinder"):
+        if isinstance(obj, (Cuboid, Cylinder)):
             length = 1.8 * np.amax(obj.dimension)
-        elif obj._object_type == "CylinderSegment":
+        elif isinstance(obj, CylinderSegment):
             length = 1.8 * np.amax(obj.dimension[:3])  # d1,d2,h
         else:
             length = 1.8 * obj.diameter  # Sphere
@@ -49,7 +54,7 @@ def draw_directs_faced(faced_objects, colors, ax, show_path, size_direction):
         # collect all draw positions and directions
         draw_pos, draw_direc = [], []
         for rot, pos, ind in zip(rots, poss, inds):
-            if obj._object_type == "CylinderSegment":
+            if isinstance(obj, CylinderSegment):
                 # change cylinder_tile draw_pos to barycenter
                 pos = obj._barycenter[ind]
             draw_pos += [pos]
@@ -339,6 +344,16 @@ def display_matplotlib(
     # pylint: disable=too-many-branches
     # pylint: disable=too-many-statements
 
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_current_Line import Line
+    from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+
     # apply config default values if None
     # create or set plotting axis
     if axis is None:
@@ -372,16 +387,16 @@ def display_matplotlib(
             pts = draw_model3d_extra(obj, style, path_frames, ax, obj_color)
             points += pts
         if obj.style.model3d.showdefault:
-            if obj._object_type == "Cuboid":
+            if isinstance(obj, Cuboid):
                 lw = 0.5
                 faces = faces_cuboid(obj, path_frames)
-            elif obj._object_type == "Cylinder":
+            elif isinstance(obj, Cylinder):
                 faces = faces_cylinder(obj, path_frames)
-            elif obj._object_type == "CylinderSegment":
+            elif isinstance(obj, CylinderSegment):
                 faces = faces_cylinder_segment(obj, path_frames)
-            elif obj._object_type == "Sphere":
+            elif isinstance(obj, Sphere):
                 faces = faces_sphere(obj, path_frames)
-            elif obj._object_type == "Line":
+            elif isinstance(obj, Line):
                 if style.arrow.show:
                     check_excitations([obj])
                 arrow_size = style.arrow.size if style.arrow.show else 0
@@ -389,7 +404,7 @@ def display_matplotlib(
                 points += draw_line(
                     [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                 )
-            elif obj._object_type == "Loop":
+            elif isinstance(obj, Loop):
                 if style.arrow.show:
                     check_excitations([obj])
                 arrow_width = style.arrow.width
@@ -397,7 +412,7 @@ def display_matplotlib(
                 points += draw_circular(
                     [obj], path_frames, obj_color, arrow_size, arrow_width, ax
                 )
-            elif obj._object_type == "Sensor":
+            elif isinstance(obj, Sensor):
                 sensors.append((obj, obj_color))
                 points += draw_pixel(
                     [obj],
@@ -408,10 +423,10 @@ def display_matplotlib(
                     style.pixel.symbol,
                     path_frames,
                 )
-            elif obj._object_type == "Dipole":
+            elif isinstance(obj, Dipole):
                 dipoles.append((obj, obj_color))
                 points += [obj.position]
-            elif obj._object_type == "CustomSource":
+            elif isinstance(obj, CustomSource):
                 draw_markers(
                     np.array([obj.position]), ax, obj_color, symbol="*", size=10
                 )

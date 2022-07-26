@@ -3,14 +3,15 @@ DOCSTRINGS V4 READY
 """
 import numpy as np
 
+from magpylib._src.fields.field_BH_cylinder_segment import (
+    magnet_cylinder_segment_field_internal,
+)
 from magpylib._src.input_checks import check_format_input_cylinder_segment
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseExcitations import BaseHomMag
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.style import MagnetStyle
 
 
-class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
+class CylinderSegment(BaseMagnet):
     """Cylinder segment (ring-section) magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
@@ -88,6 +89,10 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
      [  0.25439493   0.74331628   0.11682542]]
     """
 
+    _field_func = staticmethod(magnet_cylinder_segment_field_internal)
+    _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
+    _style_class = MagnetStyle
+
     def __init__(
         self,
         magnetization=None,
@@ -100,12 +105,9 @@ class CylinderSegment(BaseGeo, BaseDisplayRepr, BaseGetBH, BaseHomMag):
 
         # instance attributes
         self.dimension = dimension
-        self._object_type = "CylinderSegment"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
-        BaseHomMag.__init__(self, magnetization)
+        super().__init__(position, orientation, magnetization, style, **kwargs)
 
     # property getters and setters
     @property

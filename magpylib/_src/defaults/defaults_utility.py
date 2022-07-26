@@ -7,17 +7,6 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly")
 
-MAGPYLIB_FAMILIES = {
-    "Line": ("current",),
-    "Loop": ("current",),
-    "Cuboid": ("magnet",),
-    "Cylinder": ("magnet",),
-    "Sphere": ("magnet",),
-    "CylinderSegment": ("magnet",),
-    "Sensor": ("sensor",),
-    "Dipole": ("dipole",),
-    "Marker": ("markers",),
-}
 
 SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
     ".": "circle",
@@ -244,7 +233,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
 
         if isinstance(color_input, (tuple, list)):
 
-            if len(color_input) == 4: # do not allow opacity values for now
+            if len(color_input) == 4:  # do not allow opacity values for now
                 color_input = color_input[:-1]
             if len(color_input) != 3:
                 raise ValueError(
@@ -253,7 +242,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
                 )
             # transform matplotlib colors scaled from 0-1 to rgb colors
             if not isinstance(color_input[0], int):
-                color_input = [int(255*c) for c in color_input]
+                color_input = [int(255 * c) for c in color_input]
             c = tuple(color_input)
             color_input = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
 

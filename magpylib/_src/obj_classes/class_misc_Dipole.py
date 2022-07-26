@@ -1,13 +1,13 @@
 """Dipole class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
+from magpylib._src.style import DipoleStyle
 
 
-class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class Dipole(BaseSource):
     """Magnetic dipole moment.
 
     Can be used as `sources` input for magnetic field computation.
@@ -77,6 +77,10 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
      [0.08021572 0.1369368  0.05672108]]
     """
 
+    _field_func = staticmethod(dipole_field)
+    _field_func_kwargs_ndim = {"moment": 2}
+    _style_class = DipoleStyle
+
     def __init__(
         self,
         moment=None,
@@ -87,11 +91,9 @@ class Dipole(BaseGeo, BaseDisplayRepr, BaseGetBH):
     ):
         # instance attributes
         self.moment = moment
-        self._object_type = "Dipole"
 
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
+        super().__init__(position, orientation, style, **kwargs)
 
     # property getters and setters
     @property

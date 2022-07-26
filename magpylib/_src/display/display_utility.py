@@ -12,8 +12,6 @@ from magpylib._src.style import Markers
 class MagpyMarkers:
     """A class that stores markers 3D-coordinates"""
 
-    _object_type = "Marker"
-
     def __init__(self, *markers):
         self.style = Markers()
         self.markers = np.array(markers)

@@ -1,11 +1,8 @@
 """Custom class code """
-from magpylib._src.input_checks import validate_field_func
-from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
-from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
-from magpylib._src.obj_classes.class_BaseGetBH import BaseGetBH
+from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 
 
-class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
+class CustomSource(BaseSource):
     """User-defined custom source.
 
     Can be used as `sources` input for magnetic field computation.
@@ -81,6 +78,8 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
      [70.71067812 70.71067812  0.        ]]
     """
 
+    _editable_field_func = True
+
     def __init__(
         self,
         field_func=None,
@@ -89,26 +88,5 @@ class CustomSource(BaseGeo, BaseDisplayRepr, BaseGetBH):
         style=None,
         **kwargs,
     ):
-        # instance attributes
-        self.field_func = field_func
-        self._object_type = "CustomSource"
-
         # init inheritance
-        BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
-        BaseDisplayRepr.__init__(self)
-
-    @property
-    def field_func(self):
-        """
-        The function for B- and H-field computation must have the two positional arguments
-        `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
-        accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
-        be numpy ndarrays of shape (n,3) themselves.
-        """
-        return self._field_func
-
-    @field_func.setter
-    def field_func(self, val):
-        validate_field_func(val)
-        self._field_func = val
+        super().__init__(position, orientation, field_func, style, **kwargs)
