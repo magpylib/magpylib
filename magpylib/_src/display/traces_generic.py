@@ -42,7 +42,7 @@ from magpylib._src.utility import unit_prefix
 
 
 class MagpyMarkers:
-    """A class that stores markers 3D-coordinates"""
+    """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
         self.style = Markers()
