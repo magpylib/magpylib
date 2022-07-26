@@ -29,7 +29,7 @@ def get_style(obj, default_settings, **kwargs):
     )
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
     from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
-    from magpylib._src.display.display_utility import MagpyMarkers
+    from magpylib._src.display.traces_generic import MagpyMarkers
 
     families = {
         "magnet": MagpyMagnet,
@@ -297,7 +297,8 @@ class Model3d(MagicProperties):
             pairs, or a callable returning the equivalent dictionary.
 
         backend: str
-            Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+            Plotting backend corresponding to the trace. Can be one of
+            `['generic', 'matplotlib', 'plotly']`.
 
         constructor: str
             Model constructor function or method to be called to build a 3D-model object
@@ -340,7 +341,8 @@ class Trace3d(MagicProperties):
     Parameters
     ----------
     backend: str
-        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+        Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`.
 
     constructor: str
         Model constructor function or method to be called to build a 3D-model object
@@ -493,14 +495,16 @@ class Trace3d(MagicProperties):
 
     @property
     def backend(self):
-        """Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`."""
+        """Plotting backend corresponding to the trace. Can be one of
+        `['generic', 'matplotlib', 'plotly']`."""
         return self._backend
 
     @backend.setter
     def backend(self, val):
-        assert val is None or val in SUPPORTED_PLOTTING_BACKENDS, (
+        backends = ["generic"] + list(SUPPORTED_PLOTTING_BACKENDS)
+        assert val is None or val in backends, (
             f"The `backend` property of {type(self).__name__} must be one of"
-            f"{SUPPORTED_PLOTTING_BACKENDS},\n"
+            f"{backends},\n"
             f"but received {repr(val)} instead."
         )
         self._backend = val

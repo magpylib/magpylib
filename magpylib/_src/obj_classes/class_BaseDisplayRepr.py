@@ -5,6 +5,7 @@ READY FOR V4
 import numpy as np
 
 from magpylib._src.display.display import show
+from magpylib._src.display.traces_generic import make_DefaultTrace
 
 UNITS = {
     "parent": None,
@@ -21,6 +22,7 @@ class BaseDisplayRepr:
     """Provides the show and repr methods for all objects"""
 
     show = show
+    _draw_func = make_DefaultTrace
 
     def _property_names_generator(self):
         """returns a generator with class properties only"""

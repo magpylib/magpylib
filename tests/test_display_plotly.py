@@ -3,7 +3,6 @@ import plotly.graph_objects as go
 import pytest
 
 import magpylib as magpy
-from magpylib._src.display.plotly.plotly_display import get_plotly_traces
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder
@@ -164,38 +163,6 @@ def test_display_bad_style_kwargs():
         magpy.show(canvas=fig, markers=[(1, 2, 3)], style_bad_style_kwarg=None)
 
 
-def test_draw_unsupported_obj():
-    """test if a object which is not directly supported by magpylib can be plotted"""
-    magpy.defaults.display.backend = "plotly"
-
-    class UnkwnownNoPosition:
-        """Dummy Class"""
-
-    class Unkwnown1DPosition:
-        """Dummy Class"""
-
-        position = [0, 0, 0]
-
-    class Unkwnown2DPosition:
-        """Dummy Class"""
-
-        position = [[0, 0, 0]]
-        orientation = None
-
-    with pytest.raises(AttributeError):
-        get_plotly_traces(UnkwnownNoPosition())
-
-    traces = get_plotly_traces(Unkwnown1DPosition)
-    assert (
-        traces[0]["type"] == "scatter3d"
-    ), "make trace has failed, should be 'scatter3d'"
-
-    traces = get_plotly_traces(Unkwnown2DPosition)
-    assert (
-        traces[0]["type"] == "scatter3d"
-    ), "make trace has failed, should be 'scatter3d'"
-
-
 def test_extra_model3d():
     """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
@@ -204,7 +171,7 @@ def test_extra_model3d():
     cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
         {
-            "backend": "plotly",
+            "backend": "generic",
             "constructor": "Scatter3d",
             "kwargs": {
                 "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
@@ -277,9 +244,8 @@ def test_CustomSource_display():
 
 def test_empty_display():
     """should not fail if nothing to display"""
-    fig = go.Figure()
-    x = magpy.show(canvas=fig, backend="plotly")
-    assert x is None, "empty display plotly test fail"
+    fig = magpy.show(backend="plotly", return_fig=True)
+    assert isinstance(fig, go.Figure), "empty display plotly test fail"
 
 
 def test_display_warnings():

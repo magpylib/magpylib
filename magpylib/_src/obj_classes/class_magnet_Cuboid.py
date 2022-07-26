@@ -1,10 +1,10 @@
 """Magnet Cuboid class code
 DOCSTRINGS V4 READY
 """
+from magpylib._src.display.traces_generic import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.style import MagnetStyle
 
 
 class Cuboid(BaseMagnet):
@@ -82,7 +82,7 @@ class Cuboid(BaseMagnet):
 
     _field_func = staticmethod(magnet_cuboid_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _style_class = MagnetStyle
+    _draw_func = make_Cuboid
 
     def __init__(
         self,

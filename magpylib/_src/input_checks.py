@@ -9,6 +9,7 @@ from scipy.spatial.transform import Rotation
 
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings
+from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.utility import format_obj_input
@@ -412,12 +413,13 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
+    backends = SUPPORTED_PLOTTING_BACKENDS
     if inp is None:
         inp = default_settings.display.backend
-    if inp in ("matplotlib", "plotly"):
+    if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        "Input parameter `backend` must be one of `('matplotlib', 'plotly', None)`.\n"
+        f"Input parameter `backend` must be one of `{backends+(None,)}`.\n"
         f"Instead received {inp}."
     )
 
@@ -488,16 +490,13 @@ def check_format_input_obj(
 ) -> list:
     """
     Returns a flat list of all wanted objects in input.
-
     Parameters
     ----------
     input: can be
         - objects
-
     allow: str
         Specify which object types are wanted, separate by +,
         e.g. sensors+collections+sources
-
     recursive: bool
         Flatten Collection objects
     """

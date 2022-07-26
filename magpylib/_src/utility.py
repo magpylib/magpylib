@@ -63,13 +63,10 @@ def format_star_input(inp):
 
 def format_obj_input(*objects: Sequence, allow="sources+sensors", warn=True) -> list:
     """tests and flattens potential input sources (sources, Collections, sequences)
-
     ### Args:
     - sources (sequence): input sources
-
     ### Returns:
     - list: flattened, ordered list of sources
-
     ### Info:
     - exits if invalid sources are given
     """
@@ -101,14 +98,11 @@ def format_src_inputs(sources) -> list:
     """
     - input: allow only bare src objects or 1D lists/tuple of src and col
     - out: sources, src_list
-
     ### Args:
     - sources
-
     ### Returns:
     - sources: ordered list of sources
     - src_list: ordered list of sources with flattened collections
-
     ### Info:
     - raises an error if sources format is bad
     """
@@ -157,10 +151,8 @@ def check_static_sensor_orient(sensors):
 
 def check_duplicates(obj_list: Sequence) -> list:
     """checks for and eliminates source duplicates in a list of sources
-
     ### Args:
     - obj_list (list): list with source objects
-
     ### Returns:
     - list: obj_list with duplicates removed
     """
@@ -178,11 +170,9 @@ def check_duplicates(obj_list: Sequence) -> list:
 def test_path_format(inp):
     """check if each object path has same length
     of obj.pos and obj.rot
-
     Parameters
     ----------
     inp: single BaseGeo or list of BaseGeo objects
-
     Returns
     -------
     no return
@@ -248,7 +238,6 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     """
     displays a number with given unit and precision and uses unit prefixes for the exponents from
     yotta (y) to Yocto (Y). If the exponent is smaller or bigger, falls back to scientific notation.
-
     Parameters
     ----------
     number : int, float
@@ -260,7 +249,6 @@ def unit_prefix(number, unit="", precision=3, char_between="") -> str:
     char_between : str, optional
         character to insert between number of prefix. Can be " " or any string, if a space is wanted
         before the unit symbol , by default ""
-
     Returns
     -------
     str
