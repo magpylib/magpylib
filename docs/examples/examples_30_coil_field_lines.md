@@ -121,7 +121,18 @@ plt.show()
 The following example shows how to compute and display 3D field lines of `coil1` with Pyvista. To run this example, the user must install Pyvista (`pip install pyvista`). By removing the command `jupyter_backend='static'` in `show`, the 3D figure becomes interactive.
 
 ```{code-cell} ipython3
+import numpy as np
+import magpylib as magpy
 import pyvista as pv
+
+coil1 = magpy.Collection()
+for z in np.linspace(-8, 8, 16):
+    winding = magpy.current.Loop(
+        current=100,
+        diameter=10,
+        position=(0,0,z),
+    )
+    coil1.add(winding)
 
 grid = pv.UniformGrid(
     dims=(41, 41, 41),
@@ -153,18 +164,16 @@ legend_args = {
     'position_y': 0.25,
     'vertical': True,
 }
+
+# draw coils
+magpy.show(coil1, canvas=pl, backend='pyvista')
+
+# add streamlines
 pl.add_mesh(
     strl.tube(radius=.2),
     cmap="bwr",
     scalar_bar_args=legend_args,
 )
-
-# add coil as lines to scene
-ts = np.linspace(0,2*np.pi,100)
-for z in np.linspace(-8, 8, 16):
-    line = np.c_[5*np.cos(ts), 5*np.sin(ts), np.ones(100)*z]
-    pl.add_lines(line, color="black")
-
 # display scene
 pl.camera.position=(160, 10, -10)
 pl.set_background("white")
