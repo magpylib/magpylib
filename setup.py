@@ -78,6 +78,7 @@ setuptools.setup(
             "sphinx==4.4.0",
             "pandas",
             "pyvista",
+            "ipygany",
         ]
     },
     classifiers=[
