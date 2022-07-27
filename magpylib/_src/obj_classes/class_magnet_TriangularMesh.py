@@ -1,22 +1,22 @@
-"""Magnet Facets class code
+"""Magnet TriangularMesh class code
 DOCSTRINGS V4 READY
 """
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
-from magpylib._src.display.traces_generic import make_Facets
+from magpylib._src.display.traces_generic import make_TriangularMesh
 from magpylib._src.fields.field_BH_facet import magnet_facets_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 
 
-class Facets(BaseMagnet):
-    """Facets magnet with homogeneous magnetization.
+class TriangularMesh(BaseMagnet):
+    """Triangular surface mesh magnet with homogeneous magnetization.
 
     Can be used as `sources` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` the Facets facets coordinates
-    are the same as in the global coordinate system. The geometric center of the Facets
+    When `position=(0,0,0)` and `orientation=None` the TriangularMesh facets coordinates
+    are the same as in the global coordinate system. The geometric center of the TriangularMesh
     is determined by its vertices and is not necessarily located in the origin.
 
     Parameters
@@ -26,7 +26,7 @@ class Facets(BaseMagnet):
         the local object coordinates (rotates with object).
 
     facets: ndarray, shape (n,4,3)
-        Facets in the relative coordinate system of the Facets object.
+        Facets in the relative coordinate system of the TriangularMesh object.
 
     position: array_like, shape (3,) or (m,3)
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -47,7 +47,7 @@ class Facets(BaseMagnet):
 
     Returns
     -------
-    magnet source: `Facets` object
+    magnet source: `TriangularMesh` object
 
     Examples
     --------
@@ -55,7 +55,7 @@ class Facets(BaseMagnet):
 
     _field_func = staticmethod(magnet_facets_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "facets": 3}
-    _draw_func = make_Facets
+    _draw_func = make_TriangularMesh
 
     def __init__(
         self,
@@ -69,7 +69,6 @@ class Facets(BaseMagnet):
     ):
 
         # instance attributes
-        self._object_type = "Facets"
         triangles = kwargs.pop("triangles", None)
         vertices = kwargs.pop("vertices", None)
         self._facets, self._triangles, self._vertices = self._validate_facets(
@@ -99,7 +98,7 @@ class Facets(BaseMagnet):
             facets,
             dims=(3,),
             shape_m1=3,
-            sig_name="Facets.facets",
+            sig_name="TriangularMesh.facets",
             sig_type="array_like (list, tuple, ndarray) of shape (4,3)",
             allow_None=True,
         )
@@ -186,12 +185,12 @@ class Facets(BaseMagnet):
         reorient_facets=True,
         **kwargs,
     ):
-        """Facets magnet with homogeneous magnetization.
+        """Triangular surface mesh magnet with homogeneous magnetization.
 
         Can be used as `sources` input for magnetic field computation.
 
-        When `position=(0,0,0)` and `orientation=None` the Facets vertices coordinates
-        are the same as in the global coordinate system. The geometric center of the Facets
+        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
+        are the same as in the global coordinate system. The geometric center of the TriangularMesh
         is determined by its vertices and is not necessarily located in the origin.
 
         In this case the facets are constructed from `points` and `triangles`. By default,

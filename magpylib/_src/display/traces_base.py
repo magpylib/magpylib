@@ -601,7 +601,7 @@ def make_Tetrahedron(
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
 
-def make_Facets(
+def make_TriangularMesh(
     backend="generic",
     vertices=None,
     triangles=None,
@@ -611,7 +611,7 @@ def make_Facets(
     scale=1,
     **kwargs,
 ) -> dict:
-    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
+    """Provides the 3D-model parameters for a custom triangular mesh in dictionary form, based on
     number of vertices of the base, diameter and height. The zero position is in the
     barycenter of the vertices.
 
@@ -622,7 +622,7 @@ def make_Facets(
 
     vertices: ndarray, shape (4,3)
         Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
-        coordinate system of the facets.
+        coordinate system of the triangular mesh.
 
     triangles: ndarray, shape (4,3)
         For each triangle, the indices of the three points that make up the triangle, ordered in an
