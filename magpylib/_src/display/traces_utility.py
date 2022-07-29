@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.utility import format_obj_input
 
 
 # pylint: disable=too-many-branches
@@ -398,7 +399,7 @@ def group_traces(*traces):
     """Group and merge mesh traces with similar properties. This drastically improves
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
-    common_keys = ["legendgroup", "opacity"]
+    common_keys = ["legendgroup", "opacity", "row", "col"]
     spec_keys = {
         "mesh3d": ["colorscale"],
         "scatter3d": [
@@ -453,3 +454,35 @@ def subdivide_mesh_by_facecolor(trace):
         new_trace.pop("facecolor")
         subtraces.append(new_trace)
     return subtraces
+
+
+def process_show_input_objs(objs, row=None, col=None):
+    """Extract max_rows and max_cols from obj list of dicts"""
+    max_rows = max_cols = 1
+    flat_objs = []
+    new_objs = []
+    for obj in objs:
+        if isinstance(obj, dict):
+            obj = obj.copy()
+            r = obj.get("row", None)
+            c = obj.get("col", None)
+            r = row if r is None else r
+            c = col if c is None else c
+            obj["row"] = r
+            obj["col"] = c
+        else:
+            obj = {
+                "objects": obj,
+                "row": 1 if row is None else row,
+                "col": 1 if col is None else col,
+            }
+        if obj["row"] is not None:
+            max_rows = max(max_rows, obj["row"])
+        if obj["col"] is not None:
+            max_cols = max(max_cols, obj["col"])
+        obj["objects"] = format_obj_input(obj["objects"], allow="sources+sensors")
+        flat_objs.extend(obj["objects"])
+        new_objs.append(obj)
+    if max_rows == 1 and max_cols == 1:
+        max_rows = max_cols = None
+    return new_objs, list(set(flat_objs)), max_rows, max_cols

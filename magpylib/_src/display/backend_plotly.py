@@ -1,4 +1,4 @@
-""" plotly draw-functionalities"""
+"""plotly backend"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
 
@@ -55,6 +55,8 @@ def animate_path(
     frame_duration,
     animation_slider=False,
     update_layout=True,
+    rows=None,
+    cols=None,
 ):
     """This is a helper function which attaches plotly frames to the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
@@ -127,7 +129,11 @@ def animate_path(
     # update fig
     fig.frames = frames
     frame0 = fig.frames[0]
-    fig.add_traces(frame0.data)
+    fig.add_traces(
+        frame0.data,
+        rows=rows,
+        cols=cols,
+    )
     title = frame0.layout.title.text
     if update_layout:
         fig.update_layout(
@@ -203,6 +209,8 @@ def display_plotly(
     colorsequence=None,
     return_fig=False,
     update_layout=True,
+    max_rows=None,
+    max_cols=None,
     **kwargs,
 ):
 
@@ -214,7 +222,14 @@ def display_plotly(
     if fig is None:
         if not return_fig:
             show_fig = True
-        fig = go.Figure()
+        if max_rows is None and max_cols is None:
+            fig = go.Figure()
+        else:
+            fig = go.Figure().set_subplots(
+                rows=max_rows,
+                cols=max_cols,
+                specs=[[{"type": "scene"}] * max_cols] * max_rows,
+            )
 
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
@@ -239,8 +254,18 @@ def display_plotly(
         fr["data"] = new_data
         fr.pop("extra_backend_traces", None)
     with fig.batch_update():
+        for frame in frames:
+            rows_list = []
+            cols_list = []
+            for tr in frame["data"]:
+                row = tr.pop("row", None)
+                col = tr.pop("col", None)
+                rows_list.append(row)
+                cols_list.append(col)
+        if max_rows is None and max_cols is None:
+            rows_list = cols_list = None
         if len(frames) == 1:
-            fig.add_traces(frames[0]["data"])
+            fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
             animation_slider = data.get("animation_slider", False)
             animate_path(
@@ -250,6 +275,8 @@ def display_plotly(
                 data["frame_duration"],
                 animation_slider=animation_slider,
                 update_layout=update_layout,
+                rows=rows_list,
+                cols=cols_list,
             )
         ranges = data["ranges"]
         if extra_data:

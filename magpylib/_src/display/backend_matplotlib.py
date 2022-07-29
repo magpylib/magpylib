@@ -1,3 +1,7 @@
+"""matplotlib backend"""
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -87,6 +91,9 @@ def generic_trace_to_matplotlib(trace):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
+    for tr in traces_mpl:
+        tr["row"] = trace["row"]
+        tr["col"] = trace["col"]
     return traces_mpl
 
 
@@ -100,6 +107,8 @@ def process_extra_trace(model):
         "constructor": extr.constructor,
         "kwargs": model_kwargs,
         "args": model_args,
+        "row": model["kwargs"]["row"],
+        "col": model["kwargs"]["col"],
     }
     kwargs, args, = place_and_orient_model3d(
         model_kwargs=model_kwargs,
@@ -115,6 +124,25 @@ def process_extra_trace(model):
     return trace3d
 
 
+def extract_axis_from_row_col(fig, row, col):
+    "Return axis from row and col values"
+
+    def geom(ax):
+        return ax.get_subplotspec().get_topmost_subplotspec().get_geometry()
+
+    # get nrows and ncols of fig for first axis
+    rc = geom(fig.axes[0])[:2]
+    # get the axis index based on row first
+    default_ind = rc[0] * (row - 1) + col - 1
+    # get last index of geometry, gives the actual index,
+    # since axis can be added in a different order
+    inds = [geom(ax)[-1] for ax in fig.axes]
+    # retrieve first index that matches
+    ind = inds.index(default_ind)
+    ax = fig.axes[ind]
+    return ax
+
+
 def display_matplotlib(
     *obj_list,
     zoom=1,
@@ -124,6 +152,10 @@ def display_matplotlib(
     colorsequence=None,
     return_fig=False,
     return_animation=False,
+    max_rows=None,
+    max_cols=None,
+    dpi=80,
+    figsize=(8, 8),
     **kwargs,
 ):
 
@@ -149,30 +181,60 @@ def display_matplotlib(
         fr["data"] = new_data
 
     show_canvas = False
+    axes = {}
     if canvas is None:
         show_canvas = True
-        fig = plt.figure(dpi=80, figsize=(8, 8))
-        ax = fig.add_subplot(111, projection="3d")
-        ax.set_box_aspect((1, 1, 1))
+        fig = plt.figure(dpi=dpi, figsize=figsize)
+    elif isinstance(canvas, matplotlib.axes.Axes) and not (
+        max_rows is None and max_cols is None
+    ):
+        raise Exception(
+            "Provided canvas is a instance of `matplotlib.axes.Axes` and does not support `rows` "
+            "and `cols` attributes. Use an instance of `matplotlib.figure.Figure` instead"
+        )
+    if max_rows is None and max_cols is None:
+        if canvas is None:
+            axes[111] = fig.add_subplot(111, projection="3d")
+        else:
+            axes[111] = canvas
+        max_rows = 1
+        max_cols = 1
     else:
-        ax = canvas
-        fig = ax.get_figure()
+        max_rows = max_rows if max_rows is not None else 1
+        max_cols = max_cols if max_cols is not None else 1
+        count = 0
+        for row in range(1, max_rows + 1):
+            for col in range(1, max_cols + 1):
+                count += 1
+                row_col_num = (row, col)
+                if canvas is None:
+                    axes[row_col_num] = fig.add_subplot(
+                        max_rows, max_cols, count, projection="3d"
+                    )
+                elif isinstance(canvas, matplotlib.figure.Figure):
+                    fig = canvas
+                    axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
+                axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(ind):
+        for ax in axes.values():
+            ax.set(
+                **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+                **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+            )
         for tr in frames[ind]["data"]:
+            row_col_num = (tr["row"], tr["col"])
+            ax = axes[row_col_num]
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
             getattr(ax, constructor)(*args, **kwargs)
-        ax.set(
-            **{f"{k}label": f"{k} [mm]" for k in "xyz"},
-            **{f"{k}lim": r for k, r in zip("xyz", ranges)},
-        )
 
     def animate(ind):  # pragma: no cover
-        plt.cla()
+        for ax in axes.values():
+            ax.clear()
         draw_frame(ind)
-        return [ax]
+        return list(axes.values())
 
     if len(frames) == 1:
         draw_frame(0)
@@ -185,6 +247,7 @@ def display_matplotlib(
             blit=False,
             repeat=repeat,
         )
+
     out = ()
     if return_fig:
         show_canvas = False

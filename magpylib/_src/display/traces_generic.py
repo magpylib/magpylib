@@ -560,6 +560,8 @@ def get_generic_traces(
     legendtext=None,
     mag_arrows=False,
     extra_backend=False,
+    row=1,
+    col=1,
     **kwargs,
 ) -> list:
     """
@@ -609,7 +611,10 @@ def get_generic_traces(
     path_traces_extra_specific_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     if not has_path:
-        traces = [make_func(**make_func_kwargs)]
+        tr = make_func(**make_func_kwargs)
+        tr["row"] = row
+        tr["col"] = col
+        traces = [tr]
         out = (traces,)
         if extra_backend is not False:
             out += (path_traces_extra_specific_backend,)
@@ -626,7 +631,7 @@ def get_generic_traces(
             if extr.show:
                 extr.update(extr.updatefunc())
                 if extr.backend == "generic":
-                    trace3d = {"opacity": kwargs["opacity"]}
+                    trace3d = {"opacity": kwargs["opacity"], "row": row, "col": col}
                     ttype = extr.constructor.lower()
                     obj_extr_trace = (
                         extr.kwargs() if callable(extr.kwargs) else extr.kwargs
@@ -677,6 +682,8 @@ def get_generic_traces(
                             "legendgroup": legendgroup,
                             "name": label,
                             "showlegend": showleg,
+                            "row": row,
+                            "col": col,
                         },
                     }
                     path_traces_extra_specific_backend.append(trace3d)
@@ -710,6 +717,9 @@ def get_generic_traces(
     if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
         if style.magnetization.show:
             traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
+    for tr in traces:
+        tr["row"] = row
+        tr["col"] = col
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
@@ -730,9 +740,7 @@ def clean_legendgroups(frames):
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
     """Update animation kwargs"""
-    markers = [o for o in obj_list if isinstance(o, MagpyMarkers)]
-    flat_obj_list = format_obj_input([o for o in obj_list if o not in markers])
-    flat_obj_list.extend(markers)
+    flat_obj_list = format_obj_input(obj_list)
     # set animation and animation_time
     if isinstance(animation, numbers.Number) and not isinstance(animation, bool):
         kwargs["animation_time"] = animation
@@ -820,7 +828,7 @@ def extract_animation_properties(
 
 
 def draw_frame(
-    obj_list_semi_flat,
+    objs,
     colorsequence=None,
     zoom=0.0,
     autosize=None,
@@ -839,6 +847,9 @@ def draw_frame(
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
     # pylint: disable=protected-access
+    obj_list_semi_flat = format_obj_input(
+        [o["objects"] for o in objs], allow="sources+sensors+collections"
+    )
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
     extra_backend_traces = []
@@ -847,10 +858,19 @@ def draw_frame(
     traces_out = {}
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
-    traces_to_resize = {}
-    flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat, colorsequence=colorsequence
+    markers = (
+        []
+        if not objs
+        else objs[-1]["objects"][-1:]
+        if isinstance(objs[-1]["objects"], MagpyMarkers)
+        else []
     )
+
+    row_cols = get_row_cols(objs)
+    flat_objs_props = get_flatten_objects_properties(
+        *obj_list_semi_flat, *markers, colorsequence=colorsequence
+    )
+    traces_to_resize = {}
     for obj, params in flat_objs_props.items():
         params.update(kwargs)
         if isinstance(obj, (Dipole, Sensor)):
@@ -859,8 +879,30 @@ def draw_frame(
             x, y, z = obj._position.T
             traces_out[obj] = [dict(x=x, y=y, z=z)]
         else:
+            traces_out[obj] = []
+            for row_col in row_cols.get(obj, [(1, 1)]):
+                params["row"], params["col"] = row_col
+                out_traces = get_generic_traces(
+                    obj,
+                    mag_arrows=mag_arrows,
+                    extra_backend=extra_backend,
+                    **params,
+                )
+                if extra_backend is not False:
+                    out_traces, ebt = out_traces
+                    extra_backend_traces.extend(ebt)
+                traces_out[obj].extend(out_traces)
+    traces = [t for tr in traces_out.values() for t in tr]
+    ranges = get_scene_ranges(*traces, zoom=zoom)
+    if autosize is None or autosize == "return":
+        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+    for obj, params in traces_to_resize.items():
+        traces_out[obj] = []
+        for row_col in row_cols.get(obj, [(1, 1)]):
+            params["row"], params["col"] = row_col
             out_traces = get_generic_traces(
                 obj,
+                autosize=autosize,
                 mag_arrows=mag_arrows,
                 extra_backend=extra_backend,
                 **params,
@@ -868,27 +910,31 @@ def draw_frame(
             if extra_backend is not False:
                 out_traces, ebt = out_traces
                 extra_backend_traces.extend(ebt)
-            traces_out[obj] = out_traces
-    traces = [t for tr in traces_out.values() for t in tr]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
-    if autosize is None or autosize == "return":
-        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
-    for obj, params in traces_to_resize.items():
-        out_traces = get_generic_traces(
-            obj,
-            autosize=autosize,
-            mag_arrows=mag_arrows,
-            extra_backend=extra_backend,
-            **params,
-        )
-        if extra_backend is not False:
-            out_traces, ebt = out_traces
-            extra_backend_traces.extend(ebt)
-        traces_out[obj] = out_traces
+            traces_out[obj].extend(out_traces)
     if output == "list":
         traces = [t for tr in traces_out.values() for t in tr]
         traces_out = group_traces(*traces)
     return traces_out, autosize, ranges, extra_backend_traces
+
+
+def get_row_cols(objs):
+    """Return row_col dict with objs as keys and tuple (row,col) as values"""
+    # pylint: disable=import-outside-toplevel
+
+    from magpylib._src.obj_classes.class_Collection import Collection
+
+    row_cols = {}
+    for obj in objs:
+        sub_objs = []
+        for sub_obj in obj["objects"]:
+            sub_objs.append(sub_obj)
+            if isinstance(sub_obj, Collection):
+                sub_objs.extend(sub_obj.children_all)
+        for sub_obj in sub_objs:
+            if sub_obj not in row_cols:
+                row_cols[sub_obj] = []
+            row_cols[sub_obj].extend([(obj["row"], obj["col"])])
+    return row_cols
 
 
 def get_frames(
@@ -907,21 +953,24 @@ def get_frames(
     """
     # infer title if necessary
     if objs:
-        style = getattr(objs[0], "style", None)
+        style = getattr(objs[0]["objects"][0], "style", None)
         label = getattr(style, "label", None)
-        title = label if len(objs) == 1 else None
+        title = label if len(objs[0]["objects"]) == 1 else None
     else:
         title = "No objects to be displayed"
 
     # make sure the number of frames does not exceed the max frames and max frame rate
     # downsample if necessary
+    obj_list_semi_flat = format_obj_input(
+        [o["objects"] for o in objs], allow="sources+sensors+collections"
+    )
     kwargs, animation, animation_kwargs = process_animation_kwargs(
-        objs, animation=animation, **kwargs
+        obj_list_semi_flat, animation=animation, **kwargs
     )
     path_indices = [-1]
     if animation:
         path_indices, exp, frame_duration = extract_animation_properties(
-            objs, **animation_kwargs
+            obj_list_semi_flat, **animation_kwargs
         )
 
     # create frame for each path index or downsampled path index

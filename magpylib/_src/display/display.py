@@ -1,7 +1,11 @@
 """ Display function codes"""
 from importlib import import_module
+from numbers import Number
+
+import numpy as np
 
 from magpylib._src.display.traces_generic import MagpyMarkers
+from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
@@ -20,6 +24,8 @@ def show(
     backend=None,
     canvas=None,
     return_fig=False,
+    row=None,
+    col=None,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -103,9 +109,11 @@ def show(
     >>> # graphic output
     """
 
-    # flatten input
-    obj_list_flat = format_obj_input(objects, allow="sources+sensors")
-    obj_list_semi_flat = format_obj_input(objects, allow="sources+sensors+collections")
+    # process input objs
+    objects, obj_list_flat, max_rows, max_cols = process_show_input_objs(
+        objects, row, col
+    )
+    kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
 
     # test if all source dimensions and excitations have been initialized
     check_dimensions(obj_list_flat)
@@ -132,11 +140,13 @@ def show(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
     )
 
-    if markers is not None and markers:
-        obj_list_semi_flat = list(obj_list_semi_flat) + [MagpyMarkers(*markers)]
+    if markers:
+        objects = list(objects) + [
+            {"objects": [MagpyMarkers(*markers)], "row": 1, "col": 1}
+        ]
 
     return display_func(
-        *obj_list_semi_flat,
+        *objects,
         zoom=zoom,
         canvas=canvas,
         animation=animation,
