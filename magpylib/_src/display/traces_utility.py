@@ -374,23 +374,27 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     Returns 3x2 array of the min and max ranges in x,y,z directions of input traces. Traces can be
     any plotly trace object or a dict, with x,y,z numbered parameters.
     """
+    trace3d_found = False
     if traces:
         ranges = {k: [] for k in "xyz"}
         for t in traces:
             for k, v in ranges.items():
-                v.extend(
-                    [
-                        np.nanmin(np.array(t[k], dtype=float)),
-                        np.nanmax(np.array(t[k], dtype=float)),
-                    ]
-                )
-        r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
-        size = np.diff(r, axis=1)
-        size[size == 0] = 1
-        m = size.max() / 2
-        center = r.mean(axis=1)
-        ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
-    else:
+                if "z" in t:  # only extend range for 3d traces
+                    trace3d_found = True
+                    v.extend(
+                        [
+                            np.nanmin(np.array(t[k], dtype=float)),
+                            np.nanmax(np.array(t[k], dtype=float)),
+                        ]
+                    )
+        if trace3d_found:
+            r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
+            size = np.diff(r, axis=1)
+            size[size == 0] = 1
+            m = size.max() / 2
+            center = r.mean(axis=1)
+            ranges = np.array([center - m * (1 + zoom), center + m * (1 + zoom)]).T
+    if not traces or not trace3d_found:
         ranges = np.array([[-1.0, 1.0]] * 3)
     return ranges
 
@@ -456,11 +460,12 @@ def subdivide_mesh_by_facecolor(trace):
     return subtraces
 
 
-def process_show_input_objs(objs, row=None, col=None):
+def process_show_input_objs(objs, row=None, col=None, output="model3d"):
     """Extract max_rows and max_cols from obj list of dicts"""
     max_rows = max_cols = 1
     flat_objs = []
-    new_objs = []
+    new_objs = {}
+    subplot_specs = {}
     for obj in objs:
         if isinstance(obj, dict):
             obj = obj.copy()
@@ -480,9 +485,32 @@ def process_show_input_objs(objs, row=None, col=None):
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
             max_cols = max(max_cols, obj["col"])
-        obj["objects"] = format_obj_input(obj["objects"], allow="sources+sensors")
+        obj["objects"] = format_obj_input(
+            obj["objects"], allow="sources+sensors+collections"
+        )
         flat_objs.extend(obj["objects"])
-        new_objs.append(obj)
+        if "output" not in obj:
+            obj["output"] = output
+        key = (obj["row"], obj["col"], obj["output"])
+        if key in new_objs:
+            new_objs[key]["objects"] = list(
+                dict.fromkeys(new_objs[key]["objects"] + obj["objects"])
+            )
+        else:
+            new_objs[key] = obj
+        current_subplot_specs = subplot_specs.get(key[:2], obj["output"])
+        if current_subplot_specs != obj["output"]:
+            raise ValueError(
+                f"Row/Col {key[:2]}, received conflicting output types "
+                f"{current_subplot_specs!r} vs {obj['output']!r}"
+            )
+        else:
+            subplot_specs[key[:2]] = obj["output"]
+
+    specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
+    for inds, out in subplot_specs.items():
+        if out != "model3d":
+            specs[inds[0] - 1, inds[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
-    return new_objs, list(set(flat_objs)), max_rows, max_cols
+    return list(new_objs.values()), list(set(flat_objs)), max_rows, max_cols, specs

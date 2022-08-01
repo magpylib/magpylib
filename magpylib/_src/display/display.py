@@ -1,8 +1,5 @@
 """ Display function codes"""
 from importlib import import_module
-from numbers import Number
-
-import numpy as np
 
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import process_show_input_objs
@@ -12,7 +9,6 @@ from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
 from magpylib._src.input_checks import check_input_zoom
-from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import test_path_format
 
 
@@ -26,6 +22,7 @@ def show(
     return_fig=False,
     row=None,
     col=None,
+    output="model3d",
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -110,10 +107,14 @@ def show(
     """
 
     # process input objs
-    objects, obj_list_flat, max_rows, max_cols = process_show_input_objs(
-        objects, row, col
+    objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
+        objects,
+        row,
+        col,
+        output,
     )
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
+    kwargs["subplot_specs"] = subplot_specs
 
     # test if all source dimensions and excitations have been initialized
     check_dimensions(obj_list_flat)
@@ -142,7 +143,12 @@ def show(
 
     if markers:
         objects = list(objects) + [
-            {"objects": [MagpyMarkers(*markers)], "row": 1, "col": 1}
+            {
+                "objects": [MagpyMarkers(*markers)],
+                "row": 1,
+                "col": 1,
+                "output": "model3d",
+            }
         ]
 
     return display_func(

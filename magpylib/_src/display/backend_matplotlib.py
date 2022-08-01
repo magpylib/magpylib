@@ -45,8 +45,11 @@ def generic_trace_to_matplotlib(trace):
                     },
                 }
             )
-    elif trace["type"] == "scatter3d":
-        x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
+    elif "scatter" in trace["type"]:
+        coords_str = "xyz"
+        if trace["type"] == "scatter":
+            coords_str = "xy"
+        coords = np.array([trace[k] for k in coords_str], dtype=float)
         mode = trace.get("mode", None)
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
@@ -60,6 +63,24 @@ def generic_trace_to_matplotlib(trace):
                 "ms": ("marker", "size"),
             }.items()
         }
+        if isinstance(props["ms"], np.ndarray):
+            uniq = np.unique(props["ms"])
+            if uniq.shape[0] == 1:
+                props["ms"] = props["ms"][0]
+            else:
+                traces_mpl.append(
+                    {
+                        "constructor": "scatter",
+                        "args": (*coords,),
+                        "kwargs": {
+                            "s": props["ms"],
+                            "color": props["mec"],
+                            "marker": props["marker"],
+                        },
+                    }
+                )
+                props.pop("ms")
+                props.pop("marker")
         if "ls" in props:
             props["ls"] = LINE_STYLES.get(props["ls"], "solid")
         if "marker" in props:
@@ -70,17 +91,17 @@ def generic_trace_to_matplotlib(trace):
             if "markers" not in mode:
                 props["marker"] = None
             if "text" in mode and trace.get("text", False):
-                for xs, ys, zs, txt in zip(x, y, z, trace["text"]):
+                for *coords_s, txt in zip(*coords, trace["text"]):
                     traces_mpl.append(
                         {
                             "constructor": "text",
-                            "args": (xs, ys, zs, txt),
+                            "args": (*coords_s, txt),
                         }
                     )
         traces_mpl.append(
             {
                 "constructor": "plot",
-                "args": (x, y, z),
+                "args": coords,
                 "kwargs": {
                     **{k: v for k, v in props.items() if v is not None},
                     "alpha": trace.get("opacity", 1),
@@ -154,8 +175,9 @@ def display_matplotlib(
     return_animation=False,
     max_rows=None,
     max_cols=None,
+    subplot_specs=None,
     dpi=80,
-    figsize=(8, 8),
+    figsize=None,
     **kwargs,
 ):
 
@@ -184,19 +206,28 @@ def display_matplotlib(
     axes = {}
     if canvas is None:
         show_canvas = True
+        if figsize is None:
+            figsize = (8, 8)
+            ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
+            figsize = (figsize[0] * ratio, figsize[1])
         fig = plt.figure(dpi=dpi, figsize=figsize)
-    elif isinstance(canvas, matplotlib.axes.Axes) and not (
-        max_rows is None and max_cols is None
+    elif (
+        isinstance(canvas, matplotlib.axes.Axes)
+        and not max_rows is None
+        and max_cols is None
     ):
         raise Exception(
-            "Provided canvas is a instance of `matplotlib.axes.Axes` and does not support `rows` "
+            "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support `rows` "
             "and `cols` attributes. Use an instance of `matplotlib.figure.Figure` instead"
         )
     if max_rows is None and max_cols is None:
         if canvas is None:
-            axes[111] = fig.add_subplot(111, projection="3d")
+            sp_typ = subplot_specs[0, 0]["type"]
+            axes[(1, 1)] = fig.add_subplot(
+                111, projection="3d" if sp_typ == "scene" else None
+            )
         else:
-            axes[111] = canvas
+            axes[(1, 1)] = canvas
         max_rows = 1
         max_cols = 1
     else:
@@ -208,20 +239,27 @@ def display_matplotlib(
                 count += 1
                 row_col_num = (row, col)
                 if canvas is None:
+                    projection = (
+                        "3d"
+                        if subplot_specs[row - 1, col - 1]["type"] == "scene"
+                        else None
+                    )
                     axes[row_col_num] = fig.add_subplot(
-                        max_rows, max_cols, count, projection="3d"
+                        max_rows, max_cols, count, projection=projection
                     )
                 elif isinstance(canvas, matplotlib.figure.Figure):
                     fig = canvas
                     axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
-                axes[row_col_num].set_box_aspect((1, 1, 1))
+                if axes[row_col_num].name == "3d":
+                    axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(ind):
         for ax in axes.values():
-            ax.set(
-                **{f"{k}label": f"{k} [mm]" for k in "xyz"},
-                **{f"{k}lim": r for k, r in zip("xyz", ranges)},
-            )
+            if ax.name == "3d":
+                ax.set(
+                    **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+                    **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+                )
         for tr in frames[ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
             ax = axes[row_col_num]

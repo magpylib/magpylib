@@ -211,6 +211,7 @@ def display_plotly(
     update_layout=True,
     max_rows=None,
     max_cols=None,
+    subplot_specs=None,
     **kwargs,
 ):
 
@@ -228,7 +229,7 @@ def display_plotly(
             fig = go.Figure().set_subplots(
                 rows=max_rows,
                 cols=max_cols,
-                specs=[[{"type": "scene"}] * max_cols] * max_rows,
+                specs=subplot_specs.tolist(),
             )
 
     if colorsequence is None:

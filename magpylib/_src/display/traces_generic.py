@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 import numbers
 import warnings
+from collections import Counter
 from itertools import combinations
 from typing import Tuple
 
@@ -32,7 +33,6 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.style import Markers
 from magpylib._src.utility import format_obj_input
@@ -551,6 +551,102 @@ def make_path(input_obj, style, legendgroup, kwargs):
     return scatter_path
 
 
+def get_generic_traces_2D(
+    *,
+    objects,
+    output="B",
+    row=None,
+    col=None,
+    color=None,
+    style_path_frames=None,
+):
+    """draws and animates sensor values over a path in a subplot"""
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.fields.field_wrap_BH import getBH_level2
+
+    sources = format_obj_input(objects, allow="sources")
+    sensors = format_obj_input(objects, allow="sensors")
+    coords_indices = [0, 1, 2]
+    xyz_linestyles = ("solid", "dash", "dot")
+    field_str = output
+    if len(output) > 1:
+        coords_indices = list({"xyz".index(k) for k in output[1:]})
+        field_str = output[0]
+
+    BH_array = getBH_level2(
+        sources,
+        sensors,
+        sumup=True,
+        squeeze=False,
+        field=field_str,
+        pixel_agg="mean",
+        output="ndarray",
+    )
+    BH_array = BH_array[0]  # select first source
+    BH_array = BH_array.swapaxes(0, 1)  # swap axes to have sensors first, path second
+    BH_array = BH_array[:, :, 0, :]  # remove pixel dim
+
+    frames_indices = np.arange(0, BH_array.shape[1])
+    style_path_frames = [-1] if style_path_frames is None else style_path_frames
+    if isinstance(style_path_frames, numbers.Number):
+        # pylint: disable=invalid-unary-operand-type
+        style_path_frames = frames_indices[::-style_path_frames]
+    if len(sources) < 8:
+        src_lst_str = "<br>".join(f" - {s}" for s in sources)
+    else:
+        counts = Counter(s.__class__.__name__ for s in sources)
+        src_lst_str = "<br>".join(f" {v}x {k}" for k, v in counts.items())
+
+    def get_kwargs(sens, field_str, BH, coord_ind, frame_ind):
+        k = "xyz"[coord_ind]
+        name = (
+            "Sensor"
+            if sens.style.label is None or sens.style.label.strip() == ""
+            else sens.style.label
+        )
+        src_str = f"""{len(sources)} source{'s' if len(sources)>1 else ''}"""
+        marker_size = np.array([0.00001] * len(frames_indices))
+        marker_size[frame_ind] = 10
+        return dict(
+            mode="lines+markers",
+            name=f"{name}",
+            legendgroup=f"{field_str}{k}",
+            legendgrouptitle_text=f"{field_str}{k} from {src_str}",
+            text="Sources",
+            hovertemplate=(
+                "<b>Path index</b>: %{x}    "
+                f"<b>{field_str}{k}</b>: " + "%{y}T<br>"
+                f"<b>Sources</b>:<br>{src_lst_str}"
+                # "<extra></extra>",
+            ),
+            x=frames_indices,
+            y=BH.T[coord_ind][frames_indices],
+            line_dash=xyz_linestyles[coord_ind],
+            line_color=color,
+            marker_size=marker_size,
+            marker_color=color,
+            showlegend=True,
+        )
+
+    traces = []
+    for sens, BH in zip(sensors, BH_array):
+        for coord_ind in coords_indices:
+            kwargs = dict(type="scatter", row=row, col=col)
+            traces.append(
+                {
+                    **get_kwargs(
+                        sens,
+                        field_str,
+                        BH,
+                        coord_ind,
+                        style_path_frames,
+                    ),
+                    **kwargs,
+                }
+            )
+    return traces
+
+
 def get_generic_traces(
     input_obj,
     color=None,
@@ -592,13 +688,8 @@ def get_generic_traces(
     kwargs["opacity"] = style.opacity
     legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
 
-    # check excitations validity
-    for param in ("magnetization", "arrow"):
-        if getattr(getattr(style, param, None), "show", False):
-            check_excitations([input_obj])
-
     label = getattr(getattr(input_obj, "style", None), "label", None)
-    label = label if label is not None else str(type(input_obj).__name__)
+    style.label = label = label if label is not None else str(type(input_obj).__name__)
 
     make_func = input_obj._draw_func
     make_func_kwargs = kwargs.copy()
@@ -832,9 +923,6 @@ def draw_frame(
     colorsequence=None,
     zoom=0.0,
     autosize=None,
-    output="dict",
-    mag_arrows=False,
-    extra_backend=False,
     **kwargs,
 ) -> Tuple:
     """
@@ -846,78 +934,81 @@ def draw_frame(
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
-    # pylint: disable=protected-access
-    obj_list_semi_flat = format_obj_input(
-        [o["objects"] for o in objs], allow="sources+sensors+collections"
+    obj_list_semi_flat_3d = format_obj_input(
+        [o["objects"] for o in objs if o["output"] == "model3d"],
+        allow="sources+sensors+collections",
     )
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
-    extra_backend_traces = []
-    Sensor = _src.obj_classes.class_Sensor.Sensor
-    Dipole = _src.obj_classes.class_misc_Dipole.Dipole
-    traces_out = {}
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
     markers = (
         []
         if not objs
         else objs[-1]["objects"][-1:]
-        if isinstance(objs[-1]["objects"], MagpyMarkers)
+        if isinstance(objs[-1]["objects"][-1], MagpyMarkers)
         else []
     )
-
-    row_cols = get_row_cols(objs)
     flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat, *markers, colorsequence=colorsequence
+        *obj_list_semi_flat_3d, *markers, colorsequence=colorsequence
     )
-    traces_to_resize = {}
+    row_col_out = get_row_cols(objs, is_model3d=True)
+    traces_dict, traces_to_resize_dict, extra_backend_traces = get_row_col_traces(
+        flat_objs_props, row_col_out, **kwargs
+    )
+    traces = [t for tr in traces_dict.values() for t in tr]
+    ranges = get_scene_ranges(*traces, zoom=zoom)
+    if autosize is None or autosize == "return":
+        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+
+    traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
+        traces_to_resize_dict, row_col_out, autosize=autosize, **kwargs
+    )
+    traces_dict.update(traces_dict_2)
+    extra_backend_traces.extend(extra_backend_traces2)
+    traces = [t for tr in traces_dict.values() for t in tr]
+    traces = group_traces(*traces)
+    obj_list_2d = [o for o in objs if o["output"] != "model3d"]
+    for objs_2d in obj_list_2d:
+        objs_2d["style_path_frames"] = kwargs.get("style_path_frames", [-1])
+        traces2d = get_generic_traces_2D(**objs_2d)
+        traces.extend(traces2d)
+    return traces, autosize, ranges, extra_backend_traces
+
+
+def get_row_col_traces(
+    flat_objs_props, row_col_out, extra_backend=False, autosize=None, **kwargs
+):
+    """Return traces, traces to resize and extra_backend_traces"""
+    # pylint: disable=protected-access
+    extra_backend_traces = []
+    Sensor = _src.obj_classes.class_Sensor.Sensor
+    Dipole = _src.obj_classes.class_misc_Dipole.Dipole
+    traces_dict = {}
+    traces_to_resize_dict = {}
     for obj, params in flat_objs_props.items():
         params.update(kwargs)
-        if isinstance(obj, (Dipole, Sensor)):
-            traces_to_resize[obj] = {**params}
+        rco_obj = row_col_out.get(obj, [(1, 1)])
+        if autosize is None and isinstance(obj, (Dipole, Sensor)):
+            traces_to_resize_dict[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj._position.T
-            traces_out[obj] = [dict(x=x, y=y, z=z)]
+            traces_dict[obj] = [dict(x=x, y=y, z=z)]
         else:
-            traces_out[obj] = []
-            for row_col in row_cols.get(obj, [(1, 1)]):
-                params["row"], params["col"] = row_col
+            traces_dict[obj] = []
+            for rco in rco_obj:
+                params["row"], params["col"] = rco
                 out_traces = get_generic_traces(
-                    obj,
-                    mag_arrows=mag_arrows,
-                    extra_backend=extra_backend,
-                    **params,
+                    obj, extra_backend=extra_backend, autosize=autosize, **params
                 )
                 if extra_backend is not False:
                     out_traces, ebt = out_traces
                     extra_backend_traces.extend(ebt)
-                traces_out[obj].extend(out_traces)
-    traces = [t for tr in traces_out.values() for t in tr]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
-    if autosize is None or autosize == "return":
-        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
-    for obj, params in traces_to_resize.items():
-        traces_out[obj] = []
-        for row_col in row_cols.get(obj, [(1, 1)]):
-            params["row"], params["col"] = row_col
-            out_traces = get_generic_traces(
-                obj,
-                autosize=autosize,
-                mag_arrows=mag_arrows,
-                extra_backend=extra_backend,
-                **params,
-            )
-            if extra_backend is not False:
-                out_traces, ebt = out_traces
-                extra_backend_traces.extend(ebt)
-            traces_out[obj].extend(out_traces)
-    if output == "list":
-        traces = [t for tr in traces_out.values() for t in tr]
-        traces_out = group_traces(*traces)
-    return traces_out, autosize, ranges, extra_backend_traces
+                traces_dict[obj].extend(out_traces)
+    return traces_dict, traces_to_resize_dict, extra_backend_traces
 
 
-def get_row_cols(objs):
+def get_row_cols(objs, is_model3d):
     """Return row_col dict with objs as keys and tuple (row,col) as values"""
     # pylint: disable=import-outside-toplevel
 
@@ -933,7 +1024,10 @@ def get_row_cols(objs):
         for sub_obj in sub_objs:
             if sub_obj not in row_cols:
                 row_cols[sub_obj] = []
-            row_cols[sub_obj].extend([(obj["row"], obj["col"])])
+            if not (
+                is_model3d ^ (obj["output"] == "model3d")
+            ):  # both True or both False
+                row_cols[sub_obj].extend([(obj["row"], obj["col"])])
     return row_cols
 
 
@@ -988,7 +1082,6 @@ def get_frames(
             colorsequence,
             zoom,
             autosize=autosize,
-            output="list",
             mag_arrows=mag_arrows,
             extra_backend=extra_backend,
             **kwargs,
