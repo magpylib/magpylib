@@ -504,8 +504,7 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d"):
                 f"Row/Col {key[:2]}, received conflicting output types "
                 f"{current_subplot_specs!r} vs {obj['output']!r}"
             )
-        else:
-            subplot_specs[key[:2]] = obj["output"]
+        subplot_specs[key[:2]] = obj["output"]
 
     specs = np.array([[{"type": "scene"}] * max_cols] * max_rows)
     for inds, out in subplot_specs.items():
