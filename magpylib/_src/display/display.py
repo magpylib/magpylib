@@ -1,4 +1,5 @@
 """ Display function codes"""
+from contextlib import contextmanager
 from importlib import import_module
 
 from magpylib._src.display.traces_generic import MagpyMarkers
@@ -12,7 +13,26 @@ from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.utility import test_path_format
 
 
-def show(
+class DisplayContext:
+    """Display context class"""
+
+    def __init__(self, isrunning=False):
+        self.isrunning = isrunning
+        self.objects = ()
+        self.kwargs = {}
+        self.canvas = None
+
+    def reset(self):
+        """Reset display context"""
+        self.isrunning = False
+        self.objects = ()
+        self.kwargs = {}
+
+
+ctx = DisplayContext()
+
+
+def _show(
     *objects,
     zoom=0,
     animation=False,
@@ -25,6 +45,67 @@ def show(
     output="model3d",
     **kwargs,
 ):
+    """Display objects and paths graphically.
+
+    See `show` function for docstring details.
+    """
+
+    # process input objs
+    objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
+        objects,
+        row,
+        col,
+        output,
+    )
+    kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
+    kwargs["subplot_specs"] = subplot_specs
+
+    # test if all source dimensions and excitations have been initialized
+    check_dimensions(obj_list_flat)
+    check_excitations(obj_list_flat)
+
+    # test if every individual obj_path is good
+    test_path_format(obj_list_flat)
+
+    # input checks
+    backend = check_format_input_backend(backend)
+    check_input_zoom(zoom)
+    check_input_animation(animation)
+    check_format_input_vector(
+        markers,
+        dims=(2,),
+        shape_m1=3,
+        sig_name="markers",
+        sig_type="array_like of shape (n,3)",
+        allow_None=True,
+    )
+
+    # pylint: disable=import-outside-toplevel
+    display_func = getattr(
+        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
+    )
+
+    if markers:
+        objects = list(objects) + [
+            {
+                "objects": [MagpyMarkers(*markers)],
+                "row": 1,
+                "col": 1,
+                "output": "model3d",
+            }
+        ]
+
+    return display_func(
+        *objects,
+        zoom=zoom,
+        canvas=canvas,
+        animation=animation,
+        return_fig=return_fig,
+        **kwargs,
+    )
+
+
+def show(*objects, row=None, col=None, output="model3d", **kwargs):
     """Display objects and paths graphically.
 
     Global graphic styles can be set with kwargs as style dictionary or using
@@ -106,56 +187,39 @@ def show(
     >>> # graphic output
     """
 
-    # process input objs
-    objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
-        objects,
-        row,
-        col,
-        output,
-    )
-    kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
-    kwargs["subplot_specs"] = subplot_specs
+    # allows kwargs to override within `with show_context`
+    # Example:
+    # with magpy.show_context(canvas=fig, zoom=1):
+    #   src1.show(row=1, col=1)
+    #   magpy.show(src2, row=1, col=2)
+    #   magpy.show(src1, src2, row=1, col=3, zoom=10)
+    # # -> zoom=10 should override zoom=1 from context
+    rco = {"row": row, "col": col, "output": output}
+    kwargs.update(rco)
+    if ctx.isrunning:
+        ctx.kwargs.update(kwargs)
+        if not objects:
+            objects = tuple({**o, **rco} for o in ctx.objects)
+        objects, *_ = process_show_input_objs(objects, row, col, output)
+        ctx.objects += tuple(objects)
+        return None
+    return _show(*objects, **kwargs)
 
-    # test if all source dimensions and excitations have been initialized
-    check_dimensions(obj_list_flat)
-    check_excitations(obj_list_flat)
 
-    # test if every individual obj_path is good
-    test_path_format(obj_list_flat)
+@contextmanager
+def show_context(*objects, row=None, col=None, output="model3d", **kwargs):
+    """Context manager to temporarily set display settings in the `with` statement context.
 
-    # input checks
-    backend = check_format_input_backend(backend)
-    check_input_zoom(zoom)
-    check_input_animation(animation)
-    check_format_input_vector(
-        markers,
-        dims=(2,),
-        shape_m1=3,
-        sig_name="markers",
-        sig_type="array_like of shape (n,3)",
-        allow_None=True,
-    )
-
-    # pylint: disable=import-outside-toplevel
-    display_func = getattr(
-        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )
-
-    if markers:
-        objects = list(objects) + [
-            {
-                "objects": [MagpyMarkers(*markers)],
-                "row": 1,
-                "col": 1,
-                "output": "model3d",
-            }
-        ]
-
-    return display_func(
-        *objects,
-        zoom=zoom,
-        canvas=canvas,
-        animation=animation,
-        return_fig=return_fig,
-        **kwargs,
-    )
+    You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
+    """
+    # pylint: disable=protected-access
+    try:
+        ctx.isrunning = True
+        kwargs.update(row=row, col=col, output=output)
+        objects, *_ = process_show_input_objs(objects, row, col, output)
+        ctx.objects += tuple(objects)
+        ctx.kwargs.update(**kwargs)
+        yield
+        _show(*ctx.objects, **ctx.kwargs)
+    finally:
+        ctx.reset()

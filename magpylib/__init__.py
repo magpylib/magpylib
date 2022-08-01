@@ -55,4 +55,4 @@ from magpylib._src.defaults.defaults_classes import default_settings as defaults
 from magpylib._src.fields import getB, getH
 from magpylib._src.obj_classes.class_Sensor import Sensor
 from magpylib._src.obj_classes.class_Collection import Collection
-from magpylib._src.display.display import show
+from magpylib._src.display.display import show, show_context
