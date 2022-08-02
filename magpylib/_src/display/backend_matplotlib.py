@@ -27,6 +27,7 @@ LINE_STYLES = {
 def generic_trace_to_matplotlib(trace):
     """Transform a generic trace into a matplotlib trace"""
     traces_mpl = []
+    leg_title = trace.get("legendgrouptitle_text", None)
     if trace["type"] == "mesh3d":
         subtraces = [trace]
         if trace.get("facecolor", None) is not None:
@@ -46,11 +47,6 @@ def generic_trace_to_matplotlib(trace):
                 }
             )
     elif "scatter" in trace["type"]:
-        coords_str = "xyz"
-        if trace["type"] == "scatter":
-            coords_str = "xy"
-        coords = np.array([trace[k] for k in coords_str], dtype=float)
-        mode = trace.get("mode", None)
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
             for k, v in {
@@ -63,10 +59,15 @@ def generic_trace_to_matplotlib(trace):
                 "ms": ("marker", "size"),
             }.items()
         }
+        coords_str = "xyz"
+        if trace["type"] == "scatter":
+            coords_str = "xy"
+        coords = np.array([trace[k] for k in coords_str], dtype=float)
         if isinstance(props["ms"], np.ndarray):
             uniq = np.unique(props["ms"])
             if uniq.shape[0] == 1:
                 props["ms"] = props["ms"][0]
+                props["label"] = None
             else:
                 traces_mpl.append(
                     {
@@ -75,7 +76,8 @@ def generic_trace_to_matplotlib(trace):
                         "kwargs": {
                             "s": props["ms"],
                             "color": props["mec"],
-                            "marker": props["marker"],
+                            "marker": SYMBOLS.get(props["marker"], "x"),
+                            "label": None,
                         },
                     }
                 )
@@ -85,6 +87,7 @@ def generic_trace_to_matplotlib(trace):
             props["ls"] = LINE_STYLES.get(props["ls"], "solid")
         if "marker" in props:
             props["marker"] = SYMBOLS.get(props["marker"], "x")
+        mode = trace.get("mode", None)
         if mode is not None:
             if "lines" not in mode:
                 props["ls"] = ""
@@ -115,6 +118,10 @@ def generic_trace_to_matplotlib(trace):
     for tr in traces_mpl:
         tr["row"] = trace["row"]
         tr["col"] = trace["col"]
+        if "label" not in tr.get("kwargs", "label"):
+            tr["kwargs"]["label"] = trace.get("name", "")
+            if leg_title is not None:
+                tr["kwargs"]["label"] += f" ({leg_title})"
     return traces_mpl
 
 
@@ -254,12 +261,6 @@ def display_matplotlib(
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(ind):
-        for ax in axes.values():
-            if ax.name == "3d":
-                ax.set(
-                    **{f"{k}label": f"{k} [mm]" for k in "xyz"},
-                    **{f"{k}lim": r for k, r in zip("xyz", ranges)},
-                )
         for tr in frames[ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
             ax = axes[row_col_num]
@@ -267,6 +268,14 @@ def display_matplotlib(
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
             getattr(ax, constructor)(*args, **kwargs)
+        for ax in axes.values():
+            if ax.name == "3d":
+                ax.set(
+                    **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+                    **{f"{k}lim": r for k, r in zip("xyz", ranges)},
+                )
+            else:
+                ax.legend()
 
     def animate(ind):  # pragma: no cover
         for ax in axes.values():
