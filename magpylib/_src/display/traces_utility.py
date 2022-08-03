@@ -462,19 +462,19 @@ def group_traces(*traces):
 
 def subdivide_mesh_by_facecolor(trace):
     """Subdivide a mesh into a list of meshes based on facecolor"""
-    facecolor = trace["facecolor"]
+    facecolor = trace["facecolor"] = np.array(trace["facecolor"])
     subtraces = []
     # pylint: disable=singleton-comparison
     facecolor[facecolor == np.array(None)] = "black"
     for color in np.unique(facecolor):
         mask = facecolor == color
         new_trace = trace.copy()
-        uniq = np.unique(np.hstack([trace[k][mask] for k in "ijk"]))
+        uniq = np.unique(np.hstack([np.array(trace[k])[mask] for k in "ijk"]))
         new_inds = np.arange(len(uniq))
         mapping_ar = np.zeros(uniq.max() + 1, dtype=new_inds.dtype)
         mapping_ar[uniq] = new_inds
         for k in "ijk":
-            new_trace[k] = mapping_ar[trace[k][mask]]
+            new_trace[k] = mapping_ar[np.array(trace[k])[mask]]
         for k in "xyz":
             new_trace[k] = new_trace[k][uniq]
         new_trace["color"] = color

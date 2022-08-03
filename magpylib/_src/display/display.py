@@ -142,6 +142,7 @@ def show(*objects, row=None, col=None, output="model3d", **kwargs):
         If True, the function call returns the figure object.
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
 
     Returns
     -------
