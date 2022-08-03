@@ -46,7 +46,7 @@ class MagpyMarkers:
         self.style = Markers()
         self.markers = np.array(markers)
 
-    def _draw_func(self, color=None, style=None, **kwargs):
+    def _draw_func(self, style=None, **kwargs):
         """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
         provided arguments."""
         style = self.style if style is None else style
@@ -56,7 +56,7 @@ class MagpyMarkers:
             for k, v in style.marker.as_dict(flatten=True, separator="_").items()
         }
         marker_kwargs["marker_color"] = (
-            style.marker.color if style.marker.color is not None else color
+            style.marker.color if style.marker.color is not None else style.color
         )
         trace = dict(
             type="scatter3d",
@@ -77,7 +77,6 @@ def make_DefaultTrace(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -94,7 +93,7 @@ def make_DefaultTrace(
         z=[0.0],
         mode="markers+text",
         marker_size=10,
-        marker_color=color,
+        marker_color=style.color,
         marker_symbol="diamond",
     )
     update_trace_name(trace, f"{type(obj).__name__}", "", style)
@@ -108,7 +107,6 @@ def make_Line(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -133,7 +131,7 @@ def make_Line(
         z=z,
         mode="lines",
         line_width=style.arrow.width,
-        line_color=color,
+        line_color=style.color,
     )
     default_suffix = (
         f" ({unit_prefix(current)}A)"
@@ -150,7 +148,6 @@ def make_Loop(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     vertices=50,
     **kwargs,
@@ -172,7 +169,7 @@ def make_Loop(
         z=z,
         mode="lines",
         line_width=style.arrow.width,
-        line_color=color,
+        line_color=style.color,
     )
     default_suffix = (
         f" ({unit_prefix(current)}A)"
@@ -189,7 +186,6 @@ def make_Dipole(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     autosize=None,
     **kwargs,
@@ -210,7 +206,7 @@ def make_Dipole(
         diameter=0.3 * size,
         height=size,
         pivot=style.pivot,
-        color=color,
+        color=style.color,
     )
     default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
     update_trace_name(trace, "Dipole", default_suffix, style)
@@ -235,7 +231,6 @@ def make_Cuboid(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -246,7 +241,7 @@ def make_Cuboid(
     style = obj.style if style is None else style
     dimension = obj.dimension
     d = [unit_prefix(d / 1000) for d in dimension]
-    trace = make_BaseCuboid("plotly-dict", dimension=dimension, color=color)
+    trace = make_BaseCuboid("plotly-dict", dimension=dimension, color=style.color)
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     update_trace_name(trace, "Cuboid", default_suffix, style)
     update_magnet_mesh(
@@ -261,7 +256,6 @@ def make_Cylinder(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     base=50,
     **kwargs,
@@ -274,7 +268,7 @@ def make_Cylinder(
     diameter, height = obj.dimension
     d = [unit_prefix(d / 1000) for d in (diameter, height)]
     trace = make_BasePrism(
-        "plotly-dict", base=base, diameter=diameter, height=height, color=color
+        "plotly-dict", base=base, diameter=diameter, height=height, color=style.color
     )
     default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     update_trace_name(trace, "Cylinder", default_suffix, style)
@@ -290,7 +284,6 @@ def make_CylinderSegment(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     vertices=25,
     **kwargs,
@@ -303,7 +296,7 @@ def make_CylinderSegment(
     dimension = obj.dimension
     d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
     trace = make_BaseCylinderSegment(
-        "plotly-dict", dimension=dimension, vert=vertices, color=color
+        "plotly-dict", dimension=dimension, vert=vertices, color=style.color
     )
     default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     update_trace_name(trace, "CylinderSegment", default_suffix, style)
@@ -319,7 +312,6 @@ def make_Sphere(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     vertices=15,
     **kwargs,
@@ -332,7 +324,7 @@ def make_Sphere(
     diameter = obj.diameter
     vertices = min(max(vertices, 3), 20)
     trace = make_BaseEllipsoid(
-        "plotly-dict", vert=vertices, dimension=[diameter] * 3, color=color
+        "plotly-dict", vert=vertices, dimension=[diameter] * 3, color=style.color
     )
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     update_trace_name(trace, "Sphere", default_suffix, style)
@@ -360,7 +352,6 @@ def make_Sensor(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     autosize=None,
     **kwargs,
@@ -379,10 +370,10 @@ def make_Sensor(
     pixel = obj.pixel
     pixel = np.array(pixel).reshape((-1, 3))
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
-    sensor = get_sensor_mesh(**style_arrows, center_color=color)
+    sensor = get_sensor_mesh(**style_arrows, center_color=style.color)
     vertices = np.array([sensor[k] for k in "xyz"]).T
-    if color is not None:
-        sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = color
+    if style.color is not None:
+        sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
     dim = np.array(
         [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
         dtype=float,
@@ -418,7 +409,7 @@ def make_Sensor(
         hull_mesh = make_BaseCuboid(
             "plotly-dict", position=hull_pos, dimension=hull_dim
         )
-        hull_mesh["facecolor"] = np.repeat(color, len(hull_mesh["i"]))
+        hull_mesh["facecolor"] = np.repeat(style.color, len(hull_mesh["i"]))
         meshes_to_merge.append(hull_mesh)
     trace = merge_mesh3d(*meshes_to_merge)
     default_suffix = (
@@ -682,7 +673,7 @@ def get_generic_traces(
     # parse kwargs into style and non style args
 
     make_func = input_obj._draw_func
-    make_func_kwargs = {"color": style.color, "style": style, **kwargs}
+    make_func_kwargs = {"style": style, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
@@ -778,7 +769,7 @@ def get_generic_traces(
             all_generic_traces.append(make_mag_arrows(input_obj, style))
 
     for tr in all_generic_traces:
-        tr.update(row=row, col=col, legendgroup=legendgroup)
+        tr.update(row=row, col=col, legendgroup=legendgroup, opacity=style.opacity)
         if legendtext is not None:
             tr["name"] = legendtext
         elif "name" not in tr:
