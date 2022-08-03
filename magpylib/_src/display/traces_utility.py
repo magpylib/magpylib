@@ -195,7 +195,27 @@ def get_rot_pos_from_path(obj, show_path=None):
     return rots, poss, inds
 
 
-def get_flatten_objects_properties(
+def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
+    """Return flat dict with objs as keys object properties as values.
+    Properties include: row_cols, style, legendgroup, legendtext"""
+    flat_objs = {}
+    for obj in objs:
+        if obj["output"] == "model3d":
+            flat_sub_objs = get_flatten_objects_properties_recursive(
+                *obj["objects"], colorsequence=colorsequence, **kwargs
+            )
+            for subobj, props in flat_sub_objs.items():
+                if subobj in flat_objs:
+                    props["row_cols"] = flat_objs[subobj]["row_cols"]
+                elif "row_cols" not in props:
+                    props["row_cols"] = []
+                props["row_cols"].extend([(obj["row"], obj["col"])])
+            flat_objs.update(flat_sub_objs)
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
+    return flat_objs, kwargs
+
+
+def get_flatten_objects_properties_recursive(
     *obj_list_semi_flat,
     colorsequence=None,
     color_cycle=None,
@@ -205,9 +225,6 @@ def get_flatten_objects_properties(
     **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
-    colorsequence = (
-        Config.display.colorsequence if colorsequence is None else colorsequence
-    )
     if color_cycle is None:
         color_cycle = cycle(colorsequence)
     flat_objs = {}
@@ -231,7 +248,7 @@ def get_flatten_objects_properties(
         }
         if isCollection:
             flat_objs.update(
-                get_flatten_objects_properties(
+                get_flatten_objects_properties_recursive(
                     *subobj.children,
                     colorsequence=colorsequence,
                     color_cycle=color_cycle,

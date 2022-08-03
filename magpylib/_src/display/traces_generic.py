@@ -783,7 +783,9 @@ def get_generic_traces(
             tr["name"] = legendtext
         elif "name" not in tr:
             tr["name"] = style.label
-
+        if tr.get("facecolor", None) is not None:
+            # this allows merging of 3d meshes, ignoring different colors
+            tr["color"] = None
     out = {"generic": all_generic_traces}
     if extra_backend:
         out.update({extra_backend: path_traces_extra_specific_backend})
@@ -915,28 +917,16 @@ def draw_frame(
     traces_dicts, kwargs: dict, dict
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
-    obj_list_semi_flat_3d = format_obj_input(
-        [o["objects"] for o in objs if o["output"] == "model3d"],
-        allow="sources+sensors+collections",
-    )
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
-    markers = (
-        []
-        if not objs
-        else objs[-1]["objects"][-1:]
-        if isinstance(objs[-1]["objects"][-1], MagpyMarkers)
-        else []
+
+    flat_objs_props, kwargs = get_flatten_objects_properties(
+        *objs, colorsequence=colorsequence, **kwargs
     )
-    flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat_3d, *markers, colorsequence=colorsequence, **kwargs
-    )
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-    row_col_out = get_row_cols(objs, is_model3d=True)
     traces_dict, traces_to_resize_dict, extra_backend_traces = get_row_col_traces(
-        flat_objs_props, row_col_out, **kwargs
+        flat_objs_props, **kwargs
     )
     traces = [t for tr in traces_dict.values() for t in tr]
     ranges = get_scene_ranges(*traces, zoom=zoom)
@@ -944,7 +934,7 @@ def draw_frame(
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
 
     traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
-        traces_to_resize_dict, row_col_out, autosize=autosize, **kwargs
+        traces_to_resize_dict, autosize=autosize, **kwargs
     )
     traces_dict.update(traces_dict_2)
     extra_backend_traces.extend(extra_backend_traces2)
@@ -957,9 +947,7 @@ def draw_frame(
     return traces, autosize, ranges, extra_backend_traces
 
 
-def get_row_col_traces(
-    flat_objs_props, row_col_out, extra_backend=False, autosize=None, **kwargs
-):
+def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kwargs):
     """Return traces, traces to resize and extra_backend_traces"""
     # pylint: disable=protected-access
     extra_backend_traces = []
@@ -969,7 +957,6 @@ def get_row_col_traces(
     traces_to_resize_dict = {}
     for obj, params in flat_objs_props.items():
         params.update(kwargs)
-        rco_obj = row_col_out.get(obj, [(1, 1)])
         if autosize is None and isinstance(obj, (Dipole, Sensor)):
             traces_to_resize_dict[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
@@ -977,6 +964,7 @@ def get_row_col_traces(
             traces_dict[obj] = [dict(x=x, y=y, z=z)]
         else:
             traces_dict[obj] = []
+            rco_obj = params.pop("row_cols")
             for rco in rco_obj:
                 params["row"], params["col"] = rco
                 out_traces = get_generic_traces(
@@ -987,29 +975,6 @@ def get_row_col_traces(
                     extra_backend_traces.extend(ebt)
                 traces_dict[obj].extend(out_traces)
     return traces_dict, traces_to_resize_dict, extra_backend_traces
-
-
-def get_row_cols(objs, is_model3d):
-    """Return row_col dict with objs as keys and tuple (row,col) as values"""
-    # pylint: disable=import-outside-toplevel
-
-    from magpylib._src.obj_classes.class_Collection import Collection
-
-    row_cols = {}
-    for obj in objs:
-        sub_objs = []
-        for sub_obj in obj["objects"]:
-            sub_objs.append(sub_obj)
-            if isinstance(sub_obj, Collection):
-                sub_objs.extend(sub_obj.children_all)
-        for sub_obj in sub_objs:
-            if sub_obj not in row_cols:
-                row_cols[sub_obj] = []
-            if not (
-                is_model3d ^ (obj["output"] == "model3d")
-            ):  # both True or both False
-                row_cols[sub_obj].extend([(obj["row"], obj["col"])])
-    return row_cols
 
 
 def get_frames(
