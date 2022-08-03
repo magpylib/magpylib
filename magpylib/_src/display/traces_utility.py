@@ -8,6 +8,7 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
@@ -198,7 +199,10 @@ def get_flatten_objects_properties(
     *obj_list_semi_flat,
     colorsequence=None,
     color_cycle=None,
-    **parent_props,
+    parent_legendgroup=None,
+    parent_color=None,
+    parent_label=None,
+    **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
     colorsequence = (
@@ -209,30 +213,32 @@ def get_flatten_objects_properties(
     flat_objs = {}
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
-        props = {**parent_props}
-        parent_color = parent_props.get("color", "!!!missing!!!")
-        if parent_color == "!!!missing!!!":
-            props["color"] = next(color_cycle)
-        if parent_props.get("legendgroup", None) is None:
-            props["legendgroup"] = f"{subobj}"
-        if parent_props.get("showlegend", None) is None:
-            props["showlegend"] = True
-        if parent_props.get("legendtext", None) is None:
-            legendtext = None
-            if isCollection:
-                legendtext = getattr(getattr(subobj, "style", None), "label", None)
-                legendtext = f"{subobj!r}" if legendtext is None else legendtext
-            props["legendtext"] = legendtext
-        flat_objs[subobj] = props
+        style = get_style(subobj, Config, **kwargs)
+        if style.label is None:
+            style.label = str(type(subobj).__name__)
+        if parent_legendgroup is not None:
+            legendgroup = parent_legendgroup
+        else:
+            legendgroup = f"{subobj}"
+        if parent_color is not None and style.color is None:
+            style.color = parent_color
+        elif style.color is None:
+            style.color = next(color_cycle)
+        flat_objs[subobj] = {
+            "legendgroup": legendgroup,
+            "style": style,
+            "legendtext": parent_label,
+        }
         if isCollection:
-            if subobj.style.color is not None:
-                flat_objs[subobj]["color"] = subobj.style.color
             flat_objs.update(
                 get_flatten_objects_properties(
                     *subobj.children,
                     colorsequence=colorsequence,
                     color_cycle=color_cycle,
-                    **flat_objs[subobj],
+                    parent_legendgroup=legendgroup,
+                    parent_color=style.color,
+                    parent_label=style.label,
+                    **kwargs,
                 )
             )
     return flat_objs
@@ -403,7 +409,7 @@ def group_traces(*traces):
     """Group and merge mesh traces with similar properties. This drastically improves
     browser rendering performance when displaying a lot of mesh3d objects."""
     mesh_groups = {}
-    common_keys = ["legendgroup", "opacity", "row", "col"]
+    common_keys = ["legendgroup", "opacity", "row", "col", "color"]
     spec_keys = {
         "mesh3d": ["colorscale"],
         "scatter3d": [

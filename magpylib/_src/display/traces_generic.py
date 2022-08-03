@@ -34,7 +34,6 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
-from magpylib._src.style import get_style
 from magpylib._src.style import Markers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
@@ -473,7 +472,7 @@ def update_trace_name(trace, default_name, default_suffix, style):
     return trace
 
 
-def make_mag_arrows(obj, style, legendgroup, kwargs):
+def make_mag_arrows(obj, style):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -510,18 +509,17 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     trace = {
         "type": "scatter3d",
         "mode": "lines",
-        "line_color": kwargs["color"],
-        "opacity": kwargs["opacity"],
+        "line_color": style.color,
+        "opacity": style.opacity,
         "x": x,
         "y": y,
         "z": z,
-        "legendgroup": legendgroup,
         "showlegend": False,
     }
     return trace
 
 
-def make_path(input_obj, style, legendgroup, kwargs):
+def make_path(input_obj, style):
     """draw obj path based on path style properties"""
     x, y, z = np.array(input_obj.position).T
     txt_kwargs = (
@@ -531,10 +529,10 @@ def make_path(input_obj, style, legendgroup, kwargs):
     )
     marker = style.path.marker.as_dict()
     marker["symbol"] = marker["symbol"]
-    marker["color"] = kwargs["color"] if marker["color"] is None else marker["color"]
+    marker["color"] = style.color if marker["color"] is None else marker["color"]
     line = style.path.line.as_dict()
     line["dash"] = line["style"]
-    line["color"] = kwargs["color"] if line["color"] is None else line["color"]
+    line["color"] = style.color if line["color"] is None else line["color"]
     line = {k: v for k, v in line.items() if k != "style"}
     scatter_path = dict(
         type="scatter3d",
@@ -543,11 +541,10 @@ def make_path(input_obj, style, legendgroup, kwargs):
         z=z,
         name=f"Path: {input_obj}",
         showlegend=False,
-        legendgroup=legendgroup,
         **{f"marker_{k}": v for k, v in marker.items()},
         **{f"line_{k}": v for k, v in line.items()},
         **txt_kwargs,
-        opacity=kwargs["opacity"],
+        opacity=style.opacity,
     )
     return scatter_path
 
@@ -558,8 +555,8 @@ def get_generic_traces_2D(
     output="B",
     row=None,
     col=None,
-    color=None,
     style_path_frames=None,
+    flat_objs_props=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
@@ -608,6 +605,9 @@ def get_generic_traces_2D(
         src_str = f"""{len(sources)} source{'s' if len(sources)>1 else ''}"""
         marker_size = np.array([0.00001] * len(frames_indices))
         marker_size[frame_ind] = 10
+        sens_props = flat_objs_props.get(sens, None)
+        if sens_props is not None:
+            color = sens_props["style"].color
         return dict(
             mode="lines+markers",
             name=f"{name}",
@@ -650,15 +650,14 @@ def get_generic_traces_2D(
 
 def get_generic_traces(
     input_obj,
-    color=None,
     autosize=None,
     legendgroup=None,
-    showlegend=None,
     legendtext=None,
     mag_arrows=False,
     extra_backend=False,
     row=1,
     col=1,
+    style=None,
     **kwargs,
 ) -> list:
     """
@@ -681,40 +680,29 @@ def get_generic_traces(
     # pylint: disable=protected-access
 
     # parse kwargs into style and non style args
-    style = get_style(input_obj, Config, **kwargs)
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
-    kwargs["style"] = style
-    style_color = getattr(style, "color", None)
-    kwargs["color"] = style_color if style_color is not None else color
-    kwargs["opacity"] = style.opacity
-    legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
-
-    label = getattr(getattr(input_obj, "style", None), "label", None)
-    style.label = label = label if label is not None else str(type(input_obj).__name__)
 
     make_func = input_obj._draw_func
-    make_func_kwargs = kwargs.copy()
+    make_func_kwargs = {"color": style.color, "style": style, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
-    traces = []
+    all_generic_traces = []
     path_traces = []
-    path_traces_extra_generic = {}
+    path_traces_extra_generic_by_type = {}
     path_traces_extra_specific_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     if not has_path:
         tr = make_func(**make_func_kwargs)
         tr["row"] = row
         tr["col"] = col
-        traces = [tr]
-        out = (traces,)
-        if extra_backend is not False:
-            out += (path_traces_extra_specific_backend,)
-        return out[0] if len(out) == 1 else out
+        out = {"generic": [tr]}
+        if extra_backend:
+            out.update({extra_backend: path_traces_extra_specific_backend})
+        return out
 
     extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
     orientations, positions, _ = get_rot_pos_from_path(input_obj, style.path.frames)
-    for pos_orient_ind, (orient, pos) in enumerate(zip(orientations, positions)):
+    for orient, pos in zip(orientations, positions):
         if style.model3d.showdefault and make_func is not None:
             path_traces.append(
                 make_func(position=pos, orientation=orient, **make_func_kwargs)
@@ -723,7 +711,7 @@ def get_generic_traces(
             if extr.show:
                 extr.update(extr.updatefunc())
                 if extr.backend == "generic":
-                    trace3d = {"opacity": kwargs["opacity"], "row": row, "col": col}
+                    trace3d = {"opacity": style.opacity}
                     ttype = extr.constructor.lower()
                     obj_extr_trace = (
                         extr.kwargs() if callable(extr.kwargs) else extr.kwargs
@@ -732,13 +720,13 @@ def get_generic_traces(
                     if ttype == "scatter3d":
                         for k in ("marker", "line"):
                             trace3d[f"{k}_color"] = trace3d.get(
-                                f"{k}_color", kwargs["color"]
+                                f"{k}_color", style.color
                             )
                     elif ttype == "mesh3d":
                         trace3d["showscale"] = trace3d.get("showscale", False)
                         if "facecolor" in obj_extr_trace:
                             ttype = "mesh3d_facecolor"
-                        trace3d["color"] = trace3d.get("color", kwargs["color"])
+                        trace3d["color"] = trace3d.get("color", style.color)
                     else:  # pragma: no cover
                         raise ValueError(
                             f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
@@ -754,68 +742,52 @@ def get_generic_traces(
                             separator="_",
                         )
                     )
-                    if ttype not in path_traces_extra_generic:
-                        path_traces_extra_generic[ttype] = []
-                    path_traces_extra_generic[ttype].append(trace3d)
+                    if ttype not in path_traces_extra_generic_by_type:
+                        path_traces_extra_generic_by_type[ttype] = []
+                    path_traces_extra_generic_by_type[ttype].append(trace3d)
                 elif extr.backend == extra_backend:
-                    showleg = (
-                        showlegend
-                        and pos_orient_ind == 0
-                        and not style.model3d.showdefault
-                    )
-                    showleg = True if showleg is None else showleg
                     trace3d = {
                         "model3d": extr,
                         "position": pos,
                         "orientation": orient,
                         "kwargs": {
-                            "opacity": kwargs["opacity"],
-                            "color": kwargs["color"],
+                            "opacity": style.opacity,
+                            "color": style.color,
                             "legendgroup": legendgroup,
-                            "name": label,
-                            "showlegend": showleg,
+                            "name": legendtext,
                             "row": row,
                             "col": col,
                         },
                     }
                     path_traces_extra_specific_backend.append(trace3d)
-    trace = merge_traces(*path_traces)
-    for ind, traces_extra in enumerate(path_traces_extra_generic.values()):
-        extra_model3d_trace = merge_traces(*traces_extra)
-        extra_model3d_trace.update(
-            {
-                "legendgroup": legendgroup,
-                "showlegend": showlegend and ind == 0 and not trace,
-                "name": label,
-            }
-        )
-        traces.append(extra_model3d_trace)
 
+    trace = merge_traces(*path_traces)
     if trace:
-        trace.update(
-            {
-                "legendgroup": legendgroup,
-                "showlegend": True if showlegend is None else showlegend,
-            }
-        )
-        if legendtext is not None:
-            trace["name"] = legendtext
-        traces.append(trace)
+        all_generic_traces.append(trace)
+
+    for traces_extra in path_traces_extra_generic_by_type.values():
+        extra_model3d_trace = merge_traces(*traces_extra)
+        all_generic_traces.append(extra_model3d_trace)
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
-        scatter_path = make_path(input_obj, style, legendgroup, kwargs)
-        traces.append(scatter_path)
+        scatter_path = make_path(input_obj, style)
+        all_generic_traces.append(scatter_path)
 
     if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
         if style.magnetization.show:
-            traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
-    for tr in traces:
-        tr["row"] = row
-        tr["col"] = col
-    out = (traces,)
-    if extra_backend is not False:
-        out += (path_traces_extra_specific_backend,)
-    return out[0] if len(out) == 1 else out
+            all_generic_traces.append(make_mag_arrows(input_obj, style))
+
+    for tr in all_generic_traces:
+        tr.update(row=row, col=col, legendgroup=legendgroup)
+        if legendtext is not None:
+            tr["name"] = legendtext
+        elif "name" not in tr:
+            tr["name"] = style.label
+
+    out = {"generic": all_generic_traces}
+    if extra_backend:
+        out.update({extra_backend: path_traces_extra_specific_backend})
+    return out
 
 
 def clean_legendgroups(frames):
@@ -826,8 +798,16 @@ def clean_legendgroups(frames):
             lg = tr.get("legendgroup", None)
             if lg is not None and lg not in legendgroups:
                 legendgroups.append(lg)
+                tr["showlegend"] = True
             elif lg is not None:  # and tr.legendgrouptitle.text is None:
                 tr["showlegend"] = False
+        for tr in fr["extra_backend_traces"]:
+            lg = tr["kwargs"].get("legendgroup", None)
+            if lg is not None and lg not in legendgroups:
+                legendgroups.append(lg)
+                tr["kwargs"]["showlegend"] = True
+            elif lg is not None:  # and tr.legendgrouptitle.text is None:
+                tr["kwargs"]["showlegend"] = False
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
@@ -951,8 +931,9 @@ def draw_frame(
         else []
     )
     flat_objs_props = get_flatten_objects_properties(
-        *obj_list_semi_flat_3d, *markers, colorsequence=colorsequence
+        *obj_list_semi_flat_3d, *markers, colorsequence=colorsequence, **kwargs
     )
+    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
     row_col_out = get_row_cols(objs, is_model3d=True)
     traces_dict, traces_to_resize_dict, extra_backend_traces = get_row_col_traces(
         flat_objs_props, row_col_out, **kwargs
@@ -967,12 +948,11 @@ def draw_frame(
     )
     traces_dict.update(traces_dict_2)
     extra_backend_traces.extend(extra_backend_traces2)
-    traces = [t for tr in traces_dict.values() for t in tr]
-    traces = group_traces(*traces)
+    traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
     obj_list_2d = [o for o in objs if o["output"] != "model3d"]
     for objs_2d in obj_list_2d:
         objs_2d["style_path_frames"] = kwargs.get("style_path_frames", [-1])
-        traces2d = get_generic_traces_2D(**objs_2d)
+        traces2d = get_generic_traces_2D(**objs_2d, flat_objs_props=flat_objs_props)
         traces.extend(traces2d)
     return traces, autosize, ranges, extra_backend_traces
 
@@ -1002,8 +982,8 @@ def get_row_col_traces(
                 out_traces = get_generic_traces(
                     obj, extra_backend=extra_backend, autosize=autosize, **params
                 )
-                if extra_backend is not False:
-                    out_traces, ebt = out_traces
+                if extra_backend:
+                    out_traces, ebt = out_traces.values()
                     extra_backend_traces.extend(ebt)
                 traces_dict[obj].extend(out_traces)
     return traces_dict, traces_to_resize_dict, extra_backend_traces
