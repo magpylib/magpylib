@@ -483,7 +483,7 @@ def subdivide_mesh_by_facecolor(trace):
     return subtraces
 
 
-def process_show_input_objs(objs, row=None, col=None, output="model3d"):
+def process_show_input_objs(objs, row=None, col=None, output="model3d", sumup=True):
     """Extract max_rows and max_cols from obj list of dicts"""
     max_rows = max_cols = 1
     flat_objs = []
@@ -510,6 +510,8 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d"):
         flat_objs.extend(obj["objects"])
         if "output" not in obj:
             obj["output"] = output
+        if obj["output"] != "model3d" and "sumup" not in obj:
+            obj["sumup"] = sumup
         key = (obj["row"], obj["col"], obj["output"])
         if key in new_objs:
             new_objs[key]["objects"] = list(

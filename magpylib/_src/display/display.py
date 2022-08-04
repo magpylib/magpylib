@@ -43,6 +43,7 @@ def _show(
     row=None,
     col=None,
     output="model3d",
+    sumup=True,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -56,6 +57,7 @@ def _show(
         row,
         col,
         output,
+        sumup,
     )
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
@@ -105,7 +107,7 @@ def _show(
     )
 
 
-def show(*objects, row=None, col=None, output="model3d", **kwargs):
+def show(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
     """Display objects and paths graphically.
 
     Global graphic styles can be set with kwargs as style dictionary or using
@@ -195,7 +197,7 @@ def show(*objects, row=None, col=None, output="model3d", **kwargs):
     #   magpy.show(src2, row=1, col=2)
     #   magpy.show(src1, src2, row=1, col=3, zoom=10)
     # # -> zoom=10 should override zoom=1 from context
-    rco = {"row": row, "col": col, "output": output}
+    rco = {"row": row, "col": col, "output": output, "sumup": sumup}
     kwargs.update(rco)
     if ctx.isrunning:
         ctx.kwargs.update(kwargs)
@@ -208,7 +210,7 @@ def show(*objects, row=None, col=None, output="model3d", **kwargs):
 
 
 @contextmanager
-def show_context(*objects, row=None, col=None, output="model3d", **kwargs):
+def show_context(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
     """Context manager to temporarily set display settings in the `with` statement context.
 
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
@@ -216,7 +218,7 @@ def show_context(*objects, row=None, col=None, output="model3d", **kwargs):
     # pylint: disable=protected-access
     try:
         ctx.isrunning = True
-        kwargs.update(row=row, col=col, output=output)
+        kwargs.update(row=row, col=col, output=output, sumup=sumup)
         objects, *_ = process_show_input_objs(objects, row, col, output)
         ctx.objects += tuple(objects)
         ctx.kwargs.update(**kwargs)

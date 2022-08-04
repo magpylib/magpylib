@@ -546,6 +546,8 @@ def get_generic_traces_2D(
     output="B",
     row=None,
     col=None,
+    sumup=True,
+    pixel_agg="mean",
     style_path_frames=None,
     flat_objs_props=None,
 ):
@@ -553,7 +555,7 @@ def get_generic_traces_2D(
     # pylint: disable=import-outside-toplevel
     from magpylib._src.fields.field_wrap_BH import getBH_level2
 
-    sources = format_obj_input(objects, allow="sources")
+    sources = format_obj_input(objects, allow="sources+collections")
     sensors = format_obj_input(objects, allow="sensors")
     coords_indices = [0, 1, 2]
     xyz_linestyles = ("solid", "dash", "dot")
@@ -565,50 +567,56 @@ def get_generic_traces_2D(
     BH_array = getBH_level2(
         sources,
         sensors,
-        sumup=True,
+        sumup=sumup,
         squeeze=False,
         field=field_str,
-        pixel_agg="mean",
+        pixel_agg=pixel_agg,
         output="ndarray",
     )
-    BH_array = BH_array[0]  # select first source
-    BH_array = BH_array.swapaxes(0, 1)  # swap axes to have sensors first, path second
-    BH_array = BH_array[:, :, 0, :]  # remove pixel dim
+    BH_array = BH_array.swapaxes(1, 2)  # swap axes to have sensors first, path second
+    BH_array = BH_array[:, :, :, 0, :]  # remove pixel dim
 
-    frames_indices = np.arange(0, BH_array.shape[1])
+    frames_indices = np.arange(0, BH_array.shape[2])
     style_path_frames = [-1] if style_path_frames is None else style_path_frames
     if isinstance(style_path_frames, numbers.Number):
         # pylint: disable=invalid-unary-operand-type
         style_path_frames = frames_indices[::-style_path_frames]
-    if len(sources) < 8:
-        src_lst_str = "<br>".join(f" - {s}" for s in sources)
-    else:
-        counts = Counter(s.__class__.__name__ for s in sources)
-        src_lst_str = "<br>".join(f" {v}x {k}" for k, v in counts.items())
 
-    def get_kwargs(sens, field_str, BH, coord_ind, frame_ind):
+    def get_obj_list_str(objs):
+        if len(objs) < 8:
+            obj_lst_str = "<br>".join(f" - {s}" for s in objs)
+        else:
+            counts = Counter(s.__class__.__name__ for s in objs)
+            obj_lst_str = "<br>".join(f" {v}x {k}" for k, v in counts.items())
+        return obj_lst_str
+
+    def get_label_and_color(obj):
+        props = flat_objs_props.get(obj, None)
+        style = props.get("style", None)
+        label = getattr(style, "label", obj.__class__.__name__)
+        color = getattr(style, "color", None)
+        return label, color
+
+    obj_lst_str = {
+        "sources": get_obj_list_str(sources),
+        "sensors": get_obj_list_str(sensors),
+    }
+    mode = "sources" if sumup else "sensors"
+
+    def get_trace_dict(field_str, BH, coord_ind, frame_ind, label, color):
         k = "xyz"[coord_ind]
-        name = (
-            "Sensor"
-            if sens.style.label is None or sens.style.label.strip() == ""
-            else sens.style.label
-        )
-        src_str = f"""{len(sources)} source{'s' if len(sources)>1 else ''}"""
         marker_size = np.array([0.00001] * len(frames_indices))
         marker_size[frame_ind] = 10
-        sens_props = flat_objs_props.get(sens, None)
-        if sens_props is not None:
-            color = sens_props["style"].color
         return dict(
             mode="lines+markers",
-            name=f"{name}",
-            legendgroup=f"{field_str}{k}",
-            legendgrouptitle_text=f"{field_str}{k} from {src_str}",
-            text="Sources",
+            name=label,
+            legendgrouptitle_text=f"{field_str}{k}",
+            text=mode,
             hovertemplate=(
                 "<b>Path index</b>: %{x}    "
                 f"<b>{field_str}{k}</b>: " + "%{y}T<br>"
-                f"<b>Sources</b>:<br>{src_lst_str}"
+                f"<b>{'sources'}</b>:<br>{obj_lst_str['sources']}<br>"
+                f"<b>{'sensors'}</b>:<br>{obj_lst_str['sensors']}"
                 # "<extra></extra>",
             ),
             x=frames_indices,
@@ -621,21 +629,35 @@ def get_generic_traces_2D(
         )
 
     traces = []
-    for sens, BH in zip(sensors, BH_array):
-        for coord_ind in coords_indices:
-            kwargs = dict(type="scatter", row=row, col=col)
-            traces.append(
-                {
-                    **get_kwargs(
-                        sens,
-                        field_str,
-                        BH,
-                        coord_ind,
-                        style_path_frames,
-                    ),
-                    **kwargs,
-                }
-            )
+    for src_ind, src in enumerate(sources):
+        if src_ind == 1 and sumup:
+            break
+        if mode == "sensors":
+            label, color = get_label_and_color(src)
+        for sens_ind, sens in enumerate(sensors):
+            BH = BH_array[src_ind, sens_ind]
+            if mode == "sources":
+                label, color = get_label_and_color(sens)
+            num_of_pix = len(sens.pixel.reshape(-1, 3)) if sens.pixel.ndim != 1 else 1
+            if num_of_pix > 1:
+                label = f"{label} ({num_of_pix} pixels {pixel_agg})"
+            for coord_ind in coords_indices:
+                traces.append(
+                    {
+                        **get_trace_dict(
+                            field_str,
+                            BH,
+                            coord_ind,
+                            style_path_frames,
+                            label,
+                            color,
+                        ),
+                        "legendgroup": f"{field_str}{coord_ind}",
+                        "type": "scatter",
+                        "row": row,
+                        "col": col,
+                    }
+                )
     return traces
 
 
@@ -783,17 +805,18 @@ def get_generic_traces(
     return out
 
 
-def clean_legendgroups(frames):
+def clean_legendgroups(frames, clean_2d=False):
     """removes legend duplicates for a plotly figure"""
     for fr in frames:
         legendgroups = []
         for tr in fr["data"]:
-            lg = tr.get("legendgroup", None)
-            if lg is not None and lg not in legendgroups:
-                legendgroups.append(lg)
-                tr["showlegend"] = True
-            elif lg is not None:  # and tr.legendgrouptitle.text is None:
-                tr["showlegend"] = False
+            if "z" in tr or clean_2d:
+                lg = tr.get("legendgroup", None)
+                if lg is not None and lg not in legendgroups:
+                    legendgroups.append(lg)
+                    tr["showlegend"] = True
+                elif lg is not None:  # and tr.legendgrouptitle.text is None:
+                    tr["showlegend"] = False
         for tr in fr["extra_backend_traces"]:
             lg = tr["kwargs"].get("legendgroup", None)
             if lg is not None and lg not in legendgroups:
@@ -916,6 +939,10 @@ def draw_frame(
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
 
+    style_path_frames = kwargs.get(
+        "style_path_frames", [-1]
+    )  # get before next func strips style
+
     flat_objs_props, kwargs = get_flatten_objects_properties(
         *objs, colorsequence=colorsequence, **kwargs
     )
@@ -935,8 +962,11 @@ def draw_frame(
     traces = group_traces(*[t for tr in traces_dict.values() for t in tr])
     obj_list_2d = [o for o in objs if o["output"] != "model3d"]
     for objs_2d in obj_list_2d:
-        objs_2d["style_path_frames"] = kwargs.get("style_path_frames", [-1])
-        traces2d = get_generic_traces_2D(**objs_2d, flat_objs_props=flat_objs_props)
+        traces2d = get_generic_traces_2D(
+            **objs_2d,
+            style_path_frames=style_path_frames,
+            flat_objs_props=flat_objs_props,
+        )
         traces.extend(traces2d)
     return traces, autosize, ranges, extra_backend_traces
 
