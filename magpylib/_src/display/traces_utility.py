@@ -494,16 +494,12 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d"):
             obj = obj.copy()
             r = obj.get("row", None)
             c = obj.get("col", None)
-            r = row if r is None else r
-            c = col if c is None else c
-            obj["row"] = r
-            obj["col"] = c
+            obj["row"] = row if r is None else r
+            obj["col"] = col if c is None else c
         else:
-            obj = {
-                "objects": obj,
-                "row": 1 if row is None else row,
-                "col": 1 if col is None else col,
-            }
+            obj = {"objects": obj, "row": row, "col": col}
+        obj["row"] = 1 if obj["row"] is None else obj["row"]
+        obj["col"] = 1 if obj["col"] is None else obj["col"]
         if obj["row"] is not None:
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
