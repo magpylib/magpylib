@@ -235,8 +235,6 @@ def display_matplotlib(
             )
         else:
             axes[(1, 1)] = canvas
-        max_rows = 1
-        max_cols = 1
     else:
         max_rows = max_rows if max_rows is not None else 1
         max_cols = max_cols if max_cols is not None else 1
