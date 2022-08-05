@@ -376,7 +376,7 @@ class Trace3d(MagicProperties):
 
     def __init__(
         self,
-        backend=None,
+        backend="generic",
         constructor=None,
         args=None,
         kwargs=None,

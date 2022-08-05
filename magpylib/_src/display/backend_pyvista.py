@@ -36,7 +36,7 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
     return LinearSegmentedColormap(name, cdict, N, gamma)
 
 
-def generic_trace_to_pyvista(trace):
+def generic_trace_to_pyvista(trace, jupyter_backend=None):
     """Transform a generic trace into a pyvista trace"""
     traces_pv = []
     if trace["type"] == "mesh3d":
@@ -66,12 +66,14 @@ def generic_trace_to_pyvista(trace):
             )
         traces_pv.append(trace_pv)
         if colorscale is not None:
-            if colorscale is not None:
-                # ipygany does not support custom colorsequences
-                if pv.global_theme.jupyter_backend == "ipygany":
-                    trace_pv["cmap"] = "PiYG"
-                else:
-                    trace_pv["cmap"] = colormap_from_colorscale(colorscale)
+            # ipygany does not support custom colorsequences
+            if (
+                pv.global_theme.jupyter_backend == "ipygany"
+                or jupyter_backend == "ipygany"
+            ):
+                trace_pv["cmap"] = "PiYG"
+            else:
+                trace_pv["cmap"] = colormap_from_colorscale(colorscale)
     elif trace["type"] == "scatter3d":
         points = np.array([trace[k] for k in "xyz"], dtype=float).T
         line = trace.get("line", {})
@@ -95,7 +97,7 @@ def generic_trace_to_pyvista(trace):
             "point_size": 1 if marker_size is None else marker_size,
         }
         traces_pv.append(trace_pv_marker)
-    else:
+    else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         )
@@ -108,22 +110,26 @@ def display_pyvista(
     canvas=None,
     animation=False,
     colorsequence=None,
+    return_fig=False,
+    jupyter_backend=None,
     **kwargs,
 ):
 
     """Display objects and paths graphically using the pyvista library."""
 
     if animation is not False:
-        msg = "The pyvista backend does not support animation at the moment.\n"
-        msg += "Use `backend=plotly` instead."
-        warnings.warn(msg)
+        warnings.warn(
+            "The pyvista backend does not support animation at the moment.\n"
+            "Use `backend=plotly` instead."
+        )
         # animation = False
 
     # flat_obj_list = format_obj_input(obj_list)
 
     show_canvas = False
     if canvas is None:
-        show_canvas = True
+        if not return_fig:
+            show_canvas = True
         canvas = pv.Plotter()
     data = get_frames(
         objs=obj_list,
@@ -137,7 +143,7 @@ def display_pyvista(
     frame = data["frames"][0]  # select first, since no animation supported
 
     for tr0 in frame["data"]:
-        for tr1 in generic_trace_to_pyvista(tr0):
+        for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
             canvas.add_mesh(**tr1)
 
     # apply_fig_ranges(canvas, zoom=zoom)
@@ -145,5 +151,9 @@ def display_pyvista(
         canvas.remove_scalar_bar()
     except IndexError:
         pass
+
+    if return_fig and not show_canvas:
+        return canvas
     if show_canvas:
-        canvas.show()
+        canvas.show(jupyter_backend=jupyter_backend)
+    return None

@@ -1,6 +1,3 @@
-import sys
-from unittest import mock
-
 import numpy as np
 import pytest
 
@@ -250,14 +247,6 @@ def test_dataframe_ouptut_pixel_agg():
             [[0.0, 0.0, 134.78238624], [0.0, 0.0, 19.63857207], [0.0, 0.0, 5.87908614]]
         ),
     )
-
-
-def test_dataframe_output_missing_pandas():
-    """test if pandas is installed when using dataframe output in `getBH`"""
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
-    with mock.patch.dict(sys.modules, {"pandas": None}):
-        with pytest.raises(ModuleNotFoundError):
-            src.getB((0, 0, 0), output="dataframe")
 
 
 def test_getBH_bad_output_type():

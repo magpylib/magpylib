@@ -57,9 +57,9 @@ def generic_trace_to_matplotlib(trace):
             }.items()
         }
         if "ls" in props:
-            props["ls"] = LINE_STYLES.get(props["ls"], "solid")
+            props["ls"] = LINE_STYLES.get(props["ls"], props["ls"])
         if "marker" in props:
-            props["marker"] = SYMBOLS.get(props["marker"], "x")
+            props["marker"] = SYMBOLS.get(props["marker"], props["marker"])
         if mode is not None:
             if "lines" not in mode:
                 props["ls"] = ""

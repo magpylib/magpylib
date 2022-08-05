@@ -79,6 +79,7 @@ setuptools.setup(
             "pandas",
             "pyvista",
             "mayavi",
+            "ipygany",
         ]
     },
     classifiers=[
