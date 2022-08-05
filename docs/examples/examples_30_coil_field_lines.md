@@ -125,6 +125,8 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
+pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+
 coil1 = magpy.Collection()
 for z in np.linspace(-8, 8, 16):
     winding = magpy.current.Loop(
@@ -177,5 +179,5 @@ pl.add_mesh(
 # display scene
 pl.camera.position=(160, 10, -10)
 pl.set_background("white")
-pl.show(jupyter_backend='static')
+pl.show()
 ```
