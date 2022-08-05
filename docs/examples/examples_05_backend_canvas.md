@@ -146,5 +146,5 @@ magpy.show(loop, cylinder, backend='pyvista', canvas=pl)
 # display scene
 pl.camera.position=(50, 10, 10)
 pl.set_background("white")
-pl.show(jupyter_backend='static')
+pl.show()
 ```
