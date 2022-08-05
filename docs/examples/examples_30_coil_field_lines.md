@@ -125,15 +125,6 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
-coil1 = magpy.Collection()
-for z in np.linspace(-8, 8, 16):
-    winding = magpy.current.Loop(
-        current=100,
-        diameter=10,
-        position=(0,0,z),
-    )
-    coil1.add(winding)
-
 grid = pv.UniformGrid(
     dims=(41, 41, 41),
     spacing=(2, 2, 2),
@@ -177,5 +168,5 @@ pl.add_mesh(
 # display scene
 pl.camera.position=(160, 10, -10)
 pl.set_background("white")
-pl.show(jupyter_backend='static')
+pl.show()
 ```

@@ -84,9 +84,9 @@ def generic_trace_to_matplotlib(trace):
                 props.pop("ms")
                 props.pop("marker")
         if "ls" in props:
-            props["ls"] = LINE_STYLES.get(props["ls"], "solid")
+            props["ls"] = LINE_STYLES.get(props["ls"], props["ls"])
         if "marker" in props:
-            props["marker"] = SYMBOLS.get(props["marker"], "x")
+            props["marker"] = SYMBOLS.get(props["marker"], props["marker"])
         mode = trace.get("mode", None)
         if mode is not None:
             if "lines" not in mode:
