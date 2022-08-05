@@ -121,7 +121,9 @@ fig.show()
 
 An example with **Pyvista**:
 
-```
+```{code-cell} ipython3
+:tags: []
+
 import numpy as np
 import magpylib as magpy
 import pyvista as pv
@@ -129,7 +131,7 @@ import pyvista as pv
 pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
 
 # define sources and paths
-loop = magpy.current.Loop(current=1, diameter=1)
+loop = magpy.current.Loop(current=1, diameter=5)
 loop.position = np.linspace((0,0,-3), (0,0,3), 40)
 
 cylinder = magpy.magnet.Cylinder(magnetization=(0,-100,0), dimension=(1,2), position=(0,-3,0))
@@ -137,7 +139,7 @@ cylinder.rotate_from_angax(np.linspace(0, 300, 40)[1:], 'z', anchor=0)
 
 # create a pyvista plotting scene with some graphs
 pl = pv.Plotter()
-line = np.array([(t*np.cos(15*t), t*np.sin(15*t), t-8) for t in np.linspace(3,6,200)])
+line = np.array([(t*np.cos(15*t), t*np.sin(15*t), t-8) for t in np.linspace(3,5,200)])
 pl.add_lines(line, color='black')
 
 # add magpylib.show() output to existing scene
@@ -145,6 +147,6 @@ magpy.show(loop, cylinder, backend='pyvista', canvas=pl)
 
 # display scene
 pl.camera.position=(50, 10, 10)
-pl.set_background("white")
+#pl.set_background("white")
 pl.show()
 ```

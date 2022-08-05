@@ -445,7 +445,7 @@ B_as_df = magpy.getB(
     output='dataframe',
 )
 
-print(B_as_df)
+B_as_df
 ```
 
 Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of this feature, as they can deal with `dataframes` directly.
