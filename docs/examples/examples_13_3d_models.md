@@ -31,11 +31,14 @@ The input `trace` is a dictionary which includes all necessary information for p
 7. `'scale'`: default 1, object geometric scaling factor
 8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.
 
-The following example shows how a **generic** trace is constructed with  `Mesh3d` and `Scatter3d`:
+The following example shows how a **generic** trace is constructed with  `Mesh3d` and `Scatter3d` and is displayed with three different backends:
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
+import pyvista as pv
+
+pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
 
 # Mesh3d trace #########################
 
@@ -71,7 +74,9 @@ trace_scatter3d = {
 dipole = magpy.misc.Dipole(moment=(0,0,1), style_label="'Scatter3d' trace", style_size=6)
 dipole.style.model3d.add_trace(trace_scatter3d)
 
+magpy.show(coll, dipole, backend='matplotlib')
 magpy.show(coll, dipole, backend='plotly')
+magpy.show(coll, dipole, backend='pyvista')
 ```
 
 It is possible to have multiple user-defined traces that will be displayed at the same time. In addition, the following code shows how to quickly copy and manipulate trace dictionaries and `Trace3d` objects,
