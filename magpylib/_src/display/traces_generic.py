@@ -1,6 +1,7 @@
 """Generic trace drawing functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+# pylint: disable=cyclic-import
 import numbers
 import warnings
 from itertools import combinations
@@ -818,10 +819,13 @@ def extract_animation_properties(
     animation_slider,
 ):
     """Exctract animation properties"""
+    # pylint: disable=import-outside-toplevel
+    from magpylib._src.obj_classes.class_Collection import Collection
+
     path_lengths = []
     for obj in objs:
         subobjs = [obj]
-        if getattr(obj, "_object_type", None) == "Collection":
+        if isinstance(obj, Collection):
             subobjs.extend(obj.children)
         for subobj in subobjs:
             path_len = getattr(subobj, "_position", np.array((0.0, 0.0, 0.0))).shape[0]

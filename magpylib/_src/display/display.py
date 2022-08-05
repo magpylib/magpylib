@@ -58,6 +58,7 @@ def show(
         If True, the function call returns the figure object.
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
 
     Returns
     -------
