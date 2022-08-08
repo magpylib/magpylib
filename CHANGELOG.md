@@ -3,11 +3,12 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-# Unreleased
+# [4.1.0] - 2022-08-08
 * Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
-* Internal `getB`/`getH` refactoring. Like for the object oriented interface, the direct interface for `'Line'` current now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
+* Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source argument now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
 * Complete plotting backend rework to prepare for easy implementation of new backends, with minimal maintenance. ([#539](https://github.com/magpylib/magpylib/pull/539))
 * New [Pyvista](https://docs.pyvista.org/) plotting backend ([#548](https://github.com/magpylib/magpylib/pull/548))
+* Improvements on the [documentation](https://magpylib.readthedocs.io/en/latest/)
 
 ## [4.0.4] - 2022-06-09
 
