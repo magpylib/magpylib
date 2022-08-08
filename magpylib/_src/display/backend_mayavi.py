@@ -10,6 +10,20 @@ from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
 
+SYMBOLS = {
+    "circle": "2dcircle",
+    "cross": "2dcross",
+    "diamond": "2ddiamond",
+    "square": "2dsquare",
+    "x": "2dcross",
+    ".": "sphere",
+    "o": "2dcircle",
+    "+": "2dcross",
+    "D": "2ddiamond",
+    "d": "2ddiamond",
+    "s": "2dsquare",
+}
+
 
 def generic_trace_to_mayavi(trace):
     """Transform a generic trace into a mayavi trace"""
@@ -40,19 +54,50 @@ def generic_trace_to_mayavi(trace):
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
         opacity = trace.get("opacity", 1)
-        color = trace.get("line", {}).get("color", trace.get("line_color", None))
-        color = (0.0, 0.0, 0.0, opacity) if color is None else color
-        color = colorConverter.to_rgb(color)
-        trace_mvi = {
-            "constructor": "plot3d",
+        line = trace.get("line", {})
+        line_color = line.get("color", trace.get("line_color", None))
+        line_color = colorConverter.to_rgb(
+            (0.0, 0.0, 0.0, opacity) if line_color is None else line_color
+        )
+        marker_color = line.get("color", trace.get("marker_color", None))
+        marker_color = colorConverter.to_rgb(
+            line_color if marker_color is None else marker_color
+        )
+        trace_mvi_base = {
             "mlab_source_names": {"x": x, "y": y, "z": z},
             "args": (x, y, z),
-            "kwargs": {
-                "color": color,
-                "opacity": opacity,
-            },
         }
-        traces_mvi.append(trace_mvi)
+        kwargs = {"opacity": opacity, "color": line_color}
+        mode = trace.get("mode", None)
+        if mode is not None:
+            if "markers" in mode:
+                marker = trace.get("marker", {})
+                marker_size = marker.get("size", trace.get("marker_size", 1))
+                marker_symbol = marker.get(
+                    "symbol", trace.get("marker_symbol", "2dcross")
+                )
+                marker_symbol = SYMBOLS.get(marker_symbol, "2dcross")
+                trace_mvi1 = {"constructor": "points3d", **trace_mvi_base}
+                trace_mvi1["kwargs"] = {
+                    "scale_factor": 0.2 * marker_size,
+                    "mode": marker_symbol,
+                    "color": marker_color,
+                    **kwargs,
+                }
+                traces_mvi.append(trace_mvi1)
+            if "lines" in mode:
+                trace_mvi2 = {"constructor": "plot3d", **trace_mvi_base}
+                trace_mvi2["kwargs"] = {**kwargs}
+                traces_mvi.append(trace_mvi2)
+            if "text" in mode and trace.get("text", False):
+                for xs, ys, zs, txt in zip(x, y, z, trace["text"]):
+                    trace_mvi3 = {
+                        "constructor": "text3d",
+                        **trace_mvi_base,
+                        "args": (xs, ys, zs, str(txt)),
+                    }
+                    trace_mvi3["kwargs"] = {**kwargs, "scale": 0.5}
+                    traces_mvi.append(trace_mvi3)
     else:
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into mayavi trace"
