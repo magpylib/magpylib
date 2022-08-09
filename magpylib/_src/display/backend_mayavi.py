@@ -1,4 +1,5 @@
 import warnings
+from functools import lru_cache
 
 import numpy as np
 from matplotlib.colors import colorConverter
@@ -25,6 +26,23 @@ SYMBOLS = {
 }
 
 
+@lru_cache
+def to_rgba_array(color, opacity=1):
+    """Convert color to rgba_array"""
+    return colorConverter.to_rgba_array(
+        (0.0, 0.0, 0.0, opacity) if color is None else color
+    )[0]
+
+
+@lru_cache
+def colorscale_to_lut(colorscale, opacity=1):
+    "Convert plotly colorscale to vtk lut array."
+    colors = np.array([to_rgba_array(v[1], opacity) * 255 for v in colorscale])
+    print([int(256 * v[0]) for v in colorscale])
+    repeat_inds = np.diff([int(256 * v[0]) for v in colorscale], prepend=0)
+    return np.repeat(colors, repeat_inds, axis=0)
+
+
 def generic_trace_to_mayavi(trace):
     """Transform a generic trace into a mayavi trace"""
     traces_mvi = []
@@ -37,17 +55,21 @@ def generic_trace_to_mayavi(trace):
             triangles = np.array([subtrace[k] for k in "ijk"]).T
             opacity = trace.get("opacity", 1)
             color = subtrace.get("color", None)
-            color = (0.0, 0.0, 0.0, opacity) if color is None else color
-            color = colorConverter.to_rgb(color)
+            color = colorConverter.to_rgb(
+                (0.0, 0.0, 0.0, opacity) if color is None else color
+            )
+            colorscale = subtrace.get("colorscale", None)
+            if colorscale is None:
+                color_kwargs = {"color": color, "opacity": opacity}
+            else:
+                color_kwargs = {"lut": colorscale_to_lut(colorscale, opacity)}
             trace_mvi = {
                 "constructor": "triangular_mesh",
                 "mlab_source_names": {"x": x, "y": y, "z": z, "triangles": triangles},
                 "args": (x, y, z, triangles),
                 "kwargs": {
-                    # "scalars": subtrace.get("intensity", None),
-                    # "alpha": subtrace.get("opacity", None),
-                    "color": color,
-                    "opacity": opacity,
+                    "scalars": subtrace.get("intensity", None),
+                    **color_kwargs,
                 },
             }
             traces_mvi.append(trace_mvi)
@@ -134,7 +156,7 @@ def display_mayavi(
         zoom=zoom,
         animation=animation,
         extra_backend="pyvista",
-        mag_arrows=True,
+        mag_arrows=False,
         **kwargs,
     )
     frames = data["frames"]
@@ -152,11 +174,15 @@ def display_mayavi(
                 constructor = tr1["constructor"]
                 args = tr1["args"]
                 kwargs = tr1["kwargs"]
+                lut = kwargs.pop("lut", None)
                 tr = getattr(mlab, constructor)(*args, **kwargs)
+                if lut is not None:
+                    tr.module_manager.scalar_lut_manager.lut.table = lut
                 mayvi_traces.append(tr)
             else:
                 mlab_source = getattr(mayvi_traces[trace_ind], "mlab_source")
                 mlab_source.trait_set(**tr1["mlab_source_names"])
+        mlab.draw()
 
     draw_frame(0)
 
