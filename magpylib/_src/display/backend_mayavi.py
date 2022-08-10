@@ -127,7 +127,7 @@ def generic_trace_to_mayavi(trace):
 
 def display_mayavi(
     *obj_list,
-    zoom=1,
+    zoom=0,
     canvas=None,
     animation=False,
     colorsequence=None,
@@ -146,7 +146,7 @@ def display_mayavi(
         fig = mlab.figure()
     else:
         fig = canvas
-
+    fig.scene.camera.zoom(zoom)
     data = get_frames(
         objs=obj_list,
         colorsequence=colorsequence,
