@@ -26,7 +26,7 @@ SYMBOLS = {
 }
 
 
-@lru_cache
+@lru_cache(maxsize=None)
 def to_rgba_array(color, opacity=1):
     """Convert color to rgba_array"""
     return colorConverter.to_rgba_array(
@@ -34,7 +34,7 @@ def to_rgba_array(color, opacity=1):
     )[0]
 
 
-@lru_cache
+@lru_cache(maxsize=None)
 def colorscale_to_lut(colorscale, opacity=1):
     "Convert plotly colorscale to vtk lut array."
     colors = np.array([to_rgba_array(v[1], opacity) * 255 for v in colorscale])
