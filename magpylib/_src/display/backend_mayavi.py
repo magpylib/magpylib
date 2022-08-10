@@ -1,4 +1,3 @@
-import warnings
 from functools import lru_cache
 
 import numpy as np
@@ -132,6 +131,7 @@ def display_mayavi(
     canvas=None,
     animation=False,
     colorsequence=None,
+    return_fig=False,
     **kwargs,
 ):
 
@@ -139,15 +139,13 @@ def display_mayavi(
 
     # flat_obj_list = format_obj_input(obj_list)
 
-    show_canvas = True
-    if canvas == "hold":
-        show_canvas = False
-    elif canvas is not None:
-        msg = (
-            "The mayavi backend does not support a specific backend. You can specify "
-            "`canvas='hold'` if you want to hold `on mlab.show()`"
-        )
-        warnings.warn(msg)
+    show_canvas = False
+    if canvas is None:
+        if not return_fig:
+            show_canvas = True
+        fig = mlab.figure()
+    else:
+        fig = canvas
 
     data = get_frames(
         objs=obj_list,
@@ -180,9 +178,10 @@ def display_mayavi(
                 tr.actor.mapper.interpolate_scalars_before_mapping = True
                 mayvi_traces.append(tr)
             else:
-                mlab_source = getattr(mayvi_traces[trace_ind], "mlab_source")
-                mlab_source.trait_set(**tr1["mlab_source_names"])
-        mlab.draw()
+                mlab_source = getattr(mayvi_traces[trace_ind], "mlab_source", None)
+                if mlab_source is not None:
+                    mlab_source.trait_set(**tr1["mlab_source_names"])
+        mlab.draw(fig)
 
     draw_frame(0)
 
@@ -198,5 +197,8 @@ def display_mayavi(
 
         anim()
 
+    if return_fig and not show_canvas:
+        return fig
     if show_canvas:
         mlab.show()
+    return None

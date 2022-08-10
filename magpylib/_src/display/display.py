@@ -59,6 +59,7 @@ def show(
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+        - with mayavi: `mayavi.core.scene.Scene`.
 
     Returns
     -------
