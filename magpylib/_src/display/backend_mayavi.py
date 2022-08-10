@@ -38,9 +38,8 @@ def to_rgba_array(color, opacity=1):
 def colorscale_to_lut(colorscale, opacity=1):
     "Convert plotly colorscale to vtk lut array."
     colors = np.array([to_rgba_array(v[1], opacity) * 255 for v in colorscale])
-    print([int(256 * v[0]) for v in colorscale])
-    repeat_inds = np.diff([int(256 * v[0]) for v in colorscale], prepend=0)
-    return np.repeat(colors, repeat_inds, axis=0)
+    inds = np.array([int(256 * v[0]) for v in colorscale])
+    return np.array([np.interp([*range(256)], inds, c) for c in colors.T]).T
 
 
 def generic_trace_to_mayavi(trace):
@@ -178,6 +177,7 @@ def display_mayavi(
                 tr = getattr(mlab, constructor)(*args, **kwargs)
                 if lut is not None:
                     tr.module_manager.scalar_lut_manager.lut.table = lut
+                tr.actor.mapper.interpolate_scalars_before_mapping = True
                 mayvi_traces.append(tr)
             else:
                 mlab_source = getattr(mayvi_traces[trace_ind], "mlab_source")
