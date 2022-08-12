@@ -97,7 +97,7 @@ def generic_trace_to_mayavi(trace):
         if mode is not None:
             if "markers" in mode:
                 marker = trace.get("marker", {})
-                marker_size = marker.get("size", trace.get("marker_size", 1))
+                marker_size = marker.get("size", trace.get("marker_size", 1)) / 5
                 marker_symbol = marker.get(
                     "symbol", trace.get("marker_symbol", "2dcross")
                 )
