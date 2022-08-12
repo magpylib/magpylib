@@ -35,9 +35,6 @@ The following example demonstrates the currently supported backends:
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
-import pyvista as pv
-
-pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
 
 # define sources and paths
 loop = magpy.current.Loop(current=1, diameter=1)
@@ -45,11 +42,41 @@ loop.position = np.linspace((0,0,-3), (0,0,3), 40)
 
 cylinder = magpy.magnet.Cylinder(magnetization=(0,-100,0), dimension=(1,2), position=(0,-3,0))
 cylinder.rotate_from_angax(np.linspace(0, 300, 40)[1:], 'z', anchor=0)
+```
 
-# show the system using different backends
-for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
-    print(f'Plotting backend: {backend!r}')
-    magpy.show(loop, cylinder, backend=backend)
+### Matplotlib backend
+
+```{code-cell} ipython3
+magpy.show(loop, cylinder, backend='matplotlib')
+```
+
+### Plotly backend
+
+```{code-cell} ipython3
+magpy.show(loop, cylinder, backend='plotly')
+```
+
++++ {"tags": []}
+
+### Pyvista backend
+
+```{code-cell} ipython3
+import pyvista as pv
+
+pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
+
+magpy.show(loop, cylinder, backend='pyvista')
+```
+
+### Mayavi backend
+
+```{code-cell} ipython3
+# Allow rendering in a jupyter notebook - (not necessary in a python script)
+from mayavi import mlab
+mlab.init_notebook()
+
+fig = magpy.show(loop, cylinder, return_fig=True, backend='mayavi') #`return_fig` not necessary in a python script
+fig
 ```
 
 ## Output in custom figure
