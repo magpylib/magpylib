@@ -3,6 +3,10 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+# [4.1.1] - 2022-08-11
+- Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
+
+
 # [4.1.0] - 2022-08-08
 * Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
 * Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source argument now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
@@ -384,6 +388,7 @@ The first official release of the magpylib library.
 
 ---
 
+[4.1.1]:https://github.com/magpylib/magpylib/compare/4.1.0...4.1.1
 [4.1.0]:https://github.com/magpylib/magpylib/compare/4.0.4...4.1.0
 [4.0.4]:https://github.com/magpylib/magpylib/compare/4.0.3...4.0.4
 [4.0.3]:https://github.com/magpylib/magpylib/compare/4.0.2...4.0.3
