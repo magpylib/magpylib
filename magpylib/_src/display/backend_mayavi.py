@@ -2,8 +2,14 @@ from functools import lru_cache
 
 import numpy as np
 from matplotlib.colors import colorConverter
-from mayavi import mlab
 
+try:
+    from mayavi import mlab
+except ImportError as missing_module:  # pragma: no cover
+    raise ModuleNotFoundError(
+        """In order to use the mayavi plotting backend, you need to install mayavi via pip or
+        conda, see https://docs.enthought.com/mayavi/mayavi/installation.html"""
+    ) from missing_module
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
@@ -56,10 +62,9 @@ def generic_trace_to_mayavi(trace):
             color = colorConverter.to_rgb(
                 (0.0, 0.0, 0.0, opacity) if color is None else color
             )
+            color_kwargs = {"color": color, "opacity": opacity}
             colorscale = subtrace.get("colorscale", None)
-            if colorscale is None:
-                color_kwargs = {"color": color, "opacity": opacity}
-            else:
+            if colorscale is not None:
                 color_kwargs = {"lut": colorscale_to_lut(colorscale, opacity)}
             trace_mvi = {
                 "constructor": "triangular_mesh",
@@ -118,7 +123,7 @@ def generic_trace_to_mayavi(trace):
                     }
                     trace_mvi3["kwargs"] = {**kwargs, "scale": 0.5}
                     traces_mvi.append(trace_mvi3)
-    else:
+    else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into mayavi trace"
         )
