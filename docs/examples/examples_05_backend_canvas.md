@@ -32,7 +32,7 @@ There is a high level of **feature parity**, however, not all graphic features a
 
 
 |                  Feature                                        | Matplotlib | Plotly | Pyvista | Mayavi |
-|:---------------------------------------------------------------:|:----------:|:------:|---------|:------:|
+|:---------------------------------------------------------------:|:----------:|:------:|:-------:|:------:|
 | triangular mesh 3d                                              | ✔️         | ✔️    | ✔️      | ✔️    |
 | line 3d                                                         | ✔️         | ✔️    | ✔️      | ✔️    |
 | line style                                                      | ✔️         | ✔️    | ❌      | ❌    |
@@ -56,19 +56,20 @@ There is a high level of **feature parity**, however, not all graphic features a
 | user extra 3d model  - backend specific [^7]                    | ✔️         | ✔️    | ❌      | ❌    |
 
 
-[^1]: when returning animation object and exporting it as jshtml
+[^1]: when returning animation object and exporting it as jshtml.
 
-[^2]: possible but not implemented at the moment
+[^2]: possible but not implemented at the moment.
 
-[^3]: does not work with ipygany jupyter backend
+[^3]: does not work with ipygany jupyter backend.
 
-[^4]: conversions are done to best match `"2dcross", "2dsquare", "2ddiamond", "2dcircle"`
+[^4]: conversions are done to best match `"2dcross", "2dsquare", "2ddiamond", "2dcircle"`.
 
-[^5]: technically possible but looks too ugly to be practical
+[^5]: technically possible but looks too displeasing to implement.
 
 [^6]:  only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
 
 [^7]: custom user defined trace constructors  allowed, which are specific to the backend.
+
 
 The following example demonstrates the currently supported backends:
 
