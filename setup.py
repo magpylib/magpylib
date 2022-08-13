@@ -80,6 +80,7 @@ setuptools.setup(
             "pyvista",
             "mayavi",
             "ipygany",
+            "pqt5",
         ]
     },
     classifiers=[
