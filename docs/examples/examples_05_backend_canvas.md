@@ -28,7 +28,47 @@ The installation default is Matplotlib. To select a graphic backend one can
 1. Change the library default with `magpy.defaults.display.backend = 'plotly'`.
 2. Set the `backend` kwarg in the `show` function, `show(..., backend='matplotlib')`.
 
-There is a high level of **feature parity**, however, not all graphic features are supported by all backends. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
+There is a high level of **feature parity**, however, not all graphic features are supported by all backends. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends. The following table shows the comparison between backend for most of the features.
+
+
+|                  Feature                                        | Matplotlib | Plotly | Pyvista | Mayavi |
+|:---------------------------------------------------------------:|:----------:|:------:|---------|:------:|
+| triangular mesh 3d                                              | ✔️         | ✔️    | ✔️      | ✔️    |
+| line 3d                                                         | ✔️         | ✔️    | ✔️      | ✔️    |
+| line style                                                      | ✔️         | ✔️    | ❌      | ❌    |
+| line color                                                      | ✔️         | ✔️    | ✔️      | ✔️    |
+| line width                                                      | ✔️         | ✔️    | ✔️      | ❌[^5]|
+| marker 3d                                                       | ✔️         | ✔️    | ✔️      | ✔️    |
+| marker color                                                    | ✔️         | ✔️    | ✔️      | ✔️    |
+| marker size                                                     | ✔️         | ✔️    | ✔️      | ✔️    |
+| marker symbol                                                   | ✔️         | ✔️    | ❌      | ✔️[^4]|
+| marker numbering                                                | ✔️         | ✔️    | ❌      | ✔️    |
+| zoom level                                                      | ✔️         | ✔️    | ❌[^2]  | ✔️    |
+| magnetization color gradient                                    | ❌         | ✔️    | ✔️      | ✔️    |
+| custom magnetization color gradient                             | ❌         | ✔️    | ✔️[^3]  | ✔️    |
+| custom magnetization color gradient <br> for individual objects | ❌         | ✔️    | ✔️[^3]  | ✔️    |
+| animation                                                       | ✔️         | ✔️    | ❌      | ✔️    |
+| animation time                                                  | ✔️         | ✔️    | ❌      | ✔️    |
+| animation fps                                                   | ✔️         | ✔️    | ❌      | ✔️    |
+| animation slider                                                | ✔️[^1]     | ✔️    | ❌      | ❌    |
+| user canvas                                                     | ✔️         | ✔️    | ✔️      | ✔️    |
+| user extra 3d model  - generic [^6]                             | ✔️         | ✔️    | ✔️      | ✔️    |
+| user extra 3d model  - backend specific [^7]                    | ✔️         | ✔️    | ❌      | ❌    |
+
+
+[^1]: when returning animation object and exporting it as jshtml
+
+[^2]: possible but not implemented at the moment
+
+[^3]: does not work with ipygany jupyter backend
+
+[^4]: conversions are done to best match `"2dcross", "2dsquare", "2ddiamond", "2dcircle"`
+
+[^5]: technically possible but looks too ugly to be practical
+
+[^6]:  only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
+
+[^7]: custom user defined trace constructors  allowed, which are specific to the backend.
 
 The following example demonstrates the currently supported backends:
 
