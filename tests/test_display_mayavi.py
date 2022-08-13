@@ -9,6 +9,7 @@ def test_Cuboid_display():
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     src.move([[i, 0, 0] for i in range(2)], start=0)
     fig = src.show(return_fig=True, style_path_numbering=True, backend="mayavi")
+    mlab.options.offscreen = True
     assert isinstance(fig, mayavi.core.scene.Scene)
 
 
@@ -30,12 +31,14 @@ def test_extra_generic_trace():
             "show": True,
         }
     )
-    src.show(return_fig=True, style_path_numbering=True, backend="mayavi")
+    mlab.options.offscreen = True
+    fig = mlab.figure()
+    src.show(canvas=fig, style_path_numbering=True, backend="mayavi")
 
 
 def test_animation():
     "test simple display with path"
+    mlab.options.offscreen = True
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     src.move([[i, 0, 0] for i in range(2)], start=0)
-    fig = mlab.figure()
-    src.show(animation=True, canvas=fig, style_path_numbering=True, backend="mayavi")
+    src.show(animation=True, style_path_numbering=True, backend="mayavi")
