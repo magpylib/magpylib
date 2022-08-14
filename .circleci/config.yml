@@ -26,6 +26,7 @@ jobs:
           command: |
             apt update
             apt-get install -y libgl1-mesa-dev xvfb
+            apt-get install -y qtbase5-dev qtchooser qt5-qmake qtbase5-dev-tools
       - run:
           name: Install local magpylib
           command: pip install .[dev]
