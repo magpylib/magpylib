@@ -78,7 +78,6 @@ setuptools.setup(
             "sphinx==4.4.0",
             "pandas",
             "pyvista",
-            "vtk>=9.1",
             "mayavi",
             "ipygany",
             "PyQt5",
