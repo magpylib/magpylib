@@ -1,6 +1,8 @@
 """Magnet TriangularMesh class code
 DOCSTRINGS V4 READY
 """
+from warnings import warn
+
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
@@ -64,6 +66,7 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_facets=True,
+        check_euler_charasteristic=True,
         style=None,
         **kwargs,
     ):
@@ -72,7 +75,11 @@ class TriangularMesh(BaseMagnet):
         triangles = kwargs.pop("triangles", None)
         vertices = kwargs.pop("vertices", None)
         self._facets, self._triangles, self._vertices = self._validate_facets(
-            facets, vertices, triangles, reorient_facets=reorient_facets
+            facets,
+            vertices,
+            triangles,
+            reorient_facets=reorient_facets,
+            check_euler_charasteristic=check_euler_charasteristic,
         )
         # init inheritance
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -87,11 +94,18 @@ class TriangularMesh(BaseMagnet):
     def facets(self, val):
         """Set Facets facets (a,b,c), shape (3,), [mm]."""
         self._facets, self._triangles, self._vertices = self._validate_facets(
-            facets=val, reorient_facets=True
+            facets=val,
+            reorient_facets=True,
+            check_euler_charasteristic=True,
         )
 
     def _validate_facets(
-        self, facets=None, vertices=None, triangles=None, reorient_facets=True
+        self,
+        facets=None,
+        vertices=None,
+        triangles=None,
+        reorient_facets=True,
+        check_euler_charasteristic=True,
     ):
         """Validate facet input, reorient if necessary."""
         facets = check_format_input_vector(
@@ -106,6 +120,20 @@ class TriangularMesh(BaseMagnet):
             facets = vertices[triangles]
         elif facets is not None:
             vertices, triangles = self._get_vertices_and_triangles_from_facets(facets)
+        if check_euler_charasteristic:
+            # find unique pairs of vertices for each facet
+            tr = triangles
+            edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
+            # make sure unique pairs are found regardless of order
+            edges = np.sort(edges, axis=1)
+            edges_uniq = np.unique(edges, axis=0)
+            # check Euler-Poincaré characteristic, if convex and closed: V + F - E = 2.
+            euler = len(vertices) + len(facets) - len(edges_uniq)
+            if euler != 2:
+                warn(
+                    f"Provided set of vertices result in Euler-Poincaré charasteristic of {euler}"
+                    "and my not create a closed surface."
+                )
         if reorient_facets:
             triangles = self._flip_facets_outwards(vertices, triangles)
             facets = vertices[triangles]
@@ -183,6 +211,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         style=None,
         reorient_facets=True,
+        check_euler_charasteristic=True,
         **kwargs,
     ):
         """Triangular surface mesh magnet with homogeneous magnetization.
@@ -220,5 +249,6 @@ class TriangularMesh(BaseMagnet):
             triangles=triangles,
             vertices=vertices,
             reorient_facets=reorient_facets,
+            check_euler_charasteristic=check_euler_charasteristic,
             **kwargs,
         )
