@@ -218,8 +218,8 @@ def getBH_level2(
     sources, src_list = format_src_inputs(sources)
 
     # test if all source dimensions and excitations are initialized
-    check_dimensions(sources)
-    check_excitations(sources, field)
+    check_dimensions(src_list)
+    check_excitations(src_list, field)
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
