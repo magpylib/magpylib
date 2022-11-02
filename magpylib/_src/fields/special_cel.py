@@ -1,3 +1,4 @@
+import math as m
 import numpy as np
 
 
@@ -131,6 +132,41 @@ def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.n
 
 
 def cel_iter(qc, p, g, cc, ss, em, kk):
+    """
+    Iterative part of Bulirsch cel algorithm
+    """
+    #case1: scalar input
+    #   This cannot happen in core functions
+
+    #case2: small input vector - loop is faster than vectorized computation
+    n_input = len(qc)
+    if n_input<15:
+        result = np.zeros(n_input)
+        for i in range(n_input):
+            result[i] = cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
+
+    #case3: vectorized evaluation
+    return cel_iterv(qc, p, g, cc, ss, em, kk)
+
+
+def cel_iter0(qc, p, g, cc, ss, em, kk):
+    """
+    Iterative part of Bulirsch cel algorithm
+    """
+    while m.fabs(g - qc) >= qc * 1e-8:
+        qc = 2 * m.sqrt(kk)
+        kk = qc * em
+        f  = cc
+        cc = cc + ss / p
+        g  = kk / p
+        ss = 2 * (ss + f * g)
+        p  = p + g
+        g  = em
+        em = em + qc
+    return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))
+
+
+def cel_iterv(qc, p, g, cc, ss, em, kk):
     """
     Iterative part of Bulirsch cel algorithm
     """

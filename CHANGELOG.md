@@ -3,6 +3,11 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+# [4.2.0] - 2022 i hope
+- Fixed some Bugs
+- Added code of conduct
+- Improved Loop field computation
+
 # [4.1.1] - 2022-08-11
 - Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
 
