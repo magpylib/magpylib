@@ -39,7 +39,6 @@ shaft = magpy.misc.CustomSource(
     style_label='Shaft'
 )
 shaft_trace = magpy.graphics.model3d.make_Prism(
-    backend='plotly',
     base=20,
     diameter=10,
     height=10,
