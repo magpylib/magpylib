@@ -3,14 +3,13 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-# [4.2.0] - 2022 i hope
+## [4.2.0] - 2022 i hope
 - Fixed some Bugs
 - Added code of conduct
 - Improved Loop field computation
 
-# [4.1.1] - 2022-08-11
+## [4.1.1] - 2022-08-11
 - Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
-
 
 ## [4.1.0] - 2022-08-08
 * Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
