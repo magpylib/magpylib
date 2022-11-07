@@ -349,8 +349,9 @@ def check_format_input_vector(
             f"Instead received array_like with shape {inp.shape}."
         ),
     )
-    if reshape:
-        return np.reshape(inp, (-1, 3))
+    if isinstance(reshape, tuple):
+        return np.reshape(inp, reshape)
+
     if forbid_negative0:
         if np.any(inp <= 0):
             raise MagpylibBadUserInput(

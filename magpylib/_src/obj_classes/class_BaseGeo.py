@@ -113,7 +113,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=True,
+            reshape=(-1,3),
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
@@ -183,7 +183,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=True,
+            reshape=(-1,3),
         )
 
         # pad/slice and set orientation path to same length
