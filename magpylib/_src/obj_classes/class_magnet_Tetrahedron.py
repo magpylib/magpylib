@@ -2,7 +2,6 @@
 DOCSTRINGS V4 READY
 """
 import numpy as np
-
 from magpylib._src.display.traces_generic import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
@@ -16,7 +15,8 @@ class Tetrahedron(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the Tetrahedron vertices coordinates
     are the same as in the global coordinate system. The geometric center of the Tetrahedron
-    is determined by its vertices and is not necessarily located in the origin.
+    is determined by its vertices and. It is not necessarily located in the origin an can
+    be computed with the barycenter property.
 
     Parameters
     ----------
@@ -25,13 +25,17 @@ class Tetrahedron(BaseMagnet):
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (4,3)
-        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
+        Vertices [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4)], in the relative
         coordinate system of the tetrahedron.
 
     position: array_like, shape (3,) or (m,3)
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         When setting vertices, the initial position is set to the barycenter.
+
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to

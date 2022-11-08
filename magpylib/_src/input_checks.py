@@ -561,6 +561,7 @@ def check_dimensions(sources):
     from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
     from magpylib._src.obj_classes.class_current_Line import Line
     from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
 
     for src in sources:
         if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
@@ -573,7 +574,7 @@ def check_dimensions(sources):
                 raise MagpylibMissingInput(
                     f"Parameter `diameter` of {src} must be set."
                 )
-        elif isinstance(src, Line):
+        elif isinstance(src, (Line, Tetrahedron)):
             if src.vertices is None:
                 raise MagpylibMissingInput(
                     f"Parameter `vertices` of {src} must be set."
