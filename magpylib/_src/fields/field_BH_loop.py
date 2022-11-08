@@ -8,7 +8,8 @@ from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates
 from magpylib._src.utility import cyl_field_to_cart
 
-# ON INTERFACE
+
+# CORE
 def current_loop_field(
     field: str,
     observers: np.ndarray,

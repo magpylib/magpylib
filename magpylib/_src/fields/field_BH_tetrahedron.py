@@ -56,6 +56,7 @@ def point_inside(points, vertices):
     ).flatten()
 
 
+# CORE
 def magnet_tetrahedron_field(
     field: str,
     observers: np.ndarray,
