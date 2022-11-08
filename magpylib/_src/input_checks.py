@@ -580,7 +580,6 @@ def check_dimensions(sources):
                     f"Parameter `vertices` of {src} must be set."
                 )
 
-
 def check_excitations(sources, custom_field=None):
     """check if all sources have exitation initialized"""
     from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet, BaseCurrent
