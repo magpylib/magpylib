@@ -34,6 +34,10 @@ class Facet(BaseMagnet):
         `position` and `orientation` attributes together represent an object path.
         When setting facets, the initial position is set to the barycenter.
 
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
+
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes

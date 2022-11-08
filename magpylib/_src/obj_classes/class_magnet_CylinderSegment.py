@@ -37,6 +37,10 @@ class CylinderSegment(BaseMagnet):
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
+
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
