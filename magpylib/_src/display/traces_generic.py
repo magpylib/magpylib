@@ -372,7 +372,32 @@ def make_Tetrahedron(
     )
 
 
-def make_TriangularMesh(
+# def make_TriangularMesh(
+#     obj,
+#     position=(0.0, 0.0, 0.0),
+#     orientation=None,
+#     color=None,
+#     style=None,
+#     **kwargs,
+# ) -> dict:
+#     """
+#     Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
+#     provided arguments.
+#     """
+#     style = obj.style if style is None else style
+#     trace = make_BaseTriangularMesh(
+#         "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
+#     )
+#     update_trace_name(trace, "TriangularMesh", "", style)
+#     update_magnet_mesh(
+#         trace, mag_style=style.magnetization, magnetization=obj.magnetization
+#     )
+#     return place_and_orient_model3d(
+#         trace, orientation=orientation, position=position, **kwargs
+#     )
+
+
+def make_Facet(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
@@ -384,9 +409,18 @@ def make_TriangularMesh(
     Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
     provided arguments.
     """
+    facets = obj.facets
+
+    """Return vertices and triangles from facets"""
+    vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
+    triangles = tr.reshape((-1, 3))
+
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
+        "plotly-dict",
+        vertices=vertices,
+        triangles=triangles,
+        color=color
     )
     update_trace_name(trace, "TriangularMesh", "", style)
     update_magnet_mesh(
@@ -544,6 +578,8 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
         length = obj.diameter  # Sphere
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))
+    elif hasattr(obj, "facets"):
+        length = np.amax(obj.facets) - np.amin(obj.facets)
     else:  # Cuboid, Cylinder, CylinderSegment
         length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size

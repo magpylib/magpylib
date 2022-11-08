@@ -10,7 +10,7 @@ __all__ = [
     "magnet_cuboid_field",
     "magnet_cylinder_field",
     "magnet_cylinder_segment_field",
-    "facet_field",
+    "magnet_facet_field",
     "magnet_tetrahedron_field",
 ]
 
@@ -21,5 +21,5 @@ from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
-from magpylib._src.fields.field_BH_facet import facet_field
+from magpylib._src.fields.field_BH_facet import magnet_facet_field
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field

@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of a triangular facet.
 Computation details in function docstrings.
 """
+from socketserver import BaseServer
 import numpy as np
 #from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 from magpylib._src.input_checks import check_field_input
@@ -48,6 +49,7 @@ def solid_angle(R1, R2, R3, r1, r2, r3):
     return 2.0 * np.arctan2(N, D)
 
 
+# CORE
 def magnet_facet_field(
     field: str,
     observers: np.ndarray,
@@ -138,6 +140,48 @@ def magnet_facet_field(
 
     H = B * 10 / 4 / np.pi  # mT -> kA/m
     return H
+
+
+def magnet_facet_field_from_obj(
+    field: str,
+    observers: np.ndarray,
+    magnetization: np.ndarray,
+    facets: np.ndarray,
+    ) -> np.ndarray:
+    """Helper function to compute the magnetic field of a Facet object
+    Facet objects can have variable facet input shapes.
+    This function tiles up all inputs, as well as observers and magnetization
+    to yield proper input format for magnet_facet_field()
+    """
+    if facets.ndim != 1:  # all facets objects have same number of children
+        n0, n1, *_ = facets.shape
+        facets_tiled = facets.reshape(-1, 3, 3)
+        observers_tiled = np.repeat(observers, n1, axis=0)
+        magnetization_tiled = np.repeat(magnetization, n1, axis=0)
+        B = magnet_facet_field(
+            field=field,
+            observers=observers_tiled,
+            magnetization=magnetization_tiled,
+            facets=facets_tiled,
+        )
+        B = B.reshape((n0, n1, 3))
+        B = np.sum(B, axis=1)
+    else:
+        nvs = [f.shape[0] for f in facets]  # length of vertex set
+        split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
+        facets_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
+        observers_tiled = np.repeat(observers, nvs, axis=0)
+        magnetization_tiled = np.repeat(magnetization, nvs, axis=0)
+        B = magnet_facet_field(
+            field="B",
+            observers=observers_tiled,
+            magnetization=magnetization_tiled,
+            facets=facets_tiled,
+        )
+        b_split = np.split(B, split_indices)
+        B = np.array([np.sum(bh, axis=0) for bh in b_split])
+
+    return B
 
 
 ################
