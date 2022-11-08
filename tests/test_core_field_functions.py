@@ -1,6 +1,7 @@
 import numpy as np
 from numpy.testing import assert_allclose
 
+import magpylib as magpy
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
@@ -355,3 +356,100 @@ def test_field_line_v4():
         ]
     )
     np.testing.assert_allclose(B, Btest)
+
+
+def test_facet1():
+    """test core facet VS cube"""
+    obs = np.array([(3,4,5)]*4)
+    mag = np.array([(0,0,333)]*4)
+    fac = np.array([
+        [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
+        [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
+        [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
+        [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
+        ])
+    b = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    b = np.sum(b, axis=0)
+
+    obs = np.array([(3,4,5)])
+    mag = np.array([(0,0,333)])
+    dim = np.array([(2,2,2)])
+    bb = magpy.core.magnet_cuboid_field('B', obs, mag, dim)[0]
+
+    np.testing.assert_allclose(b, bb)
+
+
+def test_facet2():
+    """test core single facet vs multi-facet"""
+    obs = np.array([(3,4,5)])
+    mag = np.array([(111,222,333)])
+    fac = np.array([
+        [(0,0,0), (10,0,0), (0,10,0)],
+        ])
+    b = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    b = np.sum(b, axis=0)
+
+    obs = np.array([(3,4,5)]*4)
+    mag = np.array([(111,222,333)]*4)
+    fac = np.array([
+        [(0,0,0), (3,0,0), (0,10,0)],
+        [(3,0,0), (5,0,0), (0,10,0)],
+        [(5,0,0), (6,0,0), (0,10,0)],
+        [(6,0,0), (10,0,0), (0,10,0)],
+        ])
+    bb = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    bb = np.sum(bb, axis=0)
+
+    np.testing.assert_allclose(b, bb)
+
+
+def test_facet3():
+    """test core tetrahedron vs cube"""
+    ver = np.array(
+        [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
+        [(-1,-1,1), (-1,1,1), (1,-1,1), (1,-1,-1)],
+        [(-1,-1,-1), (-1,-1,1), (-1,1,-1), (1,-1,-1)],
+        [(-1,1,-1), (1,-1,-1), (-1,-1,1), (-1,1,1)],
+        [(1,-1,-1), (1,1,-1), (1,-1,1), (-1,1,1)],
+        [(-1,1,-1), (-1,1,1), (1,1,-1), (1,-1,-1)],]
+        )
+
+    for mag in np.random.rand(10,3)*2:
+        for obs in np.random.rand(10,3)*2:
+            obs6 = np.tile(obs, (6,1))
+            mag6 = np.tile(mag, (6,1))
+            b = magpy.core.magnet_tetrahedron_field('B', obs6, mag6, ver)
+            h = magpy.core.magnet_tetrahedron_field('H', obs6, mag6, ver)
+            b = np.sum(b, axis=0)
+            h = np.sum(h, axis=0)
+
+            obs1 = np.reshape(obs, (1,3))
+            mag1 = np.reshape(mag, (1,3))
+            dim = np.array([(2,2,2)])
+            bb = magpy.core.magnet_cuboid_field('B', obs1, mag1, dim)[0]
+            hh = magpy.core.magnet_cuboid_field('H', obs1, mag1, dim)[0]
+            np.testing.assert_allclose(b, bb)
+            np.testing.assert_allclose(h, hh)
+        
+
+def test_facet4():
+    """test core tetrahedron vs cube"""
+    obs = np.array([(3,4,5)]*6)
+    mag = np.array([(111,222,333)]*6)
+    ver = np.array(
+        [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
+        [(-1,-1,1), (-1,1,1), (1,-1,1), (1,-1,-1)],
+        [(-1,-1,-1), (-1,-1,1), (-1,1,-1), (1,-1,-1)],
+        [(-1,1,-1), (1,-1,-1), (-1,-1,1), (-1,1,1)],
+        [(1,-1,-1), (1,1,-1), (1,-1,1), (-1,1,1)],
+        [(-1,1,-1), (-1,1,1), (1,1,-1), (1,-1,-1)],]
+        )
+    b = magpy.core.magnet_tetrahedron_field('B', obs, mag, ver)
+    b = np.sum(b, axis=0)
+
+    obs = np.array([(3,4,5)])
+    mag = np.array([(111,222,333)])
+    dim = np.array([(2,2,2)])
+    bb = magpy.core.magnet_cuboid_field('B', obs, mag, dim)[0]
+
+    np.testing.assert_allclose(b, bb)
