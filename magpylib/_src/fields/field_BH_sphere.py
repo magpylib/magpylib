@@ -3,7 +3,6 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Spheres. Computation details in function docstrings.
 """
 import numpy as np
-
 from magpylib._src.input_checks import check_field_input
 
 
