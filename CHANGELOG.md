@@ -4,9 +4,11 @@ All notable changes to magpylib are documented here.
 # Releases
 
 ## [4.2.0] - 2022 i hope
-- Fixed some Bugs
-- Added code of conduct
-- Improved Loop field computation
+- Fixed some Bugs, minor performance increase, internal refactoring
+- Added code of conduct attempting to align with NumFocus standards ([558] (https://github.com/magpylib/magpylib/issues/558))
+- Improved Loop field computation in terms of performance and numerical stability ([374](https://github.com/magpylib/magpylib/issues/374))
+- (Re)introducing the powerful magnet.Facet class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface by triangular facets.
+- Introducing the magnet.Tetrahedron class as a derivate of the Facet class. ([289](https://github.com/magpylib/magpylib/issues/289))
 
 ## [4.1.1] - 2022-08-11
 - Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
