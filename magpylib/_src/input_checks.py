@@ -47,7 +47,7 @@ def make_float_array(inp, msg: str):
     return inp_array
 
 
-def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg=""):
+def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, msg=""):
     """check if inp shape is allowed
     inp: test object
     dims: list, list of allowed dims
@@ -55,9 +55,12 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg=""):
     msg: str, error msg
     """
     if inp.ndim in dims:
-        if inp.shape[-1] == shape_m1:
-            return None
-        if shape_m1 == "any":
+        if length is None:
+            if inp.shape[-1] == shape_m1:
+                return None
+            if shape_m1 == "any":
+                return None
+        elif len(inp) == length:
             return None
     raise MagpylibBadUserInput(msg)
 
@@ -309,6 +312,7 @@ def check_format_input_vector(
     shape_m1,
     sig_name,
     sig_type,
+    length=None,
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
@@ -339,6 +343,7 @@ def check_format_input_vector(
         inp,
         dims=dims,
         shape_m1=shape_m1,
+        length=length,
         msg=(
             f"Input parameter `{sig_name}` must be {sig_type}.\n"
             f"Instead received array_like with shape {inp.shape}."
@@ -556,7 +561,6 @@ def check_dimensions(sources):
     from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
     from magpylib._src.obj_classes.class_current_Line import Line
     from magpylib._src.obj_classes.class_current_Loop import Loop
-    from magpylib._src.obj_classes.class_magnet_Facet import Facet
 
     for src in sources:
         if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
@@ -573,11 +577,6 @@ def check_dimensions(sources):
             if src.vertices is None:
                 raise MagpylibMissingInput(
                     f"Parameter `vertices` of {src} must be set."
-                )
-        elif isinstance(src, Facet):
-            if src.facets is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `facets` of {src} must be set."
                 )
 
 
