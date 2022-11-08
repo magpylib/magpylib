@@ -102,6 +102,7 @@ class Facet(BaseMagnet):
             sig_name="Facet.facets",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3,3)",
             reshape=(-1,3,3),
+            allow_None=True,
         )
         # self._facets, self._triangles, self._vertices = self._validate_facets(
         #     facets=val,
