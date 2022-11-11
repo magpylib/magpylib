@@ -13,7 +13,7 @@ class Facet(BaseMagnet):
 
     Can be used as `sources` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` the TriangularMesh facets coordinates
+    When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
     are the same as in the global coordinate system. The geometric center of the TriangularMesh
     is determined by its vertices and is not necessarily located in the origin.
 
@@ -23,13 +23,14 @@ class Facet(BaseMagnet):
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
         the local object coordinates (rotates with object).
 
-    facets: ndarray, shape (n,4,3)
-        Facets in the relative coordinate system of the TriangularMesh object.
+    vertices: ndarray, shape (3,3) or (n,3,3)
+        Faces are defined through triples of vertices in the relative coordinate
+        system of the object. Multiple faces, each with dimension (3,3) can be combined in a single
+        Facet object.
 
     position: array_like, shape (3,) or (m,3)
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
-        When setting facets, the initial position is set to the barycenter.
 
     barycenter: array_like, shape (3,)
         Read only property that returns the geometric barycenter (=center of mass)
@@ -56,39 +57,39 @@ class Facet(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_facet_field_from_obj)
-    _field_func_kwargs_ndim = {"magnetization": 2, "facets": 3}
+    _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 3}
     _draw_func = make_Facet
 
     def __init__(
         self,
         magnetization=None,
-        facets=None,
+        vertices=None,
         position=(0, 0, 0),
         orientation=None,
         style=None,
         **kwargs,
     ):
 
-        self.facets = facets
+        self.vertices = vertices
 
         # init inheritance
         super().__init__(position, orientation, magnetization, style, **kwargs)
 
     # property getters and setters
     @property
-    def facets(self):
-        """Facets objects"""
-        return self._facets
+    def vertices(self):
+        """Object faces"""
+        return self._vertices
 
-    @facets.setter
-    def facets(self, val):
-        """Set Facets facets (a,b,c), shape (3,), [mm]."""
-        self._facets = check_format_input_vector(
+    @vertices.setter
+    def vertices(self, val):
+        """Set face vertices (a,b,c), shape (3,3) or (n,3,3), [mm]."""
+        self._vertices = check_format_input_vector(
             val,
             dims=(2,3),
             shape_m1=3,
-            sig_name="Facet.facets",
-            sig_type="array_like (list, tuple, ndarray) of shape (n,3,3)",
+            sig_name="Facet.vertices",
+            sig_type="array_like (list, tuple, ndarray) of shape (3,3) or (n,3,3)",
             reshape=(-1,3,3),
             allow_None=True,
         )
@@ -96,7 +97,7 @@ class Facet(BaseMagnet):
     @property
     def _barycenter(self):
         """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self._facets)
+        return self._get_barycenter(self._position, self._orientation, self._vertices)
 
     @property
     def barycenter(self):
@@ -104,8 +105,8 @@ class Facet(BaseMagnet):
         return np.squeeze(self._barycenter)
 
     @staticmethod
-    def _get_barycenter(position, orientation, facets):
-        """Returns the barycenter of a tetrahedron."""
-        centroid = np.mean(facets, axis=(0,1))
+    def _get_barycenter(position, orientation, vertices):
+        """Returns the barycenter of a facet object."""
+        centroid = np.mean(vertices, axis=(0,1))
         barycenter = orientation.apply(centroid) + position
         return barycenter

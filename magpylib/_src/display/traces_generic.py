@@ -384,16 +384,16 @@ def make_Facet(
     Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
     provided arguments.
     """
-    facets = obj.facets
+    vertices = obj.vertices
 
-    #Return vertices and triangles from facets
-    vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
+    #Return unique vertices and triangles from vertices
+    vert_unique, tr = np.unique(vertices.reshape((-1, 3)), axis=0, return_inverse=True)
     triangles = tr.reshape((-1, 3))
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
         "plotly-dict",
-        vertices=vertices,
+        vertices=vert_unique,
         triangles=triangles,
         color=color
     )

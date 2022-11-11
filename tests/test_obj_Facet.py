@@ -13,13 +13,13 @@ def test_facet_input1():
     """test obj-oriented facet vs cube"""
     obs = (1,2,3)
     mag = (0,0,333)
-    fac = np.array([
+    vert = np.array([
         [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
         [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
         [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
         [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
         ])
-    face = magpy.misc.Facet(mag, fac)
+    face = magpy.misc.Facet(mag, vert)
     cube = magpy.magnet.Cuboid(mag, (2,2,2))
 
     b = face.getB(obs)
@@ -32,27 +32,27 @@ def test_facet_input2():
     """test variable Facet class inputs against each other"""
     obs = (1,2,3)
     mag = (0,0,333)
-    fac1 = [(-1,-1,1), (1,-1,1), (-1,1,1)]
-    fac2 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]
-    fac3 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*2
-    fac4 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*3
+    vert1 = [(-1,-1,1), (1,-1,1), (-1,1,1)]
+    vert2 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]
+    vert3 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*2
+    vert4 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*3
 
-    face1 = magpy.misc.Facet(mag, fac1)
+    face1 = magpy.misc.Facet(mag, vert1)
     b1 = face1.getB(obs)
 
-    face2 = magpy.misc.Facet(mag, fac2)
+    face2 = magpy.misc.Facet(mag, vert2)
     b_test = face2.getB(obs)
     np.testing.assert_allclose(b1, b_test)
 
-    face3 = magpy.misc.Facet(mag, fac3)
+    face3 = magpy.misc.Facet(mag, vert3)
     b_test = face3.getB(obs)/2
     np.testing.assert_allclose(b1, b_test)
 
-    face4 = magpy.misc.Facet(mag, fac4)
+    face4 = magpy.misc.Facet(mag, vert4)
     b_test = face4.getB(obs)/3
     np.testing.assert_allclose(b1, b_test)
 
-    face = magpy.misc.Facet(mag, fac4)
+    face = magpy.misc.Facet(mag, vert4)
     b_test = magpy.getB([face1, face2, face3, face4], obs, sumup=True)/7
     np.testing.assert_allclose(b1, b_test)
 
@@ -62,17 +62,17 @@ def test_facet_input3():
 
     obs = np.array([(3,4,5)]*4)
     mag = np.array([(111,222,333)]*4)
-    fac = np.array([
+    vert = np.array([
         [(0,0,0), (3,0,0), (0,10,0)],
         [(3,0,0), (5,0,0), (0,10,0)],
         [(5,0,0), (6,0,0), (0,10,0)],
         [(6,0,0), (10,0,0), (0,10,0)],
         ])
-    b = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    b = magpy.core.magnet_facet_field('B', obs, mag, vert)
     b = np.sum(b, axis=0)
 
-    face1 = magpy.misc.Facet(mag[0], facets=fac[0])
-    face2 = magpy.misc.Facet(mag[0], facets=fac[1:])
+    face1 = magpy.misc.Facet(mag[0], vertices=vert[0])
+    face2 = magpy.misc.Facet(mag[0], vertices=vert[1:])
 
     bb = magpy.getB([face1, face2], obs[0], sumup=True)
 
@@ -98,12 +98,12 @@ def test_empty_object_initialization():
 def test_barycenter():
     """call barycenter"""
     mag = (0,0,333)
-    fac = np.array([
+    vert = np.array([
         [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
         [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
         [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
         [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
         ])
-    face = magpy.misc.Facet(mag, fac)
+    face = magpy.misc.Facet(mag, vert)
     bary = np.array([0,0,0])
     np.testing.assert_allclose(face.barycenter, bary)
