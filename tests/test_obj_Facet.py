@@ -68,7 +68,7 @@ def test_facet_input3():
         [(5,0,0), (6,0,0), (0,10,0)],
         [(6,0,0), (10,0,0), (0,10,0)],
         ])
-    b = magpy.core.magnet_facet_field('B', obs, mag, vert)
+    b = magpy.core.facet_field('B', obs, mag, vert)
     b = np.sum(b, axis=0)
 
     face1 = magpy.misc.Facet(mag[0], vertices=vert[0])

@@ -3,7 +3,7 @@ Implementation for the magnetic field of homogeneously
 magnetized tetrahedra. Computation details in function docstrings.
 """
 import numpy as np
-from magpylib._src.fields.field_BH_facet import magnet_facet_field
+from magpylib._src.fields.field_BH_facet import facet_field
 from magpylib._src.input_checks import check_field_input
 
 
@@ -105,7 +105,7 @@ def magnet_tetrahedron_field(
         ),
         axis=0,
     )
-    facets_fields = magnet_facet_field(
+    facets_fields = facet_field(
         field,
         np.tile(observers, (4, 1)),
         np.tile(magnetization, (4, 1)),

@@ -368,7 +368,7 @@ def test_facet1():
         [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
         [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
         ])
-    b = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    b = magpy.core.facet_field('B', obs, mag, fac)
     b = np.sum(b, axis=0)
 
     obs = np.array([(3,4,5)])
@@ -386,7 +386,7 @@ def test_facet2():
     fac = np.array([
         [(0,0,0), (10,0,0), (0,10,0)],
         ])
-    b = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    b = magpy.core.facet_field('B', obs, mag, fac)
     b = np.sum(b, axis=0)
 
     obs = np.array([(3,4,5)]*4)
@@ -397,7 +397,7 @@ def test_facet2():
         [(5,0,0), (6,0,0), (0,10,0)],
         [(6,0,0), (10,0,0), (0,10,0)],
         ])
-    bb = magpy.core.magnet_facet_field('B', obs, mag, fac)
+    bb = magpy.core.facet_field('B', obs, mag, fac)
     bb = np.sum(bb, axis=0)
 
     np.testing.assert_allclose(b, bb)
