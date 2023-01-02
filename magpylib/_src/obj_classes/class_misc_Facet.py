@@ -3,29 +3,32 @@
 
 import numpy as np
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.fields.field_BH_facet import magnet_facet_field_from_obj
+from magpylib._src.fields.field_BH_facet import facet_field_from_obj
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.display.traces_generic import make_Facet
 
 
 class Facet(BaseMagnet):
-    """Triangular surface mesh magnet with homogeneous magnetization.
+    """Triangular facet(s) with homogeneous surface charge.
 
     Can be used as `sources` input for magnetic field computation.
 
-    When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
-    are the same as in the global coordinate system. The geometric center of the TriangularMesh
-    is determined by its vertices and is not necessarily located in the origin.
+    When `position=(0,0,0)` and `orientation=None` the local object coordinates of the
+    Facet vertices coincide with the global coordinate system. The geometric
+    center of the Facet is determined by its vertices and is not necessarily located
+    in the origin of the local coordinate system.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-        the local object coordinates (rotates with object).
+        the local object coordinates (rotates with object). The homogeneous surface
+        charge of each facet is given by the projection of the magnetization on the
+        facet normal vector.
 
     vertices: ndarray, shape (3,3) or (n,3,3)
-        Faces are defined through triples of vertices in the relative coordinate
-        system of the object. Multiple faces, each with dimension (3,3) can be combined in a single
+        Triangular facets are defined through triples of vertices in the local object
+        coordinates. Multiple facets, each with dimension (3,3) can be combined in a single
         Facet object.
 
     position: array_like, shape (3,) or (m,3)
@@ -50,13 +53,13 @@ class Facet(BaseMagnet):
 
     Returns
     -------
-    magnet source: `TriangularMesh` object
+    magnet source: `Facet` object
 
     Examples
     --------
     """
 
-    _field_func = staticmethod(magnet_facet_field_from_obj)
+    _field_func = staticmethod(facet_field_from_obj)
     _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 3}
     _draw_func = make_Facet
 
