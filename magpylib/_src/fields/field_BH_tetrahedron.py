@@ -47,9 +47,9 @@ def point_inside(points:np.ndarray, vertices:np.ndarray)->np.ndarray:
     #mat[:, 1, :] = vertices[:, 2, :] - vertices[:, 0, :]
     #mat[:, 2, :] = vertices[:, 3, :] - vertices[:, 0, :]
     mat = vertices[:, 1:].swapaxes(0,1) - vertices[:, 0]
-    print(mat.swapaxes(0,1))
+    #print(mat.swapaxes(0,1))
     mat = np.transpose(mat.swapaxes(0,1), (0, 2, 1))
-    print(mat)
+    #print(mat)
 
     tetra = np.linalg.inv(mat)
 
@@ -61,7 +61,6 @@ def point_inside(points:np.ndarray, vertices:np.ndarray)->np.ndarray:
     ).flatten()
 
 
-# CORE
 def magnet_tetrahedron_field(
     field: str,
     observers: np.ndarray,
@@ -138,10 +137,8 @@ def magnet_tetrahedron_field(
 
     if not bh:
         return tetra_field
-    
+
     # if B, and inside magnet add magnetization vector
     mask_inside = point_inside(observers, vertices)
-    field[mask_inside] += magnetization[mask_inside]
-    return field
-
-    return field
+    tetra_field[mask_inside] += magnetization[mask_inside]
+    return tetra_field
