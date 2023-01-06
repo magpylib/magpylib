@@ -456,7 +456,7 @@ def test_facet3():
             hh = magpy.core.magnet_cuboid_field('H', obs1, mag1, dim)[0]
             np.testing.assert_allclose(b, bb)
             np.testing.assert_allclose(h, hh)
-        
+
 
 def test_facet4():
     """test core tetrahedron vs cube"""

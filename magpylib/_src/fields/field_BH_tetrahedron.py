@@ -42,23 +42,18 @@ def point_inside(points:np.ndarray, vertices:np.ndarray)->np.ndarray:
     Takes points, as well as the vertices of a tetrahedra.
     Returns boolean array indicating whether the points are inside the tetrahedra.
     """
-    #mat = np.zeros((len(vertices), 3, 3))
-    #mat[:, 0, :] = vertices[:, 1, :] - vertices[:, 0, :]
-    #mat[:, 1, :] = vertices[:, 2, :] - vertices[:, 0, :]
-    #mat[:, 2, :] = vertices[:, 3, :] - vertices[:, 0, :]
     mat = vertices[:, 1:].swapaxes(0,1) - vertices[:, 0]
-    #print(mat.swapaxes(0,1))
     mat = np.transpose(mat.swapaxes(0,1), (0, 2, 1))
-    #print(mat)
 
     tetra = np.linalg.inv(mat)
-
     newp = np.matmul(tetra, np.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
-    return (
+    inside = (
         np.all(newp >= 0, axis=1)
         & np.all(newp <= 1, axis=1)
         & (np.sum(newp, axis=1) <= 1)
     ).flatten()
+
+    return inside
 
 
 def magnet_tetrahedron_field(
