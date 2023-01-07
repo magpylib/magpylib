@@ -55,7 +55,17 @@ def solid_angle(R:np.ndarray, r:np.ndarray)->np.ndarray:
         np.einsum("ij, ij->i", R[2], R[1]) * r[0] +
         np.einsum("ij, ij->i", R[2], R[0]) * r[1] +
         np.einsum("ij, ij->i", R[1], R[0]) * r[2])
-    return 2. * np.arctan2(N, D)
+    result = (2. * np.arctan2(N, D))
+
+    # modulus 2pi to avoid jumps on edges in line
+    # "B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)"
+    # <-- bad fix :(
+
+    return np.where(
+            abs(result)>6.2831853,
+            0,
+            result
+        )
 
 
 def facet_field(
@@ -110,6 +120,9 @@ def facet_field(
     Notes
     -----
     Field computations implemented from Guptasarma, Geophysics, 1999, 64:1, 70-74.
+
+    Corners give (nan, nan, nan). Edges and in-plane perp components are set to 0.
+    Loss of precision when approaching the facets.
     """
     # pylint: disable=too-many-statements
     bh = check_field_input(field, "facet_field()")
@@ -127,28 +140,36 @@ def facet_field(
     L = np.swapaxes(L, 0, 1)
     l2 = np.sum(L*L, axis=-1)
     l = np.sqrt(l2)
-    
+
     # vert-vert -- vert-obs
     b = np.einsum("ijk, ijk->ij", R, L)
     bl = b / l
     ind = np.fabs(r + bl) # closeness measure to corner and edge
-    
+
     # The computation of ind is the origin of a major numerical instability
-    #    when approaching corners and edges because r ~ -bl. This number
+    #    when approaching the facet because r ~ -bl. This number
     #    becomes small at the same rate as it looses precision.
-    # This is a major problem, because at distances 1e-8 
+    #    This is a major problem, because at distances 1e-8 and 1e8 all precision
+    #    is already lost !!!
+    # The second problem is at corner and edge extensions where ind also computes
+    #    as 0. Here one approaches a special case where another evaluation should
+    #    be used. This problem is solved in the following lines.
+    # np.seterr must be used because of a numpy bug. It does not interpret where
+    #   correctly. The following code will raise a numpy warning - but obviously shouldn't
+    #
+    # x = np.array([(0,1,2), (0,0,1)])
+    # np.where(
+    #     x>0,
+    #     1/x,
+    #     0
+    # )
 
-    print(f'l={l}')
-    print(f'r={r}')
-    print(f'bl={bl}')
-    print(f'ind={ind}')
-
-    I = np.where(
-        ind>1.0e-12,
-        1./l * np.log( (np.sqrt(l2 + 2*b + r2) + l + bl) / ind ),
-        123
-    )
-    
+    with np.errstate(divide='ignore', invalid='ignore'):
+        I = np.where(
+            ind>1.0e-12,
+            1./l * np.log( (np.sqrt(l2 + 2*b + r2) + l + bl) / ind ),
+            -(1.0 / l) * np.log(np.fabs(l - r) / r)
+        )
     PQR = np.einsum("ij, ijk -> jk", I, L)
     B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)
 
@@ -156,7 +177,7 @@ def facet_field(
     if bh:
         return B.T / np.pi / 4.
 
-    H = B.T * 10. / 16. / np.pi**2  # mT -> kA/m
+    H = B.T / 1.6 / np.pi**2  # mT -> kA/m
     return H
 
 
