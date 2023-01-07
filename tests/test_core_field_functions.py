@@ -479,3 +479,4 @@ def test_facet4():
     bb = magpy.core.magnet_cuboid_field('B', obs, mag, dim)[0]
 
     np.testing.assert_allclose(b, bb)
+

@@ -58,7 +58,6 @@ def solid_angle(R:np.ndarray, r:np.ndarray)->np.ndarray:
     return 2. * np.arctan2(N, D)
 
 
-# CORE
 def facet_field(
     field: str,
     observers: np.ndarray,
@@ -118,28 +117,38 @@ def facet_field(
     n = norm_vector(vertices)
     sigma = np.einsum("ij, ij->i", n, magnetization) # vectorized inner product
 
-    # rearrange, relative
+    # vertex <-> observer
     R = np.swapaxes(vertices, 0, 1) - observers
-    r = np.linalg.norm(R, axis=2)
+    r2 = np.sum(R*R, axis=-1)
+    r = np.sqrt(r2)
 
-    # inout = np.einsum("ij, ij->i", n, R[2])
-    # solid_angle_results = np.where(
-    #     np.fabs(inout) <= EPS,
-    #     0.0,
-    #     solid_angle(R, r)
-    # )
-
+    # vertex <-> vertex
     L = vertices[:, (1,2,0)] - vertices[:, (0,1,2)]
     L = np.swapaxes(L, 0, 1)
-    b = 2. * np.einsum("ijk, ijk->ij", R, L)
-    l = np.linalg.norm(L, axis=-1)
-    bl = b / (2. * l)
-    ind = np.fabs(r + bl)
+    l2 = np.sum(L*L, axis=-1)
+    l = np.sqrt(l2)
+    
+    # vert-vert -- vert-obs
+    b = np.einsum("ijk, ijk->ij", R, L)
+    bl = b / l
+    ind = np.fabs(r + bl) # closeness measure to corner and edge
+    
+    # The computation of ind is the origin of a major numerical instability
+    #    when approaching corners and edges because r ~ -bl. This number
+    #    becomes small at the same rate as it looses precision.
+    # This is a major problem, because at distances 1e-8 
+
+    print(f'l={l}')
+    print(f'r={r}')
+    print(f'bl={bl}')
+    print(f'ind={ind}')
+
     I = np.where(
         ind>1.0e-12,
-        1./l * np.log( (np.sqrt(l*l + b + r*r) + l + bl) / np.fabs(r+bl) ),
-        -1./l * np.log(np.fabs(l-r) / r)
+        1./l * np.log( (np.sqrt(l2 + 2*b + r2) + l + bl) / ind ),
+        123
     )
+    
     PQR = np.einsum("ij, ijk -> jk", I, L)
     B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)
 
