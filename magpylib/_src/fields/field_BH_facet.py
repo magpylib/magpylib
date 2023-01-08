@@ -14,11 +14,13 @@ def vcross3(a:np.ndarray, b:np.ndarray)->np.ndarray:
     input shape a,b: (n,3)
     returns: (n, 3)
     """
-    result = np.array([
-        a[:,1] * b[:,2] - a[:,2] * b[:,1], 
-        a[:,2] * b[:,0] - a[:,0] * b[:,2], 
-        a[:,0] * b[:,1] - a[:,1] * b[:,0]
-    ])
+    # receives nan values at corners
+    with np.errstate(invalid='ignore'):
+        result = np.array([
+            a[:,1] * b[:,2] - a[:,2] * b[:,1], 
+            a[:,2] * b[:,0] - a[:,0] * b[:,2], 
+            a[:,0] * b[:,1] - a[:,1] * b[:,0]
+        ])
     return result.T
 
 
@@ -120,9 +122,9 @@ def facet_field(
     Notes
     -----
     Field computations implemented from Guptasarma, Geophysics, 1999, 64:1, 70-74.
-
     Corners give (nan, nan, nan). Edges and in-plane perp components are set to 0.
-    Loss of precision when approaching the facets.
+    Loss of precision when approaching the facets as (x-edge)**2 :(
+    Loss of precision with distance fromt he facet as distance**3 :(
     """
     # pylint: disable=too-many-statements
     bh = check_field_input(field, "facet_field()")
@@ -171,7 +173,7 @@ def facet_field(
             -(1.0 / l) * np.log(np.fabs(l - r) / r)
         )
     PQR = np.einsum("ij, ijk -> jk", I, L)
-    B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)
+    B = sigma * (n.T*solid_angle(R, r) - vcross3(n, PQR).T)
 
     # return B or compute and return H -------------
     if bh:
