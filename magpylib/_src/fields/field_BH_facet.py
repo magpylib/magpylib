@@ -4,10 +4,11 @@ Computation details in function docstrings.
 """
 # pylance: disable=Code is unreachable
 import numpy as np
+
 from magpylib._src.input_checks import check_field_input
 
 
-def vcross3(a:np.ndarray, b:np.ndarray)->np.ndarray:
+def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     """
     vectorized cross product for 3d vectors. Is ~4x faster than np.cross when
     arrays are smallish. Only slightly faster for large arrays.
@@ -24,7 +25,7 @@ def vcross3(a:np.ndarray, b:np.ndarray)->np.ndarray:
     return result.T
 
 
-def norm_vector(v)->np.ndarray:
+def norm_vector(v) -> np.ndarray:
     """
     Calculates normalized orthogonal vector on a plane defined by three vertices.
     """
@@ -35,7 +36,7 @@ def norm_vector(v)->np.ndarray:
     return n / np.expand_dims(n_norm, axis=-1)
 
 
-def solid_angle(R:np.ndarray, r:np.ndarray)->np.ndarray:
+def solid_angle(R: np.ndarray, r: np.ndarray) -> np.ndarray:
     """
     Vectorized computation of the solid angle of triangles.
 
@@ -53,21 +54,19 @@ def solid_angle(R:np.ndarray, r:np.ndarray)->np.ndarray:
     # Calculates (oriented) volume of the parallelepiped in vectorized form.
     N = np.einsum("ij, ij->i", R[2], vcross3(R[1], R[0]))
 
-    D = (r[0] * r[1] * r[2] +
-        np.einsum("ij, ij->i", R[2], R[1]) * r[0] +
-        np.einsum("ij, ij->i", R[2], R[0]) * r[1] +
-        np.einsum("ij, ij->i", R[1], R[0]) * r[2])
-    result = (2. * np.arctan2(N, D))
+    D = (
+        r[0] * r[1] * r[2]
+        + np.einsum("ij, ij->i", R[2], R[1]) * r[0]
+        + np.einsum("ij, ij->i", R[2], R[0]) * r[1]
+        + np.einsum("ij, ij->i", R[1], R[0]) * r[2]
+    )
+    result = 2.0 * np.arctan2(N, D)
 
     # modulus 2pi to avoid jumps on edges in line
     # "B = sigma * ((n.T * solid_angle(R, r)) - vcross3(n, PQR).T)"
     # <-- bad fix :(
 
-    return np.where(
-            abs(result)>6.2831853,
-            0,
-            result
-        )
+    return np.where(abs(result) > 6.2831853, 0, result)
 
 
 def facet_field(
@@ -130,23 +129,23 @@ def facet_field(
     bh = check_field_input(field, "facet_field()")
 
     n = norm_vector(vertices)
-    sigma = np.einsum("ij, ij->i", n, magnetization) # vectorized inner product
+    sigma = np.einsum("ij, ij->i", n, magnetization)  # vectorized inner product
 
     # vertex <-> observer
     R = np.swapaxes(vertices, 0, 1) - observers
-    r2 = np.sum(R*R, axis=-1)
+    r2 = np.sum(R * R, axis=-1)
     r = np.sqrt(r2)
 
     # vertex <-> vertex
-    L = vertices[:, (1,2,0)] - vertices[:, (0,1,2)]
+    L = vertices[:, (1, 2, 0)] - vertices[:, (0, 1, 2)]
     L = np.swapaxes(L, 0, 1)
-    l2 = np.sum(L*L, axis=-1)
+    l2 = np.sum(L * L, axis=-1)
     l = np.sqrt(l2)
 
     # vert-vert -- vert-obs
     b = np.einsum("ijk, ijk->ij", R, L)
     bl = b / l
-    ind = np.fabs(r + bl) # closeness measure to corner and edge
+    ind = np.fabs(r + bl)  # closeness measure to corner and edge
 
     # The computation of ind is the origin of a major numerical instability
     #    when approaching the facet because r ~ -bl. This number
@@ -166,18 +165,18 @@ def facet_field(
     #     0
     # )
 
-    with np.errstate(divide='ignore', invalid='ignore'):
+    with np.errstate(divide="ignore", invalid="ignore"):
         I = np.where(
-            ind>1.0e-12,
-            1./l * np.log( (np.sqrt(l2 + 2*b + r2) + l + bl) / ind ),
-            -(1.0 / l) * np.log(np.fabs(l - r) / r)
+            ind > 1.0e-12,
+            1.0 / l * np.log((np.sqrt(l2 + 2 * b + r2) + l + bl) / ind),
+            -(1.0 / l) * np.log(np.fabs(l - r) / r),
         )
     PQR = np.einsum("ij, ijk -> jk", I, L)
     B = sigma * (n.T*solid_angle(R, r) - vcross3(n, PQR).T)
 
     # return B or compute and return H -------------
     if bh:
-        return B.T / np.pi / 4.
+        return B.T / np.pi / 4.0
 
     H = B.T / 1.6 / np.pi**2  # mT -> kA/m
     return H
@@ -188,7 +187,7 @@ def facet_field_from_obj(
     observers: np.ndarray,
     magnetization: np.ndarray,
     vertices: np.ndarray,
-    ) -> np.ndarray:
+) -> np.ndarray:
     """Helper function to compute the magnetic field of a Facet object
     Facet objects can have variable facet input shapes.
     This function tiles up all inputs, as well as observers and magnetization
