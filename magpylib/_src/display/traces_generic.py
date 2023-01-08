@@ -6,6 +6,7 @@ import numbers
 import warnings
 from itertools import combinations
 from typing import Tuple
+import magpylib as magpy
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
@@ -551,10 +552,10 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
+    elif isinstance(obj, magpy.misc.Facet):
+        length = np.amax(obj.vertices) - np.amin(obj.vertices)
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))
-    elif hasattr(obj, "facets"):
-        length = np.amax(obj.facets) - np.amin(obj.facets)
     else:  # Cuboid, Cylinder, CylinderSegment
         length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size
