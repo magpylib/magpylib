@@ -18,8 +18,8 @@ def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     # receives nan values at corners
     with np.errstate(invalid='ignore'):
         result = np.array([
-            a[:,1] * b[:,2] - a[:,2] * b[:,1], 
-            a[:,2] * b[:,0] - a[:,0] * b[:,2], 
+            a[:,1] * b[:,2] - a[:,2] * b[:,1],
+            a[:,2] * b[:,0] - a[:,0] * b[:,2],
             a[:,0] * b[:,1] - a[:,1] * b[:,0]
         ])
     return result.T
