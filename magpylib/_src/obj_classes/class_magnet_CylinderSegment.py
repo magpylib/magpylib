@@ -1,6 +1,4 @@
-"""Magnet Cylinder class code
-DOCSTRINGS V4 READY
-"""
+"""Magnet Cylinder class code"""
 import numpy as np
 
 from magpylib._src.display.traces_generic import make_CylinderSegment

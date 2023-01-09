@@ -1,6 +1,4 @@
-"""BaseGeo class code
-DOCSTRING v4 READY
-"""
+"""BaseGeo class code"""
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
@@ -113,7 +111,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=(-1,3),
+            reshape=(-1, 3),
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
@@ -183,7 +181,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=(-1,3),
+            reshape=(-1, 3),
         )
 
         # pad/slice and set orientation path to same length

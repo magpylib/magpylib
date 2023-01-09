@@ -1,7 +1,6 @@
-"""Magnet Tetrahedron class code
-DOCSTRINGS V4 READY
-"""
+"""Magnet Tetrahedron class code"""
 import numpy as np
+
 from magpylib._src.display.traces_generic import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
