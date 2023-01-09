@@ -12,7 +12,7 @@ kernelspec:
 ---
 
 (examples-graphic-styles)=
-# Styles
+# Graphic styles
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized in many ways.
 

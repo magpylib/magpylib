@@ -47,10 +47,19 @@ _pages/*
 :glob: true
 :maxdepth: 2
 
-examples/01_fundamentals.md
-examples/02_graphic_output.md
-examples/03_advanced.md
-examples/04_application_examples.md
+examples/examples_02_paths.md
+examples/examples_05_backend_canvas.md
+examples/examples_12_styles.md
+examples/examples_15_animation.md
+examples/examples_03_collections.md
+examples/examples_01_complex_forms.md
+examples/examples_06_facet.md
+examples/examples_04_custom_source.md
+examples/examples_13_3d_models.md
+examples/examples_21_compound.md
+examples/examples_30_coil_field_lines.md
+examples/examples_22_field_interpolation.md
+examples/examples_31_end_of_shaft.md
 ```
 
 ```{toctree}

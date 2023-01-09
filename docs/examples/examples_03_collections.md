@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-collections-construction)=
 
-# Collections
+# Collection fundamentals
 
 ## Constructing collections
 
