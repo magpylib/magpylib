@@ -10,8 +10,8 @@ Magnetic field computations in Magpylib are based on known analytical solutions 
 
 - Field of cuboid magnets: \[Yang1999, Engel-Herbert2005, Camacho2013, Cichon2019\]
 - Field of cylindrical magnets: \[Furlani1994, Derby2009, Caciagli2018, Slanovc2021\]
-- Field of facet bodies: \[Janssen2009, Rubeck2013\]
-- Field of circular line current: \[Smythe1950, Simpson2001, Ortner2017\]
+- Field of facet bodies: \[Guptasarma1999, Janssen2009, Rubeck2013\]
+- Field of the current loop: \[Ortner2022\]
 - all others derived by hand
 
 A short reflection on how these formulas can be achieved: In magnetostatics (no currents) the magnetic field becomes conservative (Maxwell: $\nabla \times {\bf H} = 0$) and can thus be expressed through the magnetic scalar potential $\Phi_m$:
@@ -26,7 +26,7 @@ $$
 \Phi_m({\bf r}) = \frac{1}{4\pi}\int_{V'}\frac{\nabla'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dV'+\frac{1}{4\pi}\oint_{S'}\frac{{\bf n}'\cdot {\bf M}({\bf r}')}{|{\bf r}-{\bf r}'|}dS'
 $$
 
-where ${\bf r}$ denotes the position, $V$ is the magnetized volume with surface $S$ and normal vector ${\bf n}$ onto the surface. This solution is derived in detail e.g. in \[1999Jackson\].
+where ${\bf r}$ denotes the position, $V$ is the magnetized volume with surface $S$ and normal vector ${\bf n}$ onto the surface. This solution is derived in detail e.g. in \[Jackson1999\].
 
 **Currents**
 
@@ -90,7 +90,7 @@ The analytical solutions provide extreme performance. Single field evaluations t
 
 ## Numerical stability
 
-Many expressions provided in the literature have very questionable numerical stability. Most of these issues are fixed in Magpylib, but one should be aware that the results might not have more than 8-10 correct significant figures. A detailed treatsie on this topic is work in progress.
+Many expressions provided in the literature have very questionable numerical stability. Many of these problems are fixed in Magpylib, but one should be aware that accuracy can be a problem very close to objects, close the z-axis in cylindrical symmetries, at adge extensions, and at large distances. We are working on fixing these problems. Some details can be found in \[Ortner2022\].
 
 **References**
 
@@ -102,9 +102,8 @@ Many expressions provided in the literature have very questionable numerical sta
 - \[Derby2009\] N. Derby, "Cylindrical Magnets and Ideal Solenoids", arXiv:0909.3880v1, 2009
 - \[Caciagli2018\] A. Caciagli, R. J. Baars, A. P. Philipse and B. W. M. Kuipers, "Exact expression for the magnetic field of a finite cylinder with arbitrary uniform magnetization", Journal of Magnetism and Magnetic Materials 456 (2018) 423–432.
 - \[Slanovc2022\] F. Slanovc, M. Ortner, M. Moridi, C. Abert and D. Suess, "Full analytical solution for the magnetic field of uniformly magnetized cylinder tiles", submitted to Journal of Magnetism and Magnetic Materials.
-- \[Smythe1950\] W.B. Smythe, "Static and dynamic electricity" McGraw-Hill New York, 1950, vol. 3.
-- \[Simpson2001\] J. Simplson et al., "Simple analytic expressions for the magnetic field of a circular current loop," 2001.
-- \[Ortner2017\] M. Ortner et al., "Feedback of Eddy Currents in Layered Materials for Magnetic Speed Sensing", IEEE Transactions on Magnetics ( Volume: 53, Issue: 8, Aug. 2017)
+- \[Ortner2022\] M. Ortner, S. Slanovc and P. Leitner, "Numerically Stable and Computationally Efficient Expression for the Magnetic Field of a Current Loop", MDPI Magnetism, 3(1), 11-31, 2022.
+- \[Guptasarma1911\] D. Guptasarma and B. Singh, "New scheme for computing the magnetic field resulting from a uniformly magnetized arbitrary polyhedron", Geophysics (1999), 64(1):70.
 - \[Janssen2009\] J.L.G. Janssen, J.J.H. Paulides and E.A. Lomonova, "3D ANALYTICAL FIELD CALCULATION USING TRIANGULAR MAGNET SEGMENTS APPLIED TO A SKEWED LINEAR PERMANENT MAGNET ACTUATOR", ISEF 2009 - XIV International Symposium on Electromagnetic Fields in Mechatronics, Electrical and Electronic Engineering Arras, France, September 10-12, 2009
 - \[Rubeck2013\] C. Rubeck et al., "Analytical Calculation of Magnet Systems: Magnetic Field Created by Charged Triangles and Polyhedra", IEEE Transactions on Magnetics, VOL. 49, NO. 1, 2013
 - \[Jackson1999\] J. D. Jackson, "Classical Electrodynamics", 1999 Wiley, New York
