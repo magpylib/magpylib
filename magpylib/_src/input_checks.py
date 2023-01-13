@@ -47,7 +47,7 @@ def make_float_array(inp, msg: str):
     return inp_array
 
 
-def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg: str):
+def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, length=None, msg=""):
     """check if inp shape is allowed
     inp: test object
     dims: list, list of allowed dims
@@ -55,9 +55,12 @@ def check_array_shape(inp: np.ndarray, dims: tuple, shape_m1: int, msg: str):
     msg: str, error msg
     """
     if inp.ndim in dims:
-        if inp.shape[-1] == shape_m1:
-            return None
-        if shape_m1 == "any":
+        if length is None:
+            if inp.shape[-1] == shape_m1:
+                return None
+            if shape_m1 == "any":
+                return None
+        elif len(inp) == length:
             return None
     raise MagpylibBadUserInput(msg)
 
@@ -309,6 +312,7 @@ def check_format_input_vector(
     shape_m1,
     sig_name,
     sig_type,
+    length=None,
     reshape=False,
     allow_None=False,
     forbid_negative0=False,
@@ -339,13 +343,15 @@ def check_format_input_vector(
         inp,
         dims=dims,
         shape_m1=shape_m1,
+        length=length,
         msg=(
             f"Input parameter `{sig_name}` must be {sig_type}.\n"
             f"Instead received array_like with shape {inp.shape}."
         ),
     )
-    if reshape:
-        return np.reshape(inp, (-1, 3))
+    if isinstance(reshape, tuple):
+        return np.reshape(inp, reshape)
+
     if forbid_negative0:
         if np.any(inp <= 0):
             raise MagpylibBadUserInput(
@@ -555,6 +561,7 @@ def check_dimensions(sources):
     from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
     from magpylib._src.obj_classes.class_current_Line import Line
     from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
 
     for src in sources:
         if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
@@ -567,12 +574,11 @@ def check_dimensions(sources):
                 raise MagpylibMissingInput(
                     f"Parameter `diameter` of {src} must be set."
                 )
-        elif isinstance(src, Line):
+        elif isinstance(src, (Line, Tetrahedron)):
             if src.vertices is None:
                 raise MagpylibMissingInput(
                     f"Parameter `vertices` of {src} must be set."
                 )
-
 
 def check_excitations(sources, custom_field=None):
     """check if all sources have exitation initialized"""

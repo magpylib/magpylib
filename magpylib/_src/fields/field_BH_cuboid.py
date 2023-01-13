@@ -7,6 +7,7 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 
 
+# CORE
 def magnet_cuboid_field(
     field: str, observers: np.ndarray, magnetization: np.ndarray, dimension: np.ndarray
 ) -> np.ndarray:

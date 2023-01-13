@@ -3,11 +3,19 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-# [4.1.1] - 2022-08-11
+## [4.2.0] - 2023
+- Fixed some Bugs, minor performance increase, internal refactoring
+- Added code of conduct attempting to align with NumFocus standards ([558] (https://github.com/magpylib/magpylib/issues/558))
+- Improved Loop field computation in terms of performance and numerical stability ([374](https://github.com/magpylib/magpylib/issues/374))
+- (Re)introducing the powerful magnet.Facet class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface by triangular facets.
+- Introducing the magnet.Tetrahedron class as a derivate of the Facet class. ([289](https://github.com/magpylib/magpylib/issues/289))
+- Docu:
+    - correct conda install command
+
+## [4.1.1] - 2022-08-11
 - Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
 
-
-# [4.1.0] - 2022-08-08
+## [4.1.0] - 2022-08-08
 * Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
 * Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source argument now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
 * Complete plotting backend rework to prepare for easy implementation of new backends, with minimal maintenance. ([#539](https://github.com/magpylib/magpylib/pull/539))

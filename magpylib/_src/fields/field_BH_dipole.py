@@ -6,6 +6,7 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 
 
+# CORE
 def dipole_field(
     field: str,
     observers: np.ndarray,
@@ -19,10 +20,10 @@ def dipole_field(
     ----------
     field: str, default=`'B'`
         If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
+        in units of [kA/m].
 
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
-        in units of [kA/m].
 
     moment: ndarray, shape (n,3)
         Dipole moment vector in units of [mT*mm^3].

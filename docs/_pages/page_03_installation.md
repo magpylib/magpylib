@@ -11,7 +11,7 @@ pip install magpylib
 or with [conda](https://docs.conda.io/en/latest/).
 
 ```console
-conda install magpylib
+conda install -c conda-forge magpylib
 ```
 
 Magpylib is hosted for **download** at the following locations:

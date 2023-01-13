@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-compounds)=
 
-# Compounds
+# Compounds - Collection sub-classing
 
 The `Collection` class is a powerful tool for grouping and tracking object assemblies.
 However, in many cases it is convenient to have assembly variables themselves (e.g. geometric arrangement) as class properties of new custom classes, which is achieved by sub-classing `Collection`. We refer to such super-classes as **compounds** and show how to seamlessly integrate them into Magpylib.

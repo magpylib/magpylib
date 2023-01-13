@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-backends-canvas)=
 
-# Backend and canvas
+# Graphic backend and canvas
 
 ## Graphic backend
 

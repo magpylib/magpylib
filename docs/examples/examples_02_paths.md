@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-paths)=
 
-# Paths
+# Path fundamentals
 
 (examples-assign-absolute-path)=
 ## Assigning absolute paths

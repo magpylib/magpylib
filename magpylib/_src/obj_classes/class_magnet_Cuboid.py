@@ -1,6 +1,4 @@
-"""Magnet Cuboid class code
-DOCSTRINGS V4 READY
-"""
+"""Magnet Cuboid class code"""
 from magpylib._src.display.traces_generic import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.input_checks import check_format_input_vector

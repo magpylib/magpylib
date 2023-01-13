@@ -1,3 +1,4 @@
+import math as m
 import numpy as np
 
 
@@ -130,73 +131,53 @@ def cel(kcv: np.ndarray, pv: np.ndarray, cv: np.ndarray, sv: np.ndarray) -> np.n
     return celv(kcv, pv, cv, sv)
 
 
-def cel_loop_stable(k2):
+def cel_iter(qc, p, g, cc, ss, em, kk):
     """
-    numerically stabilized version of the function
-    xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2) = cel(np.sqrt(1-k2), 1, k2, k2*(k2-1))
-    needed for the circular current loop field. This modicfication of the cel()
-    algorithm is numerically stable when k2 becomes small.
+    Iterative part of Bulirsch cel algorithm
     """
-    # if k2 == 0: return 0    # on axis
+    #case1: scalar input
+    #   This cannot happen in core functions
 
-    pp = 1 - k2  # allocate pp and use temporarily for 1-k2
-    k = np.sqrt(pp)
-    kk = 1 + k  # allocate pp and use temporarily for 1+k
+    #case2: small input vector - loop is faster than vectorized computation
+    n_input = len(qc)
+    if n_input<15:
+        result = np.zeros(n_input)
+        for i in range(n_input):
+            result[i] = cel_iter0(qc[i], p[i], g[i], cc[i], ss[i], em[i], kk[i])
 
-    g = 1 if isinstance(k2, (float, int)) else np.ones(len(k2))
-    cc = k2**2
-    ss = 2 * cc * pp / (kk - k2)
-    pp = kk
-    em = kk
-    kk = k
+    #case3: vectorized evaluation
+    return cel_iterv(qc, p, g, cc, ss, em, kk)
 
-    errtol = 0.000001
-    while np.any(abs(g - k) > g * errtol):
-        k = 2 * np.sqrt(kk)
-        kk = k * em
-        f = cc
-        cc = cc + ss / pp
-        g = kk / pp
+
+def cel_iter0(qc, p, g, cc, ss, em, kk):
+    """
+    Iterative part of Bulirsch cel algorithm
+    """
+    while m.fabs(g - qc) >= qc * 1e-8:
+        qc = 2 * m.sqrt(kk)
+        kk = qc * em
+        f  = cc
+        cc = cc + ss / p
+        g  = kk / p
         ss = 2 * (ss + f * g)
-        pp = g + pp
-        g = em
-        em = k + em
-    return (np.pi / 2) * (ss + cc * em) / (em * (em + pp))
+        p  = p + g
+        g  = em
+        em = em + qc
+    return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))
 
 
-# def cel_loop_stable_old(k2):
-#     """
-#     numerically stabilized version of the function
-#         xi_loop = (2-k**2)E(k**2)-2(1-k**2)K(k**2)
-#         needed for the current.loop fields. See paper
-#         Leitner2021
-#     """
-#     n = len(k2)
-#     result = np.empty(n)
-
-#     mask1 = (k2 > 0.04)
-
-#     if np.any(mask1):
-#         k2m = k2[mask1]
-#         result[mask1] = cel(np.sqrt(1-k2m), np.ones(np.sum(mask1)), k2m, k2m*(k2m-1))
-#     if np.any(~mask1):
-#         result[~mask1] = cel_loop_taylor0(k2[~mask1])
-#     return result
-
-
-# def cel_loop_taylor0(k2):
-#     """
-#     taylor expansion of the function xi_loop about k2=0
-#         See paper Leitner2021
-#     """
-#     C2 = 0.5890486225480862
-#     C3 = 0.1472621556370216
-#     C4 = 0.06902913545485386
-#     C5 = 0.04026699568199808
-#     C6 = 0.02642521591631124
-#     C7 = 0.01868640268367724
-#     C8 = 0.01391747699878044
-#     C9 = 0.01076947624905629
-#     C10 = 0.008581926385966734
-#     return (C2*k2**2 + C3*k2**3 + C4*k2**4 + C5*k2**5
-#         + C6*k2**6 + C7*k2**7 + C8*k2**8 + C9*k2**9 + C10*k2**10)
+def cel_iterv(qc, p, g, cc, ss, em, kk):
+    """
+    Iterative part of Bulirsch cel algorithm
+    """
+    while np.any(np.fabs(g - qc) >= qc * 1e-8):
+        qc = 2 * np.sqrt(kk)
+        kk = qc * em
+        f  = cc
+        cc = cc + ss / p
+        g  = kk / p
+        ss = 2 * (ss + f * g)
+        p  = p + g
+        g  = em
+        em = em + qc
+    return 1.5707963267948966 * (ss + cc * em) / (em * (em + p))

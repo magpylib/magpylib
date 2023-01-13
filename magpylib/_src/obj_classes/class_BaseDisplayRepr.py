@@ -1,6 +1,4 @@
-"""BaseGeo class code
-READY FOR V4
-"""
+"""BaseGeo class code"""
 # pylint: disable=cyclic-import
 import numpy as np
 
