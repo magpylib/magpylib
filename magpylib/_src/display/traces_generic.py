@@ -7,11 +7,11 @@ import warnings
 from collections import Counter
 from itertools import combinations
 from typing import Tuple
-import magpylib as magpy
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
+import magpylib as magpy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -378,16 +378,13 @@ def make_Facet(
     """
     vertices = obj.vertices
 
-    #Return unique vertices and triangles from vertices
+    # Return unique vertices and triangles from vertices
     vert_unique, tr = np.unique(vertices.reshape((-1, 3)), axis=0, return_inverse=True)
     triangles = tr.reshape((-1, 3))
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict",
-        vertices=vert_unique,
-        triangles=triangles,
-        color=color
+        "plotly-dict", vertices=vert_unique, triangles=triangles, color=color
     )
     update_trace_name(trace, "Facet", "", style)
     update_magnet_mesh(
@@ -671,7 +668,7 @@ def get_generic_traces_2D(
 
     def get_trace_dict(field_str, BH, coord_ind, frame_ind, label, color):
         k = "xyz"[coord_ind]
-        marker_size = np.array([0.00001] * len(frames_indices))
+        marker_size = np.array([5] * len(frames_indices))
         marker_size[frame_ind] = 10
         return dict(
             mode="lines+markers",

@@ -1,6 +1,7 @@
 """plotly backend"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+import numpy as np
 
 try:
     import plotly.graph_objects as go
@@ -20,9 +21,9 @@ from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 
 
-def apply_fig_ranges(fig, ranges):
+def apply_fig_ranges(fig, ranges, apply2d=True):
     """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a certain zoom level. All three space direction will be equal and match the
+    according to a provided ranges. All three space direction will be equal and match the
     maximum of the ranges needed to display all objects, including their paths.
 
     Parameters
@@ -30,8 +31,8 @@ def apply_fig_ranges(fig, ranges):
     ranges: array of dimension=(3,2)
         min and max graph range
 
-    zoom: float, default = 1
-        When zoom=0 all objects are just inside the 3D-axes.
+    apply2d: bool, default = True
+        applies fixed range also on 2d traces
 
     Returns
     -------
@@ -46,6 +47,32 @@ def apply_fig_ranges(fig, ranges):
         aspectmode="manual",
         camera_eye={"x": 1, "y": -1.5, "z": 1.4},
     )
+    if apply2d:
+        apply_2d_ranges(fig)
+
+
+def apply_2d_ranges(fig, factor=0.05):
+    """Apply Figure ranges of 2d plots"""
+    traces = fig.data
+    ranges = {}
+    for t in traces:
+        for k in "xy":
+            try:
+                ax_str = getattr(t, f"{k}axis")
+                ax_suff = ax_str.replace(k, "")
+                if ax_suff not in ranges:
+                    ranges[ax_suff] = {"x": [], "y": []}
+                vals = getattr(t, k)
+                ranges[ax_suff][k].append([min(vals), max(vals)])
+            except AttributeError:
+                pass
+    for ax, r in ranges.items():
+        for k in "xy":
+            m, M = [np.min(r[k]), np.max(r[k])]
+            getattr(fig.layout, f"{k}axis{ax}").range = [
+                m - (M - m) * factor,
+                M + (M - m) * factor,
+            ]
 
 
 def animate_path(
@@ -265,7 +292,8 @@ def display_plotly(
                 cols_list.append(col)
         if max_rows is None and max_cols is None:
             rows_list = cols_list = None
-        if len(frames) == 1:
+        isanimation = len(frames) != 1
+        if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
             animation_slider = data.get("animation_slider", False)
@@ -283,7 +311,7 @@ def display_plotly(
         if extra_data:
             ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
         if update_layout:
-            apply_fig_ranges(fig, ranges)
+            apply_fig_ranges(fig, ranges, apply2d=isanimation)
             fig.update_layout(legend_itemsizing="constant")
         fig.update_layout(layout)
 
