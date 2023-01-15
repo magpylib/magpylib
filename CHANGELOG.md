@@ -2,35 +2,37 @@ All notable changes to magpylib are documented here.
 
 
 # Releases
+## [4.1.2] - 2023-01-15
+- Fix wrong magnetization arrow direction for some edge cases ([#570](https://github.com/magpylib/magpylib/discussions/570), [#571](https://github.com/magpylib/magpylib/issues/571), [#572](https://github.com/magpylib/magpylib/pull/572))
+- Fix cryptic `getB`/`getH` error message ([#562](https://github.com/magpylib/magpylib/issues/562), [#563](https://github.com/magpylib/magpylib/pull/563))
 
 ## [4.1.1] - 2022-08-11
-- Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
-
+- Fix inverted y and z axes colors for sensor representations ([#556](https://github.com/magpylib/magpylib/pull/556))
 
 ## [4.1.0] - 2022-08-08
-* Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
-* Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source argument now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
-* Complete plotting backend rework to prepare for easy implementation of new backends, with minimal maintenance. ([#539](https://github.com/magpylib/magpylib/pull/539))
-* New [Pyvista](https://docs.pyvista.org/) plotting backend ([#548](https://github.com/magpylib/magpylib/pull/548))
-* Improvements on the [documentation](https://magpylib.readthedocs.io/en/latest/)
+- Field computation `getB`/`getH` now supports 2D [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) in addition to the `numpy.ndarray` as output type. ([#523](https://github.com/magpylib/magpylib/pull/523))
+- Internal `getB`/`getH` refactoring. The direct interface with `'Line'` source argument now also accepts `'vertices'` as argument. ([#540](https://github.com/magpylib/magpylib/pull/540))
+- Complete plotting backend rework to prepare for easy implementation of new backends, with minimal maintenance. ([#539](https://github.com/magpylib/magpylib/pull/539))
+- New [Pyvista](https://docs.pyvista.org/) plotting backend ([#548](https://github.com/magpylib/magpylib/pull/548))
+- Improvements on the [documentation](https://magpylib.readthedocs.io/en/latest/)
 
 ## [4.0.4] - 2022-06-09
 
-* Exclude redundant properties with `_all` suffix in the `.describe()` method ([#534](https://github.com/magpylib/magpylib/pull/534))
-* Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
+- Exclude redundant properties with `_all` suffix in the `.describe()` method ([#534](https://github.com/magpylib/magpylib/pull/534))
+- Docstring improvements ([#535](https://github.com/magpylib/magpylib/pull/535))
 
 ## [4.0.3] - 2022-05-13
 
-* Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
+- Fix copy order Bug ([#530](https://github.com/magpylib/magpylib/issues/530))
 
 ## [4.0.2] - 2022-05-04
 
-* Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
-* Allow float color quadruples ([#529](https://github.com/magpylib/magpylib/pull/529))
+- Fix magnetization coloring with mesh grouping (plotly) ([#526](https://github.com/magpylib/magpylib/pull/526))
+- Allow float color quadruples ([#529](https://github.com/magpylib/magpylib/pull/529))
 
 ## [4.0.1] - 2022-04-29
 
-* Graphic performance update for plotly when showing a large number of objects. ([#524](https://github.com/magpylib/magpylib/pull/524))
+- Graphic performance update for plotly when showing a large number of objects. ([#524](https://github.com/magpylib/magpylib/pull/524))
 
 ## [4.0.0] - 2022-04-14
 
@@ -388,6 +390,7 @@ The first official release of the magpylib library.
 
 ---
 
+[4.1.2]:https://github.com/magpylib/magpylib/compare/4.1.1...4.1.2
 [4.1.1]:https://github.com/magpylib/magpylib/compare/4.1.0...4.1.1
 [4.1.0]:https://github.com/magpylib/magpylib/compare/4.0.4...4.1.0
 [4.0.4]:https://github.com/magpylib/magpylib/compare/4.0.3...4.0.4
