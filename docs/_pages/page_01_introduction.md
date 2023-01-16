@@ -636,7 +636,6 @@ egg = magpy.misc.CustomSource(
 
 # add a custom 3D model
 trace = magpy.graphics.model3d.make_Ellipsoid(
-    backend='plotly',
     dimension=(1,1,1.4),
 )
 egg.style.model3d.add_trace(trace)
