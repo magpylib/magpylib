@@ -6,7 +6,7 @@
 
 **Permanent Magnets**
 
-Magnetic field computations in Magpylib are based on known analytical solutions (formulas) to permanent magnet and current problems. For Magpylib we have used the following references:
+Magnetic field computations in Magpylib are based on known analytical solutions (closed form expressions) to permanent magnet and current problems. The Magpylib implementations are based on the following literature references:
 
 - Field of cuboid magnets: \[Yang1999, Engel-Herbert2005, Camacho2013, Cichon2019\]
 - Field of cylindrical magnets: \[Furlani1994, Derby2009, Caciagli2018, Slanovc2021\]
@@ -14,7 +14,7 @@ Magnetic field computations in Magpylib are based on known analytical solutions 
 - Field of the current loop: \[Ortner2022\]
 - all others derived by hand
 
-A short reflection on how these formulas can be achieved: In magnetostatics (no currents) the magnetic field becomes conservative (Maxwell: $\nabla \times {\bf H} = 0$) and can thus be expressed through the magnetic scalar potential $\Phi_m$:
+A short reflection on how these formulas can be achieved: In magnetostatics the magnetic field becomes conservative (Maxwell: $\nabla \times {\bf H} = 0$) and can thus be expressed through the magnetic scalar potential $\Phi_m$:
 
 $$
 {\bf H} = -\nabla\cdot\Phi_m
@@ -42,7 +42,7 @@ In some special cases (simple shapes, homogeneous magnetizations and current dis
 
 **Line currents:**
 
-The magnetic field of a wire carrying a homogeneous current density is similar (ON THE OUTSIDE ONLY) to the field of a line current in the center of the wire, which carries the total current of the wire. Current distributions become inhomogeneous at bends of the wire or when eddy currents (finite frequencies) are involved.
+The magnetic field of a wire carrying a homogeneous current density is (on the outside) similar to the field of a line current positioned in the center of the wire, which carries the same total current. Current distributions become inhomogeneous at bends of the wire or when eddy currents (finite frequencies) are involved.
 
 **Magnets and Demagnetization**
 
@@ -56,7 +56,7 @@ Demagnetization factors can be used to compensate a large part of the demagnetiz
 
 **Soft-Magnetic Materials**
 
-Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ and low remanence fields are dominated by the material response. There are no useful analytical solutions. However, recent developments showed that the Magnetostatic Method of Moments can be a powerful tool in combination with Magpylib to compute such a material response. An integration into Magpylib is planned for the future.
+Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ and low remanence fields are dominated by the material response. It is not possible to describe such bodies with analytical solutions. However, recent developments showed that the Magnetostatic Method of Moments can be a powerful tool in combination with Magpylib to compute such a material response. An integration into Magpylib is planned for the future.
 
 (docu-units-scaling)=
 
