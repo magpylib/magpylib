@@ -58,7 +58,6 @@ class CustomSource(BaseSource):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'z')
-    CustomSource(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[70.71067812 70.71067812  0.        ]
@@ -69,7 +68,6 @@ class CustomSource(BaseSource):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    CustomSource(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
