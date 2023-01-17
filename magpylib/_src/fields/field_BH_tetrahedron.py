@@ -88,15 +88,18 @@ def magnet_tetrahedron_field(
 
     Examples
     --------
+    Compute the B-field of two different tetrahedron-observer instances
+
     >>> import numpy as np
     >>> import magpylib as magpy
-
-    >>> obs = np.array([(1,2,3)])
-    >>> mag = np.array([(22,33,44)])
-    >>> vert = np.array([((-1,0,0), (1,-1,0), (1,1,0), (0,0,1))])
+    >>>
+    >>> obs = np.array([(1,2,3), (2,3,4)])
+    >>> mag = np.array([(222,333,444), (111,112,113)])
+    >>> vert = np.array([((-1,0,0), (1,-1,0), (1,1,0), (0,0,1))]*2)
     >>> B = magpy.core.magnet_tetrahedron_field('B', obs, mag, vert)
     >>> print(B)
-    [[0.01890355 0.08166293 0.11710626]]
+    [[0.19075398 0.8240532  1.18170862]
+     [0.03125701 0.08445416 0.1178967 ]]
 
     Notes
     -----
