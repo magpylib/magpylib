@@ -58,7 +58,6 @@ class Cylinder(BaseMagnet):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    Cylinder(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[3.31419501 5.26683023 0.37767015]
@@ -70,7 +69,6 @@ class Cylinder(BaseMagnet):
 
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    Cylinder(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
     [[3.31419501 5.26683023 0.37767015]

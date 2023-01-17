@@ -55,25 +55,36 @@ class Tetrahedron(BaseMagnet):
     Examples
     --------
     `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    tetrahedral magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
-    at the observer position (0,0,0) given in units of [mm]:
-
+    tetrahedron magnet with magnetization (100,200,300) in units of [mT] dimensions defined
+    through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of [mm] at the
+    observer position (1,1,1) given in units of [mm]:
+    
     >>> import magpylib as magpy
-    >>> vertices = [(1,0,-1/2**0.5),(0,1,1/2**0.5),(-1,0,-1/2**0.5),(1,-1,1/2**0.5)]
-    >>> src = magpy.magnet.Tetrahedron((100,200,300), vertices=vertices)
-    >>> H = src.getH((0,0,0))
+    >>> verts = [(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
+    >>> src = magpy.magnet.Tetrahedron(magnetization=(100,200,300), vertices=verts)
+    >>> H = src.getH((1,1,1))
     >>> print(H)
-    [  3.42521345 -40.76504699 -70.06509857]
+    [2.07089783 1.65671826 1.2425387 ]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    >>> src.rotate_from_angax(45, 'x')
-    Tetrahedron(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
-    >>> print(B)
-    [[3.2653876  7.77807843 0.41141725]
-     [0.49253111 0.930953   0.0763492 ]
-     [0.1497206  0.26663798 0.02164654]]
+    src.rotate_from_angax(45, 'x')
+    B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    print(B)
+    [[ 8.68006559e-01  2.00895792e+00 -5.03469140e-01]
+    [ 1.01357229e-01  1.93731796e-01 -1.59677364e-02]
+    [ 2.90426931e-02  5.22556994e-02 -1.70596096e-03]]
+
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). Here we use a `Sensor` object as observer.
+
+    sens = magpy.Sensor(position=(1,1,1))
+    src.move([(-1,-1,-1), (-2,-2,-2)])
+    B = src.getB(sens)
+    print(B)
+    [[ 8.68006559e-01  2.00895792e+00 -5.03469140e-01]
+    [ 1.01357229e-01  1.93731796e-01 -1.59677364e-02]
+    [ 2.90426931e-02  5.22556994e-02 -1.70596096e-03]]
     """
 
     _field_func = staticmethod(magnet_tetrahedron_field)

@@ -59,7 +59,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     We rotate the sensor by 45 degrees and compute the field again:
 
     >>> sens.rotate_from_rotvec((45,0,0))
-    Sensor(id=...)
     >>> B = sens.getB(loop)
     >>> print(B)
     [0.         0.88857659 0.88857659]

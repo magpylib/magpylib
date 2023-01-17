@@ -716,7 +716,6 @@ class Collection(BaseGeo, BaseCollection):
     >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
-    Collection(id=...)
     >>> print(src1.position)
     [2. 0. 2.]
     >>> print(src2.position)
@@ -739,23 +738,22 @@ class Collection(BaseGeo, BaseCollection):
 
     The field can be computed at position (0,0,0) as if the collection was a single source:
 
-    B = col.getB((0,0,0))
-    print(B)
+    >>> B = col.getB((0,0,0))
+    >>> print(B)
     [ 0.00126232 -0.00093169 -0.00034448]
 
     We add a sensor at position (0,0,0) to the collection:
 
     >>> sens = magpy.Sensor()
     >>> col.add(sens)
-    Collection(id=...)
     >>> print(col.children)
     [Sphere(id=...), Loop(id=...), Sensor(id=...)]
 
     and can compute the field of the sources in the collection seen by the sensor with
     a single command:
 
-    B = col.getB()
-    print(B)
+    >>> B = col.getB()
+    >>> print(B)
     [ 0.00126232 -0.00093169 -0.00034448]
     """
 
