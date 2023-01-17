@@ -107,6 +107,8 @@ def facet_field(
 
     Examples
     --------
+    Compute the B-field of two different facet-observer instances.
+
     >>> import numpy as np
     >>> import magpylib as magpy
 

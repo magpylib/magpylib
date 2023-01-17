@@ -57,6 +57,40 @@ class Facet(BaseMagnet):
 
     Examples
     --------
+    `Facet` objects are magnetic field sources. Below we compute the H-field [kA/m] of a
+    facet object with magnetization (100,200,300) in units of [mT] dimensions defined
+    through the vertices (0,0,0), (1,0,0) and (0,1,0) in units of [mm] at the
+    observer position (1,1,1) given in units of [mm]:
+
+    >>> import magpylib as magpy
+    >>> verts = [(0,0,0), (1,0,0), (0,1,0)]
+    >>> src = magpy.misc.Facet(magnetization=(100,200,300), vertices=verts)
+    >>> H = src.getH((1,1,1))
+    >>> print(H)
+    [2.24851814 2.24851814 3.49105683]
+
+    We rotate the source object, and compute the B-field, this time at a set of observer positions:
+
+    >>> src.rotate_from_angax(45, 'x')
+    Facet(id=...)
+    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> print(B)
+    [[3.94659011 4.21772671 4.21772671]
+     [0.73745776 0.77325648 0.77325648]
+     [0.30049474 0.31043974 0.31043974]]
+
+    The same result is obtained when the rotated source moves along a path away from an
+    observer at position (1,1,1). Here we use a `Sensor` object as observer.
+
+    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Facet(id=...)
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[3.94659011 4.21772671 4.21772671]
+     [0.73745776 0.77325648 0.77325648]
+     [0.30049474 0.31043974 0.31043974]]
+
     """
 
     _field_func = staticmethod(facet_field_from_obj)

@@ -35,6 +35,8 @@ def dipole_field(
 
     Examples
     --------
+    Compute the B-field of two different dipole-observer instances.
+
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> mom = np.array([(1,2,3), (0,0,1)])

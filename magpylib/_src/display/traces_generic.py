@@ -6,11 +6,11 @@ import numbers
 import warnings
 from itertools import combinations
 from typing import Tuple
-import magpylib as magpy
 
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
+import magpylib as magpy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
