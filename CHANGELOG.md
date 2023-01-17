@@ -7,10 +7,12 @@ All notable changes to magpylib are documented here.
 - Fixed some Bugs, minor performance increase, internal refactoring
 - Added code of conduct attempting to align with NumFocus standards ([558] (https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([374](https://github.com/magpylib/magpylib/issues/374))
-- (Re)introducing the powerful magnet.Facet class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface by triangular facets.
+- (Re)introducing the powerful magnet.Facet class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface by triangular facets. ([568](https://github.com/magpylib/magpylib/issues/568))
 - Introducing the magnet.Tetrahedron class as a derivate of the Facet class. ([289](https://github.com/magpylib/magpylib/issues/289))
 - Docu:
     - correct conda install command
+    - Integration of Facet and Tetrahedron into docu
+    - Removed examplem gallery substructure
 
 ## [4.1.1] - 2022-08-11
 - Fix inverted y and z axes colors for sensor representations ([556](https://github.com/magpylib/magpylib/pull/556))
