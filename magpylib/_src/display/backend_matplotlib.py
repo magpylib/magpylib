@@ -218,23 +218,29 @@ def display_matplotlib(
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
             figsize = (figsize[0] * ratio, figsize[1])
         fig = plt.figure(dpi=dpi, figsize=figsize)
-    elif (
-        isinstance(canvas, matplotlib.axes.Axes)
-        and not max_rows is None
-        and max_cols is None
-    ):
+    elif isinstance(canvas, matplotlib.axes.Axes):
+        fig = canvas.get_figure()
+        if max_rows is not None or max_cols is not None:
+            raise Exception(
+                "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support "
+                "`rows` or `cols` attributes. Use an instance of `matplotlib.figure.Figure` "
+                "instead"
+            )
+    elif isinstance(canvas, matplotlib.figure.Figure):
+        fig = canvas
+    else:
         raise Exception(
-            "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support `rows` "
-            "and `cols` attributes. Use an instance of `matplotlib.figure.Figure` instead"
+            "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
+            f"matplotlib.figure.Figure]`. Received {canvas!r} instead"
         )
     if max_rows is None and max_cols is None:
-        if canvas is None:
+        if isinstance(canvas, matplotlib.axes.Axes):
+            axes[(1, 1)] = canvas
+        else:
             sp_typ = subplot_specs[0, 0]["type"]
             axes[(1, 1)] = fig.add_subplot(
                 111, projection="3d" if sp_typ == "scene" else None
             )
-        else:
-            axes[(1, 1)] = canvas
     else:
         max_rows = max_rows if max_rows is not None else 1
         max_cols = max_cols if max_cols is not None else 1
@@ -253,7 +259,6 @@ def display_matplotlib(
                         max_rows, max_cols, count, projection=projection
                     )
                 elif isinstance(canvas, matplotlib.figure.Figure):
-                    fig = canvas
                     axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
                 if axes[row_col_num].name == "3d":
                     axes[row_col_num].set_box_aspect((1, 1, 1))
