@@ -716,6 +716,7 @@ class Collection(BaseGeo, BaseCollection):
     >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
+    Collection(id=...)
     >>> print(src1.position)
     [2. 0. 2.]
     >>> print(src2.position)
@@ -746,6 +747,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> sens = magpy.Sensor()
     >>> col.add(sens)
+    Collection(id=...)
     >>> print(col.children)
     [Sphere(id=...), Loop(id=...), Sensor(id=...)]
 

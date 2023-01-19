@@ -61,6 +61,7 @@ class Line(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    Line(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
@@ -71,6 +72,7 @@ class Line(BaseCurrent):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Line(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)

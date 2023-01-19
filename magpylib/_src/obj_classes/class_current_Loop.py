@@ -57,6 +57,7 @@ class Loop(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
+    Loop(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-1.44441884e-15  6.72068135e+00 -6.72068135e+00]
@@ -67,6 +68,7 @@ class Loop(BaseCurrent):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    Loop(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
