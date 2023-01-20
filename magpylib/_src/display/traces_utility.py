@@ -100,8 +100,6 @@ def draw_arrowed_line(
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
     arrow_shift = arrow_pos - 0.5
-    if dot == -1:
-        sign *= -1
     hy = sign * 0.1 * arrow_size
     hx = 0.06 * arrow_size
     anchor = (
@@ -126,7 +124,10 @@ def draw_arrowed_line(
         )
         * norm
     )
-    if n != 0:
+    if n == 0 and dot == -1:
+        R = RotScipy.from_rotvec([0, 0, np.pi])
+        arrow = R.apply(arrow)
+    elif n != 0:
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
         arrow = R.apply(arrow)
