@@ -3,14 +3,14 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
-## [4.2.0]
+## [4.2.0] - XXXXXXXXXXX
 - (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular facets. ([#568](https://github.com/magpylib/magpylib/issues/568))
 - Introducing the `magnet.Tetrahedron` class as a derivate of the Triangle class. ([#289](https://github.com/magpylib/magpylib/issues/289))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
 - Documentation changes:
     - Correct conda install command
-    - Integration of Facet and Tetrahedron
+    - Integration of Triangle and Tetrahedron
     - Changed example gallery substructure
     - Rewritten some passages
 - Fixed some bugs, minor performance increase, internal refactoring
