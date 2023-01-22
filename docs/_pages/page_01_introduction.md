@@ -113,7 +113,7 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 - **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in \[mT mm³]. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
 
-- **`Facet`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of three corner points given in \[mT mm³]. Multiple triangles can be included in a single `Facet` object. When multiple facets form a closed surface, their total magnetic field correponds to the one of a homogeneously charge magnet.
+- **`Triangle`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of the three corners given in \[mm³\]. When multiple Triangles form a closed surface, on the outside their total magnetic field correponds to the one of a homogeneously charged magnet.
 
 - **`CustomSource`**`(field_func, position, orientation, style)` is used to create user defined custom sources with their own field functions. Can be used as Magpylib `sources` input.
 
@@ -139,7 +139,7 @@ objects.append(magpy.current.Line())
 
 # other
 objects.append(magpy.misc.Dipole())
-objects.append(magpy.misc.Facet())
+objects.append(magpy.misc.Triangle())
 objects.append(magpy.misc.CustomSource())
 objects.append(magpy.Sensor())
 objects.append(magpy.Collection())
@@ -231,7 +231,7 @@ import numpy as np
 import magpylib as magpy
 from magpylib.magnet import Cuboid, Cylinder, CylinderSegment, Sphere, Tetrahedron
 from magpylib.current import Loop, Line
-from magpylib.misc import Dipole, Facet
+from magpylib.misc import Dipole, Triangle
 
 objects = [
     Cuboid(
@@ -273,7 +273,7 @@ objects = [
         moment=(0,0,100),
         position=(5,0,0),
     ),
-    Facet(
+    Triangle(
         magnetization=(0,0,100),
         vertices=((-1,0,0), (1,0,0), (0,1,0)),
         position=(5,0,3),

@@ -358,8 +358,8 @@ def test_field_line_v4():
     np.testing.assert_allclose(B, Btest)
 
 
-def test_facet1():
-    """test core facet VS cube"""
+def test_triangle1():
+    """test core triangle VS cube"""
     obs = np.array([(3,4,5)]*4)
     mag = np.array([(0,0,333)]*4)
     fac = np.array([
@@ -368,7 +368,7 @@ def test_facet1():
         [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
         [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
         ])
-    b = magpy.core.facet_field('B', obs, mag, fac)
+    b = magpy.core.triangle_field('B', obs, mag, fac)
     b = np.sum(b, axis=0)
 
     obs = np.array([(3,4,5)])
@@ -379,14 +379,14 @@ def test_facet1():
     np.testing.assert_allclose(b, bb)
 
 
-def test_facet2():
-    """test core single facet vs multi-facet"""
+def test_triangle2():
+    """test core single triangle vs same surface split up into 4 triangles"""
     obs = np.array([(3,4,5)])
     mag = np.array([(111,222,333)])
     fac = np.array([
         [(0,0,0), (10,0,0), (0,10,0)],
         ])
-    b = magpy.core.facet_field('B', obs, mag, fac)
+    b = magpy.core.triangle_field('B', obs, mag, fac)
     b = np.sum(b, axis=0)
 
     obs = np.array([(3,4,5)]*4)
@@ -397,13 +397,13 @@ def test_facet2():
         [(5,0,0), (6,0,0), (0,10,0)],
         [(6,0,0), (10,0,0), (0,10,0)],
         ])
-    bb = magpy.core.facet_field('B', obs, mag, fac)
+    bb = magpy.core.triangle_field('B', obs, mag, fac)
     bb = np.sum(bb, axis=0)
 
     np.testing.assert_allclose(b, bb)
 
 
-def test_facet3():
+def test_triangle3():
     """test core tetrahedron vs cube"""
     ver = np.array(
         [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
@@ -458,7 +458,7 @@ def test_facet3():
             np.testing.assert_allclose(h, hh)
 
 
-def test_facet4():
+def test_triangle4():
     """test core tetrahedron vs cube"""
     obs = np.array([(3,4,5)]*6)
     mag = np.array([(111,222,333)]*6)
@@ -481,7 +481,7 @@ def test_facet4():
     np.testing.assert_allclose(b, bb)
 
 
-def test_facet5():
+def test_triangle5():
     """ special case tests on edges - result is continuous and 0 for vertical component"""
     btest1 = ([
         [  26.29963526814195   ,  15.319834473660082  ,   0. ],
@@ -516,28 +516,28 @@ def test_facet5():
     mag = np.array([(111,222,333)]*n)
     ver = np.array([[(0,0,0), (0,5,0), (5,0,0)]]*n)
 
-    b1 = magpy.core.facet_field('H', obs1, mag, ver)
+    b1 = magpy.core.triangle_field('H', obs1, mag, ver)
     np.testing.assert_allclose(
         btest1,
         b1
     )
-    b2 = magpy.core.facet_field('H', obs2, mag, ver)
+    b2 = magpy.core.triangle_field('H', obs2, mag, ver)
     np.testing.assert_allclose(
         btest2,
         b2
     )
 
 
-def test_facet6():
+def test_triangle6():
     """ special case tests on corners - result is nan"""
     obs1 = np.array([(0,0,0)])
     obs2 = np.array([(0,5,0)])
     obs3 = np.array([(5,0,0)])
     mag = np.array([(111,222,333)])
     ver = np.array([[(0,0,0), (0,5,0), (5,0,0)]])
-    b1 = magpy.core.facet_field('B', obs1, mag, ver)
-    b2 = magpy.core.facet_field('B', obs2, mag, ver)
-    b3 = magpy.core.facet_field('B', obs3, mag, ver)
+    b1 = magpy.core.triangle_field('B', obs1, mag, ver)
+    b2 = magpy.core.triangle_field('B', obs2, mag, ver)
+    b3 = magpy.core.triangle_field('B', obs3, mag, ver)
 
     for b in [b1, b2, b3]:
         np.testing.assert_equal(

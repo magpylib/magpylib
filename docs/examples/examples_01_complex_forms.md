@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-complex-forms)=
 
-# Complex shapes with superposition
+# Complex shapes part 1: Superposition
 
 The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magneto statics when there is no material response, and simply means that the total field created by multiple magnets and currents is the sum of the individual fields.
 
@@ -86,4 +86,4 @@ print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
 
 Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.
 
-Finally, it is explained in {ref}`examples-facet`, how complex shapes are achieved based on triangular meshes.
+Finally, it is explained in {ref}`examples-triangle`, how complex shapes are achieved based on triangular meshes.

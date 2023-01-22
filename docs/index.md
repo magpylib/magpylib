@@ -53,7 +53,7 @@ examples/examples_12_styles.md
 examples/examples_15_animation.md
 examples/examples_03_collections.md
 examples/examples_01_complex_forms.md
-examples/examples_06_facet.md
+examples/examples_06_triangle.md
 examples/examples_04_custom_source.md
 examples/examples_13_3d_models.md
 examples/examples_21_compound.md

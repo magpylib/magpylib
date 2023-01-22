@@ -5,14 +5,14 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
-def test_Facet_repr():
-    """Facet repr test"""
+def test_Tetrahedron_repr():
+    """ Tetrahedron repr test"""
     tetra = magpy.magnet.Tetrahedron()
     assert tetra.__repr__()[:11] == "Tetrahedron", "Tetrahedron repr failed"
 
 
 def test_tetra_input():
-    """test obj-oriented facet vs cube"""
+    """test obj-oriented triangle vs cube"""
     obs = (1,2,3)
     mag = (111,222,333)
     vert_list = [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
@@ -38,7 +38,7 @@ def test_tetra_input():
 
 
 def test_tetra_bad_inputs():
-    """test obj-oriented facet vs cube"""
+    """test obj-oriented triangle vs cube"""
 
     bad_inputs = [
         1,
@@ -55,7 +55,7 @@ def test_tetra_bad_inputs():
         np.testing.assert_raises(MagpylibBadUserInput, test_function)
 
 
-def test_testra_barycenter():
+def test_tetra_barycenter():
     """ get barycenter"""
     mag = (111,222,333)
     vert = [(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)]
