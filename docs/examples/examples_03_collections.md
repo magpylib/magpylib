@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-collections-construction)=
 
-# Collections - Basics
+# Collections
 
 The `Collection` class is a versatile way of grouping and manipulating multiple Magpylib objects. A basic introduction is given in {ref}`intro-collections`. Here things are explained in more detail with examples.
 
