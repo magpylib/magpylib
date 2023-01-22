@@ -43,7 +43,7 @@ _pages/*
 ```
 
 ```{toctree}
-:caption: EXAMPLE GALLERIES
+:caption: FUNCTIONALITY
 :glob: true
 :maxdepth: 2
 
@@ -57,6 +57,13 @@ examples/examples_06_triangle.md
 examples/examples_04_custom_source.md
 examples/examples_13_3d_models.md
 examples/examples_21_compound.md
+```
+
+```{toctree}
+:caption: EXAMPLE GALLERIES
+:glob: true
+:maxdepth: 2
+
 examples/examples_30_coil_field_lines.md
 examples/examples_22_field_interpolation.md
 examples/examples_31_end_of_shaft.md
