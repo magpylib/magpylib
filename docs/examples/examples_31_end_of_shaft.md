@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Application: Angle sensor
+# Angle sensor
 
 End of shaft angle sensing is a classical example for a magnetic position system. The goal is to determine the angular position of a rotating shaft. A magnet, typically a diametrically magnetized cylinder, is mounted at the end of the shaft. A 2D sensor is mounted below. When the shaft rotates the two sensor outputs will be $s_1=B_0 sin(\varphi)$ and $s_2=B_0 cos(\varphi)$, so that the angle is uniquely given by $\varphi = arctan(s_1/s_2)$.
 

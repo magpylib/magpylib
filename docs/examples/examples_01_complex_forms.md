@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-complex-forms)=
 
-# Complex shapes part 1: Superposition
+# Complex shapes - Superposition
 
 The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magneto statics when there is no material response, and simply means that the total field created by multiple magnets and currents is the sum of the individual fields.
 

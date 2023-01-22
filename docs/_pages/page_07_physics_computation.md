@@ -10,7 +10,7 @@ Magnetic field computations in Magpylib are based on known analytical solutions 
 
 - Field of cuboid magnets: \[Yang1999, Engel-Herbert2005, Camacho2013, Cichon2019\]
 - Field of cylindrical magnets: \[Furlani1994, Derby2009, Caciagli2018, Slanovc2021\]
-- Field of facet bodies: \[Guptasarma1999, Janssen2009, Rubeck2013\]
+- Field of triangular surfaces: \[Guptasarma1999, Janssen2009, Rubeck2013\]
 - Field of the current loop: \[Ortner2022\]
 - all others derived by hand
 

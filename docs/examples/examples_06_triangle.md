@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-triangle)=
 
-# Complex shapes part 2: The Triangle class
+# Complex shapes - The Triangle class
 
 The field of a homogeneously charged magnet is, on the outside, the same as the field of a similarly shaped body with a magnetic surface charge. The surface charge is proportional to the projection of the magnetization vector onto the surface normal. The `Triangle` class is set up so that it can easily be used to approximate surfaces, and given the magnetization vector, the charge density is automatically computed. The resulting H-field is correct, but the B-field is only correct on the outside of the body, because on the inside the magnetization must be added to it.
 

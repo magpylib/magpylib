@@ -13,11 +13,13 @@ kernelspec:
 
 (examples-collections-construction)=
 
-# Collection fundamentals
+# Collections - Basics
+
+The `Collection` class is a versatile way of grouping and manipulating multiple Magpylib objects. A basic introduction is given in {ref}`intro-collections`. Here things are explained in more detail with examples.
 
 ## Constructing collections
 
-The `Collection` class is a versatile way of grouping and manipulating Magpylib objects. When objects are added to a Collection they are added by reference (not copied) to the **attributes** `children` (list of all objects), `sources` (list of the sources), `sensors` (list of the sensors) and `collections`.
+Collections have the attributes `children`, `sources`, `sensors` and `collections`. These attributes are ordered lists that contain objects that are added to the collection by reference (not copied). `children` returns is list of all objects in the collection. `sources` returns a list of the sources, `sensors` a list of the sensors and `collections` a list of "sub-collections" within the collection.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -34,7 +36,7 @@ print(f"sensors:     {coll.sensors}")
 print(f"collections: {coll.collections}")
 ```
 
-These attributes are ordered lists. New additions are always added at the end. Add objects to an existing collection using these parameters, or the **`add`** method.
+New additions are always added at the end. Add objects to an existing collection using these parameters, or the **`add`** method.
 
 ```{code-cell} ipython3
 
