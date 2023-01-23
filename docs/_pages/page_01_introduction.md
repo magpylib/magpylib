@@ -153,24 +153,24 @@ for obj in objects:
 
 ## Position and orientation
 
-All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and denotes the coordinates $(x,y,z)$ in units of [mm]. By default every object is created at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and denotes the object rotation relative to its initial state. By default the orientation of a Magpylib object is the unit rotation, `orientation=None`, where local object coordinates axes are parallel to global coordinate axes.
+All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of [mm]. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
 
 ```python
 import magpylib as magpy
 
+# init object with default values
 sensor = magpy.Sensor()
-
 print(sensor.position)                                     # out: [0. 0. 0.]
 print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
 ```
 
-Set absolute object position/orientation at initialization or through the properties directly. Add relative position/orientation with the `move` and `rotate` methods,
+Set absolute object position and orientation attributes at object initialization or directly through the properties.
 
 ```python
 import magpylib as magpy
 from scipy.spatial.transform import Rotation as R
 
-# set at initialization
+# set attributes at initialization
 sensor = magpy.Sensor(position=(1,1,1))
 print(sensor.position)                                     # out: [1. 1. 1.]
 print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
@@ -179,12 +179,30 @@ print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
 sensor.orientation = R.from_rotvec((0,0,45), degrees=True)
 print(sensor.position)                                     # out: [1. 1. 1.]
 print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 45.]
+```
 
-# move and rotate
-sensor.move((1,2,3))
-sensor.rotate_from_angax(45, 'z')
-print(sensor.position)                                     # out: [2. 3. 4.]
-print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 90.]
+The `move` and `rotate` methods are powerful tools to change the relative position and orientation of an existing object. **Move** the object by a `displacement` vector. **Rotate** an object by specifying the angle of rotation `angle` (scalar), an axis of rotation `axis` (vector or `'x'`, `'y'`, `'z'`) and an anchor point `anchor` (vector) through which the rotation axis passes through. By default `anchor=self.position`, meaning that the object rotates about itself.
+
+```python
+import magpylib as magpy
+
+# init object with default values
+sensor = magpy.Sensor()
+
+# move
+sensor.move(displacement=(1,1,3))
+print(sensor.position)                                     # out: [1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0.  0.]
+
+# rotate about self
+sensor.rotate_from_angax(angle=45, axis='z')
+print(sensor.position)                                     # out: [1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 45.]
+
+# rotate with anchor
+sensor.rotate_from_angax(angle=90, axis='z', anchor=(0,0,0))
+print(sensor.position)                                     # out: [-1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 135.]
 ```
 
 The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modelling object motion as the magnetic field is computed on the whole path with increased performance.

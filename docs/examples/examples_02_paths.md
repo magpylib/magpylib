@@ -15,7 +15,7 @@ kernelspec:
 
 # Paths
 
-Magpylib objects all have `position` and `orientation` attributes in the global reference frame. These attributes can be single instances describing a single position and a single orientation of an object, but they can also be vectors of positions and orientations. In this case the attributes represent multiple object locations and orientaions and are referred to as a **path**. When the field of an object is computed, it is automatically computed for the whole path. The reason is that computation is much more efficient when all instances are computed in a single operation. The introduction to `position` and `orientation` attributes and path can be found in {ref}`intro-position-and-orientation`. Here we go in more detail with practical examples.
+Magpylib objects all have `position` and `orientation` attributes in the global reference frame. These attributes can be single instances describing a single position and a single orientation of an object, but they can also be vectors of positions and orientations. In this case the attributes represent multiple object locations and orientaions and are referred to as a **path**. When the field of an object is computed, it is automatically computed for the whole path. The reason is that computation is much more efficient when all instances are computed in a single operation. The introduction to `position` and `orientation` attributes and path can be found in {ref}`intro-position-and-orientation`. Here we show how to work with paths properly.
 
 
 (examples-assign-absolute-path)=
