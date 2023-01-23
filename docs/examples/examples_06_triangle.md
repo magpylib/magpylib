@@ -17,7 +17,7 @@ kernelspec:
 
 The field of a homogeneously charged magnet is, on the outside, the same as the field of a similarly shaped body with a magnetic surface charge. The surface charge is proportional to the projection of the magnetization vector onto the surface normal. The `Triangle` class is set up so that it can easily be used to approximate surfaces, and given the magnetization vector, the charge density is automatically computed. The resulting H-field is correct, but the B-field is only correct on the outside of the body, because on the inside the magnetization must be added to it.
 
-## Example: Triangular Prisma
+## Example: Triangular prisma magnet
 
 Consider a Prisma with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prisma are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge desity dissappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards. The following examples shows how the `Triangle` class can be used to create such a prisma.
 
@@ -35,12 +35,12 @@ bott = magpy.misc.Triangle(
 
 prisma = magpy.Collection(top, bott)
 
-prisma.show()
+prisma.show(style_magnetization_size=0.2)
 ```
 
-## Example: Cuboctahedron Magnet
+## Example: Cuboctahedron magnet
 
-More complex bodies are easy constructed from Triangles. The following code shows how magnet with cuboctahedron shape can be constructed.
+More complex bodies are easy constructed from Triangles. The following code shows how a magnet with cuboctahedron shape can be constructed. Be aware that the B-field is only correcto on the outside.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -66,14 +66,14 @@ vertices = (((0.0,1.0,-1.0),(1.0,1.0,0.0),(-1.0,1.0,0.0)),
     ((0.0,-1.0,1.0),(-1.0,-1.0,0.0),(-1.0,0.0,1.0)),
     ((0.0,-1.0,1.0),(1.0,0.0,1.0),(1.0,-1.0,0.0)),
 )
-ica = magpy.Collection()
+cubo = magpy.Collection()
 for vert in vertices:
-    ica.add(magpy.misc.Triangle(
+    cubo.add(magpy.misc.Triangle(
         magnetization=(100,200,300),
         vertices=vert,
     ))
 
-magpy.show(*ica)
+magpy.show(*cubo)
 ```
 
 

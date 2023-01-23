@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-3d-models)=
 
-# Graphic - 3D models and CAD
+# Graphics - 3D models and CAD
 
 (examples-own-3d-models)=
 ## Custom 3D models

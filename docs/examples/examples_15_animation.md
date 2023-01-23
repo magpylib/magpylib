@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-animation)=
 
-# Graphic - Animate paths
+# Graphics - Animate paths
 
 With some backends, paths can automatically be animated with `show(animation=True)`. Animations can be fine-tuned with the following properties:
 
