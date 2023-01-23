@@ -16,12 +16,14 @@ def vcross3(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     returns: (n, 3)
     """
     # receives nan values at corners
-    with np.errstate(invalid='ignore'):
-        result = np.array([
-            a[:,1] * b[:,2] - a[:,2] * b[:,1],
-            a[:,2] * b[:,0] - a[:,0] * b[:,2],
-            a[:,0] * b[:,1] - a[:,1] * b[:,0]
-        ])
+    with np.errstate(invalid="ignore"):
+        result = np.array(
+            [
+                a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
+                a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
+                a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
+            ]
+        )
     return result.T
 
 
@@ -174,7 +176,7 @@ def triangle_field(
             -(1.0 / l) * np.log(np.fabs(l - r) / r),
         )
     PQR = np.einsum("ij, ijk -> jk", I, L)
-    B = sigma * (n.T*solid_angle(R, r) - vcross3(n, PQR).T)
+    B = sigma * (n.T * solid_angle(R, r) - vcross3(n, PQR).T)
 
     # return B or compute and return H -------------
     if bh:

@@ -360,44 +360,50 @@ def test_field_line_v4():
 
 def test_triangle1():
     """test core triangle VS cube"""
-    obs = np.array([(3,4,5)]*4)
-    mag = np.array([(0,0,333)]*4)
-    fac = np.array([
-        [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
-        [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
-        [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
-        [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
-        ])
-    b = magpy.core.triangle_field('B', obs, mag, fac)
+    obs = np.array([(3, 4, 5)] * 4)
+    mag = np.array([(0, 0, 333)] * 4)
+    fac = np.array(
+        [
+            [(-1, -1, 1), (1, -1, 1), (-1, 1, 1)],  # top1
+            [(1, -1, -1), (-1, -1, -1), (-1, 1, -1)],  # bott1
+            [(1, -1, 1), (1, 1, 1), (-1, 1, 1)],  # top2
+            [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
+        ]
+    )
+    b = magpy.core.triangle_field("B", obs, mag, fac)
     b = np.sum(b, axis=0)
 
-    obs = np.array([(3,4,5)])
-    mag = np.array([(0,0,333)])
-    dim = np.array([(2,2,2)])
-    bb = magpy.core.magnet_cuboid_field('B', obs, mag, dim)[0]
+    obs = np.array([(3, 4, 5)])
+    mag = np.array([(0, 0, 333)])
+    dim = np.array([(2, 2, 2)])
+    bb = magpy.core.magnet_cuboid_field("B", obs, mag, dim)[0]
 
     np.testing.assert_allclose(b, bb)
 
 
 def test_triangle2():
     """test core single triangle vs same surface split up into 4 triangles"""
-    obs = np.array([(3,4,5)])
-    mag = np.array([(111,222,333)])
-    fac = np.array([
-        [(0,0,0), (10,0,0), (0,10,0)],
-        ])
-    b = magpy.core.triangle_field('B', obs, mag, fac)
+    obs = np.array([(3, 4, 5)])
+    mag = np.array([(111, 222, 333)])
+    fac = np.array(
+        [
+            [(0, 0, 0), (10, 0, 0), (0, 10, 0)],
+        ]
+    )
+    b = magpy.core.triangle_field("B", obs, mag, fac)
     b = np.sum(b, axis=0)
 
-    obs = np.array([(3,4,5)]*4)
-    mag = np.array([(111,222,333)]*4)
-    fac = np.array([
-        [(0,0,0), (3,0,0), (0,10,0)],
-        [(3,0,0), (5,0,0), (0,10,0)],
-        [(5,0,0), (6,0,0), (0,10,0)],
-        [(6,0,0), (10,0,0), (0,10,0)],
-        ])
-    bb = magpy.core.triangle_field('B', obs, mag, fac)
+    obs = np.array([(3, 4, 5)] * 4)
+    mag = np.array([(111, 222, 333)] * 4)
+    fac = np.array(
+        [
+            [(0, 0, 0), (3, 0, 0), (0, 10, 0)],
+            [(3, 0, 0), (5, 0, 0), (0, 10, 0)],
+            [(5, 0, 0), (6, 0, 0), (0, 10, 0)],
+            [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
+        ]
+    )
+    bb = magpy.core.triangle_field("B", obs, mag, fac)
     bb = np.sum(bb, axis=0)
 
     np.testing.assert_allclose(b, bb)
@@ -406,13 +412,15 @@ def test_triangle2():
 def test_triangle3():
     """test core tetrahedron vs cube"""
     ver = np.array(
-        [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
-        [(-1,-1,1), (-1,1,1), (1,-1,1), (1,-1,-1)],
-        [(-1,-1,-1), (-1,-1,1), (-1,1,-1), (1,-1,-1)],
-        [(-1,1,-1), (1,-1,-1), (-1,-1,1), (-1,1,1)],
-        [(1,-1,-1), (1,1,-1), (1,-1,1), (-1,1,1)],
-        [(-1,1,-1), (-1,1,1), (1,1,-1), (1,-1,-1)],]
-        )
+        [
+            [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
+            [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
+            [(-1, -1, -1), (-1, -1, 1), (-1, 1, -1), (1, -1, -1)],
+            [(-1, 1, -1), (1, -1, -1), (-1, -1, 1), (-1, 1, 1)],
+            [(1, -1, -1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)],
+            [(-1, 1, -1), (-1, 1, 1), (1, 1, -1), (1, -1, -1)],
+        ]
+    )
 
     mags = [
         [1.03595366, 0.42840487, 0.10797529],
@@ -422,10 +430,10 @@ def test_triangle3():
         [0.97619806, 1.52323106, 1.63628455],
         [1.70290645, 1.49610608, 0.13878711],
         [1.49886747, 1.55633919, 1.41351862],
-        [0.9959534 , 0.62059942, 1.28616663],
+        [0.9959534, 0.62059942, 1.28616663],
         [0.60114354, 0.96120344, 0.32009221],
-        [0.83133901, 0.7925518 , 0.64574592],
-        ]
+        [0.83133901, 0.7925518, 0.64574592],
+    ]
 
     obss = [
         [0.82811352, 1.77818627, 0.19819379],
@@ -438,109 +446,102 @@ def test_triangle3():
         [1.58376758, 1.70420478, 0.22894022],
         [0.26791832, 0.36839769, 0.67934335],
         [1.15140149, 0.10549875, 0.98304184],
-        ]
+    ]
 
     for mag in mags:
         for obs in obss:
-            obs6 = np.tile(obs, (6,1))
-            mag6 = np.tile(mag, (6,1))
-            b = magpy.core.magnet_tetrahedron_field('B', obs6, mag6, ver)
-            h = magpy.core.magnet_tetrahedron_field('H', obs6, mag6, ver)
+            obs6 = np.tile(obs, (6, 1))
+            mag6 = np.tile(mag, (6, 1))
+            b = magpy.core.magnet_tetrahedron_field("B", obs6, mag6, ver)
+            h = magpy.core.magnet_tetrahedron_field("H", obs6, mag6, ver)
             b = np.sum(b, axis=0)
             h = np.sum(h, axis=0)
 
-            obs1 = np.reshape(obs, (1,3))
-            mag1 = np.reshape(mag, (1,3))
-            dim = np.array([(2,2,2)])
-            bb = magpy.core.magnet_cuboid_field('B', obs1, mag1, dim)[0]
-            hh = magpy.core.magnet_cuboid_field('H', obs1, mag1, dim)[0]
+            obs1 = np.reshape(obs, (1, 3))
+            mag1 = np.reshape(mag, (1, 3))
+            dim = np.array([(2, 2, 2)])
+            bb = magpy.core.magnet_cuboid_field("B", obs1, mag1, dim)[0]
+            hh = magpy.core.magnet_cuboid_field("H", obs1, mag1, dim)[0]
             np.testing.assert_allclose(b, bb)
             np.testing.assert_allclose(h, hh)
 
 
 def test_triangle4():
     """test core tetrahedron vs cube"""
-    obs = np.array([(3,4,5)]*6)
-    mag = np.array([(111,222,333)]*6)
+    obs = np.array([(3, 4, 5)] * 6)
+    mag = np.array([(111, 222, 333)] * 6)
     ver = np.array(
-        [[(1,1,-1), (1,1,1), (-1,1,1), (1,-1,1)],
-        [(-1,-1,1), (-1,1,1), (1,-1,1), (1,-1,-1)],
-        [(-1,-1,-1), (-1,-1,1), (-1,1,-1), (1,-1,-1)],
-        [(-1,1,-1), (1,-1,-1), (-1,-1,1), (-1,1,1)],
-        [(1,-1,-1), (1,1,-1), (1,-1,1), (-1,1,1)],
-        [(-1,1,-1), (-1,1,1), (1,1,-1), (1,-1,-1)],]
-        )
-    b = magpy.core.magnet_tetrahedron_field('B', obs, mag, ver)
+        [
+            [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
+            [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
+            [(-1, -1, -1), (-1, -1, 1), (-1, 1, -1), (1, -1, -1)],
+            [(-1, 1, -1), (1, -1, -1), (-1, -1, 1), (-1, 1, 1)],
+            [(1, -1, -1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)],
+            [(-1, 1, -1), (-1, 1, 1), (1, 1, -1), (1, -1, -1)],
+        ]
+    )
+    b = magpy.core.magnet_tetrahedron_field("B", obs, mag, ver)
     b = np.sum(b, axis=0)
 
-    obs = np.array([(3,4,5)])
-    mag = np.array([(111,222,333)])
-    dim = np.array([(2,2,2)])
-    bb = magpy.core.magnet_cuboid_field('B', obs, mag, dim)[0]
+    obs = np.array([(3, 4, 5)])
+    mag = np.array([(111, 222, 333)])
+    dim = np.array([(2, 2, 2)])
+    bb = magpy.core.magnet_cuboid_field("B", obs, mag, dim)[0]
 
     np.testing.assert_allclose(b, bb)
 
 
 def test_triangle5():
-    """ special case tests on edges - result is continuous and 0 for vertical component"""
-    btest1 = ([
-        [  26.29963526814195   ,  15.319834473660082  ,   0. ],
-        [  54.91549594789228   ,  41.20535983076747   ,   0. ],
-        [  32.25241487782939   ,  15.087161660417559  ,   0. ],
-        [  10.110611199952707  , -11.41176203622237   ,   0. ],
-        [  -3.8084378251737285 , -30.875600143560657  ,  -0. ],
-        [ -15.636505140623612  , -50.00854548249858   ,  -0. ],
-        [ -27.928308992688645  , -72.80800891847107   ,  -0. ],
-        [ -45.34417750711242   ,-109.5871836961927    ,  -0. ],
-        [ -36.33970306054345   ,  12.288824457077656  ,   0. ],
-        [ -16.984738462958845  ,   4.804383318447626  ,   0. ],
-    ])
+    """special case tests on edges - result is continuous and 0 for vertical component"""
+    btest1 = [
+        [26.29963526814195, 15.319834473660082, 0.0],
+        [54.91549594789228, 41.20535983076747, 0.0],
+        [32.25241487782939, 15.087161660417559, 0.0],
+        [10.110611199952707, -11.41176203622237, 0.0],
+        [-3.8084378251737285, -30.875600143560657, -0.0],
+        [-15.636505140623612, -50.00854548249858, -0.0],
+        [-27.928308992688645, -72.80800891847107, -0.0],
+        [-45.34417750711242, -109.5871836961927, -0.0],
+        [-36.33970306054345, 12.288824457077656, 0.0],
+        [-16.984738462958845, 4.804383318447626, 0.0],
+    ]
 
-    btest2 = ([
-        [ 15.31983447366009  , 26.299635268142033 ,  0. ],
-        [ 41.20535983076747  , 54.91549594789104  ,  0. ],
-        [-72.61316618947018  , 32.25241487782958  ,  0. ],
-        [-54.07597251255013  , 10.110611199952693 ,  0. ],
-        [-44.104089712909634 , -3.808437825173785 , -0. ],
-        [-36.78005591314963  ,-15.636505140623605 , -0. ],
-        [-30.143798442143236 ,-27.92830899268858  , -0. ],
-        [-21.886855846306176 ,-45.34417750711366  , -0. ],
-        [ 12.288824457077965 ,-36.33970306054315  ,  0. ],
-        [  4.80438331844773  ,-16.98473846295874  ,  0. ]
-    ])
+    btest2 = [
+        [15.31983447366009, 26.299635268142033, 0.0],
+        [41.20535983076747, 54.91549594789104, 0.0],
+        [-72.61316618947018, 32.25241487782958, 0.0],
+        [-54.07597251255013, 10.110611199952693, 0.0],
+        [-44.104089712909634, -3.808437825173785, -0.0],
+        [-36.78005591314963, -15.636505140623605, -0.0],
+        [-30.143798442143236, -27.92830899268858, -0.0],
+        [-21.886855846306176, -45.34417750711366, -0.0],
+        [12.288824457077965, -36.33970306054315, 0.0],
+        [4.80438331844773, -16.98473846295874, 0.0],
+    ]
 
     n = 10
-    ts = np.linspace(-1,6,n)
-    obs1 = np.array([(t,0,0) for t in ts])
-    obs2 = np.array([(0,t,0) for t in ts])
-    mag = np.array([(111,222,333)]*n)
-    ver = np.array([[(0,0,0), (0,5,0), (5,0,0)]]*n)
+    ts = np.linspace(-1, 6, n)
+    obs1 = np.array([(t, 0, 0) for t in ts])
+    obs2 = np.array([(0, t, 0) for t in ts])
+    mag = np.array([(111, 222, 333)] * n)
+    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
-    b1 = magpy.core.triangle_field('H', obs1, mag, ver)
-    np.testing.assert_allclose(
-        btest1,
-        b1
-    )
-    b2 = magpy.core.triangle_field('H', obs2, mag, ver)
-    np.testing.assert_allclose(
-        btest2,
-        b2
-    )
+    b1 = magpy.core.triangle_field("H", obs1, mag, ver)
+    np.testing.assert_allclose(btest1, b1)
+    b2 = magpy.core.triangle_field("H", obs2, mag, ver)
+    np.testing.assert_allclose(btest2, b2)
 
 
 def test_triangle6():
-    """ special case tests on corners - result is nan"""
-    obs1 = np.array([(0,0,0)])
-    obs2 = np.array([(0,5,0)])
-    obs3 = np.array([(5,0,0)])
-    mag = np.array([(111,222,333)])
-    ver = np.array([[(0,0,0), (0,5,0), (5,0,0)]])
-    b1 = magpy.core.triangle_field('B', obs1, mag, ver)
-    b2 = magpy.core.triangle_field('B', obs2, mag, ver)
-    b3 = magpy.core.triangle_field('B', obs3, mag, ver)
+    """special case tests on corners - result is nan"""
+    obs1 = np.array([(0, 0, 0)])
+    obs2 = np.array([(0, 5, 0)])
+    obs3 = np.array([(5, 0, 0)])
+    mag = np.array([(111, 222, 333)])
+    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
+    b1 = magpy.core.triangle_field("B", obs1, mag, ver)
+    b2 = magpy.core.triangle_field("B", obs2, mag, ver)
+    b3 = magpy.core.triangle_field("B", obs3, mag, ver)
 
     for b in [b1, b2, b3]:
-        np.testing.assert_equal(
-            b,
-            np.array([[np.nan]*3])
-        )
+        np.testing.assert_equal(b, np.array([[np.nan] * 3]))

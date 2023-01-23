@@ -1,11 +1,11 @@
 """Magnet Triangle class
 """
-
 import numpy as np
-from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+
+from magpylib._src.display.traces_generic import make_Triangle
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.display.traces_generic import make_Triangle
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 
 
 class Triangle(BaseMagnet):

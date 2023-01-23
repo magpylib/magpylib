@@ -3,11 +3,12 @@ Implementation for the magnetic field of homogeneously
 magnetized tetrahedra. Computation details in function docstrings.
 """
 import numpy as np
+
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_field_input
 
 
-def check_chirality(points:np.ndarray)->np.ndarray:
+def check_chirality(points: np.ndarray) -> np.ndarray:
     """
     Checks if quartupel of points (p0,p1,p2,p3) that forms tetrahedron is arranged in a way
     that the vectors p0p1, p0p2, p0p3 form a right-handed system
@@ -37,13 +38,13 @@ def check_chirality(points:np.ndarray)->np.ndarray:
     return points
 
 
-def point_inside(points:np.ndarray, vertices:np.ndarray)->np.ndarray:
+def point_inside(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
     """
     Takes points, as well as the vertices of a tetrahedra.
     Returns boolean array indicating whether the points are inside the tetrahedra.
     """
-    mat = vertices[:, 1:].swapaxes(0,1) - vertices[:, 0]
-    mat = np.transpose(mat.swapaxes(0,1), (0, 2, 1))
+    mat = vertices[:, 1:].swapaxes(0, 1) - vertices[:, 0]
+    mat = np.transpose(mat.swapaxes(0, 1), (0, 2, 1))
 
     tetra = np.linalg.inv(mat)
     newp = np.matmul(tetra, np.reshape(points - vertices[:, 0, :], (*points.shape, 1)))
@@ -115,10 +116,10 @@ def magnet_tetrahedron_field(
     vertices = check_chirality(vertices)
     tri_vertices = np.concatenate(
         (
-            vertices[:, (0,2,1), :],
-            vertices[:, (0,1,3), :],
-            vertices[:, (1,2,3), :],
-            vertices[:, (0,3,2), :],
+            vertices[:, (0, 2, 1), :],
+            vertices[:, (0, 1, 3), :],
+            vertices[:, (1, 2, 3), :],
+            vertices[:, (0, 3, 2), :],
         ),
         axis=0,
     )
@@ -128,11 +129,11 @@ def magnet_tetrahedron_field(
         np.tile(magnetization, (4, 1)),
         tri_vertices,
     )
-    tetra_field = ( # slightly faster than reshape + sum
+    tetra_field = (  # slightly faster than reshape + sum
         tri_fields[:n]
-        + tri_fields[n:2*n]
-        + tri_fields[2*n:3*n]
-        + tri_fields[3*n:]
+        + tri_fields[n : 2 * n]
+        + tri_fields[2 * n : 3 * n]
+        + tri_fields[3 * n :]
     )
 
     if not bh:

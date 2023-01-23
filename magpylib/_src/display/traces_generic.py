@@ -387,16 +387,13 @@ def make_Triangle(
     """
     vertices = obj.vertices
 
-    #Return unique vertices and triangles from vertices
+    # Return unique vertices and triangles from vertices
     vert_unique, tr = np.unique(vertices.reshape((-1, 3)), axis=0, return_inverse=True)
     triangles = tr.reshape((-1, 3))
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict",
-        vertices=vert_unique,
-        triangles=triangles,
-        color=color
+        "plotly-dict", vertices=vert_unique, triangles=triangles, color=color
     )
     update_trace_name(trace, "Triangle", "", style)
     update_magnet_mesh(

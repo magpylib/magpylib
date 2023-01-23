@@ -3,7 +3,9 @@ Implementations of analytical expressions for the magnetic field of homogeneousl
 magnetized Cuboids. Computation details in function docstrings.
 """
 import numpy as np
+
 from magpylib._src.input_checks import check_field_input
+
 
 def magnet_cuboid_field(
     field: str, observers: np.ndarray, magnetization: np.ndarray, dimension: np.ndarray
