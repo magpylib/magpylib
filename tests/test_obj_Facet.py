@@ -1,109 +1,86 @@
-import magpylib as magpy
 import numpy as np
+
+import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
 
 
-def test_Facet_repr():
-    """Facet repr test"""
-    line = magpy.misc.Facet()
-    assert line.__repr__()[:5] == "Facet", "Facet repr failed"
+def test_Triangle_repr():
+    """Triangle repr test"""
+    line = magpy.misc.Triangle()
+    assert line.__repr__()[:8] == "Triangle", "Triangle repr failed"
 
 
-def test_facet_input1():
-    """test obj-oriented facet vs cube"""
-    obs = (1,2,3)
-    mag = (0,0,333)
-    vert = np.array([
-        [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
-        [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
-        [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
-        [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
-        ])
-    face = magpy.misc.Facet(mag, vert)
-    cube = magpy.magnet.Cuboid(mag, (2,2,2))
+def test_triangle_input1():
+    """test obj-oriented triangle vs cube"""
+    obs = (1, 2, 3)
+    mag = (0, 0, 333)
+    vert = np.array(
+        [
+            [(-1, -1, 1), (1, -1, 1), (-1, 1, 1)],  # top1
+            [(1, -1, -1), (-1, -1, -1), (-1, 1, -1)],  # bott1
+            [(1, -1, 1), (1, 1, 1), (-1, 1, 1)],  # top2
+            [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
+        ]
+    )
+    coll = magpy.Collection()
+    for v in vert:
+        coll.add(magpy.misc.Triangle(mag, v))
+    cube = magpy.magnet.Cuboid(mag, (2, 2, 2))
 
-    b = face.getB(obs)
+    b = coll.getB(obs)
     bb = cube.getB(obs)
 
     np.testing.assert_allclose(b, bb)
 
 
-def test_facet_input2():
-    """test variable Facet class inputs against each other"""
-    obs = (1,2,3)
-    mag = (0,0,333)
-    vert1 = [(-1,-1,1), (1,-1,1), (-1,1,1)]
-    vert2 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]
-    vert3 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*2
-    vert4 = [[(-1,-1,1), (1,-1,1), (-1,1,1)]]*3
+def test_triangle_input3():
+    """test core triangle vs objOriented triangle"""
 
-    face1 = magpy.misc.Facet(mag, vert1)
-    b1 = face1.getB(obs)
-
-    face2 = magpy.misc.Facet(mag, vert2)
-    b_test = face2.getB(obs)
-    np.testing.assert_allclose(b1, b_test)
-
-    face3 = magpy.misc.Facet(mag, vert3)
-    b_test = face3.getB(obs)/2
-    np.testing.assert_allclose(b1, b_test)
-
-    face4 = magpy.misc.Facet(mag, vert4)
-    b_test = face4.getB(obs)/3
-    np.testing.assert_allclose(b1, b_test)
-
-    face = magpy.misc.Facet(mag, vert4)
-    b_test = magpy.getB([face1, face2, face3, face4], obs, sumup=True)/7
-    np.testing.assert_allclose(b1, b_test)
-
-
-def test_facet_input3():
-    """test core facet vs objOriented facet"""
-
-    obs = np.array([(3,4,5)]*4)
-    mag = np.array([(111,222,333)]*4)
-    vert = np.array([
-        [(0,0,0), (3,0,0), (0,10,0)],
-        [(3,0,0), (5,0,0), (0,10,0)],
-        [(5,0,0), (6,0,0), (0,10,0)],
-        [(6,0,0), (10,0,0), (0,10,0)],
-        ])
-    b = magpy.core.facet_field('B', obs, mag, vert)
+    obs = np.array([(3, 4, 5)] * 4)
+    mag = np.array([(111, 222, 333)] * 4)
+    vert = np.array(
+        [
+            [(0, 0, 0), (3, 0, 0), (0, 10, 0)],
+            [(3, 0, 0), (5, 0, 0), (0, 10, 0)],
+            [(5, 0, 0), (6, 0, 0), (0, 10, 0)],
+            [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
+        ]
+    )
+    b = magpy.core.triangle_field("B", obs, mag, vert)
     b = np.sum(b, axis=0)
 
-    face1 = magpy.misc.Facet(mag[0], vertices=vert[0])
-    face2 = magpy.misc.Facet(mag[0], vertices=vert[1:])
+    tri1 = magpy.misc.Triangle(mag[0], vertices=vert[0])
+    tri2 = magpy.misc.Triangle(mag[0], vertices=vert[1])
+    tri3 = magpy.misc.Triangle(mag[0], vertices=vert[2])
+    tri4 = magpy.misc.Triangle(mag[0], vertices=vert[3])
 
-    bb = magpy.getB([face1, face2], obs[0], sumup=True)
+    bb = magpy.getB([tri1, tri2, tri3, tri4], obs[0], sumup=True)
 
     np.testing.assert_allclose(b, bb)
 
 
 def test_empty_object_initialization():
     """empty object init and error msg"""
-    
-    fac = magpy.misc.Facet()
+
+    fac = magpy.misc.Triangle()
 
     def call_show():
         """dummy function call show"""
         fac.show()
+
     np.testing.assert_raises(MagpylibMissingInput, call_show)
 
     def call_getB():
         """dummy function call getB"""
         fac.getB()
+
     np.testing.assert_raises(MagpylibMissingInput, call_getB)
 
 
 def test_barycenter():
     """call barycenter"""
-    mag = (0,0,333)
-    vert = np.array([
-        [(-1,-1,1), (1,-1,1), (-1,1,1)], #top1
-        [(1,-1,-1), (-1,-1,-1), (-1,1,-1)], #bott1
-        [(1,-1,1), (1,1,1), (-1,1,1)],   #top2
-        [(1,1,-1), (1,-1,-1), (-1,1,-1)],   #bott2
-        ])
-    face = magpy.misc.Facet(mag, vert)
-    bary = np.array([0,0,0])
+    mag = (0, 0, 333)
+    vert = ((-1, -1, 0), (1, -1, 0), (0, 2, 0))
+    face = magpy.misc.Triangle(mag, vert)
+    bary = np.array([0, 0, 0])
     np.testing.assert_allclose(face.barycenter, bary)

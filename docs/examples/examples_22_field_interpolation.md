@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Application: Field interpolation
+# Field interpolation
 
 Working with complex magnet shapes can be cumbersome when a lot of base shapes are required, see {ref}`examples-complex-forms`. One way around this problem is to compute the field only a single time on a 3D grid, define an interpolation function, and use the interpolation function as `field_func` input of a custom source.
 

@@ -364,7 +364,7 @@ def make_Tetrahedron(
     )
 
 
-def make_Facet(
+def make_Triangle(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
@@ -386,7 +386,7 @@ def make_Facet(
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=vert_unique, triangles=triangles, color=color
     )
-    update_trace_name(trace, "Facet", "", style)
+    update_trace_name(trace, "Triangle", "", style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
@@ -539,7 +539,7 @@ def make_mag_arrows(obj, style):
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
-    elif isinstance(obj, magpy.misc.Facet):
+    elif isinstance(obj, magpy.misc.Triangle):
         length = np.amax(obj.vertices) - np.amin(obj.vertices)
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))

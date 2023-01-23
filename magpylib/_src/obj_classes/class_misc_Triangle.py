@@ -1,35 +1,32 @@
-"""Magnet Facet class code
+"""Magnet Triangle class
 """
-
 import numpy as np
-from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
-from magpylib._src.fields.field_BH_facet import facet_field_from_obj
+
+from magpylib._src.display.traces_generic import make_Triangle
+from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_format_input_vector
-from magpylib._src.display.traces_generic import make_Facet
+from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 
 
-class Facet(BaseMagnet):
-    """Triangular facet(s) with homogeneous surface charge.
+class Triangle(BaseMagnet):
+    """Triangular surface with homogeneous magnetic surface charge.
 
     Can be used as `sources` input for magnetic field computation.
 
     When `position=(0,0,0)` and `orientation=None` the local object coordinates of the
-    Facet vertices coincide with the global coordinate system. The geometric
-    center of the Facet is determined by its vertices and is not necessarily located
-    in the origin of the local coordinate system.
+    Triangle vertices coincide with the global coordinate system. The geometric
+    center of the Triangle is determined by its vertices.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
         Magnetization vector (mu0*M, remanence field) in units of [mT] given in
         the local object coordinates (rotates with object). The homogeneous surface
-        charge of each facet is given by the projection of the magnetization on the
-        facet normal vector.
+        charge of the Triangle is given by the projection of the magnetization on the
+        Triangle normal vector (right-hand-rule).
 
-    vertices: ndarray, shape (3,3) or (n,3,3)
-        Triangular facets are defined through triples of vertices in the local object
-        coordinates. Multiple facets, each with dimension (3,3) can be combined in a single
-        Facet object.
+    vertices: ndarray, shape (3,3)
+        Triple of vertices in the local object coordinates.
 
     position: array_like, shape (3,) or (m,3)
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -53,18 +50,18 @@ class Facet(BaseMagnet):
 
     Returns
     -------
-    magnet source: `Facet` object
+    magnet source: `Triangle` object
 
     Examples
     --------
-    `Facet` objects are magnetic field sources. Below we compute the H-field [kA/m] of a
-    facet object with magnetization (100,200,300) in units of [mT] dimensions defined
+    `Triangle` objects are magnetic field sources. Below we compute the H-field [kA/m] of a
+    Triangle object with magnetization (100,200,300) in units of [mT] dimensions defined
     through the vertices (0,0,0), (1,0,0) and (0,1,0) in units of [mm] at the
     observer position (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (1,0,0), (0,1,0)]
-    >>> src = magpy.misc.Facet(magnetization=(100,200,300), vertices=verts)
+    >>> src = magpy.misc.Triangle(magnetization=(100,200,300), vertices=verts)
     >>> H = src.getH((1,1,1))
     >>> print(H)
     [2.24851814 2.24851814 3.49105683]
@@ -72,7 +69,7 @@ class Facet(BaseMagnet):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    Facet(id=...)
+    Triangle(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[3.94659011 4.21772671 4.21772671]
@@ -84,7 +81,7 @@ class Facet(BaseMagnet):
 
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    Facet(id=...)
+    Triangle(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
     [[3.94659011 4.21772671 4.21772671]
@@ -93,9 +90,9 @@ class Facet(BaseMagnet):
 
     """
 
-    _field_func = staticmethod(facet_field_from_obj)
-    _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 3}
-    _draw_func = make_Facet
+    _field_func = staticmethod(triangle_field)
+    _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 2}
+    _draw_func = make_Triangle
 
     def __init__(
         self,
@@ -120,14 +117,13 @@ class Facet(BaseMagnet):
 
     @vertices.setter
     def vertices(self, val):
-        """Set face vertices (a,b,c), shape (3,3) or (n,3,3), [mm]."""
+        """Set face vertices (a,b,c), shape (3,3), [mm]."""
         self._vertices = check_format_input_vector(
             val,
-            dims=(2,3),
+            dims=(2,),
             shape_m1=3,
-            sig_name="Facet.vertices",
-            sig_type="array_like (list, tuple, ndarray) of shape (3,3) or (n,3,3)",
-            reshape=(-1,3,3),
+            sig_name="Triangle.vertices",
+            sig_type="array_like (list, tuple, ndarray) of shape (3,3)",
             allow_None=True,
         )
 
@@ -143,7 +139,7 @@ class Facet(BaseMagnet):
 
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
-        """Returns the barycenter of a facet object."""
-        centroid = np.mean(vertices, axis=(0,1))
+        """Returns the barycenter of the Triangle object."""
+        centroid = np.mean(vertices, axis=0)
         barycenter = orientation.apply(centroid) + position
         return barycenter
