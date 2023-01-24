@@ -253,6 +253,7 @@ def make_triangle_orientations(
     Create the plotly mesh3d parameters for a triangle orientation cone in a dictionary based on the
     provided arguments.
     """
+    # pylint: disable=protected-access
     style = obj.style if style is None else style
     color = color if style.orientation.color is None else style.orientation.color
     size = size if style.orientation.size is None else style.orientation.size
@@ -284,7 +285,7 @@ def make_triangle_orientations(
             height=0.2 * size * length,
             pivot=pivot,
             color=color,
-            position=obj._orientation[ind].apply(vmean+obj._position[ind]),
+            position=obj._orientation[ind].apply(vmean + obj._position[ind]),
             orientation=obj._orientation[ind] * orient,
             **kwargs,
         )
@@ -697,7 +698,7 @@ def get_generic_traces(
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=protected-access
-    # pyling: disable=import-outside-toplevel
+    # pylint: disable=import-outside-toplevel
 
     from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 
