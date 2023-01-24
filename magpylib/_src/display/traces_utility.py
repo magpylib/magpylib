@@ -454,3 +454,11 @@ def subdivide_mesh_by_facecolor(trace):
         new_trace.pop("facecolor")
         subtraces.append(new_trace)
     return subtraces
+
+
+def triangles_area(triangles):
+    """Return area of triangles of shape (n,3,3) into an array of shape n"""
+    norm = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
+    )
+    return np.linalg.norm(norm, axis=1) / 2

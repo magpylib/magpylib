@@ -39,6 +39,7 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import triangles_area
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.style import Markers
@@ -260,7 +261,7 @@ def make_triangle_orientations(
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
     nvec = vec / np.linalg.norm(vec)
-    length = np.amax(np.ptp(obj.vertices, axis=0))
+    length = triangles_area(np.expand_dims(vert, axis=0))[0]
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
     n = np.linalg.norm(cross)
