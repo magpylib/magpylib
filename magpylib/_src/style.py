@@ -566,7 +566,7 @@ class Magnetization(MagicProperties):
 
     mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
-        that the chosen backend determins which mode is applied by its capability. If the backend
+        that the chosen backend determines which mode is applied by its capability. If the backend
         can display both and `auto` is chosen, the priority is given to `color`.
     """
 
@@ -614,7 +614,7 @@ class Magnetization(MagicProperties):
     def mode(self):
         """One of {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
-        that the chosen backend determins which mode is applied by its capability. If the backend
+        that the chosen backend determines which mode is applied by its capability. If the backend
         can display both and `auto` is chosen, the priority is given to `color`."""
         return self._mode
 
