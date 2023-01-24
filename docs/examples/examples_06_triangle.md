@@ -38,7 +38,9 @@ prisma = magpy.Collection(top, bott)
 prisma.show(style_magnetization_size=0.2, style_opacity=0.5, style_orientation_color="red")
 ```
 
-## Example: cuboc magnet
++++ {"tags": []}
+
+## Example: Cuboctahedron magnet
 
 More complex bodies are easy constructed from Triangles. The following code shows how a magnet with cuboc shape can be constructed. Be aware that the B-field is only correcto on the outside.
 
