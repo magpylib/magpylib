@@ -10,6 +10,7 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
+import magpylib as magpy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -21,6 +22,10 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
+from magpylib._src.display.traces_base import (
+    make_TriangularMesh as make_BaseTriangularMesh,
+)
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
@@ -41,7 +46,7 @@ from magpylib._src.utility import unit_prefix
 
 
 class MagpyMarkers:
-    """A class that stores markers 3D-coordinates"""
+    """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
         self.style = Markers()
@@ -345,6 +350,60 @@ def make_Sphere(
     )
 
 
+def make_Tetrahedron(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    trace = make_BaseTetrahedron("plotly-dict", vertices=obj.vertices, color=color)
+    update_trace_name(trace, "Tetrahedron", "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
+def make_Triangle(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
+    provided arguments.
+    """
+    vertices = obj.vertices
+
+    # Return unique vertices and triangles from vertices
+    vert_unique, tr = np.unique(vertices.reshape((-1, 3)), axis=0, return_inverse=True)
+    triangles = tr.reshape((-1, 3))
+
+    style = obj.style if style is None else style
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=vert_unique, triangles=triangles, color=color
+    )
+    update_trace_name(trace, "Triangle", "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
 def make_Pixels(positions, size=1) -> dict:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
@@ -490,6 +549,10 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
+    elif isinstance(obj, magpy.misc.Triangle):
+        length = np.amax(obj.vertices) - np.amin(obj.vertices)
+    elif hasattr(obj, "vertices"):
+        length = np.amax(np.ptp(obj.vertices, axis=0))
     else:  # Cuboid, Cylinder, CylinderSegment
         length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size

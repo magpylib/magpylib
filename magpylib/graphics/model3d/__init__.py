@@ -11,6 +11,8 @@ __all__ = [
     "make_Cuboid",
     "make_CylinderSegment",
     "make_Prism",
+    "make_Tetrahedron",
+    "make_TriangularMesh",
 ]
 
 from magpylib._src.display.traces_base import (
@@ -20,4 +22,6 @@ from magpylib._src.display.traces_base import (
     make_Cuboid,
     make_CylinderSegment,
     make_Prism,
+    make_Tetrahedron,
+    make_TriangularMesh,
 )

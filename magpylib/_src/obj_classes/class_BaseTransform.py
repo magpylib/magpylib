@@ -1,6 +1,4 @@
-"""BaseTransform class code
-DOCSTRING v4 READY
-"""
+"""BaseTransform class code"""
 # pylint: disable=protected-access
 import numbers
 

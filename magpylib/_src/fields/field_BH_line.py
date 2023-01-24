@@ -58,7 +58,7 @@ def current_vertices_field(
     return BH
 
 
-# ON INTERFACE
+# CORE
 def current_line_field(
     field: str,
     observers: np.ndarray,

@@ -13,9 +13,9 @@ kernelspec:
 
 (examples-animation)=
 
-# Animate paths
+# Graphics - Animate paths
 
-With the Plotly backend, paths can automatically be animated with `show(animation=True)`. Animations can be fine-tuned with the following properties:
+With some backends, paths can automatically be animated with `show(animation=True)`. Animations can be fine-tuned with the following properties:
 
 1. `animation_time` (default=3), must be a positive number that gives the animation time in seconds.
 2. `animation_slider` (default=`True`), is boolean and sets if a slider should be displayed in addition.

@@ -13,7 +13,9 @@ kernelspec:
 
 (examples-backends-canvas)=
 
-# Backend and canvas
+# Graphics - Backend and canvas
+
+The graphic backend refers to the plotting library that is used for graphic output. Canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
 ## Graphic backend
 
