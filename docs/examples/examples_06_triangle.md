@@ -70,7 +70,7 @@ vertices = [
     ([0, -1, 1], [1, -1, 0], [1, 0, 1]),
 ]
 
-cuboc = magpy.Collection(style_label="cuboc")
+cuboc = magpy.Collection(style_label="Cuboctahedron")
 for ind, vert in enumerate(vertices):
     cuboc.add(
         magpy.misc.Triangle(
