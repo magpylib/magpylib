@@ -284,7 +284,7 @@ def make_triangle_orientations(
             height=0.2 * size * length,
             pivot=pivot,
             color=color,
-            position=obj._orientation[ind].apply(vmean),
+            position=obj._orientation[ind].apply(vmean+obj._position[ind]),
             orientation=obj._orientation[ind] * orient,
             **kwargs,
         )
