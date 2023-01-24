@@ -401,7 +401,7 @@ def group_traces(*traces):
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
     spec_keys = {
-        "mesh3d": ["colorscale"],
+        "mesh3d": ["colorscale", "color"],
         "scatter3d": [
             "marker",
             "line_dash",
