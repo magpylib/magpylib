@@ -250,8 +250,8 @@ def make_triangle_orientations(
     **kwargs,
 ) -> dict:
     """
-    Create the plotly mesh3d parameters for a triangle orientation cone in a dictionary based on the
-    provided arguments.
+    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
+    based on the provided arguments.
     """
     # pylint: disable=protected-access
     style = obj.style if style is None else style
@@ -276,7 +276,7 @@ def make_triangle_orientations(
     traces = []
     make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
     vmean = np.mean(vert, axis=0)
-    vmean -= 0.001 * length * nvec  # makes arrow/cone visible on both sides
+    vmean -= 0.01 * length * nvec  # makes arrow/cone visible on both sides
     for ind in pos_orient_inds:
         tr = make_fn(
             "plotly-dict",
@@ -436,21 +436,23 @@ def make_Triangle(
     orientation=None,
     color=None,
     style=None,
+    thick_facet=True,
     **kwargs,
 ) -> dict:
     """
     Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
     provided arguments.
     """
-    vertices = obj.vertices
-
-    # Return unique vertices and triangles from vertices
-    vert_unique, tr = np.unique(vertices.reshape((-1, 3)), axis=0, return_inverse=True)
-    triangles = tr.reshape((-1, 3))
+    vert = obj.vertices
+    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    triangles = np.array([[0, 1, 2]])
+    if thick_facet:
+        vert = np.concatenate([vert, vert + 1e-4*vec])
+        triangles = np.concatenate([triangles, [[3, 4, 5]]])
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vert_unique, triangles=triangles, color=color
+        "plotly-dict", vertices=vert, triangles=triangles, color=color
     )
     update_trace_name(trace, "Triangle", "", style)
     update_magnet_mesh(
