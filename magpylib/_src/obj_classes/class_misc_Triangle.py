@@ -6,6 +6,7 @@ from magpylib._src.display.traces_generic import make_Triangle
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.style import TriangleStyle
 
 
 class Triangle(BaseMagnet):
@@ -93,6 +94,7 @@ class Triangle(BaseMagnet):
     _field_func = staticmethod(triangle_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 2}
     _draw_func = make_Triangle
+    _style_class = TriangleStyle
 
     def __init__(
         self,

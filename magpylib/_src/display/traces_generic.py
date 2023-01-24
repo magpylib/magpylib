@@ -22,6 +22,7 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_base import make_Pyramid as make_BasePyramid
 from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
 from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
@@ -201,7 +202,7 @@ def make_Dipole(
     **kwargs,
 ) -> dict:
     """
-    Create the plotly mesh3d parameters for a Loop current in a dictionary based on the
+    Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
     """
     style = obj.style if style is None else style
@@ -235,6 +236,60 @@ def make_Dipole(
     return place_and_orient_model3d(
         trace, orientation=orientation, position=position, **kwargs
     )
+
+
+def make_triangle_orientations(
+    obj,
+    pos_orient_inds,
+    style=None,
+    color=None,
+    size=1,
+    pivot="tail",
+    symbol="cone",
+    **kwargs,
+) -> dict:
+    """
+    Create the plotly mesh3d parameters for a triangle orientation cone in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    color = color if style.orientation.color is None else style.orientation.color
+    size = size if style.orientation.size is None else style.orientation.size
+    pivot = pivot if style.orientation.pivot is None else style.orientation.pivot
+    symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
+    vert = obj.vertices
+    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    nvec = vec / np.linalg.norm(vec)
+    length = np.amax(np.ptp(obj.vertices, axis=0))
+    zaxis = np.array([0, 0, 1])
+    cross = np.cross(nvec, zaxis)
+    n = np.linalg.norm(cross)
+    if n == 0:
+        n = 1
+        cross = np.array([-np.sign(nvec[-1]), 0, 0])
+    dot = np.dot(nvec, zaxis)
+    t = np.arccos(dot)
+    vec = -t * cross / n
+    orient = RotScipy.from_rotvec(vec)
+    traces = []
+    make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
+    vmean = np.mean(vert, axis=0)
+    vmean -= 0.001 * length * nvec  # makes arrow/cone visible on both sides
+    for ind in pos_orient_inds:
+        tr = make_fn(
+            "plotly-dict",
+            base=10,
+            diameter=0.1 * size * length,
+            height=0.2 * size * length,
+            pivot=pivot,
+            color=color,
+            position=obj._orientation[ind].apply(vmean),
+            orientation=obj._orientation[ind] * orient,
+            **kwargs,
+        )
+        traces.append(tr)
+    trace = merge_mesh3d(*traces)
+    return trace
 
 
 def make_Cuboid(
@@ -532,19 +587,16 @@ def update_trace_name(trace, default_name, default_suffix, style):
     return trace
 
 
-def make_mag_arrows(obj, style, legendgroup, kwargs):
+def make_mag_arrows(obj, pos_orient_inds, style, legendgroup, kwargs):
     """draw direction of magnetization of faced magnets
 
     Parameters
     ----------
-    - faced_objects(list of src objects): with magnetization vector to be drawn
+    - obj: object with magnetization vector to be drawn
     - colors: colors of faced_objects
     - show_path(bool or int): draw on every position where object is displayed
     """
     # pylint: disable=protected-access
-
-    # add src attributes position and orientation depending on show_path
-    rots, _, inds = get_rot_pos_from_path(obj, style.path.frames)
 
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
@@ -559,10 +611,10 @@ def make_mag_arrows(obj, style, legendgroup, kwargs):
     mag = obj.magnetization
     # collect all draw positions and directions
     points = []
-    for rot, ind in zip(rots, inds):
+    for ind in pos_orient_inds:
         pos = getattr(obj, "_barycenter", obj._position)[ind]
         direc = mag / (np.linalg.norm(mag) + 1e-6) * length
-        vec = rot.apply(direc)
+        vec = obj._orientation[ind].apply(direc)
         pts = draw_arrowed_line(vec, pos, sign=1, arrow_pos=1, pivot="tail")
         points.append(pts)
     # insert empty point to avoid connecting line between arrows
@@ -622,7 +674,7 @@ def get_generic_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ) -> list:
@@ -644,6 +696,9 @@ def get_generic_traces(
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=protected-access
+    # pyling: disable=import-outside-toplevel
+
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 
     # parse kwargs into style and non style args
     style = get_style(input_obj, Config, **kwargs)
@@ -653,6 +708,15 @@ def get_generic_traces(
     kwargs["color"] = style_color if style_color is not None else color
     kwargs["opacity"] = style.opacity
     legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
+
+    is_mag_arrows = False
+    if getattr(input_obj, "magnetization", None) is not None:
+        mode = style.magnetization.mode
+        if style.magnetization.show:
+            if "arrow" in mode or not mag_color_grad_apt:
+                is_mag_arrows = True
+            if mag_color_grad_apt and "color" not in mode and mode != "auto":
+                style.magnetization.show = False  # disables color gradient only
 
     # check excitations validity
     for param in ("magnetization", "arrow"):
@@ -680,8 +744,10 @@ def get_generic_traces(
         return out[0] if len(out) == 1 else out
 
     extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
-    orientations, positions, _ = get_rot_pos_from_path(input_obj, style.path.frames)
-    for pos_orient_ind, (orient, pos) in enumerate(zip(orientations, positions)):
+    orientations, positions, pos_orient_inds = get_rot_pos_from_path(
+        input_obj, style.path.frames
+    )
+    for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
             path_traces.append(
                 make_func(position=pos, orientation=orient, **make_func_kwargs)
@@ -727,7 +793,7 @@ def get_generic_traces(
                 elif extr.backend == extra_backend:
                     showleg = (
                         showlegend
-                        and pos_orient_ind == 0
+                        and pos_orient_enum == 0
                         and not style.model3d.showdefault
                     )
                     showleg = True if showleg is None else showleg
@@ -771,9 +837,18 @@ def get_generic_traces(
         scatter_path = make_path(input_obj, style, legendgroup, kwargs)
         traces.append(scatter_path)
 
-    if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
-        if style.magnetization.show:
-            traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
+    if is_mag_arrows:
+        traces.append(
+            make_mag_arrows(input_obj, pos_orient_inds, style, legendgroup, kwargs)
+        )
+
+    if isinstance(input_obj, Triangle):
+        traces.append(
+            make_triangle_orientations(
+                input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs
+            )
+        )
+
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
@@ -892,7 +967,7 @@ def draw_frame(
     zoom=0.0,
     autosize=None,
     output="dict",
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ) -> Tuple:
@@ -928,7 +1003,7 @@ def draw_frame(
         else:
             out_traces = get_generic_traces(
                 obj,
-                mag_arrows=mag_arrows,
+                mag_color_grad_apt=mag_color_grad_apt,
                 extra_backend=extra_backend,
                 **params,
             )
@@ -944,7 +1019,7 @@ def draw_frame(
         out_traces = get_generic_traces(
             obj,
             autosize=autosize,
-            mag_arrows=mag_arrows,
+            mag_color_grad_apt=mag_color_grad_apt,
             extra_backend=extra_backend,
             **params,
         )
@@ -964,7 +1039,7 @@ def get_frames(
     zoom=1,
     title=None,
     animation=False,
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ):
@@ -1007,7 +1082,7 @@ def get_frames(
             zoom,
             autosize=autosize,
             output="list",
-            mag_arrows=mag_arrows,
+            mag_color_grad_apt=mag_color_grad_apt,
             extra_backend=extra_backend,
             **kwargs,
         )

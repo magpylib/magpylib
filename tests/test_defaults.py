@@ -42,6 +42,9 @@ bad_inputs = {
     "display_style_magnet_magnetization_color_mode": (
         "wrongmode",
     ),  # bicolor, tricolor, tricycle
+    "display_style_magnet_magnetization_mode": (
+        "wrongmode",
+    ),  # 'auto', 'arrow', 'color', 'arrow+color'
     "display_style_current_arrow_show": ("notbool",),
     "display_style_current_arrow_size": (-1,),  # float>=0
     "display_style_current_arrow_width": (-1,),  # float>=0
@@ -57,6 +60,11 @@ bad_inputs = {
     "display_style_sensor_pixel_symbol": ("wrongsymbol",),
     "display_style_dipole_size": (-1,),  # float>=0
     "display_style_dipole_pivot": ("wrongpivot",),  # middle, tail, tip
+    "display_style_triangle_orientation_show": ("notbool",),
+    "display_style_triangle_orientation_size": (-1,),
+    "display_style_triangle_orientation_color": ("wrongcolor",),
+    "display_style_triangle_orientation_pivot": ("wrongpivot",),  # middle, tail, tip
+    "display_style_triangle_orientation_symbol": ("arrow0d"),  # "cone", "arrow3d"
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
     "display_style_markers_marker_symbol": ("wrongsymbol",),
@@ -130,6 +138,13 @@ good_inputs = {
         "tricolor",
         "tricycle",
     ),
+    "display_style_magnet_magnetization_mode": (
+        "auto",
+        "arrow",
+        "color",
+        "arrow+color",
+        "color+arrow",
+    ),
     "display_style_current_arrow_show": (True, False),
     "display_style_current_arrow_size": (0, 1),  # float>=0
     "display_style_current_arrow_width": (0, 1),  # float>=0
@@ -149,6 +164,15 @@ good_inputs = {
         "tail",
         "tip",
     ),  # pivot middle, tail, tip
+    "display_style_triangle_orientation_show": (True, False),
+    "display_style_triangle_orientation_size": (True, False),
+    "display_style_triangle_orientation_color": ("yellow",),
+    "display_style_triangle_orientation_pivot": (
+        "middle",
+        "tail",
+        "tip",
+    ),  # pivot middle, tail, tip
+    "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
     "display_style_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
