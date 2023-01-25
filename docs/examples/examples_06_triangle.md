@@ -94,6 +94,3 @@ magpy.show(
 )
 ```
 
-```{code-cell} ipython3
-
-```
