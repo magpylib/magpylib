@@ -436,7 +436,6 @@ def make_Triangle(
     orientation=None,
     color=None,
     style=None,
-    thick_facet=True,
     **kwargs,
 ) -> dict:
     """
@@ -446,8 +445,10 @@ def make_Triangle(
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
     triangles = np.array([[0, 1, 2]])
-    if thick_facet:
-        vert = np.concatenate([vert, vert + 1e-4*vec])
+    # if magnetization is normal to the triangle, add a second triangle slightly above to enable
+    # proper color gradient visualization. Otherwise only the middle color is shown.
+    if np.all(np.cross(obj.magnetization, vec) == 0):
+        vert = np.concatenate([vert, vert + 1e-4 * vec])
         triangles = np.concatenate([triangles, [[3, 4, 5]]])
 
     style = obj.style if style is None else style
