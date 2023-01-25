@@ -286,5 +286,3 @@ def test_mpl_animation():
     anim = c.show(backend="matplotlib", animation=True, return_animation=True)
     anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
-
-
