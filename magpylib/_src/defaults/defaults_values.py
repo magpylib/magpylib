@@ -92,7 +92,7 @@ DEFAULTS = {
                 "orientation": {
                     "show": True,
                     "size": 1,
-                    "color": None,
+                    "color": "grey",
                     "pivot": "tail",
                     "symbol": "cone",
                 },

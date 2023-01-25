@@ -813,8 +813,8 @@ class Orientation(MagicProperties):
     size: float, default=1,
         Size of the orientation symbol
 
-    color: dict or MagnetizationColor object, default=None
-        Color properties of the triangle orientation.
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
     pivot: str, default=None
         The part of the orientation symbol that is anchored to the X, Y grid.
