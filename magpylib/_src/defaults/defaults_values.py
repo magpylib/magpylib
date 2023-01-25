@@ -94,7 +94,7 @@ DEFAULTS = {
                     "size": 1,
                     "color": "grey",
                     "pivot": "tail",
-                    "symbol": "cone",
+                    "symbol": "arrow3d",
                 },
             },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
