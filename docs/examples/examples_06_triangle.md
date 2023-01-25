@@ -15,11 +15,13 @@ kernelspec:
 
 # Complex shapes - The Triangle class
 
-The field of a homogeneously charged magnet is, on the outside, the same as the field of a similarly shaped body with a magnetic surface charge. The surface charge is proportional to the projection of the magnetization vector onto the surface normal. The `Triangle` class is set up so that it can easily be used to approximate surfaces, and given the magnetization vector, the charge density is automatically computed. The resulting H-field is correct, but the B-field is only correct on the outside of the body, because on the inside the magnetization must be added to it.
+The field of a homogeneously charged magnet is, on the outside, the same as the field of a similarly shaped body with a magnetic surface charge. The surface charge is proportional to the projection of the magnetization vector onto the surface normal.
+
+The `Triangle` class is set up so that it can easily be used for this purpose. Arbitrary surfaces are easily approximated by triangles, and given the magnetization vector, the surface charge density is automatically computed. One must be very careful to orient the triangles correctly, with surface normal vectors pointing outwards (right-hand-rule). The resulting H-field of such a collection is correct, but the B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field.
 
 ## Example: Triangular prisma magnet
 
-Consider a Prisma with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prisma are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge desity dissappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards. The following examples shows how the `Triangle` class can be used to create such a prisma.
+Consider a Prisma with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prisma are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge desity dissappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards. For this purpose the surface normal of `Triangle` objects is graphically displayed by default. The following examples shows how the `Triangle` class can be used to create a prisma magnet object.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -41,11 +43,9 @@ prisma.show(
 )
 ```
 
-+++ {"tags": []}
-
 ## Example: Cuboctahedron magnet
 
-More complex bodies are easy constructed from Triangles. The following code shows how a magnet with cuboc shape can be constructed. Be aware that the B-field is only correcto on the outside.
+More complex bodies are easy constructed from `Triangle` objects. The following code shows how a magnet with cuboctahedral shape can be constructed. Be aware that the B-field requires addition of the magnetization vector on the inside.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -83,14 +83,13 @@ for ind, vert in enumerate(vertices):
         )
     )
 
-
-
 magpy.show(
     *cuboc,
     backend="pyvista",
-    style_orientation=dict(size=3, symbol="arrow3d", color="magenta"),
+    style_orientation_size=2,
+    style_orientation_color='yellow',
+    style_orientation_symbol='cone',
     style_magnetization_mode="arrow",
     jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
 )
 ```
-
