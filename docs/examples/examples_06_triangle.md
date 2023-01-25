@@ -35,7 +35,10 @@ bott = magpy.misc.Triangle(
 
 prisma = magpy.Collection(top, bott)
 
-prisma.show(style_magnetization_size=0.2, style_opacity=0.5, style_orientation_color="red")
+prisma.show(
+    style_opacity=0.5,
+    style_magnetization_size=0.2,
+)
 ```
 
 +++ {"tags": []}
@@ -77,7 +80,7 @@ for ind, vert in enumerate(vertices):
             magnetization=(100, 200, 300),
             vertices=vert,
             style_label=f"Triangle_{ind+1:02d}",
-        )  # .rotate_from_angax(45, 'x')
+        )
     )
 
 
@@ -85,8 +88,12 @@ for ind, vert in enumerate(vertices):
 magpy.show(
     *cuboc,
     backend="pyvista",
-    style_orientation=dict(pivot="tail", size=2, symbol="arrow3d"),
+    style_orientation=dict(size=3, symbol="arrow3d", color="magenta"),
     style_magnetization_mode="arrow",
     jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
 )
+```
+
+```{code-cell} ipython3
+
 ```
