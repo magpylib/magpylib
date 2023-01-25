@@ -63,7 +63,7 @@ bad_inputs = {
     "display_style_triangle_orientation_show": ("notbool",),
     "display_style_triangle_orientation_size": (-1,),
     "display_style_triangle_orientation_color": ("wrongcolor",),
-    "display_style_triangle_orientation_pivot": ("wrongpivot",),  # middle, tail, tip
+    "display_style_triangle_orientation_offset": (-1,),  # float>=0
     "display_style_triangle_orientation_symbol": ("arrow0d"),  # "cone", "arrow3d"
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
@@ -167,11 +167,7 @@ good_inputs = {
     "display_style_triangle_orientation_show": (True, False),
     "display_style_triangle_orientation_size": (True, False),
     "display_style_triangle_orientation_color": ("yellow",),
-    "display_style_triangle_orientation_pivot": (
-        "middle",
-        "tail",
-        "tip",
-    ),  # pivot middle, tail, tip
+    "display_style_triangle_orientation_offset": (0, 0.5, 1),  # float>=0
     "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),

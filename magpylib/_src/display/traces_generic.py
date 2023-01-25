@@ -245,7 +245,7 @@ def make_triangle_orientations(
     style=None,
     color=None,
     size=1,
-    pivot="tail",
+    offset=0.1,
     symbol="cone",
     **kwargs,
 ) -> dict:
@@ -257,12 +257,13 @@ def make_triangle_orientations(
     style = obj.style if style is None else style
     color = color if style.orientation.color is None else style.orientation.color
     size = size if style.orientation.size is None else style.orientation.size
-    pivot = pivot if style.orientation.pivot is None else style.orientation.pivot
+    offset = offset if style.orientation.offset is None else style.orientation.offset
     symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
     nvec = vec / np.linalg.norm(vec)
-    length = triangles_area(np.expand_dims(vert, axis=0))[0]
+    # arrow length proportional to square root of triangle
+    length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
     n = np.linalg.norm(cross)
@@ -276,14 +277,14 @@ def make_triangle_orientations(
     traces = []
     make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
     vmean = np.mean(vert, axis=0)
-    vmean -= 0.01 * length * nvec  # makes arrow/cone visible on both sides
+    vmean -= (1 - offset) * length * nvec
     for ind in pos_orient_inds:
         tr = make_fn(
             "plotly-dict",
             base=10,
-            diameter=0.1 * size * length,
-            height=0.2 * size * length,
-            pivot=pivot,
+            diameter=0.5 * size * length,
+            height=size * length,
+            pivot="tail",
             color=color,
             position=obj._orientation[ind].apply(vmean) + obj._position[ind],
             orientation=obj._orientation[ind] * orient,
@@ -448,7 +449,8 @@ def make_Triangle(
     # if magnetization is normal to the triangle, add a second triangle slightly above to enable
     # proper color gradient visualization. Otherwise only the middle color is shown.
     if np.all(np.cross(obj.magnetization, vec) == 0):
-        vert = np.concatenate([vert, vert + 1e-4 * vec])
+        epsilon = 1e-4 * vec
+        vert = np.concatenate([vert - epsilon, vert + epsilon])
         triangles = np.concatenate([triangles, [[3, 4, 5]]])
 
     style = obj.style if style is None else style

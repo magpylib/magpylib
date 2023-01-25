@@ -816,15 +816,15 @@ class Orientation(MagicProperties):
     color: str, default=None
         A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
-    pivot: str, default=None
-        The part of the orientation symbol that is anchored to the X, Y grid.
-        The orientation symbol rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
+    offset: float, default=0.1
+        Defines the orientation symbol offset, normal to the triangle surface. Must be a number
+        between [0,1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
+        and 1 with the base.
 
     symbol: {"cone", "arrow3d"}:
         Orientation symbol for the triangular facets.
     """
 
-    _allowed_pivots = ("tail", "middle", "tip")
     _allowed_symbols = ("cone", "arrow3d")
 
     @property
@@ -863,20 +863,20 @@ class Orientation(MagicProperties):
         self._color = color_validator(val, parent_name=f"{type(self).__name__}")
 
     @property
-    def pivot(self):
-        """The part of the arrow that is anchored to the X, Y grid.
-        The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
+    def offset(self):
+        """Defines the orientation symbol offset, normal to the triangle surface. Must be a number
+        between [0,1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
+        and 1 with the base.
         """
-        return self._pivot
+        return self._offset
 
-    @pivot.setter
-    def pivot(self, val):
-        assert val is None or val in (self._allowed_pivots), (
-            f"The `pivot` property of {type(self).__name__} must be one of "
-            f"{self._allowed_pivots},\n"
+    @offset.setter
+    def offset(self, val):
+        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
+            "The `offset` property must be a value betwen 0 and 1,\n"
             f"but received {repr(val)} instead."
         )
-        self._pivot = val
+        self._offset = val
 
     @property
     def symbol(self):

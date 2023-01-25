@@ -93,7 +93,7 @@ DEFAULTS = {
                     "show": True,
                     "size": 1,
                     "color": "grey",
-                    "pivot": "tail",
+                    "offset": 0.9,
                     "symbol": "arrow3d",
                 },
             },
