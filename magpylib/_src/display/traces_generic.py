@@ -238,10 +238,6 @@ def make_triangle_orientations(
     obj,
     pos_orient_inds,
     style=None,
-    color=None,
-    size=1,
-    offset=0.1,
-    symbol="cone",
     **kwargs,
 ) -> dict:
     """
@@ -250,10 +246,12 @@ def make_triangle_orientations(
     """
     # pylint: disable=protected-access
     style = obj.style if style is None else style
-    color = color if style.orientation.color is None else style.orientation.color
-    size = size if style.orientation.size is None else style.orientation.size
-    offset = offset if style.orientation.offset is None else style.orientation.offset
-    symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
+    orient = style.orientation
+    size = orient.size
+    symbol = orient.symbol
+    offset = orient.offset
+    color = orient.color
+    color = style.color if color is None else color
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
     nvec = vec / np.linalg.norm(vec)
@@ -936,7 +934,11 @@ def get_generic_traces(
     if isinstance(input_obj, Triangle) and style.orientation.show:
         all_generic_traces.append(
             make_triangle_orientations(
-                input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs
+                input_obj,
+                pos_orient_inds,
+                style=style,
+                legendgroup=legendgroup,
+                **kwargs,
             )
         )
 
