@@ -864,16 +864,16 @@ class Orientation(MagicProperties):
 
     @property
     def offset(self):
-        """Defines the orientation symbol offset, normal to the triangle surface. Must be a number
-        between [0,1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
-        and 1 with the base.
+        """Defines the orientation symbol offset, normal to the triangle surface. `offset=0` results
+        in the cone/arrow head to be coincident to the triangle surface and `offset=1` with the
+        base.
         """
         return self._offset
 
     @offset.setter
     def offset(self, val):
-        assert val is None or (isinstance(val, (float, int)) and 0 <= val <= 1), (
-            "The `offset` property must be a value betwen 0 and 1,\n"
+        assert val is None or (isinstance(val, (float, int))), (
+            "The `offset` property must valid number\n"
             f"but received {repr(val)} instead."
         )
         self._offset = val
