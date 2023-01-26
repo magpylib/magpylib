@@ -403,7 +403,6 @@ def make_Tetrahedron(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -412,7 +411,9 @@ def make_Tetrahedron(
     provided arguments.
     """
     style = obj.style if style is None else style
-    trace = make_BaseTetrahedron("plotly-dict", vertices=obj.vertices, color=color)
+    trace = make_BaseTetrahedron(
+        "plotly-dict", vertices=obj.vertices, color=style.color
+    )
     update_trace_name(trace, "Tetrahedron", "", style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
@@ -426,7 +427,6 @@ def make_Triangle(
     obj,
     position=(0.0, 0.0, 0.0),
     orientation=None,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -451,10 +451,9 @@ def make_Triangle(
             [0, 3, 5],
         ]
         triangles = np.concatenate([triangles, [[3, 4, 5]], side_triangles])
-
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vert, triangles=triangles, color=color
+        "plotly-dict", vertices=vert, triangles=triangles, color=style.color
     )
     update_trace_name(trace, "Triangle", "", style)
     update_magnet_mesh(
