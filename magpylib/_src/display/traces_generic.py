@@ -589,7 +589,7 @@ def update_trace_name(trace, default_name, default_suffix, style):
     return trace
 
 
-def make_mag_arrows(obj, pos_orient_inds, style, legendgroup, kwargs):
+def make_mag_arrows(obj, pos_orient_inds, style):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -928,9 +928,7 @@ def get_generic_traces(
         all_generic_traces.append(scatter_path)
 
     if is_mag_arrows:
-        all_generic_traces.append(
-            make_mag_arrows(input_obj, pos_orient_inds, style, legendgroup, kwargs)
-        )
+        all_generic_traces.append(make_mag_arrows(input_obj, pos_orient_inds, style))
     if isinstance(input_obj, Triangle) and style.orientation.show:
         all_generic_traces.append(
             make_triangle_orientations(
