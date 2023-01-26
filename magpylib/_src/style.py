@@ -28,10 +28,12 @@ def get_style(obj, default_settings, **kwargs):
         BaseCurrent as MagpyCurrent,
     )
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle as MagpyTriangle
     from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
     from magpylib._src.display.traces_generic import MagpyMarkers
 
     families = {
+        "triangle": MagpyTriangle,
         "magnet": MagpyMagnet,
         "current": MagpyCurrent,
         "dipole": MagpyDipole,
@@ -561,6 +563,11 @@ class Magnetization(MagicProperties):
     color: dict or MagnetizationColor object, default=None
         Color properties showing the magnetization direction (for the plotly backend).
         Only applies if `show=True`.
+
+    mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
+        Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
+        that the chosen backend determines which mode is applied by its capability. If the backend
+        can display both and `auto` is chosen, the priority is given to `color`.
     """
 
     def __init__(self, show=None, size=None, color=None, **kwargs):
@@ -602,6 +609,23 @@ class Magnetization(MagicProperties):
     @color.setter
     def color(self, val):
         self._color = validate_property_class(val, "color", MagnetizationColor, self)
+
+    @property
+    def mode(self):
+        """One of {"auto", "arrow", "color", "arrow+color"}, default="auto"
+        Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
+        that the chosen backend determines which mode is applied by its capability. If the backend
+        can display both and `auto` is chosen, the priority is given to `color`."""
+        return self._mode
+
+    @mode.setter
+    def mode(self, val):
+        allowed = ("auto", "arrow", "color", "arrow+color", "color+arrow")
+        assert val is None or val in allowed, (
+            f"The `mode` input must None or be one of `{allowed}`,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._mode = val
 
 
 class MagnetizationColor(MagicProperties):
@@ -776,6 +800,177 @@ class MagnetStyle(BaseStyle, MagnetProperties):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+class Orientation(MagicProperties):
+    """Defines Triangle orientation properties.
+
+    Parameters
+    ----------
+    show: bool, default=True
+        Show/hide orientation symbol.
+
+    size: float, default=1,
+        Size of the orientation symbol
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    offset: float, default=0.1
+        Defines the orientation symbol offset, normal to the triangle surface. Must be a number
+        between [0,1], 0 resulting in the cone/arrow head to be coincident to the triangle surface
+        and 1 with the base.
+
+    symbol: {"cone", "arrow3d"}:
+        Orientation symbol for the triangular facets.
+    """
+
+    _allowed_symbols = ("cone", "arrow3d")
+
+    @property
+    def show(self):
+        """Show/hide arrow."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+    @property
+    def size(self):
+        """Positive float for ratio of sensor to canvas size."""
+        return self._size
+
+    @size.setter
+    def size(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"The `size` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._size = val
+
+    @property
+    def color(self):
+        """A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`."""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+    @property
+    def offset(self):
+        """Defines the orientation symbol offset, normal to the triangle surface. `offset=0` results
+        in the cone/arrow head to be coincident to the triangle surface and `offset=1` with the
+        base.
+        """
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        assert val is None or (isinstance(val, (float, int))), (
+            "The `offset` property must valid number\n"
+            f"but received {repr(val)} instead."
+        )
+        self._offset = val
+
+    @property
+    def symbol(self):
+        """Pixel symbol. Can be one of `("cone", "arrow3d")`."""
+        return self._symbol
+
+    @symbol.setter
+    def symbol(self, val):
+        assert val is None or val in self._allowed_symbols, (
+            f"The `symbol` property of {type(self).__name__} must be one of"
+            f"{self._allowed_symbols},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._symbol = val
+
+
+class TriangleProperties:
+    """Defines Triangle properties.
+
+    Parameters
+    ----------
+    orientation: dict or Orientation,  default=None,
+        Orientation styling of triangles.
+    """
+
+    @property
+    def orientation(self):
+        """`Orientation` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._orientation
+
+    @orientation.setter
+    def orientation(self, val):
+        self._orientation = validate_property_class(
+            val, "orientation", Orientation, self
+        )
+
+
+class Triangle(MagicProperties, MagnetProperties, TriangleProperties):
+    """Defines styling properties of homogeneous magnet classes.
+
+    Parameters
+    ----------
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
+        properties or a dictionary with equivalent key/value pairs..
+    """
+
+    def __init__(self, magnetization=None, orientation=None, **kwargs):
+        super().__init__(magnetization=magnetization, orientation=orientation, **kwargs)
+
+
+class TriangleStyle(MagnetStyle, TriangleProperties):
+    """Defines styling properties of the Triangle class.
+
+    Parameters
+    ----------
+    label: str, default=None
+        Label of the class instance, e.g. to be displayed in the legend.
+
+    description: dict or `Description` object, default=None
+        Object description properties.
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    opacity: float, default=None
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation styling of triangles.
+    """
+
+    def __init__(self, orientation=None, **kwargs):
+        super().__init__(orientation=orientation, **kwargs)
 
 
 class ArrowCS(MagicProperties):
@@ -1528,6 +1723,9 @@ class DisplayStyle(MagicProperties):
     dipole: dict or `Dipole` object, default=None
         Dipole properties.
 
+    triangle: dict or `Triangle` object, default=None
+        Triangle properties
+
     sensor: dict or `Sensor` object, default=None
         Sensor properties.
 
@@ -1541,6 +1739,7 @@ class DisplayStyle(MagicProperties):
         magnet=None,
         current=None,
         dipole=None,
+        triangle=None,
         sensor=None,
         markers=None,
         **kwargs,
@@ -1550,6 +1749,7 @@ class DisplayStyle(MagicProperties):
             magnet=magnet,
             current=current,
             dipole=dipole,
+            triangle=triangle,
             sensor=sensor,
             markers=markers,
             **kwargs,
@@ -1596,6 +1796,15 @@ class DisplayStyle(MagicProperties):
     @dipole.setter
     def dipole(self, val):
         self._dipole = validate_property_class(val, "dipole", Dipole, self)
+
+    @property
+    def triangle(self):
+        """Triangle class."""
+        return self._triangle
+
+    @triangle.setter
+    def triangle(self, val):
+        self._triangle = validate_property_class(val, "triangle", Triangle, self)
 
     @property
     def sensor(self):

@@ -152,6 +152,11 @@ def display_pyvista(
     except IndexError:
         pass
 
+    # match other backends plotter properties
+    canvas.set_background("white")
+    canvas.show_axes()
+    canvas.camera.azimuth = -90
+
     if return_fig and not show_canvas:
         return canvas
     if show_canvas:

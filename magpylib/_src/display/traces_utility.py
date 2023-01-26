@@ -429,7 +429,7 @@ def group_traces(*traces):
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity", "row", "col", "color"]
     spec_keys = {
-        "mesh3d": ["colorscale"],
+        "mesh3d": ["colorscale", "color"],
         "scatter3d": [
             "marker",
             "line_dash",
@@ -535,3 +535,11 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d", sumup=Tr
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
     return list(new_objs.values()), list(set(flat_objs)), max_rows, max_cols, specs
+
+
+def triangles_area(triangles):
+    """Return area of triangles of shape (n,3,3) into an array of shape n"""
+    norm = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
+    )
+    return np.linalg.norm(norm, axis=1) / 2

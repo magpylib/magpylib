@@ -85,7 +85,7 @@ Magpylib only provides solutions for simple geometric forms (cuboids, cylinders,
 
 ## The Magpylib objects
 
-The most convenient way of working with Magpylib is through the **object oriented interface**. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. By default all objects are initialized with `position=(0,0,0)` and `orientation=None`. The following classes are implemented:
+The most convenient way of working with Magpylib is through the **object oriented interface**. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. By default all objects are initialized with `position=(0,0,0)`, `orientation=None`, and default graphic `style` settings. Additional `**kwargs` mostly include style shortcuts, see {ref}`intro-graphic-output`. The following classes are implemented:
 
 **Magnets**
 
