@@ -4,6 +4,7 @@ All notable changes to magpylib are documented here.
 # Releases
 
 ## [4.2.0] - XXXXXXXXXXX
+- Change pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular facets. ([#568](https://github.com/magpylib/magpylib/issues/568))
 - Introducing the `magnet.Tetrahedron` class as a derivate of the Triangle class. ([#289](https://github.com/magpylib/magpylib/issues/289))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
@@ -13,7 +14,7 @@ All notable changes to magpylib are documented here.
     - Correct conda install command
     - Integration of Triangle and Tetrahedron
     - Changed example gallery substructure
-    - Rewritten some passages
+    - Rewritten and added some passages
 - Fixed some bugs, minor performance increase, internal refactoring
 
 ## [4.1.2] - 2023-01-15
