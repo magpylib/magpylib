@@ -449,9 +449,17 @@ def make_Triangle(
     # if magnetization is normal to the triangle, add a second triangle slightly above to enable
     # proper color gradient visualization. Otherwise only the middle color is shown.
     if np.all(np.cross(obj.magnetization, vec) == 0):
-        epsilon = 1e-4 * vec
+        epsilon = 1e-3 * vec
         vert = np.concatenate([vert - epsilon, vert + epsilon])
-        triangles = np.concatenate([triangles, [[3, 4, 5]]])
+        side_triangles = [
+            [0, 1, 3],
+            [1, 2, 4],
+            [2, 0, 5],
+            [1, 4, 3],
+            [2, 5, 4],
+            [0, 3, 5],
+        ]
+        triangles = np.concatenate([triangles, [[3, 4, 5]], side_triangles])
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
