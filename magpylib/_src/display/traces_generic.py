@@ -848,8 +848,7 @@ def get_generic_traces(
         traces.append(
             make_mag_arrows(input_obj, pos_orient_inds, style, legendgroup, kwargs)
         )
-
-    if isinstance(input_obj, Triangle):
+    if isinstance(input_obj, Triangle) and style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs
