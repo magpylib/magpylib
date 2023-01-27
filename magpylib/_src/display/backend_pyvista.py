@@ -153,7 +153,7 @@ def display_pyvista(
         pass
 
     # match other backends plotter properties
-    canvas.set_background("white")
+    canvas.set_background('gray', top='white')
     canvas.show_axes()
     canvas.camera.azimuth = -90
 
