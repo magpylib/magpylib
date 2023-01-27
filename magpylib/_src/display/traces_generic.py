@@ -1125,13 +1125,11 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
     """Return traces, traces to resize and extra_backend_traces"""
     # pylint: disable=protected-access
     extra_backend_traces = []
-    Sensor = _src.obj_classes.class_Sensor.Sensor
-    Dipole = _src.obj_classes.class_misc_Dipole.Dipole
     traces_dict = {}
     traces_to_resize_dict = {}
     for obj, params in flat_objs_props.items():
         params.update(kwargs)
-        if autosize is None and isinstance(obj, (Dipole, Sensor)):
+        if autosize is None and getattr(obj, "_autosize", False):
             traces_to_resize_dict[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj._position.T
