@@ -13,7 +13,7 @@ kernelspec:
 
 (examples-backends-canvas)=
 
-# Graphics - Backend and canvas
+# Graphics - Backend, canvas, return_fig
 
 The graphic backend refers to the plotting library that is used for graphic output. Canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
@@ -149,6 +149,40 @@ magpy.show(loop, cylinder, backend='pyvista', canvas=pl)
 
 # display scene
 pl.camera.position=(50, 10, 10)
-#pl.set_background("white")
+pl.set_background('black', top='white')
+pl.show()
+```
+
+## Return figure
+
+Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
+
+```{code-cell} ipython3
+:tags: []
+
+import numpy as np
+import magpylib as magpy
+import pyvista as pv
+
+pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+
+# define sources and paths
+loop = magpy.current.Loop(current=1, diameter=5)
+loop.position = np.linspace((0,0,-3), (0,0,3), 40)
+
+cylinder = magpy.magnet.Cylinder(magnetization=(0,-100,0), dimension=(1,2), position=(0,-3,0))
+cylinder.rotate_from_angax(np.linspace(0, 300, 40)[1:], 'z', anchor=0)
+
+# return pyvista scene from magpylib.show()
+pl = magpy.show(loop, cylinder, backend='pyvista', return_fig=True)
+
+# add line to the pyvista scene
+line = np.array([(t*np.cos(15*t), t*np.sin(15*t), t-8) for t in np.linspace(3,5,200)])
+pl.add_lines(line, color='black')
+
+# display scene
+pl.camera.position=(50, 10, 10)
+pl.set_background('purple', top='lightgreen')
+pl.enable_anti_aliasing('ssaa')
 pl.show()
 ```

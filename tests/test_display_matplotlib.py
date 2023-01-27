@@ -284,4 +284,5 @@ def test_mpl_animation():
     c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
     c.move([[i, 0, 0] for i in range(2)])
     anim = c.show(backend="matplotlib", animation=True, return_animation=True)
+    anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
