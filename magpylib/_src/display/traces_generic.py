@@ -244,7 +244,7 @@ def make_triangle_orientations(
     pos_orient_inds,
     style=None,
     color=None,
-    size=.5,
+    size=0.5,
     offset=0.1,
     symbol="cone",
     **kwargs,
