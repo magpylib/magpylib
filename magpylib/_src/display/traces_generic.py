@@ -270,7 +270,7 @@ def make_triangle_orientations(
     traces = []
     make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
     vmean = np.mean(vert, axis=0)
-    vmean -= (1 - offset) * length * nvec
+    vmean -= (1 - offset) * length * nvec * size
     for ind in pos_orient_inds:
         tr = make_fn(
             "plotly-dict",

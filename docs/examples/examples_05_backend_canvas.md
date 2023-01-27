@@ -144,7 +144,7 @@ magpy.show(loop, cylinder, backend='pyvista', canvas=pl)
 
 # display scene
 pl.camera.position=(50, 10, 10)
-pl.set_background('black', top='yellow')
+pl.set_background('black', top='white')
 pl.show()
 ```
 
@@ -178,5 +178,6 @@ pl.add_lines(line, color='black')
 # display scene
 pl.camera.position=(50, 10, 10)
 pl.set_background('purple', top='lightgreen')
+pl.enable_anti_aliasing('ssaa')
 pl.show()
 ```
