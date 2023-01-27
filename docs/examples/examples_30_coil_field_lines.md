@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.14.4
 kernelspec:
   display_name: Python 3 (ipykernel)
   language: python
@@ -125,8 +125,19 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
+pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+
+coil1 = magpy.Collection()
+for z in np.linspace(-8, 8, 16):
+    winding = magpy.current.Loop(
+        current=100,
+        diameter=10,
+        position=(0,0,z),
+    )
+    coil1.add(winding)
+
 grid = pv.UniformGrid(
-    dims=(41, 41, 41),
+    dimensions=(41, 41, 41),
     spacing=(2, 2, 2),
     origin=(-40, -40, -40),
 )
