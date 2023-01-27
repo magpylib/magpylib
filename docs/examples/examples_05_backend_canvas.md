@@ -19,23 +19,27 @@ The graphic backend refers to the plotting library that is used for graphic outp
 
 ## Graphic backend
 
-Magpylib supports Matplotlib and Plotly as possible graphic backends.
-If a backend is not specified, the library default stored in `magpy.defaults.display.backend` will be used.
-The value can bei either `'matplotlib'` or `'plotly'`.
+Magpylib supports several common graphic backends.
 
-To select a graphic backend one can
+```{code-cell} ipython3
+from magpylib import SUPPORTED_PLOTTING_BACKENDS
+SUPPORTED_PLOTTING_BACKENDS
+```
+
+The installation default is Matplotlib. To select a graphic backend one can
 1. Change the library default with `magpy.defaults.display.backend = 'plotly'`.
 2. Set the `backend` kwarg in the `show` function, `show(..., backend='matplotlib')`.
 
-```{note}
-There is a high level of **feature parity** between the two backends but there are also some key differences, e.g. when displaying magnetization of an object. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to Plotly and vice versa.
-```
+There is a high level of **feature parity**, however, not all graphic features are supported by all backends. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
 
-The following example shows first Matplotlib and then Plotly output:
+The following example demonstrates the currently supported backends:
 
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
+import pyvista as pv
+
+pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
 
 # define sources and paths
 loop = magpy.current.Loop(current=1, diameter=1)
@@ -44,9 +48,10 @@ loop.position = np.linspace((0,0,-3), (0,0,3), 40)
 cylinder = magpy.magnet.Cylinder(magnetization=(0,-100,0), dimension=(1,2), position=(0,-3,0))
 cylinder.rotate_from_angax(np.linspace(0, 300, 40)[1:], 'z', anchor=0)
 
-# display the system with both backends
-magpy.show(loop, cylinder)
-magpy.show(loop, cylinder, backend='plotly')
+# show the system using different backends
+for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
+    print(f'Plotting backend: {backend!r}')
+    magpy.show(loop, cylinder, backend=backend)
 ```
 
 ## Output in custom figure
