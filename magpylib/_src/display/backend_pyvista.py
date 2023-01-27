@@ -129,7 +129,7 @@ def display_pyvista(
     show_canvas = False
     if canvas is None:
         if not return_fig:
-            show_canvas = True
+            show_canvas = True  # pragma: no cover
         canvas = pv.Plotter()
     data = get_frames(
         objs=obj_list,
@@ -160,5 +160,5 @@ def display_pyvista(
     if return_fig and not show_canvas:
         return canvas
     if show_canvas:
-        canvas.show(jupyter_backend=jupyter_backend)
+        canvas.show(jupyter_backend=jupyter_backend)  # pragma: no cover
     return None

@@ -104,6 +104,15 @@ def test_Loop_display():
     assert x is None, "display test fail"
 
 
+def test_Triangle_display():
+    """testing display for Triangle source"""
+    # this test is necessary to cover the case where the backend can display mag arrows and
+    # color gradient must be deactivated
+    verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0)]
+    src = magpy.misc.Triangle(magnetization=(100, 200, 300), vertices=verts)
+    src.show(style_magnetization_mode="arrow", return_fig=True)
+
+
 def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
