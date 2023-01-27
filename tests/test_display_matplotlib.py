@@ -75,6 +75,13 @@ def test_Cuboid_display():
     assert x is None, "display test fail"
 
 
+def test_Tetrahedron_display():
+    """testing Tetrahedron display"""
+    verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+    src = magpy.magnet.Tetrahedron(magnetization=(100, 200, 300), vertices=verts)
+    src.show(return_fig=True)
+
+
 def test_Sensor_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
@@ -108,6 +115,33 @@ def test_Loop_display():
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
     x = src.show(canvas=ax, style_path_frames=3)
     assert x is None, "display test fail"
+
+
+def test_Triangle_display():
+    """testing display for Triangle source built from vertices"""
+    verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+
+    mesh3d = magpy.graphics.model3d.make_TriangularMesh(vertices=verts)
+    # note: triangles are built by scipy.Convexhull since triangles=None
+    # ConvexHull DOES NOT GUARRANTY proper orientation of triangles when building a body
+    points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
+    triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
+    src = magpy.Collection(
+        [
+            magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
+            for v in points[triangles]
+        ]
+    )
+    magpy.show(
+        *src,
+        backend="matplotlib",
+        style_orientation_offset=0.5,
+        style_orientation_size=2,
+        style_orientation_color="yellow",
+        style_orientation_symbol="cone",
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
 
 
 def test_col_display():
