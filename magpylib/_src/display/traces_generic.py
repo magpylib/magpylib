@@ -12,7 +12,6 @@ import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
 import magpylib as magpy
-from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
