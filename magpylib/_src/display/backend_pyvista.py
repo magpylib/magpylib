@@ -48,7 +48,6 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         facecolor = trace.get("facecolor", None)
         trace_pv = {
             "mesh": mesh,
-            "opacity": trace.get("opacity", None),
             "color": trace.get("color", None),
             "scalars": trace.get("intensity", None),
         }
@@ -101,6 +100,14 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         )
+    for trace_pv in traces_pv:
+        trace_pv.update(
+            {
+                "opacity": trace.get("opacity", None),
+                "row": trace.get("row", 1) - 1,
+                "col": trace.get("col", 1) - 1,
+            }
+        )
     return traces_pv
 
 
@@ -112,6 +119,9 @@ def display_pyvista(
     colorsequence=None,
     return_fig=False,
     jupyter_backend=None,
+    max_rows=None,
+    max_cols=None,
+    subplot_specs=None,
     **kwargs,
 ):
 
@@ -126,11 +136,14 @@ def display_pyvista(
 
     # flat_obj_list = format_obj_input(obj_list)
 
+    max_rows = max_rows if max_rows is not None else 1
+    max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
     if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
-        canvas = pv.Plotter()
+        canvas = pv.Plotter(shape=(max_rows, max_cols))
+
     data = get_frames(
         objs=obj_list,
         colorsequence=colorsequence,
@@ -144,6 +157,9 @@ def display_pyvista(
 
     for tr0 in frame["data"]:
         for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
+            row = tr1.pop("row", 1)
+            col = tr1.pop("col", 1)
+            canvas.subplot(row, col)
             canvas.add_mesh(**tr1)
 
     # apply_fig_ranges(canvas, zoom=zoom)
