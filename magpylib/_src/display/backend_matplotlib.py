@@ -69,7 +69,7 @@ def generic_trace_to_matplotlib(trace):
         if trace["type"] == "scatter":
             coords_str = "xy"
         coords = np.array([trace[k] for k in coords_str], dtype=float)
-        if isinstance(props["ms"], np.ndarray):
+        if isinstance(props["ms"], (list, tuple, np.ndarray)):
             uniq = np.unique(props["ms"])
             if uniq.shape[0] == 1:
                 props["ms"] = props["ms"][0]
@@ -124,8 +124,8 @@ def generic_trace_to_matplotlib(trace):
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
     for tr in traces_mpl:
-        tr["row"] = trace["row"]
-        tr["col"] = trace["col"]
+        tr["row"] = trace.get("row", 1)
+        tr["col"] = trace.get("col", 1)
         if "label" not in tr.get("kwargs", "label"):
             tr["kwargs"]["label"] = trace.get("name", "")
             if leg_title is not None:
