@@ -246,23 +246,32 @@ def make_Ellipsoid(
     y = np.cos(theta) * np.cos(phi) * dimension[1] * 0.5
     z = np.sin(theta) * dimension[2] * 0.5
 
-    x, y, z = x.flatten()[N - 1 :], y.flatten()[N - 1 :], z.flatten()[N - 1 :]
+    x, y, z = (
+        x.flatten()[N - 1 : -N + 1],
+        y.flatten()[N - 1 : -N + 1],
+        z.flatten()[N - 1 : -N + 1],
+    )
+    N2 = len(x) - 1
 
     i1 = [0] * N
-    j1 = np.array([N] + list(range(1, N)), dtype=int)
-    k1 = np.array(list(range(1, N)) + [N], dtype=int)
+    j1 = np.array([N, *range(1, N)], dtype=int)
+    k1 = np.array([*range(1, N), N], dtype=int)
 
-    i2 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j2 = np.concatenate([j1 + i * N for i in range(N - 2)])
-    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
+    i2 = np.concatenate([k1 + i * N for i in range(N - 3)])
+    j2 = np.concatenate([j1 + i * N for i in range(N - 3)])
+    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 3)])
 
-    i3 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 2)])
+    i3 = np.concatenate([k1 + i * N for i in range(N - 3)])
+    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 3)])
+    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 3)])
 
-    i = np.concatenate([i1, i2, i3])
-    j = np.concatenate([j1, j2, j3])
-    k = np.concatenate([k1, k2, k3])
+    i4 = [N2] * N
+    j4 = k1 + N2 - N - 1
+    k4 = j1 + N2 - N - 1
+
+    i = np.concatenate([i1, i2, i3, i4])
+    j = np.concatenate([j1, j2, j3, j4])
+    k = np.concatenate([k1, k2, k3, k4])
 
     trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
