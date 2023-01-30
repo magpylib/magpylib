@@ -26,12 +26,17 @@ SYMBOLS_TO_PYVISTA = {
     "d": "d",
     "s": "s",
     "x": "x",
+    "circle": "o",
+    "cross": "+",
+    "diamond": "d",
+    "square": "s",
 }
 
 LINESTYLES_TO_PYVISTA = {
     None: "-",
     "solid": "-",
     "-": "-",
+    "dash": "--",
     "dashed": "--",
     "--": "--",
     "dashdot": "-.",
@@ -39,10 +44,15 @@ LINESTYLES_TO_PYVISTA = {
     "dotted": ":",
     ".": ":",
     ":": ":",
+    "dot": ":",
     (0, (1, 1)): ":",
     "loosely dotted": ":",
     "loosely dashdotted": "-..",
+    "longdash": ":",
+    "longdashdot": "-..",
 }
+
+INCOMPATIBLE_JUPYTER_BACKENDS_2D = {"panel", "ipygany", "pythreejs"}
 
 
 @lru_cache(maxsize=32)
@@ -66,6 +76,7 @@ def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0)
 def generic_trace_to_pyvista(trace, jupyter_backend=None):
     """Transform a generic trace into a pyvista trace"""
     traces_pv = []
+    leg_title = trace.get("legendgrouptitle_text", None)
     if trace["type"] == "mesh3d":
         vertices = np.array([trace[k] for k in "xyz"], dtype=float).T
         faces = np.array([trace[k] for k in "ijk"]).T.flatten()
@@ -94,10 +105,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         traces_pv.append(trace_pv)
         if colorscale is not None:
             # ipygany does not support custom colorsequences
-            if (
-                pv.global_theme.jupyter_backend == "ipygany"
-                or jupyter_backend == "ipygany"
-            ):
+            if jupyter_backend == "ipygany":
                 trace_pv["cmap"] = "PiYG"
             else:
                 trace_pv["cmap"] = colormap_from_colorscale(colorscale)
@@ -105,10 +113,12 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         line = trace.get("line", {})
         line_color = line.get("color", trace.get("line_color", None))
         line_width = line.get("width", trace.get("line_width", None))
-        line_style = line.get("style", trace.get("line_style"))
+        line_width = 1 if line_width is None else line_width
+        line_style = line.get("dash", trace.get("line_dash"))
         marker = trace.get("marker", {})
         marker_color = marker.get("color", trace.get("marker_color", None))
         marker_size = marker.get("size", trace.get("marker_size", None))
+        marker_size = 1 if marker_size is None else marker_size
         marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
         if trace["type"] == "scatter3d":
             points = np.array([trace[k] for k in "xyz"], dtype=float).T
@@ -122,7 +132,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             trace_pv_marker = {
                 "mesh": pv.PolyData(points),
                 "color": marker_color,
-                "point_size": 1 if marker_size is None else marker_size,
+                "point_size": marker_size,
                 "opacity": trace.get("opacity", None),
             }
             traces_pv.append(trace_pv_marker)
@@ -132,8 +142,8 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 "type": "line",
                 "x": trace["x"],
                 "y": trace["y"],
-                "color": "blue",
-                "width": 1 if line_width is None else line_width,
+                "color": line_color,
+                "width": line_width,
                 "style": LINESTYLES_TO_PYVISTA.get(line_style, line_style),
                 "label": trace.get("name", ""),
             }
@@ -142,22 +152,34 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 "type": "scatter",
                 "x": trace["x"],
                 "y": trace["y"],
-                "color": "blue",
-                # "size": 1 if marker_size is None else marker_size, #TODO deal with array of values
+                "color": marker_color,
+                "size": marker_size,
                 "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, marker_symbol),
             }
-            traces_pv.append(trace_pv_marker)
+            if not isinstance(marker_size, (list, tuple, np.ndarray)):
+                marker_size = np.array([marker_size])
+            for size in np.unique(marker_size):
+                tr = trace_pv_marker.copy()
+                mask = marker_size == size
+                tr = {
+                    **tr,
+                    "x": np.array(tr["x"])[mask],
+                    "y": np.array(tr["y"][mask]),
+                    "size": size,
+                }
+                traces_pv.append(tr)
     else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         )
-    for trace_pv in traces_pv:
-        trace_pv.update(
-            {
-                "row": trace.get("row", 1) - 1,
-                "col": trace.get("col", 1) - 1,
-            }
-        )
+    for ind, tr in enumerate(traces_pv):
+        tr["row"] = trace.get("row", 1) - 1
+        tr["col"] = trace.get("col", 1) - 1
+        if ind == 0 and trace.get("showlegend", False):
+            if "label" not in tr:
+                tr["label"] = trace.get("name", "")
+            if leg_title is not None:
+                tr["label"] += f" ({leg_title})"
     return traces_pv
 
 
@@ -206,6 +228,12 @@ def display_pyvista(
 
     # TODO legendgroups for 2d traces
     charts = {}
+    if jupyter_backend is None:
+        jupyter_backend = pv.global_theme.jupyter_backend
+    jupyter_backend_2D_compatible = (
+        jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
+    )
+    warned2d = False
     for tr0 in frame["data"]:
         for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
             row = tr1.pop("row", 1)
@@ -215,11 +243,18 @@ def display_pyvista(
                 canvas.add_mesh(**tr1)
                 canvas.show_axes()
             else:
-                typ = tr1.pop("type")
-                if charts.get((row, col), None) is None:
-                    charts[(row, col)] = pv.Chart2D()
-                    canvas.add_chart(charts[(row, col)])
-                getattr(charts[(row, col)], typ)(**tr1)
+                if jupyter_backend_2D_compatible:
+                    typ = tr1.pop("type")
+                    if charts.get((row, col), None) is None:
+                        charts[(row, col)] = pv.Chart2D()
+                        canvas.add_chart(charts[(row, col)])
+                    getattr(charts[(row, col)], typ)(**tr1)
+                elif not warned2d:
+                    warnings.warn(
+                        f"The set `{jupyter_backend=}` is incompatible with 2D plots. "
+                        "Empty plots will be shown instead"
+                    )
+                    warned2d = True
 
     # apply_fig_ranges(canvas, zoom=zoom)
     try:
