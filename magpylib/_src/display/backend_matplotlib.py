@@ -12,9 +12,15 @@ from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 # from magpylib._src.utility import format_obj_input
 
-SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
+SYMBOLS_TO_MATPLOTLIB = {
+    "circle": "o",
+    "cross": "+",
+    "diamond": "d",
+    "square": "s",
+    "x": "x",
+}
 
-LINE_STYLES = {
+LINE_STYLES_TO_MATPLOTLIB = {
     "solid": "-",
     "dash": "--",
     "dashdot": "-.",
@@ -76,7 +82,7 @@ def generic_trace_to_matplotlib(trace):
                         "kwargs": {
                             "s": props["ms"],
                             "color": props["mec"],
-                            "marker": SYMBOLS.get(props["marker"], "x"),
+                            "marker": SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "x"),
                             "label": None,
                         },
                     }
@@ -84,9 +90,11 @@ def generic_trace_to_matplotlib(trace):
                 props.pop("ms")
                 props.pop("marker")
         if "ls" in props:
-            props["ls"] = LINE_STYLES.get(props["ls"], props["ls"])
+            props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], props["ls"])
         if "marker" in props:
-            props["marker"] = SYMBOLS.get(props["marker"], props["marker"])
+            props["marker"] = SYMBOLS_TO_MATPLOTLIB.get(
+                props["marker"], props["marker"]
+            )
         mode = trace.get("mode", None)
         if mode is not None:
             if "lines" not in mode:

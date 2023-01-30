@@ -201,17 +201,16 @@ def get_flatten_objects_properties(*objs, colorsequence, **kwargs):
     Properties include: row_cols, style, legendgroup, legendtext"""
     flat_objs = {}
     for obj in objs:
-        if obj["output"] == "model3d":
-            flat_sub_objs = get_flatten_objects_properties_recursive(
-                *obj["objects"], colorsequence=colorsequence, **kwargs
-            )
-            for subobj, props in flat_sub_objs.items():
-                if subobj in flat_objs:
-                    props["row_cols"] = flat_objs[subobj]["row_cols"]
-                elif "row_cols" not in props:
-                    props["row_cols"] = []
-                props["row_cols"].extend([(obj["row"], obj["col"])])
-            flat_objs.update(flat_sub_objs)
+        flat_sub_objs = get_flatten_objects_properties_recursive(
+            *obj["objects"], colorsequence=colorsequence, **kwargs
+        )
+        for subobj, props in flat_sub_objs.items():
+            if subobj in flat_objs:
+                props["row_cols"] = flat_objs[subobj]["row_cols"]
+            elif "row_cols" not in props:
+                props["row_cols"] = []
+            props["row_cols"].extend([(obj["row"], obj["col"], obj["output"])])
+        flat_objs.update(flat_sub_objs)
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("style")}
     return flat_objs, kwargs
 

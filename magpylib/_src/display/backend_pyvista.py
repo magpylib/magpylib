@@ -17,6 +17,33 @@ from magpylib._src.display.traces_generic import get_frames
 
 # from magpylib._src.utility import format_obj_input
 
+SYMBOLS_TO_PYVISTA = {
+    None: "o",
+    ".": "o",
+    "o": "o",
+    "+": "+",
+    "D": "d",
+    "d": "d",
+    "s": "s",
+    "x": "x",
+}
+
+LINESTYLES_TO_PYVISTA = {
+    None: "-",
+    "solid": "-",
+    "-": "-",
+    "dashed": "--",
+    "--": "--",
+    "dashdot": "-.",
+    "-.": "-.",
+    "dotted": ":",
+    ".": ":",
+    ":": ":",
+    (0, (1, 1)): ":",
+    "loosely dotted": ":",
+    "loosely dashdotted": "-..",
+}
+
 
 @lru_cache(maxsize=32)
 def colormap_from_colorscale(colorscale, name="plotly_to_mpl", N=256, gamma=1.0):
@@ -74,58 +101,52 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 trace_pv["cmap"] = "PiYG"
             else:
                 trace_pv["cmap"] = colormap_from_colorscale(colorscale)
-    elif trace["type"] == "scatter3d":
-        points = np.array([trace[k] for k in "xyz"], dtype=float).T
+    elif "scatter" in trace["type"]:
         line = trace.get("line", {})
         line_color = line.get("color", trace.get("line_color", None))
         line_width = line.get("width", trace.get("line_width", None))
-        trace_pv_line = {
-            "mesh": pv.lines_from_points(points),
-            "color": line_color,
-            "line_width": line_width,
-            "opacity": trace.get("opacity", None),
-        }
-        traces_pv.append(trace_pv_line)
+        line_style = line.get("style", trace.get("line_style"))
         marker = trace.get("marker", {})
         marker_color = marker.get("color", trace.get("marker_color", None))
-        # marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
         marker_size = marker.get("size", trace.get("marker_size", None))
-        trace_pv_marker = {
-            "mesh": pv.PolyData(points),
-            "opacity": trace.get("opacity", None),
-            "color": marker_color,
-            "point_size": 1 if marker_size is None else marker_size,
-            "opacity": trace.get("opacity", None),
-        }
-        traces_pv.append(trace_pv_marker)
-    elif trace["type"] == "scatter":
-        # TODO check mode="markers+lines" etc
-        line = trace.get("line", {})
-        line_color = line.get("color", trace.get("line_color", None))
-        line_width = line.get("width", trace.get("line_width", None))
-        trace_pv_line = {
-            "type": "line",
-            "x": trace["x"],
-            "y": trace["y"],
-            "color": line_color,
-            "width": 1 if line_width is None else line_width,
-            # "style": , #TODO style converter
-            "label": trace.get("name", ""),
-        }
-        traces_pv.append(trace_pv_line)
-        marker = trace.get("marker", {})
-        marker_color = marker.get("color", trace.get("marker_color", None))
-        # marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
-        marker_size = marker.get("size", trace.get("marker_size", None))
-        trace_pv_marker = {
-            "type": "scatter",
-            "x": trace["x"],
-            "y": trace["y"],
-            "color": marker_color,
-            # "size": 1 if marker_size is None else marker_size, #TODO deal with array of values
-            # "style": , #TODO style converter
-        }
-        traces_pv.append(trace_pv_marker)
+        marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
+        if trace["type"] == "scatter3d":
+            points = np.array([trace[k] for k in "xyz"], dtype=float).T
+            trace_pv_line = {
+                "mesh": pv.lines_from_points(points),
+                "color": line_color,
+                "line_width": line_width,
+                "opacity": trace.get("opacity", None),
+            }
+            traces_pv.append(trace_pv_line)
+            trace_pv_marker = {
+                "mesh": pv.PolyData(points),
+                "color": marker_color,
+                "point_size": 1 if marker_size is None else marker_size,
+                "opacity": trace.get("opacity", None),
+            }
+            traces_pv.append(trace_pv_marker)
+        elif trace["type"] == "scatter":
+            # TODO check mode="markers+lines" etc
+            trace_pv_line = {
+                "type": "line",
+                "x": trace["x"],
+                "y": trace["y"],
+                "color": "blue",
+                "width": 1 if line_width is None else line_width,
+                "style": LINESTYLES_TO_PYVISTA.get(line_style, line_style),
+                "label": trace.get("name", ""),
+            }
+            traces_pv.append(trace_pv_line)
+            trace_pv_marker = {
+                "type": "scatter",
+                "x": trace["x"],
+                "y": trace["y"],
+                "color": "blue",
+                # "size": 1 if marker_size is None else marker_size, #TODO deal with array of values
+                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, marker_symbol),
+            }
+            traces_pv.append(trace_pv_marker)
     else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
@@ -183,6 +204,7 @@ def display_pyvista(
 
     frame = data["frames"][0]  # select first, since no animation supported
 
+    # TODO legendgroups for 2d traces
     charts = {}
     for tr0 in frame["data"]:
         for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
@@ -191,8 +213,9 @@ def display_pyvista(
             canvas.subplot(row, col)
             if subplot_specs[row, col]["type"] == "scene":
                 canvas.add_mesh(**tr1)
+                canvas.show_axes()
             else:
-                typ = tr1.pop("type", "line")
+                typ = tr1.pop("type")
                 if charts.get((row, col), None) is None:
                     charts[(row, col)] = pv.Chart2D()
                     canvas.add_chart(charts[(row, col)])
@@ -206,7 +229,6 @@ def display_pyvista(
 
     # match other backends plotter properties
     canvas.set_background("gray", top="white")
-    canvas.show_axes()
     canvas.camera.azimuth = -90
 
     if return_fig and not show_canvas:

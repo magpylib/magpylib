@@ -19,6 +19,7 @@ class DisplayContext:
     def __init__(self, isrunning=False):
         self.isrunning = isrunning
         self.objects = ()
+        self.objects_from_ctx = ()
         self.kwargs = {}
         self.canvas = None
 
@@ -26,6 +27,7 @@ class DisplayContext:
         """Reset display context"""
         self.isrunning = False
         self.objects = ()
+        self.objects_from_ctx = ()
         self.kwargs = {}
 
 
@@ -107,7 +109,7 @@ def _show(
     )
 
 
-def show(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
+def show(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
     """Display objects and paths graphically.
 
     Global graphic styles can be set with kwargs as style dictionary or using
@@ -140,7 +142,7 @@ def show(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         By default a new canvas is created and immediately displayed.
 
-    canvas: bool, default=False
+    return_fig: bool, default=False
         If True, the function call returns the figure object.
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
@@ -198,19 +200,18 @@ def show(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
     #   magpy.show(src1, src2, row=1, col=3, zoom=10)
     # # -> zoom=10 should override zoom=1 from context
     rco = {"row": row, "col": col, "output": output, "sumup": sumup}
-    kwargs.update(rco)
     if ctx.isrunning:
+        rco = {k: v for k, v in rco.items() if v is not None}
         ctx.kwargs.update(kwargs)
-        if not objects:
-            objects = tuple({**o, **rco} for o in ctx.objects)
-        objects, *_ = process_show_input_objs(objects, row, col, output)
+        ctx_objects = tuple({**o, **rco} for o in ctx.objects_from_ctx)
+        objects, *_ = process_show_input_objs(objects + ctx_objects, **rco)
         ctx.objects += tuple(objects)
         return None
-    return _show(*objects, **kwargs)
+    return _show(*objects, **rco, **kwargs)
 
 
 @contextmanager
-def show_context(*objects, row=None, col=None, output="model3d", sumup=True, **kwargs):
+def show_context(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
     """Context manager to temporarily set display settings in the `with` statement context.
 
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
@@ -218,11 +219,10 @@ def show_context(*objects, row=None, col=None, output="model3d", sumup=True, **k
     # pylint: disable=protected-access
     try:
         ctx.isrunning = True
-        kwargs.update(row=row, col=col, output=output, sumup=sumup)
-        objects, *_ = process_show_input_objs(objects, row, col, output)
-        ctx.objects += tuple(objects)
+        objects, *_ = process_show_input_objs(objects, row, col, output, sumup)
+        ctx.objects_from_ctx += tuple(objects)
         ctx.kwargs.update(**kwargs)
-        yield
+        yield ctx
         _show(*ctx.objects, **ctx.kwargs)
     finally:
         ctx.reset()

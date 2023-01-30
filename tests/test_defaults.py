@@ -2,9 +2,9 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import DefaultConfig
-from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import DisplayStyle
 
 
@@ -114,10 +114,10 @@ good_inputs = {
         ["blue", "red"],
     ),  # ]),  # iterable of colors
     "display_style_base_path_line_width": (0, 1),  # float>=0
-    "display_style_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_line_style": ALLOWED_LINESTYLES,
     "display_style_base_path_line_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_marker_size": (0, 1),  # float>=0
-    "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_marker_symbol": ALLOWED_SYMBOLS,
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_show": (True, False),  # bool
     "display_style_base_path_frames": (-1, (1, 3)),  # int or iterable
@@ -157,7 +157,7 @@ good_inputs = {
     "display_style_sensor_arrows_z_show": (True, False),
     "display_style_sensor_pixel_size": (0, 1),  # float>=0
     "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
-    "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_sensor_pixel_symbol": ALLOWED_SYMBOLS,
     "display_style_dipole_size": (0, 1),  # float>=0
     "display_style_dipole_pivot": (
         "middle",
@@ -171,7 +171,7 @@ good_inputs = {
     "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
-    "display_style_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_markers_marker_symbol": ALLOWED_SYMBOLS,
 }
 
 

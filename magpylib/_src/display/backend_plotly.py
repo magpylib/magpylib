@@ -16,9 +16,37 @@ from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import get_scene_ranges
-from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
+
+
+SYMBOLS_TO_PLOTLY = {
+    ".": "circle",
+    "o": "circle",
+    "+": "cross",
+    "D": "diamond",
+    "d": "diamond",
+    "s": "square",
+    "x": "x",
+}
+
+LINESTYLES_TO_PLOTLY = {
+    "solid": "solid",
+    "-": "solid",
+    "dashed": "dash",
+    "--": "dash",
+    "dashdot": "dashdot",
+    "-.": "dashdot",
+    "dotted": "dot",
+    ".": "dot",
+    ":": "dot",
+    (0, (1, 1)): "dot",
+    "loosely dotted": "longdash",
+    "loosely dashdotted": "longdashdot",
+}
+
+SIZE_FACTORS_TO_PLOTLY = {
+    "line_width": 2.2,
+    "marker_size": 0.7,
+}
 
 
 def apply_fig_ranges(fig, ranges, apply2d=True):
@@ -177,15 +205,15 @@ def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
     if trace["type"] == "scatter3d":
         if "line_width" in trace:
-            trace["line_width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+            trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
         dash = trace.get("line_dash", None)
         if dash is not None:
-            trace["line_dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+            trace["line_dash"] = LINESTYLES_TO_PLOTLY.get(dash, dash)
         symb = trace.get("marker_symbol", None)
         if symb is not None:
-            trace["marker_symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+            trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, symb)
         if "marker_size" in trace:
-            trace["marker_size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+            trace["marker_size"] *= SIZE_FACTORS_TO_PLOTLY["marker_size"]
     return trace
 
 

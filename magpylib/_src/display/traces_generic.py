@@ -717,8 +717,9 @@ def get_generic_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        props = flat_objs_props.get(obj, None)
+        props = flat_objs_props.get(obj, {})
         style = props.get("style", None)
+        style = obj.style if style is None else style
         label = getattr(style, "label", obj.__class__.__name__)
         color = getattr(style, "color", None)
         return label, color
@@ -1091,7 +1092,6 @@ def draw_frame(
     style_path_frames = kwargs.get(
         "style_path_frames", [-1]
     )  # get before next func strips style
-
     flat_objs_props, kwargs = get_flatten_objects_properties(
         *objs, colorsequence=colorsequence, **kwargs
     )
@@ -1137,14 +1137,15 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             traces_dict[obj] = []
             rco_obj = params.pop("row_cols")
             for rco in rco_obj:
-                params["row"], params["col"] = rco
-                out_traces = get_generic_traces(
-                    obj, extra_backend=extra_backend, autosize=autosize, **params
-                )
-                if extra_backend:
-                    out_traces, ebt = out_traces.values()
-                    extra_backend_traces.extend(ebt)
-                traces_dict[obj].extend(out_traces)
+                params["row"], params["col"], output_typ = rco
+                if output_typ == "model3d":
+                    out_traces = get_generic_traces(
+                        obj, extra_backend=extra_backend, autosize=autosize, **params
+                    )
+                    if extra_backend:
+                        out_traces, ebt = out_traces.values()
+                        extra_backend_traces.extend(ebt)
+                    traces_dict[obj].extend(out_traces)
     return traces_dict, traces_to_resize_dict, extra_backend_traces
 
 

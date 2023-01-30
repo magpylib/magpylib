@@ -8,32 +8,24 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
 
-SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
-    ".": "circle",
-    "o": "circle",
-    "+": "cross",
-    "D": "diamond",
-    "d": "diamond",
-    "s": "square",
-    "x": "x",
-}
+ALLOWED_SYMBOLS = (".", "o", "+", "D", "d", "s", "x")
 
-LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
-    "solid": "solid",
-    "-": "solid",
-    "dashed": "dash",
-    "--": "dash",
-    "dashdot": "dashdot",
-    "-.": "dashdot",
-    "dotted": "dot",
-    ".": "dot",
-    ":": "dot",
-    (0, (1, 1)): "dot",
-    "loosely dotted": "longdash",
-    "loosely dashdotted": "longdashdot",
-}
+ALLOWED_LINESTYLES = (
+    "solid",
+    "-",
+    "dashed",
+    "--",
+    "dashdot",
+    "-.",
+    "dotted",
+    ".",
+    ":",
+    (0, (1, 1)),
+    "loosely dotted",
+    "loosely dashdotted",
+)
 
-COLORS_MATPLOTLIB_TO_PLOTLY = {
+COLORS_SHORT_TO_LONG = {
     "r": "red",
     "g": "green",
     "b": "blue",
@@ -42,11 +34,6 @@ COLORS_MATPLOTLIB_TO_PLOTLY = {
     "c": "cyan",
     "k": "black",
     "w": "white",
-}
-
-SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY = {
-    "line_width": 2.2,
-    "marker_size": 0.7,
 }
 
 
@@ -213,7 +200,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     color_input_original = color_input
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
-        color_input = COLORS_MATPLOTLIB_TO_PLOTLY.get(color_input, color_input)
+        color_input = COLORS_SHORT_TO_LONG.get(color_input, color_input)
         import re
 
         hex_fail = True
