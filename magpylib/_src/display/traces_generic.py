@@ -440,7 +440,7 @@ def make_Triangle(
     **kwargs,
 ) -> dict:
     """
-    Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
     provided arguments.
     """
     vert = obj.vertices
@@ -465,7 +465,32 @@ def make_Triangle(
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=vert, triangles=triangles, color=color
     )
-    update_trace_name(trace, "Triangle", "", style)
+    update_trace_name(trace, obj.__class__.__name__, "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
+def make_TriangularMesh(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
+    )
+    update_trace_name(trace, obj.__class__.__name__, "", style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
