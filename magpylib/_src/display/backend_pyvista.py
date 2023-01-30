@@ -50,6 +50,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             "mesh": mesh,
             "color": trace.get("color", None),
             "scalars": trace.get("intensity", None),
+            "opacity": trace.get("opacity", None),
         }
         if facecolor is not None:
             # pylint: disable=unsupported-assignment-operation
@@ -80,9 +81,9 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         line_width = line.get("width", trace.get("line_width", None))
         trace_pv_line = {
             "mesh": pv.lines_from_points(points),
-            "opacity": trace.get("opacity", None),
             "color": line_color,
             "line_width": line_width,
+            "opacity": trace.get("opacity", None),
         }
         traces_pv.append(trace_pv_line)
         marker = trace.get("marker", {})
@@ -94,6 +95,35 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             "opacity": trace.get("opacity", None),
             "color": marker_color,
             "point_size": 1 if marker_size is None else marker_size,
+            "opacity": trace.get("opacity", None),
+        }
+        traces_pv.append(trace_pv_marker)
+    elif trace["type"] == "scatter":
+        # TODO check mode="markers+lines" etc
+        line = trace.get("line", {})
+        line_color = line.get("color", trace.get("line_color", None))
+        line_width = line.get("width", trace.get("line_width", None))
+        trace_pv_line = {
+            "type": "line",
+            "x": trace["x"],
+            "y": trace["y"],
+            "color": line_color,
+            "width": 1 if line_width is None else line_width,
+            # "style": , #TODO style converter
+            "label": trace.get("name", ""),
+        }
+        traces_pv.append(trace_pv_line)
+        marker = trace.get("marker", {})
+        marker_color = marker.get("color", trace.get("marker_color", None))
+        # marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
+        marker_size = marker.get("size", trace.get("marker_size", None))
+        trace_pv_marker = {
+            "type": "scatter",
+            "x": trace["x"],
+            "y": trace["y"],
+            "color": marker_color,
+            # "size": 1 if marker_size is None else marker_size, #TODO deal with array of values
+            # "style": , #TODO style converter
         }
         traces_pv.append(trace_pv_marker)
     else:  # pragma: no cover
@@ -103,7 +133,6 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
     for trace_pv in traces_pv:
         trace_pv.update(
             {
-                "opacity": trace.get("opacity", None),
                 "row": trace.get("row", 1) - 1,
                 "col": trace.get("col", 1) - 1,
             }
@@ -124,7 +153,6 @@ def display_pyvista(
     subplot_specs=None,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the pyvista library."""
 
     if animation is not False:
@@ -155,12 +183,20 @@ def display_pyvista(
 
     frame = data["frames"][0]  # select first, since no animation supported
 
+    charts = {}
     for tr0 in frame["data"]:
         for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
             row = tr1.pop("row", 1)
             col = tr1.pop("col", 1)
             canvas.subplot(row, col)
-            canvas.add_mesh(**tr1)
+            if subplot_specs[row, col]["type"] == "scene":
+                canvas.add_mesh(**tr1)
+            else:
+                typ = tr1.pop("type", "line")
+                if charts.get((row, col), None) is None:
+                    charts[(row, col)] = pv.Chart2D()
+                    canvas.add_chart(charts[(row, col)])
+                getattr(charts[(row, col)], typ)(**tr1)
 
     # apply_fig_ranges(canvas, zoom=zoom)
     try:
