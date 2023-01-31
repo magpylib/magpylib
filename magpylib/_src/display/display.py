@@ -61,7 +61,6 @@ def _show(
         output,
         sumup,
     )
-    print(objects)
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 

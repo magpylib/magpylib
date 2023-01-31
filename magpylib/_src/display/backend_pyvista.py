@@ -231,7 +231,6 @@ def display_pyvista(
 
     frame = data["frames"][0]  # select first, since no animation supported
 
-    # TODO legendgroups for 2d traces
     charts = {}
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
