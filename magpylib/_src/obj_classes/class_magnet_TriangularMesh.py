@@ -65,7 +65,7 @@ class TriangularMesh(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_trimesh_field)
-    _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 2, "triangles": 2}
+    _field_func_kwargs_ndim = {"magnetization": 2, "facets": 3}
     _draw_func = make_TriangularMesh
 
     def __init__(
@@ -148,6 +148,13 @@ class TriangularMesh(BaseMagnet):
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
             allow_None=True,
         )
+        triangles = triangles.astype(int)
+        print(np.max(triangles), vertices.shape[0])
+        if np.max(triangles) >= vertices.shape[0]:
+            raise ValueError(
+                f"The triangles max index ({np.max(triangles)}) must be stricly lower than "
+                f"the number of vertices ({vertices.shape[0]})"
+            )
         if validate_mesh:
             tr = triangles
             edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
