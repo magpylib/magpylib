@@ -86,6 +86,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         mesh = pv.PolyData(vertices, faces)
         facecolor = trace.get("facecolor", None)
         trace_pv = {
+            "type": "mesh",
             "mesh": mesh,
             "color": trace.get("color", None),
             "scalars": trace.get("intensity", None),
@@ -126,6 +127,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
             points = np.array([trace[k] for k in "xyz"], dtype=float).T
             if "lines" in mode:
                 trace_pv_line = {
+                    "type": "mesh",
                     "mesh": pv.lines_from_points(points),
                     "color": line_color,
                     "line_width": line_width,
@@ -134,12 +136,21 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 traces_pv.append(trace_pv_line)
             if "markers" in mode:
                 trace_pv_marker = {
+                    "type": "mesh",
                     "mesh": pv.PolyData(points),
                     "color": marker_color,
                     "point_size": marker_size,
                     "opacity": trace.get("opacity", None),
                 }
-            traces_pv.append(trace_pv_marker)
+                traces_pv.append(trace_pv_marker)
+            if "text" in mode and trace.get("text", False):
+                trace_pv_text = {
+                    "type": "point_labels",
+                    "points": points,
+                    "labels": trace["text"],
+                    "always_visible": True,
+                }
+                traces_pv.append(trace_pv_text)
         elif trace["type"] == "scatter":
             if "lines" in mode:
                 trace_pv_line = {
@@ -242,13 +253,13 @@ def display_pyvista(
         for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
             row = tr1.pop("row", 1)
             col = tr1.pop("col", 1)
+            typ = tr1.pop("type")
             canvas.subplot(row, col)
             if subplot_specs[row, col]["type"] == "scene":
-                canvas.add_mesh(**tr1)
+                getattr(canvas, f"add_{typ}")(**tr1)
                 canvas.show_axes()
             else:
                 if jupyter_backend_2D_compatible:
-                    typ = tr1.pop("type")
                     if charts.get((row, col), None) is None:
                         charts[(row, col)] = pv.Chart2D()
                         canvas.add_chart(charts[(row, col)])
