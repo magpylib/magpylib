@@ -87,7 +87,7 @@ def test_barycenter():
     np.testing.assert_allclose(face.barycenter, bary)
 
 
-def test_triangular_mesh_body():
+def test_triangular_mesh_body_getB():
     """Compare meshed cube to magpylib cube"""
     dimension = (1, 1, 1)
     magnetization = (100, 200, 300)
@@ -127,6 +127,30 @@ def test_triangular_mesh_body():
         np.testing.assert_allclose(B1, B3)
 
 
+def test_bad_triangle_indices():
+    "raise ValueError if triangles index > len(vertices)"
+    vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
+    triangles = [[1, 2, 3]]
+    with pytest.raises(ValueError):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            triangles=triangles,
+        )
+
+
+def test_minimum_vertices():
+    "raise ValueError if triangles index > len(vertices)"
+    vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
+    triangles = [[1, 2, 3]]
+    with pytest.raises(ValueError):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            triangles=triangles,
+        )
+
+
 def test_self_intersecting_triangular_mesh():
     """raises Error if self intersecting"""
     self_intersecting_mesh3d = {
@@ -137,14 +161,16 @@ def test_self_intersecting_triangular_mesh():
         "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
         "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
     }
-    points = np.array([v for k, v in self_intersecting_mesh3d.items() if k in "xyz"]).T
+    vertices = np.array(
+        [v for k, v in self_intersecting_mesh3d.items() if k in "xyz"]
+    ).T
     triangles = np.array(
         [v for k, v in self_intersecting_mesh3d.items() if k in "ijk"]
     ).T
     with pytest.raises(ValueError):
-        magpy.magnet.TriangularMesh.from_points(
+        magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
-            points=points,
+            vertices=vertices,
             triangles=triangles,
             validate_mesh=True,
         )
@@ -160,12 +186,12 @@ def test_open_mesh():
         "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0],
         "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0],
     }
-    points = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
+    vertices = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
     triangles = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
     with pytest.raises(ValueError):
-        magpy.magnet.TriangularMesh.from_points(
+        magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
-            points=points,
+            vertices=vertices,
             triangles=triangles,
             validate_mesh=True,
         )
