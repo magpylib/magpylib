@@ -18,7 +18,6 @@ from magpylib._src.display.traces_generic import get_frames
 # from magpylib._src.utility import format_obj_input
 
 SYMBOLS_TO_PYVISTA = {
-    None: "o",
     ".": "o",
     "o": "o",
     "+": "+",
@@ -33,7 +32,6 @@ SYMBOLS_TO_PYVISTA = {
 }
 
 LINESTYLES_TO_PYVISTA = {
-    None: "-",
     "solid": "-",
     "-": "-",
     "dash": "--",
@@ -144,7 +142,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 "y": trace["y"],
                 "color": line_color,
                 "width": line_width,
-                "style": LINESTYLES_TO_PYVISTA.get(line_style, line_style),
+                "style": LINESTYLES_TO_PYVISTA.get(line_style, "-"),
                 "label": trace.get("name", ""),
             }
             traces_pv.append(trace_pv_line)
@@ -154,7 +152,7 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 "y": trace["y"],
                 "color": marker_color,
                 "size": marker_size,
-                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, marker_symbol),
+                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
             }
             if not isinstance(marker_size, (list, tuple, np.ndarray)):
                 marker_size = np.array([marker_size])

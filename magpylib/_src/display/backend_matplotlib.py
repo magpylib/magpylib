@@ -82,7 +82,7 @@ def generic_trace_to_matplotlib(trace):
                         "kwargs": {
                             "s": props["ms"],
                             "color": props["mec"],
-                            "marker": SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "x"),
+                            "marker": SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "o"),
                             "label": None,
                         },
                     }
@@ -90,11 +90,9 @@ def generic_trace_to_matplotlib(trace):
                 props.pop("ms")
                 props.pop("marker")
         if "ls" in props:
-            props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], props["ls"])
+            props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], "-")
         if "marker" in props:
-            props["marker"] = SYMBOLS_TO_MATPLOTLIB.get(
-                props["marker"], props["marker"]
-            )
+            props["marker"] = SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "o")
         mode = trace.get("mode", None)
         if mode is not None:
             if "lines" not in mode:
