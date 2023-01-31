@@ -1,6 +1,8 @@
 """pyvista backend"""
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+import os
+import tempfile
 import warnings
 from functools import lru_cache
 
@@ -17,6 +19,7 @@ except ImportError as missing_module:  # pragma: no cover
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import get_frames
+from magpylib._src.utility import show_gif, show_video
 
 # from magpylib._src.utility import format_obj_input
 
@@ -210,18 +213,11 @@ def display_pyvista(
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
+    animation_output="gif",
+    repeat=False,
     **kwargs,
 ):
     """Display objects and paths graphically using the pyvista library."""
-
-    if animation is not False:
-        warnings.warn(
-            "The pyvista backend does not support animation at the moment.\n"
-            "Use `backend=plotly` instead."
-        )
-        # animation = False
-
-    # flat_obj_list = format_obj_input(obj_list)
 
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
@@ -229,7 +225,7 @@ def display_pyvista(
     if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
-        canvas = pv.Plotter(shape=(max_rows, max_cols))
+        canvas = pv.Plotter(shape=(max_rows, max_cols), off_screen=animation)
 
     data = get_frames(
         objs=obj_list,
@@ -240,7 +236,7 @@ def display_pyvista(
         **kwargs,
     )
 
-    frame = data["frames"][0]  # select first, since no animation supported
+    frames = data["frames"]
 
     charts = {}
     if jupyter_backend is None:
@@ -249,37 +245,74 @@ def display_pyvista(
         jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
     )
     warned2d = False
-    for tr0 in frame["data"]:
-        for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
-            row = tr1.pop("row", 1)
-            col = tr1.pop("col", 1)
-            typ = tr1.pop("type")
-            canvas.subplot(row, col)
-            if subplot_specs[row, col]["type"] == "scene":
-                getattr(canvas, f"add_{typ}")(**tr1)
-                canvas.show_axes()
-            else:
-                if jupyter_backend_2D_compatible:
-                    if charts.get((row, col), None) is None:
-                        charts[(row, col)] = pv.Chart2D()
-                        canvas.add_chart(charts[(row, col)])
-                    getattr(charts[(row, col)], typ)(**tr1)
-                elif not warned2d:
-                    warnings.warn(
-                        f"The set `{jupyter_backend=}` is incompatible with 2D plots. "
-                        "Empty plots will be shown instead"
-                    )
-                    warned2d = True
 
-    # apply_fig_ranges(canvas, zoom=zoom)
-    try:
-        canvas.remove_scalar_bar()
-    except IndexError:
-        pass
+    def draw_frame(frame, render=True):
+        nonlocal warned2d
+        for tr0 in frame["data"]:
+            for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
+                row = tr1.pop("row", 1)
+                col = tr1.pop("col", 1)
+                typ = tr1.pop("type")
+                canvas.subplot(row, col)
+                if subplot_specs[row, col]["type"] == "scene":
+                    getattr(canvas, f"add_{typ}")(**tr1, render=render)
+                    canvas.show_axes()
+                else:
+                    if jupyter_backend_2D_compatible:
+                        if charts.get((row, col), None) is None:
+                            charts[(row, col)] = pv.Chart2D()
+                            canvas.add_chart(charts[(row, col)])
+                        getattr(charts[(row, col)], typ)(**tr1, render=render)
+                    elif not warned2d:
+                        warnings.warn(
+                            f"The set `{jupyter_backend=}` is incompatible with 2D plots. "
+                            "Empty plots will be shown instead"
+                        )
+                        warned2d = True
+        # match other backends plotter properties
+        canvas.set_background("gray", top="white")
+        canvas.camera.azimuth = -90
+        try:
+            canvas.remove_scalar_bar()
+        except IndexError:
+            pass
 
-    # match other backends plotter properties
-    canvas.set_background("gray", top="white")
-    canvas.camera.azimuth = -90
+    def run_animation(filename):
+        nonlocal show_canvas
+
+        suff = os.path.splitext(filename)[-1]
+        if suff == ".gif":
+            canvas.open_gif(
+                filename, loop=int(repeat), fps=1000 / data["frame_duration"]
+            )
+            show_fn = show_gif
+        elif suff == ".mp4":
+            canvas.open_movie(
+                filename, framerate=1000 / data["frame_duration"], quality=5
+            )
+            show_fn = show_video
+        else:
+            raise ValueError(
+                "Animation filename must end with `'.gif'` or `'mp4'`, "
+                f"received {suff!r} instead"
+            )
+
+        for frame in frames:
+            canvas.clear_actors()
+            draw_frame(frame, render=False)
+            canvas.write_frame()
+        canvas.close()
+        show_canvas = False
+        show_fn(filename)
+
+    if len(frames) == 1:
+        draw_frame(frames[0])
+    elif animation:
+        if animation_output in ("gif", "mp4"):
+            with tempfile.TemporaryFile() as temp:
+                run_animation(f"{temp.name}_animation.{animation_output}")
+        else:
+            run_animation(animation_output)
 
     if return_fig and not show_canvas:
         return canvas
