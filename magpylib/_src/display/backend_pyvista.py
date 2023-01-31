@@ -1,3 +1,6 @@
+"""pyvista backend"""
+# pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 import warnings
 from functools import lru_cache
 
@@ -118,54 +121,58 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         marker_size = marker.get("size", trace.get("marker_size", None))
         marker_size = 1 if marker_size is None else marker_size
         marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
+        mode = trace.get("mode", "markers+lines")
         if trace["type"] == "scatter3d":
             points = np.array([trace[k] for k in "xyz"], dtype=float).T
-            trace_pv_line = {
-                "mesh": pv.lines_from_points(points),
-                "color": line_color,
-                "line_width": line_width,
-                "opacity": trace.get("opacity", None),
-            }
-            traces_pv.append(trace_pv_line)
-            trace_pv_marker = {
-                "mesh": pv.PolyData(points),
-                "color": marker_color,
-                "point_size": marker_size,
-                "opacity": trace.get("opacity", None),
-            }
+            if "lines" in mode:
+                trace_pv_line = {
+                    "mesh": pv.lines_from_points(points),
+                    "color": line_color,
+                    "line_width": line_width,
+                    "opacity": trace.get("opacity", None),
+                }
+                traces_pv.append(trace_pv_line)
+            if "markers" in mode:
+                trace_pv_marker = {
+                    "mesh": pv.PolyData(points),
+                    "color": marker_color,
+                    "point_size": marker_size,
+                    "opacity": trace.get("opacity", None),
+                }
             traces_pv.append(trace_pv_marker)
         elif trace["type"] == "scatter":
-            # TODO check mode="markers+lines" etc
-            trace_pv_line = {
-                "type": "line",
-                "x": trace["x"],
-                "y": trace["y"],
-                "color": line_color,
-                "width": line_width,
-                "style": LINESTYLES_TO_PYVISTA.get(line_style, "-"),
-                "label": trace.get("name", ""),
-            }
-            traces_pv.append(trace_pv_line)
-            trace_pv_marker = {
-                "type": "scatter",
-                "x": trace["x"],
-                "y": trace["y"],
-                "color": marker_color,
-                "size": marker_size,
-                "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
-            }
-            if not isinstance(marker_size, (list, tuple, np.ndarray)):
-                marker_size = np.array([marker_size])
-            for size in np.unique(marker_size):
-                tr = trace_pv_marker.copy()
-                mask = marker_size == size
-                tr = {
-                    **tr,
-                    "x": np.array(tr["x"])[mask],
-                    "y": np.array(tr["y"][mask]),
-                    "size": size,
+            if "lines" in mode:
+                trace_pv_line = {
+                    "type": "line",
+                    "x": trace["x"],
+                    "y": trace["y"],
+                    "color": line_color,
+                    "width": line_width,
+                    "style": LINESTYLES_TO_PYVISTA.get(line_style, "-"),
+                    "label": trace.get("name", ""),
                 }
-                traces_pv.append(tr)
+                traces_pv.append(trace_pv_line)
+            if "markers" in mode:
+                trace_pv_marker = {
+                    "type": "scatter",
+                    "x": trace["x"],
+                    "y": trace["y"],
+                    "color": marker_color,
+                    "size": marker_size,
+                    "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
+                }
+                if not isinstance(marker_size, (list, tuple, np.ndarray)):
+                    marker_size = np.array([marker_size])
+                for size in np.unique(marker_size):
+                    tr = trace_pv_marker.copy()
+                    mask = marker_size == size
+                    tr = {
+                        **tr,
+                        "x": np.array(tr["x"])[mask],
+                        "y": np.array(tr["y"][mask]),
+                        "size": size,
+                    }
+                    traces_pv.append(tr)
     else:  # pragma: no cover
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
