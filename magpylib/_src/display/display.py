@@ -61,6 +61,7 @@ def _show(
         output,
         sumup,
     )
+    print(objects)
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
@@ -199,6 +200,7 @@ def show(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
     #   magpy.show(src2, row=1, col=2)
     #   magpy.show(src1, src2, row=1, col=3, zoom=10)
     # # -> zoom=10 should override zoom=1 from context
+
     rco = {"row": row, "col": col, "output": output, "sumup": sumup}
     if ctx.isrunning:
         rco = {k: v for k, v in rco.items() if v is not None}

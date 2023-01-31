@@ -510,8 +510,13 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d", sumup=Tr
         flat_objs.extend(obj["objects"])
         if "output" not in obj:
             obj["output"] = output
-        if obj["output"] != "model3d" and "sumup" not in obj:
-            obj["sumup"] = sumup
+        if obj["output"] is None:
+            obj["output"] = "model3d"
+        if obj["output"] != "model3d":
+            if "sumup" not in obj:
+                obj["sumup"] = sumup
+            if obj["sumup"] is None:
+                obj["sumup"] = True
         key = (obj["row"], obj["col"], obj["output"])
         if key in new_objs:
             new_objs[key]["objects"] = list(
