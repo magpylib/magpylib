@@ -144,6 +144,16 @@ def test_Triangle_display():
     )
 
 
+def test_TringularMesh_display():
+    """testing display for TriangleMesh source built from vertices"""
+    points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+
+    src = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+        magnetization=(1000, 0, 0), points=points
+    )
+    src.show(backend="matplotlib", return_fig=True)
+
+
 def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return

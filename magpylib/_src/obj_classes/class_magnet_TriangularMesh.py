@@ -8,6 +8,7 @@ from magpylib._src.fields.field_BH_trimesh import mask_inside_trimesh
 from magpylib._src.fields.field_BH_trimesh import segments_intersect_triangles
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 
 
 class TriangularMesh(BaseMagnet):
@@ -94,7 +95,7 @@ class TriangularMesh(BaseMagnet):
     # property getters and setters
     @property
     def vertices(self):
-        """Facets objects"""
+        """Mesh vertices objects"""
         return self._vertices
 
     @property
@@ -138,7 +139,6 @@ class TriangularMesh(BaseMagnet):
             shape_m1=3,
             sig_name="TriangularMesh.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
-            allow_None=True,
         )
         triangles = check_format_input_vector(
             triangles,
@@ -146,16 +146,14 @@ class TriangularMesh(BaseMagnet):
             shape_m1=3,
             sig_name="TriangularMesh.triangles",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
-            allow_None=True,
         )
         triangles = triangles.astype(int)
-        print(np.max(triangles), vertices.shape[0])
         if np.max(triangles) >= vertices.shape[0]:
             raise ValueError(
                 f"The triangles max index ({np.max(triangles)}) must be stricly lower than "
                 f"the number of vertices ({vertices.shape[0]})"
             )
-        if validate_mesh:
+        if validate_mesh or reorient_facets:
             tr = triangles
             edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
             # make sure unique edge pairs are found regardless of vertices order
@@ -204,6 +202,13 @@ class TriangularMesh(BaseMagnet):
         triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
         return triangles
 
+    @staticmethod
+    def _get_vertices_and_triangles_from_facets(facets):
+        """Return vertices and triangles from facets"""
+        vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
+        triangles = tr.reshape((-1, 3))
+        return vertices, triangles
+
     @classmethod
     def from_ConvexHull_points(
         cls,
@@ -250,6 +255,11 @@ class TriangularMesh(BaseMagnet):
             Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
             using style underscore magic, e.g. `style_color='red'`.
 
+        Notes
+        -----
+        Facets are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
+        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+
         Returns
         -------
         magnet source: `TriangularMesh` object
@@ -258,7 +268,7 @@ class TriangularMesh(BaseMagnet):
         --------
         """
 
-        # apply facet flip since ConvexHull does not guarantee that the facets are all
+        # reorient facets since ConvexHull does not guarantee that the facets are all
         # pointing outwards
         return cls(
             magnetization=magnetization,
@@ -268,6 +278,210 @@ class TriangularMesh(BaseMagnet):
             orientation=orientation,
             reorient_facets=True,
             validate_mesh=True,
+            style=style,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_pyvista(
+        cls,
+        magnetization=None,
+        polydata=None,
+        position=(0, 0, 0),
+        orientation=None,
+        style=None,
+        **kwargs,
+    ):
+        """Triangular surface mesh magnet with homogeneous magnetization.
+        Can be used as `sources` input for magnetic field computation.
+        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
+        are the same as in the global coordinate system. The geometric center of the TriangularMesh
+        is determined by its vertices and is not necessarily located in the origin.
+
+        Using this class methods allows to construct a TriangularMesh object from a cloud of
+        `points` . The `triangles` are constructed via `sciyp.spatial.ConvexHull`.
+
+        Parameters
+        ----------
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            the local object coordinates (rotates with object).
+
+        polydata: pyvista.core.pointset.PolyData object
+            A valid pyvista Polydata mesh object. (e.g. `pyvista.Sphere()`)
+
+        position: array_like, shape (3,) or (m,3)
+            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            `position` and `orientation` attributes together represent an object path.
+            When setting facets, the initial position is set to the barycenter.
+
+        orientation: scipy `Rotation` object with length 1 or m, default=`None`
+            Object orientation(s) in the global coordinates. `None` corresponds to
+            a unit-rotation. For m>1, the `position` and `orientation` attributes
+            together represent an object path.
+
+        parent: `Collection` object or `None`
+            The object is a child of it's parent collection.
+
+        style: dict
+            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+            using style underscore magic, e.g. `style_color='red'`.
+
+        Notes
+        -----
+        Facets are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+
+        Returns
+        -------
+        magnet source: `TriangularMesh` object
+
+        Examples
+        --------
+        """
+        # pylint: disable=import-outside-toplevel
+        try:
+            import pyvista
+        except ImportError as missing_module:  # pragma: no cover
+            raise ModuleNotFoundError(
+                """In order load pyvista Polydata objects, you first need to install pyvista via pip
+                or conda, see https://docs.pyvista.org/getting-started/installation.html"""
+            ) from missing_module
+        if not isinstance(polydata, pyvista.core.pointset.PolyData):
+            raise TypeError(
+                "The `polydata` parameter must be an instance of `pyvista.core.pointset.PolyData`, "
+                f"received {polydata!r} instead"
+            )
+        polydata = polydata.triangulate()
+        vertices = polydata.points
+        triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+        return cls(
+            magnetization=magnetization,
+            vertices=vertices,
+            triangles=triangles,
+            position=position,
+            orientation=orientation,
+            reorient_facets=True,
+            validate_mesh=True,
+            style=style,
+            **kwargs,
+        )
+
+    @classmethod
+    def from_triangular_facets(
+        cls,
+        magnetization=None,
+        facets=None,
+        position=(0, 0, 0),
+        orientation=None,
+        reorient_facets=True,
+        validate_mesh=True,
+        style=None,
+        **kwargs,
+    ):
+        """Triangular surface mesh magnet with homogeneous magnetization.
+        Can be used as `sources` input for magnetic field computation.
+        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
+        are the same as in the global coordinate system. The geometric center of the TriangularMesh
+        is determined by its vertices and is not necessarily located in the origin.
+
+        Using this class methods allows to construct a TriangularMesh object from a cloud of
+        `points` . The `triangles` are constructed via `sciyp.spatial.ConvexHull`.
+
+        Parameters
+        ----------
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            the local object coordinates (rotates with object).
+
+        facets: array_like
+            An array_like of valid triangular facets objects. Elements can be one of
+                - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
+                - array-like object of shape (3,3)
+
+
+        position: array_like, shape (3,) or (m,3)
+            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            `position` and `orientation` attributes together represent an object path.
+            When setting facets, the initial position is set to the barycenter.
+
+        orientation: scipy `Rotation` object with length 1 or m, default=`None`
+            Object orientation(s) in the global coordinates. `None` corresponds to
+            a unit-rotation. For m>1, the `position` and `orientation` attributes
+            together represent an object path.
+
+        reorient_facets: bool, optional
+            If `False`, no facet orientation check is performed. If `True`, facets pointing inwards
+            are fliped in the right direction.
+
+        validate_mesh: bool, optional
+            If `True`, the provided set of facets is validated by checking if it forms a closed body
+            and if it does not self-intersect. Can be deactivated for perfomance reasons by setting
+            it to `False`.
+
+        parent: `Collection` object or `None`
+            The object is a child of it's parent collection.
+
+        style: dict
+            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+            using style underscore magic, e.g. `style_color='red'`.
+
+        Notes
+        -----
+        Facets are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+
+        Returns
+        -------
+        magnet source: `TriangularMesh` object
+
+        Examples
+        --------
+        """
+        if not isinstance(facets, (np.ndarray, list, tuple)):
+            raise TypeError(
+                "The `facets` parameter must be array-like, "
+                f"\nreceived type {type(facets)} instead"
+            )
+        elif isinstance(facets, np.ndarray):
+            if not (facets.ndim == 3 and facets.shape[-2:] == (3, 3)):
+                raise ValueError(
+                    "The `facets` parameter must be array-like of shape (n,3,3), "
+                    "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
+                    f"\nreceived array of shape {facets.shape} instead"
+                )
+        else:
+            facet_list = []
+            for facet in facets:
+                if isinstance(facet, (np.ndarray, list, tuple)):
+                    facet = np.array(facet)
+                    if facet.shape != (3, 3):
+                        raise ValueError(
+                            "A facet object must be a (3,3) array-like or "
+                            "a `magpylib.misc.Triangle object"
+                            f"\nreceived array of shape {facet.shape} instead"
+                        )
+                elif isinstance(facet, Triangle):
+                    facet = facet.vertices
+                else:
+                    raise TypeError(
+                        "A facet object must be a (3,3) array-like or "
+                        "a `magpylib.misc.Triangle object"
+                        f"\nreceived type {type(facet)} instead"
+                    )
+                facet_list.append(facet)
+            facets = np.array(facet_list).astype(float)
+
+        vertices, triangles = cls._get_vertices_and_triangles_from_facets(facets)
+
+        return cls(
+            magnetization=magnetization,
+            vertices=vertices,
+            triangles=triangles,
+            position=position,
+            orientation=orientation,
+            reorient_facets=reorient_facets,
+            validate_mesh=validate_mesh,
             style=style,
             **kwargs,
         )
