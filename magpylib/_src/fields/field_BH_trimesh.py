@@ -193,6 +193,8 @@ def magnet_trimesh_field(
                     or facets[new_ind].shape != facets[prev_ind].shape
                     or not np.all(facets[new_ind] == facets[prev_ind])
                 ):
+                    if new_ind == len(B) - 1:
+                        new_ind = len(B)
                     inside_mask = mask_inside_trimesh(
                         observers[prev_ind:new_ind], facets[prev_ind]
                     )
