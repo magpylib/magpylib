@@ -24,7 +24,13 @@ validate_pivot = partial(base_validator, "pivot")
 def get_model(trace, *, backend, show, scale, kwargs):
     """Returns model3d dict depending on backend"""
 
-    model = dict(constructor="Mesh3d", kwargs=trace, args=(), show=show, scale=scale)
+    model = {
+        "constructor": "Mesh3d",
+        "kwargs": trace,
+        "args": (),
+        "show": show,
+        "scale": scale,
+    }
     if backend == "matplotlib":
         x, y, z, i, j, k = (trace[k] for k in "xyzijk")
         triangles = np.array([i, j, k]).T
@@ -85,14 +91,14 @@ def make_Cuboid(
         a 3D-model.
     """
     dimension = np.array(dimension, dtype=float)
-    trace = dict(
-        i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-        k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0],
-        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1],
-        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2],
-    )
+    trace = {
+        "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
+        "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
+        "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
+        "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0],
+        "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1],
+        "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2],
+    }
 
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
@@ -183,7 +189,7 @@ def make_Prism(
     k = np.concatenate([k1, j2, j3, k4])
 
     x, y, z = c.T
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -273,7 +279,7 @@ def make_Ellipsoid(
     j = np.concatenate([j1, j2, j3, j4])
     k = np.concatenate([k1, k2, k3, k4])
 
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -373,7 +379,7 @@ def make_CylinderSegment(
         k.extend([j5, j5 + N - 1])
     i, j, k = (np.hstack(l) for l in (i, j, k))
 
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -454,7 +460,7 @@ def make_Pyramid(
     j = i + 1
     j[-1] = 0
     k = np.array([N] * N, dtype=int)
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -590,8 +596,8 @@ def make_Tetrahedron(
         a 3D-model.
     """
     x, y, z = np.array(vertices).T
-    trace = dict(
-        i=np.array(
+    trace = {
+        "i": np.array(
             [
                 0,
                 0,
@@ -599,12 +605,12 @@ def make_Tetrahedron(
                 2,
             ]
         ),
-        j=np.array([1, 1, 2, 0]),
-        k=np.array([2, 3, 3, 3]),
-        x=x,
-        y=y,
-        z=z,
-    )
+        "j": np.array([1, 1, 2, 0]),
+        "k": np.array([2, 3, 3, 3]),
+        "x": x,
+        "y": y,
+        "z": z,
+    }
 
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
@@ -667,13 +673,6 @@ def make_TriangularMesh(
         hull = ConvexHull(vertices)
         triangles = hull.simplices
     i, j, k = np.array(triangles).T
-    trace = dict(
-        i=i,
-        j=j,
-        k=k,
-        x=x,
-        y=y,
-        z=z,
-    )
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

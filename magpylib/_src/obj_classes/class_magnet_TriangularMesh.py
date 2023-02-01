@@ -443,7 +443,7 @@ class TriangularMesh(BaseMagnet):
                 "The `facets` parameter must be array-like, "
                 f"\nreceived type {type(facets)} instead"
             )
-        elif isinstance(facets, np.ndarray):
+        if isinstance(facets, np.ndarray):
             if not (facets.ndim == 3 and facets.shape[-2:] == (3, 3)):
                 raise ValueError(
                     "The `facets` parameter must be array-like of shape (n,3,3), "
