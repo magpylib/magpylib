@@ -4,7 +4,6 @@ Computation details in function docstrings.
 """
 # pylance: disable=Code is unreachable
 import numpy as np
-from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
 
@@ -88,26 +87,6 @@ def mask_inside_enclosing_box(points, vertices, tol=1e-15):
     my = (y - ymax < tol) & (ymin - y < tol)
     mz = (z - zmax < tol) & (zmin - z < tol)
     return mx & my & mz
-
-
-def mask_inside_facets_convexhull(points, vertices):
-    """Return a mask for `points` which truth value tells if inside the
-    convexhulls built from provided `vertices`."""
-    # check first if points are in enclosing box, to save costly convexhull computation
-    inside_enclosing_box = mask_inside_enclosing_box(points, vertices)
-    hull = ConvexHull(vertices, incremental=True)
-    simplices_init = hull.simplices
-    for ind, pt in enumerate(points):
-        if inside_enclosing_box[ind]:
-            hull.add_points([pt])
-            if hull.simplices.shape != simplices_init.shape or not np.all(
-                hull.simplices == simplices_init
-            ):
-                inside_enclosing_box[ind] = False
-                hull.close()
-                hull = ConvexHull(vertices, incremental=True)
-    hull.close()
-    return inside_enclosing_box
 
 
 def mask_inside_trimesh(points, facets):
