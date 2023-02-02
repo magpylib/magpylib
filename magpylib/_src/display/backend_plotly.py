@@ -278,14 +278,14 @@ def display_plotly(
     if fig is None:
         if not return_fig:
             show_fig = True
-        if max_rows is None and max_cols is None:
             fig = go.Figure()
-        else:
-            fig = go.Figure().set_subplots(
-                rows=max_rows,
-                cols=max_cols,
-                specs=subplot_specs.tolist(),
-            )
+
+    if not (max_rows is None and max_cols is None):
+        fig = fig.set_subplots(
+            rows=max_rows,
+            cols=max_cols,
+            specs=subplot_specs.tolist(),
+        )
 
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
