@@ -483,47 +483,40 @@ def subdivide_mesh_by_facecolor(trace):
     return subtraces
 
 
-def process_show_input_objs(objs, row=None, col=None, output="model3d", sumup=True):
+def process_show_input_objs(objs, **kwargs):
     """Extract max_rows and max_cols from obj list of dicts"""
+    defaults = {
+        "row": 1,
+        "col": 1,
+        "output": "model3d",
+        "sumup": True,
+        "pixel_agg": "mean",
+    }
     max_rows = max_cols = 1
     flat_objs = []
     new_objs = {}
     subplot_specs = {}
     for obj in objs:
         if isinstance(obj, dict):
-            obj = obj.copy()
-            r = obj.get("row", None)
-            c = obj.get("col", None)
-            obj["row"] = row if r is None else r
-            obj["col"] = col if c is None else c
+            obj = {**defaults, **obj, **kwargs}
         else:
-            obj = {"objects": obj, "row": row, "col": col}
-        obj["row"] = 1 if obj["row"] is None else obj["row"]
-        obj["col"] = 1 if obj["col"] is None else obj["col"]
-        if obj["row"] is not None:
-            max_rows = max(max_rows, obj["row"])
-        if obj["col"] is not None:
-            max_cols = max(max_cols, obj["col"])
+            obj = {**defaults, "objects": obj, **kwargs}
+
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
         flat_objs.extend(obj["objects"])
-        if "output" not in obj:
-            obj["output"] = output
-        if obj["output"] is None:
-            obj["output"] = "model3d"
-        if obj["output"] != "model3d":
-            if "sumup" not in obj:
-                obj["sumup"] = sumup
-            if obj["sumup"] is None:
-                obj["sumup"] = True
+        if obj["row"] is not None:
+            max_rows = max(max_rows, obj["row"])
+        if obj["col"] is not None:
+            max_cols = max(max_cols, obj["col"])
         key = (obj["row"], obj["col"], obj["output"])
-        if key in new_objs:
+        if key not in new_objs:
+            new_objs[key] = obj
+        else:
             new_objs[key]["objects"] = list(
                 dict.fromkeys(new_objs[key]["objects"] + obj["objects"])
             )
-        else:
-            new_objs[key] = obj
         current_subplot_specs = subplot_specs.get(key[:2], obj["output"])
         if current_subplot_specs != obj["output"]:
             raise ValueError(
@@ -538,7 +531,13 @@ def process_show_input_objs(objs, row=None, col=None, output="model3d", sumup=Tr
             specs[inds[0] - 1, inds[1] - 1] = {"type": "xy"}
     if max_rows == 1 and max_cols == 1:
         max_rows = max_cols = None
-    return list(new_objs.values()), list(set(flat_objs)), max_rows, max_cols, specs
+    return (
+        list(new_objs.values()),
+        list(dict.fromkeys(flat_objs)),
+        max_rows,
+        max_cols,
+        specs,
+    )
 
 
 def triangles_area(triangles):

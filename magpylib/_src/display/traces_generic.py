@@ -6,6 +6,7 @@ import numbers
 import warnings
 from collections import Counter
 from itertools import combinations
+from itertools import cycle
 from typing import Tuple
 
 import numpy as np
@@ -666,14 +667,63 @@ def make_path(input_obj, style):
     return scatter_path
 
 
+def get_trace2D_dict(
+    BH,
+    *,
+    field_str,
+    coords_str,
+    obj_lst_str,
+    frame_focus_inds,
+    frames_indices,
+    mode,
+    label_suff,
+    color,
+    linestyle,
+    **kwargs,
+):
+    """return a 2d trace based on field and parameters"""
+    coords_inds = ["xyz".index(k) for k in coords_str]
+    y = BH.T[list(coords_inds)]
+    if len(coords_inds) == 1:
+        y = y[0]
+    else:
+        y = np.linalg.norm(y, axis=0)
+    marker_size = np.array([5] * len(frames_indices))
+    marker_size[frame_focus_inds] = 10
+    title = f"{field_str}{''.join(coords_str)}"
+    trace = {
+        "mode": "lines+markers",
+        "legendgrouptitle_text": f"{title}"
+        + (f" ({label_suff})" if label_suff else ""),
+        "text": mode,
+        "hovertemplate": (
+            "<b>Path index</b>: %{x}    "
+            f"<b>{title}</b>: " + "%{y:.3s}T<br>"
+            f"<b>{'sources'}</b>:<br>{obj_lst_str['sources']}<br>"
+            f"<b>{'sensors'}</b>:<br>{obj_lst_str['sensors']}"
+            # "<extra></extra>",
+        ),
+        "x": frames_indices,
+        "y": y[frames_indices],
+        "line_dash": linestyle,
+        "line_color": color,
+        "marker_size": marker_size,
+        "marker_color": color,
+        "showlegend": True,
+        "legendgroup": f"{title}{label_suff}",
+        **kwargs,
+    }
+    return trace
+
+
 def get_generic_traces_2D(
     *,
     objects,
-    output="B",
+    output=("Bx", "By", "Bz"),
     row=None,
     col=None,
     sumup=True,
-    pixel_agg="mean",
+    pixel_agg=None,
     style_path_frames=None,
     flat_objs_props=None,
 ):
@@ -683,13 +733,25 @@ def get_generic_traces_2D(
 
     sources = format_obj_input(objects, allow="sources+collections")
     sensors = format_obj_input(objects, allow="sensors")
-    coords_indices = [0, 1, 2]
-    xyz_linestyles = ("solid", "dash", "dot")
-    field_str = output
-    if len(output) > 1:
-        coords_indices = list({"xyz".index(k) for k in output[1:]})
-        field_str = output[0]
-
+    linestyles = ("solid", "dash", "dot", "dashdot", "longdash", "longdashdot")
+    if not isinstance(output, (list, tuple)):
+        output = [output]
+    output_params = {}
+    for out, linestyle in zip(output, cycle(linestyles)):
+        field_str, *coords_str = out
+        if not coords_str:
+            coords_str = list("xyz")
+        if field_str not in ("B", "H") and set(coords_str).difference(set("xyz")):
+            raise ValueError(
+                "The `output` parameter must start with 'B' or 'H'"
+                "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Hz') )"
+                f"\nreceived {out!r} instead"
+            )
+        output_params[out] = {
+            "field_str": field_str,
+            "coords_str": coords_str,
+            "linestyle": linestyle,
+        }
     BH_array = getBH_level2(
         sources,
         sensors,
@@ -700,13 +762,12 @@ def get_generic_traces_2D(
         output="ndarray",
     )
     BH_array = BH_array.swapaxes(1, 2)  # swap axes to have sensors first, path second
-    BH_array = BH_array[:, :, :, 0, :]  # remove pixel dim
 
     frames_indices = np.arange(0, BH_array.shape[2])
-    style_path_frames = [-1] if style_path_frames is None else style_path_frames
-    if isinstance(style_path_frames, numbers.Number):
+    frame_focus_inds = [-1] if style_path_frames is None else style_path_frames
+    if isinstance(frame_focus_inds, numbers.Number):
         # pylint: disable=invalid-unary-operand-type
-        style_path_frames = frames_indices[::-style_path_frames]
+        frame_focus_inds = frames_indices[::-style_path_frames]
 
     def get_obj_list_str(objs):
         if len(objs) < 8:
@@ -720,7 +781,8 @@ def get_generic_traces_2D(
         props = flat_objs_props.get(obj, {})
         style = props.get("style", None)
         style = obj.style if style is None else style
-        label = getattr(style, "label", obj.__class__.__name__)
+        label = getattr(style, "label", None)
+        label = repr(obj) if not label else label
         color = getattr(style, "color", None)
         return label, color
 
@@ -730,61 +792,48 @@ def get_generic_traces_2D(
     }
     mode = "sources" if sumup else "sensors"
 
-    def get_trace_dict(field_str, BH, coord_ind, frame_ind, label, color):
-        k = "xyz"[coord_ind]
-        marker_size = np.array([5] * len(frames_indices))
-        marker_size[frame_ind] = 10
-        return dict(
-            mode="lines+markers",
-            name=label,
-            legendgrouptitle_text=f"{field_str}{k}",
-            text=mode,
-            hovertemplate=(
-                "<b>Path index</b>: %{x}    "
-                f"<b>{field_str}{k}</b>: " + "%{y}T<br>"
-                f"<b>{'sources'}</b>:<br>{obj_lst_str['sources']}<br>"
-                f"<b>{'sensors'}</b>:<br>{obj_lst_str['sensors']}"
-                # "<extra></extra>",
-            ),
-            x=frames_indices,
-            y=BH.T[coord_ind][frames_indices],
-            line_dash=xyz_linestyles[coord_ind],
-            line_color=color,
-            marker_size=marker_size,
-            marker_color=color,
-            showlegend=True,
-        )
-
     traces = []
     for src_ind, src in enumerate(sources):
         if src_ind == 1 and sumup:
             break
-        if mode == "sensors":
-            label, color = get_label_and_color(src)
+        label_src, color_src = get_label_and_color(src)
         for sens_ind, sens in enumerate(sensors):
-            BH = BH_array[src_ind, sens_ind]
-            if mode == "sources":
-                label, color = get_label_and_color(sens)
-            num_of_pix = len(sens.pixel.reshape(-1, 3)) if sens.pixel.ndim != 1 else 1
-            if num_of_pix > 1:
-                label = f"{label} ({num_of_pix} pixels {pixel_agg})"
-            for coord_ind in coords_indices:
-                traces.append(
-                    {
-                        **get_trace_dict(
-                            field_str,
-                            BH,
-                            coord_ind,
-                            style_path_frames,
-                            label,
-                            color,
-                        ),
-                        "legendgroup": f"{field_str}{coord_ind}",
-                        "type": "scatter",
-                        "row": row,
-                        "col": col,
-                    }
+            label_sens, color_sens = get_label_and_color(sens)
+            label_suff = label_sens
+            if mode == "sensors":
+                label, color = label_src, color_src
+            else:
+                label_suff = (
+                    f"{label_src}" if len(sources) == 1 else f"{len(sources)} sources"
                 )
+                label, color = label_sens, color_sens
+            num_of_pix = len(sens.pixel.reshape(-1, 3)) if sens.pixel.ndim != 1 else 1
+            pix_suff = ""
+            num_of_pix_to_show = 1 if pixel_agg else num_of_pix
+            for pix_ind in range(num_of_pix_to_show):
+                BH = BH_array[src_ind, sens_ind, :, pix_ind]
+                if num_of_pix > 1:
+                    if pixel_agg:
+                        pix_suff = f" ({num_of_pix} pixels {pixel_agg})"
+                    else:
+                        pix_suff = f" (pixel {pix_ind})"
+                for param in output_params.values():
+                    traces.append(
+                        get_trace2D_dict(
+                            BH,
+                            **param,
+                            obj_lst_str=obj_lst_str,
+                            frame_focus_inds=frame_focus_inds,
+                            frames_indices=frames_indices,
+                            mode=mode,
+                            label_suff=label_suff,
+                            name=f"{label}{pix_suff}",
+                            color=color,
+                            type="scatter",
+                            row=row,
+                            col=col,
+                        )
+                    )
     return traces
 
 
