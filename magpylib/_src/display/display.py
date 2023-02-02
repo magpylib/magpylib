@@ -34,18 +34,15 @@ class DisplayContext:
 ctx = DisplayContext()
 
 
+RCO_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
+
+
 def _show(
     *objects,
     zoom=0,
     animation=False,
     markers=None,
     backend=None,
-    canvas=None,
-    return_fig=False,
-    row=None,
-    col=None,
-    output="model3d",
-    sumup=True,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -55,12 +52,9 @@ def _show(
 
     # process input objs
     objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
-        objects,
-        row,
-        col,
-        output,
-        sumup,
+        objects, **{k: v for k, v in kwargs.items() if k in RCO_NAMES}
     )
+    kwargs = {k: v for k, v in kwargs.items() if k not in RCO_NAMES}
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
@@ -102,14 +96,12 @@ def _show(
     return display_func(
         *objects,
         zoom=zoom,
-        canvas=canvas,
         animation=animation,
-        return_fig=return_fig,
         **kwargs,
     )
 
 
-def show(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
+def show(*objects, **kwargs):
     """Display objects and paths graphically.
 
     Global graphic styles can be set with kwargs as style dictionary or using
@@ -190,29 +182,46 @@ def show(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
     >>> src1.style.magnetization.size = 1
     >>> magpy.show(src1, src2, style_color='r') # doctest: +SKIP
     >>> # graphic output
+
+    Use a context manager to jointly animate 3d and 2d subplots
+
+    >>> import magpylib as magpy
+    >>> import numpy as np
+    >>> import plotly.graph_objects as go
+    >>> path_len = 40
+    >>> sensor = magpy.Sensor()
+    >>> cyl1 = magpy.magnet.Cylinder(
+    ...    magnetization=(100, 0, 0),
+    ...    dimension=(1, 2),
+    ...    position=(4, 0, 0),
+    ...    style_label="Cylinder1",
+    ... )
+    >>> sensor.move(np.linspace((0, 0, -3), (0, 0, 3), path_len), start=0)
+    Sensor(id=...)
+    >>> cyl1.rotate_from_angax(angle=np.linspace(0, 300, path_len), start=0, axis="z", anchor=0)
+    Cylinder(id=...)
+    >>> cyl2 = cyl1.copy().move((0, 0, 5))
+    >>> fig = go.Figure()
+    >>> with magpy.show_context(cyl1, cyl2, sensor, canvas=fig, backend="plotly", animation=True):
+    ...    magpy.show(col=1, output="model3d")
+    ...    magpy.show(col=2, output="Bxy", sumup=True)
+    ...    magpy.show(col=3, output="Bz", sumup=False)
+    >>> fig.show() # doctest: +SKIP
+    >>> # graphic output
     """
 
-    # allows kwargs to override within `with show_context`
-    # Example:
-    # with magpy.show_context(canvas=fig, zoom=1):
-    #   src1.show(row=1, col=1)
-    #   magpy.show(src2, row=1, col=2)
-    #   magpy.show(src1, src2, row=1, col=3, zoom=10)
-    # # -> zoom=10 should override zoom=1 from context
-
-    rco = {"row": row, "col": col, "output": output, "sumup": sumup}
     if ctx.isrunning:
-        rco = {k: v for k, v in rco.items() if v is not None}
-        ctx.kwargs.update(kwargs)
+        rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
+        ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
         ctx_objects = tuple({**o, **rco} for o in ctx.objects_from_ctx)
-        objects, *_ = process_show_input_objs(objects + ctx_objects, **rco)
+        objects, *_ = process_show_input_objs(ctx_objects + objects, **rco)
         ctx.objects += tuple(objects)
         return None
-    return _show(*objects, **rco, **kwargs)
+    return _show(*objects, **kwargs)
 
 
 @contextmanager
-def show_context(*objects, row=None, col=None, output=None, sumup=None, **kwargs):
+def show_context(*objects, **kwargs):
     """Context manager to temporarily set display settings in the `with` statement context.
 
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
@@ -220,9 +229,10 @@ def show_context(*objects, row=None, col=None, output=None, sumup=None, **kwargs
     # pylint: disable=protected-access
     try:
         ctx.isrunning = True
-        objects, *_ = process_show_input_objs(objects, row, col, output, sumup)
+        rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
+        objects, *_ = process_show_input_objs(objects, **rco)
         ctx.objects_from_ctx += tuple(objects)
-        ctx.kwargs.update(**kwargs)
+        ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
         yield ctx
         _show(*ctx.objects, **ctx.kwargs)
     finally:
