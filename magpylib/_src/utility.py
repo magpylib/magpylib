@@ -435,8 +435,12 @@ def show_gif(filepath):
 
 
 def show_video(filepath):
+    # pylint: disable=import-outside-toplevel
     if is_notebook():
-        # pylint: disable=import-outside-toplevel
         from IPython.display import Video, display
 
         display(Video(filepath))
+    else:
+        from os import startfile
+
+        startfile(filepath)
