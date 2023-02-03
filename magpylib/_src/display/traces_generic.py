@@ -65,15 +65,15 @@ class MagpyMarkers:
         marker_kwargs["marker_color"] = (
             style.marker.color if style.marker.color is not None else style.color
         )
-        trace = dict(
-            type="scatter3d",
-            x=x,
-            y=y,
-            z=z,
-            mode="markers",
+        trace = {
+            "type": "scatter3d",
+            "x": x,
+            "y": y,
+            "z": z,
+            "mode": "markers",
             **marker_kwargs,
             **kwargs,
-        )
+        }
         default_name = "Marker" if len(x) == 1 else "Markers"
         default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
         update_trace_name(trace, default_name, default_suffix, style)
@@ -93,16 +93,16 @@ def make_DefaultTrace(
     name.
     """
     style = obj.style if style is None else style
-    trace = dict(
-        type="scatter3d",
-        x=[0.0],
-        y=[0.0],
-        z=[0.0],
-        mode="markers+text",
-        marker_size=10,
-        marker_color=style.color,
-        marker_symbol="diamond",
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": [0.0],
+        "y": [0.0],
+        "z": [0.0],
+        "mode": "markers+text",
+        "marker_size": 10,
+        "marker_color": style.color,
+        "marker_symbol": "diamond",
+    }
     update_trace_name(trace, f"{type(obj).__name__}", "", style)
     trace["text"] = trace["name"]
     return place_and_orient_model3d(
@@ -131,15 +131,15 @@ def make_Line(
     else:
         vertices = np.array(vertices).T
     x, y, z = vertices
-    trace = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        mode="lines",
-        line_width=style.arrow.width,
-        line_color=style.color,
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "mode": "lines",
+        "line_width": style.arrow.width,
+        "line_color": style.color,
+    }
     default_suffix = (
         f" ({unit_prefix(current)}A)"
         if current is not None
@@ -169,15 +169,15 @@ def make_Loop(
     arrow_size = style.arrow.size if style.arrow.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, vertices)
     x, y, z = vertices
-    trace = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        mode="lines",
-        line_width=style.arrow.width,
-        line_color=style.color,
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "mode": "lines",
+        "line_width": style.arrow.width,
+        "line_color": style.color,
+    }
     default_suffix = (
         f" ({unit_prefix(current)}A)"
         if current is not None
@@ -429,7 +429,7 @@ def make_Triangle(
     **kwargs,
 ) -> dict:
     """
-    Creates the plotly mesh3d parameters for a TriangularMesh Magnet in a dictionary based on the
+    Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
     provided arguments.
     """
     vert = obj.vertices
@@ -453,7 +453,7 @@ def make_Triangle(
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=vert, triangles=triangles, color=style.color
     )
-    update_trace_name(trace, "Triangle", "", style)
+    update_trace_name(trace, obj.__class__.__name__, "", style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
@@ -652,18 +652,18 @@ def make_path(input_obj, style):
     line["dash"] = line["style"]
     line["color"] = style.color if line["color"] is None else line["color"]
     line = {k: v for k, v in line.items() if k != "style"}
-    scatter_path = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        name=f"Path: {input_obj}",
-        showlegend=False,
+    scatter_path = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "name": f"Path: {input_obj}",
+        "showlegend": False,
         **{f"marker_{k}": v for k, v in marker.items()},
         **{f"line_{k}": v for k, v in line.items()},
         **txt_kwargs,
-        opacity=style.opacity,
-    )
+        "opacity": style.opacity,
+    }
     return scatter_path
 
 
@@ -1256,12 +1256,12 @@ def get_frames(
         if i == 0:  # get the dipoles and sensors autosize from first frame
             autosize = autosize_init
         frames.append(
-            dict(
-                data=traces,
-                name=str(ind + 1),
-                layout=dict(title=title_str),
-                extra_backend_traces=extra_backend_traces,
-            )
+            {
+                "data": traces,
+                "name": str(ind + 1),
+                "layout": {"title": title_str},
+                "extra_backend_traces": extra_backend_traces,
+            }
         )
 
     clean_legendgroups(frames)

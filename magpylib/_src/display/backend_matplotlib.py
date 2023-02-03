@@ -292,6 +292,7 @@ def display_matplotlib(
         draw_frame(ind)
         return list(axes.values())
 
+    anim = None
     if len(frames) == 1:
         draw_frame(0)
     else:
