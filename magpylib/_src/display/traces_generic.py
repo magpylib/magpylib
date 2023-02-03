@@ -41,8 +41,8 @@ from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
 from magpylib._src.input_checks import check_excitations
+from magpylib._src.style import DefaultMarkers
 from magpylib._src.style import get_style
-from magpylib._src.style import Markers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
 
@@ -51,7 +51,7 @@ class MagpyMarkers:
     """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
-        self.style = Markers()
+        self.style = DefaultMarkers()
         self.markers = np.array(markers)
 
     def _draw_func(self, color=None, style=None, **kwargs):
