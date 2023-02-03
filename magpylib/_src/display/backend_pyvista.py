@@ -246,7 +246,7 @@ def display_pyvista(
     )
     warned2d = False
 
-    def draw_frame(frame, render=True):
+    def draw_frame(frame):
         nonlocal warned2d
         for tr0 in frame["data"]:
             for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
@@ -255,14 +255,14 @@ def display_pyvista(
                 typ = tr1.pop("type")
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
-                    getattr(canvas, f"add_{typ}")(**tr1, render=render)
+                    getattr(canvas, f"add_{typ}")(**tr1)
                     canvas.show_axes()
                 else:
                     if jupyter_backend_2D_compatible:
                         if charts.get((row, col), None) is None:
                             charts[(row, col)] = pv.Chart2D()
                             canvas.add_chart(charts[(row, col)])
-                        getattr(charts[(row, col)], typ)(**tr1, render=render)
+                        getattr(charts[(row, col)], typ)(**tr1)
                     elif not warned2d:
                         warnings.warn(
                             f"The set `{jupyter_backend=}` is incompatible with 2D plots. "
@@ -299,7 +299,7 @@ def display_pyvista(
 
         for frame in frames:
             canvas.clear_actors()
-            draw_frame(frame, render=False)
+            draw_frame(frame)
             canvas.write_frame()
         canvas.close()
         show_canvas = False
