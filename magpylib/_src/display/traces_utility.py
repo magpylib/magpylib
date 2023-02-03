@@ -34,7 +34,7 @@ def place_and_orient_model3d(
     new_model_args = list(model_args)
     if model_args:
         if coordsargs is None:  # matplotlib default
-            coordsargs = dict(x="args[0]", y="args[1]", z="args[2]")
+            coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}

@@ -674,7 +674,7 @@ class Collection(BaseGeo, BaseCollection):
 
     Parameters
     ----------
-    children: sources, `Sensor` or `Collection objects
+    children: sources, `Sensor` or `Collection` objects
         An ordered list of all children in the collection.
 
     sensors: `Sensor` objects
