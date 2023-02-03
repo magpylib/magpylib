@@ -296,7 +296,7 @@ def display_plotly(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
-        extra_backend="plotly",
+        backend="plotly",
         **kwargs,
     )
     frames = data["frames"]
