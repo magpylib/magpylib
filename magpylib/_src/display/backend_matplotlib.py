@@ -200,7 +200,7 @@ def display_matplotlib(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
-        mag_color_grad_apt=False,
+        supports_colorgradient=False,
         backend="matplotlib",
         **kwargs,
     )

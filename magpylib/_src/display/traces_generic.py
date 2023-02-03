@@ -843,7 +843,7 @@ def get_generic_traces(
     autosize=None,
     legendgroup=None,
     legendtext=None,
-    mag_color_grad_apt=True,
+    supports_colorgradient=True,
     extra_backend=False,
     row=1,
     col=1,
@@ -878,9 +878,9 @@ def get_generic_traces(
     if getattr(input_obj, "magnetization", None) is not None:
         mode = style.magnetization.mode
         if style.magnetization.show:
-            if "arrow" in mode or not mag_color_grad_apt:
+            if "arrow" in mode or not supports_colorgradient:
                 is_mag_arrows = True
-            if mag_color_grad_apt and "color" not in mode and mode != "auto":
+            if supports_colorgradient and "color" not in mode and mode != "auto":
                 style.magnetization.show = False  # disables color gradient only
 
     make_func = input_obj._draw_func
@@ -1204,7 +1204,7 @@ def get_frames(
     zoom=1,
     title=None,
     animation=False,
-    mag_color_grad_apt=True,
+    supports_colorgradient=True,
     backend="generic",
     **kwargs,
 ):
@@ -1249,7 +1249,7 @@ def get_frames(
             colorsequence,
             zoom,
             autosize=autosize,
-            mag_color_grad_apt=mag_color_grad_apt,
+            supports_colorgradient=supports_colorgradient,
             extra_backend=backend,
             **kwargs,
         )
