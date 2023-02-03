@@ -201,7 +201,7 @@ def display_matplotlib(
         zoom=zoom,
         animation=animation,
         mag_color_grad_apt=False,
-        extra_backend="matplotlib",
+        backend="matplotlib",
         **kwargs,
     )
     frames = data["frames"]
@@ -227,7 +227,7 @@ def display_matplotlib(
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
-            raise Exception(
+            raise ValueError(
                 "Provided canvas is an instance of `matplotlib.axes.Axes` and does not support "
                 "`rows` or `cols` attributes. Use an instance of `matplotlib.figure.Figure` "
                 "instead"
@@ -235,7 +235,7 @@ def display_matplotlib(
     elif isinstance(canvas, matplotlib.figure.Figure):
         fig = canvas
     else:
-        raise Exception(
+        raise ValueError(
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
             f"matplotlib.figure.Figure]`. Received {canvas!r} instead"
         )

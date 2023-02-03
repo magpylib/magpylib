@@ -1,6 +1,7 @@
 """Generic trace drawing functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-statements
 # pylint: disable=cyclic-import
 import numbers
 import warnings
@@ -1181,7 +1182,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             traces_to_resize_dict[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj._position.T
-            traces_dict[obj] = [dict(x=x, y=y, z=z)]
+            traces_dict[obj] = [{"x": x, "y": y, "z": z}]
         else:
             traces_dict[obj] = []
             rco_obj = params.pop("row_cols")
@@ -1192,9 +1193,8 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
                         obj, extra_backend=extra_backend, autosize=autosize, **params
                     )
                     if extra_backend:
-                        out_traces, ebt = out_traces.values()
-                        extra_backend_traces.extend(ebt)
-                    traces_dict[obj].extend(out_traces)
+                        extra_backend_traces.extend(out_traces.get(extra_backend, []))
+                    traces_dict[obj].extend(out_traces["generic"])
     return traces_dict, traces_to_resize_dict, extra_backend_traces
 
 
@@ -1205,7 +1205,7 @@ def get_frames(
     title=None,
     animation=False,
     mag_color_grad_apt=True,
-    extra_backend=False,
+    backend="generic",
     **kwargs,
 ):
     """This is a helper function which generates frames with generic traces to be provided to
@@ -1250,7 +1250,7 @@ def get_frames(
             zoom,
             autosize=autosize,
             mag_color_grad_apt=mag_color_grad_apt,
-            extra_backend=extra_backend,
+            extra_backend=backend,
             **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame

@@ -236,7 +236,7 @@ def display_pyvista(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
-        extra_backend="pyvista",
+        backend="pyvista",
         **kwargs,
     )
 
