@@ -6,11 +6,9 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.traces_generic import get_frames
+from magpylib._src.display.display import RegisterBackend
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
-
-# from magpylib._src.utility import format_obj_input
 
 SYMBOLS_TO_MATPLOTLIB = {
     "circle": "o",
@@ -178,12 +176,9 @@ def extract_axis_from_row_col(fig, row, col):
 
 
 def display_matplotlib(
-    *obj_list,
-    zoom=1,
+    data,
     canvas=None,
-    animation=False,
     repeat=False,
-    colorsequence=None,
     return_fig=False,
     return_animation=False,
     max_rows=None,
@@ -195,15 +190,6 @@ def display_matplotlib(
 ):
 
     """Display objects and paths graphically using the matplotlib library."""
-    data = get_frames(
-        objs=obj_list,
-        colorsequence=colorsequence,
-        zoom=zoom,
-        animation=animation,
-        supports_colorgradient=False,
-        backend="matplotlib",
-        **kwargs,
-    )
     frames = data["frames"]
     ranges = data["ranges"]
 
@@ -316,3 +302,12 @@ def display_matplotlib(
 
     if out:
         return out[0] if len(out) == 1 else out
+
+
+RegisterBackend(
+    name="matplotlib",
+    show_func=display_matplotlib,
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=False,
+)

@@ -1,7 +1,9 @@
 """ Display function codes"""
+import warnings
 from contextlib import contextmanager
 from importlib import import_module
 
+from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import process_show_input_objs
 from magpylib._src.input_checks import check_dimensions
@@ -11,6 +13,59 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
 from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.utility import test_path_format
+
+
+class RegisterBackend:
+    """Base class for display backends"""
+
+    backends = {}
+
+    def __init__(
+        self,
+        *,
+        name,
+        show_func,
+        supports_animation,
+        supports_subplots,
+        supports_colorgradient,
+    ):
+        self.name = name
+        self.show_func = show_func
+        self.supports = {
+            "animation": supports_animation,
+            "subplots": supports_subplots,
+            "colorgradient": supports_colorgradient,
+        }
+        self._register_backend(name)
+
+    def _register_backend(self, name):
+        self.backends[name] = self
+
+    @classmethod
+    def show(cls, *objs, backend, **kwargs):
+        """Display function of the current backend"""
+        self = cls.backends[backend]
+        conditions = {
+            "animation": {"animation": False},
+            "subplots": {"row": None, "col": None},
+        }
+        for name, params in conditions.items():
+            condition = not all(kwargs.get(k, v) == v for k, v in params.items())
+            if condition and not self.supports[name]:
+                supported = [k for k, v in self.backends.items() if v.supports[name]]
+                warnings.warn(
+                    f"The {backend} backend does not support {name}, "
+                    f"you can use one of {supported} backends instead."
+                    f"\nfalling back to: {params}"
+                )
+                kwargs.update(params)
+        data = get_frames(
+            objs,
+            supports_colorgradient=self.supports["colorgradient"],
+            backend=backend,
+            **kwargs,
+        )
+        self.show_func(data, **kwargs)
 
 
 class DisplayContext:
@@ -78,11 +133,6 @@ def _show(
         allow_None=True,
     )
 
-    # pylint: disable=import-outside-toplevel
-    display_func = getattr(
-        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
-    )
-
     if markers:
         objects = list(objects) + [
             {
@@ -93,7 +143,8 @@ def _show(
             }
         ]
 
-    return display_func(
+    return RegisterBackend.show(
+        backend=backend,
         *objects,
         zoom=zoom,
         animation=animation,

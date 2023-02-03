@@ -11,6 +11,7 @@ except ImportError as missing_module:  # pragma: no cover
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
 
+from magpylib._src.display.display import RegisterBackend
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -256,11 +257,11 @@ def extract_layout_kwargs(kwargs):
 
 
 def display_plotly(
-    *obj_list,
+    data,
     zoom=1,
+    animation=False,
     canvas=None,
     renderer=None,
-    animation=False,
     colorsequence=None,
     return_fig=False,
     update_layout=True,
@@ -271,7 +272,7 @@ def display_plotly(
 ):
 
     """Display objects and paths graphically using the plotly library."""
-
+    print(kwargs)
     fig = canvas
     show_fig = False
     extra_data = False
@@ -291,14 +292,6 @@ def display_plotly(
         colorsequence = Config.display.colorsequence
 
     layout, kwargs = extract_layout_kwargs(kwargs)
-    data = get_frames(
-        objs=obj_list,
-        colorsequence=colorsequence,
-        zoom=zoom,
-        animation=animation,
-        backend="plotly",
-        **kwargs,
-    )
     frames = data["frames"]
     for fr in frames:
         new_data = []
@@ -348,3 +341,12 @@ def display_plotly(
     if show_fig:
         fig.show(renderer=renderer)
     return None
+
+
+RegisterBackend(
+    name="plotly",
+    show_func=display_plotly,
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=True,
+)
