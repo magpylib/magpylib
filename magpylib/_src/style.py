@@ -575,8 +575,8 @@ class Magnetization(MagicProperties):
         can display both and `auto` is chosen, the priority is given to `color`.
     """
 
-    def __init__(self, show=None, size=None, color=None, **kwargs):
-        super().__init__(show=show, size=size, color=color, **kwargs)
+    def __init__(self, show=None, size=None, color=None, mode=None, **kwargs):
+        super().__init__(show=show, size=size, color=color, mode=mode, **kwargs)
 
     @property
     def show(self):
