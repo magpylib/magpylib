@@ -21,6 +21,7 @@ In the example below we show such a typical end-of-shaft system with a 2-pixel s
 import numpy as np
 import plotly.express as px
 import magpylib as magpy
+import plotly.graph_objects as go
 
 # create magnet
 magnet = magpy.magnet.Cylinder(
