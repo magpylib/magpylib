@@ -15,11 +15,9 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.defaults.defaults_utility import (
-    linearize_dict,
-    ALLOWED_LINESTYLES,
-    ALLOWED_SYMBOLS,
-)
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
+from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
