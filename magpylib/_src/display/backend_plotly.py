@@ -194,6 +194,7 @@ def animate_path(
         fig.update_layout(
             height=None,
             title=title,
+            legend_groupclick="toggleitem",
         )
     fig.update_layout(
         updatemenus=[buttons_dict],
