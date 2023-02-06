@@ -14,37 +14,45 @@ from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 
 
+def get_families(obj):
+    "get obj families"
+    # pylint: disable=import-outside-toplevel
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=redefined-outer-name
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
+    from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_current_Line import Line
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
+
+    loc = locals()
+    obj_families = []
+    for item, val in loc.items():
+        if not item.startswith("_"):
+            try:
+                if isinstance(obj, val):
+                    obj_families.append(item.lower())
+            except TypeError:
+                pass
+    return obj_families
+
+
 def get_style(obj, default_settings, **kwargs):
     """Returns default style based on increasing priority:
     - style from defaults
     - style from object
     - style from kwargs arguments
     """
-    # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseMagnet as MagpyMagnet,
-    )
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseCurrent as MagpyCurrent,
-    )
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle as MagpyTriangle
-    from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
-    from magpylib._src.display.traces_generic import MagpyMarkers
-
-    families = {
-        "triangle": MagpyTriangle,
-        "magnet": MagpyMagnet,
-        "current": MagpyCurrent,
-        "dipole": MagpyDipole,
-        "sensor": MagpySensor,
-        "markers": MagpyMarkers,
-    }
-    obj_family = None
-    for fam, cls in families.items():
-        if isinstance(obj, cls):
-            obj_family = fam
-            break
+    obj_families = get_families(obj)
     # parse kwargs into style an non-style arguments
     style_kwargs = kwargs.get("style", {})
     style_kwargs.update(
@@ -54,13 +62,15 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.style.as_dict()
+    default_style = default_settings.display.style
+    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
 
     # construct object specific dictionary base on style family and default style
-    obj_style_default_dict = {
-        **styles_by_family["base"],
-        **dict(styles_by_family.get(obj_family, {}).items()),
-    }
+    for obj_family in obj_families:
+        family_style = getattr(default_style, obj_family, {})
+        if family_style:
+            family_dict = family_style.as_dict(flatten=True, separator="_")
+            base_style_flat.update(family_dict)
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
@@ -70,9 +80,7 @@ def get_style(obj, default_settings, **kwargs):
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
-    style.update(
-        **obj_style_default_dict, _match_properties=False, _replace_None_only=True
-    )
+    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
 
     return style
 
@@ -754,7 +762,7 @@ class MagnetProperties:
         )
 
 
-class Magnet(MagicProperties, MagnetProperties):
+class DefaultMagnet(MagicProperties, MagnetProperties):
     """Defines styling properties of homogeneous magnet classes.
 
     Parameters
@@ -916,7 +924,7 @@ class TriangleProperties:
         )
 
 
-class Triangle(MagicProperties, MagnetProperties, TriangleProperties):
+class DefaultTriangle(MagicProperties, MagnetProperties, TriangleProperties):
     """Defines styling properties of homogeneous magnet classes.
 
     Parameters
@@ -1113,7 +1121,7 @@ class SensorProperties:
         self._arrows = validate_property_class(val, "arrows", ArrowCS, self)
 
 
-class Sensor(MagicProperties, SensorProperties):
+class DefaultSensor(MagicProperties, SensorProperties):
     """Defines styling properties of the Sensor class.
 
     Parameters
@@ -1252,7 +1260,7 @@ class CurrentProperties:
         self._arrow = validate_property_class(val, "current", Arrow, self)
 
 
-class Current(MagicProperties, CurrentProperties):
+class DefaultCurrent(MagicProperties, CurrentProperties):
     """Defines the specific styling properties of line current classes.
 
     Parameters
@@ -1411,7 +1419,7 @@ class Marker(MagicProperties):
         self._symbol = val
 
 
-class Markers(BaseStyle):
+class DefaultMarkers(BaseStyle):
     """Defines styling properties of the markers trace.
 
     Parameters
@@ -1479,7 +1487,7 @@ class DipoleProperties:
         self._pivot = val
 
 
-class Dipole(MagicProperties, DipoleProperties):
+class DefaultDipole(MagicProperties, DipoleProperties):
     """
     Defines styling properties of dipoles.
 
@@ -1772,54 +1780,54 @@ class DisplayStyle(MagicProperties):
 
     @property
     def magnet(self):
-        """Magnet class."""
+        """Magnet default style class."""
         return self._magnet
 
     @magnet.setter
     def magnet(self, val):
-        self._magnet = validate_property_class(val, "magnet", Magnet, self)
+        self._magnet = validate_property_class(val, "magnet", DefaultMagnet, self)
 
     @property
     def current(self):
-        """Current class."""
+        """Current default style class."""
         return self._current
 
     @current.setter
     def current(self, val):
-        self._current = validate_property_class(val, "current", Current, self)
+        self._current = validate_property_class(val, "current", DefaultCurrent, self)
 
     @property
     def dipole(self):
-        """Dipole class."""
+        """Dipole default style class."""
         return self._dipole
 
     @dipole.setter
     def dipole(self, val):
-        self._dipole = validate_property_class(val, "dipole", Dipole, self)
+        self._dipole = validate_property_class(val, "dipole", DefaultDipole, self)
 
     @property
     def triangle(self):
-        """Triangle class."""
+        """Triangle default style class."""
         return self._triangle
 
     @triangle.setter
     def triangle(self, val):
-        self._triangle = validate_property_class(val, "triangle", Triangle, self)
+        self._triangle = validate_property_class(val, "triangle", DefaultTriangle, self)
 
     @property
     def sensor(self):
-        """Sensor class."""
+        """Sensor default style class."""
         return self._sensor
 
     @sensor.setter
     def sensor(self, val):
-        self._sensor = validate_property_class(val, "sensor", Sensor, self)
+        self._sensor = validate_property_class(val, "sensor", DefaultSensor, self)
 
     @property
     def markers(self):
-        """Markers class."""
+        """Markers default style class."""
         return self._markers
 
     @markers.setter
     def markers(self, val):
-        self._markers = validate_property_class(val, "markers", Markers, self)
+        self._markers = validate_property_class(val, "markers", DefaultMarkers, self)
