@@ -11,9 +11,7 @@ except ImportError as missing_module:  # pragma: no cover
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
 
-from magpylib._src.display.display import RegisterBackend
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import get_scene_ranges
@@ -272,7 +270,6 @@ def display_plotly(
 ):
 
     """Display objects and paths graphically using the plotly library."""
-    print(kwargs)
     fig = canvas
     show_fig = False
     extra_data = False
@@ -315,6 +312,7 @@ def display_plotly(
             rows_list = cols_list = None
         isanimation = len(frames) != 1
         if not isanimation:
+            print(frames[0]["data"])
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
             animation_slider = data.get("animation_slider", False)
@@ -341,12 +339,3 @@ def display_plotly(
     if show_fig:
         fig.show(renderer=renderer)
     return None
-
-
-RegisterBackend(
-    name="plotly",
-    show_func=display_plotly,
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=True,
-)
