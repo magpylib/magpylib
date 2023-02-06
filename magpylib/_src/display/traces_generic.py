@@ -259,38 +259,39 @@ def make_triangle_orientations(
     size = size if style.orientation.size is None else style.orientation.size
     offset = offset if style.orientation.offset is None else style.orientation.offset
     symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
-    vert = obj.vertices
-    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
-    nvec = vec / np.linalg.norm(vec)
-    # arrow length proportional to square root of triangle
-    length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
-    zaxis = np.array([0, 0, 1])
-    cross = np.cross(nvec, zaxis)
-    n = np.linalg.norm(cross)
-    if n == 0:
-        n = 1
-        cross = np.array([-np.sign(nvec[-1]), 0, 0])
-    dot = np.dot(nvec, zaxis)
-    t = np.arccos(dot)
-    vec = -t * cross / n
-    orient = RotScipy.from_rotvec(vec)
+    vertices = obj.facets if hasattr(obj, "facets") else [obj.vertices]
     traces = []
-    make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
-    vmean = np.mean(vert, axis=0)
-    vmean -= (1 - offset) * length * nvec * size
-    for ind in pos_orient_inds:
-        tr = make_fn(
-            "plotly-dict",
-            base=10,
-            diameter=0.5 * size * length,
-            height=size * length,
-            pivot="tail",
-            color=color,
-            position=obj._orientation[ind].apply(vmean) + obj._position[ind],
-            orientation=obj._orientation[ind] * orient,
-            **kwargs,
-        )
-        traces.append(tr)
+    for vert in vertices:
+        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        nvec = vec / np.linalg.norm(vec)
+        # arrow length proportional to square root of triangle
+        length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
+        zaxis = np.array([0, 0, 1])
+        cross = np.cross(nvec, zaxis)
+        n = np.linalg.norm(cross)
+        if n == 0:
+            n = 1
+            cross = np.array([-np.sign(nvec[-1]), 0, 0])
+        dot = np.dot(nvec, zaxis)
+        t = np.arccos(dot)
+        vec = -t * cross / n
+        orient = RotScipy.from_rotvec(vec)
+        make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
+        vmean = np.mean(vert, axis=0)
+        vmean -= (1 - offset) * length * nvec * size
+        for ind in pos_orient_inds:
+            tr = make_fn(
+                "plotly-dict",
+                base=10,
+                diameter=0.5 * size * length,
+                height=size * length,
+                pivot="tail",
+                color=color,
+                position=obj._orientation[ind].apply(vmean) + obj._position[ind],
+                orientation=obj._orientation[ind] * orient,
+                **kwargs,
+            )
+            traces.append(tr)
     trace = merge_mesh3d(*traces)
     return trace
 
@@ -739,6 +740,7 @@ def get_generic_traces(
     # pylint: disable=import-outside-toplevel
 
     from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
     # parse kwargs into style and non style args
     style = get_style(input_obj, Config, **kwargs)
@@ -881,7 +883,7 @@ def get_generic_traces(
         traces.append(
             make_mag_arrows(input_obj, pos_orient_inds, style, legendgroup, kwargs)
         )
-    if isinstance(input_obj, Triangle) and style.orientation.show:
+    if isinstance(input_obj, (Triangle, TriangularMesh)) and style.orientation.show:
         traces.append(
             make_triangle_orientations(
                 input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs

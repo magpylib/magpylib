@@ -97,6 +97,15 @@ DEFAULTS = {
                     "symbol": "arrow3d",
                 },
             },
+            "triangularmesh": {
+                "orientation": {
+                    "show": False,
+                    "size": 1,
+                    "color": "grey",
+                    "offset": 0.9,
+                    "symbol": "arrow3d",
+                },
+            },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
     },

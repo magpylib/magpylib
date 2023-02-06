@@ -25,6 +25,7 @@ def get_families(obj):
     from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
     from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
     from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
     from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
     from magpylib._src.obj_classes.class_current_Loop import Loop
     from magpylib._src.obj_classes.class_current_Line import Line
@@ -925,7 +926,7 @@ class TriangleProperties:
 
 
 class DefaultTriangle(MagicProperties, MagnetProperties, TriangleProperties):
-    """Defines styling properties of homogeneous magnet classes.
+    """Defines styling properties of the Triangle class.
 
     Parameters
     ----------
@@ -944,6 +945,63 @@ class DefaultTriangle(MagicProperties, MagnetProperties, TriangleProperties):
 
 class TriangleStyle(MagnetStyle, TriangleProperties):
     """Defines styling properties of the Triangle class.
+
+    Parameters
+    ----------
+    label: str, default=None
+        Label of the class instance, e.g. to be displayed in the legend.
+
+    description: dict or `Description` object, default=None
+        Object description properties.
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    opacity: float, default=None
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation styling of triangles.
+    """
+
+    def __init__(self, orientation=None, **kwargs):
+        super().__init__(orientation=orientation, **kwargs)
+
+
+class DefaultTriangularMesh(MagicProperties, MagnetProperties, TriangleProperties):
+    """Defines styling properties of homogeneous TriangularMesh magnet classes.
+
+    Parameters
+    ----------
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
+        properties or a dictionary with equivalent key/value pairs..
+    """
+
+    def __init__(self, magnetization=None, orientation=None, **kwargs):
+        super().__init__(magnetization=magnetization, orientation=orientation, **kwargs)
+
+
+class TriangularMeshStyle(MagnetStyle, TriangleProperties):
+    """Defines styling properties of the TriangularMesh magnet class.
 
     Parameters
     ----------
@@ -1786,6 +1844,17 @@ class DisplayStyle(MagicProperties):
     @magnet.setter
     def magnet(self, val):
         self._magnet = validate_property_class(val, "magnet", DefaultMagnet, self)
+
+    @property
+    def triangularmesh(self):
+        """TriangularMesh default style class."""
+        return self._triangularmesh
+
+    @triangularmesh.setter
+    def triangularmesh(self, val):
+        self._triangularmesh = validate_property_class(
+            val, "triangularmesh", DefaultTriangularMesh, self
+        )
 
     @property
     def current(self):

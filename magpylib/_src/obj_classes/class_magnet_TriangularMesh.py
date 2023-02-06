@@ -9,6 +9,7 @@ from magpylib._src.fields.field_BH_trimesh import segments_intersect_triangles
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+from magpylib._src.style import TriangularMeshStyle
 
 
 class TriangularMesh(BaseMagnet):
@@ -68,6 +69,7 @@ class TriangularMesh(BaseMagnet):
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "facets": 3}
     _draw_func = make_TriangularMesh
+    _style_class = TriangularMeshStyle
 
     def __init__(
         self,
