@@ -597,14 +597,7 @@ def make_Tetrahedron(
     """
     x, y, z = np.array(vertices).T
     trace = {
-        "i": np.array(
-            [
-                0,
-                0,
-                1,
-                2,
-            ]
-        ),
+        "i": np.array([0, 0, 1, 2]),
         "j": np.array([1, 1, 2, 0]),
         "k": np.array([2, 3, 3, 3]),
         "x": x,
