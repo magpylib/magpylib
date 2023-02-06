@@ -62,14 +62,15 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.style.as_dict(
-        flatten=True, separator="_"
-    )
+    default_style = default_settings.display.style
+    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
 
     # construct object specific dictionary base on style family and default style
-    obj_style_default_dict = styles_by_family["base"]
     for obj_family in obj_families:
-        obj_style_default_dict.update(styles_by_family.get(obj_family, {}))
+        family_style = getattr(default_style, obj_family, {})
+        if family_style:
+            family_dict = family_style.as_dict(flatten=True, separator="_")
+        base_style_flat.update(family_dict)
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
@@ -79,9 +80,7 @@ def get_style(obj, default_settings, **kwargs):
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
-    style.update(
-        **obj_style_default_dict, _match_properties=False, _replace_None_only=True
-    )
+    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
 
     return style
 
