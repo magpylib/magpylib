@@ -19,7 +19,7 @@ except ImportError as missing_module:  # pragma: no cover
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import get_frames
-from magpylib._src.utility import show_gif, show_video
+from magpylib._src.utility import open_animation
 
 # from magpylib._src.utility import format_obj_input
 
@@ -277,7 +277,9 @@ def display_pyvista(
         except IndexError:
             pass
 
-    def run_animation(filename):
+    def run_animation(filename, embed=False):
+        # embed=True, embeds the animation into the notebook page and is necessary when using
+        # temp files
         nonlocal show_canvas
 
         suff = os.path.splitext(filename)[-1]
@@ -285,12 +287,10 @@ def display_pyvista(
             canvas.open_gif(
                 filename, loop=int(repeat), fps=1000 / data["frame_duration"]
             )
-            show_fn = show_gif
         elif suff == ".mp4":
             canvas.open_movie(
                 filename, framerate=1000 / data["frame_duration"], quality=5
             )
-            show_fn = show_video
         else:
             raise ValueError(
                 "Animation filename must end with `'.gif'` or `'mp4'`, "
@@ -303,14 +303,14 @@ def display_pyvista(
             canvas.write_frame()
         canvas.close()
         show_canvas = False
-        show_fn(filename)
+        open_animation(filename, embed=embed)
 
     if len(frames) == 1:
         draw_frame(frames[0])
     elif animation:
         if animation_output in ("gif", "mp4"):
             with tempfile.TemporaryFile() as temp:
-                run_animation(f"{temp.name}_animation.{animation_output}")
+                run_animation(f"{temp.name}_animation.{animation_output}", embed=True)
         else:
             run_animation(animation_output)
 
