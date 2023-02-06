@@ -185,7 +185,7 @@ def display_matplotlib(
     subplot_specs=None,
     dpi=80,
     figsize=None,
-    **kwargs,
+    **kwargs,  # pylint: disable=unused-argument
 ):
 
     """Display objects and paths graphically using the matplotlib library."""

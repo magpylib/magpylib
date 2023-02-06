@@ -18,7 +18,6 @@ except ImportError as missing_module:  # pragma: no cover
 
 from pyvista.plotting.colors import Color  # pylint: disable=import-error
 from matplotlib.colors import LinearSegmentedColormap
-from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.utility import show_gif, show_video
 
 # from magpylib._src.utility import format_obj_input
@@ -213,7 +212,7 @@ def display_pyvista(
     subplot_specs=None,
     animation_output="gif",
     repeat=False,
-    **kwargs,
+    **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the pyvista library."""
 

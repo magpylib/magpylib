@@ -257,7 +257,6 @@ def extract_layout_kwargs(kwargs):
 def display_plotly(
     data,
     zoom=1,
-    animation=False,
     canvas=None,
     renderer=None,
     colorsequence=None,

@@ -42,7 +42,16 @@ class RegisterBackend:
         self.backends[name] = self
 
     @classmethod
-    def show(cls, *objs, backend, **kwargs):
+    def show(
+        cls,
+        *objs,
+        backend,
+        zoom=0,
+        max_rows=None,
+        max_cols=None,
+        subplot_specs=None,
+        **kwargs,
+    ):
         """Display function of the current backend"""
         self = cls.backends[backend]
         conditions = {
@@ -65,7 +74,15 @@ class RegisterBackend:
             backend=backend,
             **kwargs,
         )
-        self.show_func()(data, **kwargs)
+        kwargs.pop("animation", None)
+        self.show_func()(
+            data,
+            zoom=zoom,
+            max_rows=max_rows,
+            max_cols=max_cols,
+            subplot_specs=subplot_specs,
+            **kwargs,
+        )
 
 
 def get_show_func(backend):
