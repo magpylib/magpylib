@@ -194,7 +194,6 @@ def animate_path(
         fig.update_layout(
             height=None,
             title=title,
-            legend_groupclick="toggleitem",
         )
     fig.update_layout(
         updatemenus=[buttons_dict],
@@ -204,17 +203,20 @@ def animate_path(
 
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
-    if trace["type"] == "scatter3d":
+    if "scatter" in trace["type"]:
         if "line_width" in trace:
             trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
         dash = trace.get("line_dash", None)
         if dash is not None:
-            trace["line_dash"] = LINESTYLES_TO_PLOTLY.get(dash, dash)
+            trace["line_dash"] = LINESTYLES_TO_PLOTLY.get(dash, "solid")
         symb = trace.get("marker_symbol", None)
         if symb is not None:
-            trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, symb)
+            trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, "circle")
         if "marker_size" in trace:
-            trace["marker_size"] *= SIZE_FACTORS_TO_PLOTLY["marker_size"]
+            trace["marker_size"] = (
+                np.array(trace["marker_size"], dtype="float")
+                * SIZE_FACTORS_TO_PLOTLY["marker_size"]
+            )
     return trace
 
 
@@ -279,7 +281,7 @@ def display_plotly(
     if fig is None:
         if not return_fig:
             show_fig = True
-            fig = go.Figure()
+        fig = go.Figure()
 
     if not (max_rows is None and max_cols is None):
         fig = fig.set_subplots(
@@ -341,7 +343,9 @@ def display_plotly(
             ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
         if update_layout:
             apply_fig_ranges(fig, ranges, apply2d=isanimation)
-            fig.update_layout(legend_itemsizing="constant")
+            fig.update_layout(
+                legend_itemsizing="constant", legend_groupclick="toggleitem"
+            )
         fig.update_layout(layout)
 
     if return_fig and not show_fig:

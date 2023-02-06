@@ -15,7 +15,11 @@ from scipy.spatial.transform import Rotation as RotScipy
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.defaults.defaults_utility import linearize_dict
+from magpylib._src.defaults.defaults_utility import (
+    linearize_dict,
+    ALLOWED_LINESTYLES,
+    ALLOWED_SYMBOLS,
+)
 from magpylib._src.display.sensor_mesh import get_sensor_mesh
 from magpylib._src.display.traces_base import make_Arrow as make_BaseArrow
 from magpylib._src.display.traces_base import make_Cuboid as make_BaseCuboid
@@ -679,6 +683,7 @@ def get_trace2D_dict(
     mode,
     label_suff,
     color,
+    symbol,
     linestyle,
     **kwargs,
 ):
@@ -710,6 +715,7 @@ def get_trace2D_dict(
         "line_color": color,
         "marker_size": marker_size,
         "marker_color": color,
+        "marker_symbol": symbol,
         "showlegend": True,
         "legendgroup": f"{title}{label_suff}",
         **kwargs,
@@ -734,11 +740,10 @@ def get_generic_traces_2D(
 
     sources = format_obj_input(objects, allow="sources+collections")
     sensors = format_obj_input(objects, allow="sensors")
-    linestyles = ("solid", "dash", "dot", "dashdot", "longdash", "longdashdot")
     if not isinstance(output, (list, tuple)):
         output = [output]
     output_params = {}
-    for out, linestyle in zip(output, cycle(linestyles)):
+    for out, linestyle in zip(output, cycle(ALLOWED_LINESTYLES[:6])):
         field_str, *coords_str = out
         if not coords_str:
             coords_str = list("xyz")
@@ -798,6 +803,7 @@ def get_generic_traces_2D(
         if src_ind == 1 and sumup:
             break
         label_src, color_src = get_label_and_color(src)
+        symbols = cycle(ALLOWED_SYMBOLS[:6])
         for sens_ind, sens in enumerate(sensors):
             label_sens, color_sens = get_label_and_color(sens)
             label_suff = label_sens
@@ -812,6 +818,7 @@ def get_generic_traces_2D(
             pix_suff = ""
             num_of_pix_to_show = 1 if pixel_agg else num_of_pix
             for pix_ind in range(num_of_pix_to_show):
+                symbol = next(symbols)
                 BH = BH_array[src_ind, sens_ind, :, pix_ind]
                 if num_of_pix > 1:
                     if pixel_agg:
@@ -830,6 +837,7 @@ def get_generic_traces_2D(
                             label_suff=label_suff,
                             name=f"{label}{pix_suff}",
                             color=color,
+                            symbol=symbol,
                             type="scatter",
                             row=row,
                             col=col,
