@@ -17,6 +17,8 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 def get_families(obj):
     "get obj families"
     # pylint: disable=import-outside-toplevel
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=redefined-outer-name
     from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
     from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
     from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
@@ -29,7 +31,7 @@ def get_families(obj):
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole
     from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
     from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-    from magpylib._src.obj_classes.class_Sensor import Sensor as Sensor
+    from magpylib._src.obj_classes.class_Sensor import Sensor
     from magpylib._src.display.traces_generic import MagpyMarkers as Markers
 
     loc = locals()
@@ -60,7 +62,9 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.style.as_dict()
+    styles_by_family = default_settings.display.style.as_dict(
+        flatten=True, separator="_"
+    )
 
     # construct object specific dictionary base on style family and default style
     obj_style_default_dict = styles_by_family["base"]
