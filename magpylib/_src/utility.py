@@ -384,6 +384,6 @@ def open_animation(filepath, embed=False):
         else:  # pragma: no cover
             raise TypeError("Filetype not supported, only 'mp4 or 'gif' allowed")
     else:
-        from os import startfile
+        import webbrowser
 
-        startfile(filepath)
+        webbrowser.open(filepath)
