@@ -203,11 +203,9 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
 
 
 def display_pyvista(
-    *obj_list,
-    zoom=1,
+    data,
     canvas=None,
     animation=False,
-    colorsequence=None,
     return_fig=False,
     jupyter_backend=None,
     max_rows=None,
@@ -226,15 +224,6 @@ def display_pyvista(
         if not return_fig:
             show_canvas = True  # pragma: no cover
         canvas = pv.Plotter(shape=(max_rows, max_cols), off_screen=animation)
-
-    data = get_frames(
-        objs=obj_list,
-        colorsequence=colorsequence,
-        zoom=zoom,
-        animation=animation,
-        backend="pyvista",
-        **kwargs,
-    )
 
     frames = data["frames"]
 

@@ -65,7 +65,41 @@ class RegisterBackend:
             backend=backend,
             **kwargs,
         )
-        self.show_func(data, **kwargs)
+        self.show_func()(data, **kwargs)
+
+
+def get_show_func(backend):
+    """Return the bakcend show function"""
+    # defer import to show call. Importerror should only fail if unavalaible backend is called
+    return lambda: getattr(
+        import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
+    )
+
+
+RegisterBackend(
+    name="matplotlib",
+    show_func=get_show_func("matplotlib"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=False,
+)
+
+
+RegisterBackend(
+    name="plotly",
+    show_func=get_show_func("plotly"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=True,
+)
+
+RegisterBackend(
+    name="pyvista",
+    show_func=get_show_func("pyvista"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=True,
+)
 
 
 class DisplayContext:

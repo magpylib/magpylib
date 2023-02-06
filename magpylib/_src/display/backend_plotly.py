@@ -312,7 +312,6 @@ def display_plotly(
             rows_list = cols_list = None
         isanimation = len(frames) != 1
         if not isanimation:
-            print(frames[0]["data"])
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
             animation_slider = data.get("animation_slider", False)
