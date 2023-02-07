@@ -71,7 +71,9 @@ def get_style(obj, default_settings, **kwargs):
         family_style = getattr(default_style, obj_family, {})
         if family_style:
             family_dict = family_style.as_dict(flatten=True, separator="_")
-            base_style_flat.update(family_dict)
+            base_style_flat.update(
+                {k: v for k, v in family_dict.items() if v is not None}
+            )
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
