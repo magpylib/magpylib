@@ -40,6 +40,7 @@ from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
+from magpylib._src.fields.field_BH_trimesh import segments_intersect_triangles
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.style import get_style
@@ -237,6 +238,57 @@ def make_Dipole(
     return place_and_orient_model3d(
         trace, orientation=orientation, position=position, **kwargs
     )
+
+
+def make_invalid_mesh_lines(
+    obj,
+    pos_orient_inds,
+    mode,
+    label=None,
+    style=None,
+    color=None,  # pylint: disable=unused-argument
+    **kwargs,
+):
+    """Draw open or self-intersecting mesh lines and vertices"""
+    # pylint: disable=protected-access
+    style = obj.style if style is None else style
+    mesh = getattr(style.mesh, mode)
+    marker, line = mesh.marker, mesh.line
+    tr, vert = obj.triangles, obj.vertices
+    edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
+    # make sure unique pairs are found regardless of order
+    edges = np.sort(edges, axis=1)
+    edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
+    if mode == "open":
+        lines = vert[edges_uniq[edges_counts != 2]]
+    elif mode == "intersect":
+        intersect_edges = segments_intersect_triangles(
+            vert[edges_uniq].swapaxes(0, 1), vert[tr].swapaxes(0, 1)
+        )
+        lines = vert[edges_uniq][intersect_edges != 0]
+    label = f"{obj}" if label is None else label
+    if lines.size != 0:
+        lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
+        traces = []
+        for ind in pos_orient_inds:
+            x, y, z = (obj._orientation[ind].apply(lines) + obj._position[ind]).T
+            trace = {
+                "type": "scatter3d",
+                "x": x,
+                "y": y,
+                "z": z,
+                "marker_color": marker.color,
+                "marker_size": marker.size,
+                "marker_symbol": marker.symbol,
+                "line_color": line.color,
+                "line_width": line.width,
+                "line_dash": line.style,
+                "legendgroup": f"{obj}{mode}edges",
+                "name": f"{label} - {mode}-edges",
+            }
+            traces.append(trace)
+        return {**merge_traces(*traces), **kwargs}
+    return {}
 
 
 def make_triangle_orientations(
@@ -889,7 +941,15 @@ def get_generic_traces(
                 input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs
             )
         )
-
+    if isinstance(input_obj, TriangularMesh):
+        for mode in ("open", "intersect"):
+            if getattr(style.mesh, mode).show:
+                trace = make_invalid_mesh_lines(
+                    input_obj, pos_orient_inds, mode, label, **kwargs
+                )
+                if trace:
+                    traces.append(trace)
+    # TODO implement disjoined mesh view
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)

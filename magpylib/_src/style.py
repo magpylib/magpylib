@@ -811,6 +811,153 @@ class MagnetStyle(BaseStyle, MagnetProperties):
         super().__init__(**kwargs)
 
 
+class MarkerLineProperties:
+    """Defines styling properties of Markers and Lines."""
+
+    @property
+    def show(self):
+        """Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+        """
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+    @property
+    def marker(self):
+        """`Markers` object with 'color', 'symbol', 'size' properties."""
+        return self._marker
+
+    @marker.setter
+    def marker(self, val):
+        self._marker = validate_property_class(val, "marker", Marker, self)
+
+    @property
+    def line(self):
+        """`Line` object with 'color', 'type', 'width' properties."""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", Line, self)
+
+
+class OpenMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of OpenMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class IntersectMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of IntersectMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class DisjoinedMesh(MagicProperties):
+    """Defines styling properties of DisjoinedMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+    """
+
+    @property
+    def show(self):
+        """Show/hide disjoined objects."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+
+class InvalidMesh(MagicProperties):
+    """Defines InvalidMesh mesh properties.
+
+    Parameters
+    ----------
+    open: dict or OpenMesh,  default=None
+        Shows open mesh vertices and edges of a TriangularMesh object, if any.
+
+    intersect: dict or OpenMesh,  default=None
+        Shows self-intersect mesh vertices and edges of a TriangularMesh object, if any.
+
+    disjoined: dict or DisjoinedMesh, default=None
+        Shows disjoined bodies of a TriangularMesh object, if any.
+    """
+
+    @property
+    def open(self):
+        """OpenMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._open
+
+    @open.setter
+    def open(self, val):
+        self._open = validate_property_class(val, "open", OpenMesh, self)
+
+    @property
+    def intersect(self):
+        """`IntersectMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._intersect
+
+    @intersect.setter
+    def intersect(self, val):
+        self._intersect = validate_property_class(val, "intersect", IntersectMesh, self)
+
+    @property
+    def disjoined(self):
+        """`DisjoinedMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._disjoined
+
+    @disjoined.setter
+    def disjoined(self, val):
+        self._disjoined = validate_property_class(val, "disjoined", DisjoinedMesh, self)
+
+
 class Orientation(MagicProperties):
     """Defines Triangle orientation properties.
 
@@ -982,7 +1129,24 @@ class TriangleStyle(MagnetStyle, TriangleProperties):
         super().__init__(orientation=orientation, **kwargs)
 
 
-class DefaultTriangularMesh(MagicProperties, MagnetProperties, TriangleProperties):
+class TriangularMeshProperties:
+    """Defines TriangularMesh properties."""
+
+    @property
+    def mesh(self):
+        """`InvalidMesh` instance with `'show', 'markers', 'line'` properties
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._mesh
+
+    @mesh.setter
+    def mesh(self, val):
+        self._mesh = validate_property_class(val, "mesh", InvalidMesh, self)
+
+
+class DefaultTriangularMesh(
+    MagicProperties, MagnetProperties, TriangleProperties, TriangularMeshProperties
+):
     """Defines styling properties of homogeneous TriangularMesh magnet classes.
 
     Parameters
@@ -991,16 +1155,21 @@ class DefaultTriangularMesh(MagicProperties, MagnetProperties, TrianglePropertie
         Magnetization styling with `'show'`, `'size'`, `'color'` properties
         or a dictionary with equivalent key/value pairs.
 
-    orientation: dict or Orientation,  default=None,
+    orientation: dict or Orientation,  default=None
         Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
-        properties or a dictionary with equivalent key/value pairs..
+        properties or a dictionary with equivalent key/value pairs.
+
+    mesh: dict or InvalidMesh, default=None
+        InvalidMesh styling properties (e.g. `'open', 'intersect', 'disjoined'`)
     """
 
-    def __init__(self, magnetization=None, orientation=None, **kwargs):
-        super().__init__(magnetization=magnetization, orientation=orientation, **kwargs)
+    def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
+        super().__init__(
+            magnetization=magnetization, orientation=orientation, mesh=mesh, **kwargs
+        )
 
 
-class TriangularMeshStyle(MagnetStyle, TriangleProperties):
+class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshProperties):
     """Defines styling properties of the TriangularMesh magnet class.
 
     Parameters
@@ -1033,6 +1202,9 @@ class TriangularMeshStyle(MagnetStyle, TriangleProperties):
 
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
+
+    mesh: dict or InvalidMesh,  default=None,
+        mesh styling of triangles.
     """
 
     def __init__(self, orientation=None, **kwargs):
@@ -1602,11 +1774,17 @@ class DipoleStyle(BaseStyle, DipoleProperties):
         super().__init__(**kwargs)
 
 
-class Path(MagicProperties):
+class Path(MagicProperties, MarkerLineProperties):
     """Defines styling properties of an object's path.
 
     Parameters
     ----------
+    show: bool, default=None
+        Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+
     marker: dict or `Markers` object, default=None
         `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
@@ -1614,12 +1792,6 @@ class Path(MagicProperties):
     line: dict or `Line` object, default=None
         `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
-
-    show: bool, default=None
-        Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
 
     frames: int or array_like, shape (n,), default=None
         Show copies of the 3D-model along the given path indices.
@@ -1631,51 +1803,16 @@ class Path(MagicProperties):
     """
 
     def __init__(
-        self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs
+        self, show=None, marker=None, line=None, frames=None, numbering=None, **kwargs
     ):
         super().__init__(
+            show=show,
             marker=marker,
             line=line,
             frames=frames,
-            show=show,
             numbering=numbering,
             **kwargs,
         )
-
-    @property
-    def marker(self):
-        """`Markers` object with 'color', 'symbol', 'size' properties."""
-        return self._marker
-
-    @marker.setter
-    def marker(self, val):
-        self._marker = validate_property_class(val, "marker", Marker, self)
-
-    @property
-    def line(self):
-        """`Line` object with 'color', 'type', 'width' properties."""
-        return self._line
-
-    @line.setter
-    def line(self, val):
-        self._line = validate_property_class(val, "line", Line, self)
-
-    @property
-    def show(self):
-        """Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
-        """
-        return self._show
-
-    @show.setter
-    def show(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._show = val
 
     @property
     def frames(self):

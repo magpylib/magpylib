@@ -105,6 +105,21 @@ DEFAULTS = {
                     "offset": 0.9,
                     "symbol": "arrow3d",
                 },
+                "mesh": {
+                    "open": {
+                        "show": True,
+                        "line": {"width": 2, "style": "solid", "color": "cyan"},
+                        "marker": {"size": 5, "symbol": "o", "color": "black"},
+                    },
+                    "intersect": {
+                        "show": True,
+                        "line": {"width": 2, "style": "solid", "color": "magenta"},
+                        "marker": {"size": 5, "symbol": "o", "color": "black"},
+                    },
+                    "disjoined": {
+                        "show": True,
+                    },
+                },
             },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
