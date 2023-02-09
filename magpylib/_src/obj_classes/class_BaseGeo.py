@@ -244,6 +244,7 @@ class BaseGeo(BaseTransform):
         """
         if getattr(self, "_style", None) is None:
             self._style = self._validate_style(self._style_kwargs)
+            self._style_kwargs = {}
         return self._style
 
     @style.setter
