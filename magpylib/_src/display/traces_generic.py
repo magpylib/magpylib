@@ -949,7 +949,7 @@ def get_generic_traces(
                 )
                 if trace:
                     traces.append(trace)
-    # TODO implement disjoined mesh view
+    # TODO implement disjoint mesh view
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
