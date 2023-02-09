@@ -72,13 +72,13 @@ class BaseGeo(BaseTransform):
         style=None,
         **kwargs,
     ):
-
+        self._style_kwargs = {}
         self._parent = None
         # set _position and _orientation attributes
         self._init_position_orientation(position, orientation)
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
-            self.style = self._process_style_kwargs(style=style, **kwargs)
+            self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
 
     @staticmethod
     def _process_style_kwargs(style=None, **kwargs):
@@ -242,8 +242,8 @@ class BaseGeo(BaseTransform):
         Object style in the form of a BaseStyle object. Input must be
         in the form of a style dictionary.
         """
-        if not hasattr(self, "_style") or self._style is None:
-            self._style = self._validate_style(val=None)
+        if getattr(self, "_style", None) is None:
+            self._style = self._validate_style(self._style_kwargs)
         return self._style
 
     @style.setter
