@@ -118,6 +118,8 @@ DEFAULTS = {
                     },
                     "disjoint": {
                         "show": True,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
                 },
             },

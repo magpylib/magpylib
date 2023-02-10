@@ -888,27 +888,22 @@ class IntersectMesh(MagicProperties, MarkerLineProperties):
     """
 
 
-class DisjointMesh(MagicProperties):
+class DisjointMesh(MagicProperties, MarkerLineProperties):
     """Defines styling properties of DisjointMesh objects
 
     Parameters
     ----------
     show: bool, default=None
         Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
     """
-
-    @property
-    def show(self):
-        """Show/hide disjoint objects."""
-        return self._show
-
-    @show.setter
-    def show(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._show = val
 
 
 class InvalidMesh(MagicProperties):
