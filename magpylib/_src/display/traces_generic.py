@@ -1,6 +1,7 @@
 """Generic trace drawing functionalities"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+# pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
 import numbers
 import warnings
@@ -899,32 +900,9 @@ def get_generic_traces(
     )
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
-            if (
-                False
-            ):  # isinstance(input_obj, TriangularMesh) and style.mesh.disjoint.show:
-                tria_orig = input_obj._triangles
-                mag_show = style.magnetization.show
-                parts, triangles = get_disjoint_parts_from_triangles(
-                    tria_orig, return_triangles=True
-                )
-                if len(parts) > 1:
-                    for tri in triangles:
-                        # temporary mutate triangles from subset
-                        input_obj._triangles = tri
-                        style.magnetization.show = False
-                        path_traces.append(
-                            make_func(
-                                position=pos,
-                                orientation=orient,
-                                **{**make_func_kwargs, "color": "black"},
-                            )
-                        )
-                    input_obj._triangles = tria_orig
-                    style.magnetization.show = mag_show
-            else:
-                path_traces.append(
-                    make_func(position=pos, orientation=orient, **make_func_kwargs)
-                )
+            path_traces.append(
+                make_func(position=pos, orientation=orient, **make_func_kwargs)
+            )
         for extr in extra_model3d_traces:
             if extr.show:
                 extr.update(extr.updatefunc())
@@ -1028,7 +1006,6 @@ def get_generic_traces(
                 )
                 if trace:
                     traces.append(trace)
-    # TODO implement disjoint mesh view
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
