@@ -12,7 +12,7 @@ from magpylib._src.fields.field_BH_trimesh import magnet_trimesh_field
 def test_TriangularMesh_repr():
     """TriangularMesh repr test"""
     trimesh = magpy.magnet.TriangularMesh.from_pyvista((0, 0, 1000), pv.Octahedron())
-    assert trimesh.__repr__().startswith("TriangularMesh"), "TriangularMesh repr failed"
+    assert repr(trimesh).startswith("TriangularMesh"), "TriangularMesh repr failed"
 
 
 def test_TriangularMesh_barycenter():
@@ -45,7 +45,7 @@ def test_TriangularMesh_getBH():
         magnetization=magnetization,
         vertices=vertices,
         triangles=triangles,
-        reorient_facets=True,
+        reorient_triangles=True,
     )
     cube_facet_reorient_false = magpy.magnet.TriangularMesh(
         position=cube.position,
@@ -53,7 +53,7 @@ def test_TriangularMesh_getBH():
         magnetization=magnetization,
         vertices=vertices,
         triangles=triangles,
-        reorient_facets=False,
+        reorient_triangles=False,
     )
 
     vertices = np.linspace((-2, 0, 0), (2, 0, 0), 50)
@@ -162,31 +162,6 @@ def test_minimum_vertices():
         )
 
 
-def test_self_intersecting_triangular_mesh():
-    """raises Error if self intersecting"""
-    self_intersecting_mesh3d = {
-        "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
-        "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
-        "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
-        "i": [7, 0, 0, 0, 2, 6, 4, 0, 3, 7, 4, 5, 6, 7],
-        "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
-        "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
-    }
-    vertices = np.array(
-        [v for k, v in self_intersecting_mesh3d.items() if k in "xyz"]
-    ).T
-    triangles = np.array(
-        [v for k, v in self_intersecting_mesh3d.items() if k in "ijk"]
-    ).T
-    with pytest.raises(ValueError):
-        magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
-            vertices=vertices,
-            triangles=triangles,
-            validate_mesh=True,
-        )
-
-
 def test_open_mesh():
     """raises Error if mesh is open"""
     open_mesh = {
@@ -204,7 +179,18 @@ def test_open_mesh():
             magnetization=(0, 0, 1000),
             vertices=vertices,
             triangles=triangles,
-            validate_mesh=True,
+            validate_open_mesh=True,
+        )
+
+
+def test_disjoint_mesh():
+    """raises Error if mesh is not connected"""
+    #  Multiple Text3D letters are disjoint
+    with pytest.raises(ValueError):
+        magpy.magnet.TriangularMesh.from_pyvista(
+            magnetization=(0, 0, 1000),
+            polydata=pv.Text3D("AB"),
+            validate_connected_mesh=True,
         )
 
 
@@ -233,7 +219,7 @@ def test_TriangularMesh_from_facets_bad_inputs():
 
     def get_tri_from_facets(facets):
         return magpy.magnet.TriangularMesh.from_triangular_facets(
-            mag, facets, validate_mesh=False, reorient_facets=False
+            mag, facets, validate_open_mesh=False, reorient_triangles=False
         )
 
     triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])

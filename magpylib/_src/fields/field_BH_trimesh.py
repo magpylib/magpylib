@@ -2,6 +2,7 @@
 Implementations of analytical expressions for the magnetic field of a triangular surface.
 Computation details in function docstrings.
 """
+# pylint: disable=too-many-nested-blocks
 # pylance: disable=Code is unreachable
 import numpy as np
 
@@ -87,7 +88,8 @@ def trimesh_is_connected(triangles: np.ndarray) -> np.ndarray:
     # cycle through tri_list and unique-add indices from connecting triangles
     # when adding indices to connected, remove respective triangle from tri_list
     # After completing a cycle, check if a new triangle was added
-    # if not, and tri_list still contains some triangles, then these faces must be disconnected from the rest
+    # if not, and tri_list still contains some triangles, then these faces must be
+    # disconnected from the rest
     added_new = True
     while added_new:
         added_new = False

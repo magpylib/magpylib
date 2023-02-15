@@ -87,15 +87,17 @@ class TriangularMesh(BaseMagnet):
     ):
 
         self._vertices, self._triangles = self._input_check(vertices, triangles)
+        self._is_connected = None
+        self._is_closed = None
 
         if validate_closed_mesh:
-            self._is_closed()
+            self._validate_closed()
 
         if validate_connected_mesh:
-            self._is_connected()
+            self._validate_connected()
 
         if reorient_triangles:
-            self._triangles = self._fix_trimesh_orientation()
+            self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -115,6 +117,20 @@ class TriangularMesh(BaseMagnet):
     def facets(self):
         """Facets objects"""
         return self._vertices[self._triangles]
+
+    @property
+    def is_closed(self):
+        """Is-closed boolean check"""
+        if self._is_closed is None:
+            self._is_closed = trimesh_is_closed(self._triangles)
+        return self._is_closed
+
+    @property
+    def is_connected(self):
+        """Is-connected boolean check"""
+        if self._is_connected is None:
+            self._is_connected = trimesh_is_connected(self._triangles)
+        return self._is_connected
 
     @property
     def _barycenter(self):
@@ -162,34 +178,28 @@ class TriangularMesh(BaseMagnet):
 
         return (verts, trias)
 
-    def _is_connected(self):
+    def _validate_connected(self):
         """
         Check if trimesh consists of multiple disconnecetd parts.
         Raise error if this is the case.
         """
-        if not trimesh_is_connected(self._triangles):
+        if not self.is_connected:
             raise ValueError(
                 "Bad `triangles` input of TriangularMesh. "
                 "Resulting mesh is not connected. "
                 "Disable error by setting `validate_connected=False`."
             )
 
-    def _is_closed(self):
+    def _validate_closed(self):
         """
         Check if input mesh is closed
         """
-        if not trimesh_is_closed(self._triangles):
+        if not self.is_closed:
             raise ValueError(
                 "Bad `triangles` input of TriangularMesh. "
                 "Resulting mesh is not closed. "
                 "Disable error by setting `validate_closed=False`."
             )
-
-    def _fix_trimesh_orientation(self):
-        """
-        Fix triangle orientations
-        """
-        return fix_trimesh_orientation(self._vertices, self._triangles)
 
     @classmethod
     def from_ConvexHull_points(

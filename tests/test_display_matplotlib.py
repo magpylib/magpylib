@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
 import pytest
+import pyvista as pv
 
 import magpylib as magpy
 from magpylib.graphics.model3d import make_Cuboid
@@ -10,6 +11,7 @@ from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder
 from magpylib.magnet import CylinderSegment
 from magpylib.magnet import Sphere
+
 
 # pylint: disable=assignment-from-no-return
 
@@ -137,11 +139,29 @@ def test_Triangle_display():
 
 def test_TringularMesh_display():
     """testing display for TriangleMesh source built from vertices"""
+    # test  classic trimesh display
     points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
     src = magpy.magnet.TriangularMesh.from_ConvexHull_points(
         magnetization=(1000, 0, 0), points=points
     )
+    src.show(backend="matplotlib", style_description_show=False, return_fig=True)
+
+    # test display of disjoint and open mesh elements
+    polydata = pv.Text3D("AB")  # create disjoint mesh
+    polydata = polydata.triangulate()
+    vertices = polydata.points
+    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+    triangles = triangles[1:]  # open the mesh
+    src = magpy.magnet.TriangularMesh(
+        (0, 0, 1000),
+        vertices,
+        triangles,
+        validate_closed_mesh=False,
+        validate_connected_mesh=False,
+        reorient_triangles=False,
+    )
+
     src.show(backend="matplotlib", return_fig=True)
 
 

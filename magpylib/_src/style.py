@@ -870,24 +870,6 @@ class OpenMesh(MagicProperties, MarkerLineProperties):
     """
 
 
-class IntersectMesh(MagicProperties, MarkerLineProperties):
-    """Defines styling properties of IntersectMesh objects
-
-    Parameters
-    ----------
-    show: bool, default=None
-        Show/hide Lines and Markers
-
-    marker: dict or `Markers` object, default=None
-        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
-        key/value pairs.
-
-    line: dict or `Line` object, default=None
-        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
-        key/value pairs.
-    """
-
-
 class DisjointMesh(MagicProperties, MarkerLineProperties):
     """Defines styling properties of DisjointMesh objects
 
@@ -914,9 +896,6 @@ class InvalidMesh(MagicProperties):
     open: dict or OpenMesh,  default=None
         Shows open mesh vertices and edges of a TriangularMesh object, if any.
 
-    intersect: dict or OpenMesh,  default=None
-        Shows self-intersect mesh vertices and edges of a TriangularMesh object, if any.
-
     disjoint: dict or DisjointMesh, default=None
         Shows disjoint bodies of a TriangularMesh object, if any.
     """
@@ -931,17 +910,6 @@ class InvalidMesh(MagicProperties):
     @open.setter
     def open(self, val):
         self._open = validate_property_class(val, "open", OpenMesh, self)
-
-    @property
-    def intersect(self):
-        """`IntersectMesh` instance with `'show'` property
-        or a dictionary with equivalent key/value pairs.
-        """
-        return self._intersect
-
-    @intersect.setter
-    def intersect(self, val):
-        self._intersect = validate_property_class(val, "intersect", IntersectMesh, self)
 
     @property
     def disjoint(self):
@@ -1157,7 +1125,7 @@ class DefaultTriangularMesh(
         properties or a dictionary with equivalent key/value pairs.
 
     mesh: dict or InvalidMesh, default=None
-        InvalidMesh styling properties (e.g. `'open', 'intersect', 'disjoint'`)
+        InvalidMesh styling properties (e.g. `'open', 'disjoint'`)
     """
 
     def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):

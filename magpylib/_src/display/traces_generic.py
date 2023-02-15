@@ -42,7 +42,6 @@ from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
-from magpylib._src.fields.field_BH_trimesh import segments_intersect_triangles
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.style import get_style
@@ -264,15 +263,10 @@ def make_invalid_mesh_lines(
         # make sure unique pairs are found regardless of order
         edges = np.sort(edges, axis=1)
         edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
-        if mode == "open":
-            lines = vert[edges_uniq[edges_counts != 2]]
-        elif mode == "intersect":
-            intersect_edges = segments_intersect_triangles(
-                vert[edges_uniq].swapaxes(0, 1), vert[tr].swapaxes(0, 1)
-            )
-            lines = vert[edges_uniq][intersect_edges != 0]
-    label = f"{obj}" if label is None else label
+        lines = vert[edges_uniq[edges_counts != 2]]
+    out = {}
     if lines.size != 0:
+        label = f"{obj}" if label is None else label
         lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
         traces = []
         for ind in pos_orient_inds:
@@ -292,8 +286,8 @@ def make_invalid_mesh_lines(
                 "name": f"{label} - {mode}-edges",
             }
             traces.append(trace)
-        return {**merge_traces(*traces), **kwargs}
-    return {}
+        out = {**merge_traces(*traces), **kwargs}
+    return out
 
 
 def get_closest_vertices(tr, vert):
@@ -309,7 +303,7 @@ def get_closest_vertices(tr, vert):
                 for j in range(nparts):
                     if j not in connected:
                         tr1, tr2 = parts[i], parts[j]
-                        c1, c2 = vert[list(tr1)], vert[list(tr2)]
+                        c1, c2 = vert[tr1], vert[tr2]
                         dist = distance.cdist(c1, c2)
                         i1, i2 = divmod(dist.argmin(), dist.shape[1])
                         min_dist = dist[i1, i2]
@@ -808,9 +802,9 @@ def get_disjoint_parts_from_triangles(triangles: list, return_triangles=False):
                 else:
                     rest2.append(r)
             rest = rest2
-        parts.append(first)
+        parts.append(list(first))
         tria_temp = rest
-    if return_triangles:
+    if return_triangles:  # pragma: no cover
         parts = parts, [
             triangles[np.isin(triangles, list(ps)).all(axis=1)] for ps in parts
         ]
@@ -999,7 +993,11 @@ def get_generic_traces(
             )
         )
     if isinstance(input_obj, TriangularMesh):
-        for mode in ("open", "intersect", "disjoint"):
+        for mode in ("open", "disjoint"):
+            if mode == "open" and input_obj.is_closed:
+                continue
+            if mode == "disjoint" and input_obj.is_connected:
+                continue
             if getattr(style.mesh, mode).show:
                 trace = make_invalid_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs

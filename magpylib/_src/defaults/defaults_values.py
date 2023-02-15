@@ -111,11 +111,6 @@ DEFAULTS = {
                         "line": {"width": 2, "style": "solid", "color": "cyan"},
                         "marker": {"size": 5, "symbol": "o", "color": "black"},
                     },
-                    "intersect": {
-                        "show": True,
-                        "line": {"width": 2, "style": "solid", "color": "magenta"},
-                        "marker": {"size": 5, "symbol": "o", "color": "black"},
-                    },
                     "disjoint": {
                         "show": True,
                         "line": {"width": 2, "style": "solid", "color": "black"},
