@@ -7,107 +7,333 @@ import numpy as np
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
 
-# helper functions
-def signed_volume(a, b, c, d):
-    """Computes the signed volume of a series of tetrahedrons defined by the vertices in
-    a, b c and d. The ouput is an SxT array which gives the signed volume of the tetrahedron
-    defined by the line segment 's' and two vertices of the triangle 't'."""
 
-    return np.sum((a - d) * np.cross(b - d, c - d), axis=2)
+def v_norm2(a: np.ndarray) -> np.ndarray:
+    """
+    return |a|**2
+    """
+    a = a * a
+    return a[..., 0] + a[..., 1] + a[..., 2]
 
 
-def segments_intersect_triangles(segments, triangles, summation=True):
-    """For each line segment in `s`, this function computes how many times it intersects
-    any of the triangles given in `t`.
+def v_norm_proj(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    return a_dot_b/|a||b|
+    assuming that |a|, |b| > 0
+    """
+    ab = a * b
+    ab = ab[..., 0] + ab[..., 1] + ab[..., 2]
+
+    return ab / np.sqrt(v_norm2(a) * v_norm2(b))
+
+
+def v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    a x b
+    """
+    result = np.array(
+        (
+            a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
+            a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
+            a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
+        )
+    ).T
+    return result
+
+
+def v_norm_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
+    """
+    a x b / |a x b|
+
+    """
+    res = np.array(
+        (
+            a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
+            a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
+            a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
+        )
+    )
+    res2 = res**2
+    vnorm = np.sqrt(res2[0] + res2[1] + res2[2])
+    res = res / vnorm
+    return res.T
+
+
+def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
+    """
+    a x b * c
+    """
+    result = (
+        (a[..., 1] * b[..., 2] - a[..., 2] * b[..., 1]) * c[..., 0]
+        + (a[..., 2] * b[..., 0] - a[..., 0] * b[..., 2]) * c[..., 1]
+        + (a[..., 0] * b[..., 1] - a[..., 1] * b[..., 0]) * c[..., 2]
+    )
+    return result
+
+
+def trimesh_is_connected(triangles: np.ndarray) -> np.ndarray:
+    """
+    Check if triangular mesh consists of multiple disconnecetd parts.
+
+    Input: triangles: np.ndarray, shape (n,3), dtype int
+        triples of indices
+
+    Output: bool (True if connected, False if disconnected)
+    """
+    tri_list = triangles.tolist()
+    connected = [np.min(triangles)]
+
+    # start with lowest index
+    # cycle through tri_list and unique-add indices from connecting triangles
+    # when adding indices to connected, remove respective triangle from tri_list
+    # After completing a cycle, check if a new triangle was added
+    # if not, and tri_list still contains some triangles, then these faces must be disconnected from the rest
+    added_new = True
+    while added_new:
+        added_new = False
+        # cycle through all triangles that are not connected yet
+        for tria in tri_list:
+            for ii in tria:
+                if ii in connected:
+                    # add new triangle to connected
+                    for iii in tria:
+                        if iii not in connected:
+                            connected.append(iii)
+                    tri_list.remove(tria)
+                    added_new = True
+                    break
+    if tri_list:
+        return False
+    return True
+
+
+def trimesh_is_closed(triangles: np.ndarray) -> bool:
+    """
+    Check if given trimesh forms a closed surface.
+
+    Input: triangles: np.ndarray, shape (n,3), dtype int
+        triples of indices
+
+    Output: bool (True if closed, False if open)
+    """
+    edges = np.concatenate(
+        [triangles[:, 0:2], triangles[:, 1:3], triangles[:, ::2]], axis=0
+    )
+
+    # unique edge pairs and counts how many
+    edges = np.sort(edges, axis=1)
+    _, edge_counts = np.unique(edges, axis=0, return_counts=True)
+
+    # mesh is closed if each edge exists twice
+    return np.all(edge_counts == 2)
+
+
+def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
+    """
+    Check if all triangles are oriented outwards. Fix the ones that are not, and return an
+    array of properly oriented triangles.
+
     Parameters
     ----------
-    segments: 2xSx3 array
-        Array of `S` line segments where the first index specifies the start or end point of the
-        segment, the second index refers to the S^th line segment, and the third index points to
-        the x, y, z coordinates of the line segment point.
+    vertices: np.ndarray, shape (n,3)
+        vertices of the mesh
 
-    triangles: 3xTx3
-        Array of `T` triangles, where the first index specifies one of the three vertices
-        (which don't have to be in any particular order), the second index refers to the T^th
-        triangle, and the third index points to the x,y,z coordinates the the triangle vertex.
-
-    summation: bool, optional
-        If `True`, a binary array is return which only tells if the S^th line segment intersects
-        any of  the triangles given. If `False`, returns a SxT array that tells which triangles are
-        intersected.
+    triangles: np.ndarray, shape (n,3), dtype int
+        triples of indices
 
     Returns
     -------
-        If `'summation'` is `True`, returns a binary array of size S which tells whether the S^th
-        line segment intersects any of the triangles given. Otherwise returns a SxT array that tells
-        which triangles are intersected.
+    triangles: np.ndarray, shape (n,3), dtype int
+        fixed triangles
+
+    """
+    facets = vertices[triangles]
+
+    # compute facet orientations (normalized)
+    a = facets[:, 0, :] - facets[:, 1, :]
+    b = facets[:, 1, :] - facets[:, 2, :]
+    orient = v_norm_cross(a, b)
+
+    # create check points by displacing the facet center in facet orientation direction
+    eps = 1e-6  # unfortunately this must be quite a large number :(
+    facet_center = facets.mean(axis=1)
+    check_points = facet_center + orient * eps
+
+    # find points which are now inside
+    inside_mask = mask_inside_trimesh(check_points, facets)
+
+    # flip triangles which point inside
+    triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
+    return triangles
+
+
+def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
+    """
+    Check if 2-point lines, where the first point lies distinctly outside of a closed
+    triangular mesh (no touch), ends on the inside of that mesh
+
+    If line ends close to a triangle surface it counts as inside (touch).
+    If line passes through triangle edge/corners it counts as intersection.
+
+    Parameters
+    ----------
+    lines: ndarray shape (n,2,3)
+        n line segements defined through respectively 2 (first index) positions with
+        coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
+
+    facets: ndarray, shape (m,3,3)
+        m facets defined through respectively 3 (first index) positions with coordinates
+        (x,y,z) (last index). The facets must define a closed mesh.
+
+    Returns
+    -------
+        np.ndarray shape (n,)
+
+    Note
+    ----
+    Part 1: plane_cross
+    Checks if start and end of lines are on the same or on different sides of the planes
+    defined by the triangular facets. On the way check if end-point touches the plane.
+
+    Part 2: pass_through
+    Makes use of Line-Triangle intersection as described in
+    https://www.iue.tuwien.ac.at/phd/ertl/node114.html
+    to check if the extended line would pass through the triangular facet
     """
 
-    s, t = segments, triangles
-    # compute the normals to each triangle
-    normals = np.cross(t[2] - t[0], t[2] - t[1])
-    normals /= np.linalg.norm(normals, axis=1)[:, np.newaxis]
+    # Part 1 ---------------------------
+    normals = v_cross(facets[:, 0] - facets[:, 2], facets[:, 1] - facets[:, 2])
+    normals = np.tile(normals, (len(lines), 1, 1))
 
-    # get sign of each segment endpoint, if the sign changes then we know this segment crosses the
-    # plane which contains a triangle. If the value is zero the endpoint of the segment lies on the
-    # plane.
-    s0, s1 = s[0][:, np.newaxis], s[1][:, np.newaxis]  # -> S x T x 3 arrays
-    sign1 = np.sign(np.sum(normals * (s0 - t[2]), axis=2))  # S x T
-    sign2 = np.sign(np.sum(normals * (s1 - t[2]), axis=2))  # S x T
+    l0 = lines[:, 0][:, np.newaxis]  # outside points
+    l1 = lines[:, 1][:, np.newaxis]  # possible inside test-points
 
-    # determine segments which cross the plane of a triangle.
-    #  -> 1 if the sign of the end points of s is
-    # different AND one of end points of s is not a vertex of t
-    cross = (sign1 != sign2) * (sign1 != 0) * (sign2 != 0)  # S x T
+    # test-point might coincide with chosen in-plane reference point (chosen facets[:,2] here).
+    # this then leads to bad projection computation
+    # --> choose other reference points (facets[:,1]) in those specific cases
+    ref_pts = np.tile(facets[:, 2], (len(lines), 1, 1))
+    eps = 1e-16  # note: norm square !
+    coincide = v_norm2(l1 - ref_pts) < eps
+    if np.any(coincide):
+        ref_pts2 = np.tile(
+            facets[:, 1], (len(lines), 1, 1)
+        )  # <--inefficient tile !!! only small part needed
+        ref_pts[coincide] = ref_pts2[coincide]
+    coincide = v_norm2(l1 - ref_pts) < eps
 
-    # get signed volumes
-    v = [
-        np.sign(signed_volume(t[i], t[j], s0, s1)) for i, j in zip((0, 1, 2), (1, 2, 0))
-    ]  # S x T
-    same_volume = np.logical_and(
-        (v[0] == v[1]), (v[1] == v[2])
-    )  # 1 if s and t have same sign in v0, v1 and v2
+    proj0 = v_norm_proj(l0 - ref_pts, normals)
+    proj1 = v_norm_proj(l1 - ref_pts, normals)
 
-    res = cross * same_volume
-    if summation:
-        res = np.sum(res, axis=1)
+    eps = 1e-7
+    plane_touch = (
+        np.abs(proj1) < eps
+    )  # no need to check proj0 for touch because line init pts are outside
+    # print('plane_touch:')
+    # print(plane_touch)
 
-    return res
+    plane_cross = np.sign(proj0) != np.sign(proj1)
+    # print('plane_cross:')
+    # print(plane_cross)
+
+    # Part 2 ---------------------------
+    # signed areas (no 0-problem because ss0 is the outside point)
+    a = facets[:, 0] - l0
+    b = facets[:, 1] - l0
+    c = facets[:, 2] - l0
+    d = l1 - l0
+    area1 = v_dot_cross3d(a, b, d)
+    area2 = v_dot_cross3d(b, c, d)
+    area3 = v_dot_cross3d(c, a, d)
+
+    eps = 1e-12
+    pass_through_boundary = (
+        (np.abs(area1) < eps) | (np.abs(area2) < eps) | (np.abs(area3) < eps)
+    )
+    # print('pass_through_boundary:')
+    # print(pass_through_boundary)
+
+    area1 = np.sign(area1)
+    area2 = np.sign(area2)
+    area3 = np.sign(area3)
+    pass_through_inside = (area1 == area2) * (area2 == area3)
+    # print('pass_through_inside:')
+    # print(pass_through_inside)
+
+    pass_through = pass_through_boundary | pass_through_inside
+
+    # Part 3 ---------------------------
+    result_cross = pass_through * plane_cross
+    result_touch = pass_through * plane_touch
+
+    inside1 = np.sum(result_cross, axis=1) % 2 != 0
+    inside2 = np.any(result_touch, axis=1)
+
+    return inside1 | inside2
 
 
-# masks
-def mask_inside_enclosing_box(points, vertices, tol=1e-15):
-    """Return a mask for `points` which truth value tells if inside the
-    bounding box"""
+def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
+    """
+    Quick-check which points lie inside a bounding box of the mesh (defined by vertices).
+    Returns True when inside, False when outside bounding box.
+
+    Parameters
+    ----------
+    points, ndarray, shape (n,3)
+    vertices, ndarray, shape (m,3)
+
+    Returns
+    -------
+    ndarray, boolean, shape (n,)
+    """
     xmin, ymin, zmin = np.min(vertices, axis=0)
     xmax, ymax, zmax = np.max(vertices, axis=0)
     x, y, z = points.T
-    # within cuboid dimension with positive tolerance
-    mx = (x - xmax < tol) & (xmin - x < tol)
-    my = (y - ymax < tol) & (ymin - y < tol)
-    mz = (z - zmax < tol) & (zmin - z < tol)
+
+    eps = 1e-12
+    mx = (x < xmax + eps) & (x > xmin - eps)
+    my = (y < ymax + eps) & (y > ymin - eps)
+    mz = (z < zmax + eps) & (z > zmin - eps)
+
     return mx & my & mz
 
 
-def mask_inside_trimesh(points, facets):
-    """Return a boolean mask corresponding to the truth values of which points are inside
-    the triangular mesh defined by the provided facets, using the ray tracing method. A pre-filter
-    is used to check if points are inside an enclosing box and only if the ones inside are further
-    then checked upon."""
-    # compute only points outside enclosing box more efficiently
-    vertices = np.unique(facets.reshape((-1, 3)), axis=0)
-    mask = mask_inside_enclosing_box(points, vertices)
+def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
+    """
+    Check which points lie inside of a closed triangular mesh (defined by facets).
 
-    # choose a start point that is for sure outside the mesh
-    pts_ins_box = points[mask]
-    start_point = np.min(vertices, axis=0) - np.array([1.001, 0.992, 0.993])
-    segments = np.tile(start_point, (pts_ins_box.shape[0], 1))
-    t = facets.swapaxes(0, 1)
-    s = np.concatenate([segments, pts_ins_box]).reshape((2, -1, 3))
-    sums = segments_intersect_triangles(s, t)
-    ray_tracing_mask = sums % 2 != 0
-    mask[mask] = ray_tracing_mask
-    return mask
+    Parameters
+    ----------
+    points, ndarray, shape (n,3)
+    facets, ndarray, shape (m,3,3)
+
+    Returns
+    -------
+    ndarray, shape (n,)
+
+    Note
+    ----
+    Method: ray-tracing.
+    Facets must form a closed mesh for this to work.
+    """
+    vertices = facets.reshape((-1, 3))
+
+    # test-points inside of enclosing box
+    mask_inside = mask_inside_enclosing_box(points, vertices)
+    pts_in_box = points[mask_inside]
+
+    # create test-lines from outside to test-points
+    start_point_outside = np.min(vertices, axis=0) - np.array(
+        [12.0012345, 5.9923456, 6.9932109]
+    )
+    test_lines = np.tile(start_point_outside, (len(pts_in_box), 2, 1))
+    test_lines[:, 1] = pts_in_box
+
+    # check if test-points are inside using ray tracing
+    mask_inside2 = lines_end_in_trimesh(test_lines, facets)
+
+    mask_inside[mask_inside] = mask_inside2
+
+    return mask_inside
 
 
 def magnet_trimesh_field(

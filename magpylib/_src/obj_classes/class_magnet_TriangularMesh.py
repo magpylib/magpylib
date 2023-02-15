@@ -3,9 +3,10 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_generic import make_TriangularMesh
+from magpylib._src.fields.field_BH_trimesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_trimesh import magnet_trimesh_field
-from magpylib._src.fields.field_BH_trimesh import mask_inside_trimesh
-from magpylib._src.fields.field_BH_trimesh import segments_intersect_triangles
+from magpylib._src.fields.field_BH_trimesh import trimesh_is_closed
+from magpylib._src.fields.field_BH_trimesh import trimesh_is_connected
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
@@ -42,11 +43,11 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    reorient_facets: bool, optional
+    reorient_triangles: bool, optional
         If `False`, no facet orientation check is performed. If `True`, facets pointing inwards are
         fliped in the right direction.
 
-    validate_mesh: bool, optional
+    validate_closed_mesh: bool, optional
         If `True`, the provided set of facets is validated by checking if it forms a closed body and
         if it does not self-intersect. Can be deactivated for perfomance reasons by setting it to
         `False`.
@@ -78,20 +79,25 @@ class TriangularMesh(BaseMagnet):
         triangles=None,
         position=(0, 0, 0),
         orientation=None,
-        reorient_facets=True,
-        validate_mesh=True,
+        validate_closed_mesh=True,  # <-this cannot be False or inside-outside checks will not work
+        validate_connected_mesh=True,
+        reorient_triangles=True,
         style=None,
         **kwargs,
     ):
 
-        # instance attributes
-        self._triangles, self._vertices = self._validate_facets(
-            vertices,
-            triangles,
-            reorient_facets=reorient_facets,
-            validate_mesh=validate_mesh,
-        )
-        # init inheritance
+        self._vertices, self._triangles = self._input_check(vertices, triangles)
+
+        if validate_closed_mesh:
+            self._is_closed()
+
+        if validate_connected_mesh:
+            self._is_connected()
+
+        if reorient_triangles:
+            self._triangles = self._fix_trimesh_orientation()
+
+        # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
 
     # property getters and setters
@@ -127,89 +133,63 @@ class TriangularMesh(BaseMagnet):
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
-    def _validate_facets(
-        self,
-        vertices=None,
-        triangles=None,
-        reorient_facets=True,
-        validate_mesh=True,
-    ):
-        """Validate facet input, reorient if necessary."""
-        vertices = check_format_input_vector(
+    def _input_check(self, vertices, triangles):
+        """input checks here ?"""
+
+        # no. vertices must exceed largest triangle index
+        # not all vertices can lie in a plane
+        # unique vertices ?
+        # do validation checks
+        verts = check_format_input_vector(
             vertices,
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         )
-        triangles = check_format_input_vector(
+
+        # check if triangle indices have allowed values
+        # triangles must not be duplicates
+        # triangles must not be degenerate ()
+        # do validation checks
+        trias = check_format_input_vector(
             triangles,
             dims=(2,),
             shape_m1=3,
             sig_name="TriangularMesh.triangles",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
-        )
-        triangles = triangles.astype(int)
-        if np.max(triangles) >= vertices.shape[0]:
+        ).astype(int)
+
+        return (verts, trias)
+
+    def _is_connected(self):
+        """
+        Check if trimesh consists of multiple disconnecetd parts.
+        Raise error if this is the case.
+        """
+        if not trimesh_is_connected(self._triangles):
             raise ValueError(
-                f"The triangles max index ({np.max(triangles)}) must be stricly lower than "
-                f"the number of vertices ({vertices.shape[0]})"
+                "Bad `triangles` input of TriangularMesh. "
+                "Resulting mesh is not connected. "
+                "Disable error by setting `validate_connected=False`."
             )
-        if validate_mesh or reorient_facets:
-            tr = triangles
-            edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-            # make sure unique edge pairs are found regardless of vertices order
-            edges = np.sort(edges, axis=1)
-            edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
-            # if closed, each edge belongs to exactly 2 facets
-            open_edges_sum = np.sum(edges_counts != 2)
-            if open_edges_sum != 0:
-                raise ValueError(
-                    f"Provided set of facets result in {open_edges_sum} open edges"
-                )
-            intersecting_edges = segments_intersect_triangles(
-                vertices[edges_uniq].swapaxes(0, 1), vertices[triangles].swapaxes(0, 1)
+
+    def _is_closed(self):
+        """
+        Check if input mesh is closed
+        """
+        if not trimesh_is_closed(self._triangles):
+            raise ValueError(
+                "Bad `triangles` input of TriangularMesh. "
+                "Resulting mesh is not closed. "
+                "Disable error by setting `validate_closed=False`."
             )
-            intersecting_edges_sum = np.sum(intersecting_edges != 0)
-            if intersecting_edges_sum != 0:
-                raise ValueError(
-                    "Provided set of facets result in at least "
-                    f"{intersecting_edges_sum} edges intersecting faces"
-                )
-        if reorient_facets:
-            triangles = self._flip_facets_outwards(vertices, triangles)
-        return triangles, vertices
 
-    @staticmethod
-    def _flip_facets_outwards(vertices, triangles, tol=1e-8):
-        """Flip facets pointing inwards"""
-
-        facets = vertices[triangles]
-
-        facet_centers = facets.mean(axis=1)
-
-        # calculate vectors normal to the facets
-        a = facets[:, 0, :] - facets[:, 1, :]
-        b = facets[:, 1, :] - facets[:, 2, :]
-        facet_orient_vec = np.cross(a, b)
-        facet_orient_vec_norm = np.linalg.norm(facet_orient_vec, axis=0)
-
-        # move vertices from facet centers towards face orientation
-        check_points = facet_centers + facet_orient_vec * tol / facet_orient_vec_norm
-
-        # find points which are now inside
-        inside_mask = mask_inside_trimesh(check_points, facets)
-
-        # flip triangles which point inside
-        triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
-        return triangles
-
-    @staticmethod
-    def _get_vertices_and_triangles_from_facets(facets):
-        """Return vertices and triangles from facets"""
-        vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
-        triangles = tr.reshape((-1, 3))
-        return vertices, triangles
+    def _fix_trimesh_orientation(self):
+        """
+        Fix triangle orientations
+        """
+        return fix_trimesh_orientation(self._vertices, self._triangles)
 
     @classmethod
     def from_ConvexHull_points(
@@ -278,8 +258,8 @@ class TriangularMesh(BaseMagnet):
             triangles=ConvexHull(points).simplices,
             position=position,
             orientation=orientation,
-            reorient_facets=True,
-            validate_mesh=True,
+            reorient_triangles=True,
+            validate_closed_mesh=True,
             style=style,
             **kwargs,
         )
@@ -363,8 +343,8 @@ class TriangularMesh(BaseMagnet):
             triangles=triangles,
             position=position,
             orientation=orientation,
-            reorient_facets=True,
-            validate_mesh=True,
+            reorient_triangles=True,
+            validate_closed_mesh=True,
             style=style,
             **kwargs,
         )
@@ -376,8 +356,8 @@ class TriangularMesh(BaseMagnet):
         facets=None,
         position=(0, 0, 0),
         orientation=None,
-        reorient_facets=True,
-        validate_mesh=True,
+        reorient_triangles=True,
+        validate_closed_mesh=True,
         style=None,
         **kwargs,
     ):
@@ -412,11 +392,11 @@ class TriangularMesh(BaseMagnet):
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
 
-        reorient_facets: bool, optional
+        reorient_triangles: bool, optional
             If `False`, no facet orientation check is performed. If `True`, facets pointing inwards
             are fliped in the right direction.
 
-        validate_mesh: bool, optional
+        validate_closed_mesh: bool, optional
             If `True`, the provided set of facets is validated by checking if it forms a closed body
             and if it does not self-intersect. Can be deactivated for perfomance reasons by setting
             it to `False`.
@@ -474,7 +454,8 @@ class TriangularMesh(BaseMagnet):
                 facet_list.append(facet)
             facets = np.array(facet_list).astype(float)
 
-        vertices, triangles = cls._get_vertices_and_triangles_from_facets(facets)
+        vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
+        triangles = tr.reshape((-1, 3))
 
         return cls(
             magnetization=magnetization,
@@ -482,8 +463,8 @@ class TriangularMesh(BaseMagnet):
             triangles=triangles,
             position=position,
             orientation=orientation,
-            reorient_facets=reorient_facets,
-            validate_mesh=validate_mesh,
+            reorient_triangles=reorient_triangles,
+            validate_closed_mesh=validate_closed_mesh,
             style=style,
             **kwargs,
         )
