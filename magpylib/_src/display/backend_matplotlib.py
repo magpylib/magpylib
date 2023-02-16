@@ -310,6 +310,7 @@ def display_matplotlib(
         show_canvas = False
         out += (fig,)
     if return_animation and len(frames) != 1:
+        show_canvas = False
         out += (anim,)
     if show_canvas:
         plt.show()
