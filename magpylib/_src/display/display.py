@@ -223,7 +223,13 @@ def show(
     >>> fig.show() # doctest: +SKIP
     >>> # graphic output
     """
-    kwargs.update({k: v for k, v in locals().items() if v != DEFAULT_PLACEHOLDER})
+    kwargs.update(
+        {
+            k: v
+            for k, v in locals().items()
+            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+        }
+    )
     if ctx.isrunning:
         rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
         ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
@@ -254,7 +260,13 @@ def show_context(
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
     """
     # pylint: disable=protected-access
-    kwargs.update({k: v for k, v in locals().items() if v != DEFAULT_PLACEHOLDER})
+    kwargs.update(
+        {
+            k: v
+            for k, v in locals().items()
+            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+        }
+    )
     try:
         ctx.isrunning = True
         rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
