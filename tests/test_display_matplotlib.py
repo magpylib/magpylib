@@ -65,9 +65,8 @@ def test_Cuboid_display():
     """testing display"""
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
-    plt.ion()
-    x = src.show(style_path_frames=5)
-    plt.close()
+    with plt.ion():
+        x = src.show(style_path_frames=5)
     assert x is None, "display test fail"
 
     ax = plt.subplot(projection="3d")
