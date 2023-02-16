@@ -265,8 +265,8 @@ def display_pyvista(
                         getattr(charts[(row, col)], typ)(**tr1)
                     elif not warned2d:
                         warnings.warn(
-                            f"The set `{jupyter_backend=}` is incompatible with 2D plots. "
-                            "Empty plots will be shown instead"
+                            f"The set `jupyter_backend={jupyter_backend}` is incompatible with "
+                            "2D plots. Empty plots will be shown instead"
                         )
                         warned2d = True
         # match other backends plotter properties
