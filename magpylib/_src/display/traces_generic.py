@@ -10,6 +10,7 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
+import magpylib as magpy
 from magpylib import _src
 from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -21,6 +22,11 @@ from magpylib._src.display.traces_base import (
 )
 from magpylib._src.display.traces_base import make_Ellipsoid as make_BaseEllipsoid
 from magpylib._src.display.traces_base import make_Prism as make_BasePrism
+from magpylib._src.display.traces_base import make_Pyramid as make_BasePyramid
+from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetrahedron
+from magpylib._src.display.traces_base import (
+    make_TriangularMesh as make_BaseTriangularMesh,
+)
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
@@ -33,6 +39,7 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import triangles_area
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
 from magpylib._src.style import Markers
@@ -41,7 +48,7 @@ from magpylib._src.utility import unit_prefix
 
 
 class MagpyMarkers:
-    """A class that stores markers 3D-coordinates"""
+    """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
         self.style = Markers()
@@ -59,15 +66,15 @@ class MagpyMarkers:
         marker_kwargs["marker_color"] = (
             style.marker.color if style.marker.color is not None else color
         )
-        trace = dict(
-            type="scatter3d",
-            x=x,
-            y=y,
-            z=z,
-            mode="markers",
+        trace = {
+            "type": "scatter3d",
+            "x": x,
+            "y": y,
+            "z": z,
+            "mode": "markers",
             **marker_kwargs,
             **kwargs,
-        )
+        }
         default_name = "Marker" if len(x) == 1 else "Markers"
         default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
         update_trace_name(trace, default_name, default_suffix, style)
@@ -88,16 +95,16 @@ def make_DefaultTrace(
     name.
     """
     style = obj.style if style is None else style
-    trace = dict(
-        type="scatter3d",
-        x=[0.0],
-        y=[0.0],
-        z=[0.0],
-        mode="markers+text",
-        marker_size=10,
-        marker_color=color,
-        marker_symbol="diamond",
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": [0.0],
+        "y": [0.0],
+        "z": [0.0],
+        "mode": "markers+text",
+        "marker_size": 10,
+        "marker_color": color,
+        "marker_symbol": "diamond",
+    }
     update_trace_name(trace, f"{type(obj).__name__}", "", style)
     trace["text"] = trace["name"]
     return place_and_orient_model3d(
@@ -127,15 +134,15 @@ def make_Line(
     else:
         vertices = np.array(vertices).T
     x, y, z = vertices
-    trace = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        mode="lines",
-        line_width=style.arrow.width,
-        line_color=color,
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "mode": "lines",
+        "line_width": style.arrow.width,
+        "line_color": color,
+    }
     default_suffix = (
         f" ({unit_prefix(current)}A)"
         if current is not None
@@ -166,15 +173,15 @@ def make_Loop(
     arrow_size = style.arrow.size if style.arrow.show else 0
     vertices = draw_arrowed_circle(current, diameter, arrow_size, vertices)
     x, y, z = vertices
-    trace = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        mode="lines",
-        line_width=style.arrow.width,
-        line_color=color,
-    )
+    trace = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "mode": "lines",
+        "line_width": style.arrow.width,
+        "line_color": color,
+    }
     default_suffix = (
         f" ({unit_prefix(current)}A)"
         if current is not None
@@ -196,7 +203,7 @@ def make_Dipole(
     **kwargs,
 ) -> dict:
     """
-    Create the plotly mesh3d parameters for a Loop current in a dictionary based on the
+    Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
     """
     style = obj.style if style is None else style
@@ -230,6 +237,62 @@ def make_Dipole(
     return place_and_orient_model3d(
         trace, orientation=orientation, position=position, **kwargs
     )
+
+
+def make_triangle_orientations(
+    obj,
+    pos_orient_inds,
+    style=None,
+    color=None,
+    size=0.5,
+    offset=0.1,
+    symbol="cone",
+    **kwargs,
+) -> dict:
+    """
+    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
+    based on the provided arguments.
+    """
+    # pylint: disable=protected-access
+    style = obj.style if style is None else style
+    color = color if style.orientation.color is None else style.orientation.color
+    size = size if style.orientation.size is None else style.orientation.size
+    offset = offset if style.orientation.offset is None else style.orientation.offset
+    symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
+    vert = obj.vertices
+    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    nvec = vec / np.linalg.norm(vec)
+    # arrow length proportional to square root of triangle
+    length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
+    zaxis = np.array([0, 0, 1])
+    cross = np.cross(nvec, zaxis)
+    n = np.linalg.norm(cross)
+    if n == 0:
+        n = 1
+        cross = np.array([-np.sign(nvec[-1]), 0, 0])
+    dot = np.dot(nvec, zaxis)
+    t = np.arccos(dot)
+    vec = -t * cross / n
+    orient = RotScipy.from_rotvec(vec)
+    traces = []
+    make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
+    vmean = np.mean(vert, axis=0)
+    vmean -= (1 - offset) * length * nvec * size
+    for ind in pos_orient_inds:
+        tr = make_fn(
+            "plotly-dict",
+            base=10,
+            diameter=0.5 * size * length,
+            height=size * length,
+            pivot="tail",
+            color=color,
+            position=obj._orientation[ind].apply(vmean) + obj._position[ind],
+            orientation=obj._orientation[ind] * orient,
+            **kwargs,
+        )
+        traces.append(tr)
+    trace = merge_mesh3d(*traces)
+    return trace
 
 
 def make_Cuboid(
@@ -337,6 +400,72 @@ def make_Sphere(
     )
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     update_trace_name(trace, "Sphere", default_suffix, style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
+def make_Tetrahedron(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
+    provided arguments.
+    """
+    style = obj.style if style is None else style
+    trace = make_BaseTetrahedron("plotly-dict", vertices=obj.vertices, color=color)
+    update_trace_name(trace, "Tetrahedron", "", style)
+    update_magnet_mesh(
+        trace, mag_style=style.magnetization, magnetization=obj.magnetization
+    )
+    return place_and_orient_model3d(
+        trace, orientation=orientation, position=position, **kwargs
+    )
+
+
+def make_Triangle(
+    obj,
+    position=(0.0, 0.0, 0.0),
+    orientation=None,
+    color=None,
+    style=None,
+    **kwargs,
+) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
+    provided arguments.
+    """
+    vert = obj.vertices
+    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+    triangles = np.array([[0, 1, 2]])
+    # if magnetization is normal to the triangle, add a second triangle slightly above to enable
+    # proper color gradient visualization. Otherwise only the middle color is shown.
+    if np.all(np.cross(obj.magnetization, vec) == 0):
+        epsilon = 1e-3 * vec
+        vert = np.concatenate([vert - epsilon, vert + epsilon])
+        side_triangles = [
+            [0, 1, 3],
+            [1, 2, 4],
+            [2, 0, 5],
+            [1, 4, 3],
+            [2, 5, 4],
+            [0, 3, 5],
+        ]
+        triangles = np.concatenate([triangles, [[3, 4, 5]], side_triangles])
+
+    style = obj.style if style is None else style
+    trace = make_BaseTriangularMesh(
+        "plotly-dict", vertices=vert, triangles=triangles, color=color
+    )
+    update_trace_name(trace, obj.__class__.__name__, "", style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
@@ -473,33 +602,34 @@ def update_trace_name(trace, default_name, default_suffix, style):
     return trace
 
 
-def make_mag_arrows(obj, style, legendgroup, kwargs):
+def make_mag_arrows(obj, pos_orient_inds, style, legendgroup, kwargs):
     """draw direction of magnetization of faced magnets
 
     Parameters
     ----------
-    - faced_objects(list of src objects): with magnetization vector to be drawn
+    - obj: object with magnetization vector to be drawn
     - colors: colors of faced_objects
     - show_path(bool or int): draw on every position where object is displayed
     """
     # pylint: disable=protected-access
 
-    # add src attributes position and orientation depending on show_path
-    rots, _, inds = get_rot_pos_from_path(obj, style.path.frames)
-
     # vector length, color and magnetization
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
+    elif isinstance(obj, magpy.misc.Triangle):
+        length = np.amax(obj.vertices) - np.amin(obj.vertices)
+    elif hasattr(obj, "vertices"):
+        length = np.amax(np.ptp(obj.vertices, axis=0))
     else:  # Cuboid, Cylinder, CylinderSegment
         length = np.amax(obj.dimension[:3])
     length *= 1.8 * style.magnetization.size
     mag = obj.magnetization
     # collect all draw positions and directions
     points = []
-    for rot, ind in zip(rots, inds):
+    for ind in pos_orient_inds:
         pos = getattr(obj, "_barycenter", obj._position)[ind]
         direc = mag / (np.linalg.norm(mag) + 1e-6) * length
-        vec = rot.apply(direc)
+        vec = obj._orientation[ind].apply(direc)
         pts = draw_arrowed_line(vec, pos, sign=1, arrow_pos=1, pivot="tail")
         points.append(pts)
     # insert empty point to avoid connecting line between arrows
@@ -536,19 +666,19 @@ def make_path(input_obj, style, legendgroup, kwargs):
     line["dash"] = line["style"]
     line["color"] = kwargs["color"] if line["color"] is None else line["color"]
     line = {k: v for k, v in line.items() if k != "style"}
-    scatter_path = dict(
-        type="scatter3d",
-        x=x,
-        y=y,
-        z=z,
-        name=f"Path: {input_obj}",
-        showlegend=False,
-        legendgroup=legendgroup,
+    scatter_path = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "name": f"Path: {input_obj}",
+        "showlegend": False,
+        "legendgroup": legendgroup,
         **{f"marker_{k}": v for k, v in marker.items()},
         **{f"line_{k}": v for k, v in line.items()},
         **txt_kwargs,
-        opacity=kwargs["opacity"],
-    )
+        "opacity": kwargs["opacity"],
+    }
     return scatter_path
 
 
@@ -559,7 +689,7 @@ def get_generic_traces(
     legendgroup=None,
     showlegend=None,
     legendtext=None,
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ) -> list:
@@ -581,6 +711,9 @@ def get_generic_traces(
     # pylint: disable=too-many-statements
     # pylint: disable=too-many-nested-blocks
     # pylint: disable=protected-access
+    # pylint: disable=import-outside-toplevel
+
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 
     # parse kwargs into style and non style args
     style = get_style(input_obj, Config, **kwargs)
@@ -590,6 +723,15 @@ def get_generic_traces(
     kwargs["color"] = style_color if style_color is not None else color
     kwargs["opacity"] = style.opacity
     legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
+
+    is_mag_arrows = False
+    if getattr(input_obj, "magnetization", None) is not None:
+        mode = style.magnetization.mode
+        if style.magnetization.show:
+            if "arrow" in mode or not mag_color_grad_apt:
+                is_mag_arrows = True
+            if mag_color_grad_apt and "color" not in mode and mode != "auto":
+                style.magnetization.show = False  # disables color gradient only
 
     # check excitations validity
     for param in ("magnetization", "arrow"):
@@ -617,8 +759,10 @@ def get_generic_traces(
         return out[0] if len(out) == 1 else out
 
     extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
-    orientations, positions, _ = get_rot_pos_from_path(input_obj, style.path.frames)
-    for pos_orient_ind, (orient, pos) in enumerate(zip(orientations, positions)):
+    orientations, positions, pos_orient_inds = get_rot_pos_from_path(
+        input_obj, style.path.frames
+    )
+    for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
             path_traces.append(
                 make_func(position=pos, orientation=orient, **make_func_kwargs)
@@ -664,7 +808,7 @@ def get_generic_traces(
                 elif extr.backend == extra_backend:
                     showleg = (
                         showlegend
-                        and pos_orient_ind == 0
+                        and pos_orient_enum == 0
                         and not style.model3d.showdefault
                     )
                     showleg = True if showleg is None else showleg
@@ -708,9 +852,17 @@ def get_generic_traces(
         scatter_path = make_path(input_obj, style, legendgroup, kwargs)
         traces.append(scatter_path)
 
-    if mag_arrows and getattr(input_obj, "magnetization", None) is not None:
-        if style.magnetization.show:
-            traces.append(make_mag_arrows(input_obj, style, legendgroup, kwargs))
+    if is_mag_arrows:
+        traces.append(
+            make_mag_arrows(input_obj, pos_orient_inds, style, legendgroup, kwargs)
+        )
+    if isinstance(input_obj, Triangle) and style.orientation.show:
+        traces.append(
+            make_triangle_orientations(
+                input_obj, pos_orient_inds, legendgroup=legendgroup, **kwargs
+            )
+        )
+
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)
@@ -829,7 +981,7 @@ def draw_frame(
     zoom=0.0,
     autosize=None,
     output="dict",
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ) -> Tuple:
@@ -861,11 +1013,11 @@ def draw_frame(
             traces_to_resize[obj] = {**params}
             # temporary coordinates to be able to calculate ranges
             x, y, z = obj._position.T
-            traces_out[obj] = [dict(x=x, y=y, z=z)]
+            traces_out[obj] = [{"x": x, "y": y, "z": z}]
         else:
             out_traces = get_generic_traces(
                 obj,
-                mag_arrows=mag_arrows,
+                mag_color_grad_apt=mag_color_grad_apt,
                 extra_backend=extra_backend,
                 **params,
             )
@@ -881,7 +1033,7 @@ def draw_frame(
         out_traces = get_generic_traces(
             obj,
             autosize=autosize,
-            mag_arrows=mag_arrows,
+            mag_color_grad_apt=mag_color_grad_apt,
             extra_backend=extra_backend,
             **params,
         )
@@ -901,7 +1053,7 @@ def get_frames(
     zoom=1,
     title=None,
     animation=False,
-    mag_arrows=False,
+    mag_color_grad_apt=True,
     extra_backend=False,
     **kwargs,
 ):
@@ -944,19 +1096,19 @@ def get_frames(
             zoom,
             autosize=autosize,
             output="list",
-            mag_arrows=mag_arrows,
+            mag_color_grad_apt=mag_color_grad_apt,
             extra_backend=extra_backend,
             **kwargs,
         )
         if i == 0:  # get the dipoles and sensors autosize from first frame
             autosize = autosize_init
         frames.append(
-            dict(
-                data=traces,
-                name=str(ind + 1),
-                layout=dict(title=title_str),
-                extra_backend_traces=extra_backend_traces,
-            )
+            {
+                "data": traces,
+                "name": str(ind + 1),
+                "layout": {"title": title_str},
+                "extra_backend_traces": extra_backend_traces,
+            }
         )
 
     clean_legendgroups(frames)

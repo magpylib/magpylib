@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-# Coil Field Lines
+# Magnetic field lines
 
 In this example we model the **magnetic field of a coil**, and show how to display it with spectacular **field line** representations.
 

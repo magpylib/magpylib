@@ -1,6 +1,4 @@
-"""Magnet Cylinder class code
-DOCSTRINGS V4 READY
-"""
+"""Magnet Cylinder class code"""
 import numpy as np
 
 from magpylib._src.display.traces_generic import make_CylinderSegment
@@ -36,6 +34,10 @@ class CylinderSegment(BaseMagnet):
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
+
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to

@@ -62,6 +62,7 @@ DEFAULTS = {
                         "transition": 0.2,
                         "mode": "tricolor",
                     },
+                    "mode": "auto",
                 }
             },
             "current": {"arrow": {"show": True, "size": 1, "width": 2}},
@@ -75,6 +76,27 @@ DEFAULTS = {
                 },
             },
             "dipole": {"size": 1, "pivot": "middle"},
+            "triangle": {
+                "magnetization": {
+                    "show": True,
+                    "size": 1,
+                    "color": {
+                        "north": "#E71111",
+                        "middle": "#DDDDDD",
+                        "south": "#00B050",
+                        "transition": 0.2,
+                        "mode": "tricolor",
+                    },
+                    "mode": "auto",
+                },
+                "orientation": {
+                    "show": True,
+                    "size": 1,
+                    "color": "grey",
+                    "offset": 0.9,
+                    "symbol": "arrow3d",
+                },
+            },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
     },

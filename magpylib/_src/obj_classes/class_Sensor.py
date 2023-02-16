@@ -1,6 +1,4 @@
-"""Sensor class code
-DOCSTRINGS V4 READY
-"""
+"""Sensor class code"""
 from magpylib._src.display.traces_generic import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector

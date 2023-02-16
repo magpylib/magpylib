@@ -674,7 +674,7 @@ class Collection(BaseGeo, BaseCollection):
 
     Parameters
     ----------
-    children: sources, `Sensor` or `Collection objects
+    children: sources, `Sensor` or `Collection` objects
         An ordered list of all children in the collection.
 
     sensors: `Sensor` objects
@@ -739,8 +739,8 @@ class Collection(BaseGeo, BaseCollection):
 
     The field can be computed at position (0,0,0) as if the collection was a single source:
 
-    B = col.getB((0,0,0))
-    print(B)
+    >>> B = col.getB((0,0,0))
+    >>> print(B)
     [ 0.00126232 -0.00093169 -0.00034448]
 
     We add a sensor at position (0,0,0) to the collection:
@@ -754,8 +754,8 @@ class Collection(BaseGeo, BaseCollection):
     and can compute the field of the sources in the collection seen by the sensor with
     a single command:
 
-    B = col.getB()
-    print(B)
+    >>> B = col.getB()
+    >>> print(B)
     [ 0.00126232 -0.00093169 -0.00034448]
     """
 

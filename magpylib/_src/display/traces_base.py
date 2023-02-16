@@ -2,6 +2,7 @@
 from functools import partial
 
 import numpy as np
+from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
@@ -23,7 +24,13 @@ validate_pivot = partial(base_validator, "pivot")
 def get_model(trace, *, backend, show, scale, kwargs):
     """Returns model3d dict depending on backend"""
 
-    model = dict(constructor="Mesh3d", kwargs=trace, args=(), show=show, scale=scale)
+    model = {
+        "constructor": "Mesh3d",
+        "kwargs": trace,
+        "args": (),
+        "show": show,
+        "scale": scale,
+    }
     if backend == "matplotlib":
         x, y, z, i, j, k = (trace[k] for k in "xyzijk")
         triangles = np.array([i, j, k]).T
@@ -84,14 +91,14 @@ def make_Cuboid(
         a 3D-model.
     """
     dimension = np.array(dimension, dtype=float)
-    trace = dict(
-        i=np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
-        j=np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
-        k=np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
-        x=np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0],
-        y=np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1],
-        z=np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2],
-    )
+    trace = {
+        "i": np.array([7, 0, 0, 0, 4, 4, 2, 6, 4, 0, 3, 7]),
+        "j": np.array([0, 7, 1, 2, 6, 7, 1, 2, 5, 5, 2, 2]),
+        "k": np.array([3, 4, 2, 3, 5, 6, 5, 5, 0, 1, 7, 6]),
+        "x": np.array([-1, -1, 1, 1, -1, -1, 1, 1]) * 0.5 * dimension[0],
+        "y": np.array([-1, 1, 1, -1, -1, 1, 1, -1]) * 0.5 * dimension[1],
+        "z": np.array([-1, -1, -1, -1, 1, 1, 1, 1]) * 0.5 * dimension[2],
+    }
 
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
@@ -182,7 +189,7 @@ def make_Prism(
     k = np.concatenate([k1, j2, j3, k4])
 
     x, y, z = c.T
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -245,25 +252,34 @@ def make_Ellipsoid(
     y = np.cos(theta) * np.cos(phi) * dimension[1] * 0.5
     z = np.sin(theta) * dimension[2] * 0.5
 
-    x, y, z = x.flatten()[N - 1 :], y.flatten()[N - 1 :], z.flatten()[N - 1 :]
+    x, y, z = (
+        x.flatten()[N - 1 : -N + 1],
+        y.flatten()[N - 1 : -N + 1],
+        z.flatten()[N - 1 : -N + 1],
+    )
+    N2 = len(x) - 1
 
     i1 = [0] * N
-    j1 = np.array([N] + list(range(1, N)), dtype=int)
-    k1 = np.array(list(range(1, N)) + [N], dtype=int)
+    j1 = np.array([N, *range(1, N)], dtype=int)
+    k1 = np.array([*range(1, N), N], dtype=int)
 
-    i2 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j2 = np.concatenate([j1 + i * N for i in range(N - 2)])
-    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
+    i2 = np.concatenate([k1 + i * N for i in range(N - 3)])
+    j2 = np.concatenate([j1 + i * N for i in range(N - 3)])
+    k2 = np.concatenate([j1 + (i + 1) * N for i in range(N - 3)])
 
-    i3 = np.concatenate([k1 + i * N for i in range(N - 2)])
-    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 2)])
-    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 2)])
+    i3 = np.concatenate([k1 + i * N for i in range(N - 3)])
+    j3 = np.concatenate([j1 + (i + 1) * N for i in range(N - 3)])
+    k3 = np.concatenate([k1 + (i + 1) * N for i in range(N - 3)])
 
-    i = np.concatenate([i1, i2, i3])
-    j = np.concatenate([j1, j2, j3])
-    k = np.concatenate([k1, k2, k3])
+    i4 = [N2] * N
+    j4 = k1 + N2 - N - 1
+    k4 = j1 + N2 - N - 1
 
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    i = np.concatenate([i1, i2, i3, i4])
+    j = np.concatenate([j1, j2, j3, j4])
+    k = np.concatenate([k1, k2, k3, k4])
+
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -363,7 +379,7 @@ def make_CylinderSegment(
         k.extend([j5, j5 + N - 1])
     i, j, k = (np.hstack(l) for l in (i, j, k))
 
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -444,7 +460,7 @@ def make_Pyramid(
     j = i + 1
     j[-1] = 0
     k = np.array([N] * N, dtype=int)
-    trace = dict(x=x, y=y, z=z, i=i, j=j, k=k)
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -530,5 +546,126 @@ def make_Arrow(
         position=(0, 0, z + -d / 2),
     )
     trace = merge_mesh3d(cone, prism)
+    trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
+    return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
+
+
+def make_Tetrahedron(
+    backend="generic",
+    vertices=None,
+    position=None,
+    orientation=None,
+    show=True,
+    scale=1,
+    **kwargs,
+) -> dict:
+    """Provides the 3D-model parameters for a pyramid in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
+
+    Parameters
+    ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+    vertices: ndarray, shape (4,3)
+        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
+        coordinate system of the tetrahedron.
+
+    position : array_like, shape (3,), default=(0,0,0)
+        Reference position of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
+
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
+        Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+
+    Returns
+    -------
+    3D-model: dict
+        A dictionary with necessary key/value pairs with the necessary information to construct
+        a 3D-model.
+    """
+    x, y, z = np.array(vertices).T
+    trace = {
+        "i": np.array([0, 0, 1, 2]),
+        "j": np.array([1, 1, 2, 0]),
+        "k": np.array([2, 3, 3, 3]),
+        "x": x,
+        "y": y,
+        "z": z,
+    }
+
+    trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
+    return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
+
+
+def make_TriangularMesh(
+    backend="generic",
+    vertices=None,
+    triangles=None,
+    position=None,
+    orientation=None,
+    show=True,
+    scale=1,
+    **kwargs,
+) -> dict:
+    """Provides the 3D-model parameters for a custom triangular mesh in dictionary form, based on
+    number of vertices of the base, diameter and height. The zero position is in the
+    barycenter of the vertices.
+
+    Parameters
+    ----------
+    backend : str
+        Plotting backend corresponding to the trace. Can be one of `['matplotlib', 'plotly']`.
+
+    vertices: ndarray, shape (4,3)
+        Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
+        coordinate system of the triangular mesh.
+
+    triangles: ndarray, shape (4,3)
+        For each triangle, the indices of the three points that make up the triangle, ordered in an
+        anticlockwise manner. If not specified, a `scipy.spatial.ConvexHull` triangulation is
+        calculated.
+
+    position : array_like, shape (3,), default=(0,0,0)
+        Reference position of the vertices in the global CS. The zero position is
+        in the barycenter of the vertices.
+
+    orientation : scipy Rotation object with length 1 or m, default=`identity`
+        Orientation of the vertices in the global CS.
+
+    show : bool, default=True
+        Shows/hides model3d object based on provided trace.
+
+    scale : float, default=1
+        Scaling factor by which the trace vertices coordinates are multiplied.
+
+    **kwargs : dict, optional
+        Additional keyword arguments to be passed to the trace constructor directly.
+        (e.g. `opacity=0.5` for plotly or `alpha=0.5` for matplotlib)
+
+    Returns
+    -------
+    3D-model: dict
+        A dictionary with necessary key/value pairs with the necessary information to construct
+        a 3D-model.
+    """
+    vertices = np.array(vertices)
+    x, y, z = vertices.T
+    if triangles is None:
+        hull = ConvexHull(vertices)
+        triangles = hull.simplices
+    i, j, k = np.array(triangles).T
+    trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

@@ -32,7 +32,7 @@ def place_and_orient_model3d(
     new_model_args = list(model_args)
     if model_args:
         if coordsargs is None:  # matplotlib default
-            coordsargs = dict(x="args[0]", y="args[1]", z="args[2]")
+            coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
     vertices = []
     if coordsargs is None:
         coordsargs = {"x": "x", "y": "y", "z": "z"}
@@ -98,8 +98,6 @@ def draw_arrowed_line(
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
     arrow_shift = arrow_pos - 0.5
-    if dot == -1:
-        sign *= -1
     hy = sign * 0.1 * arrow_size
     hx = 0.06 * arrow_size
     anchor = (
@@ -124,7 +122,10 @@ def draw_arrowed_line(
         )
         * norm
     )
-    if n != 0:
+    if n == 0 and dot == -1:
+        R = RotScipy.from_rotvec([0, 0, np.pi])
+        arrow = R.apply(arrow)
+    elif n != 0:
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
         arrow = R.apply(arrow)
@@ -400,7 +401,7 @@ def group_traces(*traces):
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
     spec_keys = {
-        "mesh3d": ["colorscale"],
+        "mesh3d": ["colorscale", "color"],
         "scatter3d": [
             "marker",
             "line_dash",
@@ -453,3 +454,11 @@ def subdivide_mesh_by_facecolor(trace):
         new_trace.pop("facecolor")
         subtraces.append(new_trace)
     return subtraces
+
+
+def triangles_area(triangles):
+    """Return area of triangles of shape (n,3,3) into an array of shape n"""
+    norm = np.cross(
+        triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
+    )
+    return np.linalg.norm(norm, axis=1) / 2

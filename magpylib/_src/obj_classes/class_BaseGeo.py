@@ -1,6 +1,4 @@
-"""BaseGeo class code
-DOCSTRING v4 READY
-"""
+"""BaseGeo class code"""
 # pylint: disable=cyclic-import
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=protected-access
@@ -74,13 +72,13 @@ class BaseGeo(BaseTransform):
         style=None,
         **kwargs,
     ):
-
+        self._style_kwargs = {}
         self._parent = None
         # set _position and _orientation attributes
         self._init_position_orientation(position, orientation)
 
         if style is not None or kwargs:  # avoid style creation cost if not needed
-            self.style = self._process_style_kwargs(style=style, **kwargs)
+            self._style_kwargs = self._process_style_kwargs(style=style, **kwargs)
 
     @staticmethod
     def _process_style_kwargs(style=None, **kwargs):
@@ -113,7 +111,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=True,
+            reshape=(-1, 3),
         )
         oriQ = check_format_input_orientation(orientation, init_format=True)
 
@@ -183,7 +181,7 @@ class BaseGeo(BaseTransform):
             shape_m1=3,
             sig_name="position",
             sig_type="array_like (list, tuple, ndarray) with shape (3,) or (n,3)",
-            reshape=True,
+            reshape=(-1, 3),
         )
 
         # pad/slice and set orientation path to same length
@@ -244,8 +242,9 @@ class BaseGeo(BaseTransform):
         Object style in the form of a BaseStyle object. Input must be
         in the form of a style dictionary.
         """
-        if not hasattr(self, "_style") or self._style is None:
-            self._style = self._validate_style(val=None)
+        if getattr(self, "_style", None) is None:
+            self._style = self._validate_style(self._style_kwargs)
+            self._style_kwargs = {}
         return self._style
 
     @style.setter
@@ -343,7 +342,9 @@ class BaseGeo(BaseTransform):
         else:
             obj_copy = deepcopy(self)
 
-        if getattr(self, "_style", None) is not None:
+        if getattr(self, "_style", None) is not None or bool(
+            getattr(self, "_style_kwargs", False)
+        ):
             label = self.style.label
             if label is None:
                 label = f"{type(self).__name__}_01"

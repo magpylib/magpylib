@@ -247,7 +247,7 @@ def fieldH_cylinder_diametral(
     return Hr, Hphi, Hz
 
 
-# ON INTERFACE
+# CORE
 def magnet_cylinder_field(
     field: str,
     observers: np.ndarray,

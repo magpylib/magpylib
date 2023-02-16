@@ -133,7 +133,7 @@ def display_matplotlib(
         colorsequence=colorsequence,
         zoom=zoom,
         animation=animation,
-        mag_arrows=True,
+        mag_color_grad_apt=False,
         extra_backend="matplotlib",
         **kwargs,
     )
@@ -174,6 +174,7 @@ def display_matplotlib(
         draw_frame(ind)
         return [ax]
 
+    anim = None
     if len(frames) == 1:
         draw_frame(0)
     else:

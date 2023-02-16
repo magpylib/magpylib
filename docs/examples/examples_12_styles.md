@@ -12,7 +12,7 @@ kernelspec:
 ---
 
 (examples-graphic-styles)=
-# Styles
+# Graphics - Styles
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized in many ways.
 
@@ -67,13 +67,15 @@ magpy.show(cube, cylinder, sphere, backend="plotly")
 
 user_defined_style = {
     'show': True,
+    "size": 0.5,
     'color': {
-        'transition': 1,
+        'transition': 0,
         'mode': 'tricolor',
         'middle': 'white',
         'north': 'magenta',
         'south': 'turquoise',
     },
+    "mode": "arrow+color",
 }
 magpy.defaults.display.style.magnet.magnetization = user_defined_style
 
