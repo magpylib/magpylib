@@ -10,3 +10,4 @@ jupytext
 numpy-stl
 pyvista
 trame
+ipywidgets
