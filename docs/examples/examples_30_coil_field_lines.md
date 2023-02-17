@@ -137,7 +137,7 @@ for z in np.linspace(-8, 8, 16):
     coil1.add(winding)
 
 grid = pv.UniformGrid(
-    dims=(41, 41, 41),
+    dimensions=(41, 41, 41),
     spacing=(2, 2, 2),
     origin=(-40, -40, -40),
 )
