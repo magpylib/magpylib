@@ -11,3 +11,4 @@ numpy-stl
 pyvista
 trame
 ipywidgets
+vtk>=9.2.5

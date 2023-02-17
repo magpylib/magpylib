@@ -154,8 +154,7 @@ def display_pyvista(
 
     # match other backends plotter properties
     canvas.set_background("gray", top="white")
-    # canvas.show_axes() can be reactivated
-    # once https://github.com/pyvista/pyvista/issues/4023 is solved
+    canvas.show_axes()
     canvas.camera.azimuth = -90
 
     if return_fig and not show_canvas:
