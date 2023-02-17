@@ -1,3 +1,4 @@
+import os
 import warnings
 from functools import lru_cache
 
@@ -16,6 +17,9 @@ from matplotlib.colors import LinearSegmentedColormap
 from magpylib._src.display.traces_generic import get_frames
 
 # from magpylib._src.utility import format_obj_input
+if os.environ.get("READTHEDOCS"):
+    pv.themes.DefaultTheme.server_proxy_enabled = True
+    pv.themes.DefaultTheme.server_proxy_prefix = "/proxy/"
 
 
 @lru_cache(maxsize=32)
