@@ -39,7 +39,7 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
-pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
+pv.set_jupyter_backend('client') # improve rendering in a jupyter notebook
 
 # define sources and paths
 loop = magpy.current.Loop(current=1, diameter=1)
@@ -130,7 +130,7 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
-pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+pv.set_jupyter_backend('client') # improve rending in a jupyter notebook
 
 # define sources and paths
 loop = magpy.current.Loop(current=1, diameter=5)
@@ -164,7 +164,7 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
-pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
+pv.set_jupyter_backend('client') # improve rending in a jupyter notebook
 
 # define sources and paths
 loop = magpy.current.Loop(current=1, diameter=5)

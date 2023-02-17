@@ -90,6 +90,6 @@ magpy.show(
     style_orientation_color='yellow',
     style_orientation_symbol='cone',
     style_magnetization_mode="arrow",
-    jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
+    jupyter_backend="client", # better pyvista rendering in a jupyter notebook
 )
 ```

@@ -9,4 +9,4 @@ sphinx-thebe
 jupytext
 numpy-stl
 pyvista
-panel
+trame

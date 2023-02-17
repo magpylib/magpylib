@@ -38,7 +38,7 @@ import numpy as np
 import magpylib as magpy
 import pyvista as pv
 
-pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
+pv.set_jupyter_backend('client') # improve rendering in a jupyter notebook
 
 # Mesh3d trace #########################
 
@@ -260,7 +260,7 @@ def bin_color_to_hex(x):
     g = int(sb[5:10], base=2)/31
     b = int(sb[10:15], base=2)/31
     return to_hex((r,g,b))
-    
+
 
 
 def trace_from_stl(stl_file):
