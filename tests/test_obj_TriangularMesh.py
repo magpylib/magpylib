@@ -6,7 +6,7 @@ import pytest
 import pyvista as pv
 
 import magpylib as magpy
-from magpylib._src.fields.field_BH_trimesh import magnet_trimesh_field
+from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 
 
 def test_TriangularMesh_repr():

@@ -3,10 +3,10 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_generic import make_TriangularMesh
-from magpylib._src.fields.field_BH_trimesh import fix_trimesh_orientation
-from magpylib._src.fields.field_BH_trimesh import magnet_trimesh_field
-from magpylib._src.fields.field_BH_trimesh import trimesh_is_closed
-from magpylib._src.fields.field_BH_trimesh import trimesh_is_connected
+from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
+from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
+from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
+from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_connected
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
