@@ -37,6 +37,29 @@ COLORS_SHORT_TO_LONG = {
 }
 
 
+class _DefaultType:
+    """Special keyword value.
+
+    The instance of this class may be used as the default value assigned to a
+    keyword if no other obvious default (e.g., `None`) is suitable,
+
+    """
+
+    __instance = None
+
+    def __new__(cls):
+        # ensure that only one instance exists
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls)
+        return cls.__instance
+
+    def __repr__(self):
+        return "<default>"
+
+
+_DefaultValue = _DefaultType()
+
+
 def get_defaults_dict(arg=None) -> dict:
     """returns default dict or sub-dict based on `arg`.
     (e.g. `get_defaults_dict('display.style')`)

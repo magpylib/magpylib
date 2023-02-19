@@ -127,6 +127,7 @@ def generic_trace_to_matplotlib(trace):
     for tr in traces_mpl:
         tr["row"] = trace.get("row", 1)
         tr["col"] = trace.get("col", 1)
+        tr["kwargs"] = tr.get("kwargs", {})
         if showlegend:
             if "label" not in tr["kwargs"]:
                 tr["kwargs"]["label"] = trace.get("name", "")
@@ -232,7 +233,7 @@ def display_matplotlib(
     else:
         raise ValueError(
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
-            f"matplotlib.figure.Figure]`. Received {canvas!r} instead"
+            f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
         )
     if max_rows is None and max_cols is None:
         if isinstance(canvas, matplotlib.axes.Axes):
@@ -292,7 +293,7 @@ def display_matplotlib(
                     **{f"{k}label": f"{k} [mm]" for k in "xyz"},
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
-                if count_with_labels <= legend_max_items:
+                if 0 < count_with_labels <= legend_max_items:
                     ax.legend(bbox_to_anchor=(0.5, 1.1), loc="upper left")
             else:
                 ax.legend(loc="best")

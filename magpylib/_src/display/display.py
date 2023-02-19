@@ -3,6 +3,8 @@ import warnings
 from contextlib import contextmanager
 from importlib import import_module
 
+from magpylib._src.defaults.defaults_utility import _DefaultValue
+from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import process_show_input_objs
@@ -14,28 +16,7 @@ from magpylib._src.input_checks import check_input_animation
 from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.utility import test_path_format
 
-
-class _DefaultType:
-    """Special keyword value.
-
-    The instance of this class may be used as the default value assigned to a
-    keyword if no other obvious default (e.g., `None`) is suitable,
-
-    """
-
-    __instance = None
-
-    def __new__(cls):
-        # ensure that only one instance exists
-        if not cls.__instance:
-            cls.__instance = super().__new__(cls)
-        return cls.__instance
-
-    def __repr__(self):
-        return "<default>"
-
-
-_DefaultValue = _DefaultType()
+disp_args = get_defaults_dict("display").keys()
 
 
 class RegisterBackend:
@@ -47,13 +28,13 @@ class RegisterBackend:
         self,
         *,
         name,
-        show_func,
+        show_func_getter,
         supports_animation,
         supports_subplots,
         supports_colorgradient,
     ):
         self.name = name
-        self.show_func = show_func
+        self.show_func_getter = show_func_getter
         self.supports = {
             "animation": supports_animation,
             "subplots": supports_subplots,
@@ -91,20 +72,25 @@ class RegisterBackend:
                     f"\nfalling back to: {params}"
                 )
                 kwargs.update(params)
+        frame_kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if any(k.startswith(arg) for arg in disp_args)
+        }
+        show_kwargs = {k: v for k, v in kwargs.items() if k not in frame_kwargs}
         data = get_frames(
             objs,
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
-            **kwargs,
+            **frame_kwargs,
         )
-        kwargs.pop("animation", None)
-        self.show_func()(
+        return self.show_func_getter()(
             data,
             zoom=zoom,
             max_rows=max_rows,
             max_cols=max_cols,
             subplot_specs=subplot_specs,
-            **kwargs,
+            **show_kwargs,
         )
 
 
@@ -118,7 +104,7 @@ def get_show_func(backend):
 
 RegisterBackend(
     name="matplotlib",
-    show_func=get_show_func("matplotlib"),
+    show_func_getter=get_show_func("matplotlib"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
@@ -127,7 +113,7 @@ RegisterBackend(
 
 RegisterBackend(
     name="plotly",
-    show_func=get_show_func("plotly"),
+    show_func_getter=get_show_func("plotly"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
@@ -135,7 +121,7 @@ RegisterBackend(
 
 RegisterBackend(
     name="pyvista",
-    show_func=get_show_func("pyvista"),
+    show_func_getter=get_show_func("pyvista"),
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
