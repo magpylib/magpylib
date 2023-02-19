@@ -8,21 +8,21 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
 
-ALLOWED_SYMBOLS = (".", "o", "+", "D", "d", "s", "x")
+ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")
 
 ALLOWED_LINESTYLES = (
     "solid",
-    "-",
     "dashed",
-    "--",
-    "dashdot",
-    "-.",
     "dotted",
+    "dashdot",
+    "loosely dotted",
+    "loosely dashdotted",
+    "-",
+    "--",
+    "-.",
     ".",
     ":",
     (0, (1, 1)),
-    "loosely dotted",
-    "loosely dashdotted",
 )
 
 COLORS_SHORT_TO_LONG = {

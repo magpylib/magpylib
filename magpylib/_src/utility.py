@@ -353,94 +353,37 @@ def get_registered_sources():
     }
 
 
-def is_notebook() -> bool:
+def is_notebook() -> bool:  # pragma: no cover
     """Check if execution is within a IPython environment"""
+    # pylint: disable=import-outside-toplevel
     try:
+        from IPython import get_ipython
+
         shell = get_ipython().__class__.__name__
         if shell == "ZMQInteractiveShell":
             return True  # Jupyter notebook or qtconsole
-        elif shell == "TerminalInteractiveShell":
+        if shell == "TerminalInteractiveShell":
             return False  # Terminal running IPython
-        else:
-            return False  # Other type (?)
+        return False  # Other type (?)
     except NameError:
         return False  # Probably standard Python interpreter
 
 
-import tkinter as tk
-from PIL import Image, ImageTk
-from itertools import count, cycle
-
-
-class ImageLabel(tk.Label):
-    """
-    A Label that displays images, and plays them if they are gifs
-    :im: A PIL Image instance or a string filename
-    """
-
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.frames = None
-        self.delay = 100
-
-    def load(self, im):
-        """load data"""
-        if isinstance(im, str):
-            im = Image.open(im)
-        frames = []
-
-        try:
-            for i in count(1):
-                frames.append(ImageTk.PhotoImage(im.copy()))
-                im.seek(i)
-        except EOFError:
-            pass
-        self.frames = cycle(frames)
-
-        try:
-            self.delay = im.info["duration"]
-        except TypeError:
-            self.delay = 100
-
-        if len(frames) == 1:
-            self.config(image=next(self.frames))
-        else:
-            self.next_frame()
-
-    def unload(self):
-        """unload data"""
-        self.config(image=None)
-        self.frames = None
-
-    def next_frame(self):
-        """next frame"""
-        if self.frames:
-            self.config(image=next(self.frames))
-            self.after(self.delay, self.next_frame)
-
-
-def show_gif(filepath):
-    """Display gif image using tkinter or IPython"""
-    if is_notebook():
-        # pylint: disable=import-outside-toplevel
-        from IPython.display import Image as IPyImage, display
-
-        display(IPyImage(url=filepath))
-    else:
-        root = tk.Tk()
-        lbl = ImageLabel(root)
-        lbl.pack()
-        lbl.load(filepath)
-        root.mainloop()
-
-
-def show_video(filepath):
+def open_animation(filepath, embed=False):
+    """Display video or gif file using tkinter or IPython"""
     # pylint: disable=import-outside-toplevel
     if is_notebook():
-        from IPython.display import Video, display
+        if filepath.endswith(".gif"):
+            from IPython.display import Image as IPyImage, display
 
-        display(Video(filepath))
+            display(IPyImage(filename=filepath, embed=embed))
+        elif filepath.endswith(".mp4"):
+            from IPython.display import Video, display
+
+            display(Video(filename=filepath, embed=True))
+        else:  # pragma: no cover
+            raise TypeError("Filetype not supported, only 'mp4 or 'gif' allowed")
     else:
-        from os import startfile
+        import webbrowser
 
-        startfile(filepath)
+        webbrowser.open(filepath)

@@ -141,14 +141,15 @@ ctx = DisplayContext()
 
 
 RCO_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
+DEFAULT_PLACEHOLDER = "<default>"
 
 
 def _show(
     *objects,
-    zoom=0,
-    animation=False,
-    markers=None,
     backend=None,
+    animation=False,
+    zoom=0,
+    markers=None,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -203,7 +204,20 @@ def _show(
     )
 
 
-def show(*objects, **kwargs):
+def show(
+    *objects,
+    # pylint: disable=unused-argument
+    backend=DEFAULT_PLACEHOLDER,
+    animation=DEFAULT_PLACEHOLDER,
+    zoom=DEFAULT_PLACEHOLDER,
+    markers=DEFAULT_PLACEHOLDER,
+    row=DEFAULT_PLACEHOLDER,
+    col=DEFAULT_PLACEHOLDER,
+    output=DEFAULT_PLACEHOLDER,
+    sumup=DEFAULT_PLACEHOLDER,
+    pixel_agg=DEFAULT_PLACEHOLDER,
+    **kwargs,
+):
     """Display objects and paths graphically.
 
     Global graphic styles can be set with kwargs as style dictionary or using
@@ -311,7 +325,13 @@ def show(*objects, **kwargs):
     >>> fig.show() # doctest: +SKIP
     >>> # graphic output
     """
-
+    kwargs.update(
+        {
+            k: v
+            for k, v in locals().items()
+            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+        }
+    )
     if ctx.isrunning:
         rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
         ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
@@ -323,12 +343,32 @@ def show(*objects, **kwargs):
 
 
 @contextmanager
-def show_context(*objects, **kwargs):
+def show_context(
+    *objects,
+    # pylint: disable=unused-argument
+    backend=DEFAULT_PLACEHOLDER,
+    animation=DEFAULT_PLACEHOLDER,
+    zoom=DEFAULT_PLACEHOLDER,
+    markers=DEFAULT_PLACEHOLDER,
+    row=DEFAULT_PLACEHOLDER,
+    col=DEFAULT_PLACEHOLDER,
+    output=DEFAULT_PLACEHOLDER,
+    sumup=DEFAULT_PLACEHOLDER,
+    pixel_agg=DEFAULT_PLACEHOLDER,
+    **kwargs,
+):
     """Context manager to temporarily set display settings in the `with` statement context.
 
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
     """
     # pylint: disable=protected-access
+    kwargs.update(
+        {
+            k: v
+            for k, v in locals().items()
+            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+        }
+    )
     try:
         ctx.isrunning = True
         rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
