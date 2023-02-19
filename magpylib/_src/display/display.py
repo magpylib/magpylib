@@ -15,6 +15,29 @@ from magpylib._src.input_checks import check_input_zoom
 from magpylib._src.utility import test_path_format
 
 
+class _DefaultType:
+    """Special keyword value.
+
+    The instance of this class may be used as the default value assigned to a
+    keyword if no other obvious default (e.g., `None`) is suitable,
+
+    """
+
+    __instance = None
+
+    def __new__(cls):
+        # ensure that only one instance exists
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls)
+        return cls.__instance
+
+    def __repr__(self):
+        return "<default>"
+
+
+_DefaultValue = _DefaultType()
+
+
 class RegisterBackend:
     """Base class for display backends"""
 
@@ -141,7 +164,6 @@ ctx = DisplayContext()
 
 
 ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
-DEFAULT_PLACEHOLDER = "<default>"
 
 
 def _show(
@@ -207,18 +229,18 @@ def _show(
 def show(
     *objects,
     # pylint: disable=unused-argument
-    backend=DEFAULT_PLACEHOLDER,
-    canvas=DEFAULT_PLACEHOLDER,
-    animation=DEFAULT_PLACEHOLDER,
-    zoom=DEFAULT_PLACEHOLDER,
-    markers=DEFAULT_PLACEHOLDER,
-    return_fig=DEFAULT_PLACEHOLDER,
-    row=DEFAULT_PLACEHOLDER,
-    col=DEFAULT_PLACEHOLDER,
-    output=DEFAULT_PLACEHOLDER,
-    sumup=DEFAULT_PLACEHOLDER,
-    pixel_agg=DEFAULT_PLACEHOLDER,
-    style=DEFAULT_PLACEHOLDER,
+    backend=_DefaultValue,
+    canvas=_DefaultValue,
+    animation=_DefaultValue,
+    zoom=_DefaultValue,
+    markers=_DefaultValue,
+    return_fig=_DefaultValue,
+    row=_DefaultValue,
+    col=_DefaultValue,
+    output=_DefaultValue,
+    sumup=_DefaultValue,
+    pixel_agg=_DefaultValue,
+    style=_DefaultValue,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -360,7 +382,7 @@ def show(
         {
             k: v
             for k, v in locals().items()
-            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+            if v is not _DefaultValue and k not in ("objects", "kwargs")
         }
     )
     if ctx.isrunning:
@@ -379,18 +401,18 @@ def show(
 def show_context(
     *objects,
     # pylint: disable=unused-argument
-    backend=DEFAULT_PLACEHOLDER,
-    canvas=DEFAULT_PLACEHOLDER,
-    animation=DEFAULT_PLACEHOLDER,
-    zoom=DEFAULT_PLACEHOLDER,
-    markers=DEFAULT_PLACEHOLDER,
-    return_fig=DEFAULT_PLACEHOLDER,
-    row=DEFAULT_PLACEHOLDER,
-    col=DEFAULT_PLACEHOLDER,
-    output=DEFAULT_PLACEHOLDER,
-    sumup=DEFAULT_PLACEHOLDER,
-    pixel_agg=DEFAULT_PLACEHOLDER,
-    style=DEFAULT_PLACEHOLDER,
+    backend=_DefaultValue,
+    canvas=_DefaultValue,
+    animation=_DefaultValue,
+    zoom=_DefaultValue,
+    markers=_DefaultValue,
+    return_fig=_DefaultValue,
+    row=_DefaultValue,
+    col=_DefaultValue,
+    output=_DefaultValue,
+    sumup=_DefaultValue,
+    pixel_agg=_DefaultValue,
+    style=_DefaultValue,
     **kwargs,
 ):
     """Context manager to temporarily set display settings in the `with` statement context.
@@ -404,7 +426,7 @@ def show_context(
         {
             k: v
             for k, v in locals().items()
-            if v != DEFAULT_PLACEHOLDER and k not in ("objects", "kwargs")
+            if v is not _DefaultValue and k not in ("objects", "kwargs")
         }
     )
     try:
