@@ -140,7 +140,7 @@ class DisplayContext:
 ctx = DisplayContext()
 
 
-RCO_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
+ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
 DEFAULT_PLACEHOLDER = "<default>"
 
 
@@ -159,9 +159,9 @@ def _show(
 
     # process input objs
     objects, obj_list_flat, max_rows, max_cols, subplot_specs = process_show_input_objs(
-        objects, **{k: v for k, v in kwargs.items() if k in RCO_NAMES}
+        objects, **{k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
     )
-    kwargs = {k: v for k, v in kwargs.items() if k not in RCO_NAMES}
+    kwargs = {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
@@ -208,14 +208,17 @@ def show(
     *objects,
     # pylint: disable=unused-argument
     backend=DEFAULT_PLACEHOLDER,
+    canvas=DEFAULT_PLACEHOLDER,
     animation=DEFAULT_PLACEHOLDER,
     zoom=DEFAULT_PLACEHOLDER,
     markers=DEFAULT_PLACEHOLDER,
+    return_fig=DEFAULT_PLACEHOLDER,
     row=DEFAULT_PLACEHOLDER,
     col=DEFAULT_PLACEHOLDER,
     output=DEFAULT_PLACEHOLDER,
     sumup=DEFAULT_PLACEHOLDER,
     pixel_agg=DEFAULT_PLACEHOLDER,
+    style=DEFAULT_PLACEHOLDER,
     **kwargs,
 ):
     """Display objects and paths graphically.
@@ -228,17 +231,6 @@ def show(
     objects: Magpylib objects (sources, collections, sensors)
         Objects to be displayed.
 
-    zoom: float, default=`0`
-        Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
-
-    animation: bool or float, default=`False`
-        If `True` and at least one object has a path, the paths are rendered.
-        If input is a positive float, the animation time is set to the given value.
-        This feature is only available for the plotly backend.
-
-    markers: array_like, shape (n,3), default=`None`
-        Display position markers in the global coordinate system.
-
     backend: string, default=`None`
         Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
         set, parameter will default to `magpylib.defaults.display.backend` which is
@@ -248,13 +240,52 @@ def show(
         Display graphical output on a given canvas:
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.
+
+    animation: bool or float, default=`False`
+        If `True` and at least one object has a path, the paths are rendered.
+        If input is a positive float, the animation time is set to the given value.
+        This feature is only available for the plotly backend.
+
+    zoom: float, default=`0`
+        Adjust plot zoom-level. When zoom=0 3D-figure boundaries are tight.
+
+    markers: array_like, shape (n,3), default=`None`
+        Display position markers in the global coordinate system.
 
     return_fig: bool, default=False
         If True, the function call returns the figure object.
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
+
+    row: int or None,
+        If provided specifies the row in which the objects will be displayed.
+
+    col: int or None,
+        If provided specifies the column in which the objects will be displayed.
+
+    output: tuple or string, default="model3d"
+        Can be a string or a tuple of strings specifying the plot output type. By default
+        `output='model3d'` displays the 3D representations of the objects. If output is a tuple of
+        strings it must be a combination of 'B' or 'H' and 'x', 'y' and/or 'z'. When having multiple
+        coordinates, the field value is the combined vector length (e.g. `('Bx', 'Hxy', 'Byz')`)
+        'Bxy' is equivalent to sqrt(|Bx|^2 + |By|^2). A 2D line plot is then represented
+        accordingly if the objects contain at least one source and one sensor.
+
+    sumup: bool, default=True
+        If True, sums the field values of the sources. Applies only if `output` is not `'model3d'`.
+
+    pixel_agg: bool, default="mean"
+        Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
+        which is applied to observer output values, e.g. mean of all sensor pixel outputs.
+        Applies only if `output` is not `'model3d'`.
+
+    style: dict
+        Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+        using style underscore magic, e.g. `style_color='red'`. Applies to all objects matching the
+        given style properties.
 
     Returns
     -------
@@ -333,8 +364,10 @@ def show(
         }
     )
     if ctx.isrunning:
-        rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
-        ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
+        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
+        ctx.kwargs.update(
+            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+        )
         ctx_objects = tuple({**o, **rco} for o in ctx.objects_from_ctx)
         objects, *_ = process_show_input_objs(ctx_objects + objects, **rco)
         ctx.objects += tuple(objects)
@@ -347,19 +380,24 @@ def show_context(
     *objects,
     # pylint: disable=unused-argument
     backend=DEFAULT_PLACEHOLDER,
+    canvas=DEFAULT_PLACEHOLDER,
     animation=DEFAULT_PLACEHOLDER,
     zoom=DEFAULT_PLACEHOLDER,
     markers=DEFAULT_PLACEHOLDER,
+    return_fig=DEFAULT_PLACEHOLDER,
     row=DEFAULT_PLACEHOLDER,
     col=DEFAULT_PLACEHOLDER,
     output=DEFAULT_PLACEHOLDER,
     sumup=DEFAULT_PLACEHOLDER,
     pixel_agg=DEFAULT_PLACEHOLDER,
+    style=DEFAULT_PLACEHOLDER,
     **kwargs,
 ):
     """Context manager to temporarily set display settings in the `with` statement context.
 
     You need to invoke as ``show_context(pattern1=value1, pattern2=value2)``.
+
+    See the `magpylib.show` docstrings for the parameter definitions.
     """
     # pylint: disable=protected-access
     kwargs.update(
@@ -371,10 +409,12 @@ def show_context(
     )
     try:
         ctx.isrunning = True
-        rco = {k: v for k, v in kwargs.items() if k in RCO_NAMES}
+        rco = {k: v for k, v in kwargs.items() if k in ROW_COL_SPECIFIC_NAMES}
         objects, *_ = process_show_input_objs(objects, **rco)
         ctx.objects_from_ctx += tuple(objects)
-        ctx.kwargs.update({k: v for k, v in kwargs.items() if k not in RCO_NAMES})
+        ctx.kwargs.update(
+            {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
+        )
         yield ctx
         _show(*ctx.objects, **ctx.kwargs)
     finally:
