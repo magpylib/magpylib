@@ -35,20 +35,21 @@ def generic_trace_to_matplotlib(trace):
         subtraces = [trace]
         if trace.get("facecolor", None) is not None:
             subtraces = subdivide_mesh_by_facecolor(trace)
-        for subtrace in subtraces:
+        for ind, subtrace in enumerate(subtraces):
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
-            traces_mpl.append(
-                {
-                    "constructor": "plot_trisurf",
-                    "args": (x, y, z),
-                    "kwargs": {
-                        "triangles": triangles,
-                        "alpha": subtrace.get("opacity", None),
-                        "color": subtrace.get("color", None),
-                    },
-                }
-            )
+            tr = {
+                "constructor": "plot_trisurf",
+                "args": (x, y, z),
+                "kwargs": {
+                    "triangles": triangles,
+                    "alpha": subtrace.get("opacity", None),
+                    "color": subtrace.get("color", None),
+                },
+            }
+            if ind != 0:  # hide substrace legends except first
+                tr["kwargs"]["label"] = "_no_legend_"
+            traces_mpl.append(tr)
     elif "scatter" in trace["type"]:
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
@@ -79,7 +80,9 @@ def generic_trace_to_matplotlib(trace):
                         "kwargs": {
                             "s": props["ms"],
                             "color": props["mec"],
-                            "marker": SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "o"),
+                            "marker": SYMBOLS_TO_MATPLOTLIB.get(
+                                props["marker"], props["marker"]
+                            ),
                             "label": None,
                         },
                     }
@@ -87,9 +90,11 @@ def generic_trace_to_matplotlib(trace):
                 props.pop("ms")
                 props.pop("marker")
         if "ls" in props:
-            props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], "-")
+            props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], props["ls"])
         if "marker" in props:
-            props["marker"] = SYMBOLS_TO_MATPLOTLIB.get(props["marker"], "o")
+            props["marker"] = SYMBOLS_TO_MATPLOTLIB.get(
+                props["marker"], props["marker"]
+            )
         mode = trace.get("mode", None)
         if mode is not None:
             if "lines" not in mode:
@@ -118,13 +123,17 @@ def generic_trace_to_matplotlib(trace):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
+    showlegend = trace.get("showlegend", True)
     for tr in traces_mpl:
         tr["row"] = trace.get("row", 1)
         tr["col"] = trace.get("col", 1)
-        if "label" not in tr.get("kwargs", "label"):
-            tr["kwargs"]["label"] = trace.get("name", "")
-            if leg_title is not None:
-                tr["kwargs"]["label"] += f" ({leg_title})"
+        if showlegend:
+            if "label" not in tr["kwargs"]:
+                tr["kwargs"]["label"] = trace.get("name", "")
+                if leg_title is not None:
+                    tr["kwargs"]["label"] += f" ({leg_title})"
+        else:
+            tr["kwargs"]["label"] = "_no_legend"
     return traces_mpl
 
 
@@ -185,6 +194,7 @@ def display_matplotlib(
     subplot_specs=None,
     dpi=80,
     figsize=None,
+    legend_max_items=10,
     **kwargs,  # pylint: disable=unused-argument
 ):
 
@@ -255,21 +265,37 @@ def display_matplotlib(
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
     def draw_frame(ind):
+        count_with_labels = 0
         for tr in frames[ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
             ax = axes[row_col_num]
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-            getattr(ax, constructor)(*args, **kwargs)
+            label = kwargs.get("label", "_")
+            if label and not label.startswith("_"):
+                count_with_labels += 1
+            trace = getattr(ax, constructor)(*args, **kwargs)
+            if constructor == "plot_trisurf":
+                # 'Poly3DCollection' object has no attribute '_edgecolors2d'
+                for arg in ("face", "edge"):
+                    color = getattr(trace, f"_{arg}color3d", None)
+                    color = (  # for mpl version <3.3.3
+                        getattr(trace, f"_{arg}colors3d", None)
+                        if color is None
+                        else color
+                    )
+                    setattr(trace, f"_{arg}colors2d", color)
         for ax in axes.values():
             if ax.name == "3d":
                 ax.set(
                     **{f"{k}label": f"{k} [mm]" for k in "xyz"},
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
+                if count_with_labels <= legend_max_items:
+                    ax.legend(bbox_to_anchor=(0.5, 1.1), loc="upper left")
             else:
-                ax.legend()
+                ax.legend(loc="best")
 
     def animate(ind):  # pragma: no cover
         for ax in axes.values():
@@ -289,7 +315,7 @@ def display_matplotlib(
             blit=False,
             repeat=repeat,
         )
-
+    plt.tight_layout()
     out = ()
     if return_fig:
         show_canvas = False
