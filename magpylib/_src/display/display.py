@@ -51,6 +51,7 @@ class RegisterBackend:
         *objs,
         backend,
         zoom=0,
+        title=None,
         max_rows=None,
         max_cols=None,
         subplot_specs=None,
@@ -82,6 +83,8 @@ class RegisterBackend:
             objs,
             supports_colorgradient=self.supports["colorgradient"],
             backend=backend,
+            zoom=zoom,
+            title=title,
             **frame_kwargs,
         )
         return self.show_func_getter()(

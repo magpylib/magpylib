@@ -195,7 +195,7 @@ def display_matplotlib(
     subplot_specs=None,
     dpi=80,
     figsize=None,
-    legend_max_items=10,
+    legend_max_items=20,
     **kwargs,  # pylint: disable=unused-argument
 ):
 
@@ -218,6 +218,8 @@ def display_matplotlib(
         if figsize is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
+            if legend_max_items != 0:
+                ratio *= 1.5  # extend horizontal ratio if legend is present
             figsize = (figsize[0] * ratio, figsize[1])
         fig = plt.figure(dpi=dpi, figsize=figsize)
     elif isinstance(canvas, matplotlib.axes.Axes):
@@ -293,8 +295,12 @@ def display_matplotlib(
                     **{f"{k}label": f"{k} [mm]" for k in "xyz"},
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
+                ax.set_box_aspect(aspect=(1, 1, 1))
                 if 0 < count_with_labels <= legend_max_items:
-                    ax.legend(bbox_to_anchor=(0.5, 1.1), loc="upper left")
+                    ax.legend(
+                        bbox_to_anchor=(1.04, 1),
+                        loc="upper left",
+                    )
             else:
                 ax.legend(loc="best")
 
