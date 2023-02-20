@@ -257,7 +257,8 @@ def make_invalid_mesh_lines(
     marker, line = mesh.marker, mesh.line
     tr, vert = obj.triangles, obj.vertices
     if mode == "disjoint":
-        lines = get_closest_vertices(tr, vert)
+        subsets = obj.triangles_subsets
+        lines = get_closest_vertices(subsets, vert)
     else:
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
         # make sure unique pairs are found regardless of order
@@ -290,20 +291,20 @@ def make_invalid_mesh_lines(
     return out
 
 
-def get_closest_vertices(tr, vert):
-    """Get closest pairs of points between disjoint mesh objects"""
-    parts = get_disjoint_parts_from_triangles(tr)
-    nparts = len(parts)
+def get_closest_vertices(triangles_subsets, vertices):
+    """Get closest pairs of points between disjoint subsets of triangles indices"""
+    nparts = len(triangles_subsets)
+    inds_subsets = [np.unique(v) for v in triangles_subsets]
     closest_verts_list = []
     if nparts > 1:
-        connected = [0]
+        connected = [np.min(inds_subsets[0])]
         while len(connected) < nparts:
             prev_min = float("inf")
             for i in connected:
                 for j in range(nparts):
                     if j not in connected:
-                        tr1, tr2 = parts[i], parts[j]
-                        c1, c2 = vert[tr1], vert[tr2]
+                        tr1, tr2 = inds_subsets[i], inds_subsets[j]
+                        c1, c2 = vertices[tr1], vertices[tr2]
                         dist = distance.cdist(c1, c2)
                         i1, i2 = divmod(dist.argmin(), dist.shape[1])
                         min_dist = dist[i1, i2]
@@ -783,32 +784,6 @@ def make_path(input_obj, style, legendgroup, kwargs):
         "opacity": kwargs["opacity"],
     }
     return scatter_path
-
-
-def get_disjoint_parts_from_triangles(triangles: list, return_triangles=False):
-    """Return a list of disjoint triangles sets"""
-    parts = []
-    tria_temp = triangles.copy()
-    while len(tria_temp) > 0:
-        first, *rest = tria_temp
-        first = set(first)
-        lf = -1
-        while len(first) > lf:
-            lf = len(first)
-            rest2 = []
-            for r in rest:
-                if len(first.intersection(set(r))) > 0:
-                    first |= set(r)
-                else:
-                    rest2.append(r)
-            rest = rest2
-        parts.append(list(first))
-        tria_temp = rest
-    if return_triangles:  # pragma: no cover
-        parts = parts, [
-            triangles[np.isin(triangles, list(ps)).all(axis=1)] for ps in parts
-        ]
-    return parts
 
 
 def get_generic_traces(

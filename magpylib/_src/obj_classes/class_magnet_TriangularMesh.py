@@ -4,9 +4,11 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_generic import make_TriangularMesh
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
+from magpylib._src.fields.field_BH_triangularmesh import (
+    get_disjoint_triangles_subsets,
+)
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
-from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_connected
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
@@ -48,9 +50,12 @@ class TriangularMesh(BaseMagnet):
         fliped in the right direction.
 
     validate_closed_mesh: bool, optional
-        If `True`, the provided set of facets is validated by checking if it forms a closed body and
-        if it does not self-intersect. Can be deactivated for perfomance reasons by setting it to
-        `False`.
+        If `True`, the provided set of facets is validated by checking if it forms a closed body.
+        Can be deactivated for perfomance reasons by setting it to `False`.
+
+    validate_connected_mesh: bool, optional
+        If `True`, the provided set of facets is validated by checking if it forms a connected body.
+        Can be deactivated for perfomance reasons by setting it to `False`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -89,6 +94,7 @@ class TriangularMesh(BaseMagnet):
         self._vertices, self._triangles = self._input_check(vertices, triangles)
         self._is_connected = None
         self._is_closed = None
+        self._triangles_subsets = None
 
         if validate_closed_mesh:
             self._validate_closed()
@@ -129,8 +135,15 @@ class TriangularMesh(BaseMagnet):
     def is_connected(self):
         """Is-connected boolean check"""
         if self._is_connected is None:
-            self._is_connected = trimesh_is_connected(self._triangles)
+            self._is_connected = len(self.triangles_subsets) == 1
         return self._is_connected
+
+    @property
+    def triangles_subsets(self):
+        """return triangles subsets"""
+        if self._triangles_subsets is None:
+            self._triangles_subsets = get_disjoint_triangles_subsets(self._triangles)
+        return self._triangles_subsets
 
     @property
     def _barycenter(self):
@@ -269,7 +282,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=True,
-            validate_closed_mesh=True,
+            validate_closed_mesh=kwargs.get("validate_closed_mesh", True),
+            validate_connected_mesh=kwargs.get("validate_connected_mesh", True),
             style=style,
             **kwargs,
         )
@@ -368,6 +382,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         reorient_triangles=True,
         validate_closed_mesh=True,
+        validate_connected_mesh=True,
         style=None,
         **kwargs,
     ):
@@ -407,9 +422,12 @@ class TriangularMesh(BaseMagnet):
             are fliped in the right direction.
 
         validate_closed_mesh: bool, optional
-            If `True`, the provided set of facets is validated by checking if it forms a closed body
-            and if it does not self-intersect. Can be deactivated for perfomance reasons by setting
-            it to `False`.
+            If `True`, the provided set of facets is validated by checking if it forms a closed
+            body. Can be deactivated for perfomance reasons by setting it to `False`.
+
+        validate_connected_mesh: bool, optional
+            If `True`, the provided set of facets is validated by checking if it forms a connected
+            body. Can be deactivated for perfomance reasons by setting it to `False`.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -475,6 +493,7 @@ class TriangularMesh(BaseMagnet):
             orientation=orientation,
             reorient_triangles=reorient_triangles,
             validate_closed_mesh=validate_closed_mesh,
+            validate_connected_mesh=validate_connected_mesh,
             style=style,
             **kwargs,
         )

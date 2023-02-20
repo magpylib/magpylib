@@ -190,7 +190,6 @@ def test_disjoint_mesh():
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000),
             polydata=pv.Text3D("AB"),
-            validate_connected_mesh=True,
         )
 
 

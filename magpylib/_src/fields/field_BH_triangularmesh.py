@@ -72,41 +72,29 @@ def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     return result
 
 
-def trimesh_is_connected(triangles: np.ndarray) -> np.ndarray:
-    """
-    Check if triangular mesh consists of multiple disconnecetd parts.
-
-    Input: triangles: np.ndarray, shape (n,3), dtype int
-        triples of indices
-
-    Output: bool (True if connected, False if disconnected)
-    """
-    tri_list = triangles.tolist()
-    connected = [np.min(triangles)]
-
-    # start with lowest index
-    # cycle through tri_list and unique-add indices from connecting triangles
-    # when adding indices to connected, remove respective triangle from tri_list
-    # After completing a cycle, check if a new triangle was added
-    # if not, and tri_list still contains some triangles, then these faces must be
-    # disconnected from the rest
-    added_new = True
-    while added_new:
-        added_new = False
-        # cycle through all triangles that are not connected yet
-        for tria in tri_list:
-            for ii in tria:
-                if ii in connected:
-                    # add new triangle to connected
-                    for iii in tria:
-                        if iii not in connected:
-                            connected.append(iii)
-                    tri_list.remove(tria)
-                    added_new = True
-                    break
-    if tri_list:
-        return False
-    return True
+def get_disjoint_triangles_subsets(triangles: list) -> list:
+    """Return a list of disjoint triangles sets"""
+    subsets_inds = []
+    tria_temp = triangles.copy()
+    while len(tria_temp) > 0:
+        first, *rest = tria_temp
+        first = set(first)
+        lf = -1
+        while len(first) > lf:
+            lf = len(first)
+            rest2 = []
+            for r in rest:
+                if len(first.intersection(set(r))) > 0:
+                    first |= set(r)
+                else:
+                    rest2.append(r)
+            rest = rest2
+        subsets_inds.append(list(first))
+        tria_temp = rest
+    subsets = [
+        triangles[np.isin(triangles, list(ps)).all(axis=1)] for ps in subsets_inds
+    ]
+    return subsets
 
 
 def trimesh_is_closed(triangles: np.ndarray) -> bool:
