@@ -3,6 +3,7 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-nested-blocks
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-statements
 import numbers
 import warnings
 from itertools import combinations
@@ -572,7 +573,9 @@ def make_TriangularMesh(
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
     )
-    update_trace_name(trace, obj.__class__.__name__, "", style)
+    ntri = len(obj.triangles)
+    default_suffix = f" ({ntri} facet{'s'[:ntri^1]})"
+    update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
@@ -614,7 +617,7 @@ def make_Sensor(
     style = obj.style if style is None else style
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
-    pixel = np.array(pixel).reshape((-1, 3))
+    pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
     sensor = get_sensor_mesh(**style_arrows, center_color=color)
     vertices = np.array([sensor[k] for k in "xyz"]).T
@@ -624,11 +627,15 @@ def make_Sensor(
         [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
         dtype=float,
     )
+    no_pix = pixel.shape[0] == 1 and pixel.sum() == 0
+    one_pix = pixel.shape[0] == 1 and pixel.sum() != 0
     if autosize is not None:
         dim *= autosize
-    if pixel.shape[0] == 1:
+    if no_pix:
         dim_ext = dim
     else:
+        if one_pix:
+            pixel = np.concatenate([[[0, 0, 0]], pixel])
         hull_dim = pixel.max(axis=0) - pixel.min(axis=0)
         dim_ext = max(np.mean(dim), np.min(hull_dim))
     cube_mask = (vertices < 1).all(axis=1)
@@ -638,16 +645,18 @@ def make_Sensor(
     x, y, z = vertices.T
     sensor.update(x=x, y=y, z=z)
     meshes_to_merge = [sensor]
-    if pixel.shape[0] != 1:
+    if not no_pix:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
         combs = np.array(list(combinations(pixel, 2)))
         vecs = np.diff(combs, axis=1)
         dists = np.linalg.norm(vecs, axis=2)
-        pixel_dim = np.min(dists) / 2
+        min_dist = np.min(dists)
+        pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
         if pixel_size > 0:
             pixel_dim *= pixel_size
-            pixels_mesh = make_Pixels(positions=pixel, size=pixel_dim)
+            poss = pixel[1:] if one_pix else pixel
+            pixels_mesh = make_Pixels(positions=poss, size=pixel_dim)
             pixels_mesh["facecolor"] = np.repeat(pixel_color, len(pixels_mesh["i"]))
             meshes_to_merge.append(pixels_mesh)
         hull_pos = 0.5 * (pixel.max(axis=0) + pixel.min(axis=0))
@@ -659,8 +668,10 @@ def make_Sensor(
         meshes_to_merge.append(hull_mesh)
     trace = merge_mesh3d(*meshes_to_merge)
     default_suffix = (
-        f""" ({'x'.join(str(p) for p in pixel.shape[:-1])} pixels)"""
-        if pixel.ndim != 1
+        f" ({'x'.join(str(p) for p in obj.pixel.shape[:-1])} pixels)"
+        if obj.pixel.ndim != 1
+        else f" ({pixel[1:].shape[0]} pixel)"
+        if one_pix
         else ""
     )
     update_trace_name(trace, "Sensor", default_suffix, style)
