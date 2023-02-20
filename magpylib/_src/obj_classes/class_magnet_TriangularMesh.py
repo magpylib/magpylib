@@ -368,7 +368,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=True,
-            validate_closed_mesh=True,
+            validate_closed_mesh=kwargs.get("validate_closed_mesh", True),
+            validate_connected_mesh=kwargs.get("validate_connected_mesh", True),
             style=style,
             **kwargs,
         )
