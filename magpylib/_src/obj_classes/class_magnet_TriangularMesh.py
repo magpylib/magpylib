@@ -275,6 +275,8 @@ class TriangularMesh(BaseMagnet):
 
         # reorient facets since ConvexHull does not guarantee that the facets are all
         # pointing outwards
+        validate_closed_mesh = kwargs.pop("validate_closed_mesh", True)
+        validate_connected_mesh = kwargs.pop("validate_connected_mesh", True)
         return cls(
             magnetization=magnetization,
             vertices=points,
@@ -282,8 +284,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=True,
-            validate_closed_mesh=kwargs.get("validate_closed_mesh", True),
-            validate_connected_mesh=kwargs.get("validate_connected_mesh", True),
+            validate_closed_mesh=validate_closed_mesh,
+            validate_connected_mesh=validate_connected_mesh,
             style=style,
             **kwargs,
         )
@@ -361,6 +363,8 @@ class TriangularMesh(BaseMagnet):
         polydata = polydata.triangulate()
         vertices = polydata.points
         triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+        validate_closed_mesh = kwargs.pop("validate_closed_mesh", True)
+        validate_connected_mesh = kwargs.pop("validate_connected_mesh", True)
         return cls(
             magnetization=magnetization,
             vertices=vertices,
@@ -368,8 +372,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=True,
-            validate_closed_mesh=kwargs.get("validate_closed_mesh", True),
-            validate_connected_mesh=kwargs.get("validate_connected_mesh", True),
+            validate_closed_mesh=validate_closed_mesh,
+            validate_connected_mesh=validate_connected_mesh,
             style=style,
             **kwargs,
         )
