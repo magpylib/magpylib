@@ -6,6 +6,7 @@
 import numbers
 import warnings
 from itertools import combinations
+from itertools import cycle
 from typing import Tuple
 
 import numpy as np
@@ -47,6 +48,8 @@ from magpylib._src.style import DefaultMarkers
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
+
+DISJOINT_COLORS = ("red", "blue", "green")
 
 
 class MagpyMarkers:
@@ -867,11 +870,36 @@ def get_generic_traces(
     orientations, positions, pos_orient_inds = get_rot_pos_from_path(
         input_obj, style.path.frames
     )
+    obj_is_disjoint = (
+        isinstance(input_obj, TriangularMesh)
+        and style.mesh.disjoint.show
+        and not input_obj.is_connected
+    )
+    disjoint_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
-            path_traces.append(
-                make_func(position=pos, orientation=orient, **make_func_kwargs)
-            )
+            if obj_is_disjoint:
+                tria_orig = input_obj._triangles
+                mag_show = style.magnetization.show
+                for tri, dis_color in zip(
+                    input_obj.triangles_subsets, cycle(DISJOINT_COLORS)
+                ):
+                    # temporary mutate triangles from subset
+                    input_obj._triangles = tri
+                    style.magnetization.show = False
+                    disjoint_traces.append(
+                        make_func(
+                            position=pos,
+                            orientation=orient,
+                            **{**make_func_kwargs, "color": dis_color},
+                        )
+                    )
+                input_obj._triangles = tria_orig
+                style.magnetization.show = mag_show
+            else:
+                path_traces.append(
+                    make_func(position=pos, orientation=orient, **make_func_kwargs)
+                )
         for extr in extra_model3d_traces:
             if extr.show:
                 extr.update(extr.updatefunc())
@@ -952,6 +980,20 @@ def get_generic_traces(
         if legendtext is not None:
             trace["name"] = legendtext
         traces.append(trace)
+
+    if disjoint_traces:
+        nsubsets = len(input_obj.triangles_subsets)
+        for ind in range(nsubsets):
+            trace = merge_traces(*disjoint_traces[ind::nsubsets])
+            trace.update(
+                {
+                    "legendgroup": f"{legendgroup} - part_{ind+1:02d}",
+                    "showlegend": True if showlegend is None else showlegend,
+                }
+            )
+            legendtext = trace.get("name", "") if legendtext is None else legendtext
+            trace["name"] = f"{legendtext} - part_{ind+1:02d}"
+            traces.append(trace)
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
         scatter_path = make_path(input_obj, style, legendgroup, kwargs)
