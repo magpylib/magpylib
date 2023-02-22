@@ -140,13 +140,16 @@ class DisplayContext:
         self.objects_from_ctx = ()
         self.kwargs = {}
         self.canvas = None
+        self.fig = None
 
-    def reset(self):
+    def reset(self, reset_fig=True):
         """Reset display context"""
         self.isrunning = False
         self.objects = ()
         self.objects_from_ctx = ()
         self.kwargs = {}
+        if reset_fig:
+            self.fig = None
 
 
 ctx = DisplayContext()
@@ -429,6 +432,6 @@ def show_context(
             {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
         )
         yield ctx
-        _show(*ctx.objects, **ctx.kwargs)
+        ctx.fig =_show(*ctx.objects, **ctx.kwargs)
     finally:
-        ctx.reset()
+        ctx.reset(reset_fig=False)
