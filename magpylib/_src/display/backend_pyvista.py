@@ -204,18 +204,19 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
 def display_pyvista(
     data,
     canvas=None,
-    animation=False,
     return_fig=False,
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
-    animation_output="gif",
+    fig_animation_output="gif",
     repeat=False,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the pyvista library."""
 
+    frames = data["frames"]
+    animation = True if len(frames)>1 else False
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
@@ -223,8 +224,6 @@ def display_pyvista(
         if not return_fig:
             show_canvas = True  # pragma: no cover
         canvas = pv.Plotter(shape=(max_rows, max_cols), off_screen=animation)
-
-    frames = data["frames"]
 
     charts = {}
     if jupyter_backend is None:
@@ -296,11 +295,13 @@ def display_pyvista(
     if len(frames) == 1:
         draw_frame(frames[0])
     elif animation:
-        if animation_output in ("gif", "mp4"):
+        if fig_animation_output in ("gif", "mp4"):
             with tempfile.TemporaryFile() as temp:
-                run_animation(f"{temp.name}_animation.{animation_output}", embed=True)
+                run_animation(
+                    f"{temp.name}_animation.{fig_animation_output}", embed=True
+                )
         else:
-            run_animation(animation_output)
+            run_animation(fig_animation_output)
 
     if return_fig and not show_canvas:
         return canvas
