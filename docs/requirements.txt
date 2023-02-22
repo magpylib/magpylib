@@ -1,4 +1,4 @@
-#-e .
+-e .
 pandas
 sphinx==5.3
 sphinx-copybutton
