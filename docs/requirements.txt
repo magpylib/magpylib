@@ -10,4 +10,4 @@ jupytext
 numpy-stl
 pyvista
 panel
-juypterlab-myst
+jupyterlab-myst
