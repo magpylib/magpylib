@@ -1,8 +1,8 @@
--e .
+#-e .
 pandas
 sphinx==5.3
 sphinx-copybutton
-sphinx-book-theme
+sphinx-book-theme~=1.0.0rc2
 myst-nb
 sphinx-design
 sphinx-thebe
