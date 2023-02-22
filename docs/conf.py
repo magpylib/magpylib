@@ -138,7 +138,11 @@ html_theme_options = {
     "repository_branch": release,
     "use_repository_button": True,
     "use_download_button": True,
-    "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "thebe": True,
+        "notebook_interface": "jupyterlab",
+    },
 }
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
