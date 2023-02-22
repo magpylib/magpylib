@@ -4,7 +4,7 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.0
+    jupytext_version: 1.14.4
 kernelspec:
   display_name: Python 3
   language: python
@@ -226,7 +226,7 @@ objects = [
         magnetization=(0,100,0),
         dimension=(1,1,1),
         position=(-7,0,0),
-    ),
+    ).rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0),
     Cylinder(
         magnetization=(0,0,100),
         dimension=(1,1),
@@ -251,7 +251,7 @@ objects = [
         current=1,
         diameter=1,
         position=(1,0,0),
-    ),
+    ).move(np.linspace((0,0,0), (0,0,7), 20)),
     Line(
         current=1,
         vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)],
@@ -271,9 +271,6 @@ objects = [
         position=(7,0,0),
     ),
 ]
-
-objects[5].move(np.linspace((0,0,0), (0,0,7), 20))
-objects[0].rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0)
 
 magpy.show(objects)
 ```
