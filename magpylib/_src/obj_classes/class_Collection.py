@@ -680,8 +680,8 @@ class Collection(BaseGeo, BaseCollection):
     sensors: `Sensor` objects
         An ordered list of all sensor objects in the collection.
 
-    sources: source objects
-        An ordered list of all source objects`(magnets, currents, misc) in the collection.
+    sources: `Source` objects
+        An ordered list of all source objects (magnets, currents, misc) in the collection.
 
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.

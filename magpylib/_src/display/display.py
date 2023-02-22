@@ -249,6 +249,7 @@ def show(
 
     canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=`None`
         Display graphical output on a given canvas:
+
         - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
@@ -267,6 +268,7 @@ def show(
 
     return_fig: bool, default=False
         If True, the function call returns the figure object.
+
         - with matplotlib: `matplotlib.figure.Figure`.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.

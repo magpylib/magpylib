@@ -40,6 +40,7 @@ __all__ = [
     "Sensor",
     "Collection",
     "show",
+    "show_context",
     "defaults",
     "__version__",
     "__author__",
