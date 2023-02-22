@@ -15,7 +15,7 @@ kernelspec:
 
 # Graphics - Backend, canvas, return_fig
 
-The graphic backend refers to the plotting library that is used for graphic output. Canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
+The graphic backend refers to the plotting library that is used for graphic output. `Canvas` refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
 ## Graphic backend
 
@@ -30,7 +30,49 @@ The installation default is Matplotlib. To select a graphic backend one can
 1. Change the library default with `magpy.defaults.display.backend = 'plotly'`.
 2. Set the `backend` kwarg in the `show` function, `show(..., backend='matplotlib')`.
 
-There is a high level of **feature parity**, however, not all graphic features are supported by all backends. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends.
+There is a high level of **feature parity**, however, not all graphic features are supported by all backends. In addition, some common Matplotlib syntax (e.g. color `'r'`, linestyle `':'`) is automatically translated to other backends. The following table shows a non-exhaustive comparison between supported backends for most of the features.
+
+
+|                  Feature                                        | Matplotlib | Plotly | Pyvista |
+|:---------------------------------------------------------------:|:----------:|:------:|:-------:|
+| triangular mesh 3d                                              | ✔️         | ✔️    | ✔️      |
+| line 3d                                                         | ✔️         | ✔️    | ✔️      |
+| line style                                                      | ✔️         | ✔️    | ❌      |
+| line color                                                      | ✔️         | ✔️    | ✔️      |
+| line width                                                      | ✔️         | ✔️    | ✔️      |
+| marker 3d                                                       | ✔️         | ✔️    | ✔️      |
+| marker color                                                    | ✔️         | ✔️    | ✔️      |
+| marker size                                                     | ✔️         | ✔️    | ✔️      |
+| marker symbol                                                   | ✔️         | ✔️    | ❌      |
+| marker numbering                                                | ✔️         | ✔️    | ❌      |
+| zoom level                                                      | ✔️         | ✔️    | ❌[^2]  |
+| magnetization color gradient                                    | ❌         | ✔️    | ✔️      |
+| custom magnetization color gradient                             | ❌         | ✔️    | ✔️[^3]  |
+| custom magnetization color gradient <br> for individual objects | ❌         | ✔️    | ✔️[^3]  |
+| animation                                                       | ✔️         | ✔️    | ✔️[^6]   |
+| animation time                                                  | ✔️         | ✔️    | ✔️[^6]   |
+| animation fps                                                   | ✔️         | ✔️    | ✔️[^6]   |
+| animation slider                                                | ✔️[^1]     | ✔️    | ❌      |
+| subplots 2D                                                     | ✔️         | ✔️    | ✔️[^7]  |
+| subplots 3D                                                     | ✔️         | ✔️    | ✔️      |
+| user canvas                                                     | ✔️         | ✔️    | ✔️      |
+| user extra 3d model  - generic [^4]                             | ✔️         | ✔️    | ✔️      |
+| user extra 3d model  - backend specific [^5]                    | ✔️         | ✔️    | ❌      |
+
+
+[^1]: when returning animation object and exporting it as jshtml.
+
+[^2]: possible but not implemented at the moment.
+
+[^3]: does not work with `ipygany` jupyter backend. As of `pyvista>=0.38` these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
+
+[^4]: only `"scatter3d"`, and `"mesh3d"`. Gets "translated" to every other backend.
+
+[^5]: custom user defined trace constructors  allowed, which are specific to the backend.
+
+[^6]: animation is only available through export as `gif` or `mp4`
+
+[^7]: 2D plots are not supported for all jupyter_backends. As of pyvista>=0.38 these are deprecated and replaced by the [trame](https://docs.pyvista.org/api/plotting/trame.html) backend.
 
 The following example demonstrates the currently supported backends:
 
@@ -124,8 +166,6 @@ fig.show()
 An example with **Pyvista**:
 
 ```{code-cell} ipython3
-:tags: []
-
 import numpy as np
 import magpylib as magpy
 import pyvista as pv
@@ -158,8 +198,6 @@ pl.show()
 Instead of forwarding a figure to an existing canvas, it is also possible to return the figure object for further manipulation using the `return_fig` command. In the following example this is demonstrated for the pyvista backend.
 
 ```{code-cell} ipython3
-:tags: []
-
 import numpy as np
 import magpylib as magpy
 import pyvista as pv
