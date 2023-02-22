@@ -119,31 +119,6 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 - **`Collection`**`(*children, position, orientation, style)` is a group of source and sensor objects (children) that is used for common manipulation. Depending on the children, a collection can be used as Magpylib `sources` and/or `observers` input.
 
-```{code-cell} ipython3
-import magpylib as magpy
-
-print(
-    # magnets
-    magpy.magnet.Cuboid(),
-    magpy.magnet.Cylinder(),
-    magpy.magnet.CylinderSegment(),
-    magpy.magnet.Sphere(),
-    magpy.magnet.Tetrahedron(),
-    
-    # currents
-    magpy.current.Loop(),
-    magpy.current.Line(),
-
-    # other
-    magpy.misc.Dipole(),
-    magpy.misc.Triangle(),
-    magpy.misc.CustomSource(),
-    magpy.Sensor(),
-    magpy.Collection(),
-    sep="\n",
-)
-```
-
 (intro-position-and-orientation)=
 
 ## Position and orientation
