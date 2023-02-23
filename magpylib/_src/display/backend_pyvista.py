@@ -216,7 +216,7 @@ def display_pyvista(
     """Display objects and paths graphically using the pyvista library."""
 
     frames = data["frames"]
-    animation = True if len(frames)>1 else False
+    animation = bool(len(frames)>1)
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
