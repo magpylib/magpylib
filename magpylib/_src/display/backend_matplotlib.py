@@ -128,13 +128,14 @@ def generic_trace_to_matplotlib(trace):
         tr["row"] = trace.get("row", 1)
         tr["col"] = trace.get("col", 1)
         tr["kwargs"] = tr.get("kwargs", {})
-        if showlegend:
-            if "label" not in tr["kwargs"]:
-                tr["kwargs"]["label"] = trace.get("name", "")
-                if leg_title is not None:
-                    tr["kwargs"]["label"] += f" ({leg_title})"
-        else:
-            tr["kwargs"]["label"] = "_no_legend"
+        if tr["constructor"] != "text":
+            if showlegend:
+                if "label" not in tr["kwargs"]:
+                    tr["kwargs"]["label"] = trace.get("name", "")
+                    if leg_title is not None:
+                        tr["kwargs"]["label"] += f" ({leg_title})"
+            else:
+                tr["kwargs"]["label"] = "_no_legend"
     return traces_mpl
 
 
