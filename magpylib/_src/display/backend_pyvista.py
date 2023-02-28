@@ -190,14 +190,18 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         )
-    for ind, tr in enumerate(traces_pv):
+    showlegend = trace.get("showlegend", True)
+    for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1
         tr["col"] = trace.get("col", 1) - 1
-        if ind == 0 and trace.get("showlegend", False):
-            if "label" not in tr:
-                tr["label"] = trace.get("name", "")
-            if leg_title is not None:
-                tr["label"] += f" ({leg_title})"
+        if tr["type"] != "point_labels":
+            if showlegend:
+                if "label" not in tr:
+                    tr["label"] = trace.get("name", "")
+                    if leg_title is not None:
+                        tr["label"] += f" ({leg_title})"
+            else:
+                tr.pop("label", None)
     return traces_pv
 
 
@@ -211,12 +215,13 @@ def display_pyvista(
     subplot_specs=None,
     fig_animation_output="gif",
     repeat=False,
+    legend_max_items=20,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the pyvista library."""
 
     frames = data["frames"]
-    animation = bool(len(frames)>1)
+    animation = bool(len(frames) > 1)
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
     show_canvas = False
@@ -233,13 +238,21 @@ def display_pyvista(
     )
     warned2d = False
 
-    def draw_frame(frame):
+
+    def draw_frame(frame_ind):
+        count_with_labels = {}
         nonlocal warned2d
+        frame = frames[frame_ind]
         for tr0 in frame["data"]:
             for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
+                if frame_ind==0:
+                    if (row, col) not in count_with_labels:
+                        count_with_labels[(row, col)] = 0
+                    if tr1.get("label", ""):
+                        count_with_labels[(row, col)] += 1
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
                     getattr(canvas, f"add_{typ}")(**tr1)
@@ -256,6 +269,11 @@ def display_pyvista(
                             "2D plots. Empty plots will be shown instead"
                         )
                         warned2d = True
+        for rowcol, count in count_with_labels.items():
+            if 0 < count <= legend_max_items:
+                row,col = rowcol
+                canvas.subplot(row, col)
+                canvas.add_legend(bcolor="w", size=(0.2,0.3))
         # match other backends plotter properties
         canvas.set_background("gray", top="white")
         canvas.camera.azimuth = -90
@@ -284,16 +302,16 @@ def display_pyvista(
                 f"received {suff!r} instead"
             )
 
-        for frame in frames:
+        for frame_ind,_ in enumerate(frames):
             canvas.clear_actors()
-            draw_frame(frame)
+            draw_frame(frame_ind)
             canvas.write_frame()
         canvas.close()
         show_canvas = False
         open_animation(filename, embed=embed)
 
     if len(frames) == 1:
-        draw_frame(frames[0])
+        draw_frame(0)
     elif animation:
         if fig_animation_output in ("gif", "mp4"):
             with tempfile.TemporaryFile() as temp:
