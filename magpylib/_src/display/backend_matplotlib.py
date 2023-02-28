@@ -268,17 +268,20 @@ def display_matplotlib(
                 if axes[row_col_num].name == "3d":
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
-    def draw_frame(ind):
-        count_with_labels = 0
-        for tr in frames[ind]["data"]:
+    def draw_frame(frame_ind):
+        count_with_labels = {}
+        for tr in frames[frame_ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
             ax = axes[row_col_num]
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-            label = kwargs.get("label", "_")
-            if label and not label.startswith("_"):
-                count_with_labels += 1
+            if frame_ind==0 :
+                if row_col_num not in count_with_labels:
+                    count_with_labels[row_col_num] = 0
+                label = kwargs.get("label", "_")
+                if label and not label.startswith("_"):
+                    count_with_labels[row_col_num] += 1
             trace = getattr(ax, constructor)(*args, **kwargs)
             if constructor == "plot_trisurf":
                 # 'Poly3DCollection' object has no attribute '_edgecolors2d'
@@ -290,14 +293,15 @@ def display_matplotlib(
                         else color
                     )
                     setattr(trace, f"_{arg}colors2d", color)
-        for ax in axes.values():
+        for row_col_num, ax in axes.items():
+            count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
                 ax.set(
                     **{f"{k}label": f"{k} [mm]" for k in "xyz"},
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))
-                if 0 < count_with_labels <= legend_max_items:
+                if 0 < count <= legend_max_items:
                     ax.legend(
                         bbox_to_anchor=(1.04, 1),
                         loc="upper left",
