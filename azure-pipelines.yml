@@ -19,7 +19,7 @@ strategy:
       python.version: '3.9'
     Python310:
       python.version: '3.10'
-    Python310:
+    Python311:
       python.version: '3.11'
 steps:
 - task: UsePythonVersion@0
