@@ -157,8 +157,8 @@ def test_TringularMesh_display():
         (0, 0, 1000),
         vertices,
         triangles,
-        validate_closed_mesh=False,
-        validate_connected_mesh=False,
+        validate_closed=False,
+        validate_connected=False,
         reorient_triangles=False,
     )
 

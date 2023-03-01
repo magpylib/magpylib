@@ -49,11 +49,11 @@ class TriangularMesh(BaseMagnet):
         If `False`, no facet orientation check is performed. If `True`, facets pointing inwards are
         fliped in the right direction.
 
-    validate_closed_mesh: bool, optional
+    validate_closed: bool, optional
         If `True`, the provided set of facets is validated by checking if it forms a closed body.
         Can be deactivated for perfomance reasons by setting it to `False`.
 
-    validate_connected_mesh: bool, optional
+    validate_connected: bool, optional
         If `True`, the provided set of facets is validated by checking if it forms a connected body.
         Can be deactivated for perfomance reasons by setting it to `False`.
 
@@ -84,8 +84,8 @@ class TriangularMesh(BaseMagnet):
         triangles=None,
         position=(0, 0, 0),
         orientation=None,
-        validate_closed_mesh=True,  # <-this cannot be False or inside-outside checks will not work
-        validate_connected_mesh=True,
+        validate_closed=True,  # <-this cannot be False or inside-outside checks will not work
+        validate_connected=True,
         reorient_triangles=True,
         style=None,
         **kwargs,
@@ -96,10 +96,10 @@ class TriangularMesh(BaseMagnet):
         self._is_closed = None
         self._triangles_subsets = None
 
-        if validate_closed_mesh:
+        if validate_closed:
             self._validate_closed()
 
-        if validate_connected_mesh:
+        if validate_connected:
             self._validate_connected()
 
         if reorient_triangles:
@@ -276,8 +276,8 @@ class TriangularMesh(BaseMagnet):
         # reorient facets since ConvexHull does not guarantee that the facets are all
         # pointing outwards
         reorient_triangles = kwargs.pop("reorient_triangles", True)
-        validate_closed_mesh = kwargs.pop("validate_closed_mesh", True)
-        validate_connected_mesh = kwargs.pop("validate_connected_mesh", True)
+        validate_closed = kwargs.pop("validate_closed", True)
+        validate_connected = kwargs.pop("validate_connected", True)
         return cls(
             magnetization=magnetization,
             vertices=points,
@@ -285,8 +285,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=reorient_triangles,
-            validate_closed_mesh=validate_closed_mesh,
-            validate_connected_mesh=validate_connected_mesh,
+            validate_closed=validate_closed,
+            validate_connected=validate_connected,
             style=style,
             **kwargs,
         )
@@ -365,8 +365,8 @@ class TriangularMesh(BaseMagnet):
         vertices = polydata.points
         triangles = polydata.faces.reshape(-1, 4)[:, 1:]
         reorient_triangles = kwargs.pop("reorient_triangles", True)
-        validate_closed_mesh = kwargs.pop("validate_closed_mesh", True)
-        validate_connected_mesh = kwargs.pop("validate_connected_mesh", True)
+        validate_closed = kwargs.pop("validate_closed", True)
+        validate_connected = kwargs.pop("validate_connected", True)
         return cls(
             magnetization=magnetization,
             vertices=vertices,
@@ -374,8 +374,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=reorient_triangles,
-            validate_closed_mesh=validate_closed_mesh,
-            validate_connected_mesh=validate_connected_mesh,
+            validate_closed=validate_closed,
+            validate_connected=validate_connected,
             style=style,
             **kwargs,
         )
@@ -388,8 +388,8 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_triangles=True,
-        validate_closed_mesh=True,
-        validate_connected_mesh=True,
+        validate_closed=True,
+        validate_connected=True,
         style=None,
         **kwargs,
     ):
@@ -428,11 +428,11 @@ class TriangularMesh(BaseMagnet):
             If `False`, no facet orientation check is performed. If `True`, facets pointing inwards
             are fliped in the right direction.
 
-        validate_closed_mesh: bool, optional
+        validate_closed: bool, optional
             If `True`, the provided set of facets is validated by checking if it forms a closed
             body. Can be deactivated for perfomance reasons by setting it to `False`.
 
-        validate_connected_mesh: bool, optional
+        validate_connected: bool, optional
             If `True`, the provided set of facets is validated by checking if it forms a connected
             body. Can be deactivated for perfomance reasons by setting it to `False`.
 
@@ -499,8 +499,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_triangles=reorient_triangles,
-            validate_closed_mesh=validate_closed_mesh,
-            validate_connected_mesh=validate_connected_mesh,
+            validate_closed=validate_closed,
+            validate_connected=validate_connected,
             style=style,
             **kwargs,
         )
