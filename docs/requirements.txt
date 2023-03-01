@@ -2,7 +2,7 @@
 pandas
 sphinx==5.3
 sphinx-copybutton
-sphinx-book-theme~=1.0.0rc2
+sphinx-book-theme
 myst-nb
 sphinx-design
 sphinx-thebe
