@@ -65,6 +65,10 @@ class BaseDisplayRepr:
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
+                elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
+                    val = np.array(getattr(self, k))
+                    if np.prod(val.shape) > 4:
+                        val = f"shape{val.shape}"
                 else:
                     val = getattr(self, k)
                 lines.append(f"  • {k}: {val} {unit_str}")
