@@ -629,8 +629,8 @@ def make_Sensor(
         [dimension] * 3 if isinstance(dimension, (float, int)) else dimension[:3],
         dtype=float,
     )
-    no_pix = pixel.shape[0] == 1 and pixel.sum() == 0
-    one_pix = pixel.shape[0] == 1 and pixel.sum() != 0
+    no_pix = pixel.shape[0] == 1 and (pixel==0).all()
+    one_pix = pixel.shape[0] == 1 and not (pixel==0).all()
     if autosize is not None:
         dim *= autosize
     if no_pix:
