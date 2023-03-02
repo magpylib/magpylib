@@ -1002,8 +1002,8 @@ def get_generic_traces(
                     "showlegend": True if showlegend is None else showlegend,
                 }
             )
-            legendtext = trace.get("name", "") if legendtext is None else legendtext
-            trace["name"] = f"{legendtext} - part_{ind+1:02d}"
+            lg = trace.get("name", "") if legendtext is None else legendtext
+            trace["name"] = f"{lg} - part_{ind+1:02d}"
             traces.append(trace)
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
