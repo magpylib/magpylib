@@ -94,6 +94,7 @@ class TriangularMesh(BaseMagnet):
         self._vertices, self._triangles = self._input_check(vertices, triangles)
         self._is_connected = None
         self._is_closed = None
+        self._is_reoriented = False
         self._triangles_subsets = None
 
         if validate_closed:
@@ -104,7 +105,7 @@ class TriangularMesh(BaseMagnet):
 
         if reorient_triangles and self.is_closed:
             # perform only if closed, or inside-outside will fail
-            self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
+            self.reorient_triangles()
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -131,6 +132,11 @@ class TriangularMesh(BaseMagnet):
         if self._is_closed is None:
             self._is_closed = trimesh_is_closed(self._triangles)
         return self._is_closed
+
+    @property
+    def is_reoriented(self):
+        """Tells if the triangles have been reoriented"""
+        return self._is_reoriented
 
     @property
     def is_connected(self):
@@ -214,6 +220,14 @@ class TriangularMesh(BaseMagnet):
                 "Resulting mesh is not closed. "
                 "Disable error by setting `validate_closed=False`."
             )
+
+    def reorient_triangles(self):
+        """Triangular facets pointing inwards are fliped in the right direction.
+        Prior to reorientation, it is checked if the mesh is closed.
+        """
+        _ = self.is_closed  # perform isclosed check through getter
+        self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
+        self._is_reoriented = True
 
     @classmethod
     def from_ConvexHull_points(
