@@ -118,9 +118,8 @@ def trimesh_is_closed(triangles: np.ndarray) -> bool:
     return np.all(edge_counts == 2)
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
-    """
-    Check if all triangles are oriented outwards. Fix the ones that are not, and return an
+def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray)-> np.ndarray:
+    """Check if all triangles are oriented outwards. Fix the ones that are not, and return an
     array of properly oriented triangles.
 
     Parameters
@@ -135,26 +134,52 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.n
     -------
     triangles: np.ndarray, shape (n,3), dtype int
         fixed triangles
-
     """
+
+    # use first triangle as a seed, this one needs to be oriented via inside check
+    # compute facet orientation (normalized)
     facets = vertices[triangles]
+    facet0 = facets[0]
+    facet0
+    v1 = facet0[0] - facet0[1]
+    v2 = facet0[1] - facet0[2]
+    orient = np.cross(v1, v2)
+    orient /= np.linalg.norm(orient) # for single facet numpy is fine
 
-    # compute facet orientations (normalized)
-    a = facets[:, 0, :] - facets[:, 1, :]
-    b = facets[:, 1, :] - facets[:, 2, :]
-    orient = v_norm_cross(a, b)
+    # create a check point by displacing the facet center in facet orientation direction
+    eps = 1e-6  # unfortunately this must be quite a 'large' number :(
+    check_point = facet0.mean(axis=0) + orient * eps
 
-    # create check points by displacing the facet center in facet orientation direction
-    eps = 1e-6  # unfortunately this must be quite a large number :(
-    facet_center = facets.mean(axis=1)
-    check_points = facet_center + orient * eps
+    # find out if point is inside
+    first_is_inside = mask_inside_trimesh(np.array([check_point]), facets)[0]
 
-    # find points which are now inside
-    inside_mask = mask_inside_trimesh(check_points, facets)
+    tri_temp=triangles.copy() # do not modify input triangles
 
-    # flip triangles which point inside
-    triangles[inside_mask] = triangles[inside_mask][:, [0, 2, 1]]
-    return triangles
+    if first_is_inside:
+        tri_temp[0] = tri_temp[0, [0,2,1]]
+
+    new_triangles=[]
+    free_edges = set()
+    # incrementally add triangles sharing at least a common edge by looping among left over
+    # triangles. If next triangle with common edge is reversed, flip it.
+    while len(tri_temp)!=0:
+        for tri_ind, tri in enumerate(tri_temp):
+            edges = {(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])}
+            edges_r = {(tri[1], tri[0]), (tri[2], tri[1]), (tri[0], tri[2])}
+            common = free_edges & edges
+            if not free_edges:
+                common=True
+            elif common:
+                edges = edges_r
+                tri = tri[[0,2,1]] # flip triangle
+            else:
+                common = free_edges & edges_r
+            if common: # break loop on first common edge found
+                new_triangles.append(tri)
+                free_edges ^= edges
+                tri_temp = np.delete(tri_temp, tri_ind, 0)
+                break
+    return np.array(new_triangles)
 
 
 def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:

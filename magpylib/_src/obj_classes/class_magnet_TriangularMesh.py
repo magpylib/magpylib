@@ -84,7 +84,7 @@ class TriangularMesh(BaseMagnet):
         triangles=None,
         position=(0, 0, 0),
         orientation=None,
-        validate_closed=True,  # <-this cannot be False or inside-outside checks will not work
+        validate_closed=True,
         validate_connected=True,
         reorient_triangles=True,
         style=None,
@@ -102,7 +102,8 @@ class TriangularMesh(BaseMagnet):
         if validate_connected:
             self._validate_connected()
 
-        if reorient_triangles:
+        if reorient_triangles and self.is_closed:
+            # perform only if closed, or inside-outside will fail
             self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
 
         # inherit
