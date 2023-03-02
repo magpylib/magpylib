@@ -579,6 +579,8 @@ def make_TriangularMesh(
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
     )
+    # make edges sharper in plotly
+    trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
     return place_and_orient_model3d(
         trace, orientation=orientation, position=position, **kwargs
     )
