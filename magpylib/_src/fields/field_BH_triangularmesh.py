@@ -140,7 +140,6 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray)-> np.nd
     # compute facet orientation (normalized)
     facets = vertices[triangles]
     facet0 = facets[0]
-    facet0
     v1 = facet0[0] - facet0[1]
     v2 = facet0[1] - facet0[2]
     orient = np.cross(v1, v2)
