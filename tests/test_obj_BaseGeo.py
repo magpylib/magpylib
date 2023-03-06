@@ -520,7 +520,6 @@ def test_describe():
         polydata=pv.Text3D("A"),
     )
     desc = s.describe(return_string=True)
-    # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
     test = (
         "TriangularMesh(id=REGEX)\n"
         "  • parent: None \n"
@@ -539,4 +538,5 @@ def test_describe():
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
+    # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
     assert desc == test
