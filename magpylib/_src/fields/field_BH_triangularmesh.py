@@ -215,15 +215,13 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
             facets[:, 1], (len(lines), 1, 1)
         )  # <--inefficient tile !!! only small part needed
         ref_pts[coincide] = ref_pts2[coincide]
-    coincide = v_norm2(l1 - ref_pts) < eps
 
     proj0 = v_norm_proj(l0 - ref_pts, normals)
     proj1 = v_norm_proj(l1 - ref_pts, normals)
 
     eps = 1e-7
-    plane_touch = (
-        np.abs(proj1) < eps
-    )  # no need to check proj0 for touch because line init pts are outside
+    # no need to check proj0 for touch because line init pts are outside
+    plane_touch = np.abs(proj1) < eps
     # print('plane_touch:')
     # print(plane_touch)
 

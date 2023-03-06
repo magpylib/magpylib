@@ -88,6 +88,7 @@ def test_Sensor_display():
         canvas=ax, markers=[(100, 100, 100)], style_path_frames=15, return_fig=True
     )
 
+    sens.pixel = [(2, 3, 4)]  # one non-zero pixel
     sens.show(
         canvas=ax, markers=[(100, 100, 100)], style_path_show=False, return_fig=True
     )

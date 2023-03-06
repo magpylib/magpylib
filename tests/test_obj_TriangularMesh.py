@@ -6,6 +6,7 @@ import pytest
 import pyvista as pv
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 
 
@@ -89,7 +90,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     tetra_facets = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=tetra_pv, **tetra_kwargs
     )
-
+    assert tetra_facets.is_reoriented
     cube = (
         magpy.magnet.Cuboid((111, 222, 333), (1, 1, 1))
         .move((1, 1, 1))
@@ -281,3 +282,13 @@ def test_TriangularMesh_from_facets_good_inputs():
     src4 = get_tri_from_facets(facets, **pos_orient)
     B4 = src4.getB(points)
     np.testing.assert_allclose(B0, B4)
+
+
+def test_lines_ends_in_trimesh():
+    "test special cases"
+
+    # line point coincides with facet point
+    facets = np.array([[[0, 0, 0], [0, 1, 0], [1, 0, 0]]])
+    lines = np.array([[[-1, 1, -1], [1, 0, 0]]])
+
+    assert bool(lines_end_in_trimesh(lines, facets)[0]) is True

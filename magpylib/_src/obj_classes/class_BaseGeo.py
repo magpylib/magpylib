@@ -252,8 +252,7 @@ class BaseGeo(BaseTransform):
         self._style = self._validate_style(val)
 
     def _validate_style(self, val=None):
-        if val is None:
-            val = {}
+        val = {} if val is None else val
         if isinstance(val, dict):
             val = self._style_class(**val)
         if not isinstance(val, self._style_class):
