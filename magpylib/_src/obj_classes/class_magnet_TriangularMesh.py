@@ -7,6 +7,7 @@ from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
     get_disjoint_triangles_subsets,
 )
+from magpylib._src.fields.field_BH_triangularmesh import get_intersecting_triangles
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
 from magpylib._src.input_checks import check_format_input_vector
@@ -57,6 +58,10 @@ class TriangularMesh(BaseMagnet):
         If `True`, the provided set of facets is validated by checking if it forms a connected body.
         Can be deactivated for perfomance reasons by setting it to `False`.
 
+    validate_non_self_intersecting: bool, optional
+        If `True`, the provided set of facets is validated by checking if the body is not
+        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -86,6 +91,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         validate_closed=True,
         validate_connected=True,
+        validate_non_self_intersecting=True,
         reorient_triangles=True,
         style=None,
         **kwargs,
@@ -94,14 +100,19 @@ class TriangularMesh(BaseMagnet):
         self._vertices, self._triangles = self._input_check(vertices, triangles)
         self._is_connected = None
         self._is_closed = None
+        self._is_self_intersecting = None
         self._is_reoriented = False
         self._triangles_subsets = None
+        self._self_intersecting_triangles = None
 
         if validate_closed:
             self._validate_closed()
 
         if validate_connected:
             self._validate_connected()
+
+        if validate_non_self_intersecting:
+            self._validate_non_self_intersecting()
 
         if reorient_triangles and self.is_closed:
             # perform only if closed, or inside-outside will fail
@@ -151,6 +162,22 @@ class TriangularMesh(BaseMagnet):
         if self._triangles_subsets is None:
             self._triangles_subsets = get_disjoint_triangles_subsets(self._triangles)
         return self._triangles_subsets
+
+    @property
+    def is_self_intersecting(self):
+        """Is-self_intersecting boolean check"""
+        if self._is_self_intersecting is None:
+            self._is_self_intersecting = len(self.self_intersecting_triangles) != 0
+        return self._is_self_intersecting
+
+    @property
+    def self_intersecting_triangles(self):
+        """return self-intersecting triangles"""
+        if self._self_intersecting_triangles is None:
+            self._self_intersecting_triangles = get_intersecting_triangles(
+                self._vertices, self._triangles
+            )
+        return self._self_intersecting_triangles
 
     @property
     def _barycenter(self):
@@ -219,6 +246,17 @@ class TriangularMesh(BaseMagnet):
                 "Bad `triangles` input of TriangularMesh. "
                 "Resulting mesh is not closed. "
                 "Disable error by setting `validate_closed=False`."
+            )
+
+    def _validate_non_self_intersecting(self):
+        """
+        Check if input mesh is closed
+        """
+        if not self.is_self_intersecting:
+            raise ValueError(
+                "Bad `triangles` and/or `vertices` input of TriangularMesh. "
+                "Resulting mesh is self-intersecting"
+                "Disable error by setting `validate_non_self_intersecting=False`."
             )
 
     def reorient_triangles(self):
@@ -293,6 +331,9 @@ class TriangularMesh(BaseMagnet):
         reorient_triangles = kwargs.pop("reorient_triangles", True)
         validate_closed = kwargs.pop("validate_closed", True)
         validate_connected = kwargs.pop("validate_connected", True)
+        validate_non_self_intersecting = kwargs.pop(
+            "validate_non_self_intersecting", True
+        )
         return cls(
             magnetization=magnetization,
             vertices=points,
@@ -302,6 +343,7 @@ class TriangularMesh(BaseMagnet):
             reorient_triangles=reorient_triangles,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
+            validate_non_self_intersecting=validate_non_self_intersecting,
             style=style,
             **kwargs,
         )
@@ -382,6 +424,9 @@ class TriangularMesh(BaseMagnet):
         reorient_triangles = kwargs.pop("reorient_triangles", True)
         validate_closed = kwargs.pop("validate_closed", True)
         validate_connected = kwargs.pop("validate_connected", True)
+        validate_non_self_intersecting = kwargs.pop(
+            "validate_non_self_intersecting", True
+        )
         return cls(
             magnetization=magnetization,
             vertices=vertices,
@@ -391,6 +436,7 @@ class TriangularMesh(BaseMagnet):
             reorient_triangles=reorient_triangles,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
+            validate_non_self_intersecting=validate_non_self_intersecting,
             style=style,
             **kwargs,
         )
@@ -405,6 +451,7 @@ class TriangularMesh(BaseMagnet):
         reorient_triangles=True,
         validate_closed=True,
         validate_connected=True,
+        validate_non_self_intersecting=True,
         style=None,
         **kwargs,
     ):
@@ -450,6 +497,10 @@ class TriangularMesh(BaseMagnet):
         validate_connected: bool, optional
             If `True`, the provided set of facets is validated by checking if it forms a connected
             body. Can be deactivated for perfomance reasons by setting it to `False`.
+
+        validate_non_self_intersecting: bool, optional
+            If `True`, the provided set of facets is validated by checking if the body is not
+            self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -516,6 +567,7 @@ class TriangularMesh(BaseMagnet):
             reorient_triangles=reorient_triangles,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
+            validate_non_self_intersecting=validate_non_self_intersecting,
             style=style,
             **kwargs,
         )
