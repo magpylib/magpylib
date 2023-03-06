@@ -42,24 +42,6 @@ def v_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
     return result
 
 
-def v_norm_cross(a: np.ndarray, b: np.ndarray) -> np.ndarray:
-    """
-    a x b / |a x b|
-
-    """
-    res = np.array(
-        (
-            a[:, 1] * b[:, 2] - a[:, 2] * b[:, 1],
-            a[:, 2] * b[:, 0] - a[:, 0] * b[:, 2],
-            a[:, 0] * b[:, 1] - a[:, 1] * b[:, 0],
-        )
-    )
-    res2 = res**2
-    vnorm = np.sqrt(res2[0] + res2[1] + res2[2])
-    res = res / vnorm
-    return res.T
-
-
 def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     """
     a x b * c
