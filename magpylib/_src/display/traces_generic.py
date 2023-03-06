@@ -243,6 +243,42 @@ def make_Dipole(
     )
 
 
+def make_self_intersecting_mesh(
+    obj,
+    pos_orient_inds,
+    label=None,
+    style=None,
+    color=None,  # pylint: disable=unused-argument
+    **kwargs,
+):
+    # pylint: disable=protected-access
+    style = obj.style if style is None else style
+    mesh = getattr(style.mesh, "selfintersecting")
+    inds = obj.self_intersecting_indices
+    tr, vert = obj.triangles[inds], obj.vertices
+    i, j, k = tr.T
+    label = f"{obj}" if label is None else label
+    traces = []
+    for ind in pos_orient_inds:
+        x, y, z = (obj._orientation[ind].apply(vert) + obj._position[ind]).T
+        trace = {
+            "type": "mesh3d",
+            "x": x,
+            "y": y,
+            "z": z,
+            "i": i,
+            "j": j,
+            "k": k,
+            "color": mesh.color,
+            "legendgroup": f"{obj}self-intersecting facets",
+            "name": f"{label} - self-intersecting facets",
+            "showlegend": True,
+        }
+        traces.append(trace)
+    out = {**merge_traces(*traces), **kwargs}
+    return out
+
+
 def make_invalid_mesh_lines(
     obj,
     pos_orient_inds,
@@ -252,7 +288,7 @@ def make_invalid_mesh_lines(
     color=None,  # pylint: disable=unused-argument
     **kwargs,
 ):
-    """Draw open or self-intersecting mesh lines and vertices"""
+    """Draw open or disjoint mesh lines and vertices"""
     # pylint: disable=protected-access
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, mode)
@@ -1033,6 +1069,10 @@ def get_generic_traces(
                 )
                 if trace:
                     traces.append(trace)
+        if input_obj.is_self_intersecting and style.mesh.selfintersecting.show:
+            traces.append(
+                make_self_intersecting_mesh(input_obj, pos_orient_inds, label, **kwargs)
+            )
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)

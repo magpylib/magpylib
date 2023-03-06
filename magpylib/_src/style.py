@@ -927,6 +927,41 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
         self._colorsequence = val
 
 
+class SelfIntersectingMesh(MagicProperties):
+    """Defines styling properties of SelfIntersectingMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Triangles
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+    """
+
+    @property
+    def show(self):
+        """If True, show magnetization direction."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            "The `show` input must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+    @property
+    def color(self):
+        """A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`."""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val, parent_name=f"{type(self).__name__}")
+
+
 class InvalidMesh(MagicProperties):
     """Defines InvalidMesh mesh properties.
 
@@ -937,6 +972,9 @@ class InvalidMesh(MagicProperties):
 
     disjoint: dict or DisjointMesh, default=None
         Shows disjoint bodies of a TriangularMesh object, if any.
+
+    selfintersecting: dict or SelfIntersectingMesh, default=None
+        Shows self-intersecting triangles of a TriangularMesh object, if any.
     """
 
     @property
@@ -960,6 +998,19 @@ class InvalidMesh(MagicProperties):
     @disjoint.setter
     def disjoint(self, val):
         self._disjoint = validate_property_class(val, "disjoint", DisjointMesh, self)
+
+    @property
+    def selfintersecting(self):
+        """`SelfIntersectingMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._selfintersecting
+
+    @selfintersecting.setter
+    def selfintersecting(self, val):
+        self._selfintersecting = validate_property_class(
+            val, "SelfIntersectingMesh", SelfIntersectingMesh, self
+        )
 
 
 class Orientation(MagicProperties):

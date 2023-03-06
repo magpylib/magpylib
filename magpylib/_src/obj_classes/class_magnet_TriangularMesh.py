@@ -103,7 +103,7 @@ class TriangularMesh(BaseMagnet):
         self._is_self_intersecting = None
         self._is_reoriented = False
         self._triangles_subsets = None
-        self._self_intersecting_triangles = None
+        self._self_intersecting_indices = None
 
         if validate_closed:
             self._validate_closed()
@@ -167,17 +167,17 @@ class TriangularMesh(BaseMagnet):
     def is_self_intersecting(self):
         """Is-self_intersecting boolean check"""
         if self._is_self_intersecting is None:
-            self._is_self_intersecting = len(self.self_intersecting_triangles) != 0
+            self._is_self_intersecting = len(self.self_intersecting_indices) != 0
         return self._is_self_intersecting
 
     @property
-    def self_intersecting_triangles(self):
+    def self_intersecting_indices(self):
         """return self-intersecting triangles"""
-        if self._self_intersecting_triangles is None:
-            self._self_intersecting_triangles = get_intersecting_triangles(
+        if self._self_intersecting_indices is None:
+            self._self_intersecting_indices = get_intersecting_triangles(
                 self._vertices, self._triangles
             )
-        return self._self_intersecting_triangles
+        return self._self_intersecting_indices
 
     @property
     def _barycenter(self):
