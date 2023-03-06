@@ -118,7 +118,7 @@ def trimesh_is_closed(triangles: np.ndarray) -> bool:
     return np.all(edge_counts == 2)
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray)-> np.ndarray:
+def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
     """Check if all triangles are oriented outwards. Fix the ones that are not, and return an
     array of properly oriented triangles.
 
@@ -143,7 +143,7 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray)-> np.nd
     v1 = facet0[0] - facet0[1]
     v2 = facet0[1] - facet0[2]
     orient = np.cross(v1, v2)
-    orient /= np.linalg.norm(orient) # for single facet numpy is fine
+    orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
     eps = 1e-6  # unfortunately this must be quite a 'large' number :(
@@ -152,28 +152,28 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray)-> np.nd
     # find out if point is inside
     first_is_inside = mask_inside_trimesh(np.array([check_point]), facets)[0]
 
-    tri_temp=triangles.copy() # do not modify input triangles
+    tri_temp = triangles.copy()  # do not modify input triangles
 
     if first_is_inside:
-        tri_temp[0] = tri_temp[0, [0,2,1]]
+        tri_temp[0] = tri_temp[0, [0, 2, 1]]
 
-    new_triangles=[]
+    new_triangles = []
     free_edges = set()
     # incrementally add triangles sharing at least a common edge by looping among left over
     # triangles. If next triangle with common edge is reversed, flip it.
-    while len(tri_temp)!=0:
+    while len(tri_temp) != 0:
         for tri_ind, tri in enumerate(tri_temp):
             edges = {(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])}
             edges_r = {(tri[1], tri[0]), (tri[2], tri[1]), (tri[0], tri[2])}
             common = free_edges & edges
             if not free_edges:
-                common=True
+                common = True
             elif common:
                 edges = edges_r
-                tri = tri[[0,2,1]] # flip triangle
+                tri = tri[[0, 2, 1]]  # flip triangle
             else:
                 common = free_edges & edges_r
-            if common: # break loop on first common edge found
+            if common:  # break loop on first common edge found
                 new_triangles.append(tri)
                 free_edges ^= edges
                 tri_temp = np.delete(tri_temp, tri_ind, 0)
