@@ -194,6 +194,32 @@ def test_disjoint_mesh():
         )
 
 
+def test_self_intersecting_triangular_mesh():
+    """raises Error if self intersecting"""
+    # cube with closed with an inverted pyramid crossing the opposite face.
+    self_intersecting_mesh3d = {
+        "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
+        "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
+        "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
+        "i": [7, 0, 0, 0, 2, 6, 4, 0, 3, 7, 4, 5, 6, 7],
+        "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
+        "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
+    }
+    vertices = np.array(
+        [v for k, v in self_intersecting_mesh3d.items() if k in "xyz"]
+    ).T
+    triangles = np.array(
+        [v for k, v in self_intersecting_mesh3d.items() if k in "ijk"]
+    ).T
+    with pytest.raises(ValueError):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            triangles=triangles,
+            validate_non_self_intersecting=True,
+        )
+
+
 def test_TriangularMesh_from_pyvista():
     """Test from_pyvista classmethod"""
 

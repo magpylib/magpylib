@@ -251,6 +251,7 @@ def make_self_intersecting_mesh(
     color=None,  # pylint: disable=unused-argument
     **kwargs,
 ):
+    """Draw self-intersecting triangles"""
     # pylint: disable=protected-access
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, "selfintersecting")

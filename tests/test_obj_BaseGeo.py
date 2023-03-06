@@ -1,7 +1,9 @@
 import re
+import textwrap
 
 import numpy as np
 import pytest
+import pyvista as pv
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
@@ -508,6 +510,33 @@ def test_describe():
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
         + "  • pixel: 75 (3x5x5) "
+    )
+    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
+    assert desc == test
+
+    # describe tringularmesh
+    s = magpy.magnet.TriangularMesh.from_pyvista(
+        magnetization=(0, 0, 1000),
+        polydata=pv.Text3D("A"),
+    )
+    desc = s.describe(return_string=True)
+    # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
+    test = (
+        "TriangularMesh(id=REGEX)\n"
+        "  • parent: None \n"
+        "  • position: [0. 0. 0.] mm\n"
+        "  • orientation: [0. 0. 0.] degrees\n"
+        "  • magnetization: [   0.    0. 1000.] mT\n"
+        "  • barycenter: [0.62312231 0.38878538 0.25      ] \n"
+        "  • facets: shape(52, 3, 3) \n"
+        "  • is_closed: True \n"
+        "  • is_connected: True \n"
+        "  • is_reoriented: True \n"
+        "  • is_self_intersecting: False \n"
+        "  • self_intersecting_indices: [] \n"
+        "  • triangles: shape(52, 3) \n"
+        "  • triangles_subsets: list of length 1 \n"
+        "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test

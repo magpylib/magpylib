@@ -149,7 +149,7 @@ def test_TringularMesh_display():
     src.show(backend="matplotlib", style_description_show=False, return_fig=True)
 
     # test display of disjoint and open mesh elements
-    polydata = pv.Text3D("AB")  # create disjoint mesh
+    polydata = pv.Text3D("AB").merge(pv.Text3D("C"))  # create disjoint mesh
     polydata = polydata.triangulate()
     vertices = polydata.points
     triangles = polydata.faces.reshape(-1, 4)[:, 1:]
@@ -160,6 +160,7 @@ def test_TringularMesh_display():
         triangles,
         validate_closed=False,
         validate_connected=False,
+        validate_non_self_intersecting=False,
         reorient_triangles=False,
     )
 

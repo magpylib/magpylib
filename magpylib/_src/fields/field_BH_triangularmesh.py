@@ -281,7 +281,7 @@ def segments_intersect_facets(segments, facets, eps=1e-6):
         Point to point tolerance detection. Must be strictly positive,
         otherwise some triangles may be detected as intersecting themselves.
     """
-    if eps <= 0:
+    if eps <= 0:  # pragma: no cover
         raise ValueError("eps must be stricly positive")
 
     s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
@@ -337,7 +337,7 @@ def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e
         Point to point tolerance detection. Must be strictly positive,
         otherwise some triangles may be detected as intersecting themselves.
     """
-    if r_factor < 1:
+    if r_factor < 1:  # pragma: no cover
         raise ValueError("r_factor must be greater or equal to 1")
 
     vertices = vertices.astype(np.float32)

@@ -1,4 +1,5 @@
 """Magnet TriangularMesh class code"""
+# pylint: disable=too-many-instance-attributes
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
@@ -252,10 +253,10 @@ class TriangularMesh(BaseMagnet):
         """
         Check if input mesh is closed
         """
-        if not self.is_self_intersecting:
+        if self.is_self_intersecting:
             raise ValueError(
                 "Bad `triangles` and/or `vertices` input of TriangularMesh. "
-                "Resulting mesh is self-intersecting"
+                "Resulting mesh is self-intersecting. "
                 "Disable error by setting `validate_non_self_intersecting=False`."
             )
 
