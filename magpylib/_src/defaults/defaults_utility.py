@@ -3,7 +3,7 @@ import collections.abc
 from copy import deepcopy
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
-
+from functools import lru_cache
 
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista")
 
@@ -188,6 +188,7 @@ def linearize_dict(kwargs, separator=".") -> dict:
     return dict_
 
 
+@lru_cache(maxsize=1000)
 def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs based on chosen `backend', allows `None` by default.
 
