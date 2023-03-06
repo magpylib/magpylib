@@ -50,8 +50,6 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
 
-DISJOINT_COLORS = ("red", "blue", "green")
-
 
 class MagpyMarkers:
     """A class that stores markers 3D-coordinates."""
@@ -895,7 +893,8 @@ def get_generic_traces(
                 tria_orig = input_obj._triangles
                 mag_show = style.magnetization.show
                 for tri, dis_color in zip(
-                    input_obj.triangles_subsets, cycle(DISJOINT_COLORS)
+                    input_obj.triangles_subsets,
+                    cycle(style.mesh.disjoint.colorsequence),
                 ):
                     # temporary mutate triangles from subset
                     input_obj._triangles = tri

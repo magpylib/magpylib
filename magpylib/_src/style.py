@@ -885,7 +885,46 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
     line: dict or `Line` object, default=None
         `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
+
+    colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
+        An iterable of color values used to cycle trough for every disjoint part of disjoint
+        triangular mesh object.
+        A color may be specified by
+      - a hex string (e.g. '#ff0000')
+      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - a named CSS color
     """
+
+    @property
+    def colorsequence(self):
+        """An iterable of color values used to cycle trough for every disjoint part of disjoint
+        triangular mesh object.
+          A color may be specified by
+        - a hex string (e.g. '#ff0000')
+        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - a named CSS color"""
+        return self._colorsequence
+
+    @colorsequence.setter
+    def colorsequence(self, val):
+        if val is not None:
+            name = type(self).__name__
+            try:
+                val = tuple(
+                    color_validator(c, allow_None=False, parent_name=f"{name}")
+                    for c in val
+                )
+            except TypeError as err:
+                raise ValueError(
+                    f"The `colorsequence` property of {name} must be an "
+                    f"iterable of colors but received {val!r} instead"
+                ) from err
+
+        self._colorsequence = val
 
 
 class InvalidMesh(MagicProperties):
