@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.1
+    jupytext_version: 1.14.5
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -92,4 +92,13 @@ magpy.show(
     style_magnetization_mode="arrow",
     jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
 )
+```
+
+```{note}
+Building a source with a set of triangles is error prone since there is no check if the collection produces a closed body, if the triangles are all pointing outwards and if the manifold is connected. A more feature extensive `TriangularMesh` magnet class allows for combining triangular facets into a single object and implements useful features to build complex-shaped magnets more easily.
+See some examples {ref}`examples-triangularmesh`
+```
+
+```{code-cell} ipython3
+
 ```
