@@ -82,7 +82,7 @@ For users who would like to avoid the object oriented interface, the field imple
 
 The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed. In general, Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials).
 
-When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. They typically reduce the error by an order of magnitude. The line **current** solutions give the exact same field as outside of a wire that carries a homogenous current. For more details check out the {ref}`physComp` section.
+When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. They typically reduce the error by an order of magnitude. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the {ref}`physComp` section.
 
 Magpylib only provides solutions for simple geometric forms (cuboids, cylinders, lines, ...). How **complex shapes** can be constructed from these simple base shapes is described in {ref}`examples-complex-forms`.
 
@@ -106,7 +106,7 @@ All magnet objects have the `magnetization` attribute which must be of the forma
 
 - **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of \[mm\]. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
-- **`TriangularMesh`**`(magnetization, vertices, triangles, position, orientation, validate_closed, validate_connected, reorient_triangles, style)` represents a magnet comprised of triangular facets. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define the indices corresponding to the the vertices constructing each triangle of the object. By default, validation checks if the object is closed, connected and if its facets are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`TriangularMesh`**`(magnetization, vertices, triangles, position, orientation, validate_closed, validate_connected, reorient_triangles, style)` represents a magnet comprised of triangular facets. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define the triples corresponding to coordinates indices of each facet. By default, input validation checks if the object is closed, connected and if its facets are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
 
 **Currents**
 
@@ -192,7 +192,7 @@ print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 135.]
 
 ## Paths
 
-The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modelling object motion as the magnetic field is computed on the whole path with increased performance.
+The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modeling object motion as the magnetic field is computed on the whole path with increased performance.
 
 With vector inputs, the `move` and `rotate` methods provide *append* and *merge* functionality.  The following example shows how a path `path1` is assigned to a magnet object, how `path2` is appended with `move` and how `path3` is merged on top starting at path index 25.
 
@@ -644,7 +644,7 @@ plt.show()
 
 +++ {"user_expressions": []}
 
-One central motivation behind the `Collection` class is enabling users to build **compound objects**, which refer to custom classes that inherit `Collection`. They can represent complex magnet structures like magnetic encoders, motor parts, halbach arrays, and other arrangments, and will naturally integrate into the Magpylib interface. An advanced tutorial how to sub-class `Collection` with dynamic properties and custom 3D models is given in {ref}`examples-compounds`.
+One central motivation behind the `Collection` class is enabling users to build **compound objects**, which refer to custom classes that inherit `Collection`. They can represent complex magnet structures like magnetic encoders, motor parts, Halbach arrays, and other arrangements, and will naturally integrate into the Magpylib interface. An advanced tutorial how to sub-class `Collection` with dynamic properties and custom 3D models is given in {ref}`examples-compounds`.
 
 (intro-customization)=
 
