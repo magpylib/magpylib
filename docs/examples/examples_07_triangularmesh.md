@@ -13,13 +13,19 @@ kernelspec:
 
 +++ {"user_expressions": []}
 
+```{versionadded} 4.3
+The `TriangularMesh` class
+```
+
++++ {"user_expressions": []}
+
 (examples-triangularmesh)=
 
 # Complex shapes - The TrianglularMesh class
 
 The outside field of a homogeneously charged magnet is the same as the field of a similarly shaped body with a magnetic surface charge. In turn, the surface charge is proportional to the projection of the magnetization vector onto the surface normal.
 
-The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular facets. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangles. This source is homologous to a collection of `Triangle` objects where its geometry is defined via `vertices` and `triangles`. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define indices triples corresponding to the the vertices coordinates of each triangle. 
+The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular facets. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangles. This source is homologous to a collection of `Triangle` objects where its geometry is defined via `vertices` and `triangles`. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define indices triples corresponding to the the vertices coordinates of each triangle.
 Additionally, useful input checks, enabled by default, are implemented in order to ensure the validity of a faceted magnet source, such as:
 - `reorient_triangles`: checks if facets are facing outwards and flip the ones wrongly oriented
 - `validate_closed`: checks if set of provided set of `vertices` and `triangles` form a closed body.
@@ -27,7 +33,7 @@ Additionally, useful input checks, enabled by default, are implemented in order 
 
 +++ {"user_expressions": []}
 
-```{warning}
+```{caution}
 * Input checks can be computationally intensive, especially for the automatic reorientation of triangles but can be deactivated. However, one must be sure that all the facets are oriented correctly before any field calculation, otherwise it may yield erroneous values.
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes but no guarantee is given that the produced mesh is a valid as a Magpylib `TriangularMesh` input. Deactivating mesh input checks may lead to unwanted results.
@@ -37,7 +43,29 @@ Additionally, useful input checks, enabled by default, are implemented in order 
 
 +++ {"user_expressions": []}
 
-## Example - Dodecahedron
+## Example - Faceted Tetrahedron
+
+```{code-cell} ipython3
+import magpylib as magpy
+
+# create faceted tetrahedron from vertices and triangles
+tetra_facet = magpy.magnet.TriangularMesh(
+    magnetization=(0, 0, 1000),
+    vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)],
+    triangles=[[2, 1, 0], [3, 0, 1], [3, 2, 0], [3, 1, 2]],
+)
+
+# print input checks attributes
+print("is closed:", tetra_facet.is_closed)
+print("is connected:", tetra_facet.is_connected)
+print("is reoriented:", tetra_facet.is_reoriented)
+
+tetra_facet.show()
+```
+
++++ {"user_expressions": []}
+
+## Example - Dodecahedron from pyvista
 
 In order to easily pass Pyvista objects to the `TriangularMesh` constructor a special `classmethod` has been implemented. This will take care of the transforming of a `polydata` object into an internal `TriangularMesh` magnet.
 
@@ -59,10 +87,6 @@ dodec = magpy.magnet.TriangularMesh.from_pyvista(
     polydata=dodec_mesh,
 )
 
-# print input checks attributes
-print("is closed:", dodec.is_closed)
-print("is connected:", dodec.is_connected)
-print("is reoriented:", dodec.is_reoriented)
 dodec.show()
 ```
 
@@ -129,21 +153,22 @@ plt.show()
 
 +++ {"user_expressions": []}
 
-## Example - ConvexHull
+## Example - Trapezoidal prism from ConvexHull
 
-The `from_ConvexHull_points` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a tetrahedron is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_triangles` is disabled.
+The `from_ConvexHull_points` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a trapezoidal prism is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_triangles` is disabled.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# create tetrahedron from point cloud
-points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-tetra_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
-    magnetization=(0, 0, 1000), points=points
+# create trapezoidal prism from point cloud
+points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [-1,-1, 3], [-1,1,3], [1,-1,3], [1,1,3]]
+cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+    magnetization=(0, 0, 1000),
+    points=points,
 )
 
 # show and style the created source
-tetra_from_ConvexHull.show(
+cube_from_ConvexHull.show(
     style_opacity=0.5,
     style_orientation_show=True,
     style_orientation_size=1.5,
@@ -152,55 +177,67 @@ tetra_from_ConvexHull.show(
 
 +++ {"user_expressions": []}
 
-Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the facets is wrong. In this case all triangles are pointing inwards.
+Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the facets is wrong and some triangles are pointing inwards.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# create tetrahedron from point cloud
-points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-tetra_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
-    magnetization=(0, 0, 1000), points=points, reorient_triangles=False
+# create trapezoidal prism from point cloud
+points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [-1,-1, 3], [-1,1,3], [1,-1,3], [1,1,3]]
+cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+    magnetization=(0, 0, 1000),
+    points=points,
+    reorient_triangles=False,
 )
 
 # show and style the created source
-tetra_from_ConvexHull.show(
+cube_from_ConvexHull.show(
     style_opacity=0.5,
     style_orientation_show=True,
-    style_orientation_offset=0,
     style_orientation_size=1.5,
 )
 ```
 
 +++ {"user_expressions": []}
 
-## Example - Open Cube
+## Example - Open Prism from facets
 
 +++ {"user_expressions": []}
 
-In some cases the produced mesh may not form a closed body. By disabling the corresponding `validate_closed` input check, the object initialization will pass. It is yet possible to highlight the open edges with the `show` function. The same idea holds true for the `validate_connected` check.
+In some cases it may be desirable to create an open mesh. By disabling the corresponding `validate_closed` input check, the object initialization will still pass. It is yet possible to highlight the open edges with the `show` function. The same idea holds true for the `validate_connected` check.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 import numpy as np
 
-# get triangles and vertices from a cuboid mesh from
-kw = magpy.graphics.model3d.make_Cuboid()["kwargs"]
-triangles = np.array([kw[k] for k in "ijk"]).T
-vertices = np.array([kw[k] for k in "xyz"]).T
-
-# open the mesh by removing the 2nd triangle
-triangles = np.delete(triangles, 1, axis=0)
-
-# create faceted cuboid magnet with open edges
-cube = magpy.magnet.TriangularMesh(
-    magnetization=(1000, 0, 0),
-    vertices=vertices,
-    triangles=triangles,
-    validate_closed=False,  # disable check
+top = magpy.misc.Triangle(
+    magnetization=(1000,0,0),
+    vertices= ((-1,-1,1), (1,-1,1), (0,2,1)),
 )
+bottom = magpy.misc.Triangle(
+    magnetization=(1000,0,0),
+    vertices= ((-1,-1,-1), (0,2,-1), (1,-1,-1)),
+)
+
+# create faceted prism with open edges
+cube = magpy.magnet.TriangularMesh.from_triangular_facets(
+    magnetization=(0, 0, 1000), # overrides triangles magnetization
+    facets=[top, bottom],
+    validate_closed=False,  # disable check
+    validate_connected=False,  # disable check
+    style_label="Open prism",
+)
+cube.style.magnetization.mode = "arrow"
+
 print("is closed:", cube.is_closed)
+print("is connected:", cube.is_connected)
 cube.show(backend="plotly")
+```
+
++++ {"user_expressions": []}
+
+```{seealso}
+For more information about `Triangle` objects and when to use them see {ref}`examples-triangle`
 ```
 
 +++ {"user_expressions": []}
@@ -209,7 +246,7 @@ cube.show(backend="plotly")
 
 +++ {"user_expressions": []}
 
-With the help of the Pyvista package it is possible to build even more complex shapes by boolean operations. However this comes with some caveats and will require some refinement in order to produce a clean mesh as shown below
+With the help of the Pyvista package it is possible to build even more complex shapes with boolean operations. However this comes with some caveats and will require some refinement in order to produce a clean mesh, as shown below
 
 +++ {"user_expressions": []}
 
@@ -239,6 +276,12 @@ magnet.show(backend="plotly")
 +++ {"user_expressions": []}
 
 * Add mesh cleaning which resolves the disjoint part problem
+
++++ {"user_expressions": []}
+
+```{tip}
+If the `TriangularMesh` object has disjoint parts, the magnetization coloring is overruled and colors cycle through a predefined colorsequence (`style.mesh.disjoint.colorsequence`) to match each subset.
+```
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -301,5 +344,5 @@ magnet.show(backend="plotly")
 
 +++ {"user_expressions": []}
 
-```{note}
+```{hint}
 The mesh cleaning methods as described are only rely on the Pyvista library implementations and may evolve in the future. This process is independent of Magpylib and may not work for some other shapes. In deed, other library such as [Open3D](http://www.open3d.org/docs/release/index.html#python-api-index) can also be used to create mesh objects. The provided set of input checks provided by Magpylib should help make sure created `TriangularMesh` objects are valid magnet sources.
