@@ -4,14 +4,14 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.4
+    jupytext_version: 1.14.5
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
 ---
 
-+++ {"user_expressions": [], "tags": []}
++++ {"user_expressions": []}
 
 (intro)=
 
@@ -25,6 +25,7 @@ This section gives an introduction to the Magpylib API. More detailed informatio
 - {ref}`intro-when-to-use`
 - {ref}`intro-magpylib-objects`
 - {ref}`intro-position-and-orientation`
+- {ref}`intro-paths`
 - {ref}`intro-graphic-output`
 - {ref}`intro-field-computation`
 - {ref}`intro-direct-interface`
@@ -187,7 +188,10 @@ print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 135.]
 
 +++ {"user_expressions": []}
 
+(intro-paths)=
+
 ## Paths
+
 The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modelling object motion as the magnetic field is computed on the whole path with increased performance.
 
 With vector inputs, the `move` and `rotate` methods provide *append* and *merge* functionality.  The following example shows how a path `path1` is assigned to a magnet object, how `path2` is appended with `move` and how `path3` is merged on top starting at path index 25.
