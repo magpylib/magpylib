@@ -107,17 +107,16 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.n
     Parameters
     ----------
     vertices: np.ndarray, shape (n,3)
-        vertices of the mesh
+        Vertices of the mesh
 
     triangles: np.ndarray, shape (n,3), dtype int
-        triples of indices
+        Triples of indices
 
     Returns
     -------
-    triangles: np.ndarray, shape (n,3), dtype int
-        fixed triangles
+    triangles: np.ndarray, shape (n,3), dtype int, or triangles and 1D array of triples
+        Fixed triangles
     """
-
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
     facets = vertices[triangles]
@@ -131,36 +130,64 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.n
     eps = 1e-6  # unfortunately this must be quite a 'large' number :(
     check_point = facet0.mean(axis=0) + orient * eps
 
-    # find out if point is inside
-    first_is_inside = mask_inside_trimesh(np.array([check_point]), facets)[0]
+    # find out if first point is inwards
+    first_inwards = mask_inside_trimesh(np.array([check_point]), facets)[0]
 
-    tri_temp = triangles.copy()  # do not modify input triangles
+    inside_mask = get_orientation_mask(triangles, first_inwards)
+    new_triangles = triangles.copy()
+    new_triangles[inside_mask] = new_triangles[inside_mask][:, [0, 2, 1]]
+    return new_triangles
 
-    if first_is_inside:
-        tri_temp[0] = tri_temp[0, [0, 2, 1]]
 
-    new_triangles = []
+def get_orientation_mask(
+    triangles: np.ndarray,
+    seed: bool,
+) -> np.ndarray:
+    """Return a boolean mask of normals from triangles.
+    True -> fits the seed, False -> opposite as seed.
+    This allows to check orientation consistency even on open meshes.
+
+    Parameters
+    ----------
+    triangles: np.ndarray, shape (n,3), dtype int
+        Triples of indices
+
+    seed: boolean or None
+        sets the orientation of first element.
+
+    Returns
+    -------
+    boolean mask : ndarray, shape (n,), dtype bool
+        Boolean mask of normals orientations
+    """
+
+    mask = np.full(len(triangles), seed)
+    indices = set(range(len(triangles)))
+
     free_edges = set()
     # incrementally add triangles sharing at least a common edge by looping among left over
     # triangles. If next triangle with common edge is reversed, flip it.
-    while len(tri_temp) != 0:
-        for tri_ind, tri in enumerate(tri_temp):
+    while indices:
+        for tri_ind in indices:
+            tri = triangles[tri_ind]
             edges = {(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])}
             edges_r = {(tri[1], tri[0]), (tri[2], tri[1]), (tri[0], tri[2])}
             common = free_edges & edges
+            flip = False
             if not free_edges:
                 common = True
             elif common:
                 edges = edges_r
-                tri = tri[[0, 2, 1]]  # flip triangle
+                flip = True
             else:
                 common = free_edges & edges_r
             if common:  # break loop on first common edge found
-                new_triangles.append(tri)
                 free_edges ^= edges
-                tri_temp = np.delete(tri_temp, tri_ind, 0)
+                if flip:
+                    mask[tri_ind] = not mask[tri_ind]
+                indices.remove(tri_ind)
                 break
-    return np.array(new_triangles)
+    return mask
 
 
 def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
