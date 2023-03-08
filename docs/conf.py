@@ -84,13 +84,10 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "matplotlib.sphinxext.plot_directive",
-    # "nbsphinx",
-    # "sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
     "sphinx_thebe",
-    # "myst_parser",
-    # "sphinx_panels",
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -138,6 +135,9 @@ html_theme_options = {
     "repository_branch": release,
     "use_repository_button": True,
     "use_download_button": True,
+    "use_source_button": True,
+    "use_edit_page_button": True,
+    "use_issues_button": True,
     "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
 }
 # Add any paths that contain custom static files (such as style sheets) here,
@@ -279,3 +279,11 @@ mathjax_options = {
 }
 
 myst_update_mathjax = False
+
+suppress_warnings = ["mystnb.unknown_mime_type"]
+
+favicons = [
+    "images/favicons/favicon-16x16.png",
+    "images/favicons/favicon-32x32.png",
+    "images/favicons/icon.ico",
+]
