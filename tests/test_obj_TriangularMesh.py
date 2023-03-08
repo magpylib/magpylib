@@ -6,6 +6,7 @@ import pytest
 import pyvista as pv
 
 import magpylib as magpy
+from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 
@@ -292,3 +293,20 @@ def test_lines_ends_in_trimesh():
     lines = np.array([[[-1, 1, -1], [1, 0, 0]]])
 
     assert bool(lines_end_in_trimesh(lines, facets)[0]) is True
+
+
+def test_reorient_on_closed_but_disconnected_mesh():
+    """Reorient edge case"""
+    N = 3
+    s1 = pv.Sphere(theta_resolution=N, phi_resolution=N)
+    s2 = pv.Sphere(theta_resolution=N, phi_resolution=N, center=(2, 0, 0))
+    polydata = s1.merge(s2)
+    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+    vertices = polydata.points
+
+    # flip every 2nd normals
+    bad_triangles = triangles.copy()
+    bad_triangles[::2] = bad_triangles[::2, [0, 2, 1]]
+
+    fixed_triangles = fix_trimesh_orientation(vertices, bad_triangles)
+    np.testing.assert_array_equal(triangles, fixed_triangles)
