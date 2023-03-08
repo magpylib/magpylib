@@ -4,12 +4,14 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.14.5
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
+
++++ {"user_expressions": []}
 
 (intro)=
 
@@ -23,6 +25,7 @@ This section gives an introduction to the Magpylib API. More detailed informatio
 - {ref}`intro-when-to-use`
 - {ref}`intro-magpylib-objects`
 - {ref}`intro-position-and-orientation`
+- {ref}`intro-paths`
 - {ref}`intro-graphic-output`
 - {ref}`intro-field-computation`
 - {ref}`intro-direct-interface`
@@ -69,6 +72,8 @@ plt.grid(color='.8')
 plt.show()
 ```
 
++++ {"user_expressions": []}
+
 For users who would like to avoid the object oriented interface, the field implementations can also be accessed directly, see {ref}`intro-direct-interface`. Details on how the analytical solutions are mathematically obtained can be found in the {ref}`physComp` section.
 
 (intro-when-to-use)=
@@ -77,7 +82,7 @@ For users who would like to avoid the object oriented interface, the field imple
 
 The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed. In general, Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials).
 
-When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. They typically reduce the error by an order of magnitude. The line **current** solutions give the exact same field as outside of a wire that carries a homogenous current. For more details check out the {ref}`physComp` section.
+When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. They typically reduce the error by an order of magnitude. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the {ref}`physComp` section.
 
 Magpylib only provides solutions for simple geometric forms (cuboids, cylinders, lines, ...). How **complex shapes** can be constructed from these simple base shapes is described in {ref}`examples-complex-forms`.
 
@@ -101,6 +106,8 @@ All magnet objects have the `magnetization` attribute which must be of the forma
 
 - **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of \[mm\]. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
+- **`TriangularMesh`**`(magnetization, vertices, triangles, position, orientation, validate_closed, validate_connected, reorient_triangles, style)` represents a magnet comprised of triangular facets. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define the triples corresponding to coordinates indices of each facet. By default, input validation checks if the object is closed, connected and if its facets are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
+
 **Currents**
 
 All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of \[A\]. All currents can be used as Magpylib `sources` input.
@@ -121,33 +128,7 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 - **`Collection`**`(*children, position, orientation, style)` is a group of source and sensor objects (children) that is used for common manipulation. Depending on the children, a collection can be used as Magpylib `sources` and/or `observers` input.
 
-```{code-cell} ipython3
-import magpylib as magpy
-
-objects = []
-
-# magnets
-objects.append(magpy.magnet.Cuboid())
-objects.append(magpy.magnet.Cylinder())
-objects.append(magpy.magnet.CylinderSegment())
-objects.append(magpy.magnet.Sphere())
-objects.append(magpy.magnet.Tetrahedron())
-
-# currents
-objects.append(magpy.current.Loop())
-objects.append(magpy.current.Line())
-
-# other
-objects.append(magpy.misc.Dipole())
-objects.append(magpy.misc.Triangle())
-objects.append(magpy.misc.CustomSource())
-objects.append(magpy.Sensor())
-objects.append(magpy.Collection())
-
-# print object representation
-for obj in objects:
-    print(obj)
-```
++++ {"user_expressions": []}
 
 (intro-position-and-orientation)=
 
@@ -205,7 +186,13 @@ print(sensor.position)                                     # out: [-1. 1. 3.]
 print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 135.]
 ```
 
-The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modelling object motion as the magnetic field is computed on the whole path with increased performance.
++++ {"user_expressions": []}
+
+(intro-paths)=
+
+## Paths
+
+The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modeling object motion as the magnetic field is computed on the whole path with increased performance.
 
 With vector inputs, the `move` and `rotate` methods provide *append* and *merge* functionality.  The following example shows how a path `path1` is assigned to a magnet object, how `path2` is appended with `move` and how `path3` is merged on top starting at path index 25.
 
@@ -230,6 +217,8 @@ magnet.rotate_from_angax(angle=path3, axis='z', anchor=0, start=25)
 magnet.show(backend='plotly')
 ```
 
++++ {"user_expressions": []}
+
 Notice that when one of the `position` and `orientation` attributes are modified in length, the other is automatically adjusted to the same length. A detailed outline of the functionality of `position`, `orientation`, `move`, `rotate` and paths is given in {ref}`examples-paths`.
 
 
@@ -247,15 +236,16 @@ The following example shows the graphical representation of various Magpylib obj
 ```{code-cell} ipython3
 import numpy as np
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, CylinderSegment, Sphere, Tetrahedron
+from magpylib.magnet import Cuboid, Cylinder, CylinderSegment, Sphere, Tetrahedron, TriangularMesh
 from magpylib.current import Loop, Line
 from magpylib.misc import Dipole, Triangle
+import pyvista as pv
 
 objects = [
     Cuboid(
-        magnetization=(0,100,0),
+        magnetization=(0,-100,0),
         dimension=(1,1,1),
-        position=(-7,0,0),
+        position=(-6,0,0),
     ),
     Cylinder(
         magnetization=(0,0,100),
@@ -275,38 +265,45 @@ objects = [
     Tetrahedron(
         magnetization=(0,0,100),
         vertices=((-1,0,0), (1,0,0), (0,-1,0), (0,0,1)),
-        position=(-1,0,3)
+        position=(-4,0,4)
     ),
     Loop(
         current=1,
         diameter=1,
-        position=(1,0,0),
+        position=(4,0,0),
     ),
     Line(
         current=1,
         vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)],
-        position=(3,0,0),
+        position=(1,0,0),
     ),
     Dipole(
         moment=(0,0,100),
-        position=(5,0,0),
+        position=(3,0,0),
     ),
     Triangle(
         magnetization=(0,0,100),
         vertices=((-1,0,0), (1,0,0), (0,1,0)),
-        position=(5,0,3),
+        position=(2,0,4),
+    ),
+    TriangularMesh.from_pyvista(
+        magnetization=(0,0,100),
+        polydata=pv.Icosahedron(),
+        position=(-1,0,4),
     ),
     magpy.Sensor(
         pixel=[(0,0,z) for z in (-.5,0,.5)],
-        position=(7,0,0),
+        position=(0,-3,0),
     ),
 ]
 
 objects[5].move(np.linspace((0,0,0), (0,0,7), 20))
-objects[0].rotate_from_angax(np.linspace(0, -90, 20), 'y', anchor=0)
+objects[0].rotate_from_angax(np.linspace(0, 90, 20), 'z', anchor=0)
 
 magpy.show(objects)
 ```
+
++++ {"user_expressions": []}
 
 Notice that, objects and their paths are automatically assigned different colors, the magnetization vector, current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.
 
@@ -338,6 +335,8 @@ cube4 = cube1.copy(position=(9,0,0), style_color='linen')
 magpy.show(cube1, cube2, cube3, cube4, style_magnetization_show=False)
 ```
 
++++ {"user_expressions": []}
+
 The hierarchy that decides about the final graphic object representation, a list of all style parameters and other options for tuning the `show`-output are described in {ref}`examples-graphic-styles` and {ref}`examples-animation`.
 
 (intro-field-computation)=
@@ -361,6 +360,8 @@ loop = magpy.current.Loop(current=1, diameter=2)
 B = magpy.getB(loop, (1,2,3))
 print(B)
 ```
+
++++ {"user_expressions": []}
 
 **Example 2:** When handed with multiple observer positions, `getB` and `getH` will return the field in the shape of the observer input. In the following example, B- and H-field of a cuboid magnet are computed on a position grid, and then displayed using Matplotlib:
 
@@ -394,6 +395,8 @@ for ax in [ax1,ax2]:
 plt.tight_layout()
 plt.show()
 ```
+
++++ {"user_expressions": []}
 
 **Example 3:** The following example code shows how the field in a position system is computed with a sensor object. Both, magnet and sensor are moving. The 3D system and the field along the path are displayed with Plotly:
 
@@ -431,6 +434,8 @@ for i,plab in enumerate(['pixel1', 'pixel2']):
 fig.show()
 ```
 
++++ {"user_expressions": []}
+
 **Example 4:** The last example demonstrates the most general form of a `getB` computation with multiple source and sensor inputs. Specifically, 3 sources, one with path length 11, and two sensors, each with pixel shape (4,5). Note that, when input objects have different path lengths, objects with shorter paths are treated as static beyond their path end.
 
 ```{code-cell} ipython3
@@ -453,6 +458,8 @@ sensors = [sensor1, sensor2]
 B = magpy.getB(sources, sensors)
 print(B.shape)
 ```
+
++++ {"user_expressions": []}
 
 Instead of a Numpy `ndarray`, the field computation can also return a [pandas](https://pandas.pydata.org/).[dataframe](https://pandas.pydata.org/docs/user_guide/dsintro.html#dataframe) using the `output='dataframe'` kwarg.
 
@@ -486,6 +493,8 @@ B_as_df = magpy.getB(
 B_as_df
 ```
 
++++ {"user_expressions": []}
+
 Plotting libraries such as [plotly](https://plotly.com/python/plotly-express/) or [seaborn](https://seaborn.pydata.org/introduction.html) can take advantage of this feature, as they can deal with `dataframes` directly.
 
 ```{code-cell} ipython3
@@ -501,6 +510,8 @@ fig = px.line(
 )
 fig.show()
 ```
+
++++ {"user_expressions": []}
 
 In terms of **performance** it must be noted that Magpylib automatically vectorizes all computations when `getB` and `getH` are called. This reduces the computation time dramatically for large inputs. For maximal performance try to make all field computations with as few calls to `getB` and `getH` as possible.
 
@@ -531,6 +542,8 @@ B = magpy.getB(
 print(B)
 ```
 
++++ {"user_expressions": []}
+
 The direct interface is convenient for users who work with complex inputs or favor a more functional programming paradigm. It is typically faster than the object oriented interface, but it also requires that users know how to generate the inputs efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 
 At the heart of Magpylib lies a set of **core functions** that are our implementations of the analytical field expressions, see {ref}`physcomp`. For users who are not interested in the position/orientation interface, the `magpylib.core` subpackage gives direct access to these functions. Inputs are ndarrays of shape (n,x). Details can be found in the respective function docstrings.
@@ -547,6 +560,8 @@ B = magpy.core.magnet_cylinder_segment_field('B', obs, mag, dim)
 print(B)
 ```
 
++++ {"user_expressions": []}
+
 (intro-collections)=
 
 ## Collections
@@ -561,11 +576,13 @@ loop = magpy.current.Loop(style_label='loop')
 line = magpy.current.Line(style_label='line')
 cube = magpy.magnet.Cuboid(style_label='cube')
 
-coll1 = magpy.Collection(sens, loop, line, style_label='coll1')
+coll1 = magpy.Collection(sens, loop, line, style_label='Nested Collection')
 coll2 = cube + coll1
-
-coll2.describe(format='type,label')
+coll2.style.label="Root Collection"
+coll2.describe(format='label')
 ```
+
++++ {"user_expressions": []}
 
 A detailed review of collection properties and construction is provided in the example gallery {ref}`examples-collections-construction`. It is specifically noteworthy in the above example, that any two Magpylib objects can simply be added up to form a collection.
 
@@ -604,6 +621,8 @@ for coil in [coil1, coil2]:
 magpy.show(*helmholtz, backend='plotly', animation=4, style_path_show=False)
 ```
 
++++ {"user_expressions": []}
+
 Notice, that collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
 
 For magnetic field computation a collection with source children behaves like a single source object, and a collection with sensor children behaves like a flat list of it's sensors when provided as `sources` and `observers` input respectively. This is demonstrated in the following continuation of the previous Helmholtz example:
@@ -623,7 +642,9 @@ plt.gca().legend()
 plt.show()
 ```
 
-One central motivation behind the `Collection` class is enabling users to build **compound objects**, which refer to custom classes that inherit `Collection`. They can represent complex magnet structures like magnetic encoders, motor parts, halbach arrays, and other arrangments, and will naturally integrate into the Magpylib interface. An advanced tutorial how to sub-class `Collection` with dynamic properties and custom 3D models is given in {ref}`examples-compounds`.
++++ {"user_expressions": []}
+
+One central motivation behind the `Collection` class is enabling users to build **compound objects**, which refer to custom classes that inherit `Collection`. They can represent complex magnet structures like magnetic encoders, motor parts, Halbach arrays, and other arrangements, and will naturally integrate into the Magpylib interface. An advanced tutorial how to sub-class `Collection` with dynamic properties and custom 3D models is given in {ref}`examples-compounds`.
 
 (intro-customization)=
 
@@ -644,6 +665,7 @@ import magpylib as magpy
 def easter_field(field, observers):
     """ points in z-direction and decays with 1/r^3"""
     dist = np.linalg.norm(observers, axis=1)
+    dist+=1e-16 # avoid zero division
     return np.c_[np.zeros((len(observers),2)), 1/dist**3]
 
 # create custom source
