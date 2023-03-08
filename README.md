@@ -21,17 +21,13 @@
 <a href="https://codecov.io/gh/magpylib/magpylib">
   <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg" />
 
-</a>
-<a href="https://lgtm.com/projects/g/magpylib/magpylib/context:python"><img alt="Language grade: Python" src="https://img.shields.io/lgtm/grade/python/g/magpylib/magpylib.svg?logo=lgtm&logoWidth=18"/></a>
-</p>
 
 <p align="center"> Downloads:
 <a href="https://pypi.org/project/magpylib/">
 <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18"></a>
 <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18"></a>
 <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/downloads.svg" alt="Conda Cloud" height="18"></a>
- <a href="https://anaconda.org/conda-forge/magpylib"><img src="https://anaconda.org/conda-forge/magpylib/badges/installer/conda.svg" alt="Conda Cloud" height="18"></a>
-</p>
+
 
 <p align="center"> Try it online:
 <a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.2.0?filepath=docs%2Fexamples">
