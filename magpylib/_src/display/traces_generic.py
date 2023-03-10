@@ -243,17 +243,15 @@ def make_invalid_mesh_lines(
     obj,
     pos_orient_inds,
     mode,
-    label=None,
     style=None,
-    color=None,  # pylint: disable=unused-argument
     **kwargs,
 ):
     """Draw open or self-intersecting mesh lines and vertices"""
     # pylint: disable=protected-access
+    kwargs.pop("color", None)
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    print(marker)
     tr, vert = obj.triangles, obj.vertices
     if mode == "disjoint":
         subsets = obj.triangles_subsets
@@ -266,7 +264,7 @@ def make_invalid_mesh_lines(
         lines = vert[edges_uniq[edges_counts != 2]]
     out = {}
     if lines.size != 0:
-        label = f"{obj}" if label is None else label
+        label = f"{obj}" if style.label is None else style.label
         lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
         traces = []
         for ind in pos_orient_inds:
@@ -1155,7 +1153,7 @@ def get_generic_traces(
                 continue
             if getattr(style.mesh, mode).show:
                 trace = make_invalid_mesh_lines(
-                    input_obj, pos_orient_inds, mode, style.label, **kwargs
+                    input_obj, pos_orient_inds, mode, style, **kwargs
                 )
                 if trace:
                     all_generic_traces.append(trace)
