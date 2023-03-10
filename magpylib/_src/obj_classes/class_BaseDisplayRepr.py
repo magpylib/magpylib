@@ -1,5 +1,6 @@
 """BaseGeo class code"""
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-branches
 import numpy as np
 
 from magpylib._src.display.display import show
@@ -65,6 +66,13 @@ class BaseDisplayRepr:
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
+                elif k == "triangles_subsets":
+                    val = getattr(self, k)
+                    val = f"list of length {len(val)}"
+                elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
+                    val = np.array(getattr(self, k))
+                    if np.prod(val.shape) > 4:
+                        val = f"shape{val.shape}"
                 else:
                     val = getattr(self, k)
                 lines.append(f"  • {k}: {val} {unit_str}")

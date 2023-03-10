@@ -56,6 +56,7 @@ examples/examples_03_collections.md
 examples/examples_21_compound.md
 examples/examples_01_complex_forms.md
 examples/examples_06_triangle.md
+examples/examples_07_triangularmesh.md
 examples/examples_04_custom_source.md
 ```
 

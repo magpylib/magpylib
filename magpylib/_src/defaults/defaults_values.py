@@ -97,6 +97,35 @@ DEFAULTS = {
                     "symbol": "arrow3d",
                 },
             },
+            "triangularmesh": {
+                "orientation": {
+                    "show": False,
+                    "size": 1,
+                    "color": "grey",
+                    "offset": 0.9,
+                    "symbol": "arrow3d",
+                },
+                "mesh": {
+                    "open": {
+                        "show": True,
+                        "line": {"width": 2, "style": "solid", "color": "cyan"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
+                    "disjoint": {
+                        "show": True,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 5, "symbol": "o", "color": "black"},
+                        "colorsequence": (
+                            "red",
+                            "blue",
+                            "green",
+                            "cyan",
+                            "magenta",
+                            "yellow",
+                        ),
+                    },
+                },
+            },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},
         },
     },

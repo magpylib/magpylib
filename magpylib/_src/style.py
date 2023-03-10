@@ -14,37 +14,46 @@ from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 
 
+def get_families(obj):
+    "get obj families"
+    # pylint: disable=import-outside-toplevel
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=redefined-outer-name
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
+    from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_current_Line import Line
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
+
+    loc = locals()
+    obj_families = []
+    for item, val in loc.items():
+        if not item.startswith("_"):
+            try:
+                if isinstance(obj, val):
+                    obj_families.append(item.lower())
+            except TypeError:
+                pass
+    return obj_families
+
+
 def get_style(obj, default_settings, **kwargs):
     """Returns default style based on increasing priority:
     - style from defaults
     - style from object
     - style from kwargs arguments
     """
-    # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseMagnet as MagpyMagnet,
-    )
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseCurrent as MagpyCurrent,
-    )
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle as MagpyTriangle
-    from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
-    from magpylib._src.display.traces_generic import MagpyMarkers
-
-    families = {
-        "triangle": MagpyTriangle,
-        "magnet": MagpyMagnet,
-        "current": MagpyCurrent,
-        "dipole": MagpyDipole,
-        "sensor": MagpySensor,
-        "markers": MagpyMarkers,
-    }
-    obj_family = None
-    for fam, cls in families.items():
-        if isinstance(obj, cls):
-            obj_family = fam
-            break
+    obj_families = get_families(obj)
     # parse kwargs into style an non-style arguments
     style_kwargs = kwargs.get("style", {})
     style_kwargs.update(
@@ -54,13 +63,17 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.style.as_dict()
+    default_style = default_settings.display.style
+    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
 
     # construct object specific dictionary base on style family and default style
-    obj_style_default_dict = {
-        **styles_by_family["base"],
-        **dict(styles_by_family.get(obj_family, {}).items()),
-    }
+    for obj_family in obj_families:
+        family_style = getattr(default_style, obj_family, {})
+        if family_style:
+            family_dict = family_style.as_dict(flatten=True, separator="_")
+            base_style_flat.update(
+                {k: v for k, v in family_dict.items() if v is not None}
+            )
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
@@ -70,9 +83,7 @@ def get_style(obj, default_settings, **kwargs):
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
-    style.update(
-        **obj_style_default_dict, _match_properties=False, _replace_None_only=True
-    )
+    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
 
     return style
 
@@ -754,7 +765,7 @@ class MagnetProperties:
         )
 
 
-class Magnet(MagicProperties, MagnetProperties):
+class DefaultMagnet(MagicProperties, MagnetProperties):
     """Defines styling properties of homogeneous magnet classes.
 
     Parameters
@@ -800,6 +811,155 @@ class MagnetStyle(BaseStyle, MagnetProperties):
 
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
+
+
+class MarkerLineProperties:
+    """Defines styling properties of Markers and Lines."""
+
+    @property
+    def show(self):
+        """Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+        """
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+    @property
+    def marker(self):
+        """`Markers` object with 'color', 'symbol', 'size' properties."""
+        return self._marker
+
+    @marker.setter
+    def marker(self, val):
+        self._marker = validate_property_class(val, "marker", Marker, self)
+
+    @property
+    def line(self):
+        """`Line` object with 'color', 'type', 'width' properties."""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", Line, self)
+
+
+class OpenMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of OpenMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class DisjointMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of DisjointMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
+        An iterable of color values used to cycle trough for every disjoint part of disjoint
+        triangular mesh object.
+        A color may be specified by
+      - a hex string (e.g. '#ff0000')
+      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - a named CSS color
+    """
+
+    @property
+    def colorsequence(self):
+        """An iterable of color values used to cycle trough for every disjoint part of disjoint
+        triangular mesh object.
+          A color may be specified by
+        - a hex string (e.g. '#ff0000')
+        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - a named CSS color"""
+        return self._colorsequence
+
+    @colorsequence.setter
+    def colorsequence(self, val):
+        if val is not None:
+            name = type(self).__name__
+            try:
+                val = tuple(
+                    color_validator(c, allow_None=False, parent_name=f"{name}")
+                    for c in val
+                )
+            except TypeError as err:
+                raise ValueError(
+                    f"The `colorsequence` property of {name} must be an "
+                    f"iterable of colors but received {val!r} instead"
+                ) from err
+
+        self._colorsequence = val
+
+
+class InvalidMesh(MagicProperties):
+    """Defines InvalidMesh mesh properties.
+
+    Parameters
+    ----------
+    open: dict or OpenMesh,  default=None
+        Shows open mesh vertices and edges of a TriangularMesh object, if any.
+
+    disjoint: dict or DisjointMesh, default=None
+        Shows disjoint bodies of a TriangularMesh object, if any.
+    """
+
+    @property
+    def open(self):
+        """OpenMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._open
+
+    @open.setter
+    def open(self, val):
+        self._open = validate_property_class(val, "open", OpenMesh, self)
+
+    @property
+    def disjoint(self):
+        """`DisjointMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._disjoint
+
+    @disjoint.setter
+    def disjoint(self, val):
+        self._disjoint = validate_property_class(val, "disjoint", DisjointMesh, self)
 
 
 class Orientation(MagicProperties):
@@ -916,8 +1076,8 @@ class TriangleProperties:
         )
 
 
-class Triangle(MagicProperties, MagnetProperties, TriangleProperties):
-    """Defines styling properties of homogeneous magnet classes.
+class DefaultTriangle(MagicProperties, MagnetProperties, TriangleProperties):
+    """Defines styling properties of the Triangle class.
 
     Parameters
     ----------
@@ -967,6 +1127,88 @@ class TriangleStyle(MagnetStyle, TriangleProperties):
 
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
+    """
+
+    def __init__(self, orientation=None, **kwargs):
+        super().__init__(orientation=orientation, **kwargs)
+
+
+class TriangularMeshProperties:
+    """Defines TriangularMesh properties."""
+
+    @property
+    def mesh(self):
+        """`InvalidMesh` instance with `'show', 'markers', 'line'` properties
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._mesh
+
+    @mesh.setter
+    def mesh(self, val):
+        self._mesh = validate_property_class(val, "mesh", InvalidMesh, self)
+
+
+class DefaultTriangularMesh(
+    MagicProperties, MagnetProperties, TriangleProperties, TriangularMeshProperties
+):
+    """Defines styling properties of homogeneous TriangularMesh magnet classes.
+
+    Parameters
+    ----------
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None
+        Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
+        properties or a dictionary with equivalent key/value pairs.
+
+    mesh: dict or InvalidMesh, default=None
+        InvalidMesh styling properties (e.g. `'open', 'disjoint'`)
+    """
+
+    def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
+        super().__init__(
+            magnetization=magnetization, orientation=orientation, mesh=mesh, **kwargs
+        )
+
+
+class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshProperties):
+    """Defines styling properties of the TriangularMesh magnet class.
+
+    Parameters
+    ----------
+    label: str, default=None
+        Label of the class instance, e.g. to be displayed in the legend.
+
+    description: dict or `Description` object, default=None
+        Object description properties.
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    opacity: float, default=None
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation styling of triangles.
+
+    mesh: dict or InvalidMesh,  default=None,
+        mesh styling of triangles.
     """
 
     def __init__(self, orientation=None, **kwargs):
@@ -1113,7 +1355,7 @@ class SensorProperties:
         self._arrows = validate_property_class(val, "arrows", ArrowCS, self)
 
 
-class Sensor(MagicProperties, SensorProperties):
+class DefaultSensor(MagicProperties, SensorProperties):
     """Defines styling properties of the Sensor class.
 
     Parameters
@@ -1252,7 +1494,7 @@ class CurrentProperties:
         self._arrow = validate_property_class(val, "current", Arrow, self)
 
 
-class Current(MagicProperties, CurrentProperties):
+class DefaultCurrent(MagicProperties, CurrentProperties):
     """Defines the specific styling properties of line current classes.
 
     Parameters
@@ -1411,7 +1653,7 @@ class Marker(MagicProperties):
         self._symbol = val
 
 
-class Markers(BaseStyle):
+class DefaultMarkers(BaseStyle):
     """Defines styling properties of the markers trace.
 
     Parameters
@@ -1479,7 +1721,7 @@ class DipoleProperties:
         self._pivot = val
 
 
-class Dipole(MagicProperties, DipoleProperties):
+class DefaultDipole(MagicProperties, DipoleProperties):
     """
     Defines styling properties of dipoles.
 
@@ -1536,11 +1778,17 @@ class DipoleStyle(BaseStyle, DipoleProperties):
         super().__init__(**kwargs)
 
 
-class Path(MagicProperties):
+class Path(MagicProperties, MarkerLineProperties):
     """Defines styling properties of an object's path.
 
     Parameters
     ----------
+    show: bool, default=None
+        Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+
     marker: dict or `Markers` object, default=None
         `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
@@ -1548,12 +1796,6 @@ class Path(MagicProperties):
     line: dict or `Line` object, default=None
         `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
-
-    show: bool, default=None
-        Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
 
     frames: int or array_like, shape (n,), default=None
         Show copies of the 3D-model along the given path indices.
@@ -1565,51 +1807,16 @@ class Path(MagicProperties):
     """
 
     def __init__(
-        self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs
+        self, show=None, marker=None, line=None, frames=None, numbering=None, **kwargs
     ):
         super().__init__(
+            show=show,
             marker=marker,
             line=line,
             frames=frames,
-            show=show,
             numbering=numbering,
             **kwargs,
         )
-
-    @property
-    def marker(self):
-        """`Markers` object with 'color', 'symbol', 'size' properties."""
-        return self._marker
-
-    @marker.setter
-    def marker(self, val):
-        self._marker = validate_property_class(val, "marker", Marker, self)
-
-    @property
-    def line(self):
-        """`Line` object with 'color', 'type', 'width' properties."""
-        return self._line
-
-    @line.setter
-    def line(self, val):
-        self._line = validate_property_class(val, "line", Line, self)
-
-    @property
-    def show(self):
-        """Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
-        """
-        return self._show
-
-    @show.setter
-    def show(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._show = val
 
     @property
     def frames(self):
@@ -1772,54 +1979,65 @@ class DisplayStyle(MagicProperties):
 
     @property
     def magnet(self):
-        """Magnet class."""
+        """Magnet default style class."""
         return self._magnet
 
     @magnet.setter
     def magnet(self, val):
-        self._magnet = validate_property_class(val, "magnet", Magnet, self)
+        self._magnet = validate_property_class(val, "magnet", DefaultMagnet, self)
+
+    @property
+    def triangularmesh(self):
+        """TriangularMesh default style class."""
+        return self._triangularmesh
+
+    @triangularmesh.setter
+    def triangularmesh(self, val):
+        self._triangularmesh = validate_property_class(
+            val, "triangularmesh", DefaultTriangularMesh, self
+        )
 
     @property
     def current(self):
-        """Current class."""
+        """Current default style class."""
         return self._current
 
     @current.setter
     def current(self, val):
-        self._current = validate_property_class(val, "current", Current, self)
+        self._current = validate_property_class(val, "current", DefaultCurrent, self)
 
     @property
     def dipole(self):
-        """Dipole class."""
+        """Dipole default style class."""
         return self._dipole
 
     @dipole.setter
     def dipole(self, val):
-        self._dipole = validate_property_class(val, "dipole", Dipole, self)
+        self._dipole = validate_property_class(val, "dipole", DefaultDipole, self)
 
     @property
     def triangle(self):
-        """Triangle class."""
+        """Triangle default style class."""
         return self._triangle
 
     @triangle.setter
     def triangle(self, val):
-        self._triangle = validate_property_class(val, "triangle", Triangle, self)
+        self._triangle = validate_property_class(val, "triangle", DefaultTriangle, self)
 
     @property
     def sensor(self):
-        """Sensor class."""
+        """Sensor default style class."""
         return self._sensor
 
     @sensor.setter
     def sensor(self, val):
-        self._sensor = validate_property_class(val, "sensor", Sensor, self)
+        self._sensor = validate_property_class(val, "sensor", DefaultSensor, self)
 
     @property
     def markers(self):
-        """Markers class."""
+        """Markers default style class."""
         return self._markers
 
     @markers.setter
     def markers(self, val):
-        self._markers = validate_property_class(val, "markers", Markers, self)
+        self._markers = validate_property_class(val, "markers", DefaultMarkers, self)

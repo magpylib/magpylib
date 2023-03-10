@@ -3,6 +3,7 @@ import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
 import pytest
+import pyvista as pv
 
 import magpylib as magpy
 from magpylib.graphics.model3d import make_Cuboid
@@ -11,67 +12,61 @@ from magpylib.magnet import Cylinder
 from magpylib.magnet import CylinderSegment
 from magpylib.magnet import Sphere
 
+
 # pylint: disable=assignment-from-no-return
 
 magpy.defaults.reset()
-
-
-def test_Cylinder_display():
-    """testing display"""
-    ax = plt.subplot(projection="3d")
-    src = Cylinder((1, 2, 3), (1, 2))
-    x = src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
-    assert x is None, "path should revert to True"
-    src.move(np.linspace((0.4, 0.4, 0.4), (12, 12, 12), 30), start=-1)
-    x = src.show(canvas=ax, style_path_show=False, backend="matplotlib")
-    assert x is None, "display test fail"
-
-    x = src.show(canvas=ax, style_path_frames=[], backend="matplotlib")
-    assert x is None, "ind>path_len, should display last position"
-
-    x = src.show(
-        canvas=ax,
-        style_path_frames=[1, 5, 6],
-        backend="matplotlib",
-    )
-    assert x is None, "should display 1,5,6 position"
-
-
-def test_CylinderSegment_display():
-    """testing display"""
-    ax = plt.subplot(projection="3d")
-    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
-    x = src.show(canvas=ax, style_path_frames=15)
-    assert x is None, "path should revert to True"
-
-    src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
-    x = src.show(canvas=ax, style_path_show=False)
-    assert x is None, "display test fail"
-
-
-def test_Sphere_display():
-    """testing display"""
-    ax = plt.subplot(projection="3d")
-    src = Sphere((1, 2, 3), 2)
-    x = src.show(canvas=ax, style_path_frames=15)
-    assert x is None, "path should revert to True"
-
-    src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
-    x = src.show(canvas=ax, style_path_show=False)
-    assert x is None, "display test fail"
 
 
 def test_Cuboid_display():
     """testing display"""
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
-    with plt.ion():
-        x = src.show(style_path_frames=5)
-    assert x is None, "display test fail"
+    src.show(style_path_frames=5, return_fig=True)
 
+    with plt.ion():
+        x = src.show(style_path_show=False)
+    assert x is None  # only place where return_fig=False, for testcov
+
+
+def test_Cylinder_display():
+    """testing display"""
+    # path should revert to True
     ax = plt.subplot(projection="3d")
-    x = src.show(canvas=ax, style_path_show=False)
-    assert x is None, "display test fail"
+    src = Cylinder((1, 2, 3), (1, 2))
+    src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
+
+    # hide path
+    src.move(np.linspace((0.4, 0.4, 0.4), (12, 12, 12), 30), start=-1)
+    src.show(canvas=ax, style_path_show=False, backend="matplotlib")
+
+    # empty frames, ind>path_len, should display last position
+    src.show(canvas=ax, style_path_frames=[], backend="matplotlib")
+
+    src.show(
+        canvas=ax, style_path_frames=[1, 5, 6], backend="matplotlib", return_fig=True
+    )
+
+
+def test_CylinderSegment_display():
+    """testing display"""
+    ax = plt.subplot(projection="3d")
+    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src.show(canvas=ax, style_path_frames=15, return_fig=True)
+
+    src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
+    src.show(canvas=ax, style_path_show=False, return_fig=True)
+
+
+def test_Sphere_display():
+    """testing display"""
+    # path should revert to True
+    ax = plt.subplot(projection="3d")
+    src = Sphere((1, 2, 3), 2)
+    src.show(canvas=ax, style_path_frames=15, return_fig=True)
+
+    src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
+    src.show(canvas=ax, style_path_show=False, return_fig=True)
 
 
 def test_Tetrahedron_display():
@@ -89,31 +84,31 @@ def test_Sensor_display():
     sens.style.arrows.z.show = False
     poz = np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33)
     sens.move(poz, start=-1)
-    x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_frames=15)
-    assert x is None, "display test fail"
+    sens.show(
+        canvas=ax, markers=[(100, 100, 100)], style_path_frames=15, return_fig=True
+    )
 
-    x = sens.show(canvas=ax, markers=[(100, 100, 100)], style_path_show=False)
-    assert x is None, "display test fail"
+    sens.pixel = [(2, 3, 4)]  # one non-zero pixel
+    sens.show(
+        canvas=ax, markers=[(100, 100, 100)], style_path_show=False, return_fig=True
+    )
 
 
 def test_CustomSource_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
     cs = magpy.misc.CustomSource()
-    x = cs.show(canvas=ax)
-    assert x is None, "display test fail"
+    cs.show(canvas=ax, return_fig=True)
 
 
 def test_Loop_display():
     """testing display for Loop source"""
     ax = plt.subplot(projection="3d")
     src = magpy.current.Loop(current=1, diameter=1)
-    x = src.show(canvas=ax)
-    assert x is None, "display test fail"
+    src.show(canvas=ax, return_fig=True)
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
-    x = src.show(canvas=ax, style_path_frames=3)
-    assert x is None, "display test fail"
+    src.show(canvas=ax, style_path_frames=3, return_fig=True)
 
 
 def test_Triangle_display():
@@ -143,6 +138,34 @@ def test_Triangle_display():
     )
 
 
+def test_TringularMesh_display():
+    """testing display for TriangleMesh source built from vertices"""
+    # test  classic trimesh display
+    points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
+
+    src = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+        magnetization=(1000, 0, 0), points=points
+    )
+    src.show(backend="matplotlib", style_description_show=False, return_fig=True)
+
+    # test display of disjoint and open mesh elements
+    polydata = pv.Text3D("AB")  # create disjoint mesh
+    polydata = polydata.triangulate()
+    vertices = polydata.points
+    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+    triangles = triangles[1:]  # open the mesh
+    src = magpy.magnet.TriangularMesh(
+        (0, 0, 1000),
+        vertices,
+        triangles,
+        validate_closed=False,
+        validate_connected=False,
+        reorient_triangles=False,
+    )
+
+    src.show(backend="matplotlib", return_fig=True)
+
+
 def test_col_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
@@ -151,8 +174,7 @@ def test_col_display():
     pm2 = pm1.copy(position=(2, 0, 0))
     pm3 = pm1.copy(position=(4, 0, 0))
     nested_col = (pm1 + pm2 + pm3).set_children_styles(color="magenta")
-    x = nested_col.show(canvas=ax)
-    assert x is None, "colletion display test fail"
+    nested_col.show(canvas=ax, return_fig=True)
 
 
 def test_dipole_display():
@@ -162,10 +184,8 @@ def test_dipole_display():
     dip = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
     dip2 = magpy.misc.Dipole(moment=(1, 2, 3), position=(2, 2, 2))
     dip2.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    x = dip.show(canvas=ax2)
-    assert x is None, "display test fail"
-    x = dip.show(canvas=ax2, style_path_frames=2)
-    assert x is None, "display test fail"
+    dip.show(canvas=ax2, return_fig=True)
+    dip.show(canvas=ax2, style_path_frames=2, return_fig=True)
 
 
 def test_circular_line_display():
@@ -178,14 +198,10 @@ def test_circular_line_display():
     src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
-    x = src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0)
-    assert x is None, "display test fail"
-    x = src2.show(canvas=ax2)
-    assert x is None, "display test fail"
-    x = src3.show(canvas=ax2, style_arrow_size=0)
-    assert x is None, "display test fail"
-    x = src4.show(canvas=ax2, style_path_frames=2)
-    assert x is None, "display test fail"
+    src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
+    src2.show(canvas=ax2, return_fig=True)
+    src3.show(canvas=ax2, style_arrow_size=0, return_fig=True)
+    src4.show(canvas=ax2, style_path_frames=2, return_fig=True)
 
 
 def test_matplotlib_model3d_extra():
@@ -238,8 +254,7 @@ def test_matplotlib_model3d_extra():
     obj3.style.model3d.add_trace(**trace3)
 
     ax = plt.subplot(projection="3d")
-    x = magpy.show(obj1, obj2, obj3, canvas=ax)
-    assert x is None, "display test fail"
+    magpy.show(obj1, obj2, obj3, canvas=ax, return_fig=True)
 
 
 def test_matplotlib_model3d_extra_bad_input():
@@ -256,7 +271,7 @@ def test_matplotlib_model3d_extra_bad_input():
     with pytest.raises(ValueError):
         obj.style.model3d.add_trace(**trace)
         ax = plt.subplot(projection="3d")
-        obj.show(canvas=ax)
+        obj.show(canvas=ax, return_fig=True)
 
 
 def test_matplotlib_model3d_extra_updatefunc():
@@ -266,7 +281,7 @@ def test_matplotlib_model3d_extra_updatefunc():
     updatefunc = lambda: make_Cuboid("matplotlib", position=(2, 0, 0))
     obj.style.model3d.data = updatefunc
     ax = plt.subplot(projection="3d")
-    obj.show(canvas=ax)
+    obj.show(canvas=ax, return_fig=True)
 
     with pytest.raises(ValueError):
         updatefunc = "not callable"
@@ -288,8 +303,7 @@ def test_matplotlib_model3d_extra_updatefunc():
 def test_empty_display():
     """should not fail if nothing to display"""
     ax = plt.subplot(projection="3d")
-    x = magpy.show(canvas=ax, backend="matplotlib")
-    assert x is None, "empty display matplotlib test fail"
+    magpy.show(canvas=ax, backend="matplotlib", return_fig=True)
 
 
 def test_graphics_model_mpl():
@@ -298,7 +312,7 @@ def test_graphics_model_mpl():
     c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
     c.rotate_from_angax(33, "x", anchor=0)
     c.style.model3d.add_trace(**make_Cuboid("matplotlib", position=(2, 0, 0)))
-    c.show(canvas=ax, style_path_frames=1, backend="matplotlib")
+    c.show(canvas=ax, style_path_frames=1, backend="matplotlib", return_fig=True)
 
 
 def test_graphics_model_generic_to_mpl():
@@ -316,6 +330,9 @@ def test_mpl_animation():
     """test animation with matplotib"""
     c = magpy.magnet.Cuboid((0, 1, 0), (1, 1, 1))
     c.move([[i, 0, 0] for i in range(2)])
-    anim = c.show(backend="matplotlib", animation=True, return_animation=True)
+    fig, anim = c.show(
+        backend="matplotlib", animation=True, return_animation=True, return_fig=True
+    )
     anim._draw_was_started = True  # avoid mpl test warning
+    assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)

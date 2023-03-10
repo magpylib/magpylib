@@ -432,6 +432,6 @@ def show_context(
             {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
         )
         yield ctx
-        ctx.fig =_show(*ctx.objects, **ctx.kwargs)
+        ctx.fig = _show(*ctx.objects, **ctx.kwargs)
     finally:
         ctx.reset(reset_fig=False)

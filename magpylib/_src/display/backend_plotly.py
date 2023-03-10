@@ -203,7 +203,7 @@ def animate_path(
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
     if "scatter" in trace["type"]:
-        if "line_width" in trace:
+        if trace.get("line_width", None):
             trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
         dash = trace.get("line_dash", None)
         if dash is not None:
@@ -211,7 +211,7 @@ def generic_trace_to_plotly(trace):
         symb = trace.get("marker_symbol", None)
         if symb is not None:
             trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, "circle")
-        if "marker_size" in trace:
+        if trace.get("marker_size", None):
             trace["marker_size"] = (
                 np.array(trace["marker_size"], dtype="float")
                 * SIZE_FACTORS_TO_PLOTLY["marker_size"]

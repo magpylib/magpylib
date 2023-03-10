@@ -11,3 +11,4 @@ numpy-stl
 pyvista
 panel
 jupyterlab-myst
+sphinx-favicon
