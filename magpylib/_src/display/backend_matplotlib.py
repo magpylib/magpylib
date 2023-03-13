@@ -126,6 +126,8 @@ def display_matplotlib(
     colorsequence=None,
     return_fig=False,
     return_animation=False,
+    dpi=150,
+    figsize=(8, 8),
     **kwargs,
 ):
 
@@ -153,7 +155,7 @@ def display_matplotlib(
     show_canvas = False
     if canvas is None:
         show_canvas = True
-        fig = plt.figure(dpi=80, figsize=(8, 8))
+        fig = plt.figure(dpi=dpi, figsize=figsize)
         ax = fig.add_subplot(111, projection="3d")
         ax.set_box_aspect((1, 1, 1))
     else:
