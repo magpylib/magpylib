@@ -39,6 +39,7 @@ from magpylib._src.display.traces_utility import group_traces
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.display.traces_utility import triangles_area
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.style import get_style
@@ -83,8 +84,6 @@ class MagpyMarkers:
 
 def make_DefaultTrace(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -107,15 +106,11 @@ def make_DefaultTrace(
     }
     update_trace_name(trace, f"{type(obj).__name__}", "", style)
     trace["text"] = trace["name"]
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Line(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -149,15 +144,11 @@ def make_Line(
         else " (Current not initialized)"
     )
     update_trace_name(trace, "Line", default_suffix, style)
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Loop(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     vertices=50,
@@ -188,15 +179,11 @@ def make_Loop(
         else " (Current not initialized)"
     )
     update_trace_name(trace, "Loop", default_suffix, style)
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Dipole(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     autosize=None,
@@ -233,10 +220,8 @@ def make_Dipole(
     t = np.arccos(dot)
     vec = -t * cross / n
     mag_orient = RotScipy.from_rotvec(vec)
-    orientation = orientation * mag_orient
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    trace = place_and_orient_model3d(trace, orientation=mag_orient, **kwargs)
+    return {**trace, **kwargs}
 
 
 def make_triangle_orientations(
@@ -297,8 +282,6 @@ def make_triangle_orientations(
 
 def make_Cuboid(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -313,18 +296,11 @@ def make_Cuboid(
     trace = make_BaseCuboid("plotly-dict", dimension=dimension, color=color)
     default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     update_trace_name(trace, "Cuboid", default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Cylinder(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     base=50,
@@ -342,18 +318,11 @@ def make_Cylinder(
     )
     default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     update_trace_name(trace, "Cylinder", default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_CylinderSegment(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     vertices=25,
@@ -371,18 +340,11 @@ def make_CylinderSegment(
     )
     default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     update_trace_name(trace, "CylinderSegment", default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Sphere(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     vertices=15,
@@ -400,18 +362,11 @@ def make_Sphere(
     )
     default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
     update_trace_name(trace, "Sphere", default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Tetrahedron(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -423,18 +378,11 @@ def make_Tetrahedron(
     style = obj.style if style is None else style
     trace = make_BaseTetrahedron("plotly-dict", vertices=obj.vertices, color=color)
     update_trace_name(trace, "Tetrahedron", "", style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Triangle(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -466,12 +414,7 @@ def make_Triangle(
         "plotly-dict", vertices=vert, triangles=triangles, color=color
     )
     update_trace_name(trace, obj.__class__.__name__, "", style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Pixels(positions, size=1) -> dict:
@@ -488,8 +431,6 @@ def make_Pixels(positions, size=1) -> dict:
 
 def make_Sensor(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     autosize=None,
@@ -557,15 +498,17 @@ def make_Sensor(
         else ""
     )
     update_trace_name(trace, "Sensor", default_suffix, style)
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
-def update_magnet_mesh(mesh_dict, mag_style=None, magnetization=None):
+def update_magnet_mesh(
+    mesh_dict, mag_style=None, magnetization=None, color_slicing=False
+):
     """
     Updates an existing plotly mesh3d dictionary of an object which has a magnetic vector. The
     object gets colorized, positioned and oriented based on provided arguments.
+    Slicing allows for matplotlib to show colorgradients approximations by slicing the mesh into
+    the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
     mag_color = mag_style.color
     if magnetization is not None and mag_style.show:
@@ -575,17 +518,24 @@ def update_magnet_mesh(mesh_dict, mag_style=None, magnetization=None):
             color_middle = mesh_dict["color"]
         elif mag_color.mode == "bicolor":
             color_middle = False
-        mesh_dict["colorscale"] = getColorscale(
-            color_transition=mag_color.transition,
+        ct = mag_color.transition
+        cs = getColorscale(
+            color_transition=0 if color_slicing else ct,
             color_north=mag_color.north,
             color_middle=color_middle,
             color_south=mag_color.south,
         )
-        mesh_dict["intensity"] = getIntensity(
-            vertices=vertices,
-            axis=magnetization,
-        )
+        if color_slicing:
+            tr = slice_mesh_from_colorscale(mesh_dict, magnetization, cs)
+            mesh_dict.update(tr)
+        else:
+            mesh_dict["colorscale"] = cs
+            mesh_dict["intensity"] = getIntensity(
+                vertices=vertices,
+                axis=magnetization,
+            )
         mesh_dict["showscale"] = False
+        mesh_dict.pop("color_slicing", None)
     return mesh_dict
 
 
@@ -725,13 +675,13 @@ def get_generic_traces(
     legendgroup = f"{input_obj}" if legendgroup is None else legendgroup
 
     is_mag_arrows = False
-    if getattr(input_obj, "magnetization", None) is not None:
-        mode = style.magnetization.mode
-        if style.magnetization.show:
-            if "arrow" in mode or not mag_color_grad_apt:
-                is_mag_arrows = True
-            if mag_color_grad_apt and "color" not in mode and mode != "auto":
-                style.magnetization.show = False  # disables color gradient only
+    is_mag = hasattr(input_obj, "magnetization")
+    if is_mag and style.magnetization.show:
+        mag = style.magnetization
+        if mag.mode == "auto":
+            mag.mode = "color" if mag_color_grad_apt else "arrow"
+        is_mag_arrows = "arrow" in mag.mode
+        mag.show = "color" in mag.mode
 
     # check excitations validity
     for param in ("magnetization", "arrow"):
@@ -764,9 +714,16 @@ def get_generic_traces(
     )
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
-            path_traces.append(
-                make_func(position=pos, orientation=orient, **make_func_kwargs)
-            )
+            p_tr = make_func(**make_func_kwargs)
+            if is_mag:
+                p_tr = update_magnet_mesh(
+                    p_tr,
+                    mag_style=style.magnetization,
+                    magnetization=input_obj.magnetization,
+                    color_slicing=not mag_color_grad_apt,
+                )
+            p_tr = place_and_orient_model3d(p_tr, orientation=orient, position=pos)
+            path_traces.append(p_tr)
         for extr in extra_model3d_traces:
             if extr.show:
                 extr.update(extr.updatefunc())

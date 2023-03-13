@@ -6,6 +6,7 @@ from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
+# pylint: disable=too-many-branches
 # from magpylib._src.utility import format_obj_input
 
 SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
@@ -30,16 +31,17 @@ def generic_trace_to_matplotlib(trace):
         for subtrace in subtraces:
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
+            kwargs = {
+                "triangles": triangles,
+                "alpha": subtrace.get("opacity", None),
+                "color": subtrace.get("color", None),
+            }
+            if not trace.get("flatshading", False):
+                # flatshading is on for triangular meshes, to see triangles edges better
+                # in other cases we don't want to see them
+                kwargs.update(linewidth=0, antialiased=False)
             traces_mpl.append(
-                {
-                    "constructor": "plot_trisurf",
-                    "args": (x, y, z),
-                    "kwargs": {
-                        "triangles": triangles,
-                        "alpha": subtrace.get("opacity", None),
-                        "color": subtrace.get("color", None),
-                    },
-                }
+                {"constructor": "plot_trisurf", "args": (x, y, z), "kwargs": kwargs}
             )
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
