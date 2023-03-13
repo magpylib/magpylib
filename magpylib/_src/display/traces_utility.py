@@ -544,9 +544,10 @@ def slice_mesh_from_colorscale(trace, axis, colorscale):
     vr = np.array([v for k, v in trace.items() if k in "xyz"]).T
     tr = np.array([v for k, v in trace.items() if k in "ijk"]).T
     axis = axis / np.linalg.norm(axis)
-    dists = np.dot(vr, axis)
+    dists = np.dot(vr + np.mean(vr, axis=0), axis)
     ptp = np.ptp(dists)
-    origs = np.vstack((origs - 0.5) * ptp) * axis
+    shift = np.mean([vr[np.argmin(dists)], vr[np.argmax(dists)]], axis=0)
+    origs = np.vstack((origs - 0.5) * ptp) * axis + shift
 
     traces = []
     for ind, color in enumerate(colors):
