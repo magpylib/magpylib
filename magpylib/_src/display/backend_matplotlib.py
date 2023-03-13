@@ -126,7 +126,7 @@ def display_matplotlib(
     colorsequence=None,
     return_fig=False,
     return_animation=False,
-    dpi=150,
+    dpi=80,
     figsize=(8, 8),
     **kwargs,
 ):
