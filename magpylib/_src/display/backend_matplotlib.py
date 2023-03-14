@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -7,7 +9,12 @@ from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 # pylint: disable=too-many-branches
-# from magpylib._src.utility import format_obj_input
+# pylint: disable=import-outside-toplevel
+
+if os.getenv("MAGPYLIB_MPL_SVG") == "true":
+    from matplotlib_inline.backend_inline import set_matplotlib_formats
+
+    set_matplotlib_formats("svg")
 
 SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
 
