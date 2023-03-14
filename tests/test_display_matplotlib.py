@@ -119,28 +119,27 @@ def test_Loop_display():
 
 def test_Triangle_display():
     """testing display for Triangle source built from vertices"""
-    verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-
-    mesh3d = magpy.graphics.model3d.make_TriangularMesh(vertices=verts)
+    mesh3d = magpy.graphics.model3d.make_Cuboid()
     # note: triangles are built by scipy.Convexhull since triangles=None
     # ConvexHull DOES NOT GUARRANTY proper orientation of triangles when building a body
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
     triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
         [
-            magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
+            magpy.misc.Triangle(magnetization=(1000, 1000, 0), vertices=v)
             for v in points[triangles]
         ]
     )
+    # make north/south limit pass an ege by bicolor mode and (45° mag)
     magpy.show(
         *src,
         backend="matplotlib",
+        style_magnetization_color_mode="bicolor",
         style_orientation_offset=0.5,
         style_orientation_size=2,
         style_orientation_color="yellow",
         style_orientation_symbol="cone",
         style_magnetization_mode="color+arrow",
-        return_fig=True,
     )
 
 
