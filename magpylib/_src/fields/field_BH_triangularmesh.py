@@ -108,60 +108,100 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.n
     Parameters
     ----------
     vertices: np.ndarray, shape (n,3)
-        vertices of the mesh
+        Vertices of the mesh
 
     triangles: np.ndarray, shape (n,3), dtype int
-        triples of indices
+        Triples of indices
 
     Returns
     -------
-    triangles: np.ndarray, shape (n,3), dtype int
-        fixed triangles
+    triangles: np.ndarray, shape (n,3), dtype int, or triangles and 1D array of triples
+        Fixed triangles
     """
-
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
-    facets = vertices[triangles]
-    facet0 = facets[0]
-    v1 = facet0[0] - facet0[1]
-    v2 = facet0[1] - facet0[2]
+    inwards_mask = get_inwards_mask(vertices, triangles)
+    new_triangles = triangles.copy()
+    new_triangles[inwards_mask] = new_triangles[inwards_mask][:, [0, 2, 1]]
+    return new_triangles
+
+
+def is_facet_inwards(facet, facets):
+    """Return boolean whether facet is pointing inwards, via ray tracing"""
+    v1 = facet[0] - facet[1]
+    v2 = facet[1] - facet[2]
     orient = np.cross(v1, v2)
     orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
     eps = 1e-6  # unfortunately this must be quite a 'large' number :(
-    check_point = facet0.mean(axis=0) + orient * eps
+    check_point = facet.mean(axis=0) + orient * eps
 
-    # find out if point is inside
-    first_is_inside = mask_inside_trimesh(np.array([check_point]), facets)[0]
+    # find out if first point is inwards
+    return mask_inside_trimesh(np.array([check_point]), facets)[0]
 
-    tri_temp = triangles.copy()  # do not modify input triangles
 
-    if first_is_inside:
-        tri_temp[0] = tri_temp[0, [0, 2, 1]]
+def get_inwards_mask(
+    vertices: np.ndarray,
+    triangles: np.ndarray,
+) -> np.ndarray:
+    """Return a boolean mask of normals from triangles.
+    True -> Inwards, False -> Outwards.
+    This function does not check if mesh is open, and if it is, it may deliver
+    inconsistent results silently.
 
-    new_triangles = []
-    free_edges = set()
+    Parameters
+    ----------
+    vertices: np.ndarray, shape (n,3)
+        Vertices of the mesh
+
+    triangles: np.ndarray, shape (n,3), dtype int
+        Triples of indices
+
+    Returns
+    -------
+    boolean mask : ndarray, shape (n,), dtype bool
+        Boolean mask of inwards orientations from provided triangles
+    """
+
+    facets = vertices[triangles]
+    mask = np.full(len(triangles), False)
+    indices = list(range(len(triangles)))
+
     # incrementally add triangles sharing at least a common edge by looping among left over
     # triangles. If next triangle with common edge is reversed, flip it.
-    while len(tri_temp) != 0:
-        for tri_ind, tri in enumerate(tri_temp):
+    any_connected = False
+    while indices:
+        if not any_connected:
+            free_edges = set()
+            is_inwards = is_facet_inwards(facets[indices[0]], facets[indices])
+            mask[indices] = is_inwards
+        for tri_ind in indices:
+            tri = triangles[tri_ind]
             edges = {(tri[0], tri[1]), (tri[1], tri[2]), (tri[2], tri[0])}
             edges_r = {(tri[1], tri[0]), (tri[2], tri[1]), (tri[0], tri[2])}
             common = free_edges & edges
+            flip = False
             if not free_edges:
                 common = True
             elif common:
                 edges = edges_r
-                tri = tri[[0, 2, 1]]  # flip triangle
+                flip = True
             else:
                 common = free_edges & edges_r
             if common:  # break loop on first common edge found
-                new_triangles.append(tri)
                 free_edges ^= edges
-                tri_temp = np.delete(tri_temp, tri_ind, 0)
+                if flip:
+                    mask[tri_ind] = not mask[tri_ind]
+                indices.remove(tri_ind)
+                any_connected = True
                 break
-    return np.array(new_triangles)
+        else:
+            # if loop reaches the end and does not find any connected edge, while still
+            # having some indices to go trough -> mesh is is disconnected. A new seed is
+            # needed and needs to be checked via ray tracing before continuing.
+            any_connected = False
+    return mask
 
 
 def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:

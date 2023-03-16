@@ -84,13 +84,10 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "matplotlib.sphinxext.plot_directive",
-    # "nbsphinx",
-    # "sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
     "sphinx_thebe",
-    # "myst_parser",
-    # "sphinx_panels",
+    "sphinx_favicon",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -127,7 +124,7 @@ pygments_style = "sphinx"
 #
 html_theme = "sphinx_book_theme"
 
-html_logo = "./_static/images/magpylib_logo.png"
+html_logo = "./_static/images/magpylib_flag.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -138,8 +135,32 @@ html_theme_options = {
     "repository_branch": release,
     "use_repository_button": True,
     "use_download_button": True,
+    "use_source_button": True,
+    "use_edit_page_button": True,
+    "use_issues_button": True,
     "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
+    "icon_links": [
+        {
+            "name": "Github",
+            "url": "https://github.com/magpylib/magpylib",
+            "icon": "https://img.shields.io/github/stars/magpylib/magpylib?style=social",
+            "type": "url",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/magpylib/",
+            "icon": "https://img.shields.io/pypi/v/magpylib",
+            "type": "url",
+        },
+        {
+            "name": "Conda",
+            "url": "https://anaconda.org/conda-forge/magpylib",
+            "icon": "https://img.shields.io/conda/vn/conda-forge/magpylib",
+            "type": "url",
+        },
+    ],
 }
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
@@ -279,3 +300,11 @@ mathjax_options = {
 }
 
 myst_update_mathjax = False
+
+suppress_warnings = ["mystnb.unknown_mime_type"]
+
+favicons = [
+    "images/favicons/favicon-16x16.png",
+    "images/favicons/favicon-32x32.png",
+    "images/favicons/icon.ico",
+]
