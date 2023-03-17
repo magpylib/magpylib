@@ -211,7 +211,7 @@ def generic_trace_to_plotly(trace):
         symb = trace.get("marker_symbol", None)
         if symb is not None:
             trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, "circle")
-        if trace.get("marker_size", None):
+        if "marker_size" in trace:
             trace["marker_size"] = (
                 np.array(trace["marker_size"], dtype="float")
                 * SIZE_FACTORS_TO_PLOTLY["marker_size"]
