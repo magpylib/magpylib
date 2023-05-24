@@ -378,7 +378,8 @@ def magnet_trimesh_field(
     in_out="auto",
 ) -> np.ndarray:
     """
-    Code for the field calculation of a uniformly magnetized triangular facet body.
+    core-like function that computes the field of triangular meshes using the triangle_field
+    - closed nice meshes are assumed (input comes only from TriangularMesh class)
 
     Parameters
     ----------
@@ -393,7 +394,7 @@ def magnet_trimesh_field(
         Homogeneous magnetization vector in units of [mT].
 
     facets: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
+        Triangular mesh defined by facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
         `facets` can be a ragged sequence of facet children with different lengths.
 
     in_out: {'auto', 'inside', 'outside'}
@@ -446,7 +447,7 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar facets
+            # group similar facets for inside-outise evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
