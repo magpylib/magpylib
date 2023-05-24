@@ -415,7 +415,6 @@ def magnet_trimesh_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-
     if facets.ndim != 1:  # all vertices objects have same number of children
         n0, n1, *_ = facets.shape
         vertices_tiled = facets.reshape(-1, 3, 3)
