@@ -13,6 +13,7 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
+from magpylib._src.exceptions import MagpylibMissingInput
 
 
 class TriangularMesh(BaseMagnet):
@@ -175,6 +176,14 @@ class TriangularMesh(BaseMagnet):
         # not all vertices can lie in a plane
         # unique vertices ?
         # do validation checks
+        if vertices is None:
+            raise MagpylibMissingInput(
+                    f"Parameter `vertices` of {self} must be set."
+                )
+        if triangles is None:
+            raise MagpylibMissingInput(
+                    f"Parameter `triangles` of {self} must be set."
+                )
         verts = check_format_input_vector(
             vertices,
             dims=(2,),
@@ -182,10 +191,6 @@ class TriangularMesh(BaseMagnet):
             sig_name="TriangularMesh.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         )
-        # check if triangle indices have allowed values
-        # triangles must not be duplicates
-        # triangles must not be degenerate ()
-        # do validation checks
         trias = check_format_input_vector(
             triangles,
             dims=(2,),

@@ -562,6 +562,7 @@ def check_dimensions(sources):
     from magpylib._src.obj_classes.class_current_Line import Line
     from magpylib._src.obj_classes.class_current_Loop import Loop
     from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
     for src in sources:
         if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
