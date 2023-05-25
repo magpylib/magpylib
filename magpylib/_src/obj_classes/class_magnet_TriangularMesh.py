@@ -171,7 +171,6 @@ class TriangularMesh(BaseMagnet):
 
     def _input_check(self, vertices, triangles):
         """input checks here ?"""
-
         # no. vertices must exceed largest triangle index
         # not all vertices can lie in a plane
         # unique vertices ?
@@ -183,7 +182,6 @@ class TriangularMesh(BaseMagnet):
             sig_name="TriangularMesh.vertices",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         )
-
         # check if triangle indices have allowed values
         # triangles must not be duplicates
         # triangles must not be degenerate ()
@@ -236,6 +234,9 @@ class TriangularMesh(BaseMagnet):
         points=None,
         position=(0, 0, 0),
         orientation=None,
+        validate_closed=True,
+        validate_connected=True,
+        reorient_triangles=True,
         style=None,
         **kwargs,
     ):
@@ -287,12 +288,6 @@ class TriangularMesh(BaseMagnet):
         Examples
         --------
         """
-
-        # reorient facets since ConvexHull does not guarantee that the facets are all
-        # pointing outwards
-        reorient_triangles = kwargs.pop("reorient_triangles", True)
-        validate_closed = kwargs.pop("validate_closed", True)
-        validate_connected = kwargs.pop("validate_connected", True)
         return cls(
             magnetization=magnetization,
             vertices=points,
@@ -313,6 +308,9 @@ class TriangularMesh(BaseMagnet):
         polydata=None,
         position=(0, 0, 0),
         orientation=None,
+        validate_closed=True,
+        validate_connected=True,
+        reorient_triangles=True,
         style=None,
         **kwargs,
     ):
@@ -379,9 +377,7 @@ class TriangularMesh(BaseMagnet):
         polydata = polydata.triangulate()
         vertices = polydata.points
         triangles = polydata.faces.reshape(-1, 4)[:, 1:]
-        reorient_triangles = kwargs.pop("reorient_triangles", True)
-        validate_closed = kwargs.pop("validate_closed", True)
-        validate_connected = kwargs.pop("validate_connected", True)
+
         return cls(
             magnetization=magnetization,
             vertices=vertices,
