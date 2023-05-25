@@ -478,6 +478,18 @@ def test_input_objects_field_func_bad():
 
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, gg)
 
+def test_missing_input_triangular_mesh():
+    """missing input checks for TriangularMesh"""
+    
+    verts = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
+    tris =  np.array([(0,1,2), (0,1,3), (1,2,3), (0,2,3)])
+    def trim():
+        magpy.magnet.TriangularMesh(triangles=tris)
+    np.testing.assert_raises(MagpylibMissingInput, trim)   
+
+    def trimm():
+        magpy.magnet.TriangularMesh(vertices=verts)
+    np.testing.assert_raises(MagpylibMissingInput, trimm)   
 
 ###########################################################
 ###########################################################
