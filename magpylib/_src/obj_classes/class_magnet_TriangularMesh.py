@@ -73,9 +73,9 @@ class TriangularMesh(BaseMagnet):
     (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
-    >>> verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
-    >>> trias = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
-    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=verts, triangles=trias)
+    >>> vv = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
+    >>> tt = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
+    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=vv, triangles=tt)
     >>> print(trim.getB((1,1,1)))
     [2.60236696 2.08189357 1.56142018]
     """
