@@ -20,8 +20,8 @@ class TriangularMesh(BaseMagnet):
     """Triangular surface mesh magnet with homogeneous magnetization.
     Can be used as `sources` input for magnetic field computation.
     When `position=(0,0,0)` and `orientation=None` the TriangularMesh facets coordinates
-    are the same as in the global coordinate system. The geometric center of the TriangularMesh
-    is determined by its vertices and is not necessarily located in the origin.
+    are the same as in the global coordinate system.
+
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
@@ -29,34 +29,31 @@ class TriangularMesh(BaseMagnet):
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (n,3)
-        Points defining the vertices of the facets in the relative coordinate system of the
-        TriangularMesh object.
+        A set of points in units of [mm] in the local object coordinates from which the
+        triangles of the mesh are constructed by the additional `triangles`input.
 
     triangles: ndarray, shape (n,3)
-        Indices corresponding to the the points (vertices) constructing each triangle of the
-        TriangularMesh object.
+        Indices of vertices. Each triplet represents one triangle of the mesh.
 
-    position: array_like, shape (3,) or (m,3)
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
-        When setting facets, the initial position is set to the barycenter.
-
+        
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    reorient_triangles: bool, optional
-        If `False`, no facet orientation check is performed. If `True`, facets pointing inwards are
-        fliped in the right direction.
+    reorient_triangles: bool, default=`True`
+        In a properly oriented mesh, all facets must be oriented outwards.
+        If `True`, check and fix the orientation of each triangle.
 
-    validate_closed: bool, optional
-        If `True`, the provided set of facets is validated by checking if it forms a closed body.
-        Can be deactivated for perfomance reasons by setting it to `False`.
+    validate_closed: bool, default=`True`
+        Only a closed mesh guarantees a physical magnet.
+        If `True`, raise error if mesh is not closed.
 
-    validate_connected: bool, optional
-        If `True`, the provided set of facets is validated by checking if it forms a connected body.
-        Can be deactivated for perfomance reasons by setting it to `False`.
+    validate_connected: bool, default=`True`
+        If `True` raise an error if mesh is not connected.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -71,6 +68,16 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
+    We compute the B-field in units of [mT] of a triangular mesh (4 vertices, 4 triangles)
+    with magnetization (100,200,300) in units of [mT] at the observer position
+    (1,1,1) given in units of [mm]:
+
+    >>> import magpylib as magpy
+    >>> verts = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
+    >>> trias = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
+    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=verts, triangles=trias)
+    >>> print(trim.getB((1,1,1)))
+    [2.60236696 2.08189357 1.56142018]
     """
 
     _field_func = staticmethod(magnet_trimesh_field)
