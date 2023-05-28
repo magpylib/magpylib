@@ -155,14 +155,14 @@ plt.show()
 
 ## Example - Trapezoidal prism from ConvexHull
 
-The `from_ConvexHull_points` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a trapezoidal prism is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_triangles` is disabled.
+The `from_ConvexHull` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a trapezoidal prism is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_triangles` is disabled.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 
 # create trapezoidal prism from point cloud
 points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [-1,-1, 3], [-1,1,3], [1,-1,3], [1,1,3]]
-cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull(
     magnetization=(0, 0, 1000),
     points=points,
 )
@@ -184,7 +184,7 @@ import magpylib as magpy
 
 # create trapezoidal prism from point cloud
 points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [-1,-1, 3], [-1,1,3], [1,-1,3], [1,1,3]]
-cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull(
     magnetization=(0, 0, 1000),
     points=points,
     reorient_triangles=False,

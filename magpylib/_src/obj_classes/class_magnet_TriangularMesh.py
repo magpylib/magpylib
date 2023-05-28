@@ -240,7 +240,7 @@ class TriangularMesh(BaseMagnet):
         self._is_reoriented = True
 
     @classmethod
-    def from_ConvexHull_points(
+    def from_ConvexHull(
         cls,
         magnetization=None,
         points=None,

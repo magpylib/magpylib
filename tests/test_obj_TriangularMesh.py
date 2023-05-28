@@ -255,7 +255,7 @@ def test_TriangularMesh_from_facets_good_inputs():
     pos_orient = dict(orientation=tetra.orientation, position=tetra.position)
 
     # copy Tetrahedron from vertices and convexhull into a TriangularMesh object
-    tetra_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+    tetra_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull(
         mag, tetra.vertices, **pos_orient
     )
 

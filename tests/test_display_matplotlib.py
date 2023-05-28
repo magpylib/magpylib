@@ -143,7 +143,7 @@ def test_TringularMesh_display():
     # test  classic trimesh display
     points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
-    src = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+    src = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(1000, 0, 0), points=points
     )
     src.show(backend="matplotlib", style_description_show=False, return_fig=True)
