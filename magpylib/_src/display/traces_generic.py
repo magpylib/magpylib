@@ -243,7 +243,7 @@ def make_Dipole(
     )
 
 
-def make_invalid_mesh_lines(
+def make_mesh_lines(
     obj,
     pos_orient_inds,
     mode,
@@ -266,7 +266,11 @@ def make_invalid_mesh_lines(
         # make sure unique pairs are found regardless of order
         edges = np.sort(edges, axis=1)
         edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
-        lines = vert[edges_uniq[edges_counts != 2]]
+        if mode == "open":
+            lines = vert[edges_uniq[edges_counts != 2]]
+        else:
+            lines = vert[edges_uniq]
+
     out = {}
     if lines.size != 0:
         label = f"{obj}" if label is None else label
@@ -1024,13 +1028,13 @@ def get_generic_traces(
             )
         )
     if isinstance(input_obj, TriangularMesh):
-        for mode in ("open", "disjoint"):
+        for mode in ("grid", "open", "disjoint"):
             if mode == "open" and input_obj.is_closed:
                 continue
             if mode == "disjoint" and input_obj.is_connected:
                 continue
             if getattr(style.mesh, mode).show:
-                trace = make_invalid_mesh_lines(
+                trace = make_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs
                 )
                 if trace:

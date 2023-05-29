@@ -161,6 +161,7 @@ def test_TringularMesh_display():
         validate_closed=False,
         validate_connected=False,
         reorient_triangles=False,
+        style_mesh_grid_show=True,
     )
 
     src.show(backend="matplotlib", return_fig=True)

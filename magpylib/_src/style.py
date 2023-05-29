@@ -852,6 +852,24 @@ class MarkerLineProperties:
         self._line = validate_property_class(val, "line", Line, self)
 
 
+class GridMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of GridMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
 class OpenMesh(MagicProperties, MarkerLineProperties):
     """Defines styling properties of OpenMesh objects
 
@@ -927,17 +945,31 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
         self._colorsequence = val
 
 
-class InvalidMesh(MagicProperties):
-    """Defines InvalidMesh mesh properties.
+class TriMesh(MagicProperties):
+    """Defines TriMesh mesh properties.
 
     Parameters
     ----------
+    grid: dict or GridMesh,  default=None
+        All mesh vertices and edges of a TriangularMesh object.
+
     open: dict or OpenMesh,  default=None
         Shows open mesh vertices and edges of a TriangularMesh object, if any.
 
     disjoint: dict or DisjointMesh, default=None
         Shows disjoint bodies of a TriangularMesh object, if any.
     """
+
+    @property
+    def grid(self):
+        """GridMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._grid
+
+    @grid.setter
+    def grid(self, val):
+        self._grid = validate_property_class(val, "grid", GridMesh, self)
 
     @property
     def open(self):
@@ -1138,14 +1170,14 @@ class TriangularMeshProperties:
 
     @property
     def mesh(self):
-        """`InvalidMesh` instance with `'show', 'markers', 'line'` properties
+        """`TriMesh` instance with `'show', 'markers', 'line'` properties
         or a dictionary with equivalent key/value pairs.
         """
         return self._mesh
 
     @mesh.setter
     def mesh(self, val):
-        self._mesh = validate_property_class(val, "mesh", InvalidMesh, self)
+        self._mesh = validate_property_class(val, "mesh", TriMesh, self)
 
 
 class DefaultTriangularMesh(
@@ -1163,8 +1195,8 @@ class DefaultTriangularMesh(
         Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
         properties or a dictionary with equivalent key/value pairs.
 
-    mesh: dict or InvalidMesh, default=None
-        InvalidMesh styling properties (e.g. `'open', 'disjoint'`)
+    mesh: dict or TriMesh, default=None
+        TriMesh styling properties (e.g. `'grid', 'open', 'disjoint'`)
     """
 
     def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
@@ -1207,7 +1239,7 @@ class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshPropert
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
 
-    mesh: dict or InvalidMesh,  default=None,
+    mesh: dict or TriMesh,  default=None,
         mesh styling of triangles.
     """
 

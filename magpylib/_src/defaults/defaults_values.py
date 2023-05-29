@@ -106,6 +106,11 @@ DEFAULTS = {
                     "symbol": "arrow3d",
                 },
                 "mesh": {
+                    "grid": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
                     "open": {
                         "show": True,
                         "line": {"width": 2, "style": "solid", "color": "cyan"},
