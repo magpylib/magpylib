@@ -13,6 +13,7 @@ from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
 
@@ -236,6 +237,17 @@ class TriangularMesh(BaseMagnet):
         _ = self.is_closed  # perform isclosed check through getter
         self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
         self._is_reoriented = True
+
+    def to_TrianglesCollection(self):
+        """Return a Collection of Triangles objects from the current TriangularMesh"""
+        tris = [
+            Triangle(magnetization=self.magnetization, vertices=v) for v in self.facets
+        ]
+        coll = Collection(tris)
+        coll.position = self.position
+        coll.orientation = self.orientation
+        coll.style.update(self.style.as_dict(), _match_properties=False)
+        return coll
 
     @classmethod
     def from_ConvexHull(

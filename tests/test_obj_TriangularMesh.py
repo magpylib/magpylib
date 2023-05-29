@@ -49,6 +49,7 @@ def test_TriangularMesh_getBH():
         triangles=triangles,
         reorient_triangles=True,
     )
+    cube_misc_triangles = cube_facet_reorient_true.to_TrianglesCollection()
     cube_facet_reorient_false = magpy.magnet.TriangularMesh(
         position=cube.position,
         orientation=cube.orientation,
@@ -61,17 +62,21 @@ def test_TriangularMesh_getBH():
     vertices = np.linspace((-2, 0, 0), (2, 0, 0), 50)
     B1 = cube.getB(vertices)
     B2 = cube_facet_reorient_true.getB(vertices)
-    B3 = cube_facet_reorient_false.getB(vertices)
+    B3 = cube_misc_triangles.getB(vertices)
+    B4 = cube_facet_reorient_false.getB(vertices)
 
     np.testing.assert_allclose(B1, B2)
+    np.testing.assert_allclose(B1, B3)
 
     with pytest.raises(AssertionError):
-        np.testing.assert_allclose(B1, B3)
+        np.testing.assert_allclose(B1, B4)
 
     H1 = cube.getH(vertices)
     H2 = cube_facet_reorient_true.getH(vertices)
+    H3 = cube_misc_triangles.getH(vertices)
 
     np.testing.assert_allclose(H1, H2)
+    np.testing.assert_allclose(H1, H3)
 
 
 def test_TriangularMesh_getB_different_facet_shapes_mixed():
