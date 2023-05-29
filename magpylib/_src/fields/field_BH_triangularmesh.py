@@ -9,6 +9,38 @@ import numpy as np
 from magpylib._src.fields.field_BH_triangle import triangle_field
 
 
+def calculate_centroid(vertices, triangles):
+    """
+    Calculates the centroid of a 3D triangular surface mesh.
+
+    Parameters:
+    vertices (numpy.array): an n x 3 array of vertices
+    triangles (numpy.array): an m x 3 array of triangle indices
+
+    Returns:
+    numpy.array: The centroid of the mesh
+    """
+
+    # Calculate the centroids of each triangle
+    triangle_centroids = np.mean(vertices[triangles], axis=1)
+
+    # Compute the area of each triangle
+    triangle_areas = 0.5 * np.linalg.norm(
+        np.cross(
+            vertices[triangles[:, 1]] - vertices[triangles[:, 0]],
+            vertices[triangles[:, 2]] - vertices[triangles[:, 0]],
+        ),
+        axis=1,
+    )
+
+    # Calculate the centroid of the entire mesh
+    mesh_centroid = np.sum(triangle_centroids.T * triangle_areas, axis=1) / np.sum(
+        triangle_areas
+    )
+
+    return mesh_centroid
+
+
 def v_norm2(a: np.ndarray) -> np.ndarray:
     """
     return |a|**2

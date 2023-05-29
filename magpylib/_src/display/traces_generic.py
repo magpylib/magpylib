@@ -736,6 +736,8 @@ def make_mag_arrows(obj, pos_orient_inds, style, legendgroup, kwargs):
         length = obj.diameter  # Sphere
     elif isinstance(obj, magpy.misc.Triangle):
         length = np.amax(obj.vertices) - np.amin(obj.vertices)
+    elif hasattr(obj, "facets"):
+        length = np.amax(np.ptp(obj.facets.reshape(-1, 3), axis=0))
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))
     else:  # Cuboid, Cylinder, CylinderSegment

@@ -3,6 +3,8 @@ import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_generic import make_TriangularMesh
+from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
     get_disjoint_triangles_subsets,
@@ -13,7 +15,6 @@ from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
-from magpylib._src.exceptions import MagpylibMissingInput
 
 
 class TriangularMesh(BaseMagnet):
@@ -38,7 +39,7 @@ class TriangularMesh(BaseMagnet):
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of [mm]. For m>1, the
         `position` and `orientation` attributes together represent an object path.
-        
+
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
@@ -98,7 +99,6 @@ class TriangularMesh(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         self._vertices, self._triangles = self._input_check(vertices, triangles)
         self._is_connected = None
         self._is_closed = None
@@ -163,7 +163,9 @@ class TriangularMesh(BaseMagnet):
     @property
     def _barycenter(self):
         """Object barycenter."""
-        return self._get_barycenter(self._position, self._orientation, self.vertices)
+        return self._get_barycenter(
+            self._position, self._orientation, self._vertices, self._triangles
+        )
 
     @property
     def barycenter(self):
@@ -171,9 +173,9 @@ class TriangularMesh(BaseMagnet):
         return np.squeeze(self._barycenter)
 
     @staticmethod
-    def _get_barycenter(position, orientation, vertices):
+    def _get_barycenter(position, orientation, vertices, triangles):
         """Returns the barycenter of a tetrahedron."""
-        centroid = np.mean(vertices, axis=0)
+        centroid = calculate_centroid(vertices, triangles)
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
@@ -184,13 +186,9 @@ class TriangularMesh(BaseMagnet):
         # unique vertices ?
         # do validation checks
         if vertices is None:
-            raise MagpylibMissingInput(
-                    f"Parameter `vertices` of {self} must be set."
-                )
+            raise MagpylibMissingInput(f"Parameter `vertices` of {self} must be set.")
         if triangles is None:
-            raise MagpylibMissingInput(
-                    f"Parameter `triangles` of {self} must be set."
-                )
+            raise MagpylibMissingInput(f"Parameter `triangles` of {self} must be set.")
         verts = check_format_input_vector(
             vertices,
             dims=(2,),
