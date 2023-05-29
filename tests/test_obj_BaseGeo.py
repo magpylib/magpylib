@@ -525,7 +525,7 @@ def test_describe():
         "  • position: [0. 0. 0.] mm\n"
         "  • orientation: [0. 0. 0.] degrees\n"
         "  • magnetization: [   0.    0. 1000.] mT\n"
-        "  • barycenter: [0.62312231 0.38878538 0.25      ] \n"
+        "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
         "  • facets: shape(52, 3, 3) \n"
         "  • is_closed: True \n"
         "  • is_connected: True \n"
