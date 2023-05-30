@@ -377,13 +377,15 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     if traces:
         ranges = {k: [] for k in "xyz"}
         for t in traces:
-            for k, v in ranges.items():
-                v.extend(
-                    [
-                        np.nanmin(np.array(t[k], dtype=float)),
-                        np.nanmax(np.array(t[k], dtype=float)),
-                    ]
-                )
+            for ijk, (k, v) in zip("ijk", ranges.items()):
+                # for mesh3, use only vertices part of triangles for range calculation
+                inds = t.get(ijk, None)
+                if inds is None:
+                    inds = slice(None, None)
+                else:
+                    inds = np.array(inds, dtype=int)
+                coords = np.array(t[k], dtype=float)
+                v.extend([np.nanmin(coords[inds]), np.nanmax(coords[inds])])
         r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
         size = np.diff(r, axis=1)
         size[size == 0] = 1
