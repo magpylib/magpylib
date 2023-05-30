@@ -186,7 +186,7 @@ def test_open_mesh():
             magnetization=(0, 0, 1000),
             vertices=vertices,
             triangles=triangles,
-            validate_open_mesh=True,
+            validate_closed=True,
         )
 
 
