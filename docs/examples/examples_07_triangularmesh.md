@@ -25,16 +25,16 @@ The `TriangularMesh` class
 
 The outside field of a homogeneously charged magnet is the same as the field of a similarly shaped body with a magnetic surface charge. In turn, the surface charge is proportional to the projection of the magnetization vector onto the surface normal.
 
-The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular facets. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangles. This source is homologous to a collection of `Triangle` objects where its geometry is defined via `vertices` and `triangles`. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define indices triples corresponding to the the vertices coordinates of each triangle.
+The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular faces. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangles. This source is homologous to a collection of `Triangle` objects where its geometry is defined via `vertices` and `triangles`. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define indices triples corresponding to the the vertices coordinates of each triangle.
 Additionally, useful input checks, enabled by default, are implemented in order to ensure the validity of a faceted magnet source, such as:
-- `reorient_triangles`: checks if facets are facing outwards and flip the ones wrongly oriented
+- `reorient_triangles`: checks if faces are facing outwards and flip the ones wrongly oriented
 - `validate_closed`: checks if set of provided set of `vertices` and `triangles` form a closed body.
 - `validate_connected`: checks if set of provided set of `vertices` and `triangles` is not disjoint.
 
 +++ {"user_expressions": []}
 
 ```{caution}
-* Input checks can be computationally intensive, especially for the automatic reorientation of triangles but can be deactivated. However, one must be sure that all the facets are oriented correctly before any field calculation, otherwise it may yield erroneous values.
+* Input checks can be computationally intensive, especially for the automatic reorientation of triangles but can be deactivated. However, one must be sure that all the faces are oriented correctly before any field calculation, otherwise it may yield erroneous values.
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes but no guarantee is given that the produced mesh is a valid as a Magpylib `TriangularMesh` input. Deactivating mesh input checks may lead to unwanted results.
 
@@ -177,7 +177,7 @@ cube_from_ConvexHull.show(
 
 +++ {"user_expressions": []}
 
-Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the facets is wrong and some triangles are pointing inwards.
+Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the mesh is wrong and some triangles are pointing inwards.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -200,7 +200,7 @@ cube_from_ConvexHull.show(
 
 +++ {"user_expressions": []}
 
-## Example - Open Prism from facets
+## Example - Open Prism from mesh
 
 +++ {"user_expressions": []}
 
@@ -220,9 +220,9 @@ bottom = magpy.misc.Triangle(
 )
 
 # create faceted prism with open edges
-cube = magpy.magnet.TriangularMesh.from_triangular_facets(
+cube = magpy.magnet.TriangularMesh.from_triangles(
     magnetization=(0, 0, 1000), # overrides triangles magnetization
-    facets=[top, bottom],
+    faces=[top, bottom],
     validate_closed=False,  # disable check
     validate_connected=False,  # disable check
     style_label="Open prism",

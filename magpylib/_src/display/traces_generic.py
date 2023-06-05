@@ -343,7 +343,7 @@ def make_triangle_orientations(
     size = size if style.orientation.size is None else style.orientation.size
     offset = offset if style.orientation.offset is None else style.orientation.offset
     symbol = symbol if style.orientation.symbol is None else style.orientation.symbol
-    vertices = obj.facets if hasattr(obj, "facets") else [obj.vertices]
+    vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
     traces = []
     for vert in vertices:
         vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
@@ -740,8 +740,8 @@ def make_mag_arrows(obj, pos_orient_inds, style, legendgroup, kwargs):
         length = obj.diameter  # Sphere
     elif isinstance(obj, magpy.misc.Triangle):
         length = np.amax(obj.vertices) - np.amin(obj.vertices)
-    elif hasattr(obj, "facets"):
-        length = np.amax(np.ptp(obj.facets.reshape(-1, 3), axis=0))
+    elif hasattr(obj, "mesh"):
+        length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
     elif hasattr(obj, "vertices"):
         length = np.amax(np.ptp(obj.vertices, axis=0))
     else:  # Cuboid, Cylinder, CylinderSegment

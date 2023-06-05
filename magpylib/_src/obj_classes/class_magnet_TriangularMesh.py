@@ -47,7 +47,7 @@ class TriangularMesh(BaseMagnet):
         together represent an object path.
 
     reorient_triangles: bool, default=`True`
-        In a properly oriented mesh, all facets must be oriented outwards.
+        In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
 
     validate_closed: bool, default=`True`
@@ -66,8 +66,8 @@ class TriangularMesh(BaseMagnet):
 
     Notes
     -----
-    Facets are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
-    guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+    Faces are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
+    guarantee that the faces are all pointing outwards. A mesh validation is also performed.
 
     Returns
     -------
@@ -88,7 +88,7 @@ class TriangularMesh(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_trimesh_field)
-    _field_func_kwargs_ndim = {"magnetization": 2, "facets": 3}
+    _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
     _draw_func = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
@@ -132,12 +132,12 @@ class TriangularMesh(BaseMagnet):
 
     @property
     def triangles(self):
-        """Facets objects"""
+        """Faces objects"""
         return self._triangles
 
     @property
-    def facets(self):
-        """Facets objects"""
+    def mesh(self):
+        """Mesh"""
         return self._vertices[self._triangles]
 
     @property
@@ -236,7 +236,7 @@ class TriangularMesh(BaseMagnet):
             )
 
     def reorient_triangles(self):
-        """Triangular facets pointing inwards are fliped in the right direction.
+        """Triangular faces pointing inwards are fliped in the right direction.
         Prior to reorientation, it is checked if the mesh is closed.
         """
         _ = self.is_closed  # perform isclosed check through getter
@@ -246,7 +246,7 @@ class TriangularMesh(BaseMagnet):
     def to_TrianglesCollection(self):
         """Return a Collection of Triangles objects from the current TriangularMesh"""
         tris = [
-            Triangle(magnetization=self.magnetization, vertices=v) for v in self.facets
+            Triangle(magnetization=self.magnetization, vertices=v) for v in self.mesh
         ]
         coll = Collection(tris)
         coll.position = self.position
@@ -281,7 +281,6 @@ class TriangularMesh(BaseMagnet):
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
             `position` and `orientation` attributes together represent an object path.
-            When setting facets, the initial position is set to the barycenter.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
@@ -289,7 +288,7 @@ class TriangularMesh(BaseMagnet):
             together represent an object path.
 
         reorient_triangles: bool, default=`True`
-            In a properly oriented mesh, all facets must be oriented outwards.
+            In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
         validate_closed: bool, default=`True`
@@ -308,8 +307,8 @@ class TriangularMesh(BaseMagnet):
 
         Notes
         -----
-        Facets are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
-        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+        Faces are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
+        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
 
         Returns
         -------
@@ -358,7 +357,6 @@ class TriangularMesh(BaseMagnet):
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
             `position` and `orientation` attributes together represent an object path.
-            When setting facets, the initial position is set to the barycenter.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
@@ -366,7 +364,7 @@ class TriangularMesh(BaseMagnet):
             together represent an object path.
 
         reorient_triangles: bool, default=`True`
-            In a properly oriented mesh, all facets must be oriented outwards.
+            In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
         validate_closed: bool, default=`True`
@@ -385,8 +383,8 @@ class TriangularMesh(BaseMagnet):
 
         Notes
         -----
-        Facets are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
 
         Returns
         -------
@@ -454,7 +452,6 @@ class TriangularMesh(BaseMagnet):
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
             `position` and `orientation` attributes together represent an object path.
-            When setting facets, the initial position is set to the barycenter.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
@@ -462,7 +459,7 @@ class TriangularMesh(BaseMagnet):
             together represent an object path.
 
         reorient_triangles: bool, default=`True`
-            In a properly oriented mesh, all facets must be oriented outwards.
+            In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
         validate_closed: bool, default=`True`
@@ -481,8 +478,8 @@ class TriangularMesh(BaseMagnet):
 
         Notes
         -----
-        Facets are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-        guarantee that the facets are all pointing outwards. A mesh validation is also performed.
+        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
 
         Returns
         -------

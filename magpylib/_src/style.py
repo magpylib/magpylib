@@ -1014,7 +1014,7 @@ class Orientation(MagicProperties):
         and 1 with the base.
 
     symbol: {"cone", "arrow3d"}:
-        Orientation symbol for the triangular facets.
+        Orientation symbol for the triangular faces.
     """
 
     _allowed_symbols = ("cone", "arrow3d")

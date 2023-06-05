@@ -93,10 +93,10 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
         "position": tetra.position,
         "orientation": tetra.orientation,
     }
-    tetra_facets = magpy.magnet.TriangularMesh.from_pyvista(
+    tmesh_tetra = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=tetra_pv, **tetra_kwargs
     )
-    assert tetra_facets.is_reoriented
+    assert tmesh_tetra.is_reoriented
     cube = (
         magpy.magnet.Cuboid((111, 222, 333), (1, 1, 1))
         .move((1, 1, 1))
@@ -107,7 +107,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
         "position": cube.position,
         "orientation": cube.orientation,
     }
-    cube_facets = magpy.magnet.TriangularMesh.from_pyvista(
+    tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=pv.Cube(), **cube_kwargs
     )
     # create a sensor of which the pixel line corsses both bodies
@@ -115,10 +115,10 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
         [14, 65, 97], (4, 6, 9), anchor=0
     )
 
-    np.testing.assert_allclose(magpy.getB(cube, sens), magpy.getB(cube_facets, sens))
-    np.testing.assert_allclose(magpy.getB(tetra, sens), magpy.getB(tetra_facets, sens))
+    np.testing.assert_allclose(magpy.getB(cube, sens), magpy.getB(tmesh_cube, sens))
+    np.testing.assert_allclose(magpy.getB(tetra, sens), magpy.getB(tmesh_tetra, sens))
     np.testing.assert_allclose(
-        magpy.getB([tetra, cube], sens), magpy.getB([tetra_facets, cube_facets], sens)
+        magpy.getB([tetra, cube], sens), magpy.getB([tmesh_tetra, tmesh_cube], sens)
     )
 
 
@@ -127,18 +127,18 @@ def test_magnet_trimesh_func():
     mag = (111, 222, 333)
     dim = (10, 10, 10)
     cube = magpy.magnet.Cuboid(mag, dim)
-    cube_facets = magpy.magnet.TriangularMesh.from_pyvista(
+    tmesh_cube = magpy.magnet.TriangularMesh.from_pyvista(
         mag, pv.Cube(cube.position, *dim)
     )
 
     pts_inside = np.array([[0, 0, 1]])
     B0 = cube.getB(pts_inside)
-    B1 = cube_facets.getB(pts_inside)
+    B1 = tmesh_cube.getB(pts_inside)
     B2 = magnet_trimesh_field(
         "B",
         pts_inside,
         np.array([mag]),
-        np.array([cube_facets.facets]),
+        np.array([tmesh_cube.mesh]),
         in_out="inside",
     )[0]
     np.testing.assert_allclose(B0, B1)
@@ -219,40 +219,40 @@ def test_TriangularMesh_from_pyvista():
             get_tri_from_pv(pv.Cube())
 
 
-def test_TriangularMesh_from_facets_bad_inputs():
-    """Test from_facets classmethod bad inputs"""
+def test_TriangularMesh_from_triangles_bad_inputs():
+    """Test from_triangles classmethod bad inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_facets(facets):
+    def get_tri_from_triangles(mesh):
         return magpy.magnet.TriangularMesh.from_triangles(
-            mag, facets, validate_open_mesh=False, reorient_triangles=False
+            mag, mesh, validate_open_mesh=False, reorient_triangles=False
         )
 
     triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])
 
     # good element type but not array-like
     with pytest.raises(TypeError):
-        get_tri_from_facets(triangle)
+        get_tri_from_triangles(triangle)
 
     # array-like but bad shape
     with pytest.raises(ValueError):
-        get_tri_from_facets(np.array([(0, 0, 0), (1, 0, 0)]))
+        get_tri_from_triangles(np.array([(0, 0, 0), (1, 0, 0)]))
 
     # element in list has wrong type
     with pytest.raises(TypeError):
-        get_tri_from_facets(["bad_type"])
+        get_tri_from_triangles(["bad_type"])
 
     # element in list is array like but has bad shape
     with pytest.raises(ValueError):
-        get_tri_from_facets([triangle, [(0, 0, 0), (1, 0, 0)]])
+        get_tri_from_triangles([triangle, [(0, 0, 0), (1, 0, 0)]])
 
 
-def test_TriangularMesh_from_facets_good_inputs():
-    """Test from_facets classmethod good inputs"""
+def test_TriangularMesh_from_triangles_good_inputs():
+    """Test from_triangles classmethod good inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_facets(facets, **kwargs):
-        return magpy.magnet.TriangularMesh.from_triangles(mag, facets, **kwargs)
+    def get_tri_from_triangles(mesh, **kwargs):
+        return magpy.magnet.TriangularMesh.from_triangles(mag, mesh, **kwargs)
 
     # create Tetrahedron and move/orient randomly
     tetra = magpy.magnet.Tetrahedron(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
@@ -270,22 +270,22 @@ def test_TriangularMesh_from_facets_good_inputs():
     B1 = tetra_from_ConvexHull.getB(points)
     np.testing.assert_allclose(B0, B1)
 
-    # 2-> test getB vs ConvexHull Tetrahedron faces as facets
-    facets = tetra_from_ConvexHull.facets
-    src2 = get_tri_from_facets(facets, **pos_orient)
+    # 2-> test getB vs ConvexHull Tetrahedron faces as msh
+    msh = tetra_from_ConvexHull.mesh
+    src2 = get_tri_from_triangles(msh, **pos_orient)
     B2 = src2.getB(points)
     np.testing.assert_allclose(B0, B2)
 
     # 3-> test getB vs ConvexHull Tetrahedron faces as magpylib.misc.Triangles
-    facets = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.facets]
-    src3 = get_tri_from_facets(facets, **pos_orient)
+    msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
+    src3 = get_tri_from_triangles(msh, **pos_orient)
     B3 = src3.getB(points)
     np.testing.assert_allclose(B0, B3)
 
     # 4-> test getB mixed input
-    facets = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.facets]
-    facets[-1] = [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-    src4 = get_tri_from_facets(facets, **pos_orient)
+    msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
+    msh[-1] = [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+    src4 = get_tri_from_triangles(msh, **pos_orient)
     B4 = src4.getB(points)
     np.testing.assert_allclose(B0, B4)
 
@@ -294,10 +294,10 @@ def test_lines_ends_in_trimesh():
     "test special cases"
 
     # line point coincides with facet point
-    facets = np.array([[[0, 0, 0], [0, 1, 0], [1, 0, 0]]])
+    msh = np.array([[[0, 0, 0], [0, 1, 0], [1, 0, 0]]])
     lines = np.array([[[-1, 1, -1], [1, 0, 0]]])
 
-    assert bool(lines_end_in_trimesh(lines, facets)[0]) is True
+    assert bool(lines_end_in_trimesh(lines, msh)[0]) is True
 
 
 def test_reorient_on_closed_but_disconnected_mesh():

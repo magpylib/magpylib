@@ -157,19 +157,19 @@ def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.n
     return new_triangles
 
 
-def is_facet_inwards(facet, facets):
+def is_facet_inwards(face, faces):
     """Return boolean whether facet is pointing inwards, via ray tracing"""
-    v1 = facet[0] - facet[1]
-    v2 = facet[1] - facet[2]
+    v1 = face[0] - face[1]
+    v2 = face[1] - face[2]
     orient = np.cross(v1, v2)
     orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
     eps = 1e-6  # unfortunately this must be quite a 'large' number :(
-    check_point = facet.mean(axis=0) + orient * eps
+    check_point = face.mean(axis=0) + orient * eps
 
     # find out if first point is inwards
-    return mask_inside_trimesh(np.array([check_point]), facets)[0]
+    return mask_inside_trimesh(np.array([check_point]), faces)[0]
 
 
 def get_inwards_mask(
@@ -195,7 +195,7 @@ def get_inwards_mask(
         Boolean mask of inwards orientations from provided triangles
     """
 
-    facets = vertices[triangles]
+    faces = vertices[triangles]
     mask = np.full(len(triangles), False)
     indices = list(range(len(triangles)))
 
@@ -205,7 +205,7 @@ def get_inwards_mask(
     while indices:
         if not any_connected:
             free_edges = set()
-            is_inwards = is_facet_inwards(facets[indices[0]], facets[indices])
+            is_inwards = is_facet_inwards(faces[indices[0]], faces[indices])
             mask[indices] = is_inwards
         for tri_ind in indices:
             tri = triangles[tri_ind]
@@ -235,7 +235,7 @@ def get_inwards_mask(
     return mask
 
 
-def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
+def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
     Check if 2-point lines, where the first point lies distinctly outside of a closed
     triangular mesh (no touch), ends on the inside of that mesh
@@ -249,9 +249,9 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
         n line segements defined through respectively 2 (first index) positions with
         coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
 
-    facets: ndarray, shape (m,3,3)
-        m facets defined through respectively 3 (first index) positions with coordinates
-        (x,y,z) (last index). The facets must define a closed mesh.
+    faces: ndarray, shape (m,3,3)
+        m faces defined through respectively 3 (first index) positions with coordinates
+        (x,y,z) (last index). The faces must define a closed mesh.
 
     Returns
     -------
@@ -261,7 +261,7 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
     ----
     Part 1: plane_cross
     Checks if start and end of lines are on the same or on different sides of the planes
-    defined by the triangular facets. On the way check if end-point touches the plane.
+    defined by the triangular faces. On the way check if end-point touches the plane.
 
     Part 2: pass_through
     Makes use of Line-Triangle intersection as described in
@@ -270,21 +270,21 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
     """
 
     # Part 1 ---------------------------
-    normals = v_cross(facets[:, 0] - facets[:, 2], facets[:, 1] - facets[:, 2])
+    normals = v_cross(faces[:, 0] - faces[:, 2], faces[:, 1] - faces[:, 2])
     normals = np.tile(normals, (len(lines), 1, 1))
 
     l0 = lines[:, 0][:, np.newaxis]  # outside points
     l1 = lines[:, 1][:, np.newaxis]  # possible inside test-points
 
-    # test-point might coincide with chosen in-plane reference point (chosen facets[:,2] here).
+    # test-point might coincide with chosen in-plane reference point (chosen faces[:,2] here).
     # this then leads to bad projection computation
-    # --> choose other reference points (facets[:,1]) in those specific cases
-    ref_pts = np.tile(facets[:, 2], (len(lines), 1, 1))
+    # --> choose other reference points (faces[:,1]) in those specific cases
+    ref_pts = np.tile(faces[:, 2], (len(lines), 1, 1))
     eps = 1e-16  # note: norm square !
     coincide = v_norm2(l1 - ref_pts) < eps
     if np.any(coincide):
         ref_pts2 = np.tile(
-            facets[:, 1], (len(lines), 1, 1)
+            faces[:, 1], (len(lines), 1, 1)
         )  # <--inefficient tile !!! only small part needed
         ref_pts[coincide] = ref_pts2[coincide]
 
@@ -303,9 +303,9 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
 
     # Part 2 ---------------------------
     # signed areas (no 0-problem because ss0 is the outside point)
-    a = facets[:, 0] - l0
-    b = facets[:, 1] - l0
-    c = facets[:, 2] - l0
+    a = faces[:, 0] - l0
+    b = faces[:, 1] - l0
+    c = faces[:, 2] - l0
     d = l1 - l0
     area1 = v_dot_cross3d(a, b, d)
     area2 = v_dot_cross3d(b, c, d)
@@ -363,14 +363,14 @@ def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.nd
     return mx & my & mz
 
 
-def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
+def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
-    Check which points lie inside of a closed triangular mesh (defined by facets).
+    Check which points lie inside of a closed triangular mesh (defined by faces).
 
     Parameters
     ----------
     points, ndarray, shape (n,3)
-    facets, ndarray, shape (m,3,3)
+    faces, ndarray, shape (m,3,3)
 
     Returns
     -------
@@ -379,9 +379,9 @@ def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
     Note
     ----
     Method: ray-tracing.
-    Facets must form a closed mesh for this to work.
+    Faces must form a closed mesh for this to work.
     """
-    vertices = facets.reshape((-1, 3))
+    vertices = faces.reshape((-1, 3))
 
     # test-points inside of enclosing box
     mask_inside = mask_inside_enclosing_box(points, vertices)
@@ -395,7 +395,7 @@ def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
     test_lines[:, 1] = pts_in_box
 
     # check if test-points are inside using ray tracing
-    mask_inside2 = lines_end_in_trimesh(test_lines, facets)
+    mask_inside2 = lines_end_in_trimesh(test_lines, faces)
 
     mask_inside[mask_inside] = mask_inside2
 
@@ -406,7 +406,7 @@ def magnet_trimesh_field(
     field: str,
     observers: np.ndarray,
     magnetization: np.ndarray,
-    facets: np.ndarray,
+    mesh: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
@@ -425,12 +425,12 @@ def magnet_trimesh_field(
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
-    facets: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular mesh defined by facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
-        `facets` can be a ragged sequence of facet children with different lengths.
+    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
+        Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
+        `mesh` can be a ragged sequence of mesh-children with different lengths.
 
     in_out: {'auto', 'inside', 'outside'}
-        Tells if the points are inside or outside the enclosing facets for the correct B/H-field
+        Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
         calculation. By default `in_out='auto'` and the inside/outside mask is automatically
         generated using a ray tracing algorigthm to determine which observers are inside and which
         are outside the closed body. For performance reasons, one can define `in_out='outside'`
@@ -447,9 +447,9 @@ def magnet_trimesh_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    if facets.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = facets.shape
-        vertices_tiled = facets.reshape(-1, 3, 3)
+    if mesh.ndim != 1:  # all vertices objects have same number of children
+        n0, n1, *_ = mesh.shape
+        vertices_tiled = mesh.reshape(-1, 3, 3)
         observers_tiled = np.repeat(observers, n1, axis=0)
         magnetization_tiled = np.repeat(magnetization, n1, axis=0)
         B = triangle_field(
@@ -461,9 +461,9 @@ def magnet_trimesh_field(
         B = B.reshape((n0, n1, 3))
         B = np.sum(B, axis=1)
     else:
-        nvs = [f.shape[0] for f in facets]  # length of vertex set
+        nvs = [f.shape[0] for f in mesh]  # length of vertex set
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
+        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
         observers_tiled = np.repeat(observers, nvs, axis=0)
         magnetization_tiled = np.repeat(magnetization, nvs, axis=0)
         B = triangle_field(
@@ -478,17 +478,17 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar facets for inside-outise evaluation and adding B
+            # group similar meshs for inside-outise evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
-                    or facets[new_ind].shape != facets[prev_ind].shape
-                    or not np.all(facets[new_ind] == facets[prev_ind])
+                    or mesh[new_ind].shape != mesh[prev_ind].shape
+                    or not np.all(mesh[new_ind] == mesh[prev_ind])
                 ):
                     if new_ind == len(B) - 1:
                         new_ind = len(B)
                     inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], facets[prev_ind]
+                        observers[prev_ind:new_ind], mesh[prev_ind]
                     )
                     # if inside magnet add magnetization vector
                     B[prev_ind:new_ind][inside_mask] += magnetization[prev_ind:new_ind][
