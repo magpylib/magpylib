@@ -491,41 +491,41 @@ class TriangularMesh(BaseMagnet):
         Examples
         --------
         """
-        if not isinstance(facets, (np.ndarray, list, tuple)):
+        if not isinstance(triangles, (np.ndarray, list, tuple)):
             raise TypeError(
-                "The `facets` parameter must be array-like, "
-                f"\nreceived type {type(facets)} instead"
+                "The `triangles` parameter must be array-like, "
+                f"\nreceived type {type(triangles)} instead"
             )
-        if isinstance(facets, np.ndarray):
-            if not (facets.ndim == 3 and facets.shape[-2:] == (3, 3)):
+        if isinstance(triangles, np.ndarray):
+            if not (triangles.ndim == 3 and triangles.shape[-2:] == (3, 3)):
                 raise ValueError(
-                    "The `facets` parameter must be array-like of shape (n,3,3), "
+                    "The `triangles` parameter must be array-like of shape (n,3,3), "
                     "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
-                    f"\nreceived array of shape {facets.shape} instead"
+                    f"\nreceived array of shape {triangles.shape} instead"
                 )
         else:
-            facet_list = []
-            for facet in facets:
-                if isinstance(facet, (np.ndarray, list, tuple)):
-                    facet = np.array(facet)
-                    if facet.shape != (3, 3):
+            tria_list = []
+            for tria in triangles:
+                if isinstance(tria, (np.ndarray, list, tuple)):
+                    tria = np.array(tria)
+                    if tria.shape != (3, 3):
                         raise ValueError(
-                            "A facet object must be a (3,3) array-like or "
+                            "A triangle element must be a (3,3) array-like or "
                             "a `magpylib.misc.Triangle object"
-                            f"\nreceived array of shape {facet.shape} instead"
+                            f"\nreceived array of shape {tria.shape} instead"
                         )
-                elif isinstance(facet, Triangle):
-                    facet = facet.vertices
+                elif isinstance(tria, Triangle):
+                    tria = tria.vertices
                 else:
                     raise TypeError(
-                        "A facet object must be a (3,3) array-like or "
+                        "A triangle element must be a (3,3) array-like or "
                         "a `magpylib.misc.Triangle object"
-                        f"\nreceived type {type(facet)} instead"
+                        f"\nreceived type {type(tria)} instead"
                     )
-                facet_list.append(facet)
-            facets = np.array(facet_list).astype(float)
+                tria_list.append(tria)
+            triangles = np.array(tria_list).astype(float)
 
-        vertices, tr = np.unique(facets.reshape((-1, 3)), axis=0, return_inverse=True)
+        vertices, tr = np.unique(triangles.reshape((-1, 3)), axis=0, return_inverse=True)
         triangles = tr.reshape((-1, 3))
 
         return cls(

@@ -224,7 +224,7 @@ def test_TriangularMesh_from_facets_bad_inputs():
     mag = (0, 0, 1000)
 
     def get_tri_from_facets(facets):
-        return magpy.magnet.TriangularMesh.from_triangular_facets(
+        return magpy.magnet.TriangularMesh.from_triangles(
             mag, facets, validate_open_mesh=False, reorient_triangles=False
         )
 
@@ -252,7 +252,7 @@ def test_TriangularMesh_from_facets_good_inputs():
     mag = (0, 0, 1000)
 
     def get_tri_from_facets(facets, **kwargs):
-        return magpy.magnet.TriangularMesh.from_triangular_facets(mag, facets, **kwargs)
+        return magpy.magnet.TriangularMesh.from_triangles(mag, facets, **kwargs)
 
     # create Tetrahedron and move/orient randomly
     tetra = magpy.magnet.Tetrahedron(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
