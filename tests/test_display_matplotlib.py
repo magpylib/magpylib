@@ -116,14 +116,14 @@ def test_Triangle_display():
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
     mesh3d = magpy.graphics.model3d.make_TriangularMesh(vertices=verts)
-    # note: triangles are built by scipy.Convexhull since triangles=None
-    # ConvexHull DOES NOT GUARRANTY proper orientation of triangles when building a body
+    # note: faces are built by scipy.Convexhull since faces=None
+    # ConvexHull DOES NOT GUARRANTY proper orientation of faces when building a body
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
-    triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
+    faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
         [
             magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
-            for v in points[triangles]
+            for v in points[faces]
         ]
     )
     magpy.show(
@@ -152,15 +152,15 @@ def test_TringularMesh_display():
     polydata = pv.Text3D("AB")  # create disjoint mesh
     polydata = polydata.triangulate()
     vertices = polydata.points
-    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
-    triangles = triangles[1:]  # open the mesh
+    faces = polydata.faces.reshape(-1, 4)[:, 1:]
+    faces = faces[1:]  # open the mesh
     src = magpy.magnet.TriangularMesh(
         (0, 0, 1000),
         vertices,
-        triangles,
+        faces,
         validate_closed=False,
         validate_connected=False,
-        reorient_triangles=False,
+        reorient_faces=False,
         style_mesh_grid_show=True,
     )
 

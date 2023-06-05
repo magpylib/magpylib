@@ -9,26 +9,26 @@ import numpy as np
 from magpylib._src.fields.field_BH_triangle import triangle_field
 
 
-def calculate_centroid(vertices, triangles):
+def calculate_centroid(vertices, faces):
     """
     Calculates the centroid of a 3D triangular surface mesh.
 
     Parameters:
     vertices (numpy.array): an n x 3 array of vertices
-    triangles (numpy.array): an m x 3 array of triangle indices
+    faces (numpy.array): an m x 3 array of triangle indices
 
     Returns:
     numpy.array: The centroid of the mesh
     """
 
     # Calculate the centroids of each triangle
-    triangle_centroids = np.mean(vertices[triangles], axis=1)
+    triangle_centroids = np.mean(vertices[faces], axis=1)
 
     # Compute the area of each triangle
     triangle_areas = 0.5 * np.linalg.norm(
         np.cross(
-            vertices[triangles[:, 1]] - vertices[triangles[:, 0]],
-            vertices[triangles[:, 2]] - vertices[triangles[:, 0]],
+            vertices[faces[:, 1]] - vertices[faces[:, 0]],
+            vertices[faces[:, 2]] - vertices[faces[:, 0]],
         ),
         axis=1,
     )
@@ -86,10 +86,10 @@ def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     return result
 
 
-def get_disjoint_triangles_subsets(triangles: list) -> list:
-    """Return a list of disjoint triangles sets"""
+def get_disjoint_faces_subsets(faces: list) -> list:
+    """Return a list of disjoint faces sets"""
     subsets_inds = []
-    tria_temp = triangles.copy()
+    tria_temp = faces.copy()
     while len(tria_temp) > 0:
         first, *rest = tria_temp
         first = set(first)
@@ -106,22 +106,22 @@ def get_disjoint_triangles_subsets(triangles: list) -> list:
         subsets_inds.append(list(first))
         tria_temp = rest
     subsets = [
-        triangles[np.isin(triangles, list(ps)).all(axis=1)] for ps in subsets_inds
+        faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds
     ]
     return subsets
 
 
-def trimesh_is_closed(triangles: np.ndarray) -> bool:
+def trimesh_is_closed(faces: np.ndarray) -> bool:
     """
     Check if given trimesh forms a closed surface.
 
-    Input: triangles: np.ndarray, shape (n,3), dtype int
+    Input: faces: np.ndarray, shape (n,3), dtype int
         triples of indices
 
     Output: bool (True if closed, False if open)
     """
     edges = np.concatenate(
-        [triangles[:, 0:2], triangles[:, 1:3], triangles[:, ::2]], axis=0
+        [faces[:, 0:2], faces[:, 1:3], faces[:, ::2]], axis=0
     )
 
     # unique edge pairs and counts how many
@@ -132,29 +132,29 @@ def trimesh_is_closed(triangles: np.ndarray) -> bool:
     return np.all(edge_counts == 2)
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
-    """Check if all triangles are oriented outwards. Fix the ones that are not, and return an
-    array of properly oriented triangles.
+def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+    """Check if all faces are oriented outwards. Fix the ones that are not, and return an
+    array of properly oriented faces.
 
     Parameters
     ----------
     vertices: np.ndarray, shape (n,3)
         Vertices of the mesh
 
-    triangles: np.ndarray, shape (n,3), dtype int
+    faces: np.ndarray, shape (n,3), dtype int
         Triples of indices
 
     Returns
     -------
-    triangles: np.ndarray, shape (n,3), dtype int, or triangles and 1D array of triples
-        Fixed triangles
+    faces: np.ndarray, shape (n,3), dtype int, or faces and 1D array of triples
+        Fixed faces
     """
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
-    inwards_mask = get_inwards_mask(vertices, triangles)
-    new_triangles = triangles.copy()
-    new_triangles[inwards_mask] = new_triangles[inwards_mask][:, [0, 2, 1]]
-    return new_triangles
+    inwards_mask = get_inwards_mask(vertices, faces)
+    new_faces = faces.copy()
+    new_faces[inwards_mask] = new_faces[inwards_mask][:, [0, 2, 1]]
+    return new_faces
 
 
 def is_facet_inwards(face, faces):
@@ -195,7 +195,7 @@ def get_inwards_mask(
         Boolean mask of inwards orientations from provided triangles
     """
 
-    faces = vertices[triangles]
+    msh = vertices[triangles]
     mask = np.full(len(triangles), False)
     indices = list(range(len(triangles)))
 
@@ -205,7 +205,7 @@ def get_inwards_mask(
     while indices:
         if not any_connected:
             free_edges = set()
-            is_inwards = is_facet_inwards(faces[indices[0]], faces[indices])
+            is_inwards = is_facet_inwards(msh[indices[0]], msh[indices])
             mask[indices] = is_inwards
         for tri_ind in indices:
             tri = triangles[tri_ind]

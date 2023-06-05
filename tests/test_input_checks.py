@@ -484,7 +484,7 @@ def test_missing_input_triangular_mesh():
     verts = np.array([(0,0,0), (1,0,0), (0,1,0), (0,0,1)])
     tris =  np.array([(0,1,2), (0,1,3), (1,2,3), (0,2,3)])
     def trim():
-        magpy.magnet.TriangularMesh(triangles=tris)
+        magpy.magnet.TriangularMesh(faces=tris)
     np.testing.assert_raises(MagpylibMissingInput, trim)   
 
     def trimm():

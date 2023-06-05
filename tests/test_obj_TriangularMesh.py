@@ -33,9 +33,9 @@ def test_TriangularMesh_getBH():
     magnetization = (100, 200, 300)
     mesh3d = magpy.graphics.model3d.make_Cuboid()
     vertices = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
-    triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
+    faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
 
-    triangles[0] = triangles[0][[0, 2, 1]]  # flip one triangle in wrong orientation
+    faces[0] = faces[0][[0, 2, 1]]  # flip one triangle in wrong orientation
 
     cube = magpy.magnet.Cuboid(magnetization=magnetization, dimension=dimension)
     cube.rotate_from_angax(19, (1, 2, 3))
@@ -46,23 +46,23 @@ def test_TriangularMesh_getBH():
         orientation=cube.orientation,
         magnetization=magnetization,
         vertices=vertices,
-        triangles=triangles,
-        reorient_triangles=True,
+        faces=faces,
+        reorient_faces=True,
     )
-    cube_misc_triangles = cube_facet_reorient_true.to_TrianglesCollection()
+    cube_misc_faces = cube_facet_reorient_true.to_TriangleCollection()
     cube_facet_reorient_false = magpy.magnet.TriangularMesh(
         position=cube.position,
         orientation=cube.orientation,
         magnetization=magnetization,
         vertices=vertices,
-        triangles=triangles,
-        reorient_triangles=False,
+        faces=faces,
+        reorient_faces=False,
     )
 
     vertices = np.linspace((-2, 0, 0), (2, 0, 0), 50)
     B1 = cube.getB(vertices)
     B2 = cube_facet_reorient_true.getB(vertices)
-    B3 = cube_misc_triangles.getB(vertices)
+    B3 = cube_misc_faces.getB(vertices)
     B4 = cube_facet_reorient_false.getB(vertices)
 
     np.testing.assert_allclose(B1, B2)
@@ -73,7 +73,7 @@ def test_TriangularMesh_getBH():
 
     H1 = cube.getH(vertices)
     H2 = cube_facet_reorient_true.getH(vertices)
-    H3 = cube_misc_triangles.getH(vertices)
+    H3 = cube_misc_faces.getH(vertices)
 
     np.testing.assert_allclose(H1, H2)
     np.testing.assert_allclose(H1, H3)
@@ -146,26 +146,26 @@ def test_magnet_trimesh_func():
 
 
 def test_bad_triangle_indices():
-    "raise ValueError if triangles index > len(vertices)"
+    "raise ValueError if faces index > len(vertices)"
     vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
-    triangles = [[1, 2, 3]]  # index 3 >= len(vertices)
+    faces = [[1, 2, 3]]  # index 3 >= len(vertices)
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
         )
 
 
 def test_minimum_vertices():
-    "raise ValueError if triangles index > len(vertices)"
+    "raise ValueError if faces index > len(vertices)"
     vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
-    triangles = [[1, 2, 3]]
+    faces = [[1, 2, 3]]
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
         )
 
 
@@ -180,12 +180,12 @@ def test_open_mesh():
         "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0],
     }
     vertices = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
-    triangles = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
+    faces = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
             validate_closed=True,
         )
 
@@ -219,39 +219,39 @@ def test_TriangularMesh_from_pyvista():
             get_tri_from_pv(pv.Cube())
 
 
-def test_TriangularMesh_from_triangles_bad_inputs():
-    """Test from_triangles classmethod bad inputs"""
+def test_TriangularMesh_from_faces_bad_inputs():
+    """Test from_faces classmethod bad inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_triangles(mesh):
+    def get_tri_from_faces(mesh):
         return magpy.magnet.TriangularMesh.from_triangles(
-            mag, mesh, validate_open_mesh=False, reorient_triangles=False
+            mag, mesh, validate_open_mesh=False, reorient_faces=False
         )
 
     triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])
 
     # good element type but not array-like
     with pytest.raises(TypeError):
-        get_tri_from_triangles(triangle)
+        get_tri_from_faces(triangle)
 
     # array-like but bad shape
     with pytest.raises(ValueError):
-        get_tri_from_triangles(np.array([(0, 0, 0), (1, 0, 0)]))
+        get_tri_from_faces(np.array([(0, 0, 0), (1, 0, 0)]))
 
     # element in list has wrong type
     with pytest.raises(TypeError):
-        get_tri_from_triangles(["bad_type"])
+        get_tri_from_faces(["bad_type"])
 
     # element in list is array like but has bad shape
     with pytest.raises(ValueError):
-        get_tri_from_triangles([triangle, [(0, 0, 0), (1, 0, 0)]])
+        get_tri_from_faces([triangle, [(0, 0, 0), (1, 0, 0)]])
 
 
-def test_TriangularMesh_from_triangles_good_inputs():
-    """Test from_triangles classmethod good inputs"""
+def test_TriangularMesh_from_faces_good_inputs():
+    """Test from_faces classmethod good inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_triangles(mesh, **kwargs):
+    def get_tri_from_faces(mesh, **kwargs):
         return magpy.magnet.TriangularMesh.from_triangles(mag, mesh, **kwargs)
 
     # create Tetrahedron and move/orient randomly
@@ -272,20 +272,20 @@ def test_TriangularMesh_from_triangles_good_inputs():
 
     # 2-> test getB vs ConvexHull Tetrahedron faces as msh
     msh = tetra_from_ConvexHull.mesh
-    src2 = get_tri_from_triangles(msh, **pos_orient)
+    src2 = get_tri_from_faces(msh, **pos_orient)
     B2 = src2.getB(points)
     np.testing.assert_allclose(B0, B2)
 
     # 3-> test getB vs ConvexHull Tetrahedron faces as magpylib.misc.Triangles
     msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
-    src3 = get_tri_from_triangles(msh, **pos_orient)
+    src3 = get_tri_from_faces(msh, **pos_orient)
     B3 = src3.getB(points)
     np.testing.assert_allclose(B0, B3)
 
     # 4-> test getB mixed input
     msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
     msh[-1] = [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-    src4 = get_tri_from_triangles(msh, **pos_orient)
+    src4 = get_tri_from_faces(msh, **pos_orient)
     B4 = src4.getB(points)
     np.testing.assert_allclose(B0, B4)
 
@@ -306,12 +306,12 @@ def test_reorient_on_closed_but_disconnected_mesh():
     s1 = pv.Sphere(theta_resolution=N, phi_resolution=N)
     s2 = pv.Sphere(theta_resolution=N, phi_resolution=N, center=(2, 0, 0))
     polydata = s1.merge(s2)
-    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+    faces = polydata.faces.reshape(-1, 4)[:, 1:]
     vertices = polydata.points
 
     # flip every 2nd normals
-    bad_triangles = triangles.copy()
-    bad_triangles[::2] = bad_triangles[::2, [0, 2, 1]]
+    bad_faces = faces.copy()
+    bad_faces[::2] = bad_faces[::2, [0, 2, 1]]
 
-    fixed_triangles = fix_trimesh_orientation(vertices, bad_triangles)
-    np.testing.assert_array_equal(triangles, fixed_triangles)
+    fixed_faces = fix_trimesh_orientation(vertices, bad_faces)
+    np.testing.assert_array_equal(faces, fixed_faces)

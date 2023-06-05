@@ -378,7 +378,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
         ranges = {k: [] for k in "xyz"}
         for t in traces:
             for ijk, (k, v) in zip("ijk", ranges.items()):
-                # for mesh3, use only vertices part of triangles for range calculation
+                # for mesh3, use only vertices part of faces for range calculation
                 inds = t.get(ijk, None)
                 if inds is None:
                     inds = slice(None, None)

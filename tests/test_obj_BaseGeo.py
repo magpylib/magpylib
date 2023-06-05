@@ -526,12 +526,12 @@ def test_describe():
         "  • orientation: [0. 0. 0.] degrees\n"
         "  • magnetization: [   0.    0. 1000.] mT\n"
         "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
+        "  • faces: shape(52, 3) \n"
+        "  • faces_subsets: list of length 1 \n"
         "  • is_closed: True \n"
         "  • is_connected: True \n"
         "  • is_reoriented: True \n"
         "  • mesh: shape(52, 3, 3) \n"
-        "  • triangles: shape(52, 3) \n"
-        "  • triangles_subsets: list of length 1 \n"
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

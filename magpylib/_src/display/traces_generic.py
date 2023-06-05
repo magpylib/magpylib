@@ -257,9 +257,9 @@ def make_mesh_lines(
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
-    tr, vert = obj.triangles, obj.vertices
+    tr, vert = obj.faces, obj.vertices
     if mode == "disjoint":
-        subsets = obj.triangles_subsets
+        subsets = obj.faces_subsets
         lines = get_closest_vertices(subsets, vert)
     else:
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
@@ -297,10 +297,10 @@ def make_mesh_lines(
     return out
 
 
-def get_closest_vertices(triangles_subsets, vertices):
-    """Get closest pairs of points between disjoint subsets of triangles indices"""
-    nparts = len(triangles_subsets)
-    inds_subsets = [np.unique(v) for v in triangles_subsets]
+def get_closest_vertices(faces_subsets, vertices):
+    """Get closest pairs of points between disjoint subsets of faces indices"""
+    nparts = len(faces_subsets)
+    inds_subsets = [np.unique(v) for v in faces_subsets]
     closest_verts_list = []
     if nparts > 1:
         connected = [np.min(inds_subsets[0])]
@@ -530,13 +530,13 @@ def make_Triangle(
     """
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
-    triangles = np.array([[0, 1, 2]])
+    faces = np.array([[0, 1, 2]])
     # if magnetization is normal to the triangle, add a second triangle slightly above to enable
     # proper color gradient visualization. Otherwise only the middle color is shown.
     if np.all(np.cross(obj.magnetization, vec) == 0):
         epsilon = 1e-3 * vec
         vert = np.concatenate([vert - epsilon, vert + epsilon])
-        side_triangles = [
+        side_faces = [
             [0, 1, 3],
             [1, 2, 4],
             [2, 0, 5],
@@ -544,11 +544,11 @@ def make_Triangle(
             [2, 5, 4],
             [0, 3, 5],
         ]
-        triangles = np.concatenate([triangles, [[3, 4, 5]], side_triangles])
+        faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
 
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vert, triangles=triangles, color=color
+        "plotly-dict", vertices=vert, faces=faces, color=color
     )
     update_trace_name(trace, obj.__class__.__name__, "", style)
     update_magnet_mesh(
@@ -573,9 +573,9 @@ def make_TriangularMesh(
     """
     style = obj.style if style is None else style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, triangles=obj.triangles, color=color
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=color
     )
-    ntri = len(obj.triangles)
+    ntri = len(obj.faces)
     default_suffix = f" ({ntri} facet{'s'[:ntri^1]})"
     update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
     update_magnet_mesh(
@@ -896,14 +896,14 @@ def get_generic_traces(
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
             if obj_is_disjoint:
-                tria_orig = input_obj._triangles
+                tria_orig = input_obj._faces
                 mag_show = style.magnetization.show
                 for tri, dis_color in zip(
-                    input_obj.triangles_subsets,
+                    input_obj.faces_subsets,
                     cycle(style.mesh.disjoint.colorsequence),
                 ):
-                    # temporary mutate triangles from subset
-                    input_obj._triangles = tri
+                    # temporary mutate faces from subset
+                    input_obj._faces = tri
                     style.magnetization.show = False
                     disjoint_traces.append(
                         make_func(
@@ -912,7 +912,7 @@ def get_generic_traces(
                             **{**make_func_kwargs, "color": dis_color},
                         )
                     )
-                input_obj._triangles = tria_orig
+                input_obj._faces = tria_orig
                 style.magnetization.show = mag_show
             else:
                 path_traces.append(
@@ -1000,7 +1000,7 @@ def get_generic_traces(
         traces.append(trace)
 
     if disjoint_traces:
-        nsubsets = len(input_obj.triangles_subsets)
+        nsubsets = len(input_obj.faces_subsets)
         for ind in range(nsubsets):
             trace = merge_traces(*disjoint_traces[ind::nsubsets])
             trace.update(

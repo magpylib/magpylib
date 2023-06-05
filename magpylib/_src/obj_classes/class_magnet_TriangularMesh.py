@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
-    get_disjoint_triangles_subsets,
+    get_disjoint_faces_subsets,
 )
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
@@ -32,9 +32,9 @@ class TriangularMesh(BaseMagnet):
 
     vertices: ndarray, shape (n,3)
         A set of points in units of [mm] in the local object coordinates from which the
-        triangles of the mesh are constructed by the additional `triangles`input.
+        triangular faces of the mesh are constructed by the additional `faces`input.
 
-    triangles: ndarray, shape (n,3)
+    faces: ndarray, shape (n,3)
         Indices of vertices. Each triplet represents one triangle of the mesh.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
@@ -46,7 +46,7 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    reorient_triangles: bool, default=`True`
+    reorient_faces: bool, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
 
@@ -75,14 +75,14 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
-    We compute the B-field in units of [mT] of a triangular mesh (4 vertices, 4 triangles)
+    We compute the B-field in units of [mT] of a triangular mesh (4 vertices, 4 faces)
     with magnetization (100,200,300) in units of [mT] at the observer position
     (1,1,1) given in units of [mm]:
 
     >>> import magpylib as magpy
     >>> vv = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
     >>> tt = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
-    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=vv, triangles=tt)
+    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=vv, faces=tt)
     >>> print(trim.getB((1,1,1)))
     [2.60236696 2.08189357 1.56142018]
     """
@@ -96,20 +96,20 @@ class TriangularMesh(BaseMagnet):
         self,
         magnetization=None,
         vertices=None,
-        triangles=None,
+        faces=None,
         position=(0, 0, 0),
         orientation=None,
         validate_closed=True,
         validate_connected=True,
-        reorient_triangles=True,
+        reorient_faces=True,
         style=None,
         **kwargs,
     ):
-        self._vertices, self._triangles = self._input_check(vertices, triangles)
+        self._vertices, self._faces = self._input_check(vertices, faces)
         self._is_connected = None
         self._is_closed = None
         self._is_reoriented = False
-        self._triangles_subsets = None
+        self._faces_subsets = None
 
         if validate_closed:
             self._validate_closed()
@@ -117,9 +117,9 @@ class TriangularMesh(BaseMagnet):
         if validate_connected:
             self._validate_connected()
 
-        if reorient_triangles and self.is_closed:
+        if reorient_faces and self.is_closed:
             # perform only if closed, or inside-outside will fail
-            self.reorient_triangles()
+            self.reorient_faces()
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -127,50 +127,50 @@ class TriangularMesh(BaseMagnet):
     # property getters and setters
     @property
     def vertices(self):
-        """Mesh vertices objects"""
+        """Mesh vertices"""
         return self._vertices
 
     @property
-    def triangles(self):
-        """Faces objects"""
-        return self._triangles
+    def faces(self):
+        """Mesh faces"""
+        return self._faces
 
     @property
     def mesh(self):
         """Mesh"""
-        return self._vertices[self._triangles]
+        return self._vertices[self._faces]
 
     @property
     def is_closed(self):
         """Is-closed boolean check"""
         if self._is_closed is None:
-            self._is_closed = trimesh_is_closed(self._triangles)
+            self._is_closed = trimesh_is_closed(self._faces)
         return self._is_closed
 
     @property
     def is_reoriented(self):
-        """Tells if the triangles have been reoriented"""
+        """True if the faces have been reoriented"""
         return self._is_reoriented
 
     @property
     def is_connected(self):
         """Is-connected boolean check"""
         if self._is_connected is None:
-            self._is_connected = len(self.triangles_subsets) == 1
+            self._is_connected = len(self.faces_subsets) == 1
         return self._is_connected
 
     @property
-    def triangles_subsets(self):
-        """return triangles subsets"""
-        if self._triangles_subsets is None:
-            self._triangles_subsets = get_disjoint_triangles_subsets(self._triangles)
-        return self._triangles_subsets
+    def faces_subsets(self):
+        """return faces subsets"""
+        if self._faces_subsets is None:
+            self._faces_subsets = get_disjoint_faces_subsets(self._faces)
+        return self._faces_subsets
 
     @property
     def _barycenter(self):
         """Object barycenter."""
         return self._get_barycenter(
-            self._position, self._orientation, self._vertices, self._triangles
+            self._position, self._orientation, self._vertices, self._faces
         )
 
     @property
@@ -179,13 +179,13 @@ class TriangularMesh(BaseMagnet):
         return np.squeeze(self._barycenter)
 
     @staticmethod
-    def _get_barycenter(position, orientation, vertices, triangles):
+    def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
-        centroid = calculate_centroid(vertices, triangles)
+        centroid = calculate_centroid(vertices, faces)
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
-    def _input_check(self, vertices, triangles):
+    def _input_check(self, vertices, faces):
         """input checks here ?"""
         # no. vertices must exceed largest triangle index
         # not all vertices can lie in a plane
@@ -193,8 +193,8 @@ class TriangularMesh(BaseMagnet):
         # do validation checks
         if vertices is None:
             raise MagpylibMissingInput(f"Parameter `vertices` of {self} must be set.")
-        if triangles is None:
-            raise MagpylibMissingInput(f"Parameter `triangles` of {self} must be set.")
+        if faces is None:
+            raise MagpylibMissingInput(f"Parameter `faces` of {self} must be set.")
         verts = check_format_input_vector(
             vertices,
             dims=(2,),
@@ -203,10 +203,10 @@ class TriangularMesh(BaseMagnet):
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         )
         trias = check_format_input_vector(
-            triangles,
+            faces,
             dims=(2,),
             shape_m1=3,
-            sig_name="TriangularMesh.triangles",
+            sig_name="TriangularMesh.faces",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         ).astype(int)
 
@@ -219,7 +219,7 @@ class TriangularMesh(BaseMagnet):
         """
         if not self.is_connected:
             raise ValueError(
-                "Bad `triangles` input of TriangularMesh. "
+                "Bad `faces` input of TriangularMesh. "
                 "Resulting mesh is not connected. "
                 "Disable error by setting `validate_connected=False`."
             )
@@ -230,21 +230,21 @@ class TriangularMesh(BaseMagnet):
         """
         if not self.is_closed:
             raise ValueError(
-                "Bad `triangles` input of TriangularMesh. "
+                "Bad `faces` input of TriangularMesh. "
                 "Resulting mesh is not closed. "
                 "Disable error by setting `validate_closed=False`."
             )
 
-    def reorient_triangles(self):
+    def reorient_faces(self):
         """Triangular faces pointing inwards are fliped in the right direction.
         Prior to reorientation, it is checked if the mesh is closed.
         """
         _ = self.is_closed  # perform isclosed check through getter
-        self._triangles = fix_trimesh_orientation(self._vertices, self._triangles)
+        self._faces = fix_trimesh_orientation(self._vertices, self._faces)
         self._is_reoriented = True
 
-    def to_TrianglesCollection(self):
-        """Return a Collection of Triangles objects from the current TriangularMesh"""
+    def to_TriangleCollection(self):
+        """Return a Collection of Triangle objects from the current TriangularMesh"""
         tris = [
             Triangle(magnetization=self.magnetization, vertices=v) for v in self.mesh
         ]
@@ -263,7 +263,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         validate_closed=True,
         validate_connected=True,
-        reorient_triangles=True,
+        reorient_faces=True,
         style=None,
         **kwargs,
     ):
@@ -287,7 +287,7 @@ class TriangularMesh(BaseMagnet):
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
 
-        reorient_triangles: bool, default=`True`
+        reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
@@ -320,10 +320,10 @@ class TriangularMesh(BaseMagnet):
         return cls(
             magnetization=magnetization,
             vertices=points,
-            triangles=ConvexHull(points).simplices,
+            faces=ConvexHull(points).simplices,
             position=position,
             orientation=orientation,
-            reorient_triangles=reorient_triangles,
+            reorient_faces=reorient_faces,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
             style=style,
@@ -339,7 +339,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         validate_closed=True,
         validate_connected=True,
-        reorient_triangles=True,
+        reorient_faces=True,
         style=None,
         **kwargs,
     ):
@@ -363,7 +363,7 @@ class TriangularMesh(BaseMagnet):
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
 
-        reorient_triangles: bool, default=`True`
+        reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
@@ -408,15 +408,15 @@ class TriangularMesh(BaseMagnet):
             )
         polydata = polydata.triangulate()
         vertices = polydata.points
-        triangles = polydata.faces.reshape(-1, 4)[:, 1:]
+        faces = polydata.faces.reshape(-1, 4)[:, 1:]
 
         return cls(
             magnetization=magnetization,
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
             position=position,
             orientation=orientation,
-            reorient_triangles=reorient_triangles,
+            reorient_faces=reorient_faces,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
             style=style,
@@ -427,16 +427,16 @@ class TriangularMesh(BaseMagnet):
     def from_triangles(
         cls,
         magnetization=None,
-        triangles=None,
+        faces=None,
         position=(0, 0, 0),
         orientation=None,
-        reorient_triangles=True,
+        reorient_faces=True,
         validate_closed=True,
         validate_connected=True,
         style=None,
         **kwargs,
     ):
-        """Create a TriangularMesh magnet from a set of triangles.
+        """Create a TriangularMesh magnet from a set of faces.
 
         Parameters
         ----------
@@ -444,8 +444,8 @@ class TriangularMesh(BaseMagnet):
             Magnetization vector (mu0*M, remanence field) in units of [mT] given in
             the local object coordinates (rotates with object).
 
-        triangles: array_like
-            An array_like of valid triangles. Elements can be one of
+        faces: array_like
+            An array_like of valid faces. Elements can be one of
                 - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
                 - triangle vertices of shape (3,3)
 
@@ -458,7 +458,7 @@ class TriangularMesh(BaseMagnet):
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
 
-        reorient_triangles: bool, default=`True`
+        reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
@@ -488,21 +488,21 @@ class TriangularMesh(BaseMagnet):
         Examples
         --------
         """
-        if not isinstance(triangles, (np.ndarray, list, tuple)):
+        if not isinstance(faces, (np.ndarray, list, tuple)):
             raise TypeError(
-                "The `triangles` parameter must be array-like, "
-                f"\nreceived type {type(triangles)} instead"
+                "The `faces` parameter must be array-like, "
+                f"\nreceived type {type(faces)} instead"
             )
-        if isinstance(triangles, np.ndarray):
-            if not (triangles.ndim == 3 and triangles.shape[-2:] == (3, 3)):
+        if isinstance(faces, np.ndarray):
+            if not (faces.ndim == 3 and faces.shape[-2:] == (3, 3)):
                 raise ValueError(
-                    "The `triangles` parameter must be array-like of shape (n,3,3), "
+                    "The `faces` parameter must be array-like of shape (n,3,3), "
                     "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
-                    f"\nreceived array of shape {triangles.shape} instead"
+                    f"\nreceived array of shape {faces.shape} instead"
                 )
         else:
             tria_list = []
-            for tria in triangles:
+            for tria in faces:
                 if isinstance(tria, (np.ndarray, list, tuple)):
                     tria = np.array(tria)
                     if tria.shape != (3, 3):
@@ -520,18 +520,18 @@ class TriangularMesh(BaseMagnet):
                         f"\nreceived type {type(tria)} instead"
                     )
                 tria_list.append(tria)
-            triangles = np.array(tria_list).astype(float)
+            faces = np.array(tria_list).astype(float)
 
-        vertices, tr = np.unique(triangles.reshape((-1, 3)), axis=0, return_inverse=True)
-        triangles = tr.reshape((-1, 3))
+        vertices, tr = np.unique(faces.reshape((-1, 3)), axis=0, return_inverse=True)
+        faces = tr.reshape((-1, 3))
 
         return cls(
             magnetization=magnetization,
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
             position=position,
             orientation=orientation,
-            reorient_triangles=reorient_triangles,
+            reorient_faces=reorient_faces,
             validate_closed=validate_closed,
             validate_connected=validate_connected,
             style=style,

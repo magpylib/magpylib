@@ -106,7 +106,7 @@ All magnet objects have the `magnetization` attribute which must be of the forma
 
 - **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of \[mm\]. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
-- **`TriangularMesh`**`(magnetization, vertices, triangles, position, orientation, validate_closed, validate_connected, reorient_triangles, style)` represents a magnet comprised of triangular facets. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define the triples corresponding to coordinates indices of each facet. By default, input validation checks if the object is closed, connected and if its facets are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`TriangularMesh`**`(magnetization, vertices, faces, position, orientation, validate_closed, validate_connected, reorient_faces, style)` represents a magnet comprised of triangular faces. The `vertices` correspond to the corner points in units of \[mm\] and the `faces` define the triples corresponding to coordinates indices of each facet. By default, input validation checks if the object is closed, connected and if its faces are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
 
 **Currents**
 

@@ -25,11 +25,11 @@ The `TriangularMesh` class
 
 The outside field of a homogeneously charged magnet is the same as the field of a similarly shaped body with a magnetic surface charge. In turn, the surface charge is proportional to the projection of the magnetization vector onto the surface normal.
 
-The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular faces. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangles. This source is homologous to a collection of `Triangle` objects where its geometry is defined via `vertices` and `triangles`. The `vertices` correspond to the corner points in units of \[mm\] and the `triangles` define indices triples corresponding to the the vertices coordinates of each triangle.
+The `TriangularMesh` class is set up so that a magnet with an arbitrary surface can be approximated by triangular faces. Given the magnetization vector, the surface charge density is automatically computed and summed up over all triangular faces. This source is similar to a collection of `Triangle` objects where its geometry is defined via `vertices` and `faces`. The `vertices` correspond to the corner points in units of \[mm\] and the `faces` define indices triples corresponding to the the vertices coordinates of each triangle.
 Additionally, useful input checks, enabled by default, are implemented in order to ensure the validity of a faceted magnet source, such as:
-- `reorient_triangles`: checks if faces are facing outwards and flip the ones wrongly oriented
-- `validate_closed`: checks if set of provided set of `vertices` and `triangles` form a closed body.
-- `validate_connected`: checks if set of provided set of `vertices` and `triangles` is not disjoint.
+- `reorient_faces`: checks if faces are facing outwards and flip the ones wrongly oriented
+- `validate_closed`: checks if set of provided set of `vertices` and `faces` form a closed body.
+- `validate_connected`: checks if set of provided set of `vertices` and `faces` is not disjoint.
 
 +++ {"user_expressions": []}
 
@@ -48,11 +48,11 @@ Additionally, useful input checks, enabled by default, are implemented in order 
 ```{code-cell} ipython3
 import magpylib as magpy
 
-# create faceted tetrahedron from vertices and triangles
+# create faceted tetrahedron from vertices and faces
 tetra_facet = magpy.magnet.TriangularMesh(
     magnetization=(0, 0, 1000),
     vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)],
-    triangles=[[2, 1, 0], [3, 0, 1], [3, 2, 0], [3, 1, 2]],
+    faces=[[2, 1, 0], [3, 0, 1], [3, 2, 0], [3, 1, 2]],
 )
 
 # print input checks attributes
@@ -155,7 +155,7 @@ plt.show()
 
 ## Example - Trapezoidal prism from ConvexHull
 
-The `from_ConvexHull` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a trapezoidal prism is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_triangles` is disabled.
+The `from_ConvexHull` classmethod has been added to the `TriangularMesh` constructor to easily build a convex body from a point could. In The following example a trapezoidal prism is built taking advantage of this feature. Under the hood the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class is used. Note that the Scipy method does not guarantee correct facet orientations if `reorient_faces` is disabled.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -177,7 +177,7 @@ cube_from_ConvexHull.show(
 
 +++ {"user_expressions": []}
 
-Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the mesh is wrong and some triangles are pointing inwards.
+Lets see what happens if we disable the triangle reorientation. Like shown below, the orientation of the mesh is wrong and some faces are pointing inwards.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -187,7 +187,7 @@ points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [-1,-1, 3], [-1,1,3], [1,-1,3
 cube_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull(
     magnetization=(0, 0, 1000),
     points=points,
-    reorient_triangles=False,
+    reorient_faces=False,
 )
 
 # show and style the created source
