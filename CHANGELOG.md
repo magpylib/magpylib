@@ -4,7 +4,7 @@ All notable changes to magpylib are documented here.
 # Releases
 
 ## [Unreleased]
-- New `TriangularMesh` magnet class added. This superseeds the `misc.Triangle` class by making it a fully equivalent magnet object with an arbitrary number of mesh. It also adds many features to ensure an easy generation of physically true, closed, connected and correctly oriented bodies ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
+- New `TriangularMesh` magnet class added to conveniently work with triangular surface meshes instead of large collections of individual `Triangle` objects. The `TriangularMesh` class performs important checks (closed, connected, oriented) and can directly import pyvista objects and for convex hull bodies. ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
 
 ## [4.2.0] - 2023-01-27
 - (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular faces. ([#568](https://github.com/magpylib/magpylib/issues/568))

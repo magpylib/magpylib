@@ -105,6 +105,6 @@ magpy.show(
 +++ {"user_expressions": []}
 
 ```{seealso}
-Building a source with a set of triangles is error prone, since there is no check if the collection produces a closed body, if the triangles are all pointing outwards and if the manifold is connected or self-intersecting. A more feature rich and robust `TriangularMesh` magnet class allows for combining triangular facets into a single object and implements useful features to build complex-shaped magnets more easily.
+Building a source with a set of triangles is error prone, since there is no check if the collection produces a closed body, if the triangles are all pointing outwards and if the manifold is connected or self-intersecting. A more feature rich and robust `TriangularMesh` magnet class allows for combining triangular faces into a single object and implements useful features to build complex-shaped magnets more easily.
 See some examples {ref}`examples-triangularmesh`
 ```
