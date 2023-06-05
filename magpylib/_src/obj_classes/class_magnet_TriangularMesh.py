@@ -19,9 +19,9 @@ from magpylib._src.style import TriangularMeshStyle
 
 
 class TriangularMesh(BaseMagnet):
-    """Triangular surface mesh magnet with homogeneous magnetization.
+    """Magnet with homogeneous magnetization defined by triangular surface mesh.
     Can be used as `sources` input for magnetic field computation.
-    When `position=(0,0,0)` and `orientation=None` the TriangularMesh facets coordinates
+    When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices
     are the same as in the global coordinate system.
 
     Parameters
@@ -63,6 +63,11 @@ class TriangularMesh(BaseMagnet):
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
+
+    Notes
+    -----
+    Facets are automatically reoriented since `scipy.spatial.ConvexHull` objects do not
+    guarantee that the facets are all pointing outwards. A mesh validation is also performed.
 
     Returns
     -------
@@ -262,14 +267,7 @@ class TriangularMesh(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        """Triangular surface mesh magnet with homogeneous magnetization.
-        Can be used as `sources` input for magnetic field computation.
-        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
-        are the same as in the global coordinate system. The geometric center of the TriangularMesh
-        is determined by its vertices and is not necessarily located in the origin.
-
-        Using this class methods allows to construct a TriangularMesh object from a cloud of
-        `points` . The `triangles` are constructed via `sciyp.spatial.ConvexHull`.
+        """Create a TriangularMesh magnet from a point cloud via its convex hull.
 
         Parameters
         ----------
@@ -278,8 +276,7 @@ class TriangularMesh(BaseMagnet):
             the local object coordinates (rotates with object).
 
         points: ndarray, shape (n,3)
-            Points defining the vertices of the facets in the relative coordinate system of the
-            TriangularMesh object.
+            Point cloud from which the convex hull is computed.
 
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -290,6 +287,17 @@ class TriangularMesh(BaseMagnet):
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        reorient_triangles: bool, default=`True`
+            In a properly oriented mesh, all facets must be oriented outwards.
+            If `True`, check and fix the orientation of each triangle.
+
+        validate_closed: bool, default=`True`
+            Only a closed mesh guarantees a physical magnet.
+            If `True`, raise error if mesh is not closed.
+
+        validate_connected: bool, default=`True`
+            If `True` raise an error if mesh is not connected.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -336,14 +344,7 @@ class TriangularMesh(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        """Triangular surface mesh magnet with homogeneous magnetization.
-        Can be used as `sources` input for magnetic field computation.
-        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
-        are the same as in the global coordinate system. The geometric center of the TriangularMesh
-        is determined by its vertices and is not necessarily located in the origin.
-
-        Using this class methods allows to construct a TriangularMesh object from a cloud of
-        `points` . The `triangles` are constructed via `sciyp.spatial.ConvexHull`.
+        """Create a TriangularMesh magnet from a pyvista PolyData mesh object.
 
         Parameters
         ----------
@@ -363,6 +364,17 @@ class TriangularMesh(BaseMagnet):
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        reorient_triangles: bool, default=`True`
+            In a properly oriented mesh, all facets must be oriented outwards.
+            If `True`, check and fix the orientation of each triangle.
+
+        validate_closed: bool, default=`True`
+            Only a closed mesh guarantees a physical magnet.
+            If `True`, raise error if mesh is not closed.
+
+        validate_connected: bool, default=`True`
+            If `True` raise an error if mesh is not connected.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -414,10 +426,10 @@ class TriangularMesh(BaseMagnet):
         )
 
     @classmethod
-    def from_triangular_facets(
+    def from_triangles(
         cls,
         magnetization=None,
-        facets=None,
+        triangles=None,
         position=(0, 0, 0),
         orientation=None,
         reorient_triangles=True,
@@ -426,14 +438,7 @@ class TriangularMesh(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        """Triangular surface mesh magnet with homogeneous magnetization.
-        Can be used as `sources` input for magnetic field computation.
-        When `position=(0,0,0)` and `orientation=None` the TriangularMesh vertices coordinates
-        are the same as in the global coordinate system. The geometric center of the TriangularMesh
-        is determined by its vertices and is not necessarily located in the origin.
-
-        Using this class methods allows to construct a TriangularMesh object from a cloud of
-        `points` . The `triangles` are constructed via `sciyp.spatial.ConvexHull`.
+        """Create a TriangularMesh magnet from a set of triangles.
 
         Parameters
         ----------
@@ -441,11 +446,10 @@ class TriangularMesh(BaseMagnet):
             Magnetization vector (mu0*M, remanence field) in units of [mT] given in
             the local object coordinates (rotates with object).
 
-        facets: array_like
-            An array_like of valid triangular facets objects. Elements can be one of
+        triangles: array_like
+            An array_like of valid triangles. Elements can be one of
                 - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
-                - array-like object of shape (3,3)
-
+                - triangle vertices of shape (3,3)
 
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -457,17 +461,16 @@ class TriangularMesh(BaseMagnet):
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
 
-        reorient_triangles: bool, optional
-            If `False`, no facet orientation check is performed. If `True`, facets pointing inwards
-            are fliped in the right direction.
+        reorient_triangles: bool, default=`True`
+            In a properly oriented mesh, all facets must be oriented outwards.
+            If `True`, check and fix the orientation of each triangle.
 
-        validate_closed: bool, optional
-            If `True`, the provided set of facets is validated by checking if it forms a closed
-            body. Can be deactivated for perfomance reasons by setting it to `False`.
+        validate_closed: bool, default=`True`
+            Only a closed mesh guarantees a physical magnet.
+            If `True`, raise error if mesh is not closed.
 
-        validate_connected: bool, optional
-            If `True`, the provided set of facets is validated by checking if it forms a connected
-            body. Can be deactivated for perfomance reasons by setting it to `False`.
+        validate_connected: bool, default=`True`
+            If `True` raise an error if mesh is not connected.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
