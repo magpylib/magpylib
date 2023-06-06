@@ -259,7 +259,7 @@ def make_mesh_lines(
     marker, line = mesh.marker, mesh.line
     tr, vert = obj.faces, obj.vertices
     if mode == "disjoint":
-        subsets = obj.faces_subsets
+        subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
     else:
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
@@ -890,7 +890,7 @@ def get_generic_traces(
     obj_is_disjoint = (
         isinstance(input_obj, TriangularMesh)
         and style.mesh.disjoint.show
-        and not input_obj.is_connected
+        and not input_obj.is_connected()
     )
     disjoint_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
@@ -899,7 +899,7 @@ def get_generic_traces(
                 tria_orig = input_obj._faces
                 mag_show = style.magnetization.show
                 for tri, dis_color in zip(
-                    input_obj.faces_subsets,
+                    input_obj.get_faces_subsets(),
                     cycle(style.mesh.disjoint.colorsequence),
                 ):
                     # temporary mutate faces from subset
@@ -1000,7 +1000,7 @@ def get_generic_traces(
         traces.append(trace)
 
     if disjoint_traces:
-        nsubsets = len(input_obj.faces_subsets)
+        nsubsets = len(input_obj.get_faces_subsets())
         for ind in range(nsubsets):
             trace = merge_traces(*disjoint_traces[ind::nsubsets])
             trace.update(
@@ -1029,9 +1029,9 @@ def get_generic_traces(
         )
     if isinstance(input_obj, TriangularMesh):
         for mode in ("grid", "open", "disjoint"):
-            if mode == "open" and input_obj.is_closed:
+            if mode == "open" and input_obj.is_closed():
                 continue
-            if mode == "disjoint" and input_obj.is_connected:
+            if mode == "disjoint" and input_obj.is_connected():
                 continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(

@@ -117,7 +117,7 @@ class TriangularMesh(BaseMagnet):
         if validate_connected:
             self._validate_connected()
 
-        if reorient_faces and self.is_closed:
+        if reorient_faces and self.is_closed():
             # perform only if closed, or inside-outside will fail
             self.reorient_faces()
 
@@ -140,27 +140,23 @@ class TriangularMesh(BaseMagnet):
         """Mesh"""
         return self._vertices[self._faces]
 
-    @property
     def is_closed(self):
         """Is-closed boolean check"""
         if self._is_closed is None:
             self._is_closed = trimesh_is_closed(self._faces)
         return self._is_closed
 
-    @property
     def is_reoriented(self):
         """True if the faces have been reoriented"""
         return self._is_reoriented
 
-    @property
     def is_connected(self):
         """Is-connected boolean check"""
         if self._is_connected is None:
-            self._is_connected = len(self.faces_subsets) == 1
+            self._is_connected = len(self.get_faces_subsets()) == 1
         return self._is_connected
 
-    @property
-    def faces_subsets(self):
+    def get_faces_subsets(self):
         """return faces subsets"""
         if self._faces_subsets is None:
             self._faces_subsets = get_disjoint_faces_subsets(self._faces)
@@ -217,7 +213,7 @@ class TriangularMesh(BaseMagnet):
         Check if trimesh consists of multiple disconnecetd parts.
         Raise error if this is the case.
         """
-        if not self.is_connected:
+        if not self.is_connected():
             raise ValueError(
                 "Bad `faces` input of TriangularMesh. "
                 "Resulting mesh is not connected. "
@@ -228,7 +224,7 @@ class TriangularMesh(BaseMagnet):
         """
         Check if input mesh is closed
         """
-        if not self.is_closed:
+        if not self.is_closed():
             raise ValueError(
                 "Bad `faces` input of TriangularMesh. "
                 "Resulting mesh is not closed. "
@@ -239,7 +235,8 @@ class TriangularMesh(BaseMagnet):
         """Triangular faces pointing inwards are fliped in the right direction.
         Prior to reorientation, it is checked if the mesh is closed.
         """
-        _ = self.is_closed  # perform isclosed check through getter
+        # perform is_closed check, if already done, retrieves self._is_closed
+        _ = self.is_closed()
         self._faces = fix_trimesh_orientation(self._vertices, self._faces)
         self._is_reoriented = True
 

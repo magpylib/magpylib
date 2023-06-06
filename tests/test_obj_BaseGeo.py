@@ -527,10 +527,6 @@ def test_describe():
         "  • magnetization: [   0.    0. 1000.] mT\n"
         "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
         "  • faces: shape(52, 3) \n"
-        "  • faces_subsets: list of length 1 \n"
-        "  • is_closed: True \n"
-        "  • is_connected: True \n"
-        "  • is_reoriented: True \n"
         "  • mesh: shape(52, 3, 3) \n"
         "  • vertices: shape(26, 3) "
     )

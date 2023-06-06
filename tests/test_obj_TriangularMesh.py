@@ -96,7 +96,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     tmesh_tetra = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=tetra_pv, **tetra_kwargs
     )
-    assert tmesh_tetra.is_reoriented
+    assert tmesh_tetra.is_reoriented()
     cube = (
         magpy.magnet.Cuboid((111, 222, 333), (1, 1, 1))
         .move((1, 1, 1))

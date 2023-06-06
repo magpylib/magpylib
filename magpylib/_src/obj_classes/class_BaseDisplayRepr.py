@@ -66,9 +66,6 @@ class BaseDisplayRepr:
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
-                elif k == "faces_subsets":
-                    val = getattr(self, k)
-                    val = f"list of length {len(val)}"
                 elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
                     val = np.array(getattr(self, k))
                     if np.prod(val.shape) > 4:
