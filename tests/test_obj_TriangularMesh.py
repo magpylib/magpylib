@@ -234,60 +234,72 @@ def test_TriangularMesh_from_faces_bad_inputs():
     with pytest.raises(TypeError):
         get_tri_from_faces(triangle)
 
-    # array-like but bad shape
-    with pytest.raises(ValueError):
-        get_tri_from_faces(np.array([(0, 0, 0), (1, 0, 0)]))
+    # # array-like but bad shape
+    # with pytest.raises(ValueError):
+    #     get_tri_from_faces(np.array([(0, 0, 0), (1, 0, 0)]))
 
     # element in list has wrong type
     with pytest.raises(TypeError):
         get_tri_from_faces(["bad_type"])
 
-    # element in list is array like but has bad shape
-    with pytest.raises(ValueError):
-        get_tri_from_faces([triangle, [(0, 0, 0), (1, 0, 0)]])
+    # # element in list is array like but has bad shape
+    # with pytest.raises(ValueError):
+    #     get_tri_from_faces([triangle, [(0, 0, 0), (1, 0, 0)]])
 
 
 def test_TriangularMesh_from_faces_good_inputs():
     """Test from_faces classmethod good inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_faces(mesh, **kwargs):
-        return magpy.magnet.TriangularMesh.from_triangles(mag, mesh, **kwargs)
-
     # create Tetrahedron and move/orient randomly
     tetra = magpy.magnet.Tetrahedron(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
     tetra.move((3, 4, 5)).rotate_from_angax([13, 37], (1, 2, 3), anchor=0)
-    pos_orient = dict(orientation=tetra.orientation, position=tetra.position)
+    pos_ori = dict(orientation=tetra.orientation, position=tetra.position)
 
-    # copy Tetrahedron from vertices and convexhull into a TriangularMesh object
-    tetra_from_ConvexHull = magpy.magnet.TriangularMesh.from_ConvexHull(
-        mag, tetra.vertices, **pos_orient
+    tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(
+        mag, tetra.vertices, **pos_ori
     )
 
-    # 1-> test getB vs ConvexHull Tetrahedron
+    # from triangle list
+    trias = [magpy.misc.Triangle(mag, face) for face in tmesh1.mesh]
+    tmesh2 = magpy.magnet.TriangularMesh.from_triangles(
+        mag, trias, **pos_ori
+    )
+
+    # from collection
+    coll = magpy.Collection(trias)
+    tmesh3 = magpy.magnet.TriangularMesh.from_triangles(
+        mag, coll, **pos_ori
+    )
+
     points = [0, 0, 0]
     B0 = tetra.getB(points)
-    B1 = tetra_from_ConvexHull.getB(points)
+    B1 = tmesh1.getB(points)
+    B2 = tmesh2.getB(points)
+    B3 = tmesh3.getB(points)
+    
     np.testing.assert_allclose(B0, B1)
-
-    # 2-> test getB vs ConvexHull Tetrahedron faces as msh
-    msh = tetra_from_ConvexHull.mesh
-    src2 = get_tri_from_faces(msh, **pos_orient)
-    B2 = src2.getB(points)
     np.testing.assert_allclose(B0, B2)
-
-    # 3-> test getB vs ConvexHull Tetrahedron faces as magpylib.misc.Triangles
-    msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
-    src3 = get_tri_from_faces(msh, **pos_orient)
-    B3 = src3.getB(points)
     np.testing.assert_allclose(B0, B3)
 
-    # 4-> test getB mixed input
-    msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
-    msh[-1] = [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
-    src4 = get_tri_from_faces(msh, **pos_orient)
-    B4 = src4.getB(points)
-    np.testing.assert_allclose(B0, B4)
+    # # 2-> test getB vs ConvexHull Tetrahedron faces as msh
+    # msh = tetra_from_ConvexHull.mesh
+    # src2 = get_tri_from_faces(msh, **pos_orient)
+    # B2 = src2.getB(points)
+    # np.testing.assert_allclose(B0, B2)
+
+    # # 3-> test getB vs ConvexHull Tetrahedron faces as magpylib.misc.Triangles
+    # msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
+    # src3 = get_tri_from_faces(msh, **pos_orient)
+    # B3 = src3.getB(points)
+    # np.testing.assert_allclose(B0, B3)
+
+    # # 4-> test getB mixed input
+    # msh = [magpy.misc.Triangle(mag, face) for face in tetra_from_ConvexHull.mesh]
+    # msh[-1] = [[0.0, 0.0, 1.0], [1.0, 0.0, 0.0], [0.0, 1.0, 0.0]]
+    # src4 = get_tri_from_faces(msh, **pos_orient)
+    # B4 = src4.getB(points)
+    # np.testing.assert_allclose(B0, B4)
 
 
 def test_lines_ends_in_trimesh():

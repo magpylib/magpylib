@@ -424,7 +424,7 @@ class TriangularMesh(BaseMagnet):
     def from_triangles(
         cls,
         magnetization=None,
-        faces=None,
+        triangles=None,
         position=(0, 0, 0),
         orientation=None,
         reorient_faces=True,
@@ -433,7 +433,7 @@ class TriangularMesh(BaseMagnet):
         style=None,
         **kwargs,
     ):
-        """Create a TriangularMesh magnet from a set of faces.
+        """Create a TriangularMesh magnet from a list or Collection of Triangle objects.
 
         Parameters
         ----------
@@ -441,10 +441,8 @@ class TriangularMesh(BaseMagnet):
             Magnetization vector (mu0*M, remanence field) in units of [mT] given in
             the local object coordinates (rotates with object).
 
-        faces: array_like
-            An array_like of valid faces. Elements can be one of
-                - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
-                - triangle vertices of shape (3,3)
+        triangles: list or Collection of Triangle objects
+            Only vertices of Triangle objects are taken, magnetization is ignored.
 
         position: array_like, shape (3,) or (m,3)
             Object position(s) in the global coordinates in units of [mm]. For m>1, the
@@ -485,41 +483,19 @@ class TriangularMesh(BaseMagnet):
         Examples
         --------
         """
-        if not isinstance(faces, (np.ndarray, list, tuple)):
+        if not isinstance(triangles, (list, Collection)):
             raise TypeError(
-                "The `faces` parameter must be array-like, "
-                f"\nreceived type {type(faces)} instead"
+                "The `triangles` parameter must be a list or Collection of `Triangle` objects, "
+                f"\nreceived type {type(triangles)} instead"
             )
-        if isinstance(faces, np.ndarray):
-            if not (faces.ndim == 3 and faces.shape[-2:] == (3, 3)):
-                raise ValueError(
-                    "The `faces` parameter must be array-like of shape (n,3,3), "
-                    "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
-                    f"\nreceived array of shape {faces.shape} instead"
+        for obj in triangles:
+            if not isinstance(obj, Triangle):
+                raise TypeError(
+                    "All elements of `triangles` must be `Triangle` objects, "
+                    f"\nreceived type {type(obj)} instead"
                 )
-        else:
-            tria_list = []
-            for tria in faces:
-                if isinstance(tria, (np.ndarray, list, tuple)):
-                    tria = np.array(tria)
-                    if tria.shape != (3, 3):
-                        raise ValueError(
-                            "A triangle element must be a (3,3) array-like or "
-                            "a `magpylib.misc.Triangle object"
-                            f"\nreceived array of shape {tria.shape} instead"
-                        )
-                elif isinstance(tria, Triangle):
-                    tria = tria.vertices
-                else:
-                    raise TypeError(
-                        "A triangle element must be a (3,3) array-like or "
-                        "a `magpylib.misc.Triangle object"
-                        f"\nreceived type {type(tria)} instead"
-                    )
-                tria_list.append(tria)
-            faces = np.array(tria_list).astype(float)
-
-        vertices, tr = np.unique(faces.reshape((-1, 3)), axis=0, return_inverse=True)
+        mesh = np.array([tria.vertices for tria in triangles])
+        vertices, tr = np.unique(mesh.reshape((-1, 3)), axis=0, return_inverse=True)
         faces = tr.reshape((-1, 3))
 
         return cls(
@@ -534,3 +510,119 @@ class TriangularMesh(BaseMagnet):
             style=style,
             **kwargs,
         )
+
+
+# @classmethod
+#     def from_triangles(
+#         cls,
+#         magnetization=None,
+#         faces=None,
+#         position=(0, 0, 0),
+#         orientation=None,
+#         reorient_faces=True,
+#         validate_closed=True,
+#         validate_connected=True,
+#         style=None,
+#         **kwargs,
+#     ):
+#         """Create a TriangularMesh magnet from a set of faces.
+
+#         Parameters
+#         ----------
+#         magnetization: array_like, shape (3,), default=`None`
+#             Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+#             the local object coordinates (rotates with object).
+
+#         faces: array_like
+#             An array_like of valid faces. Elements can be one of
+#                 - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
+#                 - triangle vertices of shape (3,3)
+
+#         position: array_like, shape (3,) or (m,3)
+#             Object position(s) in the global coordinates in units of [mm]. For m>1, the
+#             `position` and `orientation` attributes together represent an object path.
+
+#         orientation: scipy `Rotation` object with length 1 or m, default=`None`
+#             Object orientation(s) in the global coordinates. `None` corresponds to
+#             a unit-rotation. For m>1, the `position` and `orientation` attributes
+#             together represent an object path.
+
+#         reorient_faces: bool, default=`True`
+#             In a properly oriented mesh, all faces must be oriented outwards.
+#             If `True`, check and fix the orientation of each triangle.
+
+#         validate_closed: bool, default=`True`
+#             Only a closed mesh guarantees a physical magnet.
+#             If `True`, raise error if mesh is not closed.
+
+#         validate_connected: bool, default=`True`
+#             If `True` raise an error if mesh is not connected.
+
+#         parent: `Collection` object or `None`
+#             The object is a child of it's parent collection.
+
+#         style: dict
+#             Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+#             using style underscore magic, e.g. `style_color='red'`.
+
+#         Notes
+#         -----
+#         Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+#         guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+
+#         Returns
+#         -------
+#         magnet source: `TriangularMesh` object
+
+#         Examples
+#         --------
+#         """
+#         if not isinstance(faces, (np.ndarray, list, tuple)):
+#             raise TypeError(
+#                 "The `faces` parameter must be array-like, "
+#                 f"\nreceived type {type(faces)} instead"
+#             )
+#         if isinstance(faces, np.ndarray):
+#             if not (faces.ndim == 3 and faces.shape[-2:] == (3, 3)):
+#                 raise ValueError(
+#                     "The `faces` parameter must be array-like of shape (n,3,3), "
+#                     "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
+#                     f"\nreceived array of shape {faces.shape} instead"
+#                 )
+#         else:
+#             tria_list = []
+#             for tria in faces:
+#                 if isinstance(tria, (np.ndarray, list, tuple)):
+#                     tria = np.array(tria)
+#                     if tria.shape != (3, 3):
+#                         raise ValueError(
+#                             "A triangle element must be a (3,3) array-like or "
+#                             "a `magpylib.misc.Triangle object"
+#                             f"\nreceived array of shape {tria.shape} instead"
+#                         )
+#                 elif isinstance(tria, Triangle):
+#                     tria = tria.vertices
+#                 else:
+#                     raise TypeError(
+#                         "A triangle element must be a (3,3) array-like or "
+#                         "a `magpylib.misc.Triangle object"
+#                         f"\nreceived type {type(tria)} instead"
+#                     )
+#                 tria_list.append(tria)
+#             faces = np.array(tria_list).astype(float)
+
+#         vertices, tr = np.unique(faces.reshape((-1, 3)), axis=0, return_inverse=True)
+#         faces = tr.reshape((-1, 3))
+
+#         return cls(
+#             magnetization=magnetization,
+#             vertices=vertices,
+#             faces=faces,
+#             position=position,
+#             orientation=orientation,
+#             reorient_faces=reorient_faces,
+#             validate_closed=validate_closed,
+#             validate_connected=validate_connected,
+#             style=style,
+#             **kwargs,
+#         )
