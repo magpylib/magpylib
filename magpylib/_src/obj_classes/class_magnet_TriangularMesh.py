@@ -11,7 +11,7 @@ from magpylib._src.fields.field_BH_triangularmesh import (
 )
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
-from magpylib._src.input_checks import check_format_input_vector
+from magpylib._src.input_checks import check_format_input_vector, check_format_input_vector2
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
@@ -511,118 +511,86 @@ class TriangularMesh(BaseMagnet):
             **kwargs,
         )
 
+    @classmethod
+    def from_mesh(
+        cls,
+        magnetization=None,
+        mesh=None,
+        position=(0, 0, 0),
+        orientation=None,
+        reorient_faces=True,
+        validate_closed=True,
+        validate_connected=True,
+        style=None,
+        **kwargs,
+        ):
+        """Create a TriangularMesh magnet from a mesh input.
 
-# @classmethod
-#     def from_triangles(
-#         cls,
-#         magnetization=None,
-#         faces=None,
-#         position=(0, 0, 0),
-#         orientation=None,
-#         reorient_faces=True,
-#         validate_closed=True,
-#         validate_connected=True,
-#         style=None,
-#         **kwargs,
-#     ):
-#         """Create a TriangularMesh magnet from a set of faces.
+        Parameters
+        ----------
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            the local object coordinates (rotates with object).
 
-#         Parameters
-#         ----------
-#         magnetization: array_like, shape (3,), default=`None`
-#             Magnetization vector (mu0*M, remanence field) in units of [mT] given in
-#             the local object coordinates (rotates with object).
+        mesh: array_like, shape (n,3,3)
+            An array_like of triangular faces that make up a triangular mesh.
 
-#         faces: array_like
-#             An array_like of valid faces. Elements can be one of
-#                 - `magpylib.misc.Triangle` (only vertices are taken, magnetization is ignored)
-#                 - triangle vertices of shape (3,3)
+        position: array_like, shape (3,) or (m,3)
+            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            `position` and `orientation` attributes together represent an object path.
 
-#         position: array_like, shape (3,) or (m,3)
-#             Object position(s) in the global coordinates in units of [mm]. For m>1, the
-#             `position` and `orientation` attributes together represent an object path.
+        orientation: scipy `Rotation` object with length 1 or m, default=`None`
+            Object orientation(s) in the global coordinates. `None` corresponds to
+            a unit-rotation. For m>1, the `position` and `orientation` attributes
+            together represent an object path.
 
-#         orientation: scipy `Rotation` object with length 1 or m, default=`None`
-#             Object orientation(s) in the global coordinates. `None` corresponds to
-#             a unit-rotation. For m>1, the `position` and `orientation` attributes
-#             together represent an object path.
+        reorient_faces: bool, default=`True`
+            In a properly oriented mesh, all faces must be oriented outwards.
+            If `True`, check and fix the orientation of each triangle.
 
-#         reorient_faces: bool, default=`True`
-#             In a properly oriented mesh, all faces must be oriented outwards.
-#             If `True`, check and fix the orientation of each triangle.
+        validate_closed: bool, default=`True`
+            Only a closed mesh guarantees a physical magnet.
+            If `True`, raise error if mesh is not closed.
 
-#         validate_closed: bool, default=`True`
-#             Only a closed mesh guarantees a physical magnet.
-#             If `True`, raise error if mesh is not closed.
+        validate_connected: bool, default=`True`
+            If `True` raise an error if mesh is not connected.
 
-#         validate_connected: bool, default=`True`
-#             If `True` raise an error if mesh is not connected.
+        parent: `Collection` object or `None`
+            The object is a child of it's parent collection.
 
-#         parent: `Collection` object or `None`
-#             The object is a child of it's parent collection.
+        style: dict
+            Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
+            using style underscore magic, e.g. `style_color='red'`.
 
-#         style: dict
-#             Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
-#             using style underscore magic, e.g. `style_color='red'`.
+        Notes
+        -----
+        Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
+        guarantee that the faces are all pointing outwards. A mesh validation is also performed.
 
-#         Notes
-#         -----
-#         Faces are automatically reoriented since `pyvista.core.pointset.PolyData` objects do not
-#         guarantee that the faces are all pointing outwards. A mesh validation is also performed.
+        Returns
+        -------
+        magnet source: `TriangularMesh` object
 
-#         Returns
-#         -------
-#         magnet source: `TriangularMesh` object
+        Examples
+        --------
+        """
+        mesh = check_format_input_vector2(
+            mesh,
+            shape=[None,3,3],
+            param_name='mesh',
+        )
+        vertices, tr = np.unique(mesh.reshape((-1, 3)), axis=0, return_inverse=True)
+        faces = tr.reshape((-1, 3))
 
-#         Examples
-#         --------
-#         """
-#         if not isinstance(faces, (np.ndarray, list, tuple)):
-#             raise TypeError(
-#                 "The `faces` parameter must be array-like, "
-#                 f"\nreceived type {type(faces)} instead"
-#             )
-#         if isinstance(faces, np.ndarray):
-#             if not (faces.ndim == 3 and faces.shape[-2:] == (3, 3)):
-#                 raise ValueError(
-#                     "The `faces` parameter must be array-like of shape (n,3,3), "
-#                     "or list like of `magpylib.misc.Triangle`and array-like object of shape (3,3)"
-#                     f"\nreceived array of shape {faces.shape} instead"
-#                 )
-#         else:
-#             tria_list = []
-#             for tria in faces:
-#                 if isinstance(tria, (np.ndarray, list, tuple)):
-#                     tria = np.array(tria)
-#                     if tria.shape != (3, 3):
-#                         raise ValueError(
-#                             "A triangle element must be a (3,3) array-like or "
-#                             "a `magpylib.misc.Triangle object"
-#                             f"\nreceived array of shape {tria.shape} instead"
-#                         )
-#                 elif isinstance(tria, Triangle):
-#                     tria = tria.vertices
-#                 else:
-#                     raise TypeError(
-#                         "A triangle element must be a (3,3) array-like or "
-#                         "a `magpylib.misc.Triangle object"
-#                         f"\nreceived type {type(tria)} instead"
-#                     )
-#                 tria_list.append(tria)
-#             faces = np.array(tria_list).astype(float)
-
-#         vertices, tr = np.unique(faces.reshape((-1, 3)), axis=0, return_inverse=True)
-#         faces = tr.reshape((-1, 3))
-
-#         return cls(
-#             magnetization=magnetization,
-#             vertices=vertices,
-#             faces=faces,
-#             position=position,
-#             orientation=orientation,
-#             reorient_faces=reorient_faces,
-#             validate_closed=validate_closed,
-#             validate_connected=validate_connected,
-#             style=style,
-#             **kwargs,
-#         )
+        return cls(
+            magnetization=magnetization,
+            vertices=vertices,
+            faces=faces,
+            position=position,
+            orientation=orientation,
+            reorient_faces=reorient_faces,
+            validate_closed=validate_closed,
+            validate_connected=validate_connected,
+            style=style,
+            **kwargs,
+        )

@@ -9,7 +9,7 @@ import magpylib as magpy
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
-
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 def test_TriangularMesh_repr():
     """TriangularMesh repr test"""
@@ -223,28 +223,45 @@ def test_TriangularMesh_from_faces_bad_inputs():
     """Test from_faces classmethod bad inputs"""
     mag = (0, 0, 1000)
 
-    def get_tri_from_faces(mesh):
+    def get_tri_from_triangles(trias):
         return magpy.magnet.TriangularMesh.from_triangles(
-            mag, mesh, validate_open_mesh=False, reorient_faces=False
+            mag,
+            trias,
+            validate_closed=False,
+            validate_connected=False,
+            reorient_faces=False,
         )
-
+    def get_tri_from_mesh(mesh):
+        return magpy.magnet.TriangularMesh.from_mesh(
+            mag,
+            mesh,
+            validate_closed=False,
+            validate_connected=False,
+            reorient_faces=False,
+        )
     triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])
 
     # good element type but not array-like
     with pytest.raises(TypeError):
-        get_tri_from_faces(triangle)
-
-    # # array-like but bad shape
-    # with pytest.raises(ValueError):
-    #     get_tri_from_faces(np.array([(0, 0, 0), (1, 0, 0)]))
+        get_tri_from_triangles(triangle)
 
     # element in list has wrong type
     with pytest.raises(TypeError):
-        get_tri_from_faces(["bad_type"])
+        get_tri_from_triangles(["bad_type"])
 
-    # # element in list is array like but has bad shape
-    # with pytest.raises(ValueError):
-    #     get_tri_from_faces([triangle, [(0, 0, 0), (1, 0, 0)]])
+    # bad type input
+    with pytest.raises(MagpylibBadUserInput):
+        get_tri_from_mesh(1)
+    
+    # bad shape input
+    msh = [((0,0), (1,0), (0,1))]*2
+    with pytest.raises(ValueError):
+        get_tri_from_mesh(msh)
+
+    # bad shape input
+    msh = [((0,0,0), (1,0,0), (0,1,0), (0,0,1))]*2
+    with pytest.raises(ValueError):
+        get_tri_from_mesh(msh)
 
 
 def test_TriangularMesh_from_faces_good_inputs():
@@ -272,15 +289,23 @@ def test_TriangularMesh_from_faces_good_inputs():
         mag, coll, **pos_ori
     )
 
+    # from mesh
+    msh = [t.vertices for t in coll]
+    tmesh4 = magpy.magnet.TriangularMesh.from_mesh(
+        mag, msh, **pos_ori
+    )
+
     points = [0, 0, 0]
     B0 = tetra.getB(points)
     B1 = tmesh1.getB(points)
     B2 = tmesh2.getB(points)
     B3 = tmesh3.getB(points)
+    B4 = tmesh4.getB(points)
     
     np.testing.assert_allclose(B0, B1)
     np.testing.assert_allclose(B0, B2)
     np.testing.assert_allclose(B0, B3)
+    np.testing.assert_allclose(B0, B4)
 
     # # 2-> test getB vs ConvexHull Tetrahedron faces as msh
     # msh = tetra_from_ConvexHull.mesh
