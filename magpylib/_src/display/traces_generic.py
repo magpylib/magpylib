@@ -1029,10 +1029,24 @@ def get_generic_traces(
         )
     if isinstance(input_obj, TriangularMesh):
         for mode in ("grid", "open", "disjoint"):
-            if mode == "open" and input_obj.is_closed():
-                continue
-            if mode == "disjoint" and input_obj.is_connected():
-                continue
+            if mode == "open":
+                if input_obj._is_closed is None:
+                    warnings.warn(
+                        "Mesh has not been checked if it is connected before atempting to show "
+                        "possible open edges, which may take a while to compute when the mesh "
+                        "has many faces, now applying operation..."
+                    )
+                if input_obj.is_closed():
+                    continue
+            if mode == "disjoint":
+                if input_obj._is_connected is None:
+                    warnings.warn(
+                        "Mesh has not been checked if it is connected before atempting to show "
+                        "possible disjoint parts, which may take a while to compute when the mesh "
+                        "has many faces, now applying operation..."
+                    )
+                if input_obj.is_connected():
+                    continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs

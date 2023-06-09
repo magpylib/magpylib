@@ -6,10 +6,11 @@ import pytest
 import pyvista as pv
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import lines_end_in_trimesh
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
-from magpylib._src.exceptions import MagpylibBadUserInput
+
 
 def test_TriangularMesh_repr():
     """TriangularMesh repr test"""
@@ -231,6 +232,7 @@ def test_TriangularMesh_from_faces_bad_inputs():
             validate_connected=False,
             reorient_faces=False,
         )
+
     def get_tri_from_mesh(mesh):
         return magpy.magnet.TriangularMesh.from_mesh(
             mag,
@@ -239,6 +241,7 @@ def test_TriangularMesh_from_faces_bad_inputs():
             validate_connected=False,
             reorient_faces=False,
         )
+
     triangle = magpy.misc.Triangle(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0)])
 
     # good element type but not array-like
@@ -252,14 +255,14 @@ def test_TriangularMesh_from_faces_bad_inputs():
     # bad type input
     with pytest.raises(MagpylibBadUserInput):
         get_tri_from_mesh(1)
-    
+
     # bad shape input
-    msh = [((0,0), (1,0), (0,1))]*2
+    msh = [((0, 0), (1, 0), (0, 1))] * 2
     with pytest.raises(ValueError):
         get_tri_from_mesh(msh)
 
     # bad shape input
-    msh = [((0,0,0), (1,0,0), (0,1,0), (0,0,1))]*2
+    msh = [((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1))] * 2
     with pytest.raises(ValueError):
         get_tri_from_mesh(msh)
 
@@ -273,27 +276,19 @@ def test_TriangularMesh_from_faces_good_inputs():
     tetra.move((3, 4, 5)).rotate_from_angax([13, 37], (1, 2, 3), anchor=0)
     pos_ori = dict(orientation=tetra.orientation, position=tetra.position)
 
-    tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(
-        mag, tetra.vertices, **pos_ori
-    )
+    tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(mag, tetra.vertices, **pos_ori)
 
     # from triangle list
     trias = [magpy.misc.Triangle(mag, face) for face in tmesh1.mesh]
-    tmesh2 = magpy.magnet.TriangularMesh.from_triangles(
-        mag, trias, **pos_ori
-    )
+    tmesh2 = magpy.magnet.TriangularMesh.from_triangles(mag, trias, **pos_ori)
 
     # from collection
     coll = magpy.Collection(trias)
-    tmesh3 = magpy.magnet.TriangularMesh.from_triangles(
-        mag, coll, **pos_ori
-    )
+    tmesh3 = magpy.magnet.TriangularMesh.from_triangles(mag, coll, **pos_ori)
 
     # from mesh
     msh = [t.vertices for t in coll]
-    tmesh4 = magpy.magnet.TriangularMesh.from_mesh(
-        mag, msh, **pos_ori
-    )
+    tmesh4 = magpy.magnet.TriangularMesh.from_mesh(mag, msh, **pos_ori)
 
     points = [0, 0, 0]
     B0 = tetra.getB(points)
@@ -301,7 +296,7 @@ def test_TriangularMesh_from_faces_good_inputs():
     B2 = tmesh2.getB(points)
     B3 = tmesh3.getB(points)
     B4 = tmesh4.getB(points)
-    
+
     np.testing.assert_allclose(B0, B1)
     np.testing.assert_allclose(B0, B2)
     np.testing.assert_allclose(B0, B3)
