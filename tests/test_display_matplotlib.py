@@ -158,8 +158,8 @@ def test_TringularMesh_display():
         (0, 0, 1000),
         vertices,
         faces,
-        validate_closed=False,
-        validate_connected=False,
+        validate_closed="ignore",
+        validate_connected="ignore",
         reorient_faces=False,
         style_mesh_grid_show=True,
     )

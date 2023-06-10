@@ -150,19 +150,7 @@ def test_bad_triangle_indices():
     "raise ValueError if faces index > len(vertices)"
     vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
     faces = [[1, 2, 3]]  # index 3 >= len(vertices)
-    with pytest.raises(ValueError):
-        magpy.magnet.TriangularMesh(
-            magnetization=(0, 0, 1000),
-            vertices=vertices,
-            faces=faces,
-        )
-
-
-def test_minimum_vertices():
-    "raise ValueError if faces index > len(vertices)"
-    vertices = [[0, 0, 0], [0, 0, 1], [1, 0, 0]]
-    faces = [[1, 2, 3]]
-    with pytest.raises(ValueError):
+    with pytest.raises(IndexError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
@@ -198,6 +186,7 @@ def test_disjoint_mesh():
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000),
             polydata=pv.Text3D("AB"),
+            validate_connected="raise",
         )
 
 

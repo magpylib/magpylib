@@ -315,8 +315,13 @@ class TriangularMesh(BaseMagnet):
             sig_name="TriangularMesh.faces",
             sig_type="array_like (list, tuple, ndarray) of shape (n,3)",
         ).astype(int)
-
-        return (verts, trias)
+        try:
+            verts[trias]
+        except IndexError as e:
+            raise IndexError(
+                "Some `faces` indices do not match with `vertices` array"
+            ) from e
+        return verts, trias
 
     def reorient_faces(self, errors="warn"):
         """Triangular faces pointing inwards are fliped in the right direction.

@@ -528,6 +528,7 @@ def test_describe():
         "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
         "  • faces: shape(52, 3) \n"
         "  • mesh: shape(52, 3, 3) \n"
+        "  • mesh_status: {'closed': 'True', 'connected': 'True', 'reoriented': 'True'} \n"
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
