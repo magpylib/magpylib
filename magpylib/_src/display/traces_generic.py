@@ -1032,8 +1032,8 @@ def get_generic_traces(
             if mode == "open":
                 if input_obj._is_closed is None:
                     warnings.warn(
-                        "Mesh has not been checked if it is connected before atempting to show "
-                        "possible open edges, which may take a while to compute when the mesh "
+                        f"{input_obj!r} closed status has not been checked before atempting to show "
+                        "potential open edges, which may take a while to compute when the mesh "
                         "has many faces, now applying operation..."
                     )
                 if input_obj.is_closed():
@@ -1041,7 +1041,7 @@ def get_generic_traces(
             if mode == "disjoint":
                 if input_obj._is_connected is None:
                     warnings.warn(
-                        "Mesh has not been checked if it is connected before atempting to show "
+                        f"{input_obj!r} connected status checked before atempting to show "
                         "possible disjoint parts, which may take a while to compute when the mesh "
                         "has many faces, now applying operation..."
                     )

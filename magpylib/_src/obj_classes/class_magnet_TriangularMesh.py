@@ -189,7 +189,7 @@ class TriangularMesh(BaseMagnet):
             self._is_closed = trimesh_is_closed(self._faces)
             if not self._is_closed:
                 msg = (
-                    "Mesh is open. Field calculation may deliver erroneous results. "
+                    f"{self!r} is open. Field calculation may deliver erroneous results. "
                     "This check can be disabled at initialization time by setting "
                     "`validate_closed='ignore'`. Open edges can be displayed by setting "
                     "the `style_mesh_disjoint_show=True` in the `show` function. "
@@ -241,7 +241,7 @@ class TriangularMesh(BaseMagnet):
             self._is_connected = len(self.get_faces_subsets()) == 1
             if not self._is_connected:
                 msg = (
-                    "Mesh is disjoint. "
+                    f"{self!r} is disjoint. "
                     "Mesh parts can be obtained via the `.get_faces_subsets()` method "
                     "and be displayed by setting `style_mesh_disjoint_show=True` "
                     "in the `show` function. "
@@ -329,7 +329,7 @@ class TriangularMesh(BaseMagnet):
         """
         if self._is_closed is None:
             warnings.warn(
-                "Mesh has not been checked if it is closed before performing faces "
+                f"{self!r} has not been checked if it is closed before performing faces "
                 "reorientation, now applying operation..."
             )
             self.is_closed(errors=errors)
