@@ -11,13 +11,9 @@ kernelspec:
   name: python3
 ---
 
-+++ {"user_expressions": []}
-
 ```{versionadded} 4.2
 The `Triangle` class
 ```
-
-+++ {"user_expressions": []}
 
 (examples-triangle)=
 
@@ -102,9 +98,4 @@ magpy.show(
 )
 ```
 
-+++ {"user_expressions": []}
-
-```{seealso}
-Building a source with a set of triangles is error prone, since there is no check if the collection produces a closed body, if the triangles are all pointing outwards and if the manifold is connected or self-intersecting. A more feature rich and robust `TriangularMesh` magnet class allows for combining triangular faces into a single object and implements useful features to build complex-shaped magnets more easily.
-See some examples {ref}`examples-triangularmesh`
-```
+However, despite the potential of the `Triangle` class to build complex shapes, its application is prone to error because there is no intrinsic check of face orientation, connectedness, and being inside or outside of the magnet. For convenience the `TriangularMesh` class provides all these features, and enables users to quickly import complex triangular meshes as single magnet objects, see {ref}`examples-triangularmesh`.
