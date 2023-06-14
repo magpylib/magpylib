@@ -202,11 +202,12 @@ class TriangularMesh(BaseMagnet):
             self._status_closed = trimesh_is_closed(self._faces)
             if not self._status_closed:
                 msg = (
-                    f"{self!r} is open. Field calculation may deliver erroneous results. "
-                    "This check can be disabled at initialization time by setting "
-                    "`check_closed='skip'`. Open edges can be displayed by setting "
-                    "the `style_mesh_disjoint_show=True` in the `show` function. "
-                    "Note that faces reorientation may also fail in that case!"
+                    f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
+                    "give bad results and subsequently getB() and reorient_faces() may give bad "
+                    "results as well. "
+                    "This check can be disabled at initialization with check_closed='skip'. "
+                    "Open edges can be displayed in show() with style_mesh_disjoint_show=True."
+                    "Open edges are stored in the status_closed_data property."
                 )
                 if mode == "warn":
                     warnings.warn(msg)
@@ -250,13 +251,11 @@ class TriangularMesh(BaseMagnet):
             self._status_connected = len(self.get_faces_subsets()) == 1
             if not self._status_connected:
                 msg = (
-                    f"{self!r} is disjoint. "
-                    "Mesh parts can be obtained via the `.get_faces_subsets()` method "
-                    "and be displayed by setting `style_mesh_disjoint_show=True` "
-                    "in the `show` function. "
-                    "This check can be disabled at initialization time by setting "
-                    "`check_connected='skip'`. "
-                    "Note that this should not affect field calculation."
+                    f"Disjoint mesh detected in {self!r}. Magnet consists of multiple individual "
+                    "parts. "
+                    "This check can be disabled at initialization with check_connected='skip'. "
+                    "Parts can be displayed in show() with style_mesh_disjoint_show=True. "
+                    "Parts are stored in the status_connected_data property."
                 )
                 if mode == "warn":
                     warnings.warn(msg)
@@ -270,12 +269,21 @@ class TriangularMesh(BaseMagnet):
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
-            if self._status_closed is None and mode == "warn":
-                warnings.warn(
-                    f"{self!r} status_closed is None (=unchecked). Now applying check_closed()"
-                )
-            self.check_closed(mode=mode)
-            # if mesh is not closed, inside-outside will not fail but may deliver inconsistent results
+            
+            if self._status_closed is None:
+                if mode in ["warn", "raise"]:
+                    warnings.warn(
+                        f"Unchecked mesh status in {self!r} detected. Now applying check_closed()"
+                    )
+                self.check_closed(mode=mode)
+
+            if not self._status_closed:
+                msg = f"Open mesh in {self!r} detected. reorient_faces() can give bad results."
+                if mode=="warn":
+                    warnings.warn(msg)
+                elif mode=="raise":
+                    raise ValueError(msg)
+            
             self._faces = fix_trimesh_orientation(self._vertices, self._faces)
             self._status_reoriented = True
 
