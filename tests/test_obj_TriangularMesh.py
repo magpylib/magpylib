@@ -97,7 +97,7 @@ def test_TriangularMesh_getB_different_facet_shapes_mixed():
     tmesh_tetra = magpy.magnet.TriangularMesh.from_pyvista(
         polydata=tetra_pv, **tetra_kwargs
     )
-    assert tmesh_tetra.is_reoriented()
+    assert tmesh_tetra.status_reoriented is True
     cube = (
         magpy.magnet.Cuboid((111, 222, 333), (1, 1, 1))
         .move((1, 1, 1))
@@ -175,7 +175,7 @@ def test_open_mesh():
             magnetization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
-            validate_closed=True,
+            check_closed="raise",
         )
 
 
@@ -186,7 +186,7 @@ def test_disjoint_mesh():
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000),
             polydata=pv.Text3D("AB"),
-            validate_connected="raise",
+            check_connected="raise",
         )
 
 
@@ -217,8 +217,8 @@ def test_TriangularMesh_from_faces_bad_inputs():
         return magpy.magnet.TriangularMesh.from_triangles(
             mag,
             trias,
-            validate_closed=False,
-            validate_connected=False,
+            check_closed=False,
+            check_connected=False,
             reorient_faces=False,
         )
 
@@ -226,8 +226,8 @@ def test_TriangularMesh_from_faces_bad_inputs():
         return magpy.magnet.TriangularMesh.from_mesh(
             mag,
             mesh,
-            validate_closed=False,
-            validate_connected=False,
+            check_closed=False,
+            check_connected=False,
             reorient_faces=False,
         )
 

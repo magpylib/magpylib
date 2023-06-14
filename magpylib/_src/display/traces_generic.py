@@ -576,7 +576,7 @@ def make_TriangularMesh(
         "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=color
     )
     ntri = len(obj.faces)
-    default_suffix = f" ({ntri} facet{'s'[:ntri^1]})"
+    default_suffix = f" ({ntri} face{'s'[:ntri^1]})"
     update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
     update_magnet_mesh(
         trace, mag_style=style.magnetization, magnetization=obj.magnetization
@@ -890,7 +890,7 @@ def get_generic_traces(
     obj_is_disjoint = (
         isinstance(input_obj, TriangularMesh)
         and style.mesh.disjoint.show
-        and not input_obj.is_connected()
+        and not input_obj.check_connected()
     )
     disjoint_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
@@ -1030,22 +1030,22 @@ def get_generic_traces(
     if isinstance(input_obj, TriangularMesh):
         for mode in ("grid", "open", "disjoint"):
             if mode == "open":
-                if input_obj._is_closed is None:
+                if input_obj._status_closed is None:
                     warnings.warn(
                         f"{input_obj!r} closed status has not been checked before atempting to show "
                         "potential open edges, which may take a while to compute when the mesh "
                         "has many faces, now applying operation..."
                     )
-                if input_obj.is_closed():
+                if input_obj.check_closed():
                     continue
             if mode == "disjoint":
-                if input_obj._is_connected is None:
+                if input_obj._status_connected is None:
                     warnings.warn(
                         f"{input_obj!r} connected status checked before atempting to show "
                         "possible disjoint parts, which may take a while to compute when the mesh "
                         "has many faces, now applying operation..."
                     )
-                if input_obj.is_connected():
+                if input_obj.check_connected():
                     continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(

@@ -53,11 +53,11 @@ class TriangularMesh(BaseMagnet):
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
 
-    validate_closed: bool, default=`True`
+    check_closed: bool, default=`True`
         Only a closed mesh guarantees a physical magnet.
         If `True`, raise error if mesh is not closed.
 
-    validate_connected: bool, default=`True`
+    check_connected: bool, default=`True`
         If `True` raise an error if mesh is not connected.
 
     parent: `Collection` object or `None`
@@ -102,26 +102,21 @@ class TriangularMesh(BaseMagnet):
         faces=None,
         position=(0, 0, 0),
         orientation=None,
-        validate_closed="warn",
-        validate_connected="warn",
-        reorient_faces=True,
+        check_closed="warn",
+        check_connected="warn",
+        reorient_faces="warn",
         style=None,
         **kwargs,
     ):
         self._vertices, self._faces = self._input_check(vertices, faces)
-        self._is_connected = None
-        self._is_closed = None
-        self._is_reoriented = False
-        self._faces_subsets = None
+        self._status_connected = None
+        self._status_closed = None
+        self._status_reoriented = False
+        self._status_connected_data = None
 
-        if validate_closed != "ignore":
-            self.is_closed(errors=validate_closed)
-
-        if validate_connected != "ignore":
-            self.is_connected(errors=validate_connected)
-
-        if reorient_faces:
-            self.reorient_faces()
+        self.check_closed(mode=check_closed)
+        self.check_connected(mode=check_connected)
+        self.reorient_faces(mode=reorient_faces)
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -142,27 +137,45 @@ class TriangularMesh(BaseMagnet):
         """Mesh"""
         return self._vertices[self._faces]
 
-    @staticmethod
-    def _validate_error_arg(arg):
-        """Validate error argument"""
-        accepted_errors_vals = ("warn", "raise", "ignore")
-        if arg not in accepted_errors_vals:
-            raise ValueError(
-                f"The `error` argument must be one of {accepted_errors_vals}, "
-                f"instead received {arg!r}"
-            )
+    @property
+    def status_closed(self):
+        """Return closed satus"""
+        return self._status_closed
 
-    def is_closed(self, errors="warn"):
+    @property
+    def status_connected(self):
+        """Return connected satus"""
+        return self._status_connected
+
+    @property
+    def status_reoriented(self):
+        """Return reoriented satus"""
+        return self._status_reoriented
+
+    @staticmethod
+    def _validate_mode_arg(arg, arg_name="mode"):
+        """Validate mode argument"""
+        accepted_arg_vals = (True, False, "warn", "raise", "ignore", "skip")
+        if arg not in accepted_arg_vals:
+            raise ValueError(
+                f"The `{arg_name}` argument must be one of {accepted_arg_vals}, "
+                f"instead received {arg!r}."
+                f"\nNote that `True` translates to `'warn'` and `False` to `'skip'`"
+            )
+        arg = "warn" if arg is True else "skip" if arg is False else arg
+        return arg
+
+    def check_closed(self, mode="warn"):
         """
         Check whether the mesh is closed.
 
         This function checks if the mesh is closed. If the mesh is not closed,
-        it issues a warning or raises a ValueError, depending on the 'errors' parameter.
-        If 'errors' is set to 'ignore', it does not issue a warning or raise an error.
+        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
+        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
 
         Parameters
         ----------
-        errors : str, optional
+        mode : str, optional
             Controls how to handle if the mesh is not closed.
             Accepted values are "warn", "raise", or "ignore".
             If "warn", a warning is issued. If "raise", a ValueError is raised.
@@ -176,45 +189,41 @@ class TriangularMesh(BaseMagnet):
         Raises
         ------
         ValueError
-            If 'errors' is not one of the accepted values or if 'errors' is "raise" and the mesh
+            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
             is not closed.
 
         Warns
         -----
         UserWarning
-            If the mesh is not closed and 'errors' is "warn".
+            If the mesh is not closed and 'mode' is "warn".
         """
-        self._validate_error_arg(errors)
-        if self._is_closed is None:
-            self._is_closed = trimesh_is_closed(self._faces)
-            if not self._is_closed:
+        mode = self._validate_mode_arg(mode, arg_name="check_closed mode")
+        if mode != "skip" and self._status_closed is None:
+            self._status_closed = trimesh_is_closed(self._faces)
+            if not self._status_closed:
                 msg = (
                     f"{self!r} is open. Field calculation may deliver erroneous results. "
                     "This check can be disabled at initialization time by setting "
-                    "`validate_closed='ignore'`. Open edges can be displayed by setting "
+                    "`check_closed='skip'`. Open edges can be displayed by setting "
                     "the `style_mesh_disjoint_show=True` in the `show` function. "
                     "Note that faces reorientation may also fail in that case!"
                 )
-                if errors == "warn":
+                if mode == "warn":
                     warnings.warn(msg)
-                elif errors == "raise":
+                elif mode == "raise":
                     raise ValueError(msg)
-        return self._is_closed
+        return self._status_closed
 
-    def is_reoriented(self):
-        """True if the faces have been reoriented"""
-        return self._is_reoriented
-
-    def is_connected(self, errors="warn"):
+    def check_connected(self, mode="warn"):
         """Check whether the mesh is connected.
 
         This function checks if the mesh is connected. If the mesh is not connected,
-        it issues a warning or raises a ValueError, depending on the 'errors' parameter.
-        If 'errors' is set to 'ignore', it does not issue a warning or raise an error.
+        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
+        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
 
         Parameters
         ----------
-        errors : str, optional
+        mode : str, optional
             Controls how to handle if the mesh is not connected.
             Accepted values are "warn", "raise", or "ignore".
             If "warn", a warning is issued. If "raise", a ValueError is raised.
@@ -228,49 +237,54 @@ class TriangularMesh(BaseMagnet):
         Raises
         ------
         ValueError
-            If 'errors' is not one of the accepted values or if 'errors' is "raise" and the mesh
+            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
             is not connected.
 
         Warns
         -----
         UserWarning
-            If the mesh is not connected and 'errors' is "warn".
+            If the mesh is not connected and 'mode' is "warn".
         """
-        self._validate_error_arg(errors)
-        if self._is_connected is None:
-            self._is_connected = len(self.get_faces_subsets()) == 1
-            if not self._is_connected:
+        mode = self._validate_mode_arg(mode, arg_name="check_connected mode")
+        if mode != "skip" and self._status_connected is None:
+            self._status_connected = len(self.get_faces_subsets()) == 1
+            if not self._status_connected:
                 msg = (
                     f"{self!r} is disjoint. "
                     "Mesh parts can be obtained via the `.get_faces_subsets()` method "
                     "and be displayed by setting `style_mesh_disjoint_show=True` "
                     "in the `show` function. "
                     "This check can be disabled at initialization time by setting "
-                    "`validate_connected='ignore'`. "
+                    "`check_connected='skip'`. "
                     "Note that this should not affect field calculation."
                 )
-                if errors == "warn":
+                if mode == "warn":
                     warnings.warn(msg)
-                elif errors == "raise":
+                elif mode == "raise":
                     raise ValueError(msg)
-        return self._is_connected
+        return self._status_connected
+
+    def reorient_faces(self, mode="warn"):
+        """Triangular faces pointing inwards are fliped in the right direction.
+        Prior to reorientation, it is checked if the mesh is closed.
+        """
+        mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
+        if mode != "skip":
+            if self._status_closed is None and mode == "warn":
+                warnings.warn(
+                    f"{self!r} has not been checked if it is closed before performing faces "
+                    "reorientation, now applying operation..."
+                )
+                self.check_closed(mode=mode)
+            # if mesh is not closed, inside-outside will not fail but may deliver inconsistent results
+            self._faces = fix_trimesh_orientation(self._vertices, self._faces)
+            self._status_reoriented = True
 
     def get_faces_subsets(self):
         """return faces subsets"""
-        if self._faces_subsets is None:
-            self._faces_subsets = get_disjoint_faces_subsets(self._faces)
-        return self._faces_subsets
-
-    @property
-    def mesh_status(self):
-        """Return the current mesh status on validation checks."""
-        return {
-            "closed": "Unchecked" if self._is_closed is None else str(self._is_closed),
-            "connected": "Unchecked"
-            if self._is_connected is None
-            else str(self._is_connected),
-            "reoriented": str(self._is_reoriented),
-        }
+        if self._status_connected_data is None:
+            self._status_connected_data = get_disjoint_faces_subsets(self._faces)
+        return self._status_connected_data
 
     @property
     def _barycenter(self):
@@ -323,20 +337,6 @@ class TriangularMesh(BaseMagnet):
             ) from e
         return verts, trias
 
-    def reorient_faces(self, errors="warn"):
-        """Triangular faces pointing inwards are fliped in the right direction.
-        Prior to reorientation, it is checked if the mesh is closed.
-        """
-        if self._is_closed is None:
-            warnings.warn(
-                f"{self!r} has not been checked if it is closed before performing faces "
-                "reorientation, now applying operation..."
-            )
-            self.is_closed(errors=errors)
-        # if mesh is not closed, inside-outside will not fail but may deliver inconsistent results
-        self._faces = fix_trimesh_orientation(self._vertices, self._faces)
-        self._is_reoriented = True
-
     def to_TriangleCollection(self):
         """Return a Collection of Triangle objects from the current TriangularMesh"""
         tris = [
@@ -355,8 +355,8 @@ class TriangularMesh(BaseMagnet):
         points=None,
         position=(0, 0, 0),
         orientation=None,
-        validate_closed="warn",
-        validate_connected="warn",
+        check_closed="warn",
+        check_connected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -385,13 +385,13 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        validate_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        validate_connected: {'warn', 'raise', 'ignore'}, default='warn'
+        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disjoint and "warn", a warning is issued.
             If the mesh is disjoint and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
@@ -422,8 +422,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            validate_closed=validate_closed,
-            validate_connected=validate_connected,
+            check_closed=check_closed,
+            check_connected=check_connected,
             style=style,
             **kwargs,
         )
@@ -435,8 +435,8 @@ class TriangularMesh(BaseMagnet):
         polydata=None,
         position=(0, 0, 0),
         orientation=None,
-        validate_closed="warn",
-        validate_connected="warn",
+        check_closed="warn",
+        check_connected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -465,13 +465,13 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        validate_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        validate_connected: {'warn', 'raise', 'ignore'}, default='warn'
+        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disjoint and "warn", a warning is issued.
             If the mesh is disjoint and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
@@ -519,8 +519,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            validate_closed=validate_closed,
-            validate_connected=validate_connected,
+            check_closed=check_closed,
+            check_connected=check_connected,
             style=style,
             **kwargs,
         )
@@ -533,8 +533,8 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_faces=True,
-        validate_closed="warn",
-        validate_connected="warn",
+        check_closed="warn",
+        check_connected="warn",
         style=None,
         **kwargs,
     ):
@@ -562,13 +562,13 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        validate_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        validate_connected: {'warn', 'raise', 'ignore'}, default='warn'
+        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disjoint and "warn", a warning is issued.
             If the mesh is disjoint and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
@@ -614,8 +614,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            validate_closed=validate_closed,
-            validate_connected=validate_connected,
+            check_closed=check_closed,
+            check_connected=check_connected,
             style=style,
             **kwargs,
         )
@@ -628,8 +628,8 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_faces=True,
-        validate_closed="warn",
-        validate_connected="warn",
+        check_closed="warn",
+        check_connected="warn",
         style=None,
         **kwargs,
     ):
@@ -657,13 +657,13 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        validate_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        validate_connected: {'warn', 'raise', 'ignore'}, default='warn'
+        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disjoint and "warn", a warning is issued.
             If the mesh is disjoint and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
@@ -702,8 +702,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            validate_closed=validate_closed,
-            validate_connected=validate_connected,
+            check_closed=check_closed,
+            check_connected=check_connected,
             style=style,
             **kwargs,
         )
