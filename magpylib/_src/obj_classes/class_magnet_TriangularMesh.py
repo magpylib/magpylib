@@ -269,7 +269,7 @@ class TriangularMesh(BaseMagnet):
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
-            
+
             if self._status_closed is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(
@@ -283,7 +283,7 @@ class TriangularMesh(BaseMagnet):
                     warnings.warn(msg)
                 elif mode=="raise":
                     raise ValueError(msg)
-            
+
             self._faces = fix_trimesh_orientation(self._vertices, self._faces)
             self._status_reoriented = True
 

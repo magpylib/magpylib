@@ -1032,9 +1032,9 @@ def get_generic_traces(
             if mode == "open":
                 if input_obj._status_closed is None:
                     warnings.warn(
-                        f"{input_obj!r} closed status has not been checked before atempting to show "
-                        "potential open edges, which may take a while to compute when the mesh "
-                        "has many faces, now applying operation..."
+                        f"{input_obj!r} closed status has not been checked before attempting "
+                        "to show potential open edges, which may take a while to compute "
+                        "when the mesh has many faces, now applying operation..."
                     )
                 if input_obj.check_closed():
                     continue
