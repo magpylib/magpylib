@@ -272,10 +272,9 @@ class TriangularMesh(BaseMagnet):
         if mode != "skip":
             if self._status_closed is None and mode == "warn":
                 warnings.warn(
-                    f"{self!r} has not been checked if it is closed before performing faces "
-                    "reorientation, now applying operation..."
+                    f"{self!r} status_closed is None (=unchecked). Now applying check_closed()"
                 )
-                self.check_closed(mode=mode)
+            self.check_closed(mode=mode)
             # if mesh is not closed, inside-outside will not fail but may deliver inconsistent results
             self._faces = fix_trimesh_orientation(self._vertices, self._faces)
             self._status_reoriented = True
