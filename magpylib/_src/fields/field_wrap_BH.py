@@ -42,6 +42,7 @@ level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
 # pylint: disable=cyclic-import
 import numbers
+import warnings
 from itertools import product
 from typing import Callable
 
@@ -193,6 +194,7 @@ def getBH_level2(
     # pylint: disable=import-outside-toplevel
 
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -220,6 +222,14 @@ def getBH_level2(
     # test if all source dimensions and excitations are initialized
     check_dimensions(src_list)
     check_excitations(src_list, field)
+
+    # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
+    if field == "B":
+        for src in src_list:
+            if isinstance(src, TriangularMesh):
+                # distinguish between is_closed = NONE or FALSE once that part is done
+                if not src.is_closed():
+                    warnings.warn(f"Open mesh of {src} can lead to bad B-field computation.")
 
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
