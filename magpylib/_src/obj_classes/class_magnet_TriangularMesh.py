@@ -279,9 +279,9 @@ class TriangularMesh(BaseMagnet):
 
             if not self._status_closed:
                 msg = f"Open mesh in {self!r} detected. reorient_faces() can give bad results."
-                if mode=="warn":
+                if mode == "warn":
                     warnings.warn(msg)
-                elif mode=="raise":
+                elif mode == "raise":
                     raise ValueError(msg)
 
             self._faces = fix_trimesh_orientation(self._vertices, self._faces)
