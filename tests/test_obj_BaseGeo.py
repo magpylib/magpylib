@@ -530,6 +530,7 @@ def test_describe():
         "  • mesh: shape(52, 3, 3) \n"
         "  • status_closed: True \n"
         "  • status_connected: True \n"
+        "  • status_connected_data: shape(1, 52, 3) \n"
         "  • status_reoriented: True \n"
         "  • vertices: shape(26, 3) "
     )

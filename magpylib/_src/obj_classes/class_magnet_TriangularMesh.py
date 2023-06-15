@@ -293,6 +293,11 @@ class TriangularMesh(BaseMagnet):
         return self._status_connected_data
 
     @property
+    def status_connected_data(self):
+        """Status for connectedness (faces subsets)"""
+        return self._status_connected_data
+
+    @property
     def _barycenter(self):
         """Object barycenter."""
         return self._get_barycenter(
