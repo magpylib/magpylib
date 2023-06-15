@@ -101,7 +101,7 @@ def process_extra_trace(model):
         "kwargs": model_kwargs,
         "args": model_args,
     }
-    kwargs, args, = place_and_orient_model3d(
+    kwargs, args = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -126,7 +126,6 @@ def display_matplotlib(
     return_animation=False,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the matplotlib library."""
     data = get_frames(
         objs=obj_list,

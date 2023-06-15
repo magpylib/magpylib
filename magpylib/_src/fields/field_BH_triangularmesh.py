@@ -105,9 +105,7 @@ def get_disjoint_faces_subsets(faces: list) -> list:
             rest = rest2
         subsets_inds.append(list(first))
         tria_temp = rest
-    subsets = [
-        faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds
-    ]
+    subsets = [faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds]
     return subsets
 
 
@@ -120,9 +118,7 @@ def trimesh_is_closed(faces: np.ndarray) -> bool:
 
     Output: bool (True if closed, False if open)
     """
-    edges = np.concatenate(
-        [faces[:, 0:2], faces[:, 1:3], faces[:, ::2]], axis=0
-    )
+    edges = np.concatenate([faces[:, 0:2], faces[:, 1:3], faces[:, ::2]], axis=0)
 
     # unique edge pairs and counts how many
     edges = np.sort(edges, axis=1)

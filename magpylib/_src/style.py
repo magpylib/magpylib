@@ -450,7 +450,8 @@ class Trace3d(MagicProperties):
     @property
     def constructor(self):
         """Model constructor function or method to be called to build a 3D-model object
-        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend."""
+        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+        """
         return self._constructor
 
     @constructor.setter

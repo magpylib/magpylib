@@ -269,7 +269,6 @@ class TriangularMesh(BaseMagnet):
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
-
             if self._status_closed is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(

@@ -90,7 +90,6 @@ class Loop(BaseCurrent):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.diameter = diameter
 

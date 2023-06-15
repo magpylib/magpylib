@@ -400,6 +400,7 @@ def test_getB_dict_over_getB():
 
 def test_subclassing():
     """Test side effects of suclasssing a source"""
+
     # pylint: disable=unused-variable
     class MyCuboid(magpylib.magnet.Cuboid):
         """Test subclass"""

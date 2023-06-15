@@ -379,12 +379,10 @@ def check_format_input_vector2(
         inp,
         f"Input parameter `{param_name}` must contain only float compatible entries.\n",
     )
-    for d1,d2 in zip(inp.shape, shape):
+    for d1, d2 in zip(inp.shape, shape):
         if d2 is not None:
             if d1 != d2:
-                raise ValueError(
-                    f"Input parameter `{param_name}` has bad shape."
-                )
+                raise ValueError(f"Input parameter `{param_name}` has bad shape.")
     return inp
 
 
@@ -552,7 +550,6 @@ def check_format_input_obj(
 
     obj_list = []
     for obj in inp:
-
         # add to list if wanted type
         if isinstance(obj, wanted_types):
             obj_list.append(obj)
