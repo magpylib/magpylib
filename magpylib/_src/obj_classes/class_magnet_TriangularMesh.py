@@ -11,8 +11,8 @@ from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
     get_disjoint_faces_subsets,
 )
+from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
-from magpylib._src.fields.field_BH_triangularmesh import trimesh_is_closed
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_format_input_vector2
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -113,6 +113,7 @@ class TriangularMesh(BaseMagnet):
         self._status_closed = None
         self._status_reoriented = False
         self._status_connected_data = None
+        self._status_closed_data = None
 
         self.check_closed(mode=check_closed)
         self.check_connected(mode=check_connected)
@@ -199,7 +200,7 @@ class TriangularMesh(BaseMagnet):
         """
         mode = self._validate_mode_arg(mode, arg_name="check_closed mode")
         if mode != "skip" and self._status_closed is None:
-            self._status_closed = trimesh_is_closed(self._faces)
+            self._status_closed = len(self.get_open_edges()) == 0
             if not self._status_closed:
                 msg = (
                     f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
@@ -292,10 +293,21 @@ class TriangularMesh(BaseMagnet):
             self._status_connected_data = get_disjoint_faces_subsets(self._faces)
         return self._status_connected_data
 
+    def get_open_edges(self):
+        """return faces subsets"""
+        if self._status_closed_data is None:
+            self._status_closed_data = get_open_edges(self._faces)
+        return self._status_closed_data
+
     @property
     def status_connected_data(self):
         """Status for connectedness (faces subsets)"""
         return self._status_connected_data
+
+    @property
+    def status_closed_data(self):
+        """Status for openness (open edges)"""
+        return self._status_closed_data
 
     @property
     def _barycenter(self):

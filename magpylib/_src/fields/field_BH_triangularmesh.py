@@ -109,23 +109,23 @@ def get_disjoint_faces_subsets(faces: list) -> list:
     return subsets
 
 
-def trimesh_is_closed(faces: np.ndarray) -> bool:
+def get_open_edges(faces: np.ndarray) -> bool:
     """
     Check if given trimesh forms a closed surface.
 
     Input: faces: np.ndarray, shape (n,3), dtype int
         triples of indices
 
-    Output: bool (True if closed, False if open)
+    Output: open edges
     """
     edges = np.concatenate([faces[:, 0:2], faces[:, 1:3], faces[:, ::2]], axis=0)
 
     # unique edge pairs and counts how many
     edges = np.sort(edges, axis=1)
-    _, edge_counts = np.unique(edges, axis=0, return_counts=True)
+    edges_uniq, edge_counts = np.unique(edges, axis=0, return_counts=True)
 
     # mesh is closed if each edge exists twice
-    return np.all(edge_counts == 2)
+    return edges_uniq[edge_counts != 2]
 
 
 def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
