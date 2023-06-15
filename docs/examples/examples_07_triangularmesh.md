@@ -19,25 +19,34 @@ The `TriangularMesh` class
 
 # Complex shapes - The TrianglularMesh class
 
-The `TriangularMesh` class is used to create magnets from a triangular surface meshes, instead of assembling them from individual `Triangle` objects as described in {ref}`examples-triangle`. In contrast to a `Collection` of `Triangle` objects the `TriangularMesh` class performs several important checks at initialization to ensure that the given triangular mesh forms a proper magnet:
+The `TriangularMesh` class is used to create magnets from triangular surface meshes, instead of assembling them from individual `Triangle` objects as described in {ref}`examples-triangle`. This class is initialized with the `vertices` (an array_like of positions) and the `faces` (an array_like of index triplets) inputs. In addition, a set of useful classmethods enables initialization from various inputs:
 
-- `reorient_faces`: checks if faces are facing outwards, and flips the ones wrongly oriented
-- `validate_closed`: checks if given mesh is closed.
-- `validate_connected`: checks if given mesh is connected.
+- `TriangularMesh.from_mesh()`: from an array_like of triplets of vertices
+- `TriangularMesh.from_triangles()`: from a list of `Triangle` objects
+- `TriangularMesh.from_ConvexHull()`: from the convex hull of a given point cloud
+- `TriangularMesh.from_pyvista()`: from a Pvista `PolyData` object
+
+In contrast to a `Collection` of `Triangle` objects the `TriangularMesh` class performs several important checks at initialization by default to ensure that the given triangular mesh forms a proper magnet:
+
+- `check_closed`: checks if given mesh forms a closed surface
+- `check_connected`: checks if given mesh is connected
+- `reorient_faces`: checks if faces are oriented outwards, and flips the ones wrongly oriented. This works only if the mesh is closed.
+
+All three checks will throw warnings by default if the mesh is open, disconnected, or cannot be reoriented. Four options enable error handling: `"skip"`, `"ignore"`, `"warn"` (default), `"raise"`. If skipped at initialization, the checks can be performed by hand via respective methods.
+
+The mesh status is set by the checks, and can be viewed via the properties `status_closed`, `status_connected` and `status_reoriented` with possible values `None`, `True`, `False`. Problems of the mesh (e.g. open edges) are stored in `status_closed_data` and `status_connected_data`. Such problems can be viewed with `show`.
 
 ```{caution}
-* Only if the mesh is closed and all faces are properly oriented outwards it is possible to compute the magnetic fields B and H correctly (requires inside-outside checks).
+* Only if the mesh is closed and all faces are properly oriented outwards, `getB` and `getH` compute the fields correctly.
 
-* Input checks can be computationally expensive, especially for the automatic reorientation of faces. The checks can be individually deactivated by setting `reorient_faces=False`, `validate_closed=False` and `validate_connected=False` at initialization of `TriangularMesh` objects.
+* Input checks and face reorientation can be computationally expensive. The checks can be individually deactivated by setting `reorient_faces="skip"`, `check_closed="skip"` and `check_connected="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
 
-* Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected. Deactivating mesh input checks may lead to unwanted results.
+* Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected.
 
-* Triangular meshes from meshing tools often create very large meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that the computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited ressource. On standard computers the checks and field computations might start to fail when meshes tend towards a Million faces.
-
-* There is no self-intersecting check which might lead to unphysical bodies.
+* Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that the field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited ressource.
 ```
 
-## Example - Tetrahedron
+## Example - Tetrahedron magnet
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -49,15 +58,15 @@ tmesh_tetra = magpy.magnet.TriangularMesh(
     faces=((2, 1, 0), (3, 0, 1), (3, 2, 0), (3, 1, 2)),
 )
 
-# print input checks attributes
-print("is closed:", tmesh_tetra.is_closed)
-print("is connected:", tmesh_tetra.is_connected)
-print("is reoriented:", tmesh_tetra.is_reoriented)
+# print mesh status
+print("mesh status closed:", tmesh_tetra.status_closed)
+print("mesh status connected:", tmesh_tetra.status_connected)
+print("mesh status reoriented:", tmesh_tetra.status_reoriented)
 
 tmesh_tetra.show()
 ```
 
-## Example - Dodecahedron from pyvista
+## Example - Dodecahedron magnet from pyvista
 
 `TriangularMesh` magnets can be directly created from Pyvista `PolyData` objects via the classmethod `from_pyvista`.
 
@@ -127,7 +136,6 @@ ax2.set(
     title="Dodecahedron field",
     xlabel="path index ()",
     ylabel="B-field (mT)",
-    aspect=1,
 )
 
 plt.gca().grid(color=".9")
@@ -136,9 +144,9 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Example - Pyramid from ConvexHull
+## Example - Pyramid magnet from ConvexHull
 
-`TriangularMesh` objects are easily constructed from the convex hull of a given point cloud using the classmethod `from_ConvexHull`. This classmethod  makes use of the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class. Note that the Scipy method does not guarantee correct facet orientations if `reorient_faces` is disabled.
+`TriangularMesh` objects are easily constructed from the convex hull of a given point cloud using the classmethod `from_ConvexHull`. This classmethod  makes use of the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class. Note that the Scipy method does not guarantee correct face orientations if `reorient_faces` is disabled.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -158,12 +166,9 @@ tmesh_pyramid.show(
 )
 ```
 
-## Example - Open Prism
+## Example - Prism magnet with open mesh
 
-In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`examples-triangle`. In this case the `validate_closed` check must be disabled. 
-
-
- By disabling the corresponding `validate_closed` input check, the object initialization will still pass. It is yet possible to highlight the open edges with the `show` function. The same idea holds true for the `validate_connected` check.
+In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`examples-triangle`. In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -179,129 +184,87 @@ bottom = magpy.misc.Triangle(
 )
 
 # create faceted prism with open edges
-cube = magpy.magnet.TriangularMesh.from_triangles(
-    magnetization=(0, 0, 1000), # overrides triangles magnetization
-    faces=[top, bottom],
-    validate_closed=False,  # disable check
-    validate_connected=False,  # disable check
+prism = magpy.magnet.TriangularMesh.from_triangles(
+    magnetization=(0, 0, 1000),   # overrides triangles magnetization
+    triangles=[top, bottom],
+    check_closed="ignore",        # check but ignore open mesh
+    check_connected="ignore",     # check but ignore disconnected mesh
+    reorient_faces="ignore",      # check but ignore non-orientable mesh
     style_label="Open prism",
 )
-cube.style.magnetization.mode = "arrow"
+prism.style.magnetization.mode = "arrow"
 
-print("is closed:", cube.is_closed)
-print("is connected:", cube.is_connected)
-cube.show(backend="plotly")
+print("mesh status closed:", prism.status_closed)
+print("mesh status connected:", prism.status_connected)
+print("mesh status reoriented:", prism.status_reoriented)
+
+prism.show(
+    backend="plotly",
+    style_mesh_open_show=True,
+    style_mesh_disjoint_show=True,
+)
 ```
 
-+++ {"user_expressions": []}
+## Example - Boolean operations with Pyvista
 
-```{seealso}
-For more information about `Triangle` objects and when to use them see {ref}`examples-triangle`
-```
-
-+++ {"user_expressions": []}
-
-## Example - Boolean operation
-
-+++ {"user_expressions": []}
-
-With the help of the Pyvista package it is possible to build even more complex shapes with boolean operations. However this comes with some caveats and will require some refinement in order to produce a clean mesh, as shown below
-
-+++ {"user_expressions": []}
-
-* Deactivate all checks to see the mesh issues
+It is noteworthy that with [Pyvista](https://docs.pyvista.org/) it is possible to build complex shapes with boolean geometric operations. However, such operations often result in open and disconnected meshes that require some refinement to produce solid magnets. The following example demonstrates the problem, and how to view it with `show`.
 
 ```{code-cell} ipython3
 import magpylib as magpy
 import pyvista as pv
 
 # create a complex pyvista PolyData object with a boolean operation
-sphere = pv.Sphere(radius=0.85)
-dodec = pv.Dodecahedron().triangulate()
-obj = dodec.boolean_difference(sphere)
+sphere = pv.Sphere(radius=0.6)
+cube = pv.Cube().triangulate()
+obj = cube.boolean_difference(sphere)
 
 # use the `from_pyvista` classmethod to construct our magnet
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
     magnetization=(0, 0, 100),
     polydata=obj,
-    validate_connected=False,  # disable
-    validate_closed=False,  # disable
-    style_label="Dodecahedron cut by Sphere",
+    check_connected="ignore",
+    check_closed="ignore",
+    reorient_faces="ignore",
+    style_label="magnet",
 )
 
-magnet.show(backend="plotly")
-```
+print(f'mesh status closed: {magnet.status_closed}')
+print(f'mesh status connected: {magnet.status_connected}')
+print(f'mesh status reoriented: {magnet.status_reoriented}')
 
-+++ {"user_expressions": []}
-
-* Add mesh cleaning which resolves the disjoint part problem
-
-+++ {"user_expressions": []}
-
-```{tip}
-If the `TriangularMesh` object has disjoint parts, the magnetization coloring is overruled and colors cycle through a predefined colorsequence (`style.mesh.disjoint.colorsequence`) to match each subset.
-```
-
-```{code-cell} ipython3
-import magpylib as magpy
-import pyvista as pv
-
-# create a complex pyvista PolyData object with a boolean operation
-sphere = pv.Sphere(radius=0.85)
-
-# triangulate the dodecahedron
-dodec = pv.Dodecahedron().triangulate()
-
-# perform boolean operation
-obj = dodec.boolean_difference(sphere)
-
-# Additional step -> clean the mesh to avoid disjoint parts
-obj = obj.clean()
-
-magnet = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
-    polydata=obj,
-    validate_closed=False,  # disabled
-    style_label="Dodecahedron cut by Sphere",
+magnet.show(
+    backend="plotly",
+    style_mesh_open_show=True,
+    style_mesh_disjoint_show=True,
 )
-
-magnet.show(backend="plotly")
 ```
 
-+++ {"user_expressions": []}
+Such problems can typically be avoided by
+1. Subdivision of the initial triangulation (give Pyvista a finer mesh to work with from the start)
+2. Cleaning (merge duplicate points, remove unused points, remove degenerate faces)
 
-* Perfom mesh subdivision before boolean operation to solve the lasting open mesh problem
+The following code solves these problems and produces a clean magnet.
 
 ```{code-cell} ipython3
-import magpylib as magpy
 import pyvista as pv
+import magpylib as magpy
 
 # create a complex pyvista PolyData object with a boolean operation
-sphere = pv.Sphere(radius=0.85)
-
-# triangulate the dodecahedron
-dodec = pv.Dodecahedron().triangulate()
-
-# Additional step -> subdivide before boolean operation, to avoid open edges
-dodec = dodec.subdivide(2)
-
-# perform boolean operation
+sphere = pv.Sphere(radius=0.6)
+dodec = pv.Cube().triangulate().subdivide(2)
 obj = dodec.boolean_difference(sphere)
-
-# Additional step ->  clean the mesh
 obj = obj.clean()
 
 # use the `from_pyvista` classmethod to construct our magnet
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
     magnetization=(0, 0, 100),
     polydata=obj,
-    style_label="Dodecahedron cut by Sphere",
+    style_label="magnet",
 )
+
+print(f'mesh status closed: {magnet.status_closed}')
+print(f'mesh status connected: {magnet.status_connected}')
+print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(backend="plotly")
 ```
-
-+++ {"user_expressions": []}
-
-```{hint}
-The mesh cleaning methods as described are only rely on the Pyvista library implementations and may evolve in the future. This process is independent of Magpylib and may not work for some other shapes. In deed, other library such as [Open3D](http://www.open3d.org/docs/release/index.html#python-api-index) can also be used to create mesh objects. The provided set of input checks provided by Magpylib should help make sure created `TriangularMesh` objects are valid magnet sources.
