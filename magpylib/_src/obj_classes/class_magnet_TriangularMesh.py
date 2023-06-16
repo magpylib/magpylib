@@ -9,7 +9,7 @@ from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
-    get_disjoint_faces_subsets,
+    get_disconnected_faces_subsets,
 )
 from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
@@ -53,11 +53,11 @@ class TriangularMesh(BaseMagnet):
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
 
-    check_closed: bool, default=`True`
+    check_open: bool, default=`True`
         Only a closed mesh guarantees a physical magnet.
         If `True`, raise error if mesh is not closed.
 
-    check_connected: bool, default=`True`
+    check_disconnected: bool, default=`True`
         If `True` raise an error if mesh is not connected.
 
     parent: `Collection` object or `None`
@@ -102,21 +102,21 @@ class TriangularMesh(BaseMagnet):
         faces=None,
         position=(0, 0, 0),
         orientation=None,
-        check_closed="warn",
-        check_connected="warn",
+        check_open="warn",
+        check_disconnected="warn",
         reorient_faces="warn",
         style=None,
         **kwargs,
     ):
         self._vertices, self._faces = self._input_check(vertices, faces)
-        self._status_connected = None
-        self._status_closed = None
+        self._status_disconnected = None
+        self._status_open = None
         self._status_reoriented = False
-        self._status_connected_data = None
-        self._status_closed_data = None
+        self._status_disconnected_data = None
+        self._status_open_data = None
 
-        self.check_closed(mode=check_closed)
-        self.check_connected(mode=check_connected)
+        self.check_open(mode=check_open)
+        self.check_disconnected(mode=check_disconnected)
         self.reorient_faces(mode=reorient_faces)
 
         # inherit
@@ -139,14 +139,14 @@ class TriangularMesh(BaseMagnet):
         return self._vertices[self._faces]
 
     @property
-    def status_closed(self):
+    def status_open(self):
         """Return closed satus"""
-        return self._status_closed
+        return self._status_open
 
     @property
-    def status_connected(self):
+    def status_disconnected(self):
         """Return connected satus"""
-        return self._status_connected
+        return self._status_disconnected
 
     @property
     def status_reoriented(self):
@@ -166,7 +166,7 @@ class TriangularMesh(BaseMagnet):
         arg = "warn" if arg is True else "skip" if arg is False else arg
         return arg
 
-    def check_closed(self, mode="warn"):
+    def check_open(self, mode="warn"):
         """
         Check whether the mesh is closed.
 
@@ -198,25 +198,25 @@ class TriangularMesh(BaseMagnet):
         UserWarning
             If the mesh is not closed and 'mode' is "warn".
         """
-        mode = self._validate_mode_arg(mode, arg_name="check_closed mode")
-        if mode != "skip" and self._status_closed is None:
-            self._status_closed = len(self.get_open_edges()) == 0
-            if not self._status_closed:
+        mode = self._validate_mode_arg(mode, arg_name="check_open mode")
+        if mode != "skip" and self._status_open is None:
+            self._status_open = len(self.get_open_edges()) > 0
+            if self._status_open:
                 msg = (
                     f"Open mesh detected in {self!r}. Intrinsic inside-outside checks may "
                     "give bad results and subsequently getB() and reorient_faces() may give bad "
                     "results as well. "
-                    "This check can be disabled at initialization with check_closed='skip'. "
-                    "Open edges can be displayed in show() with style_mesh_disjoint_show=True."
-                    "Open edges are stored in the status_closed_data property."
+                    "This check can be disabled at initialization with check_open='skip'. "
+                    "Open edges can be displayed in show() with style_mesh_disconnected_show=True."
+                    "Open edges are stored in the status_open_data property."
                 )
                 if mode == "warn":
                     warnings.warn(msg)
                 elif mode == "raise":
                     raise ValueError(msg)
-        return self._status_closed
+        return self._status_open
 
-    def check_connected(self, mode="warn"):
+    def check_disconnected(self, mode="warn"):
         """Check whether the mesh is connected.
 
         This function checks if the mesh is connected. If the mesh is not connected,
@@ -247,22 +247,22 @@ class TriangularMesh(BaseMagnet):
         UserWarning
             If the mesh is not connected and 'mode' is "warn".
         """
-        mode = self._validate_mode_arg(mode, arg_name="check_connected mode")
-        if mode != "skip" and self._status_connected is None:
-            self._status_connected = len(self.get_faces_subsets()) == 1
-            if not self._status_connected:
+        mode = self._validate_mode_arg(mode, arg_name="check_disconnected mode")
+        if mode != "skip" and self._status_disconnected is None:
+            self._status_disconnected = len(self.get_faces_subsets()) > 1
+            if self._status_disconnected:
                 msg = (
-                    f"Disjoint mesh detected in {self!r}. Magnet consists of multiple individual "
-                    "parts. "
-                    "This check can be disabled at initialization with check_connected='skip'. "
-                    "Parts can be displayed in show() with style_mesh_disjoint_show=True. "
-                    "Parts are stored in the status_connected_data property."
+                    f"Disconnected mesh detected in {self!r}. Magnet consists of multiple "
+                    "individual parts. "
+                    "This check can be disabled at initialization with check_disconnected='skip'. "
+                    "Parts can be displayed in show() with style_mesh_disconnected_show=True. "
+                    "Parts are stored in the status_disconnected_data property."
                 )
                 if mode == "warn":
                     warnings.warn(msg)
                 elif mode == "raise":
                     raise ValueError(msg)
-        return self._status_connected
+        return self._status_disconnected
 
     def reorient_faces(self, mode="warn"):
         """Triangular faces pointing inwards are fliped in the right direction.
@@ -270,14 +270,14 @@ class TriangularMesh(BaseMagnet):
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
-            if self._status_closed is None:
+            if self._status_open is None:
                 if mode in ["warn", "raise"]:
                     warnings.warn(
-                        f"Unchecked mesh status in {self!r} detected. Now applying check_closed()"
+                        f"Unchecked mesh status in {self!r} detected. Now applying check_open()"
                     )
-                self.check_closed(mode=mode)
+                self.check_open(mode=mode)
 
-            if not self._status_closed:
+            if self._status_open:
                 msg = f"Open mesh in {self!r} detected. reorient_faces() can give bad results."
                 if mode == "warn":
                     warnings.warn(msg)
@@ -289,25 +289,25 @@ class TriangularMesh(BaseMagnet):
 
     def get_faces_subsets(self):
         """return faces subsets"""
-        if self._status_connected_data is None:
-            self._status_connected_data = get_disjoint_faces_subsets(self._faces)
-        return self._status_connected_data
+        if self._status_disconnected_data is None:
+            self._status_disconnected_data = get_disconnected_faces_subsets(self._faces)
+        return self._status_disconnected_data
 
     def get_open_edges(self):
         """return faces subsets"""
-        if self._status_closed_data is None:
-            self._status_closed_data = get_open_edges(self._faces)
-        return self._status_closed_data
+        if self._status_open_data is None:
+            self._status_open_data = get_open_edges(self._faces)
+        return self._status_open_data
 
     @property
-    def status_connected_data(self):
+    def status_disconnected_data(self):
         """Status for connectedness (faces subsets)"""
-        return self._status_connected_data
+        return self._status_disconnected_data
 
     @property
-    def status_closed_data(self):
+    def status_open_data(self):
         """Status for openness (open edges)"""
-        return self._status_closed_data
+        return self._status_open_data
 
     @property
     def _barycenter(self):
@@ -378,8 +378,8 @@ class TriangularMesh(BaseMagnet):
         points=None,
         position=(0, 0, 0),
         orientation=None,
-        check_closed="warn",
-        check_connected="warn",
+        check_open="warn",
+        check_disconnected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -408,15 +408,15 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_open: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disjoint and "warn", a warning is issued.
-            If the mesh is disjoint and "raise", a ValueError is raised.
+        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is disconnected and "warn", a warning is issued.
+            If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`
@@ -445,8 +445,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            check_closed=check_closed,
-            check_connected=check_connected,
+            check_open=check_open,
+            check_disconnected=check_disconnected,
             style=style,
             **kwargs,
         )
@@ -458,8 +458,8 @@ class TriangularMesh(BaseMagnet):
         polydata=None,
         position=(0, 0, 0),
         orientation=None,
-        check_closed="warn",
-        check_connected="warn",
+        check_open="warn",
+        check_disconnected="warn",
         reorient_faces=True,
         style=None,
         **kwargs,
@@ -488,15 +488,15 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_open: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disjoint and "warn", a warning is issued.
-            If the mesh is disjoint and "raise", a ValueError is raised.
+        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is disconnected and "warn", a warning is issued.
+            If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`
@@ -542,8 +542,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            check_closed=check_closed,
-            check_connected=check_connected,
+            check_open=check_open,
+            check_disconnected=check_disconnected,
             style=style,
             **kwargs,
         )
@@ -556,8 +556,8 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_faces=True,
-        check_closed="warn",
-        check_connected="warn",
+        check_open="warn",
+        check_disconnected="warn",
         style=None,
         **kwargs,
     ):
@@ -585,15 +585,15 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_open: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disjoint and "warn", a warning is issued.
-            If the mesh is disjoint and "raise", a ValueError is raised.
+        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is disconnected and "warn", a warning is issued.
+            If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`
@@ -637,8 +637,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            check_closed=check_closed,
-            check_connected=check_connected,
+            check_open=check_open,
+            check_disconnected=check_disconnected,
             style=style,
             **kwargs,
         )
@@ -651,8 +651,8 @@ class TriangularMesh(BaseMagnet):
         position=(0, 0, 0),
         orientation=None,
         reorient_faces=True,
-        check_closed="warn",
-        check_connected="warn",
+        check_open="warn",
+        check_disconnected="warn",
         style=None,
         **kwargs,
     ):
@@ -680,15 +680,15 @@ class TriangularMesh(BaseMagnet):
             In a properly oriented mesh, all faces must be oriented outwards.
             If `True`, check and fix the orientation of each triangle.
 
-        check_closed: {'warn', 'raise', 'ignore'}, default='warn'
+        check_open: {'warn', 'raise', 'ignore'}, default='warn'
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
-        check_connected: {'warn', 'raise', 'ignore'}, default='warn'
-            If the mesh is disjoint and "warn", a warning is issued.
-            If the mesh is disjoint and "raise", a ValueError is raised.
+        check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is disconnected and "warn", a warning is issued.
+            If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`
@@ -725,8 +725,8 @@ class TriangularMesh(BaseMagnet):
             position=position,
             orientation=orientation,
             reorient_faces=reorient_faces,
-            check_closed=check_closed,
-            check_connected=check_connected,
+            check_open=check_open,
+            check_disconnected=check_disconnected,
             style=style,
             **kwargs,
         )

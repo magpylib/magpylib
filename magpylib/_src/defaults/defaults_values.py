@@ -116,7 +116,7 @@ DEFAULTS = {
                         "line": {"width": 2, "style": "solid", "color": "cyan"},
                         "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
-                    "disjoint": {
+                    "disconnected": {
                         "show": False,
                         "line": {"width": 2, "style": "solid", "color": "black"},
                         "marker": {"size": 5, "symbol": "o", "color": "black"},

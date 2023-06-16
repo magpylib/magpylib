@@ -258,7 +258,7 @@ def make_mesh_lines(
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
     tr, vert = obj.faces, obj.vertices
-    if mode == "disjoint":
+    if mode == "disconnected":
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
     else:
@@ -298,7 +298,7 @@ def make_mesh_lines(
 
 
 def get_closest_vertices(faces_subsets, vertices):
-    """Get closest pairs of points between disjoint subsets of faces indices"""
+    """Get closest pairs of points between disconnected subsets of faces indices"""
     nparts = len(faces_subsets)
     inds_subsets = [np.unique(v) for v in faces_subsets]
     closest_verts_list = []
@@ -887,25 +887,25 @@ def get_generic_traces(
     orientations, positions, pos_orient_inds = get_rot_pos_from_path(
         input_obj, style.path.frames
     )
-    obj_is_disjoint = (
+    obj_is_disconnected = (
         isinstance(input_obj, TriangularMesh)
-        and style.mesh.disjoint.show
-        and not input_obj.check_connected()
+        and style.mesh.disconnected.show
+        and not input_obj.check_disconnected()
     )
-    disjoint_traces = []
+    disconnected_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
-            if obj_is_disjoint:
+            if obj_is_disconnected:
                 tria_orig = input_obj._faces
                 mag_show = style.magnetization.show
                 for tri, dis_color in zip(
                     input_obj.get_faces_subsets(),
-                    cycle(style.mesh.disjoint.colorsequence),
+                    cycle(style.mesh.disconnected.colorsequence),
                 ):
                     # temporary mutate faces from subset
                     input_obj._faces = tri
                     style.magnetization.show = False
-                    disjoint_traces.append(
+                    disconnected_traces.append(
                         make_func(
                             position=pos,
                             orientation=orient,
@@ -999,10 +999,10 @@ def get_generic_traces(
             trace["name"] = legendtext
         traces.append(trace)
 
-    if disjoint_traces:
+    if disconnected_traces:
         nsubsets = len(input_obj.get_faces_subsets())
         for ind in range(nsubsets):
-            trace = merge_traces(*disjoint_traces[ind::nsubsets])
+            trace = merge_traces(*disconnected_traces[ind::nsubsets])
             trace.update(
                 {
                     "legendgroup": f"{legendgroup} - part_{ind+1:02d}",
@@ -1028,24 +1028,24 @@ def get_generic_traces(
             )
         )
     if isinstance(input_obj, TriangularMesh):
-        for mode in ("grid", "open", "disjoint"):
+        for mode in ("grid", "open", "disconnected"):
             if mode == "open":
-                if input_obj._status_closed is None:
+                if input_obj._status_open is None:
                     warnings.warn(
                         f"{input_obj!r} closed status has not been checked before attempting "
                         "to show potential open edges, which may take a while to compute "
                         "when the mesh has many faces, now applying operation..."
                     )
-                if input_obj.check_closed():
+                if input_obj.check_open():
                     continue
-            if mode == "disjoint":
-                if input_obj._status_connected is None:
+            if mode == "disconnected":
+                if input_obj._status_disconnected is None:
                     warnings.warn(
                         f"{input_obj!r} connected status checked before atempting to show "
-                        "possible disjoint parts, which may take a while to compute when the mesh "
-                        "has many faces, now applying operation..."
+                        "possible disconnected parts, which may take a while to compute when the "
+                        "mesh has many faces, now applying operation..."
                     )
-                if input_obj.check_connected():
+                if input_obj.check_disconnected():
                     continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(

@@ -28,18 +28,18 @@ The `TriangularMesh` class is used to create magnets from triangular surface mes
 
 In contrast to a `Collection` of `Triangle` objects the `TriangularMesh` class performs several important checks at initialization by default to ensure that the given triangular mesh forms a proper magnet:
 
-- `check_closed`: checks if given mesh forms a closed surface
-- `check_connected`: checks if given mesh is connected
+- `check_open`: checks if given mesh forms a closed surface
+- `check_disconnected`: checks if given mesh is connected
 - `reorient_faces`: checks if faces are oriented outwards, and flips the ones wrongly oriented. This works only if the mesh is closed.
 
 All three checks will throw warnings by default if the mesh is open, disconnected, or cannot be reoriented. Four options enable error handling: `"skip"`, `"ignore"`, `"warn"` (default), `"raise"`. If skipped at initialization, the checks can be performed by hand via respective methods.
 
-The mesh status is set by the checks, and can be viewed via the properties `status_closed`, `status_connected` and `status_reoriented` with possible values `None`, `True`, `False`. Problems of the mesh (e.g. open edges) are stored in `status_closed_data` and `status_connected_data`. Such problems can be viewed with `show`.
+The mesh status is set by the checks, and can be viewed via the properties `status_open`, `status_disconnected` and `status_reoriented` with possible values `None`, `True`, `False`. Problems of the mesh (e.g. open edges) are stored in `status_open_data` and `status_disconnected_data`. Such problems can be viewed with `show`.
 
 ```{caution}
 * Only if the mesh is closed and all faces are properly oriented outwards, `getB` and `getH` compute the fields correctly.
 
-* Input checks and face reorientation can be computationally expensive. The checks can be individually deactivated by setting `reorient_faces="skip"`, `check_closed="skip"` and `check_connected="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
+* Input checks and face reorientation can be computationally expensive. The checks can be individually deactivated by setting `reorient_faces="skip"`, `check_open="skip"` and `check_disconnected="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected.
 
@@ -59,8 +59,8 @@ tmesh_tetra = magpy.magnet.TriangularMesh(
 )
 
 # print mesh status
-print("mesh status closed:", tmesh_tetra.status_closed)
-print("mesh status connected:", tmesh_tetra.status_connected)
+print("mesh status open:", tmesh_tetra.status_open)
+print("mesh status disconnected:", tmesh_tetra.status_disconnected)
 print("mesh status reoriented:", tmesh_tetra.status_reoriented)
 
 tmesh_tetra.show()
@@ -187,21 +187,21 @@ bottom = magpy.misc.Triangle(
 prism = magpy.magnet.TriangularMesh.from_triangles(
     magnetization=(0, 0, 1000),   # overrides triangles magnetization
     triangles=[top, bottom],
-    check_closed="ignore",        # check but ignore open mesh
-    check_connected="ignore",     # check but ignore disconnected mesh
+    check_open="ignore",        # check but ignore open mesh
+    check_disconnected="ignore",     # check but ignore disconnected mesh
     reorient_faces="ignore",      # check but ignore non-orientable mesh
     style_label="Open prism",
 )
 prism.style.magnetization.mode = "arrow"
 
-print("mesh status closed:", prism.status_closed)
-print("mesh status connected:", prism.status_connected)
+print("mesh status open:", prism.status_open)
+print("mesh status disconnected:", prism.status_disconnected)
 print("mesh status reoriented:", prism.status_reoriented)
 
 prism.show(
     backend="plotly",
     style_mesh_open_show=True,
-    style_mesh_disjoint_show=True,
+    style_mesh_disconnected_show=True,
 )
 ```
 
@@ -222,20 +222,20 @@ obj = cube.boolean_difference(sphere)
 magnet = magpy.magnet.TriangularMesh.from_pyvista(
     magnetization=(0, 0, 100),
     polydata=obj,
-    check_connected="ignore",
-    check_closed="ignore",
+    check_disconnected="ignore",
+    check_open="ignore",
     reorient_faces="ignore",
     style_label="magnet",
 )
 
-print(f'mesh status closed: {magnet.status_closed}')
-print(f'mesh status connected: {magnet.status_connected}')
+print(f'mesh status open: {magnet.status_open}')
+print(f'mesh status disconnected: {magnet.status_disconnected}')
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(
     backend="plotly",
     style_mesh_open_show=True,
-    style_mesh_disjoint_show=True,
+    style_mesh_disconnected_show=True,
 )
 ```
 
@@ -262,8 +262,8 @@ magnet = magpy.magnet.TriangularMesh.from_pyvista(
     style_label="magnet",
 )
 
-print(f'mesh status closed: {magnet.status_closed}')
-print(f'mesh status connected: {magnet.status_connected}')
+print(f'mesh status open: {magnet.status_open}')
+print(f'mesh status disconnected: {magnet.status_disconnected}')
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(backend="plotly")

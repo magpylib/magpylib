@@ -86,8 +86,8 @@ def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     return result
 
 
-def get_disjoint_faces_subsets(faces: list) -> list:
-    """Return a list of disjoint faces sets"""
+def get_disconnected_faces_subsets(faces: list) -> list:
+    """Return a list of disconnected faces sets"""
     subsets_inds = []
     tria_temp = faces.copy()
     while len(tria_temp) > 0:

@@ -175,18 +175,18 @@ def test_open_mesh():
             magnetization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
-            check_closed="raise",
+            check_open="raise",
         )
 
 
-def test_disjoint_mesh():
+def test_disconnected_mesh():
     """raises Error if mesh is not connected"""
-    #  Multiple Text3D letters are disjoint
+    #  Multiple Text3D letters are disconnected
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000),
             polydata=pv.Text3D("AB"),
-            check_connected="raise",
+            check_disconnected="raise",
         )
 
 
@@ -217,8 +217,8 @@ def test_TriangularMesh_from_faces_bad_inputs():
         return magpy.magnet.TriangularMesh.from_triangles(
             mag,
             trias,
-            check_closed=False,
-            check_connected=False,
+            check_open=False,
+            check_disconnected=False,
             reorient_faces=False,
         )
 
@@ -226,8 +226,8 @@ def test_TriangularMesh_from_faces_bad_inputs():
         return magpy.magnet.TriangularMesh.from_mesh(
             mag,
             mesh,
-            check_closed=False,
-            check_connected=False,
+            check_open=False,
+            check_disconnected=False,
             reorient_faces=False,
         )
 

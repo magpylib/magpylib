@@ -66,7 +66,7 @@ class BaseDisplayRepr:
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
-                elif k == "status_connected_data":
+                elif k == "status_disconnected_data":
                     val = getattr(self, k)
                     if val is not None:
                         val = f"{len(val)} part{'s'[:len(val)^1]}"

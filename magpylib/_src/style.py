@@ -889,8 +889,8 @@ class OpenMesh(MagicProperties, MarkerLineProperties):
     """
 
 
-class DisjointMesh(MagicProperties, MarkerLineProperties):
-    """Defines styling properties of DisjointMesh objects
+class DisconnectedMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of DisconnectedMesh objects
 
     Parameters
     ----------
@@ -906,8 +906,8 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
         key/value pairs.
 
     colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
-        An iterable of color values used to cycle trough for every disjoint part of disjoint
-        triangular mesh object.
+        An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
       - an rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -918,8 +918,8 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
 
     @property
     def colorsequence(self):
-        """An iterable of color values used to cycle trough for every disjoint part of disjoint
-        triangular mesh object.
+        """An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
           A color may be specified by
         - a hex string (e.g. '#ff0000')
         - an rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -957,8 +957,8 @@ class TriMesh(MagicProperties):
     open: dict or OpenMesh,  default=None
         Shows open mesh vertices and edges of a TriangularMesh object, if any.
 
-    disjoint: dict or DisjointMesh, default=None
-        Shows disjoint bodies of a TriangularMesh object, if any.
+    disconnected: dict or DisconnectedMesh, default=None
+        Shows disconnected bodies of a TriangularMesh object, if any.
     """
 
     @property
@@ -984,15 +984,17 @@ class TriMesh(MagicProperties):
         self._open = validate_property_class(val, "open", OpenMesh, self)
 
     @property
-    def disjoint(self):
-        """`DisjointMesh` instance with `'show'` property
+    def disconnected(self):
+        """`DisconnectedMesh` instance with `'show'` property
         or a dictionary with equivalent key/value pairs.
         """
-        return self._disjoint
+        return self._disconnected
 
-    @disjoint.setter
-    def disjoint(self, val):
-        self._disjoint = validate_property_class(val, "disjoint", DisjointMesh, self)
+    @disconnected.setter
+    def disconnected(self, val):
+        self._disconnected = validate_property_class(
+            val, "disconnected", DisconnectedMesh, self
+        )
 
 
 class Orientation(MagicProperties):
@@ -1197,7 +1199,7 @@ class DefaultTriangularMesh(
         properties or a dictionary with equivalent key/value pairs.
 
     mesh: dict or TriMesh, default=None
-        TriMesh styling properties (e.g. `'grid', 'open', 'disjoint'`)
+        TriMesh styling properties (e.g. `'grid', 'open', 'disconnected'`)
     """
 
     def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
