@@ -194,18 +194,18 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         bool
-            True if the mesh is closed, False otherwise.
+            True if the mesh is open, False otherwise.
 
         Raises
         ------
         ValueError
             If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is not closed.
+            is open.
 
         Warns
         -----
         UserWarning
-            If the mesh is not closed and 'mode' is "warn".
+            If the mesh is open and 'mode' is "warn".
         """
         mode = self._validate_mode_arg(mode, arg_name="check_open mode")
         if mode != "skip" and self._status_open is None:
@@ -243,18 +243,18 @@ class TriangularMesh(BaseMagnet):
         Returns
         -------
         bool
-            True if the mesh is connected, False otherwise.
+            True if the mesh is disconnected, False otherwise.
 
         Raises
         ------
         ValueError
             If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
-            is not connected.
+            is disconnected.
 
         Warns
         -----
         UserWarning
-            If the mesh is not connected and 'mode' is "warn".
+            If the mesh is disconnected and 'mode' is "warn".
         """
         mode = self._validate_mode_arg(mode, arg_name="check_disconnected mode")
         if mode != "skip" and self._status_disconnected is None:
@@ -323,8 +323,37 @@ class TriangularMesh(BaseMagnet):
         return self._status_selfintersecting
 
     def reorient_faces(self, mode="warn"):
-        """Triangular faces pointing inwards are flipped in the right direction.
-        Prior to reorientation, it is checked if the mesh is closed.
+        """Correctly reorients the mesh's faces.
+
+        In a properly oriented mesh, all faces must be oriented outwards. This function
+        fixes the orientation of each face. It issues a warning or raises a ValueError,
+        depending on the 'mode' parameter. If 'mode' is set to 'ignore', it does not issue
+        a warning or raise an error. Note that this parameter is passed on the check_closed()
+        function as the mesh is only orientable if it is closed.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Controls how to handle if the mesh is open and not orientable.
+            Accepted values are "warn", "raise", or "ignore".
+            If "warn", a warning is issued. If "raise", a ValueError is raised.
+            If "ignore", no action is taken. By default "warn".
+
+        Returns
+        -------
+        bool
+            True if the mesh is connected, False otherwise.
+
+        Raises
+        ------
+        ValueError
+            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
+            is open and not orientable.
+
+        Warns
+        -----
+        UserWarning
+            If the mesh is not connected and 'mode' is "warn".
         """
         mode = self._validate_mode_arg(mode, arg_name="reorient_faces mode")
         if mode != "skip":
@@ -346,19 +375,43 @@ class TriangularMesh(BaseMagnet):
             self._status_reoriented = True
 
     def get_faces_subsets(self):
-        """return faces subsets"""
+        """
+        Obtain and return subsets of the mesh. If the mesh has n parts, returns and list of
+        length n of faces (m,3) vertices indices triplets corresponding to each part.
+
+        Returns
+        -------
+        status_disconnected_data : list of numpy.ndarray
+            Subsets of faces data.
+        """
         if self._status_disconnected_data is None:
             self._status_disconnected_data = get_disconnected_faces_subsets(self._faces)
         return self._status_disconnected_data
 
     def get_open_edges(self):
-        """return faces subsets"""
+        """
+        Obtain and return the potential open edges. If the mesh has n open edges, returns an
+        corresponding (n,2) array of vertices indices doubles.
+
+        Returns
+        -------
+        status_open_data : numpy.ndarray
+            Open edges data.
+        """
         if self._status_open_data is None:
             self._status_open_data = get_open_edges(self._faces)
         return self._status_open_data
 
     def get_selfintersecting_faces(self):
-        """return self-intersecting faces"""
+        """
+        Obtain and return the potential self intersecting faces indices. If the mesh has n
+        intersecting faces, returns a corresponding 1D array length n faces indices.
+
+        Returns
+        -------
+        status_open_data : numpy.ndarray
+            Open edges data.
+        """
         if self._status_selfintersecting_data is None:
             self._status_selfintersecting_data = get_intersecting_triangles(
                 self._vertices, self._faces

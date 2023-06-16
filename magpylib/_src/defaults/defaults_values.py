@@ -129,7 +129,11 @@ DEFAULTS = {
                             "yellow",
                         ),
                     },
-                    "selfintersecting": {"show": True, "color": "magenta"},
+                    "selfintersecting": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "magenta"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
                 },
             },
             "markers": {"marker": {"size": 2, "color": "grey", "symbol": "x"}},

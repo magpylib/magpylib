@@ -534,6 +534,8 @@ def test_describe():
         "  • status_open: False \n"
         "  • status_open_data: [] \n"
         "  • status_reoriented: True \n"
+        "  • status_selfintersecting: None \n"
+        "  • status_selfintersecting_data: None \n"
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

@@ -202,14 +202,12 @@ def test_selfintersecting_triangular_mesh():
         "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
     }
     vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
-    triangles = np.array(
-        [v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]
-    ).T
+    faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
-            triangles=triangles,
+            faces=faces,
             check_selfintersecting="raise",
         )
 
