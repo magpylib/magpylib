@@ -243,43 +243,6 @@ def make_Dipole(
     )
 
 
-def make_self_intersecting_mesh(
-    obj,
-    pos_orient_inds,
-    label=None,
-    style=None,
-    color=None,  # pylint: disable=unused-argument
-    **kwargs,
-):
-    """Draw self-intersecting triangles"""
-    # pylint: disable=protected-access
-    style = obj.style if style is None else style
-    mesh = getattr(style.mesh, "selfintersecting")
-    inds = obj.self_intersecting_indices
-    tr, vert = obj.triangles[inds], obj.vertices
-    i, j, k = tr.T
-    label = f"{obj}" if label is None else label
-    traces = []
-    for ind in pos_orient_inds:
-        x, y, z = (obj._orientation[ind].apply(vert) + obj._position[ind]).T
-        trace = {
-            "type": "mesh3d",
-            "x": x,
-            "y": y,
-            "z": z,
-            "i": i,
-            "j": j,
-            "k": k,
-            "color": mesh.color,
-            "legendgroup": f"{obj}self-intersecting facets",
-            "name": f"{label} - self-intersecting facets",
-            "showlegend": True,
-        }
-        traces.append(trace)
-    out = {**merge_traces(*traces), **kwargs}
-    return out
-
-
 def make_mesh_lines(
     obj,
     pos_orient_inds,
@@ -299,14 +262,14 @@ def make_mesh_lines(
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
     else:
+        if mode == "selfintersecting":
+            tr = obj.faces[obj.get_selfintersecting_faces()]
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        # make sure unique pairs are found regardless of order
-        edges = np.sort(edges, axis=1)
-        edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
         if mode == "open":
-            lines = vert[edges_uniq[edges_counts != 2]]
+            edges = obj.get_open_edges()
         else:
-            lines = vert[edges_uniq]
+            edges = np.unique(edges, axis=0)
+        lines = vert[edges]
 
     out = {}
     if lines.size != 0:
@@ -1084,16 +1047,21 @@ def get_generic_traces(
                     )
                 if input_obj.check_disconnected():
                     continue
+            if mode == "selfintersecting":
+                if input_obj._status_selfintersecting is None:
+                    warnings.warn(
+                        f"{input_obj!r} selfintersecting status has not been checked before "
+                        "atempting to show possible self-intersecting parts, which may take a "
+                        "while to compute when the mesh has many faces, now applying operation..."
+                    )
+                if input_obj.check_selfintersecting():
+                    continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs
                 )
                 if trace:
                     traces.append(trace)
-        if input_obj.is_self_intersecting and style.mesh.selfintersecting.show:
-            traces.append(
-                make_self_intersecting_mesh(input_obj, pos_orient_inds, label, **kwargs)
-            )
     out = (traces,)
     if extra_backend is not False:
         out += (path_traces_extra_specific_backend,)

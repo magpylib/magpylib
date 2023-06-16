@@ -190,10 +190,10 @@ def test_disconnected_mesh():
         )
 
 
-def test_self_intersecting_triangular_mesh():
+def test_selfintersecting_triangular_mesh():
     """raises Error if self intersecting"""
     # cube with closed with an inverted pyramid crossing the opposite face.
-    self_intersecting_mesh3d = {
+    selfintersecting_mesh3d = {
         "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
         "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
         "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
@@ -201,18 +201,16 @@ def test_self_intersecting_triangular_mesh():
         "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
         "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
     }
-    vertices = np.array(
-        [v for k, v in self_intersecting_mesh3d.items() if k in "xyz"]
-    ).T
+    vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
     triangles = np.array(
-        [v for k, v in self_intersecting_mesh3d.items() if k in "ijk"]
+        [v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]
     ).T
     with pytest.raises(ValueError):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
             triangles=triangles,
-            validate_non_self_intersecting=True,
+            check_selfintersecting="raise",
         )
 
 
