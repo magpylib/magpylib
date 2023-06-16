@@ -102,7 +102,6 @@ class Tetrahedron(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.vertices = vertices
         self._object_type = "Tetrahedron"

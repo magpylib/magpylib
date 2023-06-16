@@ -106,13 +106,18 @@ DEFAULTS = {
                     "symbol": "arrow3d",
                 },
                 "mesh": {
+                    "grid": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
                     "open": {
-                        "show": True,
+                        "show": False,
                         "line": {"width": 2, "style": "solid", "color": "cyan"},
                         "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
-                    "disjoint": {
-                        "show": True,
+                    "disconnected": {
+                        "show": False,
                         "line": {"width": 2, "style": "solid", "color": "black"},
                         "marker": {"size": 5, "symbol": "o", "color": "black"},
                         "colorsequence": (

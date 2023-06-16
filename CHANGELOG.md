@@ -3,8 +3,11 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [Unreleased]
+- New `TriangularMesh` magnet class added to conveniently work with triangular surface meshes instead of large collections of individual `Triangle` objects. The `TriangularMesh` class performs important checks (closed, connected, oriented) and can directly import pyvista objects and for convex hull bodies. ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
+
 ## [4.2.0] - 2023-01-27
-- (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular facets. ([#568](https://github.com/magpylib/magpylib/issues/568))
+- (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular faces. ([#568](https://github.com/magpylib/magpylib/issues/568))
 - Introducing the `magnet.Tetrahedron` class as a derivate of the Triangle class. ([#289](https://github.com/magpylib/magpylib/issues/289))
 - Change pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
@@ -405,6 +408,7 @@ The first official release of the magpylib library.
 
 ---
 
+[Unreleased]:https://github.com/magpylib/magpylib/compare/4.2.0...HEAD
 [4.2.0]:https://github.com/magpylib/magpylib/compare/4.1.2...4.2.0
 [4.1.2]:https://github.com/magpylib/magpylib/compare/4.1.1...4.1.2
 [4.1.1]:https://github.com/magpylib/magpylib/compare/4.1.0...4.1.1

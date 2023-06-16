@@ -91,7 +91,6 @@ class Cylinder(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.dimension = dimension
 

@@ -30,19 +30,17 @@ def generic_trace_to_matplotlib(trace):
         for subtrace in subtraces:
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
-            kwargs = {
-                "triangles": triangles,
-                "alpha": subtrace.get("opacity", None),
-                "color": subtrace.get("color", None),
-            }
-            if not trace.get("flatshading", False):
-                # flatshading is on for triangular meshes, to see triangles edges better
-                # in other cases we don't want to see them
-                kwargs.update(linewidth=0, antialiased=False)
             traces_mpl.append(
-                {"constructor": "plot_trisurf", "args": (x, y, z), "kwargs": kwargs}
+                {
+                    "constructor": "plot_trisurf",
+                    "args": (x, y, z),
+                    "kwargs": {
+                        "triangles": triangles,
+                        "alpha": subtrace.get("opacity", None),
+                        "color": subtrace.get("color", None),
+                    },
+                }
             )
-
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
         mode = trace.get("mode", None)
@@ -103,7 +101,7 @@ def process_extra_trace(model):
         "kwargs": model_kwargs,
         "args": model_args,
     }
-    kwargs, args, = place_and_orient_model3d(
+    kwargs, args = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -128,7 +126,6 @@ def display_matplotlib(
     return_animation=False,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the matplotlib library."""
     data = get_frames(
         objs=obj_list,

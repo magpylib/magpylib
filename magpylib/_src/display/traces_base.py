@@ -612,7 +612,7 @@ def make_Tetrahedron(
 def make_TriangularMesh(
     backend="generic",
     vertices=None,
-    triangles=None,
+    faces=None,
     position=None,
     orientation=None,
     show=True,
@@ -632,7 +632,7 @@ def make_TriangularMesh(
         Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
         coordinate system of the triangular mesh.
 
-    triangles: ndarray, shape (4,3)
+    faces: ndarray, shape (4,3)
         For each triangle, the indices of the three points that make up the triangle, ordered in an
         anticlockwise manner. If not specified, a `scipy.spatial.ConvexHull` triangulation is
         calculated.
@@ -662,10 +662,10 @@ def make_TriangularMesh(
     """
     vertices = np.array(vertices)
     x, y, z = vertices.T
-    if triangles is None:
+    if faces is None:
         hull = ConvexHull(vertices)
-        triangles = hull.simplices
-    i, j, k = np.array(triangles).T
+        faces = hull.simplices
+    i, j, k = np.array(faces).T
     trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

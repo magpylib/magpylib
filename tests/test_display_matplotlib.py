@@ -116,14 +116,14 @@ def test_Triangle_display():
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
     mesh3d = magpy.graphics.model3d.make_TriangularMesh(vertices=verts)
-    # note: triangles are built by scipy.Convexhull since triangles=None
-    # ConvexHull DOES NOT GUARRANTY proper orientation of triangles when building a body
+    # note: faces are built by scipy.Convexhull since faces=None
+    # ConvexHull DOES NOT GUARRANTY proper orientation of faces when building a body
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
-    triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
+    faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
         [
             magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
-            for v in points[triangles]
+            for v in points[faces]
         ]
     )
     magpy.show(
@@ -143,25 +143,25 @@ def test_TringularMesh_display():
     # test  classic trimesh display
     points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
-    src = magpy.magnet.TriangularMesh.from_ConvexHull_points(
+    src = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(1000, 0, 0), points=points
     )
     src.show(backend="matplotlib", style_description_show=False, return_fig=True)
 
-    # test display of disjoint and open mesh elements
-    polydata = pv.Text3D("AB").merge(pv.Text3D("C"))  # create disjoint mesh
+    # test display of disconnected and open mesh elements
+    polydata = pv.Text3D("AB")  # create disconnected mesh
     polydata = polydata.triangulate()
     vertices = polydata.points
-    triangles = polydata.faces.reshape(-1, 4)[:, 1:]
-    triangles = triangles[1:]  # open the mesh
+    faces = polydata.faces.reshape(-1, 4)[:, 1:]
+    faces = faces[1:]  # open the mesh
     src = magpy.magnet.TriangularMesh(
         (0, 0, 1000),
         vertices,
-        triangles,
-        validate_closed=False,
-        validate_connected=False,
-        validate_non_self_intersecting=False,
-        reorient_triangles=False,
+        faces,
+        check_open="ignore",
+        check_disconnected="ignore",
+        reorient_faces=False,
+        style_mesh_grid_show=True,
     )
 
     src.show(backend="matplotlib", return_fig=True)

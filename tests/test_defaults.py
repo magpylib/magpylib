@@ -65,7 +65,7 @@ bad_inputs = {
     "display_style_triangle_orientation_color": ("wrongcolor",),
     "display_style_triangle_orientation_offset": ("-1",),  # float, int
     "display_style_triangle_orientation_symbol": ("arrow0d"),  # "cone", "arrow3d"
-    "display_style_triangularmesh_mesh_disjoint_colorsequence": (1,),
+    "display_style_triangularmesh_mesh_disconnected_colorsequence": (1,),
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
     "display_style_markers_marker_symbol": ("wrongsymbol",),
