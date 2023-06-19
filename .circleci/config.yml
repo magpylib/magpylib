@@ -28,7 +28,7 @@ jobs:
           name: Set up testing tools and environment
           command: mkdir test-results && pip install tox && pip install pylint
       - run:
-          name: Specific depedencies for pyvista
+          name: Specific dependencies for pyvista
           command: |
             apt update
             apt-get install -y libgl1-mesa-dev xvfb
@@ -66,6 +66,11 @@ jobs:
             name: create packages
             command: |
               make package
+        - run:
+            name: Create wheel
+            command: |
+              . venv/bin/activate
+              python setup.py bdist_wheel
         - run:
             name: upload to pypi
             command: |
