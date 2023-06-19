@@ -1,3 +1,5 @@
+import re
+
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
@@ -164,7 +166,37 @@ def test_TringularMesh_display():
         style_mesh_grid_show=True,
     )
 
-    src.show(backend="matplotlib", return_fig=True)
+    src.show(
+        style_mesh_open_show=True,
+        style_mesh_disconnected_show=True,
+        backend="matplotlib",
+        return_fig=True,
+    )
+
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            (0, 0, 1000),
+            vertices,
+            faces,
+            check_open="skip",
+            check_disconnected="skip",
+            reorient_faces=False,
+            style_mesh_grid_show=True,
+        ).show(
+            style_mesh_open_show=True,
+            style_mesh_disconnected_show=True,
+            backend="matplotlib",
+            return_fig=True,
+        )
+        assert len(record) == 4
+        assert re.match(
+            r"Unchecked open mesh status in .* detected", str(record[0].message)
+        )
+        assert re.match(r"Open mesh detected in .*.", str(record[1].message))
+        assert re.match(
+            r"Unchecked disconnected mesh status in .* detected", str(record[2].message)
+        )
+        assert re.match(r"Disconnected mesh detected in .*.", str(record[3].message))
 
 
 def test_col_display():

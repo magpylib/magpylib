@@ -1,4 +1,6 @@
+import re
 import sys
+import warnings
 from unittest.mock import patch
 
 import numpy as np
@@ -170,23 +172,96 @@ def test_open_mesh():
     }
     vertices = np.array([v for k, v in open_mesh.items() if k in "xyz"]).T
     faces = np.array([v for k, v in open_mesh.items() if k in "ijk"]).T
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"Open mesh detected in .*."):
         magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
             check_open="raise",
         )
+    with pytest.raises(ValueError, match=r"Open mesh in .* detected."):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="ignore",
+            reorient_faces="raise",
+        )
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="warn",
+        )
+        assert len(record) == 2
+        assert re.match(r"Open mesh detected in .*.", str(record[0].message))
+        assert re.match(r"Open mesh in .* detected.", str(record[1].message))
+
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="skip",
+            reorient_faces="warn",
+        )
+        assert len(record) == 3
+        assert re.match(
+            r"Unchecked mesh status in .* detected. Now applying check_open()",
+            str(record[0].message),
+        )
+        assert re.match(r"Open mesh detected in .*.", str(record[1].message))
+        assert re.match(r"Open mesh in .* detected.", str(record[2].message))
+
+    with warnings.catch_warnings():  # no warning should be issued!
+        warnings.simplefilter("error")
+        mesh = magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="ignore",
+            reorient_faces="ignore",
+        )
+
+    with pytest.warns(
+        UserWarning,
+        match=r"Open mesh of .* detected. This may result in bad B-field computation.",
+    ):
+        mesh = magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="ignore",
+            reorient_faces="ignore",
+        )
+        mesh.getB((0, 0, 0))
+
+    with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected."):
+        mesh = magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="skip",
+            reorient_faces="skip",
+        )
+        mesh.getB((0, 0, 0))
 
 
 def test_disconnected_mesh():
     """raises Error if mesh is not connected"""
     #  Multiple Text3D letters are disconnected
-    with pytest.raises(ValueError):
+    with pytest.raises(ValueError, match=r"Disconnected mesh detected in .*."):
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000),
             polydata=pv.Text3D("AB"),
             check_disconnected="raise",
+        )
+    with pytest.warns(UserWarning, match=r"Disconnected mesh detected in .*."):
+        magpy.magnet.TriangularMesh.from_pyvista(
+            magnetization=(0, 0, 1000),
+            polydata=pv.Text3D("AB"),
+            check_disconnected="warn",
         )
 
 
@@ -336,3 +411,13 @@ def test_reorient_on_closed_but_disconnected_mesh():
 
     fixed_faces = fix_trimesh_orientation(vertices, bad_faces)
     np.testing.assert_array_equal(faces, fixed_faces)
+
+
+def test_bad_mode_input():
+    with pytest.raises(
+        ValueError,
+        match=r"The `check_open mode` argument .*, instead received 'badinput'.",
+    ):
+        magpy.magnet.TriangularMesh.from_pyvista(
+            magnetization=(0, 0, 1000), polydata=pv.Octahedron(), check_open="badinput"
+        )
