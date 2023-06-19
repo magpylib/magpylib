@@ -902,9 +902,9 @@ def get_generic_traces(
             elif mode == "disconnected" and show_mesh:
                 if input_obj.status_disconnected is None:
                     warnings.warn(
-                        f"Unchecked disconnected mesh status in {input_obj!r} detected, before attempting "
-                        "to show possible disconnected parts, which may take a while to compute "
-                        "when the mesh has many faces, now applying operation..."
+                        f"Unchecked disconnected mesh status in {input_obj!r} detected, before "
+                        "attempting to show possible disconnected parts, which may take a while "
+                        "to compute when the mesh has many faces, now applying operation..."
                     )
                     obj_is_disconnected = input_obj.check_disconnected()
     disconnected_traces = []
