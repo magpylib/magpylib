@@ -887,11 +887,26 @@ def get_generic_traces(
     orientations, positions, pos_orient_inds = get_rot_pos_from_path(
         input_obj, style.path.frames
     )
-    obj_is_disconnected = (
-        isinstance(input_obj, TriangularMesh)
-        and style.mesh.disconnected.show
-        and input_obj.check_disconnected()
-    )
+    obj_is_disconnected = False
+    if isinstance(input_obj, TriangularMesh):
+        for mode in ("open", "disconnected"):
+            show_mesh = getattr(style.mesh, mode).show
+            if mode == "open" and show_mesh:
+                if input_obj.status_open is None:
+                    warnings.warn(
+                        f"Unchecked open mesh status in {input_obj!r} detected, before attempting "
+                        "to show potential open edges, which may take a while to compute "
+                        "when the mesh has many faces, now applying operation..."
+                    )
+                    input_obj.check_open()
+            elif mode == "disconnected" and show_mesh:
+                if input_obj.status_disconnected is None:
+                    warnings.warn(
+                        f"Unchecked disconnected mesh status in {input_obj!r} detected, before attempting "
+                        "to show possible disconnected parts, which may take a while to compute "
+                        "when the mesh has many faces, now applying operation..."
+                    )
+                    obj_is_disconnected = input_obj.check_disconnected()
     disconnected_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
@@ -1029,24 +1044,6 @@ def get_generic_traces(
         )
     if isinstance(input_obj, TriangularMesh):
         for mode in ("grid", "open", "disconnected"):
-            if mode == "open":
-                if input_obj._status_open is None:
-                    warnings.warn(
-                        f"{input_obj!r} open status has not been checked before attempting "
-                        "to show potential open edges, which may take a while to compute "
-                        "when the mesh has many faces, now applying operation..."
-                    )
-                if not input_obj.check_open():
-                    continue
-            if mode == "disconnected":
-                if input_obj._status_disconnected is None:
-                    warnings.warn(
-                        f"{input_obj!r} disconnected status has not been checked before atempting "
-                        "to show possible disconnected parts, which may take a while to compute "
-                        "when the mesh has many faces, now applying operation..."
-                    )
-                if not input_obj.check_disconnected():
-                    continue
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs
