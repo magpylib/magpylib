@@ -86,7 +86,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.pixel = pixel
 

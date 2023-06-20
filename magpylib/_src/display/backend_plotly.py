@@ -205,7 +205,6 @@ def display_plotly(
     update_layout=True,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the plotly library."""
 
     fig = canvas
