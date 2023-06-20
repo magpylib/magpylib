@@ -233,7 +233,7 @@ def getBH_level2(
                         f"Unchecked mesh status of {src} detected before B-field computation. "
                         "An open mesh may return bad results."
                     )
-                elif src.status_open: # mesh is open
+                elif src.status_open:  # mesh is open
                     warnings.warn(
                         f"Open mesh of {src} detected before B-field computation. "
                         "An open mesh may return bad results."
