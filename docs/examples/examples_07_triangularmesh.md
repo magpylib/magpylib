@@ -17,7 +17,7 @@ The `TriangularMesh` class
 
 (examples-triangularmesh)=
 
-# Complex shapes - The TrianglularMesh class
+# Complex shapes - TrianglularMesh
 
 The `TriangularMesh` class is used to create magnets from triangular surface meshes, instead of assembling them from individual `Triangle` objects as described in {ref}`examples-triangle`. This class is initialized with the `vertices` (an array_like of positions) and the `faces` (an array_like of index triplets) inputs. In addition, a set of useful classmethods enables initialization from various inputs:
 

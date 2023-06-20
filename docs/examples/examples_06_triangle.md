@@ -17,7 +17,7 @@ The `Triangle` class
 
 (examples-triangle)=
 
-# Complex shapes - The Triangle class
+# Complex shapes - Triangle
 
 The field of a homogeneously charged magnet is, on the outside, the same as the field of a similarly shaped body with a magnetic surface charge. The surface charge is proportional to the projection of the magnetization vector onto the surface normal.
 
