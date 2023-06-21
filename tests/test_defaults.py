@@ -16,7 +16,7 @@ bad_inputs = {
     "display_animation_maxframes": (0,),  # int>0
     "display_animation_slider": ("notbool"),  # bool
     "display_backend": ("plotty",),  # str typo
-    "display_colorsequence": (["#2E91E5", "wrongcolor"],),  # iterable of colors
+    "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
     "display_style_base_path_line_style": ("wrongstyle",),
     "display_style_base_path_line_color": ("wrongcolor",),  # color
@@ -65,6 +65,7 @@ bad_inputs = {
     "display_style_triangle_orientation_color": ("wrongcolor",),
     "display_style_triangle_orientation_offset": ("-1",),  # float, int
     "display_style_triangle_orientation_symbol": ("arrow0d"),  # "cone", "arrow3d"
+    "display_style_triangularmesh_mesh_disconnected_colorsequence": (1,),
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
     "display_style_markers_marker_symbol": ("wrongsymbol",),
@@ -110,8 +111,8 @@ good_inputs = {
     "display_animation_slider": (True, False),  # bool
     "display_backend": tuple(SUPPORTED_PLOTTING_BACKENDS),  # str typo
     "display_colorsequence": (
-        ["#2E91E5", "#0D2A63"],
-        ["blue", "red"],
+        ("#2e91e5", "#0d2a63"),
+        ("blue", "red"),
     ),  # ]),  # iterable of colors
     "display_style_base_path_line_width": (0, 1),  # float>=0
     "display_style_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),

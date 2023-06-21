@@ -4,9 +4,9 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.13.7
+    jupytext_version: 1.14.0
 kernelspec:
-  display_name: Python 3 (ipykernel)
+  display_name: Python 3
   language: python
   name: python3
 ---
@@ -137,7 +137,7 @@ for z in np.linspace(-8, 8, 16):
     coil1.add(winding)
 
 grid = pv.UniformGrid(
-    dims=(41, 41, 41),
+    dimensions=(41, 41, 41),
     spacing=(2, 2, 2),
     origin=(-40, -40, -40),
 )

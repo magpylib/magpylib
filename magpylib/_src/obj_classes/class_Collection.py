@@ -123,7 +123,6 @@ class BaseCollection(BaseDisplayRepr):
     _draw_func = None
 
     def __init__(self, *children, override_parent=False):
-
         BaseDisplayRepr.__init__(self)
 
         self._children = []

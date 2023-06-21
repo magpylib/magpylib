@@ -33,12 +33,7 @@ MANIFEST
 tempCodeRunnerFile.py
 
 #temp files
-__temp.py
-__temp2.py
-__temp3.py
-__temp4.py
-__temp5.py
-__temp6.py
+__temp*.py
 
 # PyInstaller
 #  Usually these files are written by a python script from a template

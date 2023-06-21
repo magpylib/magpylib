@@ -91,7 +91,6 @@ class Cuboid(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.dimension = dimension
 

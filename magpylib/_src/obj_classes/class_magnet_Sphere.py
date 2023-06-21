@@ -91,7 +91,6 @@ class Sphere(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.diameter = diameter
 

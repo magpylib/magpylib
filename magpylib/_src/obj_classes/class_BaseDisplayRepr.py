@@ -1,5 +1,6 @@
 """BaseGeo class code"""
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-branches
 import numpy as np
 
 from magpylib._src.display.display import show
@@ -65,6 +66,14 @@ class BaseDisplayRepr:
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
+                elif k == "status_disconnected_data":
+                    val = getattr(self, k)
+                    if val is not None:
+                        val = f"{len(val)} part{'s'[:len(val)^1]}"
+                elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
+                    val = np.array(getattr(self, k))
+                    if np.prod(val.shape) > 4:
+                        val = f"shape{val.shape}"
                 else:
                     val = getattr(self, k)
                 lines.append(f"  • {k}: {val} {unit_str}")
