@@ -87,9 +87,10 @@ class Display(MagicProperties):
 
     @backend.setter
     def backend(self, val):
-        assert val is None or val in SUPPORTED_PLOTTING_BACKENDS, (
+        backends = [*SUPPORTED_PLOTTING_BACKENDS, "auto"]
+        assert val is None or val in backends, (
             f"the `backend` property of {type(self).__name__} must be one of"
-            f"{SUPPORTED_PLOTTING_BACKENDS}"
+            f"{backends}"
             f" but received {repr(val)} instead"
         )
         self._backend = val

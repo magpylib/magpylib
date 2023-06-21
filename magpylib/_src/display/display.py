@@ -1,6 +1,8 @@
 """ Display function codes"""
 from importlib import import_module
 
+import matplotlib
+
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
@@ -44,14 +46,18 @@ def show(
         Display position markers in the global coordinate system.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
-        set, parameter will default to `magpylib.defaults.display.backend` which is
-        `'matplotlib'` by installation default.
+        Define plotting backend. Must be one of `['auto', 'matplotlib', 'plotly', 'pyvista']`.
+        If not set, parameter will default to `magpylib.defaults.display.backend` which is
+        `'auto'` by installation default. With `'auto'`, the backend defaults to `'plotly'` if
+        plotly is installed and the function is called in an `IPython` environment, otherwise
+        defaults to `'matplotlib'` which comes installed with magpylib. If the `canvas` is set,
+        the backend defaults to the one corresponding to the canvas object (see canvas parameter).
 
     canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=`None`
         Display graphical output on a given canvas:
-        - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
+        - with matplotlib: `matplotlib.axes.Axes` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
+        - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.
 
     return_fig: bool, default=False
@@ -129,6 +135,36 @@ def show(
     )
 
     # pylint: disable=import-outside-toplevel
+    if backend == "auto":
+        backend = "matplotlib"
+        in_notebook = False
+        plotly_available = False
+        if canvas is None:
+            try:
+                from magpylib._src.utility import is_notebook
+                import plotly  # pylint: disable=unused-import
+
+                plotly_available = True
+                in_notebook = is_notebook()
+                if in_notebook:
+                    backend = "plotly"
+            except ImportError:  # pragma: no cover
+                pass
+        elif isinstance(canvas, matplotlib.axes.Axes):
+            backend = "matplotlib"
+        elif plotly_available and isinstance(
+            canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
+        ):
+            backend = "plotly"
+        else:
+            try:
+                import pyvista  # pylint: disable=unused-import
+
+                if isinstance(canvas, pyvista.Plotter):
+                    backend = "pyvista"
+            except ImportError:
+                pass
+
     display_func = getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
     )
