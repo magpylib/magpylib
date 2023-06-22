@@ -118,7 +118,6 @@ def display_pyvista(
     jupyter_backend=None,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the pyvista library."""
 
     if animation is not False:

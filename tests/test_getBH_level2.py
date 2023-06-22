@@ -35,7 +35,6 @@ def test_getB_level2_input_simple():
         [fb1, fb1, fb1, fb1, fb2],
         [fc1, fc1, fc1, fc1, fc2],
     ):
-
         src_obs_res = [
             [pm1, poso, fb],
             [pm3, poso, fc],

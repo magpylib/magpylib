@@ -12,3 +12,5 @@ pyvista>=0.38
 trame
 ipywidgets>=8.0
 vtk>=9.2.5
+panel
+sphinx-favicon

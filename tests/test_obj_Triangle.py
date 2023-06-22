@@ -77,8 +77,8 @@ def test_empty_object_initialization():
     np.testing.assert_raises(MagpylibMissingInput, call_getB)
 
 
-def test_barycenter():
-    """call barycenter"""
+def test_Triangle_barycenter():
+    """test Triangle barycenter"""
     mag = (0, 0, 333)
     vert = ((-1, -1, 0), (1, -1, 0), (0, 2, 0))
     face = magpy.misc.Triangle(mag, vert)

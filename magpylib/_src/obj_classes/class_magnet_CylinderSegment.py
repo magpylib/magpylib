@@ -104,7 +104,6 @@ class CylinderSegment(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.dimension = dimension
 

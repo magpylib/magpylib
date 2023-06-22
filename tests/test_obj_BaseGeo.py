@@ -2,6 +2,7 @@ import re
 
 import numpy as np
 import pytest
+import pyvista as pv
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
@@ -510,4 +511,30 @@ def test_describe():
         + "  • pixel: 75 (3x5x5) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
+    assert desc == test
+
+    # describe tringularmesh
+    s = magpy.magnet.TriangularMesh.from_pyvista(
+        magnetization=(0, 0, 1000),
+        polydata=pv.Text3D("A"),
+    )
+    desc = s.describe(return_string=True)
+    test = (
+        "TriangularMesh(id=REGEX)\n"
+        "  • parent: None \n"
+        "  • position: [0. 0. 0.] mm\n"
+        "  • orientation: [0. 0. 0.] degrees\n"
+        "  • magnetization: [   0.    0. 1000.] mT\n"
+        "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
+        "  • faces: shape(52, 3) \n"
+        "  • mesh: shape(52, 3, 3) \n"
+        "  • status_disconnected: False \n"
+        "  • status_disconnected_data: 1 part \n"
+        "  • status_open: False \n"
+        "  • status_open_data: [] \n"
+        "  • status_reoriented: True \n"
+        "  • vertices: shape(26, 3) "
+    )
+    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
+    # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
     assert desc == test
