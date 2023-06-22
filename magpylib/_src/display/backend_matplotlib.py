@@ -28,7 +28,7 @@ LINE_STYLES = {
 }
 
 
-def generic_trace_to_matplotlib(trace):
+def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
     traces_mpl = []
     if trace["type"] == "mesh3d":
@@ -42,11 +42,9 @@ def generic_trace_to_matplotlib(trace):
                 "triangles": triangles,
                 "alpha": subtrace.get("opacity", None),
                 "color": subtrace.get("color", None),
+                "linewidth": 0,
+                "antialiased": antialiased,
             }
-            if not trace.get("flatshading", False):
-                # flatshading is on for triangular meshes, to see triangles edges better
-                # in other cases we don't want to see them
-                kwargs.update(linewidth=0, antialiased=False)
             traces_mpl.append(
                 {"constructor": "plot_trisurf", "args": (x, y, z), "kwargs": kwargs}
             )
@@ -135,6 +133,7 @@ def display_matplotlib(
     return_animation=False,
     dpi=80,
     figsize=(8, 8),
+    antialiased=True,
     **kwargs,
 ):
     """Display objects and paths graphically using the matplotlib library."""
@@ -153,7 +152,7 @@ def display_matplotlib(
     for fr in frames:
         new_data = []
         for tr in fr["data"]:
-            new_data.extend(generic_trace_to_matplotlib(tr))
+            new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
         for model in fr["extra_backend_traces"]:
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data

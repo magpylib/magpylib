@@ -504,8 +504,6 @@ def make_Triangle(
 
 def make_TriangularMesh(
     obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
     color=None,
     style=None,
     **kwargs,
@@ -521,14 +519,9 @@ def make_TriangularMesh(
     ntri = len(obj.faces)
     default_suffix = f" ({ntri} face{'s'[:ntri^1]})"
     update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
     # make edges sharper in plotly
     trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
+    return {**trace, **kwargs}
 
 
 def make_Pixels(positions, size=1) -> dict:
@@ -804,7 +797,7 @@ def get_generic_traces(
     if is_mag and style.magnetization.show:
         mag = style.magnetization
         if mag.mode == "auto":
-            mag.mode = "color" if mag_color_grad_apt else "arrow"
+            mag.mode = "color"  # if mag_color_grad_apt else "arrow"
         is_mag_arrows = "arrow" in mag.mode
         mag.show = "color" in mag.mode
 
