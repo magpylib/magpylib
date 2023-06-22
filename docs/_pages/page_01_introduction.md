@@ -259,7 +259,7 @@ objects = [
     ),
     Tetrahedron(
         magnetization=(0,0,100),
-        vertices=((-1,0,0), (1,0,0), (0,-1,0), (0,0,1)),
+        vertices=((-1,0,0), (1,0,0), (0,-1,0), (0,-1,-1)),
         position=(-4,0,4)
     ),
     Loop(
