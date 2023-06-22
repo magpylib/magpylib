@@ -135,6 +135,7 @@ def test_Triangle_display():
         style_orientation_color="yellow",
         style_orientation_symbol="cone",
         style_magnetization_mode="color+arrow",
+        return_fig=True,
     )
 
 
