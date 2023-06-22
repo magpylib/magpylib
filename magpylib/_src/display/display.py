@@ -1,7 +1,7 @@
 """ Display function codes"""
 from importlib import import_module
 
-import matplotlib
+from matplotlib.axes import Axes as mplAxes
 
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.input_checks import check_dimensions
@@ -30,7 +30,7 @@ def infer_backend(canvas):
             backend = "plotly"
     except ImportError:  # pragma: no cover
         pass
-    if isinstance(canvas, matplotlib.axes.Axes):
+    if isinstance(canvas, mplAxes):
         backend = "matplotlib"
     elif plotly_available and isinstance(
         canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
