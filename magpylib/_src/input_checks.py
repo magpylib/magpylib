@@ -451,7 +451,7 @@ def check_format_input_backend(inp):
     if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        f"Input parameter `backend` must be one of `{backends+(None,)}`.\n"
+        f"Input parameter `backend` must be one of `{backends+[None]}`.\n"
         f"Instead received {inp}."
     )
 
