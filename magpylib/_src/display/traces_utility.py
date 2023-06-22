@@ -403,7 +403,7 @@ def group_traces(*traces):
     mesh_groups = {}
     common_keys = ["legendgroup", "opacity"]
     spec_keys = {
-        "mesh3d": ["colorscale", "color"],
+        "mesh3d": ["colorscale", "color", "facecolor"],
         "scatter3d": [
             "marker",
             "line_dash",
@@ -422,7 +422,10 @@ def group_traces(*traces):
         )
         gr = [tr["type"]]
         for k in common_keys + spec_keys[tr["type"]]:
-            v = tr.get(k, "")
+            if k == "facecolor":
+                v = tr.get(k, None) is None
+            else:
+                v = tr.get(k, "")
             gr.append(str(v))
         gr = "".join(gr)
         if gr not in mesh_groups:
@@ -464,3 +467,97 @@ def triangles_area(triangles):
         triangles[:, 1] - triangles[:, 0], triangles[:, 2] - triangles[:, 0], axis=1
     )
     return np.linalg.norm(norm, axis=1) / 2
+
+
+def slice_mesh_with_plane(
+    verts, tris, plane_orig=(0.0, 0.0, 0.0), plane_axis=(1.0, 0.0, 0.0)
+):
+    """Slice a mesh obj defined by vertices an triangles by a plane defined by its
+    origin and axis. Returns two (verts, tris) tuples for left and right side."""
+    dists = np.dot(verts - plane_orig, plane_axis)
+
+    if np.any(dists == 0):
+        # if planes passes some vertices shift vertices slightly
+        # IMPROVE-> make special case without a hack like this
+        verts += np.array([129682, -986394, 123495]) * 1e-16
+        dists = np.dot(verts - plane_orig, plane_axis)
+    all_dists = dists[tris]
+
+    mask_left = np.all(all_dists < 0, axis=1)
+    mask_right = np.all(all_dists > 0, axis=1)
+    mask_cut = np.any(all_dists < 0, axis=1) & np.any(all_dists > 0, axis=1)
+    tri_cut = mask_cut.nonzero()[0]
+
+    d = all_dists.copy()[mask_cut]
+    t = tris.copy()[tri_cut]
+
+    s = d[:, [0, 1, 1, 2, 2, 0]].reshape(-1, 3, 2)  # pairs of distances
+
+    # make sure the first two edges are the one intersected, if not cycle it
+    im = np.prod(s, axis=2) < 0  # edge intersects if product of dist<0
+    m1 = im[:, [0, 2]].sum(axis=1) == 2
+    m2 = im[:, [1, 2]].sum(axis=1) == 2
+    if np.any(m1):
+        t[m1] = t[m1][:, [2, 0, 1]]
+        s[m1] = s[m1][:, [2, 0, 1]]
+        d[m1] = d[m1][:, [2, 0, 1]]
+    if np.any(m2):
+        t[m2] = t[m2][:, [1, 2, 0]]
+        s[m2] = s[m2][:, [1, 2, 0]]
+        d[m2] = d[m2][:, [1, 2, 0]]
+    f = verts[t]
+
+    p = np.abs(s).sum(axis=2)  # projected dists to plane
+
+    e = f[:, [0, 1, 1, 2, 2, 0]].reshape(-1, 3, 2, 3)  # edges
+    v = np.squeeze(np.diff(e, axis=2))  # edges vectors
+
+    pts = (f + v * (np.abs(d) / p).reshape(-1, 3, 1))[:, :2]
+
+    f5 = np.concatenate([f, pts], axis=1)
+    f1 = f5[:, [[3, 1, 4]]]
+    f2 = f5[:, [[0, 3, 2], [3, 4, 2]]]
+
+    fl1 = f1[d[:, 0] > 0].reshape(-1, 3, 3)
+    fr1 = f1[d[:, 0] < 0].reshape(-1, 3, 3)
+    fl2 = f2[d[:, 0] < 0].reshape(-1, 3, 3)
+    fr2 = f2[d[:, 0] > 0].reshape(-1, 3, 3)
+
+    fl0 = verts[tris[mask_left]]
+    fr0 = verts[tris[mask_right]]
+
+    fl = np.concatenate([fl0, fl1, fl2]).reshape((-1, 3))
+    fr = np.concatenate([fr0, fr1, fr2]).reshape((-1, 3))
+
+    vr, tr = np.unique(fr, axis=0, return_inverse=True)
+    tr = tr.reshape((-1, 3))
+
+    vl, tl = np.unique(fl, axis=0, return_inverse=True)
+    tl = tl.reshape((-1, 3))
+    return (vl, tl), (vr, tr)
+
+
+def slice_mesh_from_colorscale(trace, axis, colorscale):
+    """Slice mesh3d obj by axis and colorsale. Return single mesh dict with according
+    facecolor argument."""
+    cs = colorscale
+    origs = np.array(list(dict.fromkeys([v[0] for v in cs])))[1:-1]
+    colors = list(dict.fromkeys([v[1] for v in cs]))
+    vr = np.array([v for k, v in trace.items() if k in "xyz"]).T
+    tr = np.array([v for k, v in trace.items() if k in "ijk"]).T
+    axis = axis / np.linalg.norm(axis)
+    dists = np.dot(vr + np.mean(vr, axis=0), axis)
+    ptp = np.ptp(dists)
+    shift = np.mean([vr[np.argmin(dists)], vr[np.argmax(dists)]], axis=0)
+    origs = np.vstack((origs - 0.5) * ptp) * axis + shift
+
+    traces = []
+    for ind, color in enumerate(colors):
+        if ind < len(origs):
+            (vl, tl), (vr, tr) = slice_mesh_with_plane(vr, tr, origs[ind], axis)
+        else:
+            vl, tl = vr, tr
+        trace_temp = dict(zip("xyzijk", [*vl.T, *tl.T]))
+        trace_temp.update(facecolor=np.array([color] * len(tl)))
+        traces.append(trace_temp)
+    return {**trace, **merge_mesh3d(*traces)}
