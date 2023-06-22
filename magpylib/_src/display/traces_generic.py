@@ -906,7 +906,7 @@ def get_generic_traces(
                         "attempting to show possible disconnected parts, which may take a while "
                         "to compute when the mesh has many faces, now applying operation..."
                     )
-                    obj_is_disconnected = input_obj.check_disconnected()
+                obj_is_disconnected = input_obj.check_disconnected()
     disconnected_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:

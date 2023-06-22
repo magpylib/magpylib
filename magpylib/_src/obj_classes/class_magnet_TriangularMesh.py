@@ -207,7 +207,7 @@ class TriangularMesh(BaseMagnet):
                     "give bad results and subsequently getB() and reorient_faces() may give bad "
                     "results as well. "
                     "This check can be disabled at initialization with check_open='skip'. "
-                    "Open edges can be displayed in show() with style_mesh_disconnected_show=True."
+                    "Open edges can be displayed in show() with style_mesh_open_show=True."
                     "Open edges are stored in the status_open_data property."
                 )
                 if mode == "warn":

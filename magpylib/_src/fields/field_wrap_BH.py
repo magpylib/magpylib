@@ -227,16 +227,16 @@ def getBH_level2(
     if field == "B":
         for src in src_list:
             if isinstance(src, TriangularMesh):
-                # distinguish between is_closed = NONE or FALSE once that part is done
+                # unchecked mesh status - may be open
                 if src.status_open is None:
                     warnings.warn(
-                        f"Unchecked mesh status of {src} detected. An open mesh may "
-                        "result in bad B-field computation."
+                        f"Unchecked mesh status of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
                     )
-                elif src.status_open:
+                elif src.status_open:  # mesh is open
                     warnings.warn(
-                        f"Open mesh of {src} detected. This may result in "
-                        "bad B-field computation."
+                        f"Open mesh of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
                     )
 
     # format observers input:

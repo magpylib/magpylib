@@ -226,7 +226,7 @@ def test_open_mesh():
 
     with pytest.warns(
         UserWarning,
-        match=r"Open mesh of .* detected. This may result in bad B-field computation.",
+        match=r"Open mesh of .* detected",
     ):
         mesh = magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
@@ -237,7 +237,7 @@ def test_open_mesh():
         )
         mesh.getB((0, 0, 0))
 
-    with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected."):
+    with pytest.warns(UserWarning, match=r"Unchecked mesh status of .* detected"):
         mesh = magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
