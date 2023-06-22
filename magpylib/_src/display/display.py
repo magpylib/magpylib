@@ -14,6 +14,39 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import test_path_format
 
 
+def infer_backend(canvas):
+    """Infers the plotting backend from canvas and environment"""
+    # pylint: disable=import-outside-toplevel
+    backend = "matplotlib"
+    in_notebook = False
+    plotly_available = False
+    try:
+        from magpylib._src.utility import is_notebook
+        import plotly  # pylint: disable=unused-import
+
+        plotly_available = True
+        in_notebook = is_notebook()
+        if in_notebook:
+            backend = "plotly"
+    except ImportError:  # pragma: no cover
+        pass
+    if isinstance(canvas, matplotlib.axes.Axes):
+        backend = "matplotlib"
+    elif plotly_available and isinstance(
+        canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
+    ):
+        backend = "plotly"
+    else:
+        try:
+            import pyvista  # pylint: disable=unused-import
+
+            if isinstance(canvas, pyvista.Plotter):
+                backend = "pyvista"
+        except ImportError:  # pragma: no cover
+            pass
+    return backend
+
+
 def show(
     *objects,
     zoom=0,
@@ -133,37 +166,8 @@ def show(
         sig_type="array_like of shape (n,3)",
         allow_None=True,
     )
-
-    # pylint: disable=import-outside-toplevel
     if backend == "auto":
-        backend = "matplotlib"
-        in_notebook = False
-        plotly_available = False
-        if canvas is None:
-            try:
-                from magpylib._src.utility import is_notebook
-                import plotly  # pylint: disable=unused-import
-
-                plotly_available = True
-                in_notebook = is_notebook()
-                if in_notebook:
-                    backend = "plotly"
-            except ImportError:  # pragma: no cover
-                pass
-        elif isinstance(canvas, matplotlib.axes.Axes):
-            backend = "matplotlib"
-        elif plotly_available and isinstance(
-            canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
-        ):
-            backend = "plotly"
-        else:
-            try:
-                import pyvista  # pylint: disable=unused-import
-
-                if isinstance(canvas, pyvista.Plotter):
-                    backend = "pyvista"
-            except ImportError:
-                pass
+        backend = infer_backend(canvas)
 
     display_func = getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
