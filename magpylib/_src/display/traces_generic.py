@@ -863,13 +863,13 @@ def get_generic_traces(
                     # temporary mutate faces from subset
                     input_obj._faces = tri
                     style.magnetization.show = False
-                    disconnected_traces.append(
-                        make_func(
-                            position=pos,
-                            orientation=orient,
-                            **{**make_func_kwargs, "color": dis_color},
-                        )
+                    dis_tr = make_func(
+                        **{**make_func_kwargs, "color": dis_color},
                     )
+                    dis_tr = place_and_orient_model3d(
+                        dis_tr, orientation=orient, position=pos
+                    )
+                    disconnected_traces.append(dis_tr)
                 input_obj._faces = tria_orig
                 style.magnetization.show = mag_show
             else:  # if disconnnected, no mag slicing needed
