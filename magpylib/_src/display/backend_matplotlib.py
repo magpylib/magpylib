@@ -11,7 +11,7 @@ from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 # pylint: disable=too-many-branches
 # pylint: disable=import-outside-toplevel
 
-if os.getenv("MAGPYLIB_MPL_SVG") == "true":
+if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
     from matplotlib_inline.backend_inline import set_matplotlib_formats
 
     set_matplotlib_formats("svg")

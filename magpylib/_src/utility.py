@@ -351,3 +351,19 @@ def get_registered_sources():
         for k, v in get_subclasses(BaseSource, recursive=True).items()
         if not v in (BaseCurrent, BaseMagnet, BaseSource)
     }
+
+
+def is_notebook() -> bool:  # pragma: no cover
+    """Check if execution is within a IPython environment"""
+    # pylint: disable=import-outside-toplevel
+    try:
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        if shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter

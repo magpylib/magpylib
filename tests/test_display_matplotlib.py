@@ -27,7 +27,7 @@ def test_Cuboid_display():
     src.show(style_path_frames=5, return_fig=True)
 
     with plt.ion():
-        x = src.show(style_path_show=False)
+        x = src.show(style_path_show=False, style_magnetization_mode="color+arrow")
     assert x is None  # only place where return_fig=False, for testcov
 
 
@@ -68,14 +68,19 @@ def test_Sphere_display():
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
-    src.show(canvas=ax, style_path_show=False, return_fig=True)
+    src.show(
+        canvas=ax,
+        style_path_show=False,
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
 
 
 def test_Tetrahedron_display():
     """testing Tetrahedron display"""
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
     src = magpy.magnet.Tetrahedron(magnetization=(100, 200, 300), vertices=verts)
-    src.show(return_fig=True)
+    src.show(return_fig=True, style_magnetization_mode="color+arrow")
 
 
 def test_Sensor_display():
@@ -195,6 +200,7 @@ def test_TringularMesh_display():
     src.show(
         style_mesh_open_show=True,
         style_mesh_disconnected_show=True,
+        style_magnetization_mode="color+arrow",
         backend="matplotlib",
         return_fig=True,
     )

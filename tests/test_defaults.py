@@ -109,7 +109,7 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
-    "display_backend": tuple(SUPPORTED_PLOTTING_BACKENDS),  # str typo
+    "display_backend": ["auto", *SUPPORTED_PLOTTING_BACKENDS],  # str typo
     "display_colorsequence": (
         ("#2e91e5", "#0d2a63"),
         ("blue", "red"),
