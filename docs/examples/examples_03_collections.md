@@ -82,7 +82,7 @@ coll.describe(format='label')
 
 ## Child-parent relations
 
-Objects that are part of a collection become children of that collection, and the collection itself becomes their parent. Every Magpylib object has the `parent` attribute, which is `None` by default. 
+Objects that are part of a collection become children of that collection, and the collection itself becomes their parent. Every Magpylib object has the `parent` attribute, which is `None` by default.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -180,13 +180,12 @@ for index in range(10):
     coll.add(cuboid)
 
 # add 3D-trace
-plotly_trace = magpy.graphics.model3d.make_Cuboid(
-    backend='matplotlib',
+extra_generic_trace = magpy.graphics.model3d.make_Cuboid(
     dimension=(104, 12, 12),
     position=(45, 0, 0),
-    alpha=0.5,
+    opacity=0.5,
 )
-coll.style.model3d.add_trace(plotly_trace)
+coll.style.model3d.add_trace(extra_generic_trace)
 
 coll.style.label='Collection with visible children'
 coll.show()
