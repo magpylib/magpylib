@@ -383,7 +383,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                 pts = pts[inds].reshape(-1, 3)
             except KeyError:
                 pass
-            min_max = np.min(pts, axis=0), np.max(pts, axis=0)
+            min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
             for v, min_, max_ in zip(ranges.values(), *min_max):
                 v.extend([min_, max_])
         r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
