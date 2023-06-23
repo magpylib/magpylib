@@ -1,3 +1,5 @@
+import os
+
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
@@ -6,7 +8,13 @@ from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
-# from magpylib._src.utility import format_obj_input
+# pylint: disable=too-many-branches
+# pylint: disable=import-outside-toplevel
+
+if os.getenv("MAGPYLIB_MPL_SVG") == "true":
+    from matplotlib_inline.backend_inline import set_matplotlib_formats
+
+    set_matplotlib_formats("svg")
 
 SYMBOLS = {"circle": "o", "cross": "+", "diamond": "d", "square": "s", "x": "x"}
 
@@ -20,7 +28,7 @@ LINE_STYLES = {
 }
 
 
-def generic_trace_to_matplotlib(trace):
+def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
     traces_mpl = []
     if trace["type"] == "mesh3d":
@@ -30,16 +38,15 @@ def generic_trace_to_matplotlib(trace):
         for subtrace in subtraces:
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
+            kwargs = {
+                "triangles": triangles,
+                "alpha": subtrace.get("opacity", None),
+                "color": subtrace.get("color", None),
+                "linewidth": 0,
+                "antialiased": antialiased,
+            }
             traces_mpl.append(
-                {
-                    "constructor": "plot_trisurf",
-                    "args": (x, y, z),
-                    "kwargs": {
-                        "triangles": triangles,
-                        "alpha": subtrace.get("opacity", None),
-                        "color": subtrace.get("color", None),
-                    },
-                }
+                {"constructor": "plot_trisurf", "args": (x, y, z), "kwargs": kwargs}
             )
     elif trace["type"] == "scatter3d":
         x, y, z = np.array([trace[k] for k in "xyz"], dtype=float)
@@ -124,6 +131,9 @@ def display_matplotlib(
     colorsequence=None,
     return_fig=False,
     return_animation=False,
+    dpi=80,
+    figsize=(8, 8),
+    antialiased=True,
     **kwargs,
 ):
     """Display objects and paths graphically using the matplotlib library."""
@@ -142,7 +152,7 @@ def display_matplotlib(
     for fr in frames:
         new_data = []
         for tr in fr["data"]:
-            new_data.extend(generic_trace_to_matplotlib(tr))
+            new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
         for model in fr["extra_backend_traces"]:
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
@@ -150,7 +160,7 @@ def display_matplotlib(
     show_canvas = False
     if canvas is None:
         show_canvas = True
-        fig = plt.figure(dpi=80, figsize=(8, 8))
+        fig = plt.figure(dpi=dpi, figsize=figsize)
         ax = fig.add_subplot(111, projection="3d")
         ax.set_box_aspect((1, 1, 1))
     else:

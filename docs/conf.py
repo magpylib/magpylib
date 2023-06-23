@@ -21,6 +21,7 @@ os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 
+os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above

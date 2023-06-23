@@ -246,7 +246,7 @@ def getBH_level2(
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
-        int(np.product(ps[:-1])) for ps in pix_shapes
+        int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
     pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
