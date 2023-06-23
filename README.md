@@ -48,7 +48,7 @@ Magpylib is a Python package for calculating **3D static magnetic fields** of ma
 ---
 
 ### Dependencies:
-_Python3.7+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
+_Python3.8+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
 
 ---
 
