@@ -413,10 +413,10 @@ def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e
     centers = np.mean(facets, axis=1)
 
     if r is None:
-        radius = r_factor * np.sqrt(((facets - centers[:, None, :]) ** 2).sum(-1)).max()
+        r = r_factor * np.sqrt(((facets - centers[:, None, :]) ** 2).sum(-1)).max()
 
     kdtree = scipy.spatial.KDTree(centers)
-    near = kdtree.query_ball_point(centers, radius, return_sorted=False, workers=-1)
+    near = kdtree.query_ball_point(centers, r, return_sorted=False, workers=-1)
     tria1 = np.concatenate(near)
     tria2 = np.repeat(np.arange(len(near)), [len(n) for n in near])
     pairs = np.stack([tria1, tria2], axis=1)
