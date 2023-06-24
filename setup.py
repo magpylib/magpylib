@@ -6,7 +6,7 @@
 ###
 # Local install:
 #   Create virtual environment:
-#   $ conda create -n packCondaTest python=3.7.1 anaconda
+#   $ conda create -n packCondaTest python=3.8.1 anaconda
 #   Activate:
 #   $ conda activate packCondaTest
 #   Generate distribution files (untracked by git):
@@ -85,7 +85,6 @@ setuptools.setup(
     classifiers=[
         "Development Status :: 5 - Production/Stable",
         "Programming Language :: Python :: 3",
-        "Programming Language :: Python :: 3.7",
         "Programming Language :: Python :: 3.8",
         "Programming Language :: Python :: 3.9",
         "Programming Language :: Python :: 3.10",
@@ -96,7 +95,7 @@ setuptools.setup(
         "License :: OSI Approved :: BSD License",
         "Operating System :: OS Independent",
     ],
-    python_requires="~=3.7",
+    python_requires="~=3.8",
     keywords="magnetism physics analytical parallel electromagnetic fields b-field",
     command_options={
         "build_sphinx": {
