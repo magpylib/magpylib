@@ -21,6 +21,9 @@ from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
 
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
+
 
 class TriangularMesh(BaseMagnet):
     """Magnet with homogeneous magnetization defined by triangular surface mesh.

@@ -228,60 +228,6 @@ def make_Dipole(
     return {**trace, **kwargs}
 
 
-def make_mesh_lines(
-    obj,
-    pos_orient_inds,
-    mode,
-    label=None,
-    style=None,
-    color=None,  # pylint: disable=unused-argument
-    **kwargs,
-):
-    """Draw open or self-intersecting mesh lines and vertices"""
-    # pylint: disable=protected-access
-    style = obj.style if style is None else style
-    mesh = getattr(style.mesh, mode)
-    marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, obj.vertices
-    if mode == "disconnected":
-        subsets = obj.get_faces_subsets()
-        lines = get_closest_vertices(subsets, vert)
-    else:
-        edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        # make sure unique pairs are found regardless of order
-        edges = np.sort(edges, axis=1)
-        edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
-        if mode == "open":
-            lines = vert[edges_uniq[edges_counts != 2]]
-        else:
-            lines = vert[edges_uniq]
-
-    out = {}
-    if lines.size != 0:
-        label = f"{obj}" if label is None else label
-        lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
-        traces = []
-        for ind in pos_orient_inds:
-            x, y, z = (obj._orientation[ind].apply(lines) + obj._position[ind]).T
-            trace = {
-                "type": "scatter3d",
-                "x": x,
-                "y": y,
-                "z": z,
-                "marker_color": marker.color,
-                "marker_size": marker.size,
-                "marker_symbol": marker.symbol,
-                "line_color": line.color,
-                "line_width": line.width,
-                "line_dash": line.style,
-                "legendgroup": f"{obj}{mode}edges",
-                "name": f"{label} - {mode}-edges",
-            }
-            traces.append(trace)
-        out = {**merge_traces(*traces), **kwargs}
-    return out
-
-
 def get_closest_vertices(faces_subsets, vertices):
     """Get closest pairs of points between disconnected subsets of faces indices"""
     nparts = len(faces_subsets)
@@ -360,32 +306,6 @@ def make_mesh_lines(
             traces.append(trace)
         out = {**merge_traces(*traces), **kwargs}
     return out
-
-
-def get_closest_vertices(faces_subsets, vertices):
-    """Get closest pairs of points between disconnected subsets of faces indices"""
-    nparts = len(faces_subsets)
-    inds_subsets = [np.unique(v) for v in faces_subsets]
-    closest_verts_list = []
-    if nparts > 1:
-        connected = [np.min(inds_subsets[0])]
-        while len(connected) < nparts:
-            prev_min = float("inf")
-            for i in connected:
-                for j in range(nparts):
-                    if j not in connected:
-                        tr1, tr2 = inds_subsets[i], inds_subsets[j]
-                        c1, c2 = vertices[tr1], vertices[tr2]
-                        dist = distance.cdist(c1, c2)
-                        i1, i2 = divmod(dist.argmin(), dist.shape[1])
-                        min_dist = dist[i1, i2]
-                        if min_dist < prev_min:
-                            prev_min = min_dist
-                            closest_verts = [c1[i1], c2[i2]]
-                            connected_ind = j
-            connected.append(connected_ind)
-            closest_verts_list.append(closest_verts)
-    return np.array(closest_verts_list)
 
 
 def make_triangle_orientations(
@@ -602,35 +522,6 @@ def make_TriangularMesh(
     # make edges sharper in plotly
     trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
     return {**trace, **kwargs}
-
-
-def make_TriangularMesh(
-    obj,
-    position=(0.0, 0.0, 0.0),
-    orientation=None,
-    color=None,
-    style=None,
-    **kwargs,
-) -> dict:
-    """
-    Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
-    provided arguments.
-    """
-    style = obj.style if style is None else style
-    trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=color
-    )
-    ntri = len(obj.faces)
-    default_suffix = f" ({ntri} face{'s'[:ntri^1]})"
-    update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
-    update_magnet_mesh(
-        trace, mag_style=style.magnetization, magnetization=obj.magnetization
-    )
-    # make edges sharper in plotly
-    trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
-    return place_and_orient_model3d(
-        trace, orientation=orientation, position=position, **kwargs
-    )
 
 
 def make_Pixels(positions, size=1) -> dict:
@@ -962,9 +853,10 @@ def get_generic_traces(
             if mode == "selfintersecting":
                 if input_obj._status_selfintersecting is None:
                     warnings.warn(
-                        f"Unchecked{input_obj!r} selfintersecting status has not been checked before "
-                        "atempting to show possible self-intersecting parts, which may take a "
-                        "while to compute when the mesh has many faces, now applying operation..."
+                        f"Unchecked{input_obj!r} selfintersecting status has not been checked "
+                        "before atempting to show possible self-intersecting parts, which may take "
+                        "a while to compute when the mesh has many faces, now applying "
+                        "operation..."
                     )
                     input_obj.check_selfintersecting()
     disconnected_traces = []
