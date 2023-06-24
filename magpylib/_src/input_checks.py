@@ -445,13 +445,13 @@ def check_format_input_cylinder_segment(inp):
 
 def check_format_input_backend(inp):
     """checks show-backend input and returns Non if bad input value"""
-    backends = SUPPORTED_PLOTTING_BACKENDS
+    backends = [*SUPPORTED_PLOTTING_BACKENDS, "auto"]
     if inp is None:
         inp = default_settings.display.backend
     if inp in backends:
         return inp
     raise MagpylibBadUserInput(
-        f"Input parameter `backend` must be one of `{backends+(None,)}`.\n"
+        f"Input parameter `backend` must be one of `{backends+[None]}`.\n"
         f"Instead received {inp}."
     )
 

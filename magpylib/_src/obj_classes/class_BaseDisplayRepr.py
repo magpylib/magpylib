@@ -62,7 +62,7 @@ class BaseDisplayRepr:
                 elif k == "pixel":
                     val = getattr(self, "pixel")
                     px_shape = val.shape[:-1]
-                    val_str = f"{int(np.product(px_shape))}"
+                    val_str = f"{int(np.prod(px_shape))}"
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str

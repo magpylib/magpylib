@@ -975,9 +975,6 @@ class TriMesh(MagicProperties):
     open: dict or OpenMesh,  default=None
         Shows open mesh vertices and edges of a TriangularMesh object, if any.
 
-    disjoint: dict or DisjointMesh, default=None
-        Shows disjoint bodies of a TriangularMesh object, if any.
-
     disconnected: dict or DisconnectedMesh, default=None
         Shows disconnected bodies of a TriangularMesh object, if any.
 

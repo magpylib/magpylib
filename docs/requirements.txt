@@ -8,6 +8,6 @@ sphinx-panels
 sphinx-thebe
 jupytext
 numpy-stl
-pyvista
+pyvista==0.37
 panel
 sphinx-favicon

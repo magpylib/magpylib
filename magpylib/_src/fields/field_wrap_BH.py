@@ -227,16 +227,16 @@ def getBH_level2(
     if field == "B":
         for src in src_list:
             if isinstance(src, TriangularMesh):
-                # distinguish between is_closed = NONE or FALSE once that part is done
+                # unchecked mesh status - may be open
                 if src.status_open is None:
                     warnings.warn(
-                        f"Unchecked mesh status of {src} detected. An open mesh may "
-                        "result in bad B-field computation."
+                        f"Unchecked mesh status of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
                     )
-                elif src.status_open:
+                elif src.status_open:  # mesh is open
                     warnings.warn(
-                        f"Open mesh of {src} detected. This may result in "
-                        "bad B-field computation."
+                        f"Open mesh of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
                     )
 
     # format observers input:
@@ -246,7 +246,7 @@ def getBH_level2(
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
-        int(np.product(ps[:-1])) for ps in pix_shapes
+        int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
     pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1

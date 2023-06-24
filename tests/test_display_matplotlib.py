@@ -1,3 +1,5 @@
+import re
+
 import matplotlib
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
@@ -25,7 +27,7 @@ def test_Cuboid_display():
     src.show(style_path_frames=5, return_fig=True)
 
     with plt.ion():
-        x = src.show(style_path_show=False)
+        x = src.show(style_path_show=False, style_magnetization_mode="color+arrow")
     assert x is None  # only place where return_fig=False, for testcov
 
 
@@ -66,14 +68,19 @@ def test_Sphere_display():
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
-    src.show(canvas=ax, style_path_show=False, return_fig=True)
+    src.show(
+        canvas=ax,
+        style_path_show=False,
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
 
 
 def test_Tetrahedron_display():
     """testing Tetrahedron display"""
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
     src = magpy.magnet.Tetrahedron(magnetization=(100, 200, 300), vertices=verts)
-    src.show(return_fig=True)
+    src.show(return_fig=True, style_magnetization_mode="color+arrow")
 
 
 def test_Sensor_display():
@@ -112,6 +119,32 @@ def test_Loop_display():
 
 
 def test_Triangle_display():
+    """testing display for Triangle source built from vertices"""
+    mesh3d = magpy.graphics.model3d.make_Cuboid()
+    # note: triangles are built by scipy.Convexhull since triangles=None
+    points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
+    triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
+    src = magpy.Collection(
+        [
+            magpy.misc.Triangle(magnetization=(1000, 1000, 0), vertices=v)
+            for v in points[triangles]
+        ]
+    )
+    # make north/south limit pass an ege by bicolor mode and (45° mag)
+    magpy.show(
+        *src,
+        backend="matplotlib",
+        style_magnetization_color_mode="bicolor",
+        style_orientation_offset=0.5,
+        style_orientation_size=2,
+        style_orientation_color="yellow",
+        style_orientation_symbol="cone",
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
+
+
+def test_Triangle_display_from_convexhull():
     """testing display for Triangle source built from vertices"""
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
@@ -164,7 +197,38 @@ def test_TringularMesh_display():
         style_mesh_grid_show=True,
     )
 
-    src.show(backend="matplotlib", return_fig=True)
+    src.show(
+        style_mesh_open_show=True,
+        style_mesh_disconnected_show=True,
+        style_magnetization_mode="color+arrow",
+        backend="matplotlib",
+        return_fig=True,
+    )
+
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            (0, 0, 1000),
+            vertices,
+            faces,
+            check_open="skip",
+            check_disconnected="skip",
+            reorient_faces=False,
+            style_mesh_grid_show=True,
+        ).show(
+            style_mesh_open_show=True,
+            style_mesh_disconnected_show=True,
+            backend="matplotlib",
+            return_fig=True,
+        )
+        assert len(record) == 4
+        assert re.match(
+            r"Unchecked open mesh status in .* detected", str(record[0].message)
+        )
+        assert re.match(r"Open mesh detected in .*.", str(record[1].message))
+        assert re.match(
+            r"Unchecked disconnected mesh status in .* detected", str(record[2].message)
+        )
+        assert re.match(r"Disconnected mesh detected in .*.", str(record[3].message))
 
 
 def test_col_display():

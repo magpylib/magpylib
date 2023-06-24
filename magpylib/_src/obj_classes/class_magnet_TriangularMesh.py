@@ -149,12 +149,12 @@ class TriangularMesh(BaseMagnet):
 
     @property
     def status_open(self):
-        """Return closed status"""
+        """Return open status"""
         return self._status_open
 
     @property
     def status_disconnected(self):
-        """Return connected status"""
+        """Return disconnected status"""
         return self._status_disconnected
 
     @property
@@ -216,7 +216,7 @@ class TriangularMesh(BaseMagnet):
                     "give bad results and subsequently getB() and reorient_faces() may give bad "
                     "results as well. "
                     "This check can be disabled at initialization with check_open='skip'. "
-                    "Open edges can be displayed in show() with style_mesh_disconnected_show=True."
+                    "Open edges can be displayed in show() with style_mesh_open_show=True."
                     "Open edges are stored in the status_open_data property."
                 )
                 if mode == "warn":

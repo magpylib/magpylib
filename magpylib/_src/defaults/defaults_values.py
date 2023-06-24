@@ -10,7 +10,7 @@ DEFAULTS = {
             "time": 5,
             "slider": True,
         },
-        "backend": "matplotlib",
+        "backend": "auto",
         "colorsequence": (
             "#2E91E5",
             "#E15F99",
