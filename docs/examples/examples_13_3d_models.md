@@ -158,7 +158,7 @@ trace_trisurf = {
     'constructor': 'plot_trisurf',
     'args': (xs,ys,zs),
     'kwargs': {
-        'faces': tri.faces,
+        'triangles': tri.triangles,
         'cmap': plt.cm.coolwarm,
     },
 }

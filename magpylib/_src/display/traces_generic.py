@@ -263,7 +263,7 @@ def make_mesh_lines(
     color=None,  # pylint: disable=unused-argument
     **kwargs,
 ):
-    """Draw open or disjoint mesh lines and vertices"""
+    """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, mode)
