@@ -401,19 +401,18 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     if traces:
         ranges = {k: [] for k in "xyz"}
         for t in traces:
-            coords = "xy"
+            coords = "xyz"
             if "z" in t:  # only extend range for 3d traces
                 trace3d_found = True
-                coords = "xyz"
-            pts = np.array([t[k] for k in coords], dtype="float64").T
-            try:  # for mesh3, use only vertices part of faces for range calculation
-                inds = np.array([t[k] for k in "ijk"], dtype="int64").T
-                pts = pts[inds].reshape(-1, 3)
-            except KeyError:
-                pass
-            min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-            for v, min_, max_ in zip(ranges.values(), *min_max):
-                v.extend([min_, max_])
+                pts = np.array([t[k] for k in coords], dtype="float64").T
+                try:  # for mesh3, use only vertices part of faces for range calculation
+                    inds = np.array([t[k] for k in "ijk"], dtype="int64").T
+                    pts = pts[inds].reshape(-1, 3)
+                except KeyError:
+                    pass
+                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
+                for v, min_, max_ in zip(ranges.values(), *min_max):
+                    v.extend([min_, max_])
         if trace3d_found:
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
             size = np.diff(r, axis=1)
