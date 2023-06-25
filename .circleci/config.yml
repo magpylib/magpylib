@@ -40,9 +40,9 @@ jobs:
           command: tox
 
   deploy:
-  docker:
-    - image: python:3
-  steps:
+    docker:
+      - image: python:3
+    steps:
       - checkout
       - run:
           name: install python dependencies
@@ -72,7 +72,7 @@ jobs:
             . venv/bin/activate
             pip install wheel
       - run:
-          name: create wheel
+          name: Create wheel
           command: |
             . venv/bin/activate
             python setup.py bdist_wheel
@@ -81,3 +81,4 @@ jobs:
           command: |
             . venv/bin/activate
             twine upload --repository pypi dist/*
+
