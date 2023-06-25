@@ -270,7 +270,6 @@ def display_plotly(
     subplot_specs=None,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the plotly library."""
     fig = canvas
     show_fig = False

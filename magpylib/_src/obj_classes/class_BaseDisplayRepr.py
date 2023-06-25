@@ -62,13 +62,14 @@ class BaseDisplayRepr:
                 elif k == "pixel":
                     val = getattr(self, "pixel")
                     px_shape = val.shape[:-1]
-                    val_str = f"{int(np.product(px_shape))}"
+                    val_str = f"{int(np.prod(px_shape))}"
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
-                elif k == "triangles_subsets":
+                elif k == "status_disconnected_data":
                     val = getattr(self, k)
-                    val = f"list of length {len(val)}"
+                    if val is not None:
+                        val = f"{len(val)} part{'s'[:len(val)^1]}"
                 elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
                     val = np.array(getattr(self, k))
                     if np.prod(val.shape) > 4:

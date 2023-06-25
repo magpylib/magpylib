@@ -30,7 +30,7 @@
 
 
 <p align="center"> Try it online:
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.2.0?filepath=docs%2Fexamples">
+<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.3.0?filepath=docs%2Fexamples">
 <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18"></a>
 </p>
 
@@ -48,7 +48,7 @@ Magpylib is a Python package for calculating **3D static magnetic fields** of ma
 ---
 
 ### Dependencies:
-_Python3.7+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
+_Python3.8+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
 
 ---
 

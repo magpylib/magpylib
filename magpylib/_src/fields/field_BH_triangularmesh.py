@@ -5,8 +5,41 @@ Computation details in function docstrings.
 # pylint: disable=too-many-nested-blocks
 # pylance: disable=Code is unreachable
 import numpy as np
+import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
+
+
+def calculate_centroid(vertices, faces):
+    """
+    Calculates the centroid of a 3D triangular surface mesh.
+
+    Parameters:
+    vertices (numpy.array): an n x 3 array of vertices
+    faces (numpy.array): an m x 3 array of triangle indices
+
+    Returns:
+    numpy.array: The centroid of the mesh
+    """
+
+    # Calculate the centroids of each triangle
+    triangle_centroids = np.mean(vertices[faces], axis=1)
+
+    # Compute the area of each triangle
+    triangle_areas = 0.5 * np.linalg.norm(
+        np.cross(
+            vertices[faces[:, 1]] - vertices[faces[:, 0]],
+            vertices[faces[:, 2]] - vertices[faces[:, 0]],
+        ),
+        axis=1,
+    )
+
+    # Calculate the centroid of the entire mesh
+    mesh_centroid = np.sum(triangle_centroids.T * triangle_areas, axis=1) / np.sum(
+        triangle_areas
+    )
+
+    return mesh_centroid
 
 
 def v_norm2(a: np.ndarray) -> np.ndarray:
@@ -54,10 +87,10 @@ def v_dot_cross3d(a: np.ndarray, b: np.ndarray, c: np.ndarray) -> np.ndarray:
     return result
 
 
-def get_disjoint_triangles_subsets(triangles: list) -> list:
-    """Return a list of disjoint triangles sets"""
+def get_disconnected_faces_subsets(faces: list) -> list:
+    """Return a list of disconnected faces sets"""
     subsets_inds = []
-    tria_temp = triangles.copy()
+    tria_temp = faces.copy()
     while len(tria_temp) > 0:
         first, *rest = tria_temp
         first = set(first)
@@ -73,71 +106,67 @@ def get_disjoint_triangles_subsets(triangles: list) -> list:
             rest = rest2
         subsets_inds.append(list(first))
         tria_temp = rest
-    subsets = [
-        triangles[np.isin(triangles, list(ps)).all(axis=1)] for ps in subsets_inds
-    ]
+    subsets = [faces[np.isin(faces, list(ps)).all(axis=1)] for ps in subsets_inds]
     return subsets
 
 
-def trimesh_is_closed(triangles: np.ndarray) -> bool:
+def get_open_edges(faces: np.ndarray) -> bool:
     """
     Check if given trimesh forms a closed surface.
 
-    Input: triangles: np.ndarray, shape (n,3), dtype int
+    Input: faces: np.ndarray, shape (n,3), dtype int
         triples of indices
 
-    Output: bool (True if closed, False if open)
+    Output: open edges
     """
-    edges = np.concatenate(
-        [triangles[:, 0:2], triangles[:, 1:3], triangles[:, ::2]], axis=0
-    )
+    edges = np.concatenate([faces[:, 0:2], faces[:, 1:3], faces[:, ::2]], axis=0)
 
     # unique edge pairs and counts how many
     edges = np.sort(edges, axis=1)
-    _, edge_counts = np.unique(edges, axis=0, return_counts=True)
+    edges_uniq, edge_counts = np.unique(edges, axis=0, return_counts=True)
 
     # mesh is closed if each edge exists twice
-    return np.all(edge_counts == 2)
+    return edges_uniq[edge_counts != 2]
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, triangles: np.ndarray) -> np.ndarray:
-    """Check if all triangles are oriented outwards. Fix the ones that are not, and return an
-    array of properly oriented triangles.
+def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+    """Check if all faces are oriented outwards. Fix the ones that are not, and return an
+    array of properly oriented faces.
 
     Parameters
     ----------
     vertices: np.ndarray, shape (n,3)
         Vertices of the mesh
 
-    triangles: np.ndarray, shape (n,3), dtype int
+    faces: np.ndarray, shape (n,3), dtype int
         Triples of indices
 
     Returns
     -------
-    triangles: np.ndarray, shape (n,3), dtype int, or triangles and 1D array of triples
-        Fixed triangles
+    faces: np.ndarray, shape (n,3), dtype int, or faces and 1D array of triples
+        Fixed faces
     """
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
-    inwards_mask = get_inwards_mask(vertices, triangles)
-    new_triangles = triangles.copy()
-    new_triangles[inwards_mask] = new_triangles[inwards_mask][:, [0, 2, 1]]
-    return new_triangles
+    inwards_mask = get_inwards_mask(vertices, faces)
+    new_faces = faces.copy()
+    new_faces[inwards_mask] = new_faces[inwards_mask][:, [0, 2, 1]]
+    return new_faces
 
 
-def is_facet_inwards(facet, facets):
+def is_facet_inwards(face, faces):
     """Return boolean whether facet is pointing inwards, via ray tracing"""
-    v1 = facet[0] - facet[1]
-    v2 = facet[1] - facet[2]
+    v1 = face[0] - face[1]
+    v2 = face[1] - face[2]
     orient = np.cross(v1, v2)
     orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
     eps = 1e-6  # unfortunately this must be quite a 'large' number :(
-    check_point = facet.mean(axis=0) + orient * eps
+    check_point = face.mean(axis=0) + orient * eps
 
     # find out if first point is inwards
-    return mask_inside_trimesh(np.array([check_point]), facets)[0]
+    return mask_inside_trimesh(np.array([check_point]), faces)[0]
 
 
 def get_inwards_mask(
@@ -163,7 +192,7 @@ def get_inwards_mask(
         Boolean mask of inwards orientations from provided triangles
     """
 
-    facets = vertices[triangles]
+    msh = vertices[triangles]
     mask = np.full(len(triangles), False)
     indices = list(range(len(triangles)))
 
@@ -173,7 +202,7 @@ def get_inwards_mask(
     while indices:
         if not any_connected:
             free_edges = set()
-            is_inwards = is_facet_inwards(facets[indices[0]], facets[indices])
+            is_inwards = is_facet_inwards(msh[indices[0]], msh[indices])
             mask[indices] = is_inwards
         for tri_ind in indices:
             tri = triangles[tri_ind]
@@ -203,7 +232,7 @@ def get_inwards_mask(
     return mask
 
 
-def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
+def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
     Check if 2-point lines, where the first point lies distinctly outside of a closed
     triangular mesh (no touch), ends on the inside of that mesh
@@ -217,9 +246,9 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
         n line segements defined through respectively 2 (first index) positions with
         coordinates (x,y,z) (last index). The first point must lie outside of the mesh.
 
-    facets: ndarray, shape (m,3,3)
-        m facets defined through respectively 3 (first index) positions with coordinates
-        (x,y,z) (last index). The facets must define a closed mesh.
+    faces: ndarray, shape (m,3,3)
+        m faces defined through respectively 3 (first index) positions with coordinates
+        (x,y,z) (last index). The faces must define a closed mesh.
 
     Returns
     -------
@@ -229,7 +258,7 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
     ----
     Part 1: plane_cross
     Checks if start and end of lines are on the same or on different sides of the planes
-    defined by the triangular facets. On the way check if end-point touches the plane.
+    defined by the triangular faces. On the way check if end-point touches the plane.
 
     Part 2: pass_through
     Makes use of Line-Triangle intersection as described in
@@ -238,21 +267,21 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
     """
 
     # Part 1 ---------------------------
-    normals = v_cross(facets[:, 0] - facets[:, 2], facets[:, 1] - facets[:, 2])
+    normals = v_cross(faces[:, 0] - faces[:, 2], faces[:, 1] - faces[:, 2])
     normals = np.tile(normals, (len(lines), 1, 1))
 
     l0 = lines[:, 0][:, np.newaxis]  # outside points
     l1 = lines[:, 1][:, np.newaxis]  # possible inside test-points
 
-    # test-point might coincide with chosen in-plane reference point (chosen facets[:,2] here).
+    # test-point might coincide with chosen in-plane reference point (chosen faces[:,2] here).
     # this then leads to bad projection computation
-    # --> choose other reference points (facets[:,1]) in those specific cases
-    ref_pts = np.tile(facets[:, 2], (len(lines), 1, 1))
+    # --> choose other reference points (faces[:,1]) in those specific cases
+    ref_pts = np.tile(faces[:, 2], (len(lines), 1, 1))
     eps = 1e-16  # note: norm square !
     coincide = v_norm2(l1 - ref_pts) < eps
     if np.any(coincide):
         ref_pts2 = np.tile(
-            facets[:, 1], (len(lines), 1, 1)
+            faces[:, 1], (len(lines), 1, 1)
         )  # <--inefficient tile !!! only small part needed
         ref_pts[coincide] = ref_pts2[coincide]
 
@@ -271,9 +300,9 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
 
     # Part 2 ---------------------------
     # signed areas (no 0-problem because ss0 is the outside point)
-    a = facets[:, 0] - l0
-    b = facets[:, 1] - l0
-    c = facets[:, 2] - l0
+    a = faces[:, 0] - l0
+    b = faces[:, 1] - l0
+    c = faces[:, 2] - l0
     d = l1 - l0
     area1 = v_dot_cross3d(a, b, d)
     area2 = v_dot_cross3d(b, c, d)
@@ -305,6 +334,100 @@ def lines_end_in_trimesh(lines: np.ndarray, facets: np.ndarray) -> np.ndarray:
     return inside1 | inside2
 
 
+def segments_intersect_facets(segments, facets, eps=1e-6):
+    """Pair-wise detect if set of segments intersect set of facets.
+
+    Parameters
+    -----------
+    segments: np.ndarray, shape (n,3,3)
+        Set of segments.
+
+    facets: np.ndarray, shape (n,3,3)
+        Set of facets.
+
+    eps: float
+        Point to point tolerance detection. Must be strictly positive,
+        otherwise some triangles may be detected as intersecting themselves.
+    """
+    if eps <= 0:  # pragma: no cover
+        raise ValueError("eps must be stricly positive")
+
+    s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
+
+    # compute the normals to each triangle
+    normals = np.cross(t[2] - t[0], t[2] - t[1])
+    normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+
+    # get sign of each segment endpoint, if the sign changes then we know this
+    # segment crosses the plane which contains a triangle. If the value is zero
+    # the endpoint of the segment lies on the plane.
+    g1 = np.sum(normals * (s[0] - t[2]), axis=1)
+    g2 = np.sum(normals * (s[1] - t[2]), axis=1)
+
+    # determine segments which cross the plane of a triangle.
+    #  -> 1 if the sign of the end points of s is
+    # different AND one of end points of s is not a vertex of t
+    cross = (np.sign(g1) != np.sign(g2)) * (np.abs(g1) > eps) * (np.abs(g2) > eps)
+
+    v = []  # get signed volumes
+    for i, j in zip((0, 1, 2), (1, 2, 0)):
+        sv = np.sum((t[i] - s[1]) * np.cross(t[j] - s[1], s[0] - s[1]), axis=1)
+        v.append(np.sign(sv))
+
+    # same volume if s and t have same sign in v0, v1 and v2
+    same_volume = np.logical_and((v[0] == v[1]), (v[1] == v[2]))
+
+    return cross * same_volume
+
+
+def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e-6):
+    """Return intersecting triangles indices from a triangular mesh described
+    by vertices and triangles indices.
+
+    Parameters
+    ----------
+    vertices: np.ndarray, shape (n,3)
+        Vertices/points of the mesh.
+
+    triangles: np.ndarray, shape (n,3), dtype int
+        Triples of vertices indices that build each triangle of the mesh.
+
+    r: float or None
+        The radius of the ball-point query for the k-d tree. If None:
+        r=max_distance_between_center_and_vertices*2
+
+    r_factor: float
+        The factor by which to multiply the radius `r` of the ball-point query.
+        Note that increasing this value will drastically augment computation
+        time.
+
+    eps: float
+        Point to point tolerance detection. Must be strictly positive,
+        otherwise some triangles may be detected as intersecting themselves.
+    """
+    if r_factor < 1:  # pragma: no cover
+        raise ValueError("r_factor must be greater or equal to 1")
+
+    vertices = vertices.astype(np.float32)
+    facets = vertices[triangles]
+    centers = np.mean(facets, axis=1)
+
+    if r is None:
+        r = r_factor * np.sqrt(((facets - centers[:, None, :]) ** 2).sum(-1)).max()
+
+    kdtree = scipy.spatial.KDTree(centers)
+    near = kdtree.query_ball_point(centers, r, return_sorted=False, workers=-1)
+    tria1 = np.concatenate(near)
+    tria2 = np.repeat(np.arange(len(near)), [len(n) for n in near])
+    pairs = np.stack([tria1, tria2], axis=1)
+    pairs = pairs[pairs[:, 0] != pairs[:, 1]]  # remove check against itself
+    f1, f2 = facets[pairs[:, 0]], facets[pairs[:, 1]]
+    sums = 0
+    for inds in [[0, 1], [1, 2], [2, 0]]:
+        sums += segments_intersect_facets(f1[:, inds], f2, eps=eps)
+    return np.unique(pairs[sums > 0])
+
+
 def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:
     """
     Quick-check which points lie inside a bounding box of the mesh (defined by vertices).
@@ -331,14 +454,14 @@ def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.nd
     return mx & my & mz
 
 
-def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
+def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     """
-    Check which points lie inside of a closed triangular mesh (defined by facets).
+    Check which points lie inside of a closed triangular mesh (defined by faces).
 
     Parameters
     ----------
     points, ndarray, shape (n,3)
-    facets, ndarray, shape (m,3,3)
+    faces, ndarray, shape (m,3,3)
 
     Returns
     -------
@@ -347,9 +470,9 @@ def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
     Note
     ----
     Method: ray-tracing.
-    Facets must form a closed mesh for this to work.
+    Faces must form a closed mesh for this to work.
     """
-    vertices = facets.reshape((-1, 3))
+    vertices = faces.reshape((-1, 3))
 
     # test-points inside of enclosing box
     mask_inside = mask_inside_enclosing_box(points, vertices)
@@ -363,7 +486,7 @@ def mask_inside_trimesh(points: np.ndarray, facets: np.ndarray) -> np.ndarray:
     test_lines[:, 1] = pts_in_box
 
     # check if test-points are inside using ray tracing
-    mask_inside2 = lines_end_in_trimesh(test_lines, facets)
+    mask_inside2 = lines_end_in_trimesh(test_lines, faces)
 
     mask_inside[mask_inside] = mask_inside2
 
@@ -374,11 +497,12 @@ def magnet_trimesh_field(
     field: str,
     observers: np.ndarray,
     magnetization: np.ndarray,
-    facets: np.ndarray,
+    mesh: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
-    Code for the field calculation of a uniformly magnetized triangular facet body.
+    core-like function that computes the field of triangular meshes using the triangle_field
+    - closed nice meshes are assumed (input comes only from TriangularMesh class)
 
     Parameters
     ----------
@@ -392,12 +516,12 @@ def magnet_trimesh_field(
     magnetization: ndarray, shape (n,3)
         Homogeneous magnetization vector in units of [mT].
 
-    facets: ndarray, shape (n,n1,3,3) or ragged sequence
-        Triangular facets of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
-        `facets` can be a ragged sequence of facet children with different lengths.
+    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
+        Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
+        `mesh` can be a ragged sequence of mesh-children with different lengths.
 
     in_out: {'auto', 'inside', 'outside'}
-        Tells if the points are inside or outside the enclosing facets for the correct B/H-field
+        Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
         calculation. By default `in_out='auto'` and the inside/outside mask is automatically
         generated using a ray tracing algorigthm to determine which observers are inside and which
         are outside the closed body. For performance reasons, one can define `in_out='outside'`
@@ -414,10 +538,9 @@ def magnet_trimesh_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-
-    if facets.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = facets.shape
-        vertices_tiled = facets.reshape(-1, 3, 3)
+    if mesh.ndim != 1:  # all vertices objects have same number of children
+        n0, n1, *_ = mesh.shape
+        vertices_tiled = mesh.reshape(-1, 3, 3)
         observers_tiled = np.repeat(observers, n1, axis=0)
         magnetization_tiled = np.repeat(magnetization, n1, axis=0)
         B = triangle_field(
@@ -429,9 +552,9 @@ def magnet_trimesh_field(
         B = B.reshape((n0, n1, 3))
         B = np.sum(B, axis=1)
     else:
-        nvs = [f.shape[0] for f in facets]  # length of vertex set
+        nvs = [f.shape[0] for f in mesh]  # length of vertex set
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in facets])
+        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
         observers_tiled = np.repeat(observers, nvs, axis=0)
         magnetization_tiled = np.repeat(magnetization, nvs, axis=0)
         B = triangle_field(
@@ -446,17 +569,17 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar facets
+            # group similar meshs for inside-outise evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
-                    or facets[new_ind].shape != facets[prev_ind].shape
-                    or not np.all(facets[new_ind] == facets[prev_ind])
+                    or mesh[new_ind].shape != mesh[prev_ind].shape
+                    or not np.all(mesh[new_ind] == mesh[prev_ind])
                 ):
                     if new_ind == len(B) - 1:
                         new_ind = len(B)
                     inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], facets[prev_ind]
+                        observers[prev_ind:new_ind], mesh[prev_ind]
                     )
                     # if inside magnet add magnetization vector
                     B[prev_ind:new_ind][inside_mask] += magnetization[prev_ind:new_ind][

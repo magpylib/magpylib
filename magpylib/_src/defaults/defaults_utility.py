@@ -243,7 +243,6 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             pass
 
         if isinstance(color_input, (tuple, list)):
-
             if len(color_input) == 4:  # do not allow opacity values for now
                 color_input = color_input[:-1]
             if len(color_input) != 3:

@@ -3,6 +3,8 @@ import warnings
 from contextlib import contextmanager
 from importlib import import_module
 
+from matplotlib.axes import Axes as mplAxes
+
 from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import get_frames
@@ -98,7 +100,7 @@ class RegisterBackend:
 
 
 def get_show_func(backend):
-    """Return the bakcend show function"""
+    """Return the backend show function"""
     # defer import to show call. Importerror should only fail if unavalaible backend is called
     return lambda: getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
@@ -158,6 +160,39 @@ ctx = DisplayContext()
 ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
 
 
+def infer_backend(canvas):
+    """Infers the plotting backend from canvas and environment"""
+    # pylint: disable=import-outside-toplevel
+    backend = "matplotlib"
+    in_notebook = False
+    plotly_available = False
+    try:
+        from magpylib._src.utility import is_notebook
+        import plotly  # pylint: disable=unused-import
+
+        plotly_available = True
+        in_notebook = is_notebook()
+        if in_notebook:
+            backend = "plotly"
+    except ImportError:  # pragma: no cover
+        pass
+    if isinstance(canvas, mplAxes):
+        backend = "matplotlib"
+    elif plotly_available and isinstance(
+        canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)
+    ):
+        backend = "plotly"
+    else:
+        try:
+            import pyvista  # pylint: disable=unused-import
+
+            if isinstance(canvas, pyvista.Plotter):
+                backend = "pyvista"
+        except ImportError:  # pragma: no cover
+            pass
+    return backend
+
+
 def _show(
     *objects,
     backend=None,
@@ -209,6 +244,9 @@ def _show(
             }
         ]
 
+    if backend == "auto":
+        backend = infer_backend(kwargs.get("canvas", None))
+
     return RegisterBackend.show(
         backend=backend,
         *objects,
@@ -246,14 +284,16 @@ def show(
         Objects to be displayed.
 
     backend: string, default=`None`
-        Define plotting backend. Must be one of `'matplotlib'`, `'plotly'`. If not
-        set, parameter will default to `magpylib.defaults.display.backend` which is
-        `'matplotlib'` by installation default.
+        Define plotting backend. Must be one of `['auto', 'matplotlib', 'plotly', 'pyvista']`.
+        If not set, parameter will default to `magpylib.defaults.display.backend` which is
+        `'auto'` by installation default. With `'auto'`, the backend defaults to `'plotly'` if
+        plotly is installed and the function is called in an `IPython` environment, otherwise
+        defaults to `'matplotlib'` which comes installed with magpylib. If the `canvas` is set,
+        the backend defaults to the one corresponding to the canvas object (see canvas parameter).
 
     canvas: matplotlib.pyplot `AxesSubplot` or plotly `Figure` object, default=`None`
         Display graphical output on a given canvas:
-
-        - with matplotlib: `matplotlib.axes._subplots.AxesSubplot` with `projection=3d.
+        - with matplotlib: `matplotlib.axes.Axes` with `projection=3d.
         - with plotly: `plotly.graph_objects.Figure` or `plotly.graph_objects.FigureWidget`.
         - with pyvista: `pyvista.Plotter`.
         By default a new canvas is created and immediately displayed.

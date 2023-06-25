@@ -105,7 +105,6 @@ class Triangle(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         self.vertices = vertices
 
         # init inheritance

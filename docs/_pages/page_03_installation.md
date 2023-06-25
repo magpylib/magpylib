@@ -22,7 +22,7 @@ Magpylib is hosted for **download** at the following locations:
 
 The Magpylib **dependencies** are as follows (check on [GitHub](https://github.com/magpylib/magpylib) for the latest version requirements):
 
-- Python 3.7 or later
+- Python 3.8 or later
 - numpy
 - scipy (.spatial.transform, .special)
 - matplotlib

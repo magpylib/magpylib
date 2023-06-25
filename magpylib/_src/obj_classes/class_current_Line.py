@@ -100,7 +100,6 @@ class Line(BaseCurrent):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.vertices = vertices
 

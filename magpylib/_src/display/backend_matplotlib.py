@@ -1,6 +1,9 @@
 """matplotlib backend"""
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
+# pylint: disable=import-outside-toplevel
+import os
+
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
@@ -8,6 +11,11 @@ from matplotlib.animation import FuncAnimation
 
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
+
+if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
+    from matplotlib_inline.backend_inline import set_matplotlib_formats
+
+    set_matplotlib_formats("svg")
 
 SYMBOLS_TO_MATPLOTLIB = {
     "circle": "o",
@@ -27,7 +35,7 @@ LINE_STYLES_TO_MATPLOTLIB = {
 }
 
 
-def generic_trace_to_matplotlib(trace):
+def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
     traces_mpl = []
     leg_title = trace.get("legendgrouptitle_text", None)
@@ -45,6 +53,8 @@ def generic_trace_to_matplotlib(trace):
                     "triangles": triangles,
                     "alpha": subtrace.get("opacity", None),
                     "color": subtrace.get("color", None),
+                    "linewidth": 0,
+                    "antialiased": antialiased,
                 },
             }
             if ind != 0:  # hide substrace legends except first
@@ -152,7 +162,7 @@ def process_extra_trace(model):
         "row": model["kwargs"]["row"],
         "col": model["kwargs"]["col"],
     }
-    kwargs, args, = place_and_orient_model3d(
+    kwargs, args = place_and_orient_model3d(
         model_kwargs=model_kwargs,
         model_args=model_args,
         orientation=model["orientation"],
@@ -196,10 +206,10 @@ def display_matplotlib(
     subplot_specs=None,
     dpi=80,
     figsize=None,
+    antialiased=True,
     legend_max_items=20,
     **kwargs,  # pylint: disable=unused-argument
 ):
-
     """Display objects and paths graphically using the matplotlib library."""
     frames = data["frames"]
     ranges = data["ranges"]
@@ -207,7 +217,7 @@ def display_matplotlib(
     for fr in frames:
         new_data = []
         for tr in fr["data"]:
-            new_data.extend(generic_trace_to_matplotlib(tr))
+            new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
         for model in fr["extra_backend_traces"]:
             new_data.append(process_extra_trace(model))
         fr["data"] = new_data
@@ -276,7 +286,7 @@ def display_matplotlib(
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-            if frame_ind==0 :
+            if frame_ind == 0:
                 if row_col_num not in count_with_labels:
                     count_with_labels[row_col_num] = 0
                 label = kwargs.get("label", "_")

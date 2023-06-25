@@ -65,7 +65,7 @@ bad_inputs = {
     "display_style_triangle_orientation_color": ("wrongcolor",),
     "display_style_triangle_orientation_offset": ("-1",),  # float, int
     "display_style_triangle_orientation_symbol": ("arrow0d"),  # "cone", "arrow3d"
-    "display_style_triangularmesh_mesh_disjoint_colorsequence": (1,),
+    "display_style_triangularmesh_mesh_disconnected_colorsequence": (1,),
     "display_style_markers_marker_size": (-1,),  # float>=0
     "display_style_markers_marker_color": ("wrongcolor",),
     "display_style_markers_marker_symbol": ("wrongsymbol",),
@@ -109,7 +109,7 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
-    "display_backend": tuple(SUPPORTED_PLOTTING_BACKENDS),  # str typo
+    "display_backend": ["auto", *SUPPORTED_PLOTTING_BACKENDS],  # str typo
     "display_colorsequence": (
         ("#2e91e5", "#0d2a63"),
         ("blue", "red"),

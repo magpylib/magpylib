@@ -450,7 +450,8 @@ class Trace3d(MagicProperties):
     @property
     def constructor(self):
         """Model constructor function or method to be called to build a 3D-model object
-        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend."""
+        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+        """
         return self._constructor
 
     @constructor.setter
@@ -852,6 +853,24 @@ class MarkerLineProperties:
         self._line = validate_property_class(val, "line", Line, self)
 
 
+class GridMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of GridMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
 class OpenMesh(MagicProperties, MarkerLineProperties):
     """Defines styling properties of OpenMesh objects
 
@@ -870,8 +889,8 @@ class OpenMesh(MagicProperties, MarkerLineProperties):
     """
 
 
-class DisjointMesh(MagicProperties, MarkerLineProperties):
-    """Defines styling properties of DisjointMesh objects
+class DisconnectedMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of DisconnectedMesh objects
 
     Parameters
     ----------
@@ -887,8 +906,8 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
         key/value pairs.
 
     colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
-        An iterable of color values used to cycle trough for every disjoint part of disjoint
-        triangular mesh object.
+        An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
         A color may be specified by
       - a hex string (e.g. '#ff0000')
       - an rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -899,8 +918,8 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
 
     @property
     def colorsequence(self):
-        """An iterable of color values used to cycle trough for every disjoint part of disjoint
-        triangular mesh object.
+        """An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
           A color may be specified by
         - a hex string (e.g. '#ff0000')
         - an rgb/rgba string (e.g. 'rgb(255,0,0)')
@@ -927,17 +946,52 @@ class DisjointMesh(MagicProperties, MarkerLineProperties):
         self._colorsequence = val
 
 
-class InvalidMesh(MagicProperties):
-    """Defines InvalidMesh mesh properties.
+class SelfIntersectingMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of SelfIntersectingMesh objects
 
     Parameters
     ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class TriMesh(MagicProperties):
+    """Defines TriMesh mesh properties.
+
+    Parameters
+    ----------
+    grid: dict or GridMesh,  default=None
+        All mesh vertices and edges of a TriangularMesh object.
+
     open: dict or OpenMesh,  default=None
         Shows open mesh vertices and edges of a TriangularMesh object, if any.
 
-    disjoint: dict or DisjointMesh, default=None
-        Shows disjoint bodies of a TriangularMesh object, if any.
+    disconnected: dict or DisconnectedMesh, default=None
+        Shows disconnected bodies of a TriangularMesh object, if any.
+
+    selfintersecting: dict or SelfIntersectingMesh, default=None
+        Shows self-intersecting triangles of a TriangularMesh object, if any.
     """
+
+    @property
+    def grid(self):
+        """GridMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._grid
+
+    @grid.setter
+    def grid(self, val):
+        self._grid = validate_property_class(val, "grid", GridMesh, self)
 
     @property
     def open(self):
@@ -951,15 +1005,30 @@ class InvalidMesh(MagicProperties):
         self._open = validate_property_class(val, "open", OpenMesh, self)
 
     @property
-    def disjoint(self):
-        """`DisjointMesh` instance with `'show'` property
+    def disconnected(self):
+        """`DisconnectedMesh` instance with `'show'` property
         or a dictionary with equivalent key/value pairs.
         """
-        return self._disjoint
+        return self._disconnected
 
-    @disjoint.setter
-    def disjoint(self, val):
-        self._disjoint = validate_property_class(val, "disjoint", DisjointMesh, self)
+    @disconnected.setter
+    def disconnected(self, val):
+        self._disconnected = validate_property_class(
+            val, "disconnected", DisconnectedMesh, self
+        )
+
+    @property
+    def selfintersecting(self):
+        """`SelfIntersectingMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._selfintersecting
+
+    @selfintersecting.setter
+    def selfintersecting(self, val):
+        self._selfintersecting = validate_property_class(
+            val, "selfintersecting", SelfIntersectingMesh, self
+        )
 
 
 class Orientation(MagicProperties):
@@ -982,7 +1051,7 @@ class Orientation(MagicProperties):
         and 1 with the base.
 
     symbol: {"cone", "arrow3d"}:
-        Orientation symbol for the triangular facets.
+        Orientation symbol for the triangular faces.
     """
 
     _allowed_symbols = ("cone", "arrow3d")
@@ -1138,14 +1207,14 @@ class TriangularMeshProperties:
 
     @property
     def mesh(self):
-        """`InvalidMesh` instance with `'show', 'markers', 'line'` properties
+        """`TriMesh` instance with `'show', 'markers', 'line'` properties
         or a dictionary with equivalent key/value pairs.
         """
         return self._mesh
 
     @mesh.setter
     def mesh(self, val):
-        self._mesh = validate_property_class(val, "mesh", InvalidMesh, self)
+        self._mesh = validate_property_class(val, "mesh", TriMesh, self)
 
 
 class DefaultTriangularMesh(
@@ -1163,8 +1232,8 @@ class DefaultTriangularMesh(
         Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
         properties or a dictionary with equivalent key/value pairs.
 
-    mesh: dict or InvalidMesh, default=None
-        InvalidMesh styling properties (e.g. `'open', 'disjoint'`)
+    mesh: dict or TriMesh, default=None
+        TriMesh styling properties (e.g. `'grid', 'open', 'disconnected'`)
     """
 
     def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
@@ -1207,7 +1276,7 @@ class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshPropert
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
 
-    mesh: dict or InvalidMesh,  default=None,
+    mesh: dict or TriMesh,  default=None,
         mesh styling of triangles.
     """
 

@@ -165,7 +165,7 @@ trace_trisurf = {
 mobius = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
 mobius.style.model3d.add_trace(trace_trisurf)
 
-magpy.show(magnet, ball, mobius, zoom=2)
+magpy.show(magnet, ball, mobius, zoom=5, backend="matplotlib")
 ```
 
 ## Pre-defined 3D models
@@ -260,7 +260,7 @@ def bin_color_to_hex(x):
     g = int(sb[5:10], base=2)/31
     b = int(sb[10:15], base=2)/31
     return to_hex((r,g,b))
-    
+
 
 
 def trace_from_stl(stl_file):

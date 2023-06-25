@@ -10,14 +10,13 @@ DEFAULTS = {
             "time": 5,
             "slider": True,
         },
-        "backend": "matplotlib",
+        "backend": "auto",
         "colorsequence": (
             "#2E91E5",
             "#E15F99",
             "#1CA71C",
             "#FB0D0D",
             "#DA16FF",
-            "#222A2A",
             "#B68100",
             "#750D86",
             "#EB663B",
@@ -36,6 +35,7 @@ DEFAULTS = {
             "#6C4516",
             "#0D2A63",
             "#AF0038",
+            "#222A2A",
         ),
         "style": {
             "base": {
@@ -106,13 +106,18 @@ DEFAULTS = {
                     "symbol": "arrow3d",
                 },
                 "mesh": {
+                    "grid": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "black"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
+                    },
                     "open": {
-                        "show": True,
+                        "show": False,
                         "line": {"width": 2, "style": "solid", "color": "cyan"},
                         "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
-                    "disjoint": {
-                        "show": True,
+                    "disconnected": {
+                        "show": False,
                         "line": {"width": 2, "style": "solid", "color": "black"},
                         "marker": {"size": 5, "symbol": "o", "color": "black"},
                         "colorsequence": (
@@ -123,6 +128,11 @@ DEFAULTS = {
                             "magenta",
                             "yellow",
                         ),
+                    },
+                    "selfintersecting": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "magenta"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
                 },
             },

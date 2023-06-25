@@ -42,6 +42,7 @@ level5(sens.getB, sens.getH): <--- USER INTERFACE
 """
 # pylint: disable=cyclic-import
 import numbers
+import warnings
 from itertools import product
 from typing import Callable
 
@@ -193,6 +194,7 @@ def getBH_level2(
     # pylint: disable=import-outside-toplevel
 
     from magpylib._src.obj_classes.class_Collection import Collection
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
     # CHECK AND FORMAT INPUT ---------------------------------------------------
     if isinstance(sources, str):
@@ -221,6 +223,22 @@ def getBH_level2(
     check_dimensions(src_list)
     check_excitations(src_list, field)
 
+    # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
+    if field == "B":
+        for src in src_list:
+            if isinstance(src, TriangularMesh):
+                # unchecked mesh status - may be open
+                if src.status_open is None:
+                    warnings.warn(
+                        f"Unchecked mesh status of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
+                    )
+                elif src.status_open:  # mesh is open
+                    warnings.warn(
+                        f"Open mesh of {src} detected before B-field computation. "
+                        "An open mesh may return bad results."
+                    )
+
     # format observers input:
     #   allow only bare sensor, collection, pos_vec or list thereof
     #   transform input into an ordered list of sensors (pos_vec->pixel)
@@ -228,7 +246,7 @@ def getBH_level2(
     pixel_agg_func = check_format_pixel_agg(pixel_agg)
     sensors, pix_shapes = check_format_input_observers(observers, pixel_agg)
     pix_nums = [
-        int(np.product(ps[:-1])) for ps in pix_shapes
+        int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
     pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1

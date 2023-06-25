@@ -1,4 +1,5 @@
 import re
+import textwrap
 
 import numpy as np
 import pytest
@@ -525,13 +526,16 @@ def test_describe():
         "  • position: [0. 0. 0.] mm\n"
         "  • orientation: [0. 0. 0.] degrees\n"
         "  • magnetization: [   0.    0. 1000.] mT\n"
-        "  • barycenter: [0.62312231 0.38878538 0.25      ] \n"
-        "  • facets: shape(52, 3, 3) \n"
-        "  • is_closed: True \n"
-        "  • is_connected: True \n"
-        "  • is_reoriented: True \n"
-        "  • triangles: shape(52, 3) \n"
-        "  • triangles_subsets: list of length 1 \n"
+        "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
+        "  • faces: shape(52, 3) \n"
+        "  • mesh: shape(52, 3, 3) \n"
+        "  • status_disconnected: False \n"
+        "  • status_disconnected_data: 1 part \n"
+        "  • status_open: False \n"
+        "  • status_open_data: [] \n"
+        "  • status_reoriented: True \n"
+        "  • status_selfintersecting: None \n"
+        "  • status_selfintersecting_data: None \n"
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

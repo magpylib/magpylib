@@ -382,7 +382,7 @@ def test_triangle1():
 
 
 def test_triangle2():
-    """test core single triangle vs same surface split up into 4 triangles"""
+    """test core single triangle vs same surface split up into 4 triangular faces"""
     obs = np.array([(3, 4, 5)])
     mag = np.array([(111, 222, 333)])
     fac = np.array(

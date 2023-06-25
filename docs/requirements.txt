@@ -8,7 +8,7 @@ sphinx-design
 sphinx-thebe
 jupytext
 numpy-stl
-pyvista
+pyvista==0.37
 panel
 jupyterlab-myst
 sphinx-favicon
