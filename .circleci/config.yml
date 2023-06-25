@@ -40,39 +40,44 @@ jobs:
           command: tox
 
   deploy:
-    docker:
-      - image: python:3
-    steps:
-        - checkout
-        - run:
-            name: install python dependencies
-            command: |
-              python3 -m venv venv
-              . venv/bin/activate
-              make dev
-        - run:
-            name: verify git tag vs. version
-            command: |
-              python3 -m venv venv
-              . venv/bin/activate
-              python setup.py verify
-        - run:
-            name: init .pypirc
-            command: |
-              echo -e "[pypi]" >> ~/.pypirc
-              echo -e "username: magpylib" >> ~/.pypirc
-              echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
-        - run:
-            name: create packages
-            command: |
-              make package
-        - run:
-            name: Create wheel
-            command: |
-              . venv/bin/activate
-              python setup.py bdist_wheel
-        - run:
-            name: upload to pypi
-            command: |
-              . venv/bin/activate
-              twine upload --repository pypi dist/*
+  docker:
+    - image: python:3
+  steps:
+      - checkout
+      - run:
+          name: install python dependencies
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            make dev
+      - run:
+          name: verify git tag vs. version
+          command: |
+            python3 -m venv venv
+            . venv/bin/activate
+            python setup.py verify
+      - run:
+          name: init .pypirc
+          command: |
+            echo -e "[pypi]" >> ~/.pypirc
+            echo -e "username: magpylib" >> ~/.pypirc
+            echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
+      - run:
+          name: create packages
+          command: |
+            make package
+      - run:
+          name: install wheel
+          command: |
+            . venv/bin/activate
+            pip install wheel
+      - run:
+          name: create wheel
+          command: |
+            . venv/bin/activate
+            python setup.py bdist_wheel
+      - run:
+          name: upload to pypi
+          command: |
+            . venv/bin/activate
+            twine upload --repository pypi dist/*
