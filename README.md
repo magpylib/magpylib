@@ -30,7 +30,7 @@
 
 
 <p align="center"> Try it online:
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.3.0rc0?filepath=docs%2Fexamples">
+<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.3.0rc1?filepath=docs%2Fexamples">
 <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18"></a>
 </p>
 
