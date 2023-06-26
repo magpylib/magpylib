@@ -128,7 +128,9 @@ def get_open_edges(faces: np.ndarray) -> bool:
     return edges_uniq[edge_counts != 2]
 
 
-def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarray:
+def fix_trimesh_orientation(
+    vertices: np.ndarray, faces: np.ndarray, show_progress=False
+) -> np.ndarray:
     """Check if all faces are oriented outwards. Fix the ones that are not, and return an
     array of properly oriented faces.
 
@@ -147,7 +149,7 @@ def fix_trimesh_orientation(vertices: np.ndarray, faces: np.ndarray) -> np.ndarr
     """
     # use first triangle as a seed, this one needs to be oriented via inside check
     # compute facet orientation (normalized)
-    inwards_mask = get_inwards_mask(vertices, faces)
+    inwards_mask = get_inwards_mask(vertices, faces, show_progress=show_progress)
     new_faces = faces.copy()
     new_faces[inwards_mask] = new_faces[inwards_mask][:, [0, 2, 1]]
     return new_faces
@@ -168,9 +170,13 @@ def is_facet_inwards(face, faces):
     return mask_inside_trimesh(np.array([check_point]), faces)[0]
 
 
+from tqdm import tqdm
+
+from tqdm import tqdm
+
+
 def get_inwards_mask(
-    vertices: np.ndarray,
-    triangles: np.ndarray,
+    vertices: np.ndarray, triangles: np.ndarray, show_progress: bool = False
 ) -> np.ndarray:
     """Return a boolean mask of normals from triangles.
     True -> Inwards, False -> Outwards.
@@ -185,6 +191,9 @@ def get_inwards_mask(
     triangles: np.ndarray, shape (n,3), dtype int
         Triples of indices
 
+    show_progress: bool, optional
+        If True, displays a progress bar
+
     Returns
     -------
     boolean mask : ndarray, shape (n,), dtype bool
@@ -194,6 +203,15 @@ def get_inwards_mask(
     msh = vertices[triangles]
     mask = np.full(len(triangles), False)
     indices = list(range(len(triangles)))
+
+    # Prepare progress bar
+    pbar = tqdm(
+        total=len(triangles), disable=not show_progress, desc="Processing Triangles"
+    )
+
+    # Set up variables for controlling update frequency
+    update_step = len(triangles) // 100  # update every 1% step
+    update_counter = 0
 
     # incrementally add triangles sharing at least a common edge by looping among left over
     # triangles. If next triangle with common edge is reversed, flip it.
@@ -228,6 +246,17 @@ def get_inwards_mask(
             # having some indices to go trough -> mesh is is disconnected. A new seed is
             # needed and needs to be checked via ray tracing before continuing.
             any_connected = False
+
+        # Update progress bar every update_step iterations
+        update_counter += 1
+        if update_counter >= update_step:
+            pbar.update(update_step)
+            update_counter = 0
+
+    # Update for remaining progress not covered by update_step and close progress bar
+    pbar.update(update_counter)
+    pbar.close()
+
     return mask
 
 

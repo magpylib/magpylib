@@ -105,6 +105,7 @@ class TriangularMesh(BaseMagnet):
         check_open="warn",
         check_disconnected="warn",
         reorient_faces="warn",
+        show_progress=False,
         style=None,
         **kwargs,
     ):
@@ -117,7 +118,7 @@ class TriangularMesh(BaseMagnet):
 
         self.check_open(mode=check_open)
         self.check_disconnected(mode=check_disconnected)
-        self.reorient_faces(mode=reorient_faces)
+        self.reorient_faces(mode=reorient_faces, show_progress=show_progress)
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -264,7 +265,7 @@ class TriangularMesh(BaseMagnet):
                     raise ValueError(msg)
         return self._status_disconnected
 
-    def reorient_faces(self, mode="warn"):
+    def reorient_faces(self, mode="warn", show_progress=False):
         """Correctly reorients the mesh's faces.
 
         In a properly oriented mesh, all faces must be oriented outwards. This function
@@ -313,7 +314,9 @@ class TriangularMesh(BaseMagnet):
                 elif mode == "raise":
                     raise ValueError(msg)
 
-            self._faces = fix_trimesh_orientation(self._vertices, self._faces)
+            self._faces = fix_trimesh_orientation(
+                self._vertices, self._faces, show_progress=show_progress
+            )
             self._status_reoriented = True
 
     def get_faces_subsets(self):
