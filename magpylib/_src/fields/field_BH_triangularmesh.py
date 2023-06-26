@@ -206,7 +206,7 @@ def get_inwards_mask(
 
     # Prepare progress bar
     pbar = tqdm(
-        total=len(triangles), disable=not show_progress, desc="Processing Triangles"
+        total=len(triangles), disable=not show_progress, desc="Reorienting faces"
     )
 
     # Set up variables for controlling update frequency
