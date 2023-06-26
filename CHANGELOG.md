@@ -15,7 +15,7 @@ All notable changes to magpylib are documented here.
 - Change pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
-- Add `magnetization.mode` style to allow showing magnetization direction for any backend [#576](https://github.com/magpylib/magpylib/pull/576))
+- Add `magnetization.mode` style to allow showing magnetization direction for any backend ([#576](https://github.com/magpylib/magpylib/pull/576))
 - Documentation changes:
     - Correct conda install command
     - Integration of Triangle and Tetrahedron
