@@ -1,4 +1,5 @@
 import re
+import textwrap
 
 import numpy as np
 import pytest
@@ -517,6 +518,7 @@ def test_describe():
     s = magpy.magnet.TriangularMesh.from_pyvista(
         magnetization=(0, 0, 1000),
         polydata=pv.Text3D("A"),
+        check_selfintersecting='skip',
     )
     desc = s.describe(return_string=True)
     test = (
@@ -533,6 +535,8 @@ def test_describe():
         "  • status_open: False \n"
         "  • status_open_data: [] \n"
         "  • status_reoriented: True \n"
+        "  • status_selfintersecting: None \n"
+        "  • status_selfintersecting_data: None \n"
         "  • vertices: shape(26, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)

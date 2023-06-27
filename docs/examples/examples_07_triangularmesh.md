@@ -26,20 +26,21 @@ The `TriangularMesh` class is used to create magnets from triangular surface mes
 - `TriangularMesh.from_ConvexHull()`: from the convex hull of a given point cloud
 - `TriangularMesh.from_pyvista()`: from a Pvista `PolyData` object
 
-In contrast to a `Collection` of `Triangle` objects the `TriangularMesh` class performs several important checks at initialization by default to ensure that the given triangular mesh forms a proper magnet:
+In contrast to a `Collection` of `Triangle` objects the `TriangularMesh` class performs several important checks at initialization by default to ensure that the given triangular mesh can form a proper magnet:
 
 - `check_open`: checks if given mesh forms a closed surface
 - `check_disconnected`: checks if given mesh is connected
+- `check_selfintersecting`: checks if given mesh is self-intersecting
 - `reorient_faces`: checks if faces are oriented outwards, and flips the ones wrongly oriented. This works only if the mesh is closed.
 
-All three checks will throw warnings by default if the mesh is open, disconnected, or cannot be reoriented. Four options enable error handling: `"skip"`, `"ignore"`, `"warn"` (default), `"raise"`. If skipped at initialization, the checks can be performed by hand via respective methods.
+All four checks will throw warnings by default if the mesh is open, disconnected, self-intersecting, or cannot be reoriented. Four options enable error handling: `"skip"` (=`False`), `"ignore"`, `"warn"` (=default=`True`), `"raise"`. If skipped at initialization, the checks can be performed by hand via respective methods.
 
 The mesh status is set by the checks, and can be viewed via the properties `status_open`, `status_disconnected` and `status_reoriented` with possible values `None`, `True`, `False`. Problems of the mesh (e.g. open edges) are stored in `status_open_data` and `status_disconnected_data`. Such problems can be viewed with `show`.
 
 ```{caution}
-* Only if the mesh is closed and all faces are properly oriented outwards, `getB` and `getH` compute the fields correctly.
+* `getB` and `getH` compute the fields correctly only if the mesh is closed, not self-intersecting, and all faces are properly oriented outwards.
 
-* Input checks and face reorientation can be computationally expensive. The checks can be individually deactivated by setting `reorient_faces="skip"`, `check_open="skip"` and `check_disconnected="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
+* Input checks and face reorientation can be computationally expensive. The checks can be individually deactivated by setting `reorient_faces="skip"`, `check_open="skip"`, `check_disconnected="skip"`, and `check_selfintersecting="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
 
 * Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected.
 
@@ -61,6 +62,7 @@ tmesh_tetra = magpy.magnet.TriangularMesh(
 # print mesh status
 print("mesh status open:", tmesh_tetra.status_open)
 print("mesh status disconnected:", tmesh_tetra.status_disconnected)
+print("mesh status selfintersecting:", tmesh_tetra.status_selfintersecting)
 print("mesh status reoriented:", tmesh_tetra.status_reoriented)
 
 tmesh_tetra.show()
@@ -196,6 +198,7 @@ prism.style.magnetization.mode = "arrow"
 
 print("mesh status open:", prism.status_open)
 print("mesh status disconnected:", prism.status_disconnected)
+print("mesh status self-intersecting:", prism.status_selfintersecting)
 print("mesh status reoriented:", prism.status_reoriented)
 
 prism.show(
@@ -230,6 +233,7 @@ magnet = magpy.magnet.TriangularMesh.from_pyvista(
 
 print(f'mesh status open: {magnet.status_open}')
 print(f'mesh status disconnected: {magnet.status_disconnected}')
+print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(
@@ -264,6 +268,7 @@ magnet = magpy.magnet.TriangularMesh.from_pyvista(
 
 print(f'mesh status open: {magnet.status_open}')
 print(f'mesh status disconnected: {magnet.status_disconnected}')
+print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
 print(f'mesh status reoriented: {magnet.status_reoriented}')
 
 magnet.show(backend="plotly")
