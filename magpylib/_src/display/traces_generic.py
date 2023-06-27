@@ -88,7 +88,6 @@ class MagpyMarkers:
 
 def make_DefaultTrace(
     obj,
-    color=None,
     style=None,
     **kwargs,
 ) -> dict:
@@ -1009,7 +1008,7 @@ def get_generic_traces(
                     )
                     input_obj.check_selfintersecting()
     disconnected_traces = []
-    for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
+    for orient, pos in zip(orientations, positions):
         if style.model3d.showdefault and make_func is not None:
             if obj_is_disconnected:
                 tria_orig = input_obj._faces
