@@ -17,7 +17,6 @@ DEFAULTS = {
             "#1CA71C",
             "#FB0D0D",
             "#DA16FF",
-            "#222A2A",
             "#B68100",
             "#750D86",
             "#EB663B",
@@ -36,6 +35,7 @@ DEFAULTS = {
             "#6C4516",
             "#0D2A63",
             "#AF0038",
+            "#222A2A",
         ),
         "style": {
             "base": {
@@ -128,6 +128,11 @@ DEFAULTS = {
                             "magenta",
                             "yellow",
                         ),
+                    },
+                    "selfintersecting": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "magenta"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
                 },
             },

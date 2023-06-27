@@ -946,6 +946,24 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
         self._colorsequence = val
 
 
+class SelfIntersectingMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of SelfIntersectingMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
 class TriMesh(MagicProperties):
     """Defines TriMesh mesh properties.
 
@@ -959,6 +977,9 @@ class TriMesh(MagicProperties):
 
     disconnected: dict or DisconnectedMesh, default=None
         Shows disconnected bodies of a TriangularMesh object, if any.
+
+    selfintersecting: dict or SelfIntersectingMesh, default=None
+        Shows self-intersecting triangles of a TriangularMesh object, if any.
     """
 
     @property
@@ -994,6 +1015,19 @@ class TriMesh(MagicProperties):
     def disconnected(self, val):
         self._disconnected = validate_property_class(
             val, "disconnected", DisconnectedMesh, self
+        )
+
+    @property
+    def selfintersecting(self):
+        """`SelfIntersectingMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._selfintersecting
+
+    @selfintersecting.setter
+    def selfintersecting(self, val):
+        self._selfintersecting = validate_property_class(
+            val, "selfintersecting", SelfIntersectingMesh, self
         )
 
 

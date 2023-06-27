@@ -228,6 +228,32 @@ def make_Dipole(
     return {**trace, **kwargs}
 
 
+def get_closest_vertices(faces_subsets, vertices):
+    """Get closest pairs of points between disconnected subsets of faces indices"""
+    nparts = len(faces_subsets)
+    inds_subsets = [np.unique(v) for v in faces_subsets]
+    closest_verts_list = []
+    if nparts > 1:
+        connected = [np.min(inds_subsets[0])]
+        while len(connected) < nparts:
+            prev_min = float("inf")
+            for i in connected:
+                for j in range(nparts):
+                    if j not in connected:
+                        tr1, tr2 = inds_subsets[i], inds_subsets[j]
+                        c1, c2 = vertices[tr1], vertices[tr2]
+                        dist = distance.cdist(c1, c2)
+                        i1, i2 = divmod(dist.argmin(), dist.shape[1])
+                        min_dist = dist[i1, i2]
+                        if min_dist < prev_min:
+                            prev_min = min_dist
+                            closest_verts = [c1[i1], c2[i2]]
+                            connected_ind = j
+            connected.append(connected_ind)
+            closest_verts_list.append(closest_verts)
+    return np.array(closest_verts_list)
+
+
 def make_mesh_lines(
     obj,
     pos_orient_inds,
@@ -237,7 +263,7 @@ def make_mesh_lines(
     color=None,  # pylint: disable=unused-argument
     **kwargs,
 ):
-    """Draw open or self-intersecting mesh lines and vertices"""
+    """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     style = obj.style if style is None else style
     mesh = getattr(style.mesh, mode)
@@ -247,14 +273,14 @@ def make_mesh_lines(
         subsets = obj.get_faces_subsets()
         lines = get_closest_vertices(subsets, vert)
     else:
+        if mode == "selfintersecting":
+            tr = obj.faces[obj.get_selfintersecting_faces()]
         edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        # make sure unique pairs are found regardless of order
-        edges = np.sort(edges, axis=1)
-        edges_uniq, edges_counts = np.unique(edges, axis=0, return_counts=True)
         if mode == "open":
-            lines = vert[edges_uniq[edges_counts != 2]]
+            edges = obj.get_open_edges()
         else:
-            lines = vert[edges_uniq]
+            edges = np.unique(edges, axis=0)
+        lines = vert[edges]
 
     out = {}
     if lines.size != 0:
@@ -280,32 +306,6 @@ def make_mesh_lines(
             traces.append(trace)
         out = {**merge_traces(*traces), **kwargs}
     return out
-
-
-def get_closest_vertices(faces_subsets, vertices):
-    """Get closest pairs of points between disconnected subsets of faces indices"""
-    nparts = len(faces_subsets)
-    inds_subsets = [np.unique(v) for v in faces_subsets]
-    closest_verts_list = []
-    if nparts > 1:
-        connected = [np.min(inds_subsets[0])]
-        while len(connected) < nparts:
-            prev_min = float("inf")
-            for i in connected:
-                for j in range(nparts):
-                    if j not in connected:
-                        tr1, tr2 = inds_subsets[i], inds_subsets[j]
-                        c1, c2 = vertices[tr1], vertices[tr2]
-                        dist = distance.cdist(c1, c2)
-                        i1, i2 = divmod(dist.argmin(), dist.shape[1])
-                        min_dist = dist[i1, i2]
-                        if min_dist < prev_min:
-                            prev_min = min_dist
-                            closest_verts = [c1[i1], c2[i2]]
-                            connected_ind = j
-            connected.append(connected_ind)
-            closest_verts_list.append(closest_verts)
-    return np.array(closest_verts_list)
 
 
 def make_triangle_orientations(
@@ -850,6 +850,15 @@ def get_generic_traces(
                         "to compute when the mesh has many faces, now applying operation..."
                     )
                 obj_is_disconnected = input_obj.check_disconnected()
+            if mode == "selfintersecting":
+                if input_obj._status_selfintersecting is None:
+                    warnings.warn(
+                        f"Unchecked{input_obj!r} selfintersecting status has not been checked "
+                        "before atempting to show possible self-intersecting parts, which may take "
+                        "a while to compute when the mesh has many faces, now applying "
+                        "operation..."
+                    )
+                    input_obj.check_selfintersecting()
     disconnected_traces = []
     for pos_orient_enum, (orient, pos) in enumerate(zip(orientations, positions)):
         if style.model3d.showdefault and make_func is not None:
@@ -993,7 +1002,7 @@ def get_generic_traces(
             )
         )
     if isinstance(input_obj, TriangularMesh):
-        for mode in ("grid", "open", "disconnected"):
+        for mode in ("grid", "open", "disconnected", "selfintersecting"):
             if getattr(style.mesh, mode).show:
                 trace = make_mesh_lines(
                     input_obj, pos_orient_inds, mode, label, **kwargs
