@@ -53,20 +53,25 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    reorient_faces: bool, default=`True`
+    reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
-    check_open: bool, default=`True`
-        Only a closed mesh guarantees a physical magnet.
-        If `True`, raise error if mesh is not closed.
+    check_open: bool or string, default=`True`
+        Only a closed mesh guarantees correct B-field computation.
+        If `True`, check if mesh is open.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
-    check_disconnected: bool, default=`True`
-        If `True` raise an error if mesh is not connected.
+    check_disconnected: bool or string, default=`True`
+        Individual magnets should be connected bodies to avoid confusion.
+        If `True`, check if mesh is disconnected.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
-    check_selfintersecting: bool, optional
-        If `True`, the provided set of facets is validated by checking if the body is not
-        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+    check_selfintersecting: bool or string, default=`True`
+        a proper body cannot have a self-intersecting mesh.
+        If `True`, check if mesh is self-intersecting.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -112,7 +117,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         check_open="warn",
         check_disconnected="warn",
-        check_selfintersecting="skip",
+        check_selfintersecting="warn",
         reorient_faces="warn",
         style=None,
         **kwargs,
