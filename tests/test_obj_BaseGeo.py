@@ -518,6 +518,7 @@ def test_describe():
     s = magpy.magnet.TriangularMesh.from_pyvista(
         magnetization=(0, 0, 1000),
         polydata=pv.Text3D("A"),
+        check_selfintersecting='skip',
     )
     desc = s.describe(return_string=True)
     test = (
