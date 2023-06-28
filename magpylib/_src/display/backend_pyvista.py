@@ -190,18 +190,19 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into pyvista trace"
         )
-    showlegend = trace.get("showlegend", True)
+    showlegend = trace.get("showlegend", False)
     for tr in traces_pv:
         tr["row"] = trace.get("row", 1) - 1
         tr["col"] = trace.get("col", 1) - 1
         if tr["type"] != "point_labels":
             if showlegend:
+                showlegend = False  # show only first subtrace
                 if "label" not in tr:
                     tr["label"] = trace.get("name", "")
-                    if leg_title is not None:
-                        tr["label"] += f" ({leg_title})"
-            else:
-                tr.pop("label", None)
+                if leg_title is not None:
+                    tr["label"] += f" ({leg_title})"
+        if not tr.get("label", ""):
+            tr.pop("label", None)
     return traces_pv
 
 
@@ -238,7 +239,6 @@ def display_pyvista(
     )
     warned2d = False
 
-
     def draw_frame(frame_ind):
         count_with_labels = {}
         nonlocal warned2d
@@ -248,7 +248,7 @@ def display_pyvista(
                 row = tr1.pop("row", 1)
                 col = tr1.pop("col", 1)
                 typ = tr1.pop("type")
-                if frame_ind==0:
+                if frame_ind == 0:
                     if (row, col) not in count_with_labels:
                         count_with_labels[(row, col)] = 0
                     if tr1.get("label", ""):
@@ -271,9 +271,10 @@ def display_pyvista(
                         warned2d = True
         for rowcol, count in count_with_labels.items():
             if 0 < count <= legend_max_items:
-                row,col = rowcol
+                row, col = rowcol
                 canvas.subplot(row, col)
-                canvas.add_legend(bcolor="w", size=(0.2,0.3))
+                if subplot_specs[row, col]["type"] == "scene":
+                    canvas.add_legend(bcolor=None)
         # match other backends plotter properties
         canvas.set_background("gray", top="white")
         canvas.camera.azimuth = -90
@@ -302,7 +303,7 @@ def display_pyvista(
                 f"received {suff!r} instead"
             )
 
-        for frame_ind,_ in enumerate(frames):
+        for frame_ind, _ in enumerate(frames):
             canvas.clear_actors()
             draw_frame(frame_ind)
             canvas.write_frame()
