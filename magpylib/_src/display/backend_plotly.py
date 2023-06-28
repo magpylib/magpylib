@@ -334,7 +334,8 @@ def display_plotly(
         if update_layout:
             apply_fig_ranges(fig, ranges, apply2d=isanimation)
             fig.update_layout(
-                legend_itemsizing="constant", legend_groupclick="toggleitem"
+                legend_itemsizing="constant",
+                # legend_groupclick="toggleitem",
             )
         fig.update_layout(layout)
 
