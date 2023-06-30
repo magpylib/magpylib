@@ -22,16 +22,12 @@
 </a>
 </div>
 
-### What is magpylib ?
 Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
 
-### Dependencies:
-_Python3.8+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
-
----
-
-### Documentation & Install:
+### Installation
+Magpylib supports _Python3.8+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend. Magpylib is on PyPI and conda-forge. Install using **pip** (`pip install magpylib`) or **conda** (`conda install -c conda-forge magpylib`) package managers.
 
 **Please check out our [documentation](https://magpylib.readthedocs.io/en/latest) for installation, examples and detailed information!**
 
-Magpylib is on PyPI and conda-forge. **Install using pip** (`pip install magpylib`) or **conda** (`conda install magpylib`) package managers.
+### Quickstart
+
