@@ -12,13 +12,13 @@
 </a>
 <a href="https://opensource.org/licenses/BSD-2-Clause"> <img align='center' src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg">
 </a>
-<a href="https://codecov.io/gh/magpylib/magpylib"> <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg">
+<a href="https://codecov.io/gh/magpylib/magpylib"> <img align='center' src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg">
 </a>
-<a href="https://pypi.org/project/magpylib/"> <img src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18">
+<a href="https://pypi.org/project/magpylib/"> <img align='center' src="https://badge.fury.io/py/magpylib.svg" alt="PyPI version" height="18">
 </a>
-<a href="https://anaconda.org/conda-forge/magpylib"> <img src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18">
+<a href="https://anaconda.org/conda-forge/magpylib"> <img align='center' src="https://anaconda.org/conda-forge/magpylib/badges/version.svg" alt="Conda Cloud" height="18">
 </a>
-<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.3.0?filepath=docs%2Fexamples"> <img src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
+<a href="https://mybinder.org/v2/gh/magpylib/magpylib/4.3.0?filepath=docs%2Fexamples"> <img align='center' src="https://mybinder.org/badge_logo.svg" alt="MyBinder link" height="18">
 </a>
 </div>
 
