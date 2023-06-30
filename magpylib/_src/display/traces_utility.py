@@ -516,7 +516,8 @@ def process_show_input_objs(objs, **kwargs):
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
             max_cols = max(max_cols, obj["col"])
-        key = (obj["row"], obj["col"], obj["output"])
+        out = obj["output"]
+        key = (obj["row"], obj["col"], out if isinstance(out, str) else tuple(out))
         if key not in new_objs:
             new_objs[key] = obj
         else:
