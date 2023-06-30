@@ -1,5 +1,6 @@
 
-<p align="center"><img align="left" src=docs/_static/images/magpylib_flag.png width=35%><p>
+<p align="left"><img align="center" src=docs/_static/images/magpylib_flag.png width=35%>
+</p>
 
 ---
 <div>
@@ -21,16 +22,8 @@
 </a>
 </div>
 
----
-
 ### What is magpylib ?
-Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on analytical expressions and therefore **extremely fast**. A **user friendly geometry interface** enables convenient relative positioning between sources and observers.
-
-<p align="center">
-    <img align='center' src=docs/_static/images/index/source_fundamentals.png>
-</p>
-
----
+Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
 
 ### Dependencies:
 _Python3.8+_, _Numpy_, _Scipy_, _Matplotlib_, _Plotly_
