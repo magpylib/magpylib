@@ -133,30 +133,6 @@ RegisterBackend(
 )
 
 
-class DisplayContext:
-    """Display context class"""
-
-    def __init__(self, isrunning=False):
-        self.isrunning = isrunning
-        self.objects = ()
-        self.objects_from_ctx = ()
-        self.kwargs = {}
-        self.canvas = None
-        self.fig = None
-
-    def reset(self, reset_fig=True):
-        """Reset display context"""
-        self.isrunning = False
-        self.objects = ()
-        self.objects_from_ctx = ()
-        self.kwargs = {}
-        if reset_fig:
-            self.fig = None
-
-
-ctx = DisplayContext()
-
-
 ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
 
 
@@ -475,3 +451,29 @@ def show_context(
         ctx.fig = _show(*ctx.objects, **ctx.kwargs)
     finally:
         ctx.reset(reset_fig=False)
+
+
+class DisplayContext:
+    """Display context class"""
+
+    show = staticmethod(show)
+
+    def __init__(self, isrunning=False):
+        self.isrunning = isrunning
+        self.objects = ()
+        self.objects_from_ctx = ()
+        self.kwargs = {}
+        self.canvas = None
+        self.fig = None
+
+    def reset(self, reset_fig=True):
+        """Reset display context"""
+        self.isrunning = False
+        self.objects = ()
+        self.objects_from_ctx = ()
+        self.kwargs = {}
+        if reset_fig:
+            self.fig = None
+
+
+ctx = DisplayContext()
