@@ -100,7 +100,7 @@ print(B.round()) # --> [[   8.  -73.  -55.]
 magpy.show(cube, sensor, backend='pyvista')
 ```
 
-## More important features
+## Other important features
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
@@ -110,7 +110,7 @@ magpy.show(cube, sensor, backend='pyvista')
 
 ## How can I cite this library ?
 
-An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) describes v2 of this library. A valid bibtex entry would be.
+An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) from 2020 describes v2 of this library. A valid bibtex entry would be.
 
 ```
 @article{ortner2020magpylib,
@@ -123,3 +123,11 @@ An [open-access paper](https://www.sciencedirect.com/science/article/pii/S235271
   publisher={Elsevier}
 }
 ```
+
+## Links
+
+The [Github project](https://github.com/magpylib/magpylib) where everything comes together.
+
+The [official documentation](https://magpylib.readthedocs.io/en/latest/) on read the docs.
+
+A [Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs) introdution to Magpylib within the [GSC network](https://www.internationalcollaboration.org/).
