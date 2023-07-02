@@ -24,8 +24,8 @@
 
 Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
 
-### Installation & Ressources
---------------
+## Installation & Ressources
+
 Install from PyPI using **pip**
 ```
 pip install magpylib
@@ -38,8 +38,8 @@ Magpylib supports _Python3.8+_ and relies on common scientific computation libra
 
 Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information! Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**. Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project [Issues](https://github.com/magpylib/magpylib/issues) give an up-to-date list of potential enhancements. Propose new ones.
 
-### Quickstart
----------------------
+## Quickstart
+
 Here is an example how to use Magpylib.
 
 ```python3
@@ -100,8 +100,8 @@ print(B.round()) # --> [[   8.  -73.  -55.]
 magpy.show(cube, sensor)
 ```
 
-### Important features
--------------------------
+## Important features
+
 - Collections: Group multiple objects for common manipulation
 - Complex shapes: Create magnets with arbitrary shapes
 - Graphics: Styling options, graphic backends, animations, and 3D models
