@@ -76,6 +76,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         coords_str = "xyz"
         if trace["type"] == "scatter":
             coords_str = "xy"
+            # marker size is proportional to area, not radius like generic
+            props["ms"] = np.pi * props["ms"] ** 2
         coords = np.array([trace[k] for k in coords_str], dtype=float)
         if isinstance(props["ms"], (list, tuple, np.ndarray)):
             uniq = np.unique(props["ms"])

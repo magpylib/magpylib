@@ -757,8 +757,8 @@ def get_trace2D_dict(
         y = y[0]
     else:
         y = np.linalg.norm(y, axis=0)
-    marker_size = np.array([1] * len(frames_indices))
-    marker_size[frame_focus_inds] = 10
+    marker_size = np.array([2] * len(frames_indices))
+    marker_size[frame_focus_inds] = 15
     title = f"{field_str}{''.join(coords_str)}"
     trace = {
         "mode": "lines+markers",
