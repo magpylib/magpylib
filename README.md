@@ -100,11 +100,26 @@ print(B.round()) # --> [[   8.  -73.  -55.]
 magpy.show(cube, sensor)
 ```
 
-## Important features
+## More important features
 
-- Collections: Group multiple objects for common manipulation
-- Complex shapes: Create magnets with arbitrary shapes
-- Graphics: Styling options, graphic backends, animations, and 3D models
-- CustomSource: Integrate your own field implementation
-- Direct interface: Circumvent the object oriented interface (max speed)
-- Computation Core: Direct access to field function implementations
+- **Collections**: Group multiple objects for common manipulation
+- **Complex shapes**: Create magnets with arbitrary shapes
+- **Graphics**: Styling options, graphic backends, animations, and 3D models
+- **CustomSource**: Integrate your own field implementation
+- **Direct interface**: Circumvent the object oriented interface (max speed)
+
+## How can I cite this library ?
+
+An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) describes v2 of this library. A valid bibtex entry would be.
+
+```
+@article{ortner2020magpylib,
+  title={Magpylib: A free Python package for magnetic field computation},
+  author={Ortner, Michael and Bandeira, Lucas Gabriel Coliado},
+  journal={SoftwareX},
+  volume={11},
+  pages={100466},
+  year={2020},
+  publisher={Elsevier}
+}
+```
