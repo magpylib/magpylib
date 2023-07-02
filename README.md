@@ -97,7 +97,7 @@ print(B.round()) # --> [[   8.  -73.  -55.]
 # When several objects are involved and things are getting complex,
 # make use of the show function to view your system through
 # Matplotlib, Plotly or Pyvista backends.
-magpy.show(cube, sensor)
+magpy.show(cube, sensor, backend='pyvista')
 ```
 
 ## More important features
