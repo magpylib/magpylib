@@ -122,8 +122,8 @@ An [open-access paper](https://www.sciencedirect.com/science/article/pii/S235271
 
 ## Links
 
-The [Github project](https://github.com/magpylib/magpylib) where everything comes together.
+The **[Github project](https://github.com/magpylib/magpylib)** where everything comes together.
 
-The [official documentation](https://magpylib.readthedocs.io/en/latest/) on read the docs.
+The **[official documentation](https://magpylib.readthedocs.io/en/latest/)** on read the docs.
 
-A [Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs) introdution to Magpylib within the [GSC network](https://www.internationalcollaboration.org/).
+A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
