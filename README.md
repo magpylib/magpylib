@@ -108,7 +108,7 @@ More details and other important features are described in detail in the **[Docu
 - **Complex shapes**: Create magnets with arbitrary shapes
 - **Graphics**: Styling options, graphic backends, animations, and 3D models
 - **CustomSource**: Integrate your own field implementation
-- **Direct interface**: Circumvent the object oriented interface (max speed)
+- **Direct interface**: Bypass the object oriented interface (max speed)
 
 # How can I cite this library ?
 
