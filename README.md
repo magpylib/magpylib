@@ -31,7 +31,7 @@ Install from PyPI using **pip**
 ```
 pip install magpylib
 ```
-of from conda forge using  **conda**
+Install from conda forge using **conda**
 ```
 conda install -c conda-forge magpylib
 ```
@@ -52,8 +52,8 @@ Here is an example how to use Magpylib.
 ```python3
 import magpylib as magpy
 
-# Create a Cuboid magnet with sides 1,2 and 3 mm and magnetization (polarization)
-# of 1000 mT pointing in x-direction.
+# Create a Cuboid magnet with sides 1,2 and 3 mm respectively, and magnetization
+# (polarization) of 1000 mT pointing in x-direction.
 cube = magpy.magnet.Cuboid(
   magnetization=(1000,0,0),
   dimension=(1,2,3),
@@ -65,17 +65,16 @@ cube = magpy.magnet.Cuboid(
 print(cube.position)                   # --> [0. 0. 0.]
 print(cube.orientation.as_rotvec())    # --> [0. 0. 0.]
 
-# Manipulate object position and rotation using the powerful `move` and `rotate`
-# methods.
+# Manipulate object position and orientation through the respective attributes,
+# or by using the powerful `move` and `rotate` methods.
 cube.move((0,0,-2))
 cube.rotate_from_angax(angle=45, axis='z')
 print(cube.position)                            # --> [0. 0. -2.]
 print(cube.orientation.as_rotvec(degrees=True)) # --> [0. 0. 45.]
 
-# Compute the magnetic field at a set of observer positions. Magpylib makes use
-# of vectorized computation. This means that the field computation should not be
-# used in a loop, but all instances (e.g. different observer positions) should be
-# handed over at one function call, if possible.
+# Compute the magnetic field in units of mT at a set of observer positions. Magpylib
+# makes use of vectorized computation. Hand over all field computation instances,
+# e.g. different observer positions, at one funtion call. Avoid Python loops !!!
 observers = [(0,0,0), (1,0,0), (2,0,0)]
 B = magpy.getB(cube, observers)
 print(B.round()) # --> [[-91. -91.   0.]
@@ -83,27 +82,27 @@ print(B.round()) # --> [[-91. -91.   0.]
                  #      [ 18. -14.  26.]]
 
 # Sensors are observer objects that can have their own position and orientation.
-sensor = magpy.Sensor(position=(0,0,-2))
+# Compute the H-field in units of kA/m.
+sensor = magpy.Sensor(position=(0,0,0))
 sensor.rotate_from_angax(angle=45, axis=(1,1,1))
 H = magpy.getH(cube, sensor)
-print(H.round()) # --> [-476. -179.  -71.]
+print(H.round()) # --> [-95. -36. -14.]
 
-# Position and orientation attributes of magpylib objects can be vectors of
-# multiple positions/orientations that we then refer to as paths. When computing
-# the magnetic field of an object with a path, it is simultaneously computeted at
-# every path index using vectorization.
-cube.position = [(-1,0,0), (0,0,0), (1,0,0)]
+# Position and orientation attributes of Magpylib objects can be vectors of
+# multiple positions/orientations refered to as "paths". When computing the
+# magnetic field of an object with a path, it is computed at every path index.
+cube.position = [(0,0,-2), (1,0,-2), (2,0,-2)]
 B = cube.getB(sensor)
-print(B.round()) # --> [[   8.  -73.  -55.]
-                 #      [-119.  -45.  -18.]
-                 #      [ -44.   11.   80.]]
+print(B.round()) # --> [[-119.  -45.  -18.]
+                 #      [   8.  -73.  -55.]
+                 #      [  15.  -30.   -8.]]
 
 # When several objects are involved and things are getting complex, make use of
-# the show function to view your system through Matplotlib, Plotly or Pyvista backends.
+# the `show` function to view your system through Matplotlib, Plotly or Pyvista backends.
 magpy.show(cube, sensor, backend='pyvista')
 ```
 
-Some other important features that are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)** are:
+Some other important features described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)** are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
