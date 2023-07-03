@@ -102,7 +102,7 @@ print(B.round()) # --> [[-119.  -45.  -18.]
 magpy.show(cube, sensor, backend='pyvista')
 ```
 
-Some other important features described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)** are:
+More details and other important features are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)**. Key features are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
