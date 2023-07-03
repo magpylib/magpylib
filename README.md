@@ -41,7 +41,7 @@ Magpylib supports _Python3.8+_ and relies on common scientific computation libra
 
  - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
  - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
- - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project [Issues](https://github.com/magpylib/magpylib/issues) give an up-to-date list of potential enhancements. Propose new ones.
+ - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project **[Issues](https://github.com/magpylib/magpylib/issues)** give an up-to-date list of potential enhancements and planned milestones. Propose new ones.
  - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
 - An **[open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)** from the year 2020 describes v2 of this library with most basic concepts still intact in later versions.
 
@@ -103,7 +103,7 @@ print(B.round()) # --> [[   8.  -73.  -55.]
 magpy.show(cube, sensor, backend='pyvista')
 ```
 
-Some other important features are:
+Some other important features that are described in detail in the **[Documentation](https://magpylib.readthedocs.io/en/latest)** are:
 
 - **Collections**: Group multiple objects for common manipulation
 - **Complex shapes**: Create magnets with arbitrary shapes
@@ -113,7 +113,7 @@ Some other important features are:
 
 # How can I cite this library ?
 
-A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
+We would be happy if you give us credit for our efforts. A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
 
 ```
 @article{ortner2020magpylib,
@@ -124,5 +124,17 @@ A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.
   pages={100466},
   year={2020},
   publisher={Elsevier}
+}
+```
+
+A valid software citation could be
+
+```
+@software{magpylib,
+    author = {{Michael-Ortner et al.}},
+    title = {magpylib},
+    url = {https://magpylib.readthedocs.io/en/latest/},
+    version = {4.3.0},
+    date = {2023-06-25},
 }
 ```
