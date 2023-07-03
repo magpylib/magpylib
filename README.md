@@ -25,7 +25,7 @@
 
 Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
 
-# Installation & ressources
+# Installation
 
 Install from PyPI using **pip**
 ```
@@ -37,11 +37,13 @@ conda install -c conda-forge magpylib
 ```
 Magpylib supports _Python3.8+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
 
+# Links
+
  - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
  - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
  - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project [Issues](https://github.com/magpylib/magpylib/issues) give an up-to-date list of potential enhancements. Propose new ones.
  - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
-- An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) from 2020 describes v2 of this library.
+- An **[open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170)** from the year 2020 describes v2 of this library with most basic concepts still intact in later versions.
 
 # Quickstart
 
@@ -111,7 +113,7 @@ Some other important features are:
 
 # How can I cite this library ?
 
-An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) from 2020 describes v2 of this library. A valid bibtex entry would be.
+A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
 
 ```
 @article{ortner2020magpylib,
