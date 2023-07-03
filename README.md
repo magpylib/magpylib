@@ -3,6 +3,7 @@
 </p>
 
 ---
+
 <div>
 <a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=main"> <img src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=main">
 </a>
@@ -24,7 +25,7 @@
 
 Magpylib is a Python package for calculating **3D static magnetic fields** of magnets, line currents and other sources. The computation is based on explicit expressions and is therefore **extremely fast**. A **user friendly API** enables convenient positioning of sources and observers.
 
-# Installation & Ressources
+# Installation & ressources
 
 Install from PyPI using **pip**
 ```
@@ -36,7 +37,10 @@ conda install -c conda-forge magpylib
 ```
 Magpylib supports _Python3.8+_ and relies on common scientific computation libraries _Numpy_, _Scipy_, _Matplotlib_ and _Plotly_. Optionally, _Pyvista_ is recommended as graphical backend.
 
-Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information! Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**. Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project [Issues](https://github.com/magpylib/magpylib/issues) give an up-to-date list of potential enhancements. Propose new ones.
+ - Check out our **[Documentation](https://magpylib.readthedocs.io/en/latest)** for detailed information.
+ - Please abide by our **[Code of Conduct](https://github.com/magpylib/magpylib/blob/main/CODE_OF_CONDUCT.md)**.
+ - Contribute through **[Discussions](https://github.com/magpylib/magpylib/discussions)** and coding by following the **[Contribution Guide]()**. The Git project [Issues](https://github.com/magpylib/magpylib/issues) give an up-to-date list of potential enhancements. Propose new ones.
+ - A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
 
 # Quickstart
 
@@ -119,11 +123,3 @@ An [open-access paper](https://www.sciencedirect.com/science/article/pii/S235271
   publisher={Elsevier}
 }
 ```
-
-# Links
-
-The **[Github project](https://github.com/magpylib/magpylib)** where everything comes together.
-
-The official **[Documentation](https://magpylib.readthedocs.io/en/latest/)** on read the docs.
-
-A **[Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs)** introdution to Magpylib v4.0.0 within the **[GSC network](https://www.internationalcollaboration.org/).**
