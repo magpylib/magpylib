@@ -11,7 +11,7 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 1. Clone the Magpylib repository to your local machine.
 2. Create new personal branch locally.
 3. Publish new branch in the Github Magpylib repository.
-4. Modify, add and fix things in your new branch. Push your commits.
+4. Modify, add and fix things in your local new branch. Push your commits to the Github.
 5. Rebase the new branch on a regular basis to avoid future merge conflicts.
 6. Make a draft pull request where we can review and discuss your changes.
 7. When **everything is complete** mark your draft pull request as "ready for review". A Magpylib core team member will then review and merge. Write a note if you do not want your branch deleted.
