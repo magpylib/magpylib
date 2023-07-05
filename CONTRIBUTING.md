@@ -20,7 +20,8 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 
 - the desired functionality is achieved.
 - all code is well documented and all top level doc strings abide the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
-- unit tests are written. We aim for 100% code coverage. We suggest you use the python package [coverage](https://coverage.readthedocs.io/en/)
+- unit tests are running
+- new unit tests are written aiming for 100% code coverage. We suggest you use the python package [coverage](https://coverage.readthedocs.io/en/)
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10.
 - your code is PEP8 compliant and formatted with [black](https://black.readthedocs.io/en/stable/) default settings.
 
