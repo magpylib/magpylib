@@ -23,6 +23,7 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 - unit tests are written. We aim for 100% code coverage. We suggest you use the python package [coverage](https://coverage.readthedocs.io/en/)
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10.
 - your code is PEP8 compliant and formatted with [black](https://black.readthedocs.io/en/stable/) default settings.
+- all PR checks are green
 
 We strongly suggest that you install [pre-commit](https://pre-commit.com/) which will stop you from pushing your code when it is not ready.
 
@@ -34,6 +35,13 @@ the Magpylib repository is structured as follows:
 - **docs**: containts the documentation that is displayed on [Read the Docs](https://readthedocs.org/) using [Sphinx](https://www.sphinx-doc.org/en/master/). We like to use [Markdown](https://daringfireball.net/projects/markdown/) for the documentation.
 - **tests**: contains the unit tests
 - All other top level files are configuration files
+
+
+
+
+
+
+
 
 # Contribution guide
 
