@@ -116,9 +116,9 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 **Other**
 
-- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in \[mT mm³]. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
+- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in mT mm³. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
 
-- **`Triangle`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of the three corners given in \[mm³\]. When multiple Triangles form a closed surface, on the outside their total magnetic field correponds to the one of a homogeneously charged magnet.
+- **`Triangle`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of the three corners given in mm³. When multiple Triangles form a closed surface, on the outside their total magnetic field correponds to the one of a homogeneously charged magnet.
 
 - **`CustomSource`**`(field_func, position, orientation, style)` is used to create user defined custom sources with their own field functions. Can be used as Magpylib `sources` input.
 
@@ -613,7 +613,7 @@ B = helmholtz.getB((10,0,0))
 plt.plot(B, label=['Bx', 'By', 'Bz'])
 
 plt.gca().set(
-    title='B-field [mT] at position (10,0,0)',
+    title='B-field (mT) at position (10,0,0)',
     xlabel='helmholtz path position index'
 )
 plt.gca().grid(color='.9')
@@ -630,7 +630,7 @@ One central motivation behind the `Collection` class is enabling users to build 
 
 **User-defined 3D models** (traces) for any object that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts visualization.
 
-**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with a user-defined field computation function, that is stored in the attribute `field_func` and is used when `getB` and `getH` are called. Similar to core functions, `field_func` must have the two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of \[mT\] and \[kA/m\] in the same shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
+**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with a user-defined field computation function, that is stored in the attribute `field_func` and is used when `getB` and `getH` are called. Similar to core functions, `field_func` must have the two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and kA/m in the same shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
 
 While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
 
@@ -674,6 +674,6 @@ magpy.show(egg, sensor, backend='plotly', animation=True, style_path_show=False)
 fig = go.Figure()
 for i,lab in enumerate(['Bx', 'By', 'Bz']):
     fig.add_trace(go.Scatter(x=ts/2*3, y=B[:,i], name=lab))
-fig.update_layout(title='Field at sensor', xaxis_title='animation time [s]')
+fig.update_layout(title='Field at sensor', xaxis_title='animation time (s)')
 fig.show()
 ```

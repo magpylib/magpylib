@@ -64,15 +64,15 @@ Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim
 
 Magpylib uses the following physical units:
 
-- \[mT\]: for the B-field and the magnetization (µ0\*M).
-- \[kA/m\]: for the H-field.
-- \[mm\]: for position and length inputs.
-- \[deg\]: for angle inputs by default.
-- \[A\]: for current inputs.
+- mT: for the B-field and the magnetization (µ0\*M).
+- kA/m: for the H-field.
+- mm: for position and length inputs.
+- deg: for angle inputs by default.
+- A: for current inputs.
 
-However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of \[mm\] is a result of history and practical considerations when working with position and orientation systems.
+However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of mm is a result of history and practical considerations when working with position and orientation systems.
 
-In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of \[mT\] (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in \[mT\], then `getH` returns \[kA/m\] which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
+In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of mT (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in mT, then `getH` returns kA/m which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
 
 
 (docu-performance)=
