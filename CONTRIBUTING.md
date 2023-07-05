@@ -1,25 +1,19 @@
 # Contributing to Magpylib
 
-You dont have to be an expert programmer to contribute to Magpylib. Any feedback helps us understand what is really needed by the community.
+The sucess of Magpylib relies on its user-friedliness. Your feedback and discussion participation is highly valuable. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in this very informal channel: **[Discussions](https://github.com/magpylib/magpylib/discussions)**
 
-Ask questions about Magpylib. Give feeback about things that you like or dislike. Start general discussions here:
+We use GitHub Issues and Milestones to plan and track the Magpylib project. Open new **[Issues](https://github.com/magpylib/magpylib/issues)** to report a bug, to point out a problem, or to  make a feature request, e.g. following a fruitful discussion. Within the Issue we will together define in detail what the API should be like.
 
-**[Discussions](https://github.com/magpylib/magpylib/discussions)**
-
-Make us aware of bugs and problems. Make feature requests and define new features e.g. following a fruitful discussion. Participate in tasks planning here:
-
-**[Issues](https://github.com/magpylib/magpylib/issues)**
-
-Once features are clearly defined in an issue, contribute with actual coding. We will review, help and guide.
+Once an Issue documents an improvement that everyone agrees upon, its time for coding and you are most welcome to contribute. Please abide by the following procedure **how to contribute with coding**, to make things easy for us to review and manage the project.
 
 ## How to contribute with coding...
 
-1. Clone the Magpylib repository on your local machine.
+1. Clone the Magpylib repository to your local machine.
 2. Create new personal branch locally.
-3. Publish new branch into the Github Magpylib repository. At this point we will be aware that something is happening.
+3. Publish new branch into the Github Magpylib repository.
 4. Modify, add and fix things in your new branch.
+5. Push your commits regularly so we can review and discuss your changes.
 5. Rebase the new branch on a regular basis to avoid future merge conflicts.
-6. Push your commits regularly so we can review and discuss your changes.
 7. When **everything is complete** make a pull request to merge your branch into the original one.
 
 ## Everything is complete when...
