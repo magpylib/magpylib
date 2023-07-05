@@ -2,7 +2,7 @@
 
 The sucess of Magpylib relies on its user-friedliness. Your feedback and discussion participation is highly valuable. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in this very informal channel: **[Discussions](https://github.com/magpylib/magpylib/discussions)**
 
-We use GitHub Issues and Milestones to plan and track the Magpylib project. Open new **[Issues](https://github.com/magpylib/magpylib/issues)** to report a bug, to point out a problem, or to  make a feature request, e.g. following a fruitful discussion. Within the Issue we will together define in detail what the API should be like.
+We use GitHub Issues and Milestones to plan and track the Magpylib project. Open new **[Issues](https://github.com/magpylib/magpylib/issues)** to report a bug, to point out a problem, or to  make a feature request, e.g. following a fruitful discussion. Within the Issue we will together define in detail what should be done.
 
 Once an Issue documents an improvement that everyone agrees upon, its time for coding and you are most welcome to contribute. Please abide by the following procedure **how to contribute with coding**, to make things easy for us to review and manage the project.
 
@@ -10,11 +10,11 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 
 1. Clone the Magpylib repository to your local machine.
 2. Create new personal branch locally.
-3. Publish new branch into the Github Magpylib repository.
-4. Modify, add and fix things in your new branch.
-5. Push your commits regularly so we can review and discuss your changes.
+3. Publish new branch in the Github Magpylib repository.
+4. Modify, add and fix things in your new branch. Push your commits.
 5. Rebase the new branch on a regular basis to avoid future merge conflicts.
-7. When **everything is complete** make a pull request to merge your branch into the original one.
+6. Make a draft pull request where we can review and discuss your changes.
+7. When **everything is complete** mark your draft pull request as "ready for review". A Magpylib core team member will then review and merge. Write a note if you do not want your branch deleted.
 
 ## Everything is complete when...
 
