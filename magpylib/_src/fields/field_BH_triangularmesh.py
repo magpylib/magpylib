@@ -507,14 +507,14 @@ def magnet_trimesh_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT].
+        Homogeneous magnetization vector in units of mT.
 
     mesh: ndarray, shape (n,n1,3,3) or ragged sequence
         Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
@@ -531,7 +531,7 @@ def magnet_trimesh_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Notes
     -----

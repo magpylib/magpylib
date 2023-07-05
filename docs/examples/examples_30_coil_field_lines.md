@@ -96,19 +96,19 @@ ax2.streamplot(
 # figure styling
 ax1.set(
     title='Magnetic field of coil1',
-    xlabel='x-position [mm]',
-    ylabel='z-position [mm]',
+    xlabel='x-position (mm)',
+    ylabel='z-position (mm)',
     aspect=1,
 )
 ax2.set(
     title='Magnetic field of coil2',
-    xlabel='x-position [mm]',
-    ylabel='z-position [mm]',
+    xlabel='x-position (mm)',
+    ylabel='z-position (mm)',
     aspect=1,
 )
 
-plt.colorbar(sp.lines, ax=ax1, label='[mT]')
-plt.colorbar(cp, ax=ax2, label='[mT]')
+plt.colorbar(sp.lines, ax=ax1, label='(mT)')
+plt.colorbar(cp, ax=ax2, label='(mT)')
 
 plt.tight_layout()
 plt.show()
@@ -160,7 +160,7 @@ pl = pv.Plotter()
 
 # add field lines and legend to scene
 legend_args = {
-    'title': 'B [mT]',
+    'title': 'B (mT)',
     'title_font_size': 20,
     'color': 'black',
     'position_y': 0.25,

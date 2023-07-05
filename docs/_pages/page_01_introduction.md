@@ -92,25 +92,25 @@ The most convenient way of working with Magpylib is through the **object oriente
 
 **Magnets**
 
-All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in the local object coordinates in units of \[mT\]. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in the local object coordinates in units of mT. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
 
-- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of \[mm\]. By default the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
+- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of mm. By default the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
 
-- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of \[mm\]. By default the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of mm. By default the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of \[mm\] and the two section angles $\varphi_1<\varphi_2$ in \[deg\]. By default the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of mm and the two section angles $\varphi_1<\varphi_2$ in deg. By default the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of \[mm\]. By default the center of the sphere lies in the origin of the global coordinates.
+- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of mm. By default the center of the sphere lies in the origin of the global coordinates.
 
-- **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of \[mm\]. By default the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of mm. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
-- **`TriangularMesh`**`(magnetization, vertices, faces, position, orientation, validate_closed, validate_connected, reorient_faces, style)` represents a magnet with surface given by a triangular mesh. The `vertices` correspond to the corner points in units of \[mm\] and the `faces` are index-triplets for each face. By default, input checks are performed to see if the mesh is closed, connected and if its faces are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`TriangularMesh`**`(magnetization, vertices, faces, position, orientation, validate_closed, validate_connected, reorient_faces, style)` represents a magnet with surface given by a triangular mesh. The `vertices` correspond to the corner points in units of mm and the `faces` are index-triplets for each face. By default, input checks are performed to see if the mesh is closed, connected and if its faces are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
 
 **Currents**
 
-All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of \[A\]. All currents can be used as Magpylib `sources` input.
+All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of A. All currents can be used as Magpylib `sources` input.
 
-- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of \[mm\]. By default the loop lies in the xy-plane with it's center in the origin of the global coordinates.
+- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of mm. By default the loop lies in the xy-plane with it's center in the origin of the global coordinates.
 
 - **`Line`**`(current, vertices, position, orientation, style)` represents electrical current segments that flow in a straight line from vertex to vertex. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
@@ -131,7 +131,7 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 ## Position and orientation
 
-All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of [mm]. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
+All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of mm. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
 
 ```python
 import magpylib as magpy
@@ -336,8 +336,8 @@ The hierarchy that decides about the final graphic object representation, a list
 
 Magnetic field computation in Magpylib is achieved through:
 
-- **`getB`**`(sources, observers)` computes the B-field seen by `observers` generated by `sources` in units of \[mT\]
-- **`getH`**`(sources, observers)` computes the H-field seen by `observers` generated by `sources` in units of \[kA/m\]
+- **`getB`**`(sources, observers)` computes the B-field seen by `observers` generated by `sources` in units of mT
+- **`getH`**`(sources, observers)` computes the H-field seen by `observers` generated by `sources` in units of kA/m
 
 The argument `sources` can be any Magpylib **source object** or a flat list thereof. The argument `observers` can be an array_like of position vectors with shape $(n_1,n_2,n_3,...,3)$, any Magpylib **observer object** or a flat list thereof. `getB` and `getH` return the field for all combinations of sources, observers and paths.
 

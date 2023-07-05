@@ -14,7 +14,7 @@ kernelspec:
 (examples-custom-source-objects)=
 # CustomSource class
 
-The class `CustomSource` allows users to integrate their own custom-object field computation into the Magpylib interface. For this, the argument `field_func` must be provided with a function that is then automatically called with `getB` and `getH`. This custom field function is treated like a core function. It must have the positional arguments `field` (with values `'B'` or `'H'`), and `observers` (must accept array_like, shape (n,3)) and return the B-field in units of \[mT\] and the H-field in units of \[kA/m\] with a similar shape. A fundamental example how to create a custom source object is shown below:
+The class `CustomSource` allows users to integrate their own custom-object field computation into the Magpylib interface. For this, the argument `field_func` must be provided with a function that is then automatically called with `getB` and `getH`. This custom field function is treated like a core function. It must have the positional arguments `field` (with values `'B'` or `'H'`), and `observers` (must accept array_like, shape (n,3)) and return the B-field in units of mT and the H-field in units of kA/m with a similar shape. A fundamental example how to create a custom source object is shown below:
 
 ```{code-cell} ipython3
 import numpy as np
@@ -107,14 +107,14 @@ ax2.plot(pole_pos[:,0], pole_pos[:,2], marker='o', ms=10, mfc='k', mec='w', ls='
 # plot styling
 ax1.set(
     title='3D model',
-    xlabel='x-position [mm]',
-    ylabel='y-position [mm]',
-    zlabel='z-position [mm]',
+    xlabel='x-position (mm)',
+    ylabel='y-position (mm)',
+    zlabel='z-position (mm)',
 )
 ax2.set(
     title='Quadrupole field',
-    xlabel='x-position [mm]',
-    ylabel='z-position [mm]',
+    xlabel='x-position (mm)',
+    ylabel='z-position (mm)',
     aspect=1,
 )
 fig.colorbar(cp, label='[$charge/mm^2$]', ax=ax2)
