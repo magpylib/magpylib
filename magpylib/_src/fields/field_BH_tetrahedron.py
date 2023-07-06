@@ -69,14 +69,14 @@ def magnet_tetrahedron_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT].
+        Homogeneous magnetization vector in units of mT.
 
     vertices: ndarray, shape (n,4,3)
         Vertices of the individual tetrahedrons [(pos1a, pos1b, pos1c, pos1d),
@@ -85,7 +85,7 @@ def magnet_tetrahedron_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------

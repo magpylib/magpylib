@@ -39,7 +39,7 @@ def apply_fig_ranges(fig, ranges):
     """
     fig.update_scenes(
         **{
-            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} [mm]"}
+            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} (mm)"}
             for i, k in enumerate("xyz")
         },
         aspectratio={k: 1 for k in "xyz"},

@@ -154,7 +154,7 @@ class BaseGeo(BaseTransform):
     @property
     def position(self):
         """
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         """
         return np.squeeze(self._position)

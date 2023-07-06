@@ -42,8 +42,8 @@ def test_dipole_approximation():
 
 def test_Loop_vs_Cylinder_field():
     """
-    The H-field of a loop with radius r0[mm] and current i0[A] is the same
-    as the H-field of a cylinder with radius r0[mm], height h0[mm] and
+    The H-field of a loop with radius r0 (mm) and current i0 (A) is the same
+    as the H-field of a cylinder with radius r0 (mm), height h0 (mm) and
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 

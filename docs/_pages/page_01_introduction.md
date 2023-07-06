@@ -92,33 +92,33 @@ The most convenient way of working with Magpylib is through the **object oriente
 
 **Magnets**
 
-All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in the local object coordinates in units of \[mT\]. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in the local object coordinates in units of mT. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
 
-- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of \[mm\]. By default the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
+- **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of mm. By default the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
 
-- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of \[mm\]. By default the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`Cylinder`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cylindrical shape. `dimension` has the format $(d,h)$ and denotes diameter and height of the cylinder in units of mm. By default the center of the cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of \[mm\] and the two section angles $\varphi_1<\varphi_2$ in \[deg\]. By default the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
+- **`CylinderSegment`**`(magnetization, dimension, position, orientation, style)` represents a magnet with the shape of a cylindrical ring section. `dimension` has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in units of mm and the two section angles $\varphi_1<\varphi_2$ in deg. By default the center of the full cylinder lies in the origin of the global coordinates, and the cylinder axis coincides with the z-axis.
 
-- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of \[mm\]. By default the center of the sphere lies in the origin of the global coordinates.
+- **`Sphere`**`(magnetization, diameter, position, orientation, style)` represents a magnet of spherical shape. `diameter` is the sphere diameter $d$ in units of mm. By default the center of the sphere lies in the origin of the global coordinates.
 
-- **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of \[mm\]. By default the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`Tetrahedron`**`(magnetization, vertices, position, orientation, style)` represents a magnet of tetrahedral shape. `vertices` corresponds to the four corner points in units of mm. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
-- **`TriangularMesh`**`(magnetization, vertices, faces, position, orientation, validate_closed, validate_connected, reorient_faces, style)` represents a magnet with surface given by a triangular mesh. The `vertices` correspond to the corner points in units of \[mm\] and the `faces` are index-triplets for each face. By default, input checks are performed to see if the mesh is closed, connected and if its faces are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
+- **`TriangularMesh`**`(magnetization, vertices, faces, position, orientation, validate_closed, validate_connected, reorient_faces, style)` represents a magnet with surface given by a triangular mesh. The `vertices` correspond to the corner points in units of mm and the `faces` are index-triplets for each face. By default, input checks are performed to see if the mesh is closed, connected and if its faces are correctly oriented. At initialization, the vertex positions coincide in the local object coordinates and the global coordinates.
 
 **Currents**
 
-All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of \[A\]. All currents can be used as Magpylib `sources` input.
+All current objects have the `current` attribute which must be a scalar $i_0$ and denotes the electrical current in units of A. All currents can be used as Magpylib `sources` input.
 
-- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of \[mm\]. By default the loop lies in the xy-plane with it's center in the origin of the global coordinates.
+- **`Loop`**`(current, diameter, position, orientation, style)` represents a circular current loop where `diameter` is the loop diameter $d$ in units of mm. By default the loop lies in the xy-plane with it's center in the origin of the global coordinates.
 
 - **`Line`**`(current, vertices, position, orientation, style)` represents electrical current segments that flow in a straight line from vertex to vertex. By default the vertex positions coincide in the local object coordinates and the global coordinates.
 
 **Other**
 
-- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in \[mT mm³]. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
+- **`Dipole`**`(moment, position, orientation, style)` represents a magnetic dipole moment with moment $(m_x,m_y,m_z)$ given in mT mm³. For homogeneous magnets the relation moment=magnetization$\times$volume holds. Can be used as Magpylib `sources` input.
 
-- **`Triangle`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of the three corners given in \[mm³\]. When multiple Triangles form a closed surface, on the outside their total magnetic field correponds to the one of a homogeneously charged magnet.
+- **`Triangle`**`(magnetization, vertices, position, orientation, style)` represents a triangular surface with a homogeneous charge given by the projection of the `magnetization` vector onto the surface normal. `vertices` is a set of the three corners given in mm³. When multiple Triangles form a closed surface, on the outside their total magnetic field correponds to the one of a homogeneously charged magnet.
 
 - **`CustomSource`**`(field_func, position, orientation, style)` is used to create user defined custom sources with their own field functions. Can be used as Magpylib `sources` input.
 
@@ -131,7 +131,7 @@ All current objects have the `current` attribute which must be a scalar $i_0$ an
 
 ## Position and orientation
 
-All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of [mm]. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
+All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of mm. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
 
 ```python
 import magpylib as magpy
@@ -336,8 +336,8 @@ The hierarchy that decides about the final graphic object representation, a list
 
 Magnetic field computation in Magpylib is achieved through:
 
-- **`getB`**`(sources, observers)` computes the B-field seen by `observers` generated by `sources` in units of \[mT\]
-- **`getH`**`(sources, observers)` computes the H-field seen by `observers` generated by `sources` in units of \[kA/m\]
+- **`getB`**`(sources, observers)` computes the B-field seen by `observers` generated by `sources` in units of mT
+- **`getH`**`(sources, observers)` computes the H-field seen by `observers` generated by `sources` in units of kA/m
 
 The argument `sources` can be any Magpylib **source object** or a flat list thereof. The argument `observers` can be an array_like of position vectors with shape $(n_1,n_2,n_3,...,3)$, any Magpylib **observer object** or a flat list thereof. `getB` and `getH` return the field for all combinations of sources, observers and paths.
 
@@ -613,7 +613,7 @@ B = helmholtz.getB((10,0,0))
 plt.plot(B, label=['Bx', 'By', 'Bz'])
 
 plt.gca().set(
-    title='B-field [mT] at position (10,0,0)',
+    title='B-field (mT) at position (10,0,0)',
     xlabel='helmholtz path position index'
 )
 plt.gca().grid(color='.9')
@@ -630,7 +630,7 @@ One central motivation behind the `Collection` class is enabling users to build 
 
 **User-defined 3D models** (traces) for any object that will be displayed by `show`, can be stored in `style.model3d.data`. A trace itself is a dictionary that contains all information necessary for plotting, and can be added with the method `style.model3d.data.add_trace`. In the example gallery {ref}`examples-3d-models` it is explained how to create custom traces with standard plotting backends such as `scatter3d` or `mesh3d` in Plotly, or `plot`, `plot_surface` and `plot_trisurf` in Matplotlib. Some pre-defined models are also provided for easy parts visualization.
 
-**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with a user-defined field computation function, that is stored in the attribute `field_func` and is used when `getB` and `getH` are called. Similar to core functions, `field_func` must have the two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of \[mT\] and \[kA/m\] in the same shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
+**User-defined source objects** are easily realized with the `CustomSource` class. Such a custom source object is provided with a user-defined field computation function, that is stored in the attribute `field_func` and is used when `getB` and `getH` are called. Similar to core functions, `field_func` must have the two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and kA/m in the same shape. Details on working with custom sources are given in {ref}`examples-custom-source-objects`.
 
 While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
 
@@ -674,6 +674,6 @@ magpy.show(egg, sensor, backend='plotly', animation=True, style_path_show=False)
 fig = go.Figure()
 for i,lab in enumerate(['Bx', 'By', 'Bz']):
     fig.add_trace(go.Scatter(x=ts/2*3, y=B[:,i], name=lab))
-fig.update_layout(title='Field at sensor', xaxis_title='animation time [s]')
+fig.update_layout(title='Field at sensor', xaxis_title='animation time (s)')
 fig.show()
 ```

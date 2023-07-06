@@ -269,7 +269,7 @@ class BaseTransform:
         Parameters
         ----------
         displacement: array_like, shape (3,) or (n,3)
-            Displacement vector in units of [mm].
+            Displacement vector in units of mm.
 
         start: int or str, default=`'auto'`
             Starting index when applying operations. See 'General move/rotate behavior' above
@@ -377,7 +377,7 @@ class BaseTransform:
             as unit rotation.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -453,14 +453,14 @@ class BaseTransform:
         Parameters
         ----------
         angle: int, float or array_like with shape (n,)
-            Angle(s) of rotation in units of [deg] (by default).
+            Angle(s) of rotation in units of deg (by default).
 
         axis: str or array_like, shape (3,)
             The direction of the axis of rotation. Input can be a vector of shape (3,)
             or a string 'x', 'y' or 'z' to denote respective directions.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -469,7 +469,7 @@ class BaseTransform:
             for details.
 
         degrees: bool, default=`True`
-            Interpret input in units of [deg] or [rad].
+            Interpret input in units of deg or rad.
 
         Returns
         -------
@@ -556,10 +556,10 @@ class BaseTransform:
         ----------
         rotvec : array_like, shape (n,3) or (3,)
             Rotation input. Rotation vector direction is the rotation axis, vector length is
-            the rotation angle in units of [rad].
+            the rotation angle in units of rad.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -568,7 +568,7 @@ class BaseTransform:
             for details.
 
         degrees: bool, default=`True`
-            Interpret input in units of [deg] or [rad].
+            Interpret input in units of deg or rad.
 
         Returns
         -------
@@ -636,7 +636,7 @@ class BaseTransform:
         Parameters
         ----------
         angle: int, float or array_like with shape (n,)
-            Angle(s) of rotation in units of [deg] (by default).
+            Angle(s) of rotation in units of deg (by default).
 
         seq : string
             Specifies sequence of axes for rotations. Up to 3 characters
@@ -645,7 +645,7 @@ class BaseTransform:
             rotations cannot be mixed in one function call.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -654,7 +654,7 @@ class BaseTransform:
             for details.
 
         degrees: bool, default=`True`
-            Interpret input in units of [deg] or [rad].
+            Interpret input in units of deg or rad.
 
         Returns
         -------
@@ -726,7 +726,7 @@ class BaseTransform:
             Rotation input. See scipy.spatial.transform.Rotation for details.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -789,7 +789,7 @@ class BaseTransform:
             Parameters (MRPs).
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 
@@ -851,7 +851,7 @@ class BaseTransform:
             Rotation input in quaternion form.
 
         anchor: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-            The axis of rotation passes through the anchor point given in units of [mm].
+            The axis of rotation passes through the anchor point given in units of mm.
             By default (`anchor=None`) the object will rotate about its own center.
             `anchor=0` rotates the object about the origin `(0,0,0)`.
 

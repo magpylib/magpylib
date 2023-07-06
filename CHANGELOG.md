@@ -251,7 +251,7 @@ This is a major update that includes
       - Objects with shorter paths will be considered as static once their path ends while other paths still continue.
     4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be arrays of length N or of length 1 (statics will be tiled).
   - While `getBv` is the fastest way to compute the fields it is much more convenient to use `getB()` which mostly provides the same performance. Specifically,the new `getB()` automatically groups all inputs for combined vectorized evaluation. This leads to a massive speedup when dealing with large Collections of similar sources.
-  - In addition to `getB`, the new `getH` returns the field in [kA/m].
+  - In addition to `getB`, the new `getH` returns the field in kA/m.
 
 ### Removed
 - the kwarg `niter=50` does not exist anymore for the Cylinder field computation. The functionality was completely replaced by the config setting `Config.ITER_CYLINDER=50`.

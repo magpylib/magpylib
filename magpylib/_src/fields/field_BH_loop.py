@@ -24,22 +24,22 @@ def current_loop_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     current: ndarray, shape (n,)
-        Electrical current in units of [A].
+        Electrical current in units of A.
 
     diameter: ndarray, shape (n,)
-        Diameter of loop in units of [mm].
+        Diameter of loop in units of mm.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------
