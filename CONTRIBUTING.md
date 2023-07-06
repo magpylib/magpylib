@@ -8,10 +8,10 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 
 ## How to contribute with coding...
 
-1. Clone the Magpylib repository to your local machine.
-2. Create new personal branch locally.
-3. Publish new branch in the Github Magpylib repository.
-4. Modify, add and fix things in your local new branch. Push your commits to the Github.
+1. Everyone has push-rights in the Magpylib repository. It is therefore not necessary to fork the repository, but you can clone it directly to your local machine.
+2. Once cloned, create new personal branch locally.
+3. Publish (=push) new branch to the Github Magpylib repository.
+4. Modify, add and fix things in your local new branch. Push your commits to Github.
 5. Rebase the new branch on a regular basis to avoid future merge conflicts.
 6. Make a draft pull request where we can review and discuss your changes.
 7. When **everything is complete** mark your draft pull request as "ready for review". A Magpylib core team member will then review and merge. Write a note if you do not want your branch deleted.
@@ -20,7 +20,7 @@ Once an Issue documents an improvement that everyone agrees upon, its time for c
 
 - the desired functionality is achieved.
 - all code is well documented and all top level doc strings abide the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
-- unit tests are running
+- all unit tests are running. We recommend using the [pytest](https://docs.pytest.org/en/7.4.x/) package.
 - new unit tests are written aiming for 100% code coverage. We suggest you use the python package [coverage](https://coverage.readthedocs.io/en/)
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10.
 - your code is PEP8 compliant and formatted with [black](https://black.readthedocs.io/en/stable/) default settings.
