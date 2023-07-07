@@ -22,7 +22,7 @@ import setuptools
 from setuptools.command.install import install
 
 _magPyVersion = "4.3.0"
-_SphinxVersion = "4.4.0"
+_SphinxVersion = "5.3.0"
 _name = "magpylib"
 _description = "Free Python3 package to compute magnetic fields."
 _author_email = "magpylib@gmail.com"
