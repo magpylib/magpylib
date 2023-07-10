@@ -995,7 +995,7 @@ def get_generic_traces(
     )
     obj_is_disconnected = False
     if isinstance(input_obj, TriangularMesh):
-        for mode in ("open", "disconnected"):
+        for mode in ("open", "disconnected", "selfintersecting"):
             show_mesh = getattr(style.mesh, mode).show
             if mode == "open" and show_mesh:
                 if input_obj.status_open is None:
@@ -1013,13 +1013,12 @@ def get_generic_traces(
                         "to compute when the mesh has many faces, now applying operation..."
                     )
                 obj_is_disconnected = input_obj.check_disconnected()
-            if mode == "selfintersecting":
+            elif mode == "selfintersecting":
                 if input_obj._status_selfintersecting is None:
                     warnings.warn(
-                        f"Unchecked{input_obj!r} selfintersecting status has not been checked "
-                        "before atempting to show possible self-intersecting parts, which may take "
-                        "a while to compute when the mesh has many faces, now applying "
-                        "operation..."
+                        f"Unchecked selfintersecting mesh status in {input_obj!r} detected, before "
+                        "attempting to show possible disconnected parts, which may take a while "
+                        "to compute when the mesh has many faces, now applying operation..."
                     )
                     input_obj.check_selfintersecting()
     disconnected_traces = []

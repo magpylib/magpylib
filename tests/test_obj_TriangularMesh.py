@@ -279,6 +279,13 @@ def test_selfintersecting_triangular_mesh():
             faces=faces,
             check_selfintersecting="raise",
         )
+    with pytest.warns(UserWarning, match=r"Self-intersecting mesh detected in .*."):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_selfintersecting="warn",
+        )
 
 
 def test_TriangularMesh_from_pyvista():

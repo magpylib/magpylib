@@ -230,6 +230,40 @@ def test_TringularMesh_display():
         )
         assert re.match(r"Disconnected mesh detected in .*.", str(record[3].message))
 
+    # test self-intersecting display
+    selfintersecting_mesh3d = {
+        "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
+        "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
+        "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
+        "i": [7, 0, 0, 0, 2, 6, 4, 0, 3, 7, 4, 5, 6, 7],
+        "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
+        "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
+    }
+    vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
+    faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            (0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="warn",
+            check_disconnected="warn",
+            check_selfintersecting="skip",
+            reorient_faces=True,
+        ).show(
+            style_mesh_selfintersecting_show=True,
+            backend="matplotlib",
+            return_fig=True,
+        )
+        assert len(record) == 2
+        assert re.match(
+            r"Unchecked selfintersecting mesh status in .* detected",
+            str(record[0].message),
+        )
+        assert re.match(
+            r"Self-intersecting mesh detected in .*.", str(record[1].message)
+        )
+
 
 def test_col_display():
     """testing display"""
