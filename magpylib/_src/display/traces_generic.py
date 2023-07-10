@@ -802,7 +802,18 @@ def get_generic_traces_2D(
     from magpylib._src.fields.field_wrap_BH import getBH_level2
 
     sources = format_obj_input(objects, allow="sources+collections")
-    sensors = format_obj_input(objects, allow="sensors")
+    sources = [
+        s
+        for s in sources
+        if not (isinstance(s, magpy.Collection) and not s.sources_all)
+    ]
+    sensors = format_obj_input(objects, allow="sensors+collections")
+    sensors = [
+        sub_s
+        for s in sensors
+        for sub_s in (s.sensors_all if isinstance(s, magpy.Collection) else [s])
+    ]
+
     if not isinstance(output, (list, tuple)):
         output = [output]
     output_params = {}
@@ -812,7 +823,7 @@ def get_generic_traces_2D(
             coords_str = list("xyz")
         if field_str not in ("B", "H") and set(coords_str).difference(set("xyz")):
             raise ValueError(
-                "The `output` parameter must start with 'B' or 'H'"
+                "The `output` parameter must start with 'B' or 'H' "
                 "and be followed by a combination of 'x', 'y', 'z' (e.g. 'Bxy' or ('Bxy', 'Hz') )"
                 f"\nreceived {out!r} instead"
             )
@@ -877,7 +888,11 @@ def get_generic_traces_2D(
                     f"{label_src}" if len(sources) == 1 else f"{len(sources)} sources"
                 )
                 label, color = label_sens, color_sens
-            num_of_pix = len(sens.pixel.reshape(-1, 3)) if sens.pixel.ndim != 1 else 1
+            num_of_pix = (
+                len(sens.pixel.reshape(-1, 3))
+                if (not isinstance(sens, magpy.Collection)) and sens.pixel.ndim != 1
+                else 1
+            )
             pix_suff = ""
             num_of_pix_to_show = 1 if pixel_agg else num_of_pix
             for pix_ind in range(num_of_pix_to_show):
