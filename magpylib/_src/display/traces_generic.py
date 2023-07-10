@@ -1221,6 +1221,7 @@ def extract_animation_properties(
     animation_maxframes,
     # pylint: disable=unused-argument
     animation_slider,
+    animation_output,
 ):
     """Exctract animation properties"""
     # pylint: disable=import-outside-toplevel
@@ -1396,7 +1397,6 @@ def get_frames(
         path_indices, exp, frame_duration = extract_animation_properties(
             obj_list_semi_flat, **animation_kwargs
         )
-
     # create frame for each path index or downsampled path index
     frames = []
     autosize = "return"
@@ -1433,13 +1433,13 @@ def get_frames(
     out = {
         "frames": frames,
         "ranges": ranges,
+        "input_kwargs": {**kwargs, **animation_kwargs},
     }
     if animation:
         out.update(
             {
                 "frame_duration": frame_duration,
                 "path_indices": path_indices,
-                "animation_slider": animation_kwargs["animation_slider"],
             }
         )
     return out

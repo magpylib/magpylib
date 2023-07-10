@@ -214,7 +214,6 @@ def display_pyvista(
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
-    fig_animation_output="gif",
     repeat=False,
     legend_max_items=20,
     **kwargs,  # pylint: disable=unused-argument
@@ -314,13 +313,14 @@ def display_pyvista(
     if len(frames) == 1:
         draw_frame(0)
     elif animation:
-        if fig_animation_output in ("gif", "mp4"):
+        animation_output = data["input_kwargs"].get("animation_output", None)
+        animation_output = "gif" if animation_output is None else animation_output
+        if animation_output in ("gif", "mp4"):
+            print(animation_output)
             with tempfile.TemporaryFile() as temp:
-                run_animation(
-                    f"{temp.name}_animation.{fig_animation_output}", embed=True
-                )
+                run_animation(f"{temp.name}_animation.{animation_output}", embed=True)
         else:
-            run_animation(fig_animation_output)
+            run_animation(animation_output)
 
     if return_fig and not show_canvas:
         return canvas

@@ -35,6 +35,7 @@ class RegisteredBackend:
         supports_animation,
         supports_subplots,
         supports_colorgradient,
+        supports_animation_output,
     ):
         self.name = name
         self.show_func_getter = show_func_getter
@@ -42,6 +43,7 @@ class RegisteredBackend:
             "animation": supports_animation,
             "subplots": supports_subplots,
             "colorgradient": supports_colorgradient,
+            "animation_output": supports_animation_output,
         }
         self._register_backend(name)
 
@@ -62,11 +64,11 @@ class RegisteredBackend:
     ):
         """Display function of the current backend"""
         self = cls.backends[backend]
-        conditions = {
+        fallback = {
             "animation": {"animation": False},
             "subplots": {"row": None, "col": None},
         }
-        for name, params in conditions.items():
+        for name, params in fallback.items():
             condition = not all(kwargs.get(k, v) == v for k, v in params.items())
             if condition and not self.supports[name]:
                 supported = [k for k, v in self.backends.items() if v.supports[name]]
@@ -460,6 +462,7 @@ RegisteredBackend(
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=False,
+    supports_animation_output=False,
 )
 
 
@@ -469,6 +472,7 @@ RegisteredBackend(
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
+    supports_animation_output=False,
 )
 
 RegisteredBackend(
@@ -477,4 +481,5 @@ RegisteredBackend(
     supports_animation=True,
     supports_subplots=True,
     supports_colorgradient=True,
+    supports_animation_output=True,
 )

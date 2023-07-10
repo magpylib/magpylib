@@ -317,7 +317,7 @@ def display_plotly(
         if not isanimation:
             fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
-            animation_slider = data.get("animation_slider", False)
+            animation_slider = data["input_kwargs"].get("animation_slider", False)
             animate_path(
                 fig,
                 frames,
