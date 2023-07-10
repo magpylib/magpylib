@@ -21,7 +21,7 @@ from magpylib._src.utility import test_path_format
 disp_args = get_defaults_dict("display").keys()
 
 
-class RegisterBackend:
+class RegisteredBackend:
     """Base class for display backends"""
 
     backends = {}
@@ -105,32 +105,6 @@ def get_show_func(backend):
     return lambda: getattr(
         import_module(f"magpylib._src.display.backend_{backend}"), f"display_{backend}"
     )
-
-
-RegisterBackend(
-    name="matplotlib",
-    show_func_getter=get_show_func("matplotlib"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=False,
-)
-
-
-RegisterBackend(
-    name="plotly",
-    show_func_getter=get_show_func("plotly"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=True,
-)
-
-RegisterBackend(
-    name="pyvista",
-    show_func_getter=get_show_func("pyvista"),
-    supports_animation=True,
-    supports_subplots=True,
-    supports_colorgradient=True,
-)
 
 
 ROW_COL_SPECIFIC_NAMES = ("row", "col", "output", "sumup", "pixel_agg")
@@ -223,7 +197,7 @@ def _show(
     if backend == "auto":
         backend = infer_backend(kwargs.get("canvas", None))
 
-    return RegisterBackend.show(
+    return RegisteredBackend.show(
         backend=backend,
         *objects,
         zoom=zoom,
@@ -477,3 +451,29 @@ class DisplayContext:
 
 
 ctx = DisplayContext()
+
+
+RegisteredBackend(
+    name="matplotlib",
+    show_func_getter=get_show_func("matplotlib"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=False,
+)
+
+
+RegisteredBackend(
+    name="plotly",
+    show_func_getter=get_show_func("plotly"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=True,
+)
+
+RegisteredBackend(
+    name="pyvista",
+    show_func_getter=get_show_func("pyvista"),
+    supports_animation=True,
+    supports_subplots=True,
+    supports_colorgradient=True,
+)
