@@ -238,10 +238,10 @@ def display_pyvista(
         jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
     )
     warned2d = False
+    count_with_labels = {}
 
     def draw_frame(frame_ind):
-        count_with_labels = {}
-        nonlocal warned2d
+        nonlocal warned2d, count_with_labels
         frame = frames[frame_ind]
         for tr0 in frame["data"]:
             for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
