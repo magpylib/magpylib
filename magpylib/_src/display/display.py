@@ -4,6 +4,7 @@ from contextlib import contextmanager
 from importlib import import_module
 
 from matplotlib.axes import Axes as mplAxes
+from matplotlib.figure import Figure as mplFig
 
 from magpylib._src.defaults.defaults_utility import _DefaultValue
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
@@ -126,7 +127,7 @@ def infer_backend(canvas):
             backend = "plotly"
     except ImportError:  # pragma: no cover
         pass
-    if isinstance(canvas, mplAxes):
+    if isinstance(canvas, (mplAxes, mplFig)):
         backend = "matplotlib"
     elif plotly_available and isinstance(
         canvas, (plotly.graph_objects.Figure, plotly.graph_objects.FigureWidget)

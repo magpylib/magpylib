@@ -264,19 +264,21 @@ def display_matplotlib(
         count = 0
         for row in range(1, max_rows + 1):
             for col in range(1, max_cols + 1):
+                subplot_found = True
                 count += 1
                 row_col_num = (row, col)
-                if canvas is None:
-                    projection = (
-                        "3d"
-                        if subplot_specs[row - 1, col - 1]["type"] == "scene"
-                        else None
-                    )
+                projection = (
+                    "3d" if subplot_specs[row - 1, col - 1]["type"] == "scene" else None
+                )
+                if isinstance(canvas, matplotlib.figure.Figure):
+                    try:
+                        axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
+                    except (ValueError, IndexError):  # IndexError if axis is not found
+                        subplot_found = False
+                if canvas is None or not subplot_found:
                     axes[row_col_num] = fig.add_subplot(
                         max_rows, max_cols, count, projection=projection
                     )
-                elif isinstance(canvas, matplotlib.figure.Figure):
-                    axes[row_col_num] = extract_axis_from_row_col(fig, row, col)
                 if axes[row_col_num].name == "3d":
                     axes[row_col_num].set_box_aspect((1, 1, 1))
 
