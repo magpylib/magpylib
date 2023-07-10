@@ -401,3 +401,59 @@ def test_mpl_animation():
     anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
+
+
+def test_subplots():
+    """test subplots"""
+    sensor = magpy.Sensor(
+        pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
+    )
+    sensor.style.label = "Sensor1"
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+
+    # define paths
+    sensor.position = np.linspace((0, 0, -3), (0, 0, 3), 100)
+    cyl1.position = (4, 0, 0)
+    cyl1.rotate_from_angax(angle=np.linspace(0, 300, 100), start=0, axis="z", anchor=0)
+    cyl2 = cyl1.copy().move((0, 0, 5))
+    objs = cyl1, cyl2, sensor
+
+    # with implicit axes
+    fig = plt.figure(figsize=(20, 4))
+    with magpy.show_context(
+        backend="matplotlib", canvas=fig, animation=False, sumup=True, pixel_agg="mean"
+    ) as s:
+        s.show(*objs, col=1, output=("Bx", "By", "Bz"))  # from context
+        magpy.show(cyl1, col=2)  # directly
+        magpy.show({"objects": [cyl1, cyl2], "col": 3})  # as dict
+
+    # with given axes in figure
+    fig = plt.figure(figsize=(20, 4))
+    fig.add_subplot(121, projection="3d")
+    magpy.show(cyl1, col=2, canvas=fig)
+
+
+def test_bad_canvas_inputs():
+    """canvas inputs"""
+
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+
+    # test bad canvas
+    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of .*"):
+        magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
+
+    # test bad axes canvas with rows
+    fig = plt.figure(figsize=(20, 4))
+    ax = fig.add_subplot(131, projection="3d")
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Provided canvas is an instance of `matplotlib.axes.Axes` "
+            r"and does not support `rows`.*"
+        ),
+    ):
+        magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")

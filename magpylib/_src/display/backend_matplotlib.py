@@ -80,27 +80,22 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
             props["ms"] = np.pi * props["ms"] ** 2
         coords = np.array([trace[k] for k in coords_str], dtype=float)
         if isinstance(props["ms"], (list, tuple, np.ndarray)):
-            uniq = np.unique(props["ms"])
-            if uniq.shape[0] == 1:
-                props["ms"] = props["ms"][0]
-                props["label"] = None
-            else:
-                traces_mpl.append(
-                    {
-                        "constructor": "scatter",
-                        "args": (*coords,),
-                        "kwargs": {
-                            "s": props["ms"],
-                            "color": props["mec"],
-                            "marker": SYMBOLS_TO_MATPLOTLIB.get(
-                                props["marker"], props["marker"]
-                            ),
-                            "label": None,
-                        },
-                    }
-                )
-                props.pop("ms")
-                props.pop("marker")
+            traces_mpl.append(
+                {
+                    "constructor": "scatter",
+                    "args": (*coords,),
+                    "kwargs": {
+                        "s": props["ms"],
+                        "color": props["mec"],
+                        "marker": SYMBOLS_TO_MATPLOTLIB.get(
+                            props["marker"], props["marker"]
+                        ),
+                        "label": None,
+                    },
+                }
+            )
+            props.pop("ms")
+            props.pop("marker")
         if "ls" in props:
             props["ls"] = LINE_STYLES_TO_MATPLOTLIB.get(props["ls"], props["ls"])
         if "marker" in props:
@@ -246,7 +241,7 @@ def display_matplotlib(
     elif isinstance(canvas, matplotlib.figure.Figure):
         fig = canvas
     else:
-        raise ValueError(
+        raise TypeError(
             "The `canvas` parameter must be one of `[None, matplotlib.axes.Axes, "
             f"matplotlib.figure.Figure]`. Received type {type(canvas)!r} instead"
         )
