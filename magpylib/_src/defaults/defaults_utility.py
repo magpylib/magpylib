@@ -53,7 +53,7 @@ class _DefaultType:
             cls.__instance = super().__new__(cls)
         return cls.__instance
 
-    def __repr__(self):
+    def __repr__(self):  # pragma: no cover
         return "<default>"
 
 
