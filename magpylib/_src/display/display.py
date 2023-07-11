@@ -67,15 +67,21 @@ class RegisteredBackend:
         fallback = {
             "animation": {"animation": False},
             "subplots": {"row": None, "col": None},
+            "animation_output": {"animation_output": None},
         }
         for name, params in fallback.items():
             condition = not all(kwargs.get(k, v) == v for k, v in params.items())
             if condition and not self.supports[name]:
                 supported = [k for k, v in self.backends.items() if v.supports[name]]
+                supported_str = (
+                    f"one of {supported!r}"
+                    if len(supported) > 1
+                    else f"{supported[0]!r}"
+                )
                 warnings.warn(
-                    f"The {backend} backend does not support {name}, "
-                    f"you can use one of {supported} backends instead."
-                    f"\nfalling back to: {params}"
+                    f"The {backend!r} backend does not support {name!r}, "
+                    f"you need to use {supported_str} instead."
+                    f"\nFalling back to: {params}"
                 )
                 kwargs.update(params)
         frame_kwargs = {
@@ -440,7 +446,6 @@ class DisplayContext:
         self.objects = ()
         self.objects_from_ctx = ()
         self.kwargs = {}
-        self.canvas = None
         self.fig = None
 
     def reset(self, reset_fig=True):

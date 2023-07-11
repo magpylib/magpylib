@@ -15,6 +15,7 @@ bad_inputs = {
     "display_animation_time": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
     "display_animation_slider": ("notbool"),  # bool
+    "display_animation_output": ("filename.badext", "badext"),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
@@ -109,6 +110,7 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
+    "display_animation_output": ("filename.mp4", "gif"),  # bool
     "display_backend": ["auto", *SUPPORTED_PLOTTING_BACKENDS],  # str typo
     "display_colorsequence": (
         ("#2e91e5", "#0d2a63"),

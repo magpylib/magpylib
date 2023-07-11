@@ -6,8 +6,10 @@ import matplotlib.tri as mtri
 import numpy as np
 import pytest
 import pyvista as pv
+from matplotlib.figure import Figure as mplFig
 
 import magpylib as magpy
+from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
 from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder
@@ -469,8 +471,8 @@ def test_subplots():
     magpy.show(cyl1, col=2, canvas=fig)
 
 
-def test_bad_canvas_inputs():
-    """canvas inputs"""
+def test_bad_show_inputs():
+    """bad show inputs"""
 
     cyl1 = magpy.magnet.Cylinder(
         magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
@@ -491,3 +493,44 @@ def test_bad_canvas_inputs():
         ),
     ):
         magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")
+
+    # test conflicting output types
+    sensor = magpy.Sensor(
+        pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
+    )
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+    with pytest.raises(
+        ValueError,
+        match=r"Row/Col .* received conflicting output types.*",
+    ):
+        with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
+            s.show(cyl1, sensor, col=1, output="Bx")
+            s.show(cyl1, sensor, col=1)
+
+    # test unsupported specific args for some backends
+    with pytest.warns(
+        UserWarning,
+        match=r"The 'plotly' backend does not support 'animation_output'.*",
+    ):
+        sensor = magpy.Sensor(
+            position=np.linspace((0, 0, -0.2), (0, 0, 0.2), 200), style_size=1.5
+        )
+        magpy.show(
+            sensor,
+            backend="plotly",
+            col=1,
+            animation=True,
+            animation_output="gif",
+            return_fig=True,
+        )
+
+
+def test_show_context_reset():
+    """show context reset"""
+    ctx.reset(reset_fig=True)
+    with magpy.show_context(backend="matplotlib") as s:
+        assert s.fig is None
+        s.show(magpy.Sensor(), return_fig=True)
+    assert isinstance(s.fig, mplFig)
