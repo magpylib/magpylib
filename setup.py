@@ -80,6 +80,7 @@ setuptools.setup(
             "pandas",
             "pyvista",
             "ipygany",
+            "imageio",
         ]
     },
     classifiers=[
