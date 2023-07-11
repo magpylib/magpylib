@@ -216,6 +216,7 @@ def display_pyvista(
     subplot_specs=None,
     repeat=False,
     legend_max_items=20,
+    mp4_quality=5,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the pyvista library."""
@@ -236,11 +237,11 @@ def display_pyvista(
     jupyter_backend_2D_compatible = (
         jupyter_backend not in INCOMPATIBLE_JUPYTER_BACKENDS_2D
     )
-    warned2d = False
     count_with_labels = {}
+    charts_max_ind = 0
 
     def draw_frame(frame_ind):
-        nonlocal warned2d, count_with_labels
+        nonlocal count_with_labels, charts_max_ind
         frame = frames[frame_ind]
         for tr0 in frame["data"]:
             for tr1 in generic_trace_to_pyvista(tr0, jupyter_backend=jupyter_backend):
@@ -259,6 +260,7 @@ def display_pyvista(
                 else:
                     if jupyter_backend_2D_compatible:
                         if charts.get((row, col), None) is None:
+                            charts_max_ind += 1
                             charts[(row, col)] = pv.Chart2D()
                             canvas.add_chart(charts[(row, col)])
                         getattr(charts[(row, col)], typ)(**tr1)
@@ -280,12 +282,13 @@ def display_pyvista(
         try:
             canvas.remove_scalar_bar()
         except IndexError:
+            "try to remove scalar bar, if none, pass"
             pass
 
     def run_animation(filename, embed=False):
         # embed=True, embeds the animation into the notebook page and is necessary when using
         # temp files
-        nonlocal show_canvas
+        nonlocal show_canvas, charts_max_ind, charts
 
         suff = os.path.splitext(filename)[-1]
         if suff == ".gif":
@@ -293,7 +296,7 @@ def display_pyvista(
             canvas.open_gif(filename, loop=loop, fps=1000 / data["frame_duration"])
         elif suff == ".mp4":
             canvas.open_movie(
-                filename, framerate=1000 / data["frame_duration"], quality=5
+                filename, framerate=1000 / data["frame_duration"], quality=mp4_quality
             )
         else:
             raise ValueError(
@@ -303,6 +306,10 @@ def display_pyvista(
 
         for frame_ind, _ in enumerate(frames):
             canvas.clear_actors()
+            for ind in range(charts_max_ind):
+                canvas.remove_chart(ind)
+            charts_max_ind = 0
+            charts = {}
             draw_frame(frame_ind)
             canvas.write_frame()
         canvas.close()
