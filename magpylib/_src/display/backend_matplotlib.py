@@ -3,8 +3,9 @@
 # pylint: disable=too-many-statements
 # pylint: disable=import-outside-toplevel
 import os
+import matplotlib  # noreorder
 
-import matplotlib
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
