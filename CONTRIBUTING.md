@@ -10,15 +10,14 @@ When it comes to coding (this incudes new features, code cleanup, documentation 
 
 ## How to contribute with coding...
 
-1. Everyone has push-rights in the Magpylib repository. It is therefore not necessary to fork the repository, but you can clone it directly to your local machine.
-2. Once cloned, create new personal branch locally.
-3. Publish (=push) new branch to the Github Magpylib repository.
-4. Modify, add and fix things in your local new branch. Push your commits to Github.
-5. Rebase the new branch on a regular basis to avoid future merge conflicts.
-6. Make a draft pull request (PR) when your features are ready for first reviews and your code satisfies the **Code layout guide**. Explain your feature in the PR. Assign a Magpylib core team member for review. With the draft PR the pipeline tests will run automatically with every push you make to the branch.
-7. Discuss, review and improve your branch. When ready (features are there, pipeline tests are all green, everyone is happy) mark your PR as "ready for review". A Magpylib core team member will then review and merge. Write a note if you do not want your branch deleted.
+1. Fork the Magpylib repository to your GitHub account
+2. Edit your new repository (good practice: clone to local machine, edit, push changes).
+3. Rebase your new repository regularly to include upstream changes.
+4. Once your changes are complete (see **Coding guide** below), or you want some feedback, make a pull request (PR) targeting the Magpylib repository. Explain your feature in the PR. Add illustrative code examples. Reference the issue or discussion that you are addressing.
+5. Once a PR is created, our pipelines tests will automatically check your code. A Magpylib member will review your contributions and discuss your changes. Possible improvements will be requested.
+6. When satisfied, the reviewer will merge your PR and you become an official Magpylib contributor.
 
-## Code layout guide...
+## Coding guide...
 
 - all code is well documented and all top level doc strings abide the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
 - all unit tests are running. We recommend using the [pytest](https://docs.pytest.org/en/7.4.x/) package.
@@ -26,7 +25,7 @@ When it comes to coding (this incudes new features, code cleanup, documentation 
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and there are no formatting issues reportet (e.g. line-to-long).
 - your code is PEP8 compliant and formatted with [black](https://black.readthedocs.io/en/stable/) default settings.
 
-We strongly suggest that you install [pre-commit](https://pre-commit.com/) which will stop you from pushing your code when it has formatting problems.
+We strongly suggest that you install [pre-commit](https://pre-commit.com/) which will stop you from pushing your code with bad format.
 
 ## For your orientation
 
