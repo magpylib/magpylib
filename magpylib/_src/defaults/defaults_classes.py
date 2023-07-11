@@ -1,5 +1,3 @@
-from pathlib import Path
-
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import MagicProperties
