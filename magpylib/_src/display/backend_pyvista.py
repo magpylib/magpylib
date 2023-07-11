@@ -210,6 +210,7 @@ def display_pyvista(
     data,
     canvas=None,
     return_fig=False,
+    window_size=None,
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
@@ -229,7 +230,11 @@ def display_pyvista(
     if canvas is None:
         if not return_fig:
             show_canvas = True  # pragma: no cover
-        canvas = pv.Plotter(shape=(max_rows, max_cols), off_screen=animation)
+        canvas = pv.Plotter(
+            shape=(max_rows, max_cols),
+            off_screen=animation,
+            window_size=window_size,
+        )
 
     charts = {}
     if jupyter_backend is None:
