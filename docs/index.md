@@ -124,6 +124,24 @@ _pages/*
 ```
 
 ```{toctree}
+:caption: FUNCTIONALITY
+:glob: true
+:maxdepth: 2
+
+examples/examples_02_paths.md
+examples/examples_05_backend_canvas.md
+examples/examples_12_styles.md
+examples/examples_15_animation.md
+examples/examples_13_3d_models.md
+examples/examples_03_collections.md
+examples/examples_21_compound.md
+examples/examples_01_complex_forms.md
+examples/examples_06_triangle.md
+examples/examples_07_triangularmesh.md
+examples/examples_04_custom_source.md
+```
+
+```{toctree}
 :caption: LIBRARY DOCSTRINGS
 :glob: true
 :maxdepth: 1
