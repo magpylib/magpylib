@@ -289,9 +289,8 @@ def display_pyvista(
 
         suff = os.path.splitext(filename)[-1]
         if suff == ".gif":
-            canvas.open_gif(
-                filename, loop=int(repeat), fps=1000 / data["frame_duration"]
-            )
+            loop = 1 if repeat is False else 0 if repeat is True else int(repeat)
+            canvas.open_gif(filename, loop=loop, fps=1000 / data["frame_duration"])
         elif suff == ".mp4":
             canvas.open_movie(
                 filename, framerate=1000 / data["frame_duration"], quality=5
@@ -316,7 +315,6 @@ def display_pyvista(
         animation_output = data["input_kwargs"].get("animation_output", None)
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
-            print(animation_output)
             with tempfile.TemporaryFile() as temp:
                 run_animation(f"{temp.name}_animation.{animation_output}", embed=True)
         else:
