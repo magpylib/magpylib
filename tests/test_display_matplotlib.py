@@ -1,7 +1,9 @@
 import re
 from unittest.mock import patch
 
-import matplotlib
+import matplotlib  # noreorder
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
@@ -530,8 +532,8 @@ def test_bad_show_inputs():
 
 def test_show_context_reset():
     """show context reset"""
-    ctx.reset(reset_fig=True)
+    ctx.reset(reset_show_return_value=True)
     with magpy.show_context(backend="matplotlib") as s:
-        assert s.fig is None
+        assert s.show_return_value is None
         s.show(magpy.Sensor(), return_fig=True)
-    assert isinstance(s.fig, mplFig)
+    assert isinstance(s.show_return_value, mplFig)

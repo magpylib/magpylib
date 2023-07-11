@@ -2,10 +2,10 @@
 # pylint: disable=too-many-branches
 # pylint: disable=too-many-statements
 # pylint: disable=import-outside-toplevel
+# pylint: disable=wrong-import-position
 import os
-import matplotlib  # noreorder
 
-matplotlib.use("Agg")
+import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation

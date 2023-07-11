@@ -431,9 +431,9 @@ def show_context(
             {k: v for k, v in kwargs.items() if k not in ROW_COL_SPECIFIC_NAMES}
         )
         yield ctx
-        ctx.fig = _show(*ctx.objects, **ctx.kwargs)
+        ctx.show_return_value = _show(*ctx.objects, **ctx.kwargs)
     finally:
-        ctx.reset(reset_fig=False)
+        ctx.reset(reset_show_return_value=False)
 
 
 class DisplayContext:
@@ -446,16 +446,16 @@ class DisplayContext:
         self.objects = ()
         self.objects_from_ctx = ()
         self.kwargs = {}
-        self.fig = None
+        self.show_return_value = None
 
-    def reset(self, reset_fig=True):
+    def reset(self, reset_show_return_value=True):
         """Reset display context"""
         self.isrunning = False
         self.objects = ()
         self.objects_from_ctx = ()
         self.kwargs = {}
-        if reset_fig:
-            self.fig = None
+        if reset_show_return_value:
+            self.show_return_value = None
 
 
 ctx = DisplayContext()

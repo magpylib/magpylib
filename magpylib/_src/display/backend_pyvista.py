@@ -174,8 +174,11 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                     "size": marker_size,
                     "style": SYMBOLS_TO_PYVISTA.get(marker_symbol, "o"),
                 }
-                if not isinstance(marker_size, (list, tuple, np.ndarray)):
-                    marker_size = np.array([marker_size])
+                marker_size = (
+                    marker_size
+                    if isinstance(marker_size, (list, tuple, np.ndarray))
+                    else np.array([marker_size])
+                )
                 for size in np.unique(marker_size):
                     tr = trace_pv_marker.copy()
                     mask = marker_size == size
@@ -269,12 +272,11 @@ def display_pyvista(
                             charts[(row, col)] = pv.Chart2D()
                             canvas.add_chart(charts[(row, col)])
                         getattr(charts[(row, col)], typ)(**tr1)
-                    elif not warned2d:
+                    else:
                         warnings.warn(
                             f"The set `jupyter_backend={jupyter_backend}` is incompatible with "
                             "2D plots. Empty plots will be shown instead"
                         )
-                        warned2d = True
         for rowcol, count in count_with_labels.items():
             if 0 < count <= legend_max_items:
                 row, col = rowcol
@@ -302,11 +304,6 @@ def display_pyvista(
         elif suff == ".mp4":
             canvas.open_movie(
                 filename, framerate=1000 / data["frame_duration"], quality=mp4_quality
-            )
-        else:
-            raise ValueError(
-                "Animation filename must end with `'.gif'` or `'mp4'`, "
-                f"received {suff!r} instead"
             )
 
         for frame_ind, _ in enumerate(frames):

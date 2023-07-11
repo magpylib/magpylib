@@ -56,6 +56,7 @@ def test_extra_model3d():
 @pytest.mark.parametrize("filename", (True, False))
 def test_pyvista_animation(is_notebook_result, extension, filename):
     # define sensor and source
+    magpy.defaults.reset()
     sensor = magpy.Sensor(
         pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
     )
@@ -65,7 +66,7 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
     )
 
     # define paths
-    N = 4
+    N = 2
     sensor.position = np.linspace((0, 0, -3), (0, 0, 3), N)
     cyl1.position = (4, 0, 0)
     cyl1.rotate_from_angax(angle=np.linspace(0, 300, N), start=0, axis="z", anchor=0)
@@ -87,3 +88,21 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
                     mp4_quality=1,
                     return_fig=True,
                 )
+
+
+def test_incompatible_jupyter_backend_for2d():
+    """test_incompatible_pyvista_backend"""
+    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    sens = magpy.Sensor()
+    with pytest.warns(
+        UserWarning,
+        match=r"The set `jupyter_backend=ipygany` is incompatible with 2D plots.*",
+    ):
+        magpy.show(
+            src,
+            sens,
+            output="Bx",
+            return_fig=True,
+            backend="pyvista",
+            jupyter_backend="ipygany",
+        )
