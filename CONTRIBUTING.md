@@ -1,5 +1,7 @@
 # Contributing to Magpylib
 
+test1234
+
 The sucess of Magpylib relies on its user-friedliness. Your feedback and discussion participation is highly valuable. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in this very informal channel: **[Discussions](https://github.com/magpylib/magpylib/discussions)**
 
 We use GitHub Issues and Milestones to plan and track the Magpylib project. Open new **[Issues](https://github.com/magpylib/magpylib/issues)** to report a bug, to point out a problem, or to  make a feature request, e.g. following a fruitful discussion. Within the Issue we will together define in detail what should be done. For small bug fixes, code cleanups, and other small improvements its not necessary to create issues.
