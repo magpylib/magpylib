@@ -282,7 +282,7 @@ def display_pyvista(
         try:
             canvas.remove_scalar_bar()
         except IndexError:
-            "try to remove scalar bar, if none, pass"
+            # try to remove scalar bar, if none, pass
             pass
 
     def run_animation(filename, embed=False):
