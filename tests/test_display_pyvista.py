@@ -1,3 +1,7 @@
+import tempfile
+from unittest.mock import patch
+
+import numpy as np
 import pytest
 import pyvista as pv
 
@@ -45,3 +49,41 @@ def test_extra_model3d():
     coll.style.model3d.add_trace(trace_mesh3d)
 
     magpy.show(coll, return_fig=True, backend="pyvista")
+
+
+@pytest.mark.parametrize("is_notebook_result", (True, False))
+@pytest.mark.parametrize("extension", ("mp4", "gif"))
+@pytest.mark.parametrize("filename", (True, False))
+def test_pyvista_animation(is_notebook_result, extension, filename):
+    # define sensor and source
+    sensor = magpy.Sensor(
+        pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
+    )
+    sensor.style.label = "Sensor1"
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+
+    # define paths
+    N = 4
+    sensor.position = np.linspace((0, 0, -3), (0, 0, 3), N)
+    cyl1.position = (4, 0, 0)
+    cyl1.rotate_from_angax(angle=np.linspace(0, 300, N), start=0, axis="z", anchor=0)
+    cyl2 = cyl1.copy().move((0, 0, 5))
+    objs = cyl1, cyl2, sensor
+
+    with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
+        with patch("webbrowser.open"):
+            with tempfile.TemporaryFile() as temp:
+                animation_output = f"{temp.name}.{extension}" if filename else extension
+                magpy.show(
+                    dict(objects=objs, col=1, output=("Bx", "By", "Bz")),
+                    dict(objects=objs, col=2),
+                    backend="pyvista",
+                    style_path_numbering=True,
+                    animation=True,
+                    sumup=True,
+                    animation_output=animation_output,
+                    mp4_quality=1,
+                    return_fig=True,
+                )

@@ -1,4 +1,5 @@
 import re
+from unittest.mock import patch
 
 import matplotlib
 import matplotlib.pyplot as plt
@@ -28,7 +29,7 @@ def test_Cuboid_display():
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     src.show(style_path_frames=5, return_fig=True)
 
-    with plt.ion():
+    with patch("matplotlib.pyplot.show"):
         x = src.show(style_path_show=False, style_magnetization_mode="color+arrow")
     assert x is None  # only place where return_fig=False, for testcov
 
