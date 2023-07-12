@@ -8,6 +8,28 @@ import pyvista as pv
 import magpylib as magpy
 
 
+HAS_IMAGEIO = True
+try:
+    import imageio
+except ModuleNotFoundError:
+    HAS_IMAGEIO = False
+
+
+ffmpeg_failed = False
+try:
+    try:
+        import imageio_ffmpeg
+
+        imageio_ffmpeg.get_ffmpeg_exe()
+    except ImportError as err:
+        if HAS_IMAGEIO:
+            imageio.plugins.ffmpeg.download()
+        else:
+            raise err
+except:  # noqa: E722
+    ffmpeg_failed = True
+
+
 def test_Cuboid_display():
     "test simple display with path"
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
@@ -54,6 +76,8 @@ def test_extra_model3d():
 # @pytest.mark.parametrize("is_notebook_result", (True, False))
 @pytest.mark.parametrize("extension", ("mp4", "gif"))
 @pytest.mark.parametrize("filename", (True, False))
+@pytest.mark.skipif(ffmpeg_failed, reason="Requires imageio-ffmpeg")
+@pytest.mark.skipif(not HAS_IMAGEIO, reason="Requires imageio")
 def test_pyvista_animation(extension, filename):
     """Test pyvista animation"""
     # define sensor and source
