@@ -380,7 +380,7 @@ def open_animation(filepath, embed=False):
         elif filepath.endswith(".mp4"):
             from IPython.display import Video, display
 
-            display(Video(filename=filepath, embed=True))
+            display(Video(data=filepath, embed=True))
         else:  # pragma: no cover
             raise TypeError("Filetype not supported, only 'mp4 or 'gif' allowed")
     else:
