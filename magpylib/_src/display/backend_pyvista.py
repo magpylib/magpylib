@@ -292,7 +292,7 @@ def display_pyvista(
             # try to remove scalar bar, if none, pass
             pass
 
-    def run_animation(filename, embed=False):
+    def run_animation(filename, embed=True):
         # embed=True, embeds the animation into the notebook page and is necessary when using
         # temp files
         nonlocal show_canvas, charts_max_ind, charts
@@ -327,7 +327,7 @@ def display_pyvista(
             with tempfile.NamedTemporaryFile(suffix=f".{animation_output}") as temp:
                 run_animation(temp.name, embed=True)
         else:
-            run_animation(animation_output)
+            run_animation(animation_output, embed=True)
 
     if return_fig and not show_canvas:
         return canvas
