@@ -75,8 +75,8 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
 
     with patch("magpylib._src.utility.is_notebook", return_value=is_notebook_result):
         with patch("webbrowser.open"):
-            with tempfile.TemporaryFile() as temp:
-                animation_output = f"{temp.name}.{extension}" if filename else extension
+            with tempfile.NamedTemporaryFile(suffix=f".{extension}") as temp:
+                animation_output = temp.name if filename else extension
                 magpy.show(
                     dict(objects=objs, col=1, output=("Bx", "By", "Bz")),
                     dict(objects=objs, col=2),

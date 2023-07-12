@@ -324,8 +324,8 @@ def display_pyvista(
         animation_output = data["input_kwargs"].get("animation_output", None)
         animation_output = "gif" if animation_output is None else animation_output
         if animation_output in ("gif", "mp4"):
-            with tempfile.TemporaryFile() as temp:
-                run_animation(f"{temp.name}_animation.{animation_output}", embed=True)
+            with tempfile.NamedTemporaryFile(suffix=f".{animation_output}") as temp:
+                run_animation(temp.name, embed=True)
         else:
             run_animation(animation_output)
 
