@@ -585,8 +585,10 @@ def getB(
         `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
 
-    Other Parameters (Direct interface)
-    -----------------------------------
+    See Also
+    --------
+    *Direct-interface
+
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
         Source position(s) in the global coordinates in units of [mm].
 
@@ -747,15 +749,17 @@ def getH(
     pixel_agg: str, default=`None`
         Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observer inputs with different (pixel) shapes are allowed.
+        With this option, observers input with different (pixel) shapes is allowed.
 
     output: str, default='ndarray'
         Output type, which must be one of `('ndarray', 'dataframe')`. By default a
         `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
 
-    Other Parameters (Direct interface)
-    -----------------------------------
+    See Also
+    --------
+    *Direct-interface
+
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
         Source position(s) in the global coordinates in units of [mm].
 
