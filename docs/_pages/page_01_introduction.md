@@ -60,15 +60,13 @@ sensor.rotate_from_rotvec((0,0,225), degrees=True)
 cube.position = np.linspace((-3,0,0), (3,0,0), 50)
 loop.move(np.linspace((0,0,0), (0,0,6), 50), start=0)
 
-magpy.show(loop, cube, sensor, backend='plotly', animation=2, style_path_show=False)
+with magpy.show_context(backend='plotly', animation=2, style_path_show=False, layout_height=500):
+    magpy.show(loop, cube, sensor, output="model3d", col=1)
+    magpy.show(loop, cube, sensor, output=("Bx", "By", "Bz"), sumup=True, col=2)
 
-# 3. compute field at sensor (and plot with Matplotlib)
-B = sensor.getB(cube, loop, sumup=True)
-
-plt.plot(B, label=['Bx', 'By', 'Bz'])
-plt.legend()
-plt.grid(color='.8')
-plt.show()
+# 3. compute field at sensor
+B = sensor.getB(cube, loop, output="dataframe")
+B
 ```
 
 
@@ -389,14 +387,10 @@ plt.show()
 
 ```{code-cell} ipython3
 import numpy as np
-import plotly.graph_objects as go
 import magpylib as magpy
 
 # reset defaults set in previous example
 magpy.defaults.reset()
-
-# setup plotly figure and subplots
-fig = go.Figure().set_subplots(rows=1, cols=2, specs=[[{"type": "scene"}, {"type": "xy"}]])
 
 # define sensor and source
 sensor = magpy.Sensor(pixel=[(0,0,-.2), (0,0,.2)], style_size=1.5)
@@ -407,18 +401,10 @@ sensor.position = np.linspace((0,0,-3), (0,0,3), 40)
 magnet.position = (4,0,0)
 magnet.rotate_from_angax(angle=np.linspace(0, 300, 40)[1:], axis='z', anchor=0)
 
-# display system in 3D
-temp_fig = go.Figure()
-magpy.show(magnet, sensor, canvas=temp_fig, backend='plotly')
-fig.add_traces(temp_fig.data, rows=1, cols=1)
-
-# compute field and plot
-B = magpy.getB(magnet, sensor)
-for i,plab in enumerate(['pixel1', 'pixel2']):
-    for j,lab in enumerate(['_Bx', '_By', '_Bz']):
-        fig.add_trace(go.Scatter(x=np.arange(40), y=B[:,i,j], name=plab+lab))
-
-fig.show()
+# display system in 3D and field values along paths
+with magpy.show_context(magnet, sensor, backend='plotly'):
+    magpy.show(output="model3d", col=1)
+    magpy.show(output=("Bx", "By", "Bz"), pixel_agg=None, sumup=True, col=2)
 ```
 
 
@@ -636,7 +622,6 @@ While each of these features can be used individually, the combination of the tw
 
 ```{code-cell} ipython3
 import numpy as np
-import plotly.graph_objects as go
 import magpylib as magpy
 
 # define B/H field function for custom source
@@ -664,16 +649,11 @@ ts = ts + 0.75*np.sin(ts-np.pi/8)**2
 egg.position = [(t/3, 0, -0.2*np.sin(t)**2) for t in ts]
 egg.rotate_from_euler(ts, 'y', start=0, degrees=False)
 
-# add sensor and compute field on path
+# add sensor
 sensor = magpy.Sensor(position=(0,0,1.5), style_size=2)
-B = sensor.getB(egg)
 
 # animate path and plot field
-magpy.show(egg, sensor, backend='plotly', animation=True, style_path_show=False)
-
-fig = go.Figure()
-for i,lab in enumerate(['Bx', 'By', 'Bz']):
-    fig.add_trace(go.Scatter(x=ts/2*3, y=B[:,i], name=lab))
-fig.update_layout(title='Field at sensor', xaxis_title='animation time (s)')
-fig.show()
+with magpy.show_context(egg, sensor, backend='plotly', animation=True):
+    magpy.show(col=1, output="model3d", style_path_show=False)
+    magpy.show(col=2, output=("Bx", "By", "Bz"))
 ```

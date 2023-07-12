@@ -31,7 +31,7 @@ jobs:
           name: Specific dependencies for pyvista
           command: |
             apt update
-            apt-get install -y libgl1-mesa-dev xvfb
+            apt-get install -y libgl1-mesa-dev xvfb ffmpeg
       - run:
           name: Run pylint test
           command: pylint --rcfile='./.pylintrc' magpylib

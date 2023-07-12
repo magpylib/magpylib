@@ -3,7 +3,7 @@ from copy import deepcopy
 import pytest
 
 from magpylib._src.defaults.defaults_utility import color_validator
-from magpylib._src.defaults.defaults_utility import COLORS_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import COLORS_SHORT_TO_LONG
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.defaults.defaults_utility import magic_to_dict
@@ -109,7 +109,7 @@ def test_linearize_dict():
         ((0, 0, 0, 0), False, "#000000"),
         ((0.1, 0.2, 0.3), False, "#19334c"),
     ]
-    + [(shortC, True, longC) for shortC, longC in COLORS_MATPLOTLIB_TO_PLOTLY.items()],
+    + [(shortC, True, longC) for shortC, longC in COLORS_SHORT_TO_LONG.items()],
 )
 def test_good_colors(color, allow_None, color_expected):
     """test color validator based on matploblib validation"""
