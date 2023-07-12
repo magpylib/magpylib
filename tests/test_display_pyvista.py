@@ -73,15 +73,14 @@ def test_extra_model3d():
     magpy.show(coll, return_fig=True, backend="pyvista")
 
 
-# @pytest.mark.parametrize("is_notebook_result", (True, False))
+@pytest.mark.parametrize("is_notebook_result", (True, False))
 @pytest.mark.parametrize("extension", ("mp4", "gif"))
 @pytest.mark.parametrize("filename", (True, False))
 @pytest.mark.skipif(ffmpeg_failed, reason="Requires imageio-ffmpeg")
 @pytest.mark.skipif(not HAS_IMAGEIO, reason="Requires imageio")
-def test_pyvista_animation(extension, filename):
+def test_pyvista_animation(is_notebook_result, extension, filename):
     """Test pyvista animation"""
     # define sensor and source
-    is_notebook_result = True
     magpy.defaults.reset()
     sensor = magpy.Sensor(
         pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
