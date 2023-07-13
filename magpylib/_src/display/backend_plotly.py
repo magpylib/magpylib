@@ -263,12 +263,12 @@ def process_extra_trace(model):
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
         trace3d["color"] = trace3d.get("color", kwargs["color"])
-    else:  # need to match parameters to the constructor
-        # the color parameter is added by default  int the `traces_generic` module but is not
-        # compatible with some traces (e.g. `go.Surface`)
-        trace3d = {
-            k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
-        }
+    # need to match parameters to the constructor
+    # the color parameter is added by default  int the `traces_generic` module but is not
+    # compatible with some traces (e.g. `go.Surface`)
+    trace3d = {
+        k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
+    }
     trace3d.update(
         linearize_dict(
             place_and_orient_model3d(
