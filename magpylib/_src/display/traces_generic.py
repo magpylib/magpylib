@@ -299,7 +299,7 @@ def make_mesh_lines(
                 "name": f"{label} - {mode}-edges",
             }
             traces.append(trace)
-        out = {**merge_traces(*traces), **kwargs}
+        out = {**merge_traces(*traces)[0], **kwargs}
     return out
 
 
@@ -1108,18 +1108,17 @@ def get_generic_traces(
                     }
                     path_traces_extra_specific_backend.append(trace3d)
 
-    trace = merge_traces(*path_traces)
+    merged_traces = merge_traces(*path_traces)
+    trace = merged_traces[0] if merged_traces else []
     if trace:
         all_generic_traces.append(trace)
-
     for traces_extra in path_traces_extra_generic_by_type.values():
-        extra_model3d_trace = merge_traces(*traces_extra)
-        all_generic_traces.append(extra_model3d_trace)
+        all_generic_traces.extend(group_traces(*traces_extra))
 
     if disconnected_traces:
         nsubsets = len(input_obj.get_faces_subsets())
         for ind in range(nsubsets):
-            trace = merge_traces(*disconnected_traces[ind::nsubsets])
+            trace = merge_traces(*disconnected_traces[ind::nsubsets])[0]
             trace["legendgroup"] = f"{legendgroup} - part_{ind+1:02d}"
             lg = trace.get("name", "") if legendtext is None else legendtext
             trace["name"] = f"{lg} - part_{ind+1:02d}"
