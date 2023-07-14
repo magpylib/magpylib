@@ -1,4 +1,4 @@
-# Contributing to Magpylib
+# Contributing
 
 The sucess of Magpylib relies on its user-friedliness. Your feedback and discussion participation is highly valuable. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in this very informal channel: **[Discussions](https://github.com/magpylib/magpylib/discussions)**
 
@@ -25,13 +25,13 @@ When it comes to coding (this incudes new features, code cleanup, documentation 
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and there are no formatting issues reportet (e.g. line-to-long).
 - your code is PEP8 compliant and formatted with [black](https://black.readthedocs.io/en/stable/) default settings.
 
-We strongly suggest that you install [pre-commit](https://pre-commit.com/) which will stop you from pushing your code with bad format.
+We strongly suggest that you use the Magpylib [pre-commit](https://pre-commit.com/) hooks that apply important code checks.
 
 ## For your orientation
 
 the Magpylib repository is structured as follows:
 
 - **magpylib**: contains the actual package.
-- **docs**: containts the documentation that is displayed on [Read the Docs](https://readthedocs.org/) using [Sphinx](https://www.sphinx-doc.org/en/master/). We use [Markdown](https://daringfireball.net/projects/markdown/) for the documentation.
+- **docs**: containts the documentation that is displayed on [Read the Docs](https://readthedocs.org/) using [Sphinx](https://www.sphinx-doc.org/en/master/).
 - **tests**: contains the unit tests
 - All other top level files are configuration files

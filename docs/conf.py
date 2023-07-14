@@ -89,7 +89,14 @@ extensions = [
     "myst_nb",
     "sphinx_thebe",
     "sphinx_favicon",
+    "sphinx_design",
+    "sphinx_gallery.gen_gallery",
 ]
+
+sphinx_gallery_conf = {
+    "examples_dirs": "../examples",  # path to your example scripts
+    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
+}
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
@@ -97,7 +104,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -261,7 +268,10 @@ epub_exclude_files = ["search.html"]
 
 # -- Markdown enable
 
-source_suffix = [".rst", ".md"]
+# source_suffix = [".rst", ".md"]
+# source_parsers = {
+#     '.md': 'recommonmark.parser.CommonMarkParser',
+# }
 
 # html_js_files = [
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"

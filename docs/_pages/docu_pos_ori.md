@@ -11,9 +11,98 @@ kernelspec:
   name: python3
 ---
 
-(examples-paths)=
+# Position, Orientation, Paths
 
-# Paths
+(intro-position-and-orientation)=
+
+## Position and orientation
+
+All Magpylib objects have the `position` and `orientation` attributes that refer to position and orientation in the global Cartesian coordinate system. The `position` attribute is a numpy ndarray, shape (3,) or (m,3) and corresponds to the coordinates $(x,y,z)$ in units of mm. By default every object is created in the origin of the global coordinate system, at `position=(0,0,0)`. The `orientation` attribute is a scipy [Rotation object](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html) and corresponds to the object orientation relative to its initial state. By default objects are created with initial orientation, `orientation=None`, which is the unit rotation. The initial orientation of every object, e.g. current loop lies in the x-y plane, is described in the respective class docstrings.
+
+```python
+import magpylib as magpy
+
+# init object with default values
+sensor = magpy.Sensor()
+print(sensor.position)                                     # out: [0. 0. 0.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
+```
+
+Set absolute object position and orientation attributes at object initialization or directly through the properties.
+
+```python
+import magpylib as magpy
+from scipy.spatial.transform import Rotation as R
+
+# set attributes at initialization
+sensor = magpy.Sensor(position=(1,1,1))
+print(sensor.position)                                     # out: [1. 1. 1.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [0. 0. 0.]
+
+# set properties directly
+sensor.orientation = R.from_rotvec((0,0,45), degrees=True)
+print(sensor.position)                                     # out: [1. 1. 1.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 45.]
+```
+
+The `move` and `rotate` methods are powerful tools to change the relative position and orientation of an existing object. **Move** the object by a `displacement` vector. **Rotate** an object by specifying the angle of rotation `angle` (scalar), an axis of rotation `axis` (vector or `'x'`, `'y'`, `'z'`) and an anchor point `anchor` (vector) through which the rotation axis passes through. By default `anchor=self.position`, meaning that the object rotates about itself.
+
+```python
+import magpylib as magpy
+
+# init object with default values
+sensor = magpy.Sensor()
+
+# move
+sensor.move(displacement=(1,1,3))
+print(sensor.position)                                     # out: [1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0.  0.]
+
+# rotate about self
+sensor.rotate_from_angax(angle=45, axis='z')
+print(sensor.position)                                     # out: [1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 45.]
+
+# rotate with anchor
+sensor.rotate_from_angax(angle=90, axis='z', anchor=(0,0,0))
+print(sensor.position)                                     # out: [-1. 1. 3.]
+print(sensor.orientation.as_euler('xyz', degrees=True))    # out: [ 0.  0. 135.]
+```
+
+
+(intro-paths)=
+
+## Paths
+
+The attributes `position` and `orientation` can be either of **"scalar"** nature, i.e. a single position or a single rotation like in the examples above, or **"vectors"** when they are arrays of such scalars. The two attributes together define an object **"path"**. Paths should always be used when modeling object motion as the magnetic field is computed on the whole path with increased performance.
+
+With vector inputs, the `move` and `rotate` methods provide *append* and *merge* functionality.  The following example shows how a path `path1` is assigned to a magnet object, how `path2` is appended with `move` and how `path3` is merged on top starting at path index 25.
+
+```{code-cell} ipython3
+import numpy as np
+from magpylib.magnet import Cylinder
+
+magnet = Cylinder(magnetization=(100,0,0), dimension=(2,2))
+
+# assign path
+path1 = np.linspace((0,0,0), (0,0,5), 20)
+magnet.position = path1
+
+# append path
+path2 = np.linspace((0,0,0), (0,10,0), 40)
+magnet.move(path2[1:])
+
+# merge path
+path3 = np.linspace(0, 360, 20)
+magnet.rotate_from_angax(angle=path3, axis='z', anchor=0, start=25)
+
+magnet.show(backend='plotly')
+```
+
+
+Notice that when one of the `position` and `orientation` attributes are modified in length, the other is automatically adjusted to the same length. A detailed outline of the functionality of `position`, `orientation`, `move`, `rotate` and paths is given in examples `examples-paths`.
+
+# paths
 
 Magpylib objects all have `position` and `orientation` attributes in the global reference frame. These attributes can be single instances describing a single position and a single orientation of an object, but they can also be vectors of positions and orientations. In this case the attributes represent multiple object locations and orientaions and are referred to as a **path**. When the field of an object is computed, it is automatically computed for the whole path. The reason is that computation is much more efficient when all instances are computed in a single operation. The introduction to `position` and `orientation` attributes and path can be found in {ref}`intro-position-and-orientation`. Here we show how to work with paths properly.
 

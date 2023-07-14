@@ -76,7 +76,7 @@ setuptools.setup(
             "pylint",
             "jupyterlab>=3.2",
             "jupyterlab_myst",
-            "sphinx==4.4.0",
+            "sphinx==5.3.0",
             "pandas",
             "pyvista",
             "ipygany",

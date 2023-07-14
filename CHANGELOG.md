@@ -1,7 +1,7 @@
 All notable changes to magpylib are documented here.
 
 
-# Releases
+# Changelog
 
 ## [4.3.x] 
 - include self-intersection check in `TriangularMesh` ([#589](https://github.com/magpylib/magpylib/issues/589)).
