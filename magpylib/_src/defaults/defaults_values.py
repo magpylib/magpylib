@@ -9,6 +9,7 @@ DEFAULTS = {
             "maxframes": 200,
             "time": 5,
             "slider": True,
+            "output": None,
         },
         "backend": "auto",
         "colorsequence": (

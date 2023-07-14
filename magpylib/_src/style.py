@@ -4,12 +4,12 @@
 # pylint: disable=cyclic-import
 import numpy as np
 
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 
@@ -1536,9 +1536,9 @@ class Pixel(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
@@ -1714,9 +1714,9 @@ class Marker(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
@@ -1951,9 +1951,9 @@ class Line(MagicProperties):
 
     @style.setter
     def style(self, val):
-        assert val is None or val in LINESTYLES_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_LINESTYLES, (
             f"The `style` property of {type(self).__name__} must be one of "
-            f"{list(LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_LINESTYLES},\n"
             f"but received {repr(val)} instead."
         )
         self._style = val

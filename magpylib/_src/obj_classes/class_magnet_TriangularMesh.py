@@ -73,6 +73,10 @@ class TriangularMesh(BaseMagnet):
         If `True`, check if mesh is self-intersecting.
         Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
+    check_selfintersecting: bool, optional
+        If `True`, the provided set of facets is validated by checking if the body is not
+        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 

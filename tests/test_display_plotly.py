@@ -286,3 +286,37 @@ def test_bad_animation_value():
 
     with pytest.raises(MagpylibBadUserInput):
         src.show(canvas=fig, animation=-1)
+
+
+def test_subplots():
+    """test subplots"""
+    sensors = magpy.Collection(
+        [
+            magpy.Sensor(
+                pixel=np.linspace((x, 0, -0.2), (x, 0, 0.2), 2), style_label=str(x)
+            )
+            for x in np.linspace(0, 10, 11)
+        ]
+    )
+    cyl1 = magpy.magnet.Cylinder(magnetization=(100, 0, 0), dimension=(1, 2))
+
+    # define paths
+    sensors.position = np.linspace((0, 0, -3), (0, 0, 3), 100)
+    cyl1.position = (4, 0, 0)
+    cyl1.rotate_from_angax(angle=np.linspace(0, 300, 100), start=0, axis="z", anchor=0)
+    objs = cyl1, sensors
+
+    # with implicit axes
+    fig = go.Figure()
+    with magpy.show_context(
+        backend="plotly", canvas=fig, animation=False, sumup=False, pixel_agg="mean"
+    ) as s:
+        s.show(
+            *objs, col=1, output="B", style_path_frames=10, sumup=False, pixel_agg=None
+        )
+
+    # bad output value
+    with pytest.raises(
+        ValueError, match=r"The `output` parameter must start with 'B' or 'H'.*"
+    ):
+        magpy.show(*objs, canvas=fig, output="bad_output")

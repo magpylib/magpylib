@@ -251,20 +251,22 @@ class BaseTransform:
         """Move object by the displacement input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -354,20 +356,22 @@ class BaseTransform:
         """Rotate object about a given anchor.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -435,20 +439,22 @@ class BaseTransform:
         """Rotates object using angle-axis input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -537,20 +543,22 @@ class BaseTransform:
         """Rotates object using rotation vector input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -618,20 +626,22 @@ class BaseTransform:
         """Rotates object using Euler angle input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -704,20 +714,22 @@ class BaseTransform:
         """Rotates object using matrix input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
 
         Parameters
@@ -767,20 +779,22 @@ class BaseTransform:
         """Rotates object using Modified Rodrigues Parameters (MRPs) input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
@@ -830,20 +844,22 @@ class BaseTransform:
         """Rotates object using quaternion input.
 
         Terminology for move/rotate methods:
-        - 'path' refers to `position` and `orientation` of an object.
+
+        - `path` refers to `position` and `orientation` of an object.
         - When an input is just a single operation (e.g. one displacement vector or one angle)
-        we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
-        it as 'vector input'.
+          we call it 'scalar input'. When it is an array_like of multiple scalars, we refer to
+          it as 'vector input'.
 
         General move/rotate behavior:
+
         - Scalar input is applied to the whole object path, starting with path index `start`.
         - Vector input of length n applies the individual n operations to n object path
-        entries, starting with path index `start`.
+          entries, starting with path index `start`.
         - When an input extends beyond the object path, the object path will be padded by its
-        edge-entries before the operation is applied.
+          edge-entries before the operation is applied.
         - By default (`start='auto'`) the index is set to `start=0` for scalar input [=move
-        whole object path], and to `start=len(object path)` for vector input [=append to
-        existing object path].
+          whole object path], and to `start=len(object path)` for vector input [=append to
+          existing object path].
 
         Parameters
         ----------
