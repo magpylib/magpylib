@@ -23,15 +23,14 @@ Example 1
 
 some information 1 appears onmouse over
 
-.. GENERATED FROM PYTHON SOURCE LINES 7-14
+.. GENERATED FROM PYTHON SOURCE LINES 7-13
 
 .. code-block:: default
 
-
-    import numpy as np
     import matplotlib.pyplot as plt
+    import numpy as np
 
-    xs = np.linspace(0,10,100)
+    xs = np.linspace(0, 10, 100)
     plt.plot(xs, np.sin(xs))
     plt.show()
 
