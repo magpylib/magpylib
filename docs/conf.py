@@ -15,6 +15,8 @@
 import os
 import sys
 
+import sphinxgallery
+
 # This is for pyvista
 os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
 os.environ["DISPLAY"] = ":99"
