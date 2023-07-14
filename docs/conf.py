@@ -15,8 +15,6 @@
 import os
 import sys
 
-import sphinxgallery
-
 # This is for pyvista
 os.system("/usr/bin/Xvfb :99 -screen 0 1024x768x24 > /dev/null 2>&1 &")
 os.environ["DISPLAY"] = ":99"
@@ -179,6 +177,7 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+# html_css_files = ['css/stylesheet.css']
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.

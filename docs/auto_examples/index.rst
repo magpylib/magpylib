@@ -15,35 +15,35 @@ blablabla
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="some information 1 appears onmouse over">
+    <div class="sphx-glr-thumbcontainer" tooltip="some information 2 appears onmouse over">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_example1_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_example2_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_example1.py`
+  :ref:`sphx_glr_auto_examples_plot_example2.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Example 1</div>
+      <div class="sphx-glr-thumbnail-title">Example 2</div>
     </div>
 
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="some information 2 appears onmouse over">
+    <div class="sphx-glr-thumbcontainer" tooltip="Plot the magnetic field lines with matplotlib streamline">
 
 .. only:: html
 
-  .. image:: /auto_examples/images/thumb/sphx_glr_example2_thumb.png
+  .. image:: /auto_examples/images/thumb/sphx_glr_plot_field_streamline_thumb.png
     :alt:
 
-  :ref:`sphx_glr_auto_examples_example2.py`
+  :ref:`sphx_glr_auto_examples_plot_field_streamline.py`
 
 .. raw:: html
 
-      <div class="sphx-glr-thumbnail-title">Example 2</div>
+      <div class="sphx-glr-thumbnail-title">Streamline field</div>
     </div>
 
 
@@ -55,8 +55,8 @@ blablabla
 .. toctree::
    :hidden:
 
-   /auto_examples/example1
-   /auto_examples/example2
+   /auto_examples/plot_example2
+   /auto_examples/plot_field_streamline
 
 
 .. only:: html
