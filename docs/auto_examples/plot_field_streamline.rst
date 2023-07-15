@@ -23,35 +23,44 @@ Streamline field
 
 Plot the magnetic field lines with matplotlib streamline
 
-.. GENERATED FROM PYTHON SOURCE LINES 9-10
+.. GENERATED FROM PYTHON SOURCE LINES 8-9
 
 In this example we show the B-field of a cuboid magnet in the symmetry plane using
 
-.. GENERATED FROM PYTHON SOURCE LINES 10-34
+.. GENERATED FROM PYTHON SOURCE LINES 9-42
 
 .. code-block:: default
 
 
-    import numpy as np
     import matplotlib.pyplot as plt
+    import numpy as np
+
     import magpylib as magpy
 
     fig, ax = plt.subplots()
 
     # create an observer grid in the xz-symmetry plane
     ts = np.linspace(-3, 3, 30)
-    grid = np.array([[(x,0,z) for x in ts] for z in ts])
+    grid = np.array([[(x, 0, z) for x in ts] for z in ts])
 
     # compute B-field of a cuboid magnet on the grid
-    cube = magpy.magnet.Cuboid(magnetization=(500,0,500), dimension=(2,2,2))
+    cube = magpy.magnet.Cuboid(magnetization=(500, 0, 500), dimension=(2, 2, 2))
     B = cube.getB(grid)
 
     # display field with Pyplot
-    ax.streamplot(grid[:,:,0], grid[:,:,2], B[:,:,0], B[:,:,2], density=2,
-        color=np.log(np.linalg.norm(B, axis=2)), linewidth=1, cmap='autumn')
+    ax.streamplot(
+        grid[:, :, 0],
+        grid[:, :, 2],
+        B[:, :, 0],
+        B[:, :, 2],
+        density=2,
+        color=np.log(np.linalg.norm(B, axis=2)),
+        linewidth=1,
+        cmap="autumn",
+    )
 
     # outline magnet boundary
-    ax.plot([1,1,-1,-1,1], [1,-1,-1,1,1], 'k--')
+    ax.plot([1, 1, -1, -1, 1], [1, -1, -1, 1, 1], "k--")
 
     plt.tight_layout()
     plt.show()
@@ -70,7 +79,7 @@ In this example we show the B-field of a cuboid magnet in the symmetry plane usi
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** ( 0 minutes  0.846 seconds)
+   **Total running time of the script:** ( 0 minutes  0.843 seconds)
 
 
 .. _sphx_glr_download_auto_examples_plot_field_streamline.py:
