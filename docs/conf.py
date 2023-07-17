@@ -321,6 +321,10 @@ sphinx_gallery_conf = {
     "image_scrapers": ("pyvista", "matplotlib"),
 }
 
+import pyvista
+
+pyvista.BUILDING_GALLERY = True
+
 # sphinx_gallery_conf = {
 #     # directory where function granular galleries are stored
 #     # "backreferences_dir": None,

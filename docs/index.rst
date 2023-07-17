@@ -18,7 +18,7 @@ Magpylib |release| documentation
     .. grid-item::
       .. image:: _static/images/index_icon1.png
         :height: 100
-        :target: auto_examples/plot_field_streamline.html
+        :target: auto_examples/plot_field_mpl_streamplot.html
     .. grid-item::
       .. image:: _static/images/index_icon2.png
         :height: 100
@@ -26,7 +26,7 @@ Magpylib |release| documentation
     .. grid-item::
       .. image:: _static/images/index_icon3.png
         :height: 100
-        :target: https://stackoverflow.com/questions/14087784/linked-image-in-restructuredtext
+        :target: auto_examples/plot_field_pv_streamlines.html
     .. grid-item::
       .. image:: _static/images/index_icon4.png
         :height: 100
