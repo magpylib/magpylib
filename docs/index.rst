@@ -16,7 +16,7 @@ Magpylib |release| documentation
 .. grid:: 1 1 6 6
 
     .. grid-item::
-      .. image:: _static/images/sphx_glr_plot_field_streamline_001.png
+      .. image:: _static/images/index_icon1.png
         :height: 100
         :target: auto_examples/plot_field_streamline.html
     .. grid-item::
