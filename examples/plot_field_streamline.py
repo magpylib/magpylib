@@ -2,10 +2,14 @@
 Streamline field
 ================
 
-Plot the magnetic field lines with matplotlib streamline
+Display the magnetic field with Matplotlib streamplot
 """
 # %%
-# In this example we show the B-field of a cuboid magnet in the symmetry plane using
+# In this example we show the B-field of a cuboid magnet using streamlines.
+# Streamlines are not magnetic field lines in the sense that the fiel amplitude cannot be derived from their density.
+# However, matplotlib streamlines can show the field amplitude via color and line thickness.
+# One must be carefult that streamlines can only display two components of the field. In the examples below the third
+# component is always zero.
 import matplotlib.pyplot as plt
 import numpy as np
 
@@ -14,27 +18,35 @@ import magpylib as magpy
 fig, ax = plt.subplots()
 
 # create an observer grid in the xz-symmetry plane
-ts = np.linspace(-3, 3, 30)
-grid = np.array([[(x, 0, z) for x in ts] for z in ts])
+X, Z = np.mgrid[-5:5:40j, -5:5:40j].transpose((0, 2, 1))
+grid = np.stack([X, np.zeros((40, 40)), Z], axis=2)
 
 # compute B-field of a cuboid magnet on the grid
 cube = magpy.magnet.Cuboid(magnetization=(500, 0, 500), dimension=(2, 2, 2))
 B = cube.getB(grid)
+Bamp = np.linalg.norm(B, axis=2)
+log_Bamp = np.log(np.linalg.norm(B, axis=2))
 
 # display field with Pyplot
-ax.streamplot(
-    grid[:, :, 0],
-    grid[:, :, 2],
+splt = ax.streamplot(
+    X,
+    Z,
     B[:, :, 0],
     B[:, :, 2],
-    density=2,
-    color=np.log(np.linalg.norm(B, axis=2)),
-    linewidth=1,
+    color=log_Bamp,
+    density=1,
+    linewidth=log_Bamp,
     cmap="autumn",
 )
 
 # outline magnet boundary
-ax.plot([1, 1, -1, -1, 1], [1, -1, -1, 1, 1], "k--")
+ax.plot([1, 1, -1, -1, 1], [1, -1, -1, 1, 1], "k--", lw=2)
+
+ax.set(
+    xlabel="x-position (mm)",
+    ylabel="z-position (mm)",
+)
+fig.colorbar(splt.lines, ax=ax, label="ln|B| (mT)")
 
 plt.tight_layout()
 plt.show()

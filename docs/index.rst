@@ -7,17 +7,18 @@ Magpylib |release| documentation
 ##################################
 
 
-* Magpylib is a Python package for calculating 3D static magnetic fields of magnets, currents and other sources.
+* Magpylib is a Python package for calculating static magnetic fields of magnets, currents and other sources.
 * The computation is based on vectorized explicit expressions and is extremely fast.
-* With Magpylib, sources (magnets, currents, ...) and observers (sensors, position grids, ...) are created as Python objects with position and orientation properties.
-* These objects can be moved around, grouped, displayed graphically, and the field is computed in the reference frame of the observers.
+* In Magpylib, sources (magnets, currents, ...) and observers (sensors, position grids, ...) are created as Python objects with position and orientation attributes.
+* These objects can then be moved around, grouped, and displayed graphically.
+* Finally, the magnetic field is computed in the reference frame of the observers.
 
 .. grid:: 1 1 6 6
 
     .. grid-item::
-      .. image:: _static/images/index_icon1.png
+      .. image:: _static/images/sphx_glr_plot_field_streamline_001.png
         :height: 100
-        :target: https://stackoverflow.com/questions/14087784/linked-image-in-restructuredtext
+        :target: auto_examples/plot_field_streamline.html
     .. grid-item::
       .. image:: _static/images/index_icon2.png
         :height: 100
@@ -39,14 +40,10 @@ Magpylib |release| documentation
         :height: 100
         :target: https://stackoverflow.com/questions/14087784/linked-image-in-restructuredtext
 
-`TEMP LINK TO GALLERY`_
-
-.. _TEMP LINK TO GALLERY: auto_examples/index.html
-
 ***************************
 When can you use Magpylib ?
 ***************************
-The analytical solutions are exact when there is no material response and natural boundary conditions can be assumed. In general, Magpylib is at its best when dealing with air-coils (no eddy currents) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts 1-5 % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not automatically included at this point. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the :ref:`physComp` section.
+The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the :ref:`physComp` section.
 
 *****************************
 Installation and Dependencies
@@ -79,11 +76,11 @@ Magpylib supports *Python3.8+* and relies on common scientific computation libra
 Ressources
 **********
 
-* The project is hosted and organized on `GitHub`_.
-* We welcome your contribution ! Please follow the :ref:`contributing`.
-* Always abide by the :ref:`code_of_conduct`.
-* A `Youtube video`_ introdution to Magpylib v4.0.0 within the `GSC network`_.
-* An `open-access paper`_ describing version 2 with basic concepts still intact in later versions.
+* The Magpylib project is hosted and organized on `GitHub`_.
+* We welcome your contribution ! Please follow the guide for :ref:`contributing`.
+* Always abide by our :ref:`code_of_conduct`.
+* There is a `Youtube video`_ introduction to Magpylib v4.0.0 presented within the `GSC network`_.
+* An `open-access paper`_ describes version 2 where fundamental concepts are still intact in later versions.
 
 .. _GitHub: https://github.com/magpylib/magpylib
 .. _Youtube video: https://www.youtube.com/watch?v=LeUx6cM1vcs
@@ -156,7 +153,7 @@ Here is an example how to use Magpylib.
 Other important features include
 
 * **Collections**: Group multiple objects for common manipulation
-* **Complex shapes**: Create magnets with arbitrary shapes
+* **Complex magnet shapes**: Create magnets with arbitrary shapes
 * **Graphics**: Styling options, graphic backends, animations, and 3D models
 * **CustomSource**: Integrate your own field implementation
 * **Direct interface**: Bypass the object oriented interface (max speed)

@@ -2,6 +2,7 @@
     text-align: center
 }
 
+/* disable download note at beginning of sphinx gallery examples */
 div.sphx-glr-download-link-note {
     height: 0px;
     visibility: hidden;
