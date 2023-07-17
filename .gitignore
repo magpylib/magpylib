@@ -29,6 +29,9 @@ share/python-wheels/
 *.egg
 MANIFEST
 
+# sphinx-gallery
+auto_examples
+
 # coderunner
 tempCodeRunnerFile.py
 
