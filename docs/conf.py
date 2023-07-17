@@ -93,11 +93,6 @@ extensions = [
     "sphinx_gallery.gen_gallery",
 ]
 
-sphinx_gallery_conf = {
-    "examples_dirs": "../examples",  # path to your example scripts
-    "gallery_dirs": "auto_examples",  # path to where to save gallery generated output
-}
-
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ["_templates"]
 
@@ -307,3 +302,31 @@ favicons = [
     "images/favicons/favicon-32x32.png",
     "images/favicons/icon.ico",
 ]
+
+sphinx_gallery_conf = {
+    # convert rst to md for ipynb
+    # "pypandoc": True,
+    # path to your example scripts
+    "examples_dirs": "../examples",
+    # path to where to save gallery generated output
+    "gallery_dirs": "auto_examples",
+    # Remove the "Download all examples" button from the top level gallery
+    "download_all_examples": False,
+    # # Remove sphinx configuration comments from code blocks
+    # "remove_config_comments": True,
+    # # Sort gallery example by file name instead of number of lines (default)
+    # "within_subsection_order": FileNameSortKey,
+    # Modules for which function level galleries are created.  In
+    "doc_module": "pyvista",
+    "image_scrapers": ("pyvista", "matplotlib"),
+}
+
+# sphinx_gallery_conf = {
+#     # directory where function granular galleries are stored
+#     # "backreferences_dir": None,
+#     #"first_notebook_cell": (
+#     #    "%matplotlib inline\n" "from pyvista import set_plot_theme\n" "set_plot_theme('document')\n"
+#     #),
+#     #"reset_modules": (reset_pyvista,),
+#     #"reset_modules_order": "both",
+# }
