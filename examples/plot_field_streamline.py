@@ -1,8 +1,8 @@
 """
-Streamline field
-================
+Magnetic field with streamlines
+===============================
 
-Display the magnetic field with Matplotlib streamplot
+Display the magnetic field of a cuboid magnet with Matplotlib streamplot
 """
 # %%
 # In this example we show the B-field of a cuboid magnet using streamlines.
