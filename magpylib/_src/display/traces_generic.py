@@ -962,7 +962,9 @@ def get_generic_traces(
     # parse kwargs into style and non style args
 
     is_mag_arrows = False
-    is_mag = hasattr(input_obj, "magnetization")
+    is_mag = hasattr(input_obj, "magnetization") and hasattr(
+        input_obj.style, "magnetization"
+    )
     if is_mag and style.magnetization.show:
         mag = style.magnetization
         if mag.mode == "auto":
