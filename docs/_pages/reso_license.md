@@ -12,7 +12,7 @@ Magpylib is published under the open source [FreeBSD](https://www.freebsd.org/co
 
 ## License Text
 
-```{include} ../LICENSE
+```{include} ../../LICENSE
 :relative-docs: docs/
 :relative-images:
 ```

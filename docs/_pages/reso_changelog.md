@@ -1,6 +1,6 @@
 (changelog)=
 
-```{include} ../CHANGELOG.md
+```{include} ../../CHANGELOG.md
 :relative-docs: docs/
 :relative-images:
 ```
