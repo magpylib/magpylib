@@ -15,6 +15,9 @@ kernelspec:
 
 # Physics and Computation
 
+## When can you use Magpylib ?
+The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the :ref:`physComp` section.
+
 ## The analytical solutions
 
 **Permanent Magnets**

@@ -6,19 +6,34 @@
 * These objects can then be moved around, grouped, and displayed graphically.
 * Finally, the magnetic field is computed in the reference frame of the observers.
 
-## When can you use Magpylib ?
-The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the :ref:`physComp` section.
+::::{grid} 5
+:gutter: 1
+
+:::{grid-item}
+[<img src="_static/images/gallery_icon_mpl_streamplot.png"
+     alt="link to gallery"
+     style="height: 100;" />](_pages/gallery/gallery_mpl_streamplot.md)
+:::
+
+:::{grid-item}
+[<img src="_static/images/gallery_icon_pv_streamlines.png"
+     alt="link to gallery"
+     style="height: 100;" />](_pages/gallery/gallery_pv_streamlines.md)
+:::
+
+::::
+
 
 ## Ressources
 
 * The Magpylib project is hosted and organized on [GitHub](https://github.com/magpylib/magpylib).
 * We welcome your contribution ! Please follow the guide for {ref}`contributing`.
-* Always abide by our :ref:`code_of_conduct`.
+* Always abide by our {ref}`code_of_conduct`.
 * There is a [Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs) introduction to Magpylib v4.0.0 presented within the [GSC network](https://www.internationalcollaboration.org/).
 * An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) describes version 2 where fundamental concepts are still intact in later versions.
 
 
-## Quickstart
+## Installation and Dependencies
 
 ::::{grid} 2
 :::{grid-item-card} Install with pip:
@@ -34,6 +49,10 @@ conda install -c conda-forge magpylib
 ```
 :::
 ::::
+
+Magpylib supports *Python3.8+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
+
+## Quickstart
 
 ```python
 import magpylib as magpy
@@ -100,7 +119,23 @@ Other important features include
 * **CustomSource**: Integrate your own field implementation
 * **Direct interface**: Bypass the object oriented interface (max speed)
 
-## Content
+## How can I cite this library ?
+
+We would be happy if you give us credit for our efforts. A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
+
+```latex
+@article{ortner2020magpylib,
+  title={Magpylib: A free Python package for magnetic field computation},
+  author={Ortner, Michael and Bandeira, Lucas Gabriel Coliado},
+  journal={SoftwareX},
+  volume={11},
+  pages={100466},
+  year={2020},
+  publisher={Elsevier}
+}
+```
+
+## Table of Contents
 
 ```{toctree}
 :maxdepth: 2
@@ -116,7 +151,7 @@ _pages/docu_graphic_styles.md
 :maxdepth: 2
 :caption: RESSOURCES
 
-auto_examples/index.rst
+_pages/gallery/gallery_index.md
 _pages/reso_physics.md
 _pages/reso_changelog.md
 _pages/reso_contributing.md
