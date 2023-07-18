@@ -184,7 +184,7 @@ Content
 
 .. toctree::
   :maxdepth: 2
-  :caption: API DOCUMENTATION
+  :caption: DOCUMENTATION
   :glob:
 
   _pages/docu_classes.md

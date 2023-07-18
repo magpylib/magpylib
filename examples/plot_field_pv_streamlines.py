@@ -11,28 +11,21 @@ import pyvista as pv
 
 import magpylib as magpy
 
-# create an aircoil with Magpylib
-coil = magpy.Collection()
-for z in np.linspace(-8, 8, 16):
-    winding = magpy.current.Loop(
-        current=100,
-        diameter=10,
-        position=(0, 0, z),
-    )
-    coil.add(winding)
+# create a magnet with Magpylib
+magnet = magpy.magnet.Cylinder((0, 0, 1000), (11, 4))
 
 # create a grid with Pyvista
 grid = pv.UniformGrid(
-    dimensions=(41, 41, 41),
-    spacing=(4, 4, 4),
-    origin=(-40, -40, -40),
+    dimensions=(21, 21, 21),
+    spacing=(2, 2, 2),
+    origin=(-20, -20, -20),
 )
 
 # compute B-field and add as data to grid
-grid["B"] = coil.getB(grid.points)
+grid["B"] = magnet.getB(grid.points)
 
 # compute field lines
-seed = pv.Disc(inner=1, outer=5.2, r_res=3, c_res=12)
+seed = pv.Disc(inner=1, outer=4, r_res=2, c_res=6)
 strl = grid.streamlines_from_source(
     seed,
     vectors="B",
@@ -44,7 +37,7 @@ strl = grid.streamlines_from_source(
 # create plotting scene
 pl = pv.Plotter()
 
-# add field lines and legend to scene
+# add legend to scene
 legend_args = {
     "title": "B (mT)",
     "title_font_size": 20,
@@ -53,16 +46,17 @@ legend_args = {
     "vertical": True,
 }
 
-# draw coils
-magpy.show(coil, canvas=pl, backend="pyvista", style_color="r")
+# add magnet to scene
+magpy.show(magnet, canvas=pl, backend="pyvista")
 
-# add streamlines
+# add streamlines to scene
 pl.add_mesh(
     strl.tube(radius=0.2),
     cmap="bwr",
     scalar_bar_args=legend_args,
 )
+
 # display scene
-pl.camera.position = (50, 50, 50)
+pl.camera.position = (30, 30, 20)
 pl.set_background("white")
 pl.show()
