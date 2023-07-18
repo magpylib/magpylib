@@ -7,18 +7,18 @@
 * Finally, the magnetic field is computed in the reference frame of the observers.
 
 ::::{grid} 5
-:gutter: 1
+:gutter: 3
 
 :::{grid-item}
 [<img src="_static/images/gallery_icon_mpl_streamplot.png"
      alt="link to gallery"
-     style="height: 100;" />](_pages/gallery/gallery_mpl_streamplot.md)
+     style="height: 100;" />](_pages/gallery/gallery_index.md)
 :::
 
 :::{grid-item}
 [<img src="_static/images/gallery_icon_pv_streamlines.png"
      alt="link to gallery"
-     style="height: 100;" />](_pages/gallery/gallery_pv_streamlines.md)
+     style="height: 100;" />](_pages/gallery/gallery_index.md)
 :::
 
 ::::
