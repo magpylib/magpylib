@@ -10,15 +10,29 @@
 :gutter: 3
 
 :::{grid-item}
-[<img src="_static/images/gallery_icon_mpl_streamplot.png"
+[<img src="_static/images/gallery_icon_viz_mpl_streamplot.png"
      alt="link to gallery"
-     style="height: 100;" />](_pages/gallery/gallery_index.md)
+     height="100" />](_pages/gallery/gallery_index.md)
 :::
 
 :::{grid-item}
-[<img src="_static/images/gallery_icon_pv_streamlines.png"
+[<img src="_static/images/gallery_icon_ext_compound.png"
      alt="link to gallery"
-     style="height: 100;" />](_pages/gallery/gallery_index.md)
+     height="100" />](_pages/gallery/gallery_index.md)
+:::
+
+:::{grid-item}
+:::{div} sd-text-center
+[<img src="_static/images/gallery_icon_viz_pv_streamlines.png"
+     alt="link to gallery"
+     height="100" />](_pages/gallery/gallery_index.md)
+:::
+
+:::{grid-item}
+:::{div} sd-text-center
+[<img src="_static/images/gallery_icon_app_end_of_shaft.png"
+     alt="link to gallery"
+     height="100" />](_pages/gallery/gallery_index.md)
 :::
 
 ::::
@@ -53,6 +67,8 @@ conda install -c conda-forge magpylib
 Magpylib supports *Python3.8+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
 
 ## Quickstart
+
+Here is an example how to use Magpylib
 
 ```python
 import magpylib as magpy

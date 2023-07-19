@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery_mpl_streamplot)=
+(gallery-viz-mpl-streamplot)=
 
 # Streamplot
 

@@ -11,7 +11,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery_pv_streamlines)=
+(gallery-viz-pv-streamlines)=
 
 # Streamlines
 
