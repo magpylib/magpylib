@@ -1,4 +1,5 @@
 """ Display function codes"""
+from collections import defaultdict
 from functools import lru_cache
 from itertools import cycle
 from typing import Tuple
@@ -308,21 +309,31 @@ def merge_scatter3d(*traces):
     return merged_trace
 
 
+def aggregate_by_trace_type(traces):
+    """aggregate traces by type"""
+    result_dict = defaultdict(list)
+    for item in traces:
+        result_dict[item["type"]].append(item)
+    yield from result_dict.items()
+
+
 def merge_traces(*traces):
     """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
     All traces have be of the same type when merging. Keys are taken from the first object, other
     keys from further objects are ignored.
     """
-    if len(traces) > 1:
-        if traces[0]["type"] == "mesh3d":
-            trace = merge_mesh3d(*traces)
-        elif traces[0]["type"] == "scatter3d":
-            trace = merge_scatter3d(*traces)
-    elif len(traces) == 1:
-        trace = traces[0]
-    else:
-        trace = []
-    return trace
+    new_traces = []
+    for ttype, tlist in aggregate_by_trace_type(traces):
+        if len(tlist) > 1:
+            if ttype == "mesh3d":
+                new_traces.append(merge_mesh3d(*tlist))
+            elif ttype == "scatter3d":
+                new_traces.append(merge_scatter3d(*tlist))
+            else:
+                new_traces.extend(tlist)
+        elif len(tlist) == 1:
+            new_traces.append(tlist[0])
+    return new_traces
 
 
 def getIntensity(vertices, axis) -> np.ndarray:
@@ -417,10 +428,11 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                 pts = np.array([t[k] for k in coords], dtype="float64").T
                 try:  # for mesh3d, use only vertices part of faces for range calculation
                     inds = np.array([t[k] for k in "ijk"], dtype="int64").T
-                    pts = pts[inds].reshape(-1, 3)
+                    pts = pts[inds]
                 except KeyError:
                     # for 2d meshes, nothing special needed
                     pass
+                pts = pts.reshape(-1, 3)
                 min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
                 for v, min_, max_ in zip(ranges.values(), *min_max):
                     v.extend([min_, max_])
@@ -460,7 +472,7 @@ def group_traces(*traces):
             separator="_",
         )
         gr = [tr["type"]]
-        for k in common_keys + spec_keys[tr["type"]]:
+        for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
             if k == "facecolor":
                 v = tr.get(k, None) is None
             else:
@@ -473,7 +485,7 @@ def group_traces(*traces):
 
     traces = []
     for group in mesh_groups.values():
-        traces.extend([merge_traces(*group)])
+        traces.extend(merge_traces(*group))
     return traces
 
 

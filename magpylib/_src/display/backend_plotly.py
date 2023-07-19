@@ -1,6 +1,9 @@
 """plotly backend"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+import inspect
+from functools import lru_cache
+
 import numpy as np
 
 try:
@@ -46,6 +49,32 @@ SIZE_FACTORS_TO_PLOTLY = {
     "line_width": 2.2,
     "marker_size": 0.7,
 }
+
+
+@lru_cache(maxsize=None)  # Cache all results
+def match_args(ttype: str):
+    """
+    Return named arguments of a Plotly graph object function.
+
+    Parameters
+    ----------
+    ttype : str
+        Type of Plotly graph object (e.g., 'scatter' for go.Scatter).
+
+    Returns
+    -------
+    list
+        Names of the named arguments of the specified function.
+    """
+    func = getattr(go, ttype.capitalize())
+    sig = inspect.signature(func)
+    params = sig.parameters
+    named_args = [
+        name
+        for name, param in params.items()
+        if param.default != inspect.Parameter.empty
+    ]
+    return named_args
 
 
 def apply_fig_ranges(fig, ranges, apply2d=True):
@@ -234,6 +263,12 @@ def process_extra_trace(model):
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
         trace3d["color"] = trace3d.get("color", kwargs["color"])
+    # need to match parameters to the constructor
+    # the color parameter is added by default  int the `traces_generic` module but is not
+    # compatible with some traces (e.g. `go.Surface`)
+    trace3d = {
+        k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
+    }
     trace3d.update(
         linearize_dict(
             place_and_orient_model3d(

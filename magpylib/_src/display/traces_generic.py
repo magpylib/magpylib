@@ -304,7 +304,7 @@ def make_mesh_lines(
                 "name": f"{label} - {mode}-edges",
             }
             traces.append(trace)
-        out = {**merge_traces(*traces), **kwargs}
+        out = {**merge_traces(*traces)[0], **kwargs}
     return out
 
 
@@ -967,7 +967,9 @@ def get_generic_traces(
     # parse kwargs into style and non style args
 
     is_mag_arrows = False
-    is_mag = hasattr(input_obj, "magnetization")
+    is_mag = hasattr(input_obj, "magnetization") and hasattr(
+        input_obj.style, "magnetization"
+    )
     if is_mag and style.magnetization.show:
         mag = style.magnetization
         if mag.mode == "auto":
@@ -982,7 +984,7 @@ def get_generic_traces(
 
     all_generic_traces = []
     path_traces = []
-    path_traces_extra_generic_by_type = {}
+    path_traces_extra_generic = []
     path_traces_extra_specific_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     if not has_path:
@@ -1098,9 +1100,7 @@ def get_generic_traces(
                             separator="_",
                         )
                     )
-                    if ttype not in path_traces_extra_generic_by_type:
-                        path_traces_extra_generic_by_type[ttype] = []
-                    path_traces_extra_generic_by_type[ttype].append(trace3d)
+                    path_traces_extra_generic.append(trace3d)
                 elif extr.backend == extra_backend:
                     trace3d = {
                         "model3d": extr,
@@ -1117,18 +1117,13 @@ def get_generic_traces(
                     }
                     path_traces_extra_specific_backend.append(trace3d)
 
-    trace = merge_traces(*path_traces)
-    if trace:
-        all_generic_traces.append(trace)
-
-    for traces_extra in path_traces_extra_generic_by_type.values():
-        extra_model3d_trace = merge_traces(*traces_extra)
-        all_generic_traces.append(extra_model3d_trace)
+    all_generic_traces.extend(merge_traces(*path_traces))
+    all_generic_traces.extend(group_traces(*path_traces_extra_generic))
 
     if disconnected_traces:
         nsubsets = len(input_obj.get_faces_subsets())
         for ind in range(nsubsets):
-            trace = merge_traces(*disconnected_traces[ind::nsubsets])
+            trace = merge_traces(*disconnected_traces[ind::nsubsets])[0]
             trace["legendgroup"] = f"{legendgroup} - part_{ind+1:02d}"
             lg = trace.get("name", "") if legendtext is None else legendtext
             trace["name"] = f"{lg} - part_{ind+1:02d}"
@@ -1160,7 +1155,9 @@ def get_generic_traces(
                     all_generic_traces.append(trace)
 
     for tr in all_generic_traces:
-        tr.update(row=row, col=col, opacity=style.opacity)
+        tr.update(row=row, col=col)
+        if tr.get("opacity", None) is None:
+            tr["opacity"] = style.opacity
         if tr.get("legendgroup", None) is None:
             # allow invalid trimesh traces to have their own legendgroup
             tr["legendgroup"] = legendgroup
