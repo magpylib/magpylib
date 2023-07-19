@@ -34,7 +34,7 @@ from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
 )
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
-from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
@@ -133,12 +133,15 @@ def make_Line(
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
-                vertices = draw_arrow_from_vertices(
-                    obj.vertices, obj.current, kind_style.size, include_line=False
+                x, y, z = draw_arrow_from_vertices(
+                    obj.vertices,
+                    obj.current,
+                    kind_style.size,
+                    arrow_pos=style.arrow.offset,
+                    include_line=False,
                 ).T
             else:
-                vertices = obj.vertices
-            x, y, z = vertices.T
+                x, y, z = obj.vertices.T
             trace = {
                 "type": "scatter3d",
                 "x": x,
@@ -157,35 +160,52 @@ def make_Line(
 def make_Loop(
     obj,
     style=None,
-    vertices=50,
+    vert_num=72,
     **kwargs,
 ):
     """
     Creates the plotly scatter3d parameters for a Loop current in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
-    current = obj.current
-    diameter = obj.diameter
-    arrow_size = style.arrow.size if style.arrow.show else 0
-    vertices = draw_arrowed_circle(current, diameter, arrow_size, vertices)
-    x, y, z = vertices
-    trace = {
-        "type": "scatter3d",
-        "x": x,
-        "y": y,
-        "z": z,
-        "mode": "lines",
-        "line_width": style.arrow.width,
-        "line_color": style.color,
-    }
     default_suffix = (
-        f" ({unit_prefix(current)}A)"
-        if current is not None
+        f" ({unit_prefix(obj.current)}A)"
+        if obj.current is not None
         else " (Current not initialized)"
     )
-    update_trace_name(trace, "Loop", default_suffix, style)
-    return {**trace, **kwargs}
+    style = obj.style if style is None else style
+    traces = []
+    for kind in ("arrow", "line"):
+        kind_style = getattr(style, kind)
+        if kind_style.show:
+            color = style.color if kind_style.color is None else kind_style.color
+
+            if kind == "arrow":
+                angle_pos_deg = 360 * np.round(style.arrow.offset * vert_num) / vert_num
+                vertices = draw_arrow_on_circle(
+                    np.sign(obj.current),
+                    obj.diameter,
+                    style.arrow.size,
+                    angle_pos_deg=angle_pos_deg,
+                )
+                x, y, z = vertices.T
+            else:
+                t = np.linspace(0, 2 * np.pi, vert_num)
+                x = np.cos(t) * obj.diameter / 2
+                y = np.sin(t) * obj.diameter / 2
+                z = np.zeros(x.shape)
+            trace = {
+                "type": "scatter3d",
+                "x": x,
+                "y": y,
+                "z": z,
+                "mode": "lines",
+                "line_width": kind_style.width,
+                "line_dash": kind_style.style,
+                "line_color": color,
+            }
+            update_trace_name(trace, "Line", default_suffix, style)
+            traces.append({**trace, **kwargs})
+    return traces
 
 
 def make_Dipole(
@@ -1117,9 +1137,9 @@ def get_generic_traces(
                     }
                     path_traces_extra_specific_backend.append(trace3d)
 
-    trace = merge_traces(*path_traces)
-    if trace:
-        all_generic_traces.append(trace)
+    traces = group_traces(*path_traces)
+    if traces:
+        all_generic_traces.extend(traces)
 
     for traces_extra in path_traces_extra_generic_by_type.values():
         extra_model3d_trace = merge_traces(*traces_extra)

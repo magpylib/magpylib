@@ -1691,6 +1691,10 @@ class Arrow(Line):
     size: float, default=None
         Positive number defining the size of the arrows.
 
+    offset: float, default=0.5
+        Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+
     style: str, default=None
         Can be one of:
         `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
@@ -1731,6 +1735,23 @@ class Arrow(Line):
             f"but received {repr(val)} instead."
         )
         self._size = val
+
+    @property
+    def offset(self):
+        """Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+        """
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        assert (
+            val is None or (isinstance(val, (float, int))) and val >= 0 and val <= 1
+        ), (
+            "The `offset` property must valid number between 0 and 1\n"
+            f"but received {repr(val)} instead."
+        )
+        self._offset = val
 
 
 class CurrentLine(Line):

@@ -54,7 +54,7 @@ def test_draw_arrow_from_vertices():
             [-1.0, 1.0, 0.0],
             [-1.0, 1.0, 1.0],
         ]
-    ).T
+    )
 
     np.testing.assert_allclose(
         result, expected, err_msg="draw arrow from vertices failed"

@@ -70,6 +70,7 @@ DEFAULTS = {
                 "arrow": {
                     "show": True,
                     "size": 1,
+                    "offset": 0.5,
                     "width": 2,
                     "style": "solid",
                     "color": None,

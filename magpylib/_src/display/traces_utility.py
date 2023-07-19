@@ -140,7 +140,9 @@ def draw_arrowed_line(
     return x, y, z
 
 
-def draw_arrow_from_vertices(vertices, current, arrow_size, include_line=True):
+def draw_arrow_from_vertices(
+    vertices, current, arrow_size, arrow_pos=0.5, include_line=True
+):
     """returns scatter coordinates of arrows between input vertices"""
     vectors = np.diff(vertices, axis=0)
     positions = vertices[:-1] + vectors / 2
@@ -151,6 +153,7 @@ def draw_arrow_from_vertices(vertices, current, arrow_size, include_line=True):
                 pos,
                 np.sign(current),
                 arrow_size=arrow_size,
+                arrow_pos=arrow_pos,
                 include_line=include_line,
             )
             for vec, pos in zip(vectors, positions)
@@ -158,23 +161,20 @@ def draw_arrow_from_vertices(vertices, current, arrow_size, include_line=True):
         axis=1,
     )
 
-    return vertices
+    return vertices.T
 
 
-def draw_arrowed_circle(current, diameter, arrow_size, vert):
+def draw_arrow_on_circle(sign, diameter, arrow_size, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
-    t = np.linspace(0, 2 * np.pi, vert)
-    x = np.cos(t)
-    y = np.sin(t)
-    if arrow_size != 0:
-        hy = 0.2 * np.sign(current) * arrow_size
-        hx = 0.15 * arrow_size
-        x = np.hstack([x, [1 + hx, 1, 1 - hx]])
-        y = np.hstack([y, [-hy, 0, -hy]])
-    x = x * diameter / 2
-    y = y * diameter / 2
+    hy = 0.2 * np.sign(sign) * arrow_size
+    hx = 0.15 * arrow_size
+    x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
+    y = np.array([-hy, 0, -hy]) * diameter / 2
     z = np.zeros(x.shape)
-    vertices = np.array([x, y, z])
+    vertices = np.array([x, y, z]).T
+    if angle_pos_deg != 0:
+        rot = RotScipy.from_euler("z", angle_pos_deg, degrees=True)
+        vertices = rot.apply(vertices)
     return vertices
 
 
