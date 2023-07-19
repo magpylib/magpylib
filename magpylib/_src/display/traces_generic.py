@@ -121,32 +121,37 @@ def make_Line(
     Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
-    current = obj.current
-    vertices = obj.vertices
-    show_arrows = style.arrow.show
-    arrow_size = style.arrow.size
-    if show_arrows:
-        vertices = draw_arrow_from_vertices(vertices, current, arrow_size)
-    else:
-        vertices = np.array(vertices).T
-    x, y, z = vertices
-    trace = {
-        "type": "scatter3d",
-        "x": x,
-        "y": y,
-        "z": z,
-        "mode": "lines",
-        "line_width": style.arrow.width,
-        "line_color": style.color,
-    }
     default_suffix = (
-        f" ({unit_prefix(current)}A)"
-        if current is not None
+        f" ({unit_prefix(obj.current)}A)"
+        if obj.current is not None
         else " (Current not initialized)"
     )
-    update_trace_name(trace, "Line", default_suffix, style)
-    return {**trace, **kwargs}
+    style = obj.style if style is None else style
+    traces = []
+    for kind in ("arrow", "line"):
+        kind_style = getattr(style, kind)
+        if kind_style.show:
+            color = style.color if kind_style.color is None else kind_style.color
+            if kind == "arrow":
+                vertices = draw_arrow_from_vertices(
+                    obj.vertices, obj.current, kind_style.size, include_line=False
+                ).T
+            else:
+                vertices = obj.vertices
+            x, y, z = vertices.T
+            trace = {
+                "type": "scatter3d",
+                "x": x,
+                "y": y,
+                "z": z,
+                "mode": "lines",
+                "line_width": kind_style.width,
+                "line_dash": kind_style.style,
+                "line_color": color,
+            }
+            update_trace_name(trace, "Line", default_suffix, style)
+            traces.append({**trace, **kwargs})
+    return traces
 
 
 def make_Loop(
@@ -1044,16 +1049,20 @@ def get_generic_traces(
                 input_obj._faces = tria_orig
                 style.magnetization.show = mag_show
             else:  # if disconnnected, no mag slicing needed
-                p_tr = make_func(**make_func_kwargs)
-                if is_mag:
-                    p_tr = update_magnet_mesh(
-                        p_tr,
-                        mag_style=style.magnetization,
-                        magnetization=input_obj.magnetization,
-                        color_slicing=not supports_colorgradient,
+                p_trs = make_func(**make_func_kwargs)
+                p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
+                for p_tr in p_trs:
+                    if is_mag:
+                        p_tr = update_magnet_mesh(
+                            p_tr,
+                            mag_style=style.magnetization,
+                            magnetization=input_obj.magnetization,
+                            color_slicing=not supports_colorgradient,
+                        )
+                    p_tr = place_and_orient_model3d(
+                        p_tr, orientation=orient, position=pos
                     )
-                p_tr = place_and_orient_model3d(p_tr, orientation=orient, position=pos)
-                path_traces.append(p_tr)
+                    path_traces.append(p_tr)
         for extr in extra_model3d_traces:
             if extr.show:
                 extr.update(extr.updatefunc())

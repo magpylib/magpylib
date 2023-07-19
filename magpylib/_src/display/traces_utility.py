@@ -86,7 +86,13 @@ def place_and_orient_model3d(
 
 
 def draw_arrowed_line(
-    vec, pos, sign=1, arrow_size=1, arrow_pos=0.5, pivot="middle"
+    vec,
+    pos,
+    sign=1,
+    arrow_size=1,
+    arrow_pos=0.5,
+    pivot="middle",
+    include_line=True,
 ) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
@@ -109,21 +115,19 @@ def draw_arrowed_line(
         if pivot == "tail"
         else (0, 0, 0)
     )
-    arrow = (
-        np.array(
-            [
-                [0, -0.5, 0],
-                [0, arrow_shift, 0],
-                [-hx, arrow_shift - hy, 0],
-                [0, arrow_shift, 0],
-                [hx, arrow_shift - hy, 0],
-                [0, arrow_shift, 0],
-                [0, 0.5, 0],
-            ]
-            + np.array(anchor)
-        )
-        * norm
-    )
+    arrow = [
+        [0, arrow_shift, 0],
+        [-hx, arrow_shift - hy, 0],
+        [0, arrow_shift, 0],
+        [hx, arrow_shift - hy, 0],
+        [0, arrow_shift, 0],
+    ]
+    if include_line:
+        arrow = [[0, -0.5, 0], *arrow, [0, 0.5, 0]]
+    else:
+        arrow = [[0, -0.5, 0], [np.nan] * 3, *arrow, [np.nan] * 3, [0, 0.5, 0]]
+    arrow = (np.array(arrow) + np.array(anchor)) * norm
+
     if n == 0 and dot == -1:
         R = RotScipy.from_rotvec([0, 0, np.pi])
         arrow = R.apply(arrow)
@@ -135,13 +139,19 @@ def draw_arrowed_line(
     return x, y, z
 
 
-def draw_arrow_from_vertices(vertices, current, arrow_size):
+def draw_arrow_from_vertices(vertices, current, arrow_size, include_line=True):
     """returns scatter coordinates of arrows between input vertices"""
     vectors = np.diff(vertices, axis=0)
     positions = vertices[:-1] + vectors / 2
     vertices = np.concatenate(
         [
-            draw_arrowed_line(vec, pos, np.sign(current), arrow_size=arrow_size)
+            draw_arrowed_line(
+                vec,
+                pos,
+                np.sign(current),
+                arrow_size=arrow_size,
+                include_line=include_line,
+            )
             for vec, pos in zip(vectors, positions)
         ],
         axis=1,
