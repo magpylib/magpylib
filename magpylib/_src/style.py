@@ -1745,9 +1745,7 @@ class Arrow(Line):
 
     @offset.setter
     def offset(self, val):
-        assert (
-            val is None or (isinstance(val, (float, int))) and val >= 0 and val <= 1
-        ), (
+        assert val is None or (isinstance(val, (float, int))) and 0 <= val <= 1, (
             "The `offset` property must valid number between 0 and 1\n"
             f"but received {repr(val)} instead."
         )
