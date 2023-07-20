@@ -152,9 +152,12 @@ class BaseStyle(MagicProperties):
 
     @description.setter
     def description(self, val):
-        self._description = validate_property_class(
-            val, "description", Description, self
-        )
+        if isinstance(val, str):
+            self._description = Description(text=val)
+        else:
+            self._description = validate_property_class(
+                val, "description", Description, self
+            )
 
     @property
     def color(self):
