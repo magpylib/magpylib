@@ -14,14 +14,14 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-def get_label(obj, default_suffix="", default_name=None):
+def get_label(obj, default_suffix="", default_name=None, style=None):
     """provides legend entry based on name and suffix"""
-    style = obj.style
+    style = obj.style if style is None else obj.style
     default_name = obj.__class__.__name__ if default_name is None else default_name
     name = default_name if style.label is None else style.label
-    if style.description.show and style.description.text is None:
+    if style.description.show is not False and style.description.text is None:
         name_suffix = default_suffix
-    elif not style.description.show:
+    elif not style.description.show is not False:
         name_suffix = ""
     else:
         name_suffix = f" ({style.description.text})"
@@ -273,7 +273,9 @@ def get_flatten_objects_properties_recursive(
                         suffs.append(f"{num} {name}{'s'[:num^1]}")
             else:
                 suffs.append("no children")
-            label = get_label(subobj, default_suffix=f" ({', '.join(suffs)})")
+            label = get_label(
+                subobj, default_suffix=f" ({', '.join(suffs)})", style=style
+            )
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
