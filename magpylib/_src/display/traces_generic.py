@@ -203,7 +203,7 @@ def make_Loop(
                 "line_dash": kind_style.style,
                 "line_color": color,
             }
-            update_trace_name(trace, "Line", default_suffix, style)
+            update_trace_name(trace, "Loop", default_suffix, style)
             traces.append({**trace, **kwargs})
     return traces
 
