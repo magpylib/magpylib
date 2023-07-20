@@ -37,6 +37,7 @@ from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrowed_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
+from magpylib._src.display.traces_utility import get_label
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
@@ -47,7 +48,6 @@ from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.display.traces_utility import triangles_area
-from magpylib._src.display.traces_utility import update_trace_name
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
@@ -57,13 +57,18 @@ class MagpyMarkers:
     """A class that stores markers 3D-coordinates."""
 
     def __init__(self, *markers):
-        self.style = DefaultMarkers()
+        self._style = DefaultMarkers()
         self.markers = np.array(markers)
 
-    def _draw_func(self, style=None, **kwargs):
+    @property
+    def style(self):
+        """Style property"""
+        return self._style
+
+    def _draw_func(self, **kwargs):
         """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
         provided arguments."""
-        style = self.style if style is None else style
+        style = self.style
         x, y, z = self.markers.T
         marker_kwargs = {
             f"marker_{k}": v
@@ -83,21 +88,17 @@ class MagpyMarkers:
         }
         default_name = "Marker" if len(x) == 1 else "Markers"
         default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
-        update_trace_name(trace, default_name, default_suffix, style)
+        trace["name"] = get_label(self, default_suffix, default_name)
         return trace
 
 
-def make_DefaultTrace(
-    obj,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_DefaultTrace(obj, **kwargs) -> dict:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
     representation. The object will be represented by a scatter point and text above with object
     name.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     trace = {
         "type": "scatter3d",
         "x": [0.0],
@@ -108,21 +109,17 @@ def make_DefaultTrace(
         "marker_color": style.color,
         "marker_symbol": "diamond",
     }
-    update_trace_name(trace, f"{type(obj).__name__}", "", style)
+    trace["name"] = get_label(obj)
     trace["text"] = trace["name"]
     return {**trace, **kwargs}
 
 
-def make_Line(
-    obj,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_Line(obj, **kwargs) -> dict:
     """
     Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     current = obj.current
     vertices = obj.vertices
     show_arrows = style.arrow.show
@@ -146,21 +143,16 @@ def make_Line(
         if current is not None
         else " (Current not initialized)"
     )
-    update_trace_name(trace, "Line", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_Loop(
-    obj,
-    style=None,
-    vertices=50,
-    **kwargs,
-):
+def make_Loop(obj, vertices=50, **kwargs):
     """
     Creates the plotly scatter3d parameters for a Loop current in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     current = obj.current
     diameter = obj.diameter
     arrow_size = style.arrow.size if style.arrow.show else 0
@@ -180,21 +172,16 @@ def make_Loop(
         if current is not None
         else " (Current not initialized)"
     )
-    update_trace_name(trace, "Loop", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_Dipole(
-    obj,
-    style=None,
-    autosize=None,
-    **kwargs,
-) -> dict:
+def make_Dipole(obj, autosize=None, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     moment = obj.moment
     moment_mag = np.linalg.norm(moment)
     size = style.size
@@ -209,7 +196,7 @@ def make_Dipole(
         color=style.color,
     )
     default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
-    update_trace_name(trace, "Dipole", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     nvec = np.array(moment) / moment_mag
     zaxis = np.array([0, 0, 1])
     cross = np.cross(nvec, zaxis)
@@ -251,17 +238,11 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(
-    obj,
-    pos_orient_inds,
-    mode,
-    style=None,
-    **kwargs,
-):
+def make_mesh_lines(obj, pos_orient_inds, mode, **kwargs):
     """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
-    style = obj.style if style is None else style
+    style = obj.style
     mesh = getattr(style.mesh, mode)
     marker, line = mesh.marker, mesh.line
     tr, vert = obj.faces, obj.vertices
@@ -304,18 +285,13 @@ def make_mesh_lines(
     return out
 
 
-def make_triangle_orientations(
-    obj,
-    pos_orient_inds,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_triangle_orientations(obj, pos_orient_inds, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
     based on the provided arguments.
     """
     # pylint: disable=protected-access
-    style = obj.style if style is None else style
+    style = obj.style
     orient = style.orientation
     size = orient.size
     symbol = orient.symbol
@@ -358,16 +334,12 @@ def make_triangle_orientations(
     return trace
 
 
-def make_Cuboid(
-    obj,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_Cuboid(obj, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = f" (no dimension)"
@@ -377,21 +349,16 @@ def make_Cuboid(
         )
         d = [unit_prefix(d / 1000) for d in obj.dimension]
         default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
-    update_trace_name(trace, "Cuboid", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_Cylinder(
-    obj,
-    style=None,
-    base=50,
-    **kwargs,
-) -> dict:
+def make_Cylinder(obj, base=50, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = f" (no dimension)"
@@ -406,21 +373,16 @@ def make_Cylinder(
             color=style.color,
         )
         default_suffix = f" (D={d[0]}m, H={d[1]}m)"
-    update_trace_name(trace, "Cylinder", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(
-    obj,
-    style=None,
-    vertices=25,
-    **kwargs,
-):
+def make_CylinderSegment(obj, vertices=25, **kwargs):
     """
     Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = f" (no dimension)"
@@ -432,21 +394,16 @@ def make_CylinderSegment(
             "plotly-dict", dimension=obj.dimension, vert=vertices, color=style.color
         )
         default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
-    update_trace_name(trace, "CylinderSegment", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_Sphere(
-    obj,
-    style=None,
-    vertices=15,
-    **kwargs,
-) -> dict:
+def make_Sphere(obj, vertices=15, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
 
     if obj.diameter is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
@@ -460,37 +417,29 @@ def make_Sphere(
             color=style.color,
         )
         default_suffix = f" (D={unit_prefix(obj.diameter / 1000)}m)"
-    update_trace_name(trace, "Sphere", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(
-    obj,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_Tetrahedron(obj, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     trace = make_BaseTetrahedron(
         "plotly-dict", vertices=obj.vertices, color=style.color
     )
-    update_trace_name(trace, "Tetrahedron", "", style)
+    trace["name"] = get_label(obj)
     return {**trace, **kwargs}
 
 
-def make_Triangle(
-    obj,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_Triangle(obj, **kwargs) -> dict:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     vert = obj.vertices
     vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
     faces = np.array([[0, 1, 2]])
@@ -509,31 +458,26 @@ def make_Triangle(
         ]
         faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
 
-    style = obj.style if style is None else style
+    style = obj.style
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=vert, faces=faces, color=style.color
     )
-    update_trace_name(trace, obj.__class__.__name__, "", style)
+    trace["name"] = get_label(obj)
     return {**trace, **kwargs}
 
 
-def make_TriangularMesh(
-    obj,
-    color=None,
-    style=None,
-    **kwargs,
-) -> dict:
+def make_TriangularMesh(obj, **kwargs) -> dict:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
     provided arguments.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=color
+        "plotly-dict", vertices=obj.vertices, faces=obj.faces, color=style.color
     )
     ntri = len(obj.faces)
     default_suffix = f" ({ntri} face{'s'[:ntri^1]})"
-    update_trace_name(trace, obj.__class__.__name__, default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     # make edges sharper in plotly
     trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
     return {**trace, **kwargs}
@@ -551,12 +495,7 @@ def make_Pixels(positions, size=1) -> dict:
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(
-    obj,
-    style=None,
-    autosize=None,
-    **kwargs,
-):
+def make_Sensor(obj, autosize=None, **kwargs):
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
@@ -566,7 +505,7 @@ def make_Sensor(
         pixels will be hidden, when greater than 0, pixels will occupy half the ratio of the minimum
         distance between any pixel of the same sensor, equal to `size_pixel`.
     """
-    style = obj.style if style is None else style
+    style = obj.style
     dimension = getattr(obj, "dimension", style.size)
     pixel = obj.pixel
     pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
@@ -626,7 +565,7 @@ def make_Sensor(
         if one_pix
         else ""
     )
-    update_trace_name(trace, "Sensor", default_suffix, style)
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
@@ -668,7 +607,7 @@ def update_magnet_mesh(
     return mesh_dict
 
 
-def make_mag_arrows(obj, pos_orient_inds, style):
+def make_mag_arrows(obj, pos_orient_inds):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -680,6 +619,7 @@ def make_mag_arrows(obj, pos_orient_inds, style):
     # pylint: disable=protected-access
 
     # vector length, color and magnetization
+    style = obj.style
     if hasattr(obj, "diameter"):
         length = obj.diameter  # Sphere
     elif isinstance(obj, magpy.misc.Triangle):
@@ -718,8 +658,9 @@ def make_mag_arrows(obj, pos_orient_inds, style):
     return trace
 
 
-def make_path(input_obj, style):
+def make_path(input_obj):
     """draw obj path based on path style properties"""
+    style = input_obj.style
     x, y, z = np.array(input_obj.position).T
     txt_kwargs = (
         {"mode": "markers+text+lines", "text": list(range(len(x)))}
@@ -873,7 +814,7 @@ def get_generic_traces_2D(
     def get_label_and_color(obj):
         props = flat_objs_props.get(obj, {})
         style = props.get("style", None)
-        style = obj.style if style is None else style
+        style = obj.style
         label = getattr(style, "label", None)
         label = repr(obj) if not label else label
         color = getattr(style, "color", None)
@@ -946,7 +887,6 @@ def get_generic_traces(
     extra_backend=False,
     row=1,
     col=1,
-    style=None,
     **kwargs,
 ) -> list:
     """
@@ -972,12 +912,9 @@ def get_generic_traces(
     from magpylib._src.obj_classes.class_misc_Triangle import Triangle
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
 
-    # parse kwargs into style and non style args
-
+    style = input_obj.style
     is_mag_arrows = False
-    is_mag = hasattr(input_obj, "magnetization") and hasattr(
-        input_obj.style, "magnetization"
-    )
+    is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
     if is_mag and style.magnetization.show:
         mag = style.magnetization
         if mag.mode == "auto":
@@ -986,7 +923,7 @@ def get_generic_traces(
         mag.show = "color" in mag.mode
 
     make_func = input_obj._draw_func
-    make_func_kwargs = {"style": style, **kwargs}
+    make_func_kwargs = {}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
@@ -1134,17 +1071,16 @@ def get_generic_traces(
             all_generic_traces.append(trace)
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
-        scatter_path = make_path(input_obj, style)
+        scatter_path = make_path(input_obj)
         all_generic_traces.append(scatter_path)
 
     if is_mag_arrows:
-        all_generic_traces.append(make_mag_arrows(input_obj, pos_orient_inds, style))
+        all_generic_traces.append(make_mag_arrows(input_obj, pos_orient_inds))
     if isinstance(input_obj, (Triangle, TriangularMesh)) and style.orientation.show:
         all_generic_traces.append(
             make_triangle_orientations(
                 input_obj,
                 pos_orient_inds,
-                style=style,
                 legendgroup=legendgroup,
                 **kwargs,
             )
@@ -1152,9 +1088,7 @@ def get_generic_traces(
     if isinstance(input_obj, TriangularMesh):
         for mode in ("grid", "open", "disconnected", "selfintersecting"):
             if getattr(style.mesh, mode).show:
-                trace = make_mesh_lines(
-                    input_obj, pos_orient_inds, mode, style, **kwargs
-                )
+                trace = make_mesh_lines(input_obj, pos_orient_inds, mode, **kwargs)
                 if trace:
                     all_generic_traces.append(trace)
 
@@ -1292,13 +1226,7 @@ def extract_animation_properties(
     return path_indices, exp, frame_duration
 
 
-def draw_frame(
-    objs,
-    colorsequence=None,
-    zoom=0.0,
-    autosize=None,
-    **kwargs,
-) -> Tuple:
+def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> Tuple:
     """
     Creates traces from input `objs` and provided parameters, updates the size of objects like
     Sensors and Dipoles in `kwargs` depending on the canvas size.
@@ -1363,9 +1291,18 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             for rco in rco_obj:
                 params["row"], params["col"], output_typ = rco
                 if output_typ == "model3d":
-                    out_traces = get_generic_traces(
-                        obj, extra_backend=extra_backend, autosize=autosize, **params
-                    )
+                    try:
+                        # temporary replace style attribute
+                        orig_style = obj._style
+                        obj._style = params["style"]
+                        out_traces = get_generic_traces(
+                            obj,
+                            extra_backend=extra_backend,
+                            autosize=autosize,
+                            **params,
+                        )
+                    finally:
+                        obj._style = orig_style
                     if extra_backend:
                         extra_backend_traces.extend(out_traces.get(extra_backend, []))
                     traces_dict[obj].extend(out_traces["generic"])
