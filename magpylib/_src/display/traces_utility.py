@@ -150,8 +150,7 @@ def draw_arrowed_line(
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
         arrow = R.apply(arrow)
-    x, y, z = (arrow + pos).T
-    return x, y, z
+    return arrow + pos
 
 
 def draw_arrow_from_vertices(
@@ -169,7 +168,7 @@ def draw_arrow_from_vertices(
                 arrow_size=arrow_size,
                 arrow_pos=arrow_pos,
                 include_line=include_line,
-            )
+            ).T
             for vec, pos in zip(vectors, positions)
         ],
         axis=1,

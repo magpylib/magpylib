@@ -552,12 +552,10 @@ def make_TriangularMesh(obj, **kwargs) -> dict:
         tria_orig = obj._faces
         obj.style.magnetization.mode = "arrow"
         traces = []
-        for ind, (tri, dis_color) in enumerate(
-            zip(
-                obj.get_faces_subsets(),
-                cycle(obj.style.mesh.disconnected.colorsequence),
-            )
-        ):
+        subsets = obj.get_faces_subsets()
+        col_seq = cycle(obj.style.mesh.disconnected.colorsequence)
+        exponent = np.log10(len(subsets)).astype(int) + 1
+        for ind, (tri, dis_color) in enumerate(zip(subsets, col_seq)):
             # temporary mutate faces from subset
             obj._faces = tri
             obj.style.magnetization.show = False
@@ -565,7 +563,7 @@ def make_TriangularMesh(obj, **kwargs) -> dict:
             # match first group with path scatter trace
             lg_suff = "" if ind == 0 else f"- part_{ind+1:02d}"
             tr["legendgroup"] = f"{kwargs.get('legendgroup', obj)}{lg_suff}"
-            tr["name_suffix"] = f" - part_{ind+1:02d}"
+            tr["name_suffix"] = f" - part_{ind+1:0{exponent}d}"
             traces.append(tr)
             if style.orientation.show:
                 traces.append(
@@ -716,7 +714,7 @@ def update_magnet_mesh(
     return mesh_dict
 
 
-def make_mag_arrows(obj, pos_orient_inds):
+def make_mag_arrows(obj):
     """draw direction of magnetization of faced magnets
 
     Parameters
@@ -742,18 +740,9 @@ def make_mag_arrows(obj, pos_orient_inds):
     length *= 1.8 * style.magnetization.size
     mag = obj.magnetization
     # collect all draw positions and directions
-    points = []
-    for ind in pos_orient_inds:
-        pos = getattr(obj, "_barycenter", obj._position)[ind]
-        direc = mag / (np.linalg.norm(mag) + 1e-6) * length
-        vec = obj._orientation[ind].apply(direc)
-        pts = draw_arrowed_line(vec, pos, sign=1, arrow_pos=1, pivot="tail")
-        points.append(pts)
-    # insert empty point to avoid connecting line between arrows
-    points = np.array(points)
-    points = np.insert(points, points.shape[-1], np.nan, axis=2)
-    # remove last nan after insert with [:-1]
-    x, y, z = np.concatenate(points.swapaxes(1, 2))[:-1].T
+    pos = getattr(obj, "_barycenter", obj._position)[0] - obj._position[0]
+    direc = mag / (np.linalg.norm(mag) + 1e-6) * length
+    x, y, z = draw_arrowed_line(direc, pos, sign=1, arrow_pos=1, pivot="tail").T
     trace = {
         "type": "scatter3d",
         "mode": "lines",
@@ -1033,10 +1022,8 @@ def get_generic_traces(
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
-    all_generic_traces = []
-    traces_generic = []
-    path_traces_extra_non_generic_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
+    path_traces_extra_non_generic_backend = []
     if not has_path and make_func is not None:
         tr = make_func(**make_func_kwargs)
         tr["row"] = row
@@ -1049,6 +1036,7 @@ def get_generic_traces(
     orientations, positions, pos_orient_inds = get_rot_pos_from_path(
         input_obj, style.path.frames
     )
+    traces_generic = []
     if pos_orient_inds.size != 0:
         if style.model3d.showdefault and make_func is not None:
             p_trs = make_func(**make_func_kwargs)
@@ -1094,6 +1082,10 @@ def get_generic_traces(
                 tr_generic.update(linearize_dict(obj_extr_trace, separator="_"))
                 traces_generic.append(tr_generic)
 
+    if is_mag_arrows:
+        mag_arrow_tr = make_mag_arrows(input_obj)
+        traces_generic.append(mag_arrow_tr)
+
     path_traces_generic = []
     for tr in traces_generic:
         temp_rot_traces = []
@@ -1127,16 +1119,13 @@ def get_generic_traces(
                 }
                 path_traces_extra_non_generic_backend.append(tr_generic)
 
-    all_generic_traces.extend(group_traces(*path_traces_generic))
-
     if np.array(input_obj.position).ndim > 1 and style.path.show:
         scatter_path = make_path(input_obj)
-        all_generic_traces.append(scatter_path)
+        path_traces_generic.append(scatter_path)
 
-    if is_mag_arrows:
-        all_generic_traces.append(make_mag_arrows(input_obj, pos_orient_inds))
+    path_traces_generic.extend(group_traces(*path_traces_generic))
 
-    for tr in all_generic_traces:
+    for tr in path_traces_generic:
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
             tr["opacity"] = style.opacity
@@ -1150,7 +1139,7 @@ def get_generic_traces(
         if tr.get("facecolor", None) is not None:
             # this allows merging of 3d meshes, ignoring different colors
             tr["color"] = None
-    out = {"generic": all_generic_traces}
+    out = {"generic": path_traces_generic}
     if extra_backend:
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
