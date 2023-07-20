@@ -47,6 +47,7 @@ from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import slice_mesh_from_colorscale
 from magpylib._src.display.traces_utility import triangles_area
+from magpylib._src.display.traces_utility import update_trace_name
 from magpylib._src.style import DefaultMarkers
 from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import unit_prefix
@@ -367,10 +368,15 @@ def make_Cuboid(
     provided arguments.
     """
     style = obj.style if style is None else style
-    dimension = obj.dimension
-    d = [unit_prefix(d / 1000) for d in dimension]
-    trace = make_BaseCuboid("plotly-dict", dimension=dimension, color=style.color)
-    default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
+    if obj.dimension is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = f" (no dimension)"
+    else:
+        trace = make_BaseCuboid(
+            "plotly-dict", dimension=obj.dimension, color=style.color
+        )
+        d = [unit_prefix(d / 1000) for d in obj.dimension]
+        default_suffix = f" ({d[0]}m|{d[1]}m|{d[2]}m)"
     update_trace_name(trace, "Cuboid", default_suffix, style)
     return {**trace, **kwargs}
 
@@ -386,12 +392,20 @@ def make_Cylinder(
     provided arguments.
     """
     style = obj.style if style is None else style
-    diameter, height = obj.dimension
-    d = [unit_prefix(d / 1000) for d in (diameter, height)]
-    trace = make_BasePrism(
-        "plotly-dict", base=base, diameter=diameter, height=height, color=style.color
-    )
-    default_suffix = f" (D={d[0]}m, H={d[1]}m)"
+    if obj.dimension is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = f" (no dimension)"
+    else:
+        diameter, height = obj.dimension
+        d = [unit_prefix(d / 1000) for d in (diameter, height)]
+        trace = make_BasePrism(
+            "plotly-dict",
+            base=base,
+            diameter=diameter,
+            height=height,
+            color=style.color,
+        )
+        default_suffix = f" (D={d[0]}m, H={d[1]}m)"
     update_trace_name(trace, "Cylinder", default_suffix, style)
     return {**trace, **kwargs}
 
@@ -407,12 +421,17 @@ def make_CylinderSegment(
     provided arguments.
     """
     style = obj.style if style is None else style
-    dimension = obj.dimension
-    d = [unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(dimension)]
-    trace = make_BaseCylinderSegment(
-        "plotly-dict", dimension=dimension, vert=vertices, color=style.color
-    )
-    default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
+    if obj.dimension is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = f" (no dimension)"
+    else:
+        d = [
+            unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(obj.dimension)
+        ]
+        trace = make_BaseCylinderSegment(
+            "plotly-dict", dimension=obj.dimension, vert=vertices, color=style.color
+        )
+        default_suffix = f" (r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°)"
     update_trace_name(trace, "CylinderSegment", default_suffix, style)
     return {**trace, **kwargs}
 
@@ -428,12 +447,19 @@ def make_Sphere(
     provided arguments.
     """
     style = obj.style if style is None else style
-    diameter = obj.diameter
-    vertices = min(max(vertices, 3), 20)
-    trace = make_BaseEllipsoid(
-        "plotly-dict", vert=vertices, dimension=[diameter] * 3, color=style.color
-    )
-    default_suffix = f" (D={unit_prefix(diameter / 1000)}m)"
+
+    if obj.diameter is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = f" (no dimension)"
+    else:
+        vertices = min(max(vertices, 3), 20)
+        trace = make_BaseEllipsoid(
+            "plotly-dict",
+            vert=vertices,
+            dimension=[obj.diameter] * 3,
+            color=style.color,
+        )
+        default_suffix = f" (D={unit_prefix(obj.diameter / 1000)}m)"
     update_trace_name(trace, "Sphere", default_suffix, style)
     return {**trace, **kwargs}
 
@@ -640,19 +666,6 @@ def update_magnet_mesh(
         mesh_dict["showscale"] = False
         mesh_dict.pop("color_slicing", None)
     return mesh_dict
-
-
-def update_trace_name(trace, default_name, default_suffix, style):
-    """provides legend entry based on name and suffix"""
-    name = default_name if style.label is None else style.label
-    if style.description.show and style.description.text is None:
-        name_suffix = default_suffix
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
-    trace.update(name=f"{name}{name_suffix}")
-    return trace
 
 
 def make_mag_arrows(obj, pos_orient_inds, style):

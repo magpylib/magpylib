@@ -1,4 +1,5 @@
 """ Display function codes"""
+# pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
 from itertools import cycle
@@ -13,7 +14,25 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-# pylint: disable=too-many-branches
+def update_trace_name(trace, default_name, default_suffix, style):
+    """updates legend entry based on name and suffix"""
+    label = get_label(default_name, default_suffix, style)
+    trace.update(name=label)
+    return trace
+
+
+def get_label(default_name, default_suffix, style):
+    """provides legend entry based on name and suffix"""
+    name = default_name if style.label is None else style.label
+    if style.description.show and style.description.text is None:
+        name_suffix = default_suffix
+    elif not style.description.show:
+        name_suffix = ""
+    else:
+        name_suffix = f" ({style.description.text})"
+    return f"{name}{name_suffix}"
+
+
 def place_and_orient_model3d(
     model_kwargs,
     model_args=None,
@@ -248,6 +267,18 @@ def get_flatten_objects_properties_recursive(
             "legendtext": parent_label,
         }
         if isCollection:
+            suffs = []
+            if subobj.children_all:
+                nums = {
+                    "sensor": len(subobj.sensors_all),
+                    "source": len(subobj.sources_all),
+                }
+                for name, num in nums.items():
+                    if num > 0:
+                        suffs.append(f"{num} {name}{'s'[:num^1]}")
+            else:
+                suffs.append("no children")
+            label = get_label("Collection", f" ({', '.join(suffs)})", style)
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -255,7 +286,7 @@ def get_flatten_objects_properties_recursive(
                     color_cycle=color_cycle,
                     parent_legendgroup=legendgroup,
                     parent_color=style.color,
-                    parent_label=style.label,
+                    parent_label=label,
                     **kwargs,
                 )
             )
