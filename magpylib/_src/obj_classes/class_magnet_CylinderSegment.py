@@ -93,7 +93,7 @@ class CylinderSegment(BaseMagnet):
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_CylinderSegment
+    get_trace = make_CylinderSegment
 
     def __init__(
         self,

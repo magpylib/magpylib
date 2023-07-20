@@ -109,7 +109,7 @@ class TriangularMesh(BaseMagnet):
 
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
-    _draw_func = make_TriangularMesh
+    get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
     def __init__(

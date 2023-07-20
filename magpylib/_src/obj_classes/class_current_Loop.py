@@ -79,7 +79,7 @@ class Loop(BaseCurrent):
 
     _field_func = staticmethod(current_loop_field)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
-    _draw_func = make_Loop
+    get_trace = make_Loop
 
     def __init__(
         self,

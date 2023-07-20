@@ -21,7 +21,7 @@ class BaseDisplayRepr:
     """Provides the show and repr methods for all objects"""
 
     show = show
-    _draw_func = make_DefaultTrace
+    get_trace = make_DefaultTrace
 
     def _property_names_generator(self):
         """returns a generator with class properties only"""

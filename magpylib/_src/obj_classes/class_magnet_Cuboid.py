@@ -80,7 +80,7 @@ class Cuboid(BaseMagnet):
 
     _field_func = staticmethod(magnet_cuboid_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_Cuboid
+    get_trace = make_Cuboid
 
     def __init__(
         self,

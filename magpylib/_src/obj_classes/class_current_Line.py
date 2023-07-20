@@ -89,7 +89,7 @@ class Line(BaseCurrent):
         "segment_start": 2,
         "segment_end": 2,
     }
-    _draw_func = make_Line
+    get_trace = make_Line
 
     def __init__(
         self,

@@ -65,7 +65,7 @@ class MagpyMarkers:
         """Style property"""
         return self._style
 
-    def _draw_func(self, **kwargs):
+    def get_trace(self, **kwargs):
         """Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
         provided arguments."""
         style = self.style
@@ -922,7 +922,7 @@ def get_generic_traces(
         is_mag_arrows = "arrow" in mag.mode
         mag.show = "color" in mag.mode
 
-    make_func = input_obj._draw_func
+    make_func = getattr(input_obj, "get_trace", None)
     make_func_kwargs = {}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
@@ -932,7 +932,7 @@ def get_generic_traces(
     path_traces_extra_generic = []
     path_traces_extra_specific_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
-    if not has_path:
+    if not has_path and make_func is not None:
         tr = make_func(**make_func_kwargs)
         tr["row"] = row
         tr["col"] = col

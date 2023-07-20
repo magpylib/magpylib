@@ -76,7 +76,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     _style_class = SensorStyle
     _autosize = True
-    _draw_func = make_Sensor
+    get_trace = make_Sensor
 
     def __init__(
         self,
