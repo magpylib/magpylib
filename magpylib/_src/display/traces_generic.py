@@ -268,102 +268,6 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, pos_orient_inds, mode, **kwargs):
-    """Draw mesh lines and vertices"""
-    # pylint: disable=protected-access
-    kwargs.pop("color", None)
-    style = obj.style
-    mesh = getattr(style.mesh, mode)
-    marker, line = mesh.marker, mesh.line
-    tr, vert = obj.faces, obj.vertices
-    if mode == "disconnected":
-        subsets = obj.get_faces_subsets()
-        lines = get_closest_vertices(subsets, vert)
-    else:
-        if mode == "selfintersecting":
-            tr = obj.faces[obj.get_selfintersecting_faces()]
-        edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
-        if mode == "open":
-            edges = obj.get_open_edges()
-        else:
-            edges = np.unique(edges, axis=0)
-        lines = vert[edges]
-
-    out = {}
-    if lines.size != 0:
-        label = f"{obj}" if style.label is None else style.label
-        lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
-        traces = []
-        for ind in pos_orient_inds:
-            x, y, z = (obj._orientation[ind].apply(lines) + obj._position[ind]).T
-            trace = {
-                "type": "scatter3d",
-                "x": x,
-                "y": y,
-                "z": z,
-                "marker_color": marker.color,
-                "marker_size": marker.size,
-                "marker_symbol": marker.symbol,
-                "line_color": line.color,
-                "line_width": line.width,
-                "line_dash": line.style,
-                "legendgroup": f"{obj}{mode}edges",
-                "name": f"{label} - {mode}-edges",
-            }
-            traces.append(trace)
-        out = {**merge_traces(*traces)[0], **kwargs}
-    return out
-
-
-def make_triangle_orientations(obj, pos_orient_inds, **kwargs) -> dict:
-    """
-    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
-    based on the provided arguments.
-    """
-    # pylint: disable=protected-access
-    style = obj.style
-    orient = style.orientation
-    size = orient.size
-    symbol = orient.symbol
-    offset = orient.offset
-    color = style.color if orient.color is None else orient.color
-    vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
-    traces = []
-    for vert in vertices:
-        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
-        nvec = vec / np.linalg.norm(vec)
-        # arrow length proportional to square root of triangle
-        length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
-        zaxis = np.array([0, 0, 1])
-        cross = np.cross(nvec, zaxis)
-        n = np.linalg.norm(cross)
-        if n == 0:
-            n = 1
-            cross = np.array([-np.sign(nvec[-1]), 0, 0])
-        dot = np.dot(nvec, zaxis)
-        t = np.arccos(dot)
-        vec = -t * cross / n
-        orient = RotScipy.from_rotvec(vec)
-        make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
-        vmean = np.mean(vert, axis=0)
-        vmean -= (1 - offset) * length * nvec * size
-        for ind in pos_orient_inds:
-            tr = make_fn(
-                "plotly-dict",
-                base=10,
-                diameter=0.5 * size * length,
-                height=size * length,
-                pivot="tail",
-                color=color,
-                position=obj._orientation[ind].apply(vmean) + obj._position[ind],
-                orientation=obj._orientation[ind] * orient,
-                **kwargs,
-            )
-            traces.append(tr)
-    trace = merge_mesh3d(*traces)
-    return trace
-
-
 def make_Cuboid(obj, **kwargs) -> dict:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
@@ -464,6 +368,100 @@ def make_Tetrahedron(obj, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
+def make_triangle_orientations(obj, **kwargs) -> dict:
+    """
+    Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
+    based on the provided arguments.
+    """
+    # pylint: disable=protected-access
+    style = obj.style
+    orient = style.orientation
+    size = orient.size
+    symbol = orient.symbol
+    offset = orient.offset
+    color = style.color if orient.color is None else orient.color
+    vertices = obj.mesh if hasattr(obj, "mesh") else [obj.vertices]
+    traces = []
+    for vert in vertices:
+        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        nvec = vec / np.linalg.norm(vec)
+        # arrow length proportional to square root of triangle
+        length = np.sqrt(triangles_area(np.expand_dims(vert, axis=0))[0]) * 0.2
+        zaxis = np.array([0, 0, 1])
+        cross = np.cross(nvec, zaxis)
+        n = np.linalg.norm(cross)
+        if n == 0:
+            n = 1
+            cross = np.array([-np.sign(nvec[-1]), 0, 0])
+        dot = np.dot(nvec, zaxis)
+        t = np.arccos(dot)
+        vec = -t * cross / n
+        orient = RotScipy.from_rotvec(vec)
+        make_fn = make_BasePyramid if symbol == "cone" else make_BaseArrow
+        vmean = np.mean(vert, axis=0)
+        vmean -= (1 - offset) * length * nvec * size
+        tr = make_fn(
+            "plotly-dict",
+            base=10,
+            diameter=0.5 * size * length,
+            height=size * length,
+            pivot="tail",
+            color=color,
+            position=vmean,
+            orientation=orient,
+            **kwargs,
+        )
+        traces.append(tr)
+    trace = merge_mesh3d(*traces)
+    return trace
+
+
+def make_mesh_lines(obj, mode, **kwargs):
+    """Draw mesh lines and vertices"""
+    # pylint: disable=protected-access
+    kwargs.pop("color", None)
+    legendgroup = kwargs.pop("legendgroup", obj)
+    style = obj.style
+    mesh = getattr(style.mesh, mode)
+    marker, line = mesh.marker, mesh.line
+    tr, vert = obj.faces, obj.vertices
+    if mode == "disconnected":
+        subsets = obj.get_faces_subsets()
+        lines = get_closest_vertices(subsets, vert)
+    else:
+        if mode == "selfintersecting":
+            tr = obj.faces[obj.get_selfintersecting_faces()]
+        edges = np.concatenate([tr[:, 0:2], tr[:, 1:3], tr[:, ::2]], axis=0)
+        if mode == "open":
+            edges = obj.get_open_edges()
+        else:
+            edges = np.unique(edges, axis=0)
+        lines = vert[edges]
+
+    if lines.size == 0:
+        return {}
+    lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
+    traces = []
+    x, y, z = lines.T
+    trace = {
+        "type": "scatter3d",
+        "x": x,
+        "y": y,
+        "z": z,
+        "marker_color": marker.color,
+        "marker_size": marker.size,
+        "marker_symbol": marker.symbol,
+        "line_color": line.color,
+        "line_width": line.width,
+        "line_dash": line.style,
+        "legendgroup": f"{legendgroup} - {mode}edges",
+        "name_suffix": f" - {mode}-edges",
+        "name": get_label(obj),
+    }
+    traces.append(trace)
+    return {**merge_traces(*traces)[0], **kwargs}
+
+
 def make_Triangle(obj, **kwargs) -> dict:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
@@ -492,10 +490,13 @@ def make_Triangle(obj, **kwargs) -> dict:
         "plotly-dict", vertices=vert, faces=faces, color=style.color
     )
     trace["name"] = get_label(obj)
-    return {**trace, **kwargs}
+    traces = [{**trace, **kwargs}]
+    if style.orientation.show:
+        traces.append(make_triangle_orientations(obj, **kwargs))
+    return traces
 
 
-def make_TriangularMesh(obj, **kwargs) -> dict:
+def make_TriangularMesh_single(obj, **kwargs) -> dict:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
     provided arguments.
@@ -510,6 +511,85 @@ def make_TriangularMesh(obj, **kwargs) -> dict:
     # make edges sharper in plotly
     trace.update(flatshading=True, lighting_facenormalsepsilon=0, lighting_ambient=0.7)
     return {**trace, **kwargs}
+
+
+def make_TriangularMesh(obj, **kwargs) -> dict:
+    """
+    Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
+    provided arguments.
+    """
+    # pylint: disable=protected-access
+    style = obj.style
+    is_disconnected = False
+    for mode in ("open", "disconnected", "selfintersecting"):
+        show_mesh = getattr(style.mesh, mode).show
+        if mode == "open" and show_mesh:
+            if obj.status_open is None:
+                warnings.warn(
+                    f"Unchecked open mesh status in {obj!r} detected, before attempting "
+                    "to show potential open edges, which may take a while to compute "
+                    "when the mesh has many faces, now applying operation..."
+                )
+                obj.check_open()
+        elif mode == "disconnected" and show_mesh:
+            if obj.status_disconnected is None:
+                warnings.warn(
+                    f"Unchecked disconnected mesh status in {obj!r} detected, before "
+                    "attempting to show possible disconnected parts, which may take a while "
+                    "to compute when the mesh has many faces, now applying operation..."
+                )
+            is_disconnected = obj.check_disconnected()
+        elif mode == "selfintersecting":
+            if obj._status_selfintersecting is None:
+                warnings.warn(
+                    f"Unchecked selfintersecting mesh status in {obj!r} detected, before "
+                    "attempting to show possible disconnected parts, which may take a while "
+                    "to compute when the mesh has many faces, now applying operation..."
+                )
+                obj.check_selfintersecting()
+
+    if is_disconnected:
+        tria_orig = obj._faces
+        obj.style.magnetization.mode = "arrow"
+        traces = []
+        for ind, (tri, dis_color) in enumerate(
+            zip(
+                obj.get_faces_subsets(),
+                cycle(obj.style.mesh.disconnected.colorsequence),
+            )
+        ):
+            # temporary mutate faces from subset
+            obj._faces = tri
+            obj.style.magnetization.show = False
+            tr = make_TriangularMesh_single(obj, **{**kwargs, "color": dis_color})
+            # match first group with path scatter trace
+            lg_suff = "" if ind == 0 else f"- part_{ind+1:02d}"
+            tr["legendgroup"] = f"{kwargs.get('legendgroup', obj)}{lg_suff}"
+            tr["name_suffix"] = f" - part_{ind+1:02d}"
+            traces.append(tr)
+            if style.orientation.show:
+                traces.append(
+                    make_triangle_orientations(
+                        obj,
+                        **{**kwargs, "legendgroup": tr["legendgroup"]},
+                    )
+                )
+        obj._faces = tria_orig
+    else:
+        traces = [make_TriangularMesh_single(obj, **kwargs)]
+        if style.orientation.show:
+            traces.append(
+                make_triangle_orientations(
+                    obj,
+                    **kwargs,
+                )
+            )
+    for mode in ("grid", "open", "disconnected", "selfintersecting"):
+        if getattr(style.mesh, mode).show:
+            trace = make_mesh_lines(obj, mode, **kwargs)
+            if trace:
+                traces.append(trace)
+    return traces
 
 
 def make_Pixels(positions, size=1) -> dict:
@@ -938,9 +1018,6 @@ def get_generic_traces(
     # pylint: disable=protected-access
     # pylint: disable=import-outside-toplevel
 
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
-    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
-
     style = input_obj.style
     is_mag_arrows = False
     is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
@@ -952,14 +1029,13 @@ def get_generic_traces(
         mag.show = "color" in mag.mode
 
     make_func = getattr(input_obj, "get_trace", None)
-    make_func_kwargs = {}
+    make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
     if getattr(input_obj, "_autosize", False):
         make_func_kwargs["autosize"] = autosize
 
     all_generic_traces = []
-    path_traces = []
-    path_traces_extra_generic = []
-    path_traces_extra_specific_backend = []
+    traces_generic = []
+    path_traces_extra_non_generic_backend = []
     has_path = hasattr(input_obj, "position") and hasattr(input_obj, "orientation")
     if not has_path and make_func is not None:
         tr = make_func(**make_func_kwargs)
@@ -967,140 +1043,91 @@ def get_generic_traces(
         tr["col"] = col
         out = {"generic": [tr]}
         if extra_backend:
-            out.update({extra_backend: path_traces_extra_specific_backend})
+            out.update({extra_backend: path_traces_extra_non_generic_backend})
         return out
 
-    extra_model3d_traces = style.model3d.data if style.model3d.data is not None else []
     orientations, positions, pos_orient_inds = get_rot_pos_from_path(
         input_obj, style.path.frames
     )
-    obj_is_disconnected = False
-    if isinstance(input_obj, TriangularMesh):
-        for mode in ("open", "disconnected", "selfintersecting"):
-            show_mesh = getattr(style.mesh, mode).show
-            if mode == "open" and show_mesh:
-                if input_obj.status_open is None:
-                    warnings.warn(
-                        f"Unchecked open mesh status in {input_obj!r} detected, before attempting "
-                        "to show potential open edges, which may take a while to compute "
-                        "when the mesh has many faces, now applying operation..."
-                    )
-                    input_obj.check_open()
-            elif mode == "disconnected" and show_mesh:
-                if input_obj.status_disconnected is None:
-                    warnings.warn(
-                        f"Unchecked disconnected mesh status in {input_obj!r} detected, before "
-                        "attempting to show possible disconnected parts, which may take a while "
-                        "to compute when the mesh has many faces, now applying operation..."
-                    )
-                obj_is_disconnected = input_obj.check_disconnected()
-            elif mode == "selfintersecting":
-                if input_obj._status_selfintersecting is None:
-                    warnings.warn(
-                        f"Unchecked selfintersecting mesh status in {input_obj!r} detected, before "
-                        "attempting to show possible disconnected parts, which may take a while "
-                        "to compute when the mesh has many faces, now applying operation..."
-                    )
-                    input_obj.check_selfintersecting()
-    disconnected_traces = []
-    for orient, pos in zip(orientations, positions):
+    if pos_orient_inds.size != 0:
         if style.model3d.showdefault and make_func is not None:
-            if obj_is_disconnected:
-                tria_orig = input_obj._faces
-                mag_show = style.magnetization.show
-                for tri, dis_color in zip(
-                    input_obj.get_faces_subsets(),
-                    cycle(style.mesh.disconnected.colorsequence),
-                ):
-                    # temporary mutate faces from subset
-                    input_obj._faces = tri
-                    style.magnetization.show = False
-                    dis_tr = make_func(
-                        **{**make_func_kwargs, "color": dis_color},
+            p_trs = make_func(**make_func_kwargs)
+            p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
+            for p_tr in p_trs:
+                if is_mag and p_tr.get("type", "") == "mesh3d":
+                    p_tr = update_magnet_mesh(
+                        p_tr,
+                        mag_style=style.magnetization,
+                        magnetization=input_obj.magnetization,
+                        color_slicing=not supports_colorgradient,
                     )
-                    dis_tr = place_and_orient_model3d(
-                        dis_tr, orientation=orient, position=pos
-                    )
-                    disconnected_traces.append(dis_tr)
-                input_obj._faces = tria_orig
-                style.magnetization.show = mag_show
-            else:  # if disconnnected, no mag slicing needed
-                p_trs = make_func(**make_func_kwargs)
-                p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
-                for p_tr in p_trs:
-                    if is_mag and p_tr.get("type", "") == "mesh3d":
-                        p_tr = update_magnet_mesh(
-                            p_tr,
-                            mag_style=style.magnetization,
-                            magnetization=input_obj.magnetization,
-                            color_slicing=not supports_colorgradient,
-                        )
-                    p_tr = place_and_orient_model3d(
-                        p_tr, orientation=orient, position=pos
-                    )
-                    path_traces.append(p_tr)
+
+                traces_generic.append(p_tr)
+
+        extra_model3d_traces = (
+            style.model3d.data if style.model3d.data is not None else []
+        )
         for extr in extra_model3d_traces:
-            if extr.show:
+            if not extr.show:
+                continue
+            extr.update(extr.updatefunc())  # update before checking backend
+            if extr.backend == "generic":
                 extr.update(extr.updatefunc())
-                if extr.backend == "generic":
-                    trace3d = {"opacity": style.opacity}
-                    ttype = extr.constructor.lower()
-                    obj_extr_trace = (
-                        extr.kwargs() if callable(extr.kwargs) else extr.kwargs
-                    )
-                    obj_extr_trace = {"type": ttype, **obj_extr_trace}
-                    if ttype == "scatter3d":
-                        for k in ("marker", "line"):
-                            trace3d[f"{k}_color"] = trace3d.get(
-                                f"{k}_color", style.color
-                            )
-                    elif ttype == "mesh3d":
-                        trace3d["showscale"] = trace3d.get("showscale", False)
-                        if "facecolor" in obj_extr_trace:
-                            ttype = "mesh3d_facecolor"
-                        trace3d["color"] = trace3d.get("color", style.color)
-                    else:  # pragma: no cover
-                        raise ValueError(
-                            f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
+                tr_generic = {"opacity": style.opacity}
+                ttype = extr.constructor.lower()
+                obj_extr_trace = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
+                obj_extr_trace = {"type": ttype, **obj_extr_trace}
+                if ttype == "scatter3d":
+                    for k in ("marker", "line"):
+                        tr_generic[f"{k}_color"] = tr_generic.get(
+                            f"{k}_color", style.color
                         )
-                    trace3d.update(
-                        linearize_dict(
-                            place_and_orient_model3d(
-                                model_kwargs=obj_extr_trace,
-                                orientation=orient,
-                                position=pos,
-                                scale=extr.scale,
-                            ),
-                            separator="_",
-                        )
+                elif ttype == "mesh3d":
+                    tr_generic["showscale"] = tr_generic.get("showscale", False)
+                    if "facecolor" in obj_extr_trace:
+                        ttype = "mesh3d_facecolor"
+                    tr_generic["color"] = tr_generic.get("color", style.color)
+                else:  # pragma: no cover
+                    raise ValueError(
+                        f"{ttype} is not supported, only 'scatter3d' and 'mesh3d' are"
                     )
-                    path_traces_extra_generic.append(trace3d)
-                elif extr.backend == extra_backend:
-                    trace3d = {
-                        "model3d": extr,
-                        "position": pos,
-                        "orientation": orient,
-                        "kwargs": {
-                            "opacity": style.opacity,
-                            "color": style.color,
-                            "legendgroup": legendgroup,
-                            "name": legendtext,
-                            "row": row,
-                            "col": col,
-                        },
-                    }
-                    path_traces_extra_specific_backend.append(trace3d)
+                tr_generic.update(linearize_dict(obj_extr_trace, separator="_"))
+                traces_generic.append(tr_generic)
 
-    all_generic_traces.extend(group_traces(*path_traces, *path_traces_extra_generic))
+    path_traces_generic = []
+    for tr in traces_generic:
+        temp_rot_traces = []
+        name_suff = tr.pop("name_suffix", None)
+        name = tr.get("name", "") if legendtext is None else legendtext
+        for orient, pos in zip(orientations, positions):
+            tr1 = place_and_orient_model3d(tr, orientation=orient, position=pos)
+            if name_suff is not None:
+                tr1["name"] = f"{name}{name_suff}"
+            temp_rot_traces.append(tr1)
+        path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    if disconnected_traces:
-        nsubsets = len(input_obj.get_faces_subsets())
-        for ind in range(nsubsets):
-            trace = merge_traces(*disconnected_traces[ind::nsubsets])[0]
-            trace["legendgroup"] = f"{legendgroup} - part_{ind+1:02d}"
-            lg = trace.get("name", "") if legendtext is None else legendtext
-            trace["name"] = f"{lg} - part_{ind+1:02d}"
-            all_generic_traces.append(trace)
+    for extr in extra_model3d_traces:
+        if not extr.show:
+            continue
+        extr.update(extr.updatefunc())  # update before checking backend
+        if extr.backend == extra_backend:
+            for orient, pos in zip(orientations, positions):
+                tr_generic = {
+                    "model3d": extr,
+                    "position": pos,
+                    "orientation": orient,
+                    "kwargs": {
+                        "opacity": style.opacity,
+                        "color": style.color,
+                        "legendgroup": legendgroup,
+                        "name": legendtext,
+                        "row": row,
+                        "col": col,
+                    },
+                }
+                path_traces_extra_non_generic_backend.append(tr_generic)
+
+    all_generic_traces.extend(group_traces(*path_traces_generic))
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
         scatter_path = make_path(input_obj)
@@ -1108,21 +1135,6 @@ def get_generic_traces(
 
     if is_mag_arrows:
         all_generic_traces.append(make_mag_arrows(input_obj, pos_orient_inds))
-    if isinstance(input_obj, (Triangle, TriangularMesh)) and style.orientation.show:
-        all_generic_traces.append(
-            make_triangle_orientations(
-                input_obj,
-                pos_orient_inds,
-                legendgroup=legendgroup,
-                **kwargs,
-            )
-        )
-    if isinstance(input_obj, TriangularMesh):
-        for mode in ("grid", "open", "disconnected", "selfintersecting"):
-            if getattr(style.mesh, mode).show:
-                trace = make_mesh_lines(input_obj, pos_orient_inds, mode, **kwargs)
-                if trace:
-                    all_generic_traces.append(trace)
 
     for tr in all_generic_traces:
         tr.update(row=row, col=col)
@@ -1140,7 +1152,7 @@ def get_generic_traces(
             tr["color"] = None
     out = {"generic": all_generic_traces}
     if extra_backend:
-        out.update({extra_backend: path_traces_extra_specific_backend})
+        out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
 
