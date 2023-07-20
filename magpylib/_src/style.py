@@ -15,7 +15,7 @@ from magpylib._src.defaults.defaults_utility import validate_style_keys
 
 
 def get_families(obj):
-    "get obj families"
+    """get obj families"""
     # pylint: disable=import-outside-toplevel
     # pylint: disable=possibly-unused-variable
     # pylint: disable=redefined-outer-name

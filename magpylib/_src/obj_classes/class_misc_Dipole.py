@@ -1,5 +1,5 @@
 """Dipole class code"""
-from magpylib._src.display.traces_generic import make_Dipole
+from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource

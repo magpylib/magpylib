@@ -1,5 +1,5 @@
 """Loop current class code"""
-from magpylib._src.display.traces_generic import make_Loop
+from magpylib._src.display.traces_core import make_Loop
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent

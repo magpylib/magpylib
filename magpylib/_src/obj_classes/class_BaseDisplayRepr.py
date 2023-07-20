@@ -4,7 +4,7 @@
 import numpy as np
 
 from magpylib._src.display.display import show
-from magpylib._src.display.traces_generic import make_DefaultTrace
+from magpylib._src.display.traces_core import make_DefaultTrace
 
 UNITS = {
     "parent": None,

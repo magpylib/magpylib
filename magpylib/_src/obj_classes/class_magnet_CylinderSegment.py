@@ -1,7 +1,7 @@
 """Magnet Cylinder class code"""
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_CylinderSegment
+from magpylib._src.display.traces_core import make_CylinderSegment
 from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
 )
