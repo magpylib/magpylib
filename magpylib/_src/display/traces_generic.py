@@ -342,7 +342,7 @@ def make_Cuboid(obj, **kwargs) -> dict:
     style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
-        default_suffix = f" (no dimension)"
+        default_suffix = " (no dimension)"
     else:
         trace = make_BaseCuboid(
             "plotly-dict", dimension=obj.dimension, color=style.color
@@ -361,7 +361,7 @@ def make_Cylinder(obj, base=50, **kwargs) -> dict:
     style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
-        default_suffix = f" (no dimension)"
+        default_suffix = " (no dimension)"
     else:
         diameter, height = obj.dimension
         d = [unit_prefix(d / 1000) for d in (diameter, height)]
@@ -385,7 +385,7 @@ def make_CylinderSegment(obj, vertices=25, **kwargs):
     style = obj.style
     if obj.dimension is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
-        default_suffix = f" (no dimension)"
+        default_suffix = " (no dimension)"
     else:
         d = [
             unit_prefix(d / (1000 if i < 3 else 1)) for i, d in enumerate(obj.dimension)
@@ -407,7 +407,7 @@ def make_Sphere(obj, vertices=15, **kwargs) -> dict:
 
     if obj.diameter is None:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
-        default_suffix = f" (no dimension)"
+        default_suffix = " (no dimension)"
     else:
         vertices = min(max(vertices, 3), 20)
         trace = make_BaseEllipsoid(
@@ -1290,6 +1290,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
             for rco in rco_obj:
                 params["row"], params["col"], output_typ = rco
                 if output_typ == "model3d":
+                    orig_style = None
                     try:
                         # temporary replace style attribute
                         orig_style = obj._style
