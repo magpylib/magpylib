@@ -436,6 +436,7 @@ def get_generic_traces(
             p_trs = make_func(**make_func_kwargs)
             p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
             for p_tr in p_trs:
+                is_mag = p_tr.pop("ismagnet", is_mag)
                 if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
                         p_tr,

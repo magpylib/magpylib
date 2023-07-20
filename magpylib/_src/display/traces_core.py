@@ -330,6 +330,7 @@ def make_triangle_orientations(obj, **kwargs) -> dict:
         )
         traces.append(tr)
     trace = merge_mesh3d(*traces)
+    trace["ismagnet"] = False  # neede to avoid updating mag mesh
     return trace
 
 
