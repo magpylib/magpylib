@@ -7,6 +7,10 @@
 import warnings
 from itertools import combinations
 from itertools import cycle
+from typing import Any
+from typing import Dict
+from typing import List
+from typing import Union
 
 import numpy as np
 from scipy.spatial import distance
@@ -29,13 +33,12 @@ from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import get_label
 from magpylib._src.display.traces_utility import merge_mesh3d
-from magpylib._src.display.traces_utility import merge_traces
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import triangles_area
 from magpylib._src.utility import unit_prefix
 
 
-def make_DefaultTrace(obj, **kwargs) -> dict:
+def make_DefaultTrace(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly scatter3d parameters for an object with no specifically supported
     representation. The object will be represented by a scatter point and text above with object
@@ -57,7 +60,7 @@ def make_DefaultTrace(obj, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_Line(obj, **kwargs) -> dict:
+def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
     provided arguments.
@@ -98,12 +101,7 @@ def make_Line(obj, **kwargs) -> dict:
     return traces
 
 
-def make_Loop(
-    obj,
-    style=None,
-    vert_num=72,
-    **kwargs,
-):
+def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly scatter3d parameters for a Loop current in a dictionary based on the
     provided arguments.
@@ -121,7 +119,7 @@ def make_Loop(
             color = style.color if kind_style.color is None else kind_style.color
 
             if kind == "arrow":
-                angle_pos_deg = 360 * np.round(style.arrow.offset * vert_num) / vert_num
+                angle_pos_deg = 360 * np.round(style.arrow.offset * base) / base
                 vertices = draw_arrow_on_circle(
                     np.sign(obj.current),
                     obj.diameter,
@@ -130,7 +128,7 @@ def make_Loop(
                 )
                 x, y, z = vertices.T
             else:
-                t = np.linspace(0, 2 * np.pi, vert_num)
+                t = np.linspace(0, 2 * np.pi, base)
                 x = np.cos(t) * obj.diameter / 2
                 y = np.sin(t) * obj.diameter / 2
                 z = np.zeros(x.shape)
@@ -149,7 +147,7 @@ def make_Loop(
     return traces
 
 
-def make_Dipole(obj, autosize=None, **kwargs) -> dict:
+def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a dipole in a dictionary based on the
     provided arguments.
@@ -185,7 +183,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_Cuboid(obj, **kwargs) -> dict:
+def make_Cuboid(obj, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cuboid Magnet in a dictionary based on the
     provided arguments.
@@ -204,7 +202,7 @@ def make_Cuboid(obj, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_Cylinder(obj, base=50, **kwargs) -> dict:
+def make_Cylinder(obj, base=50, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Magnet in a dictionary based on the
     provided arguments.
@@ -228,7 +226,7 @@ def make_Cylinder(obj, base=50, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_CylinderSegment(obj, vertices=25, **kwargs):
+def make_CylinderSegment(obj, vertices=25, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Cylinder Segment Magnet in a dictionary based on the
     provided arguments.
@@ -249,7 +247,7 @@ def make_CylinderSegment(obj, vertices=25, **kwargs):
     return {**trace, **kwargs}
 
 
-def make_Sphere(obj, vertices=15, **kwargs) -> dict:
+def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sphere Magnet in a dictionary based on the
     provided arguments.
@@ -272,7 +270,7 @@ def make_Sphere(obj, vertices=15, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_Tetrahedron(obj, **kwargs) -> dict:
+def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Tetrahedron Magnet in a dictionary based on the
     provided arguments.
@@ -285,7 +283,7 @@ def make_Tetrahedron(obj, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_triangle_orientations(obj, **kwargs) -> dict:
+def make_triangle_orientations(obj, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a triangle orientation cone or arrow3d in a dictionary
     based on the provided arguments.
@@ -360,7 +358,7 @@ def get_closest_vertices(faces_subsets, vertices):
     return np.array(closest_verts_list)
 
 
-def make_mesh_lines(obj, mode, **kwargs):
+def make_mesh_lines(obj, mode, **kwargs) -> Dict[str, Any]:
     """Draw mesh lines and vertices"""
     # pylint: disable=protected-access
     kwargs.pop("color", None)
@@ -385,7 +383,6 @@ def make_mesh_lines(obj, mode, **kwargs):
     if lines.size == 0:
         return {}
     lines = np.insert(lines, 2, None, axis=1).reshape(-1, 3)
-    traces = []
     x, y, z = lines.T
     trace = {
         "type": "scatter3d",
@@ -402,11 +399,10 @@ def make_mesh_lines(obj, mode, **kwargs):
         "name_suffix": f" - {mode}-edges",
         "name": get_label(obj),
     }
-    traces.append(trace)
-    return {**merge_traces(*traces)[0], **kwargs}
+    return {**trace, **kwargs}
 
 
-def make_Triangle(obj, **kwargs) -> dict:
+def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet in a dictionary based on the
     provided arguments.
@@ -440,7 +436,7 @@ def make_Triangle(obj, **kwargs) -> dict:
     return traces
 
 
-def make_TriangularMesh_single(obj, **kwargs) -> dict:
+def make_TriangularMesh_single(obj, **kwargs) -> Dict[str, Any]:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
     provided arguments.
@@ -457,7 +453,7 @@ def make_TriangularMesh_single(obj, **kwargs) -> dict:
     return {**trace, **kwargs}
 
 
-def make_TriangularMesh(obj, **kwargs) -> dict:
+def make_TriangularMesh(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     Creates the plotly mesh3d parameters for a Trianglular facet mesh in a dictionary based on the
     provided arguments.
@@ -534,7 +530,7 @@ def make_TriangularMesh(obj, **kwargs) -> dict:
     return traces
 
 
-def make_Pixels(positions, size=1) -> dict:
+def make_Pixels(positions, size=1) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for Sensor pixels based on pixel positions and chosen size
     For now, only "cube" shape is provided.
@@ -546,7 +542,7 @@ def make_Pixels(positions, size=1) -> dict:
     return merge_mesh3d(*pixels)
 
 
-def make_Sensor(obj, autosize=None, **kwargs):
+def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     """
     Create the plotly mesh3d parameters for a Sensor object in a dictionary based on the
     provided arguments.
