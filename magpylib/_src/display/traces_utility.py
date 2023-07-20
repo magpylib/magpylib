@@ -16,12 +16,12 @@ from magpylib._src.utility import format_obj_input
 
 def get_label(obj, default_suffix="", default_name=None, style=None):
     """provides legend entry based on name and suffix"""
-    style = obj.style if style is None else obj.style
+    style = obj.style if style is None else style
     default_name = obj.__class__.__name__ if default_name is None else default_name
     name = default_name if style.label is None else style.label
-    if style.description.show is not False and style.description.text is None:
+    if style.description.show and style.description.text is None:
         name_suffix = default_suffix
-    elif not style.description.show is not False:
+    elif not style.description.show:
         name_suffix = ""
     else:
         name_suffix = f" ({style.description.text})"
