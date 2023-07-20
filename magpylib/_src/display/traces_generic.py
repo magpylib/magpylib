@@ -34,7 +34,7 @@ from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
 )
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
-from magpylib._src.display.traces_utility import draw_arrowed_circle
+from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
 from magpylib._src.display.traces_utility import get_label
@@ -120,60 +120,90 @@ def make_Line(obj, **kwargs) -> dict:
     provided arguments.
     """
     style = obj.style
-    current = obj.current
-    vertices = obj.vertices
-    show_arrows = style.arrow.show
-    arrow_size = style.arrow.size
-    if show_arrows:
-        vertices = draw_arrow_from_vertices(vertices, current, arrow_size)
-    else:
-        vertices = np.array(vertices).T
-    x, y, z = vertices
-    trace = {
-        "type": "scatter3d",
-        "x": x,
-        "y": y,
-        "z": z,
-        "mode": "lines",
-        "line_width": style.arrow.width,
-        "line_color": style.color,
-    }
     default_suffix = (
-        f" ({unit_prefix(current)}A)"
-        if current is not None
+        f" ({unit_prefix(obj.current)}A)"
+        if obj.current is not None
         else " (Current not initialized)"
     )
-    trace["name"] = get_label(obj, default_suffix=default_suffix)
-    return {**trace, **kwargs}
+    traces = []
+    for kind in ("arrow", "line"):
+        kind_style = getattr(style, kind)
+        if kind_style.show:
+            color = style.color if kind_style.color is None else kind_style.color
+            if kind == "arrow":
+                x, y, z = draw_arrow_from_vertices(
+                    obj.vertices,
+                    obj.current,
+                    kind_style.size,
+                    arrow_pos=style.arrow.offset,
+                    include_line=False,
+                ).T
+            else:
+                x, y, z = obj.vertices.T
+            trace = {
+                "type": "scatter3d",
+                "x": x,
+                "y": y,
+                "z": z,
+                "mode": "lines",
+                "line_width": kind_style.width,
+                "line_dash": kind_style.style,
+                "line_color": color,
+            }
+            trace["name"] = get_label(obj, default_suffix=default_suffix)
+            traces.append({**trace, **kwargs})
+    return traces
 
 
-def make_Loop(obj, vertices=50, **kwargs):
+def make_Loop(
+    obj,
+    style=None,
+    vert_num=72,
+    **kwargs,
+):
     """
     Creates the plotly scatter3d parameters for a Loop current in a dictionary based on the
     provided arguments.
     """
     style = obj.style
-    current = obj.current
-    diameter = obj.diameter
-    arrow_size = style.arrow.size if style.arrow.show else 0
-    vertices = draw_arrowed_circle(current, diameter, arrow_size, vertices)
-    x, y, z = vertices
-    trace = {
-        "type": "scatter3d",
-        "x": x,
-        "y": y,
-        "z": z,
-        "mode": "lines",
-        "line_width": style.arrow.width,
-        "line_color": style.color,
-    }
     default_suffix = (
-        f" ({unit_prefix(current)}A)"
-        if current is not None
+        f" ({unit_prefix(obj.current)}A)"
+        if obj.current is not None
         else " (Current not initialized)"
     )
-    trace["name"] = get_label(obj, default_suffix=default_suffix)
-    return {**trace, **kwargs}
+    traces = []
+    for kind in ("arrow", "line"):
+        kind_style = getattr(style, kind)
+        if kind_style.show:
+            color = style.color if kind_style.color is None else kind_style.color
+
+            if kind == "arrow":
+                angle_pos_deg = 360 * np.round(style.arrow.offset * vert_num) / vert_num
+                vertices = draw_arrow_on_circle(
+                    np.sign(obj.current),
+                    obj.diameter,
+                    style.arrow.size,
+                    angle_pos_deg=angle_pos_deg,
+                )
+                x, y, z = vertices.T
+            else:
+                t = np.linspace(0, 2 * np.pi, vert_num)
+                x = np.cos(t) * obj.diameter / 2
+                y = np.sin(t) * obj.diameter / 2
+                z = np.zeros(x.shape)
+            trace = {
+                "type": "scatter3d",
+                "x": x,
+                "y": y,
+                "z": z,
+                "mode": "lines",
+                "line_width": kind_style.width,
+                "line_dash": kind_style.style,
+                "line_color": color,
+            }
+            trace["name"] = get_label(obj, default_suffix=default_suffix)
+            traces.append({**trace, **kwargs})
+    return traces
 
 
 def make_Dipole(obj, autosize=None, **kwargs) -> dict:
@@ -995,16 +1025,20 @@ def get_generic_traces(
                 input_obj._faces = tria_orig
                 style.magnetization.show = mag_show
             else:  # if disconnnected, no mag slicing needed
-                p_tr = make_func(**make_func_kwargs)
-                if is_mag and p_tr.get("type", "") == "mesh3d":
-                    p_tr = update_magnet_mesh(
-                        p_tr,
-                        mag_style=style.magnetization,
-                        magnetization=input_obj.magnetization,
-                        color_slicing=not supports_colorgradient,
+                p_trs = make_func(**make_func_kwargs)
+                p_trs = [p_trs] if isinstance(p_trs, dict) else p_trs
+                for p_tr in p_trs:
+                    if is_mag and p_tr.get("type", "") == "mesh3d":
+                        p_tr = update_magnet_mesh(
+                            p_tr,
+                            mag_style=style.magnetization,
+                            magnetization=input_obj.magnetization,
+                            color_slicing=not supports_colorgradient,
+                        )
+                    p_tr = place_and_orient_model3d(
+                        p_tr, orientation=orient, position=pos
                     )
-                p_tr = place_and_orient_model3d(p_tr, orientation=orient, position=pos)
-                path_traces.append(p_tr)
+                    path_traces.append(p_tr)
         for extr in extra_model3d_traces:
             if extr.show:
                 extr.update(extr.updatefunc())
@@ -1057,8 +1091,7 @@ def get_generic_traces(
                     }
                     path_traces_extra_specific_backend.append(trace3d)
 
-    all_generic_traces.extend(merge_traces(*path_traces))
-    all_generic_traces.extend(group_traces(*path_traces_extra_generic))
+    all_generic_traces.extend(group_traces(*path_traces, *path_traces_extra_generic))
 
     if disconnected_traces:
         nsubsets = len(input_obj.get_faces_subsets())

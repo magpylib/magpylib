@@ -88,6 +88,63 @@ def get_style(obj, default_settings, **kwargs):
     return style
 
 
+class Line(MagicProperties):
+    """Defines line styling properties.
+
+    Parameters
+    ----------
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    def __init__(self, style=None, color=None, width=None, **kwargs):
+        super().__init__(style=style, color=color, width=width, **kwargs)
+
+    @property
+    def style(self):
+        """Line style."""
+        return self._style
+
+    @style.setter
+    def style(self, val):
+        assert val is None or val in ALLOWED_LINESTYLES, (
+            f"The `style` property of {type(self).__name__} must be one of "
+            f"{ALLOWED_LINESTYLES},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._style = val
+
+    @property
+    def color(self):
+        """Line color."""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val)
+
+    @property
+    def width(self):
+        """Positive number that defines the line width."""
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._width = val
+
+
 class BaseStyle(MagicProperties):
     """Base class for display styling options of `BaseGeo` objects.
 
@@ -1553,17 +1610,29 @@ class CurrentProperties:
     Parameters
     ----------
     arrow: dict or `Arrow` object, default=None
-        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
+        `Arrow` object or dict with `show, size, width, style, color` properties/keys.
+
+    line: dict or `Line` object, default=None
+        `Line` object or dict with `show, width, style, color` properties/keys.
     """
 
     @property
     def arrow(self):
-        """`Arrow` object or dict with `'show'`, `'size'` properties/keys."""
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
         return self._arrow
 
     @arrow.setter
     def arrow(self, val):
         self._arrow = validate_property_class(val, "current", Arrow, self)
+
+    @property
+    def line(self):
+        """`Line` object or dict with `show, width, style, color` properties/keys."""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", CurrentLine, self)
 
 
 class DefaultCurrent(MagicProperties, CurrentProperties):
@@ -1614,19 +1683,31 @@ class CurrentStyle(BaseStyle, CurrentProperties):
         super().__init__(**kwargs)
 
 
-class Arrow(MagicProperties):
+class Arrow(Line):
     """Defines styling properties of current arrows.
 
     Parameters
     ----------
     show: bool, default=None
-        If True current direction is shown with an arrow.
+        Show/Hide arrow
 
     size: float, default=None
         Positive number defining the size of the arrows.
 
+    offset: float, default=0.5
+        Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
     width: float, default=None
-        Positive number that defines the arrow line width.
+        Positive number that defines the line width.
     """
 
     def __init__(self, show=None, size=None, **kwargs):
@@ -1659,17 +1740,53 @@ class Arrow(MagicProperties):
         self._size = val
 
     @property
-    def width(self):
-        """Positive number that defines the arrow line width."""
-        return self._width
+    def offset(self):
+        """Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+        """
+        return self._offset
 
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+    @offset.setter
+    def offset(self, val):
+        assert val is None or (isinstance(val, (float, int))) and 0 <= val <= 1, (
+            "The `offset` property must valid number between 0 and 1\n"
             f"but received {repr(val)} instead."
         )
-        self._width = val
+        self._offset = val
+
+
+class CurrentLine(Line):
+    """Defines styling properties of current lines.
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/Hide arrow
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    @property
+    def show(self):
+        """Show/hide current line."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
 
 
 class Marker(MagicProperties):
@@ -1925,63 +2042,6 @@ but received {repr(val)} instead"""
             f"but received {repr(val)} instead."
         )
         self._numbering = val
-
-
-class Line(MagicProperties):
-    """Defines line styling properties.
-
-    Parameters
-    ----------
-    style: str, default=None
-        Can be one of:
-        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
-        'loosely dotted', 'loosely dashdotted']`
-
-    color: str, default=None
-        Line color.
-
-    width: float, default=None
-        Positive number that defines the line width.
-    """
-
-    def __init__(self, style=None, color=None, width=None, **kwargs):
-        super().__init__(style=style, color=color, width=width, **kwargs)
-
-    @property
-    def style(self):
-        """Line style."""
-        return self._style
-
-    @style.setter
-    def style(self, val):
-        assert val is None or val in ALLOWED_LINESTYLES, (
-            f"The `style` property of {type(self).__name__} must be one of "
-            f"{ALLOWED_LINESTYLES},\n"
-            f"but received {repr(val)} instead."
-        )
-        self._style = val
-
-    @property
-    def color(self):
-        """Line color."""
-        return self._color
-
-    @color.setter
-    def color(self, val):
-        self._color = color_validator(val)
-
-    @property
-    def width(self):
-        """Positive number that defines the line width."""
-        return self._width
-
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._width = val
 
 
 class DisplayStyle(MagicProperties):
