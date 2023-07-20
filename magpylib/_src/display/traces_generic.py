@@ -458,7 +458,6 @@ def make_Triangle(obj, **kwargs) -> dict:
         ]
         faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
 
-    style = obj.style
     trace = make_BaseTriangularMesh(
         "plotly-dict", vertices=vert, faces=faces, color=style.color
     )
@@ -1294,7 +1293,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
                     try:
                         # temporary replace style attribute
                         orig_style = obj._style
-                        obj._style = params["style"]
+                        obj._style = params.pop("style", None)
                         out_traces = get_generic_traces(
                             obj,
                             extra_backend=extra_backend,
