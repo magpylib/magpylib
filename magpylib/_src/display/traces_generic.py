@@ -997,7 +997,7 @@ def get_generic_traces(
                 style.magnetization.show = mag_show
             else:  # if disconnnected, no mag slicing needed
                 p_tr = make_func(**make_func_kwargs)
-                if is_mag:
+                if is_mag and p_tr.get("type", "") == "mesh3d":
                     p_tr = update_magnet_mesh(
                         p_tr,
                         mag_style=style.magnetization,
