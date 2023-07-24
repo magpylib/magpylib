@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -10,6 +11,8 @@ kernelspec:
   language: python
   name: python3
 ---
+
+(docu-classes)=
 
 # The Magpylib Classes
 
@@ -69,82 +72,6 @@ The field of a homogeneously charged magnet is, on the outside, the same as the 
 
 The `Triangle` class is set up so that it can easily be used for this purpose. Arbitrary surfaces are easily approximated by triangles, and given the magnetization vector, the surface charge density is automatically computed. One must be very careful to orient the triangles correctly, with surface normal vectors pointing outwards (right-hand-rule). The resulting H-field of such a collection is correct, but the B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field.
 
-## Example: Triangular prism magnet
-
-Consider a prism with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prism are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge density disappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards. For this purpose the surface normal of `Triangle` objects is graphically displayed by default. The following examples shows how the `Triangle` class can be used to create a prism magnet object.
-
-```{code-cell} ipython3
-import magpylib as magpy
-
-top = magpy.misc.Triangle(
-    magnetization=(0,0,1000),
-    vertices= ((-1,-1,1), (1,-1,1), (0,2,1)),
-)
-bott = magpy.misc.Triangle(
-    magnetization=(0,0,1000),
-    vertices= ((-1,-1,-1), (0,2,-1), (1,-1,-1)),
-)
-
-prism = magpy.Collection(top, bott)
-
-prism.show(
-    style_opacity=0.5,
-    style_magnetization_size=0.2,
-)
-```
-
-## Example: Cuboctahedron magnet
-
-More complex bodies are easy constructed from `Triangle` objects. The following code shows how a magnet with cuboctahedral shape can be constructed. Be aware that the B-field requires addition of the magnetization vector on the inside.
-
-```{code-cell} ipython3
-import magpylib as magpy
-
-vertices = [
-    ([0, 1, -1], [-1, 1, 0], [1, 1, 0]),
-    ([0, 1, 1], [1, 1, 0], [-1, 1, 0]),
-    ([0, 1, 1], [-1, 0, 1], [0, -1, 1]),
-    ([0, 1, 1], [0, -1, 1], [1, 0, 1]),
-    ([0, 1, -1], [1, 0, -1], [0, -1, -1]),
-    ([0, 1, -1], [0, -1, -1], [-1, 0, -1]),
-    ([0, -1, 1], [-1, -1, 0], [1, -1, 0]),
-    ([0, -1, -1], [1, -1, 0], [-1, -1, 0]),
-    ([-1, 1, 0], [-1, 0, -1], [-1, 0, 1]),
-    ([-1, -1, 0], [-1, 0, 1], [-1, 0, -1]),
-    ([1, 1, 0], [1, 0, 1], [1, 0, -1]),
-    ([1, -1, 0], [1, 0, -1], [1, 0, 1]),
-    ([0, 1, 1], [-1, 1, 0], [-1, 0, 1]),
-    ([0, 1, 1], [1, 0, 1], [1, 1, 0]),
-    ([0, 1, -1], [-1, 0, -1], [-1, 1, 0]),
-    ([0, 1, -1], [1, 1, 0], [1, 0, -1]),
-    ([0, -1, -1], [-1, -1, 0], [-1, 0, -1]),
-    ([0, -1, -1], [1, 0, -1], [1, -1, 0]),
-    ([0, -1, 1], [-1, 0, 1], [-1, -1, 0]),
-    ([0, -1, 1], [1, -1, 0], [1, 0, 1]),
-]
-
-cuboc = magpy.Collection(style_label="Cuboctahedron")
-for ind, vert in enumerate(vertices):
-    cuboc.add(
-        magpy.misc.Triangle(
-            magnetization=(100, 200, 300),
-            vertices=vert,
-            style_label=f"Triangle_{ind+1:02d}",
-        )
-    )
-
-magpy.show(
-    *cuboc,
-    backend="pyvista",
-    style_orientation_size=2,
-    style_orientation_color='yellow',
-    style_orientation_symbol='cone',
-    style_magnetization_mode="arrow",
-    jupyter_backend="panel", # better pyvista rendering in a jupyter notebook
-)
-```
-
-However, despite the potential of the `Triangle` class to build complex shapes, its application is prone to error because there is no intrinsic check of face orientation, connectedness, and being inside or outside of the magnet. For convenience the `TriangularMesh` class provides all these features, and enables users to quickly import complex triangular meshes as single magnet objects, see {ref}`examples-triangularmesh`.
 
 
 
@@ -205,107 +132,9 @@ print("mesh status reoriented:", tmesh_tetra.status_reoriented)
 tmesh_tetra.show()
 ```
 
-## Example - Dodecahedron magnet from pyvista
 
-`TriangularMesh` magnets can be directly created from Pyvista `PolyData` objects via the classmethod `from_pyvista`.
 
-```{note}
-The Pyvista library used in the following examples is not automatically installed with Magpylib. A Pyvista installation guide is found [here](https://docs.pyvista.org/getting-started/installation.html).
-```
-
-```{code-cell} ipython3
-import pyvista as pv
-import magpylib as magpy
-
-# create a simple pyvista PolyData object
-dodec_mesh = pv.Dodecahedron()
-
-dodec = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
-    polydata=dodec_mesh,
-)
-
-dodec.show()
-```
-
-We can now add a sensor and plot the B-field value along the sensor path.
-
-```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
-import pyvista as pv
-import magpylib as magpy
-
-# create a simple pyvista PolyData object
-dodec_mesh = pv.Dodecahedron()
-
-# create TriangularMesh object
-tmesh_dodec = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(1000, 0, 0),
-    polydata=dodec_mesh,
-)
-
-# add sensor and rotate around source
-sens = magpy.Sensor(position=(2, 0, 0))
-sens.rotate_from_angax(angle=np.linspace(0, 320, 50), axis="z", start=0, anchor=0)
-
-# define matplotlib figure and axes
-fig = plt.figure(figsize=(12, 6))
-ax1 = fig.add_subplot(
-    121,
-    projection="3d",
-    azim=-80,
-    elev=15,
-)
-ax2 = fig.add_subplot(
-    122,
-)
-
-# plot 3D model and B-field
-magpy.show(tmesh_dodec, sens, canvas=ax1)
-B = tmesh_dodec.getB(sens)
-ax2.plot(B, label=["Bx", "By", "Bz"])
-
-# plot styling
-ax1.set(
-    title="3D model",
-    aspect="equal",
-)
-ax2.set(
-    title="Dodecahedron field",
-    xlabel="path index ()",
-    ylabel="B-field (mT)",
-)
-
-plt.gca().grid(color=".9")
-plt.gca().legend()
-plt.tight_layout()
-plt.show()
-```
-
-## Example - Pyramid magnet from ConvexHull
-
-`TriangularMesh` objects are easily constructed from the convex hull of a given point cloud using the classmethod `from_ConvexHull`. This classmethod  makes use of the [scipy.spatial.ConvexHull](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.ConvexHull.html) class. Note that the Scipy method does not guarantee correct face orientations if `reorient_faces` is disabled.
-
-```{code-cell} ipython3
-import magpylib as magpy
-
-# create Pyramid
-points = [[-2,-2, 0], [-2,2,0], [2,-2,0], [2,2,0], [0,0,3]]
-tmesh_pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
-    magnetization=(0, 0, 1000),
-    points=points,
-)
-
-#display graphically
-tmesh_pyramid.show(
-    style_opacity=0.5,
-    style_orientation_show=True,
-    style_orientation_size=1.5,
-)
-```
-
-## Example - Prism magnet with open mesh
+## Prism magnet with open mesh
 
 In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`examples-triangle`. In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
@@ -345,84 +174,7 @@ prism.show(
 )
 ```
 
-## Example - Boolean operations with Pyvista
 
-It is noteworthy that with [Pyvista](https://docs.pyvista.org/) it is possible to build complex shapes with boolean geometric operations. However, such operations often result in open and disconnected meshes that require some refinement to produce solid magnets. The following example demonstrates the problem, and how to view it with `show`.
-
-```{code-cell} ipython3
-import magpylib as magpy
-import pyvista as pv
-
-# create a complex pyvista PolyData object with a boolean operation
-sphere = pv.Sphere(radius=0.6)
-cube = pv.Cube().triangulate()
-obj = cube.boolean_difference(sphere)
-
-# use the `from_pyvista` classmethod to construct our magnet
-magnet = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
-    polydata=obj,
-    check_disconnected="ignore",
-    check_open="ignore",
-    reorient_faces="ignore",
-    style_label="magnet",
-)
-
-print(f'mesh status open: {magnet.status_open}')
-print(f'mesh status disconnected: {magnet.status_disconnected}')
-print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
-print(f'mesh status reoriented: {magnet.status_reoriented}')
-
-magnet.show(
-    backend="plotly",
-    style_mesh_open_show=True,
-    style_mesh_disconnected_show=True,
-)
-```
-
-Such problems can typically be avoided by
-1. Subdivision of the initial triangulation (give Pyvista a finer mesh to work with from the start)
-2. Cleaning (merge duplicate points, remove unused points, remove degenerate faces)
-
-The following code solves these problems and produces a clean magnet.
-
-```{code-cell} ipython3
-import pyvista as pv
-import magpylib as magpy
-
-# create a complex pyvista PolyData object with a boolean operation
-sphere = pv.Sphere(radius=0.6)
-dodec = pv.Cube().triangulate().subdivide(2)
-obj = dodec.boolean_difference(sphere)
-obj = obj.clean()
-
-# use the `from_pyvista` classmethod to construct our magnet
-magnet = magpy.magnet.TriangularMesh.from_pyvista(
-    magnetization=(0, 0, 100),
-    polydata=obj,
-    style_label="magnet",
-)
-
-print(f'mesh status open: {magnet.status_open}')
-print(f'mesh status disconnected: {magnet.status_disconnected}')
-print(f"mesh status self-intersecting: {magnet.status_selfintersecting}")
-print(f'mesh status reoriented: {magnet.status_reoriented}')
-
-magnet.show(backend="plotly")
-```
-
----
-jupytext:
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.14.5
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
----
 
 # Collections
 

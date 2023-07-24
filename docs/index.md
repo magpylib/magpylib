@@ -1,143 +1,111 @@
-# Magpylib documentation
+# The Magpylib Documentation
 
-* Magpylib is a Python package for calculating static magnetic fields of magnets, currents and other sources.
-* The computation is based on vectorized explicit expressions and is extremely fast.
-* In Magpylib, sources (magnets, currents, ...) and observers (sensors, position grids, ...) are created as Python objects with position and orientation attributes.
-* These objects can then be moved around, grouped, and displayed graphically.
-* Finally, the magnetic field is computed in the reference frame of the observers.
-
-::::{grid} 5
-:gutter: 3
+::::{grid} 2
+:gutter: 2
 
 :::{grid-item}
-[<img src="_static/images/gallery_icon_viz_mpl_streamplot.png"
-     alt="link to gallery"
-     height="100" />](_pages/gallery/gallery_index.md)
+:columns: 7
+Magpylib is an **open-source Python package** for calculating static **magnetic fields** of magnets, currents and other sources. The computation is based on vectorized **explicit expressions**, solutions to the macroscopic magnetostatic problems, and is therefore **extremely fast**.
 :::
-
 :::{grid-item}
-[<img src="_static/images/gallery_icon_ext_compound.png"
-     alt="link to gallery"
-     height="100" />](_pages/gallery/gallery_index.md)
+:columns: 5
+![](../../_static/images/index_head.png)
 :::
-
-:::{grid-item}
-:::{div} sd-text-center
-[<img src="_static/images/gallery_icon_viz_pv_streamlines.png"
-     alt="link to gallery"
-     height="100" />](_pages/gallery/gallery_index.md)
-:::
-
-:::{grid-item}
-:::{div} sd-text-center
-[<img src="_static/images/gallery_icon_app_end_of_shaft.png"
-     alt="link to gallery"
-     height="100" />](_pages/gallery/gallery_index.md)
-:::
-
 ::::
 
+## How it works
+
+::::{grid} 1
+:gutter: 2
+
+:::{grid-item}
+:columns: 12
+![](_static/images/index_flowchart.png)
+:::
+
+:::{grid-item}
+:columns: 12
+In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, position grids, ...) are created as Python objects with position and orientation attributes. These objects can be **grouped** and **moved** around. The system can be **viewed** graphically trough various backends. The **magnetic field** is computed in the observer reference frame. Magpylib collects all inputs, and vectorizes the computation for maximal performance.
+:::
+::::
 
 ## Ressources
 
-* The Magpylib project is hosted and organized on [GitHub](https://github.com/magpylib/magpylib).
-* We welcome your contribution ! Please follow the guide for {ref}`contributing`.
-* Always abide by our {ref}`code_of_conduct`.
-* There is a [Youtube video](https://www.youtube.com/watch?v=LeUx6cM1vcs) introduction to Magpylib v4.0.0 presented within the [GSC network](https://www.internationalcollaboration.org/).
-* An [open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) describes version 2 where fundamental concepts are still intact in later versions.
+::::{grid} 6
+:gutter: 2
 
-
-## Installation and Dependencies
-
-::::{grid} 2
-:::{grid-item-card} Install with pip:
+:::{grid-item-card}
+:link: getting-started
+:link-type: ref
+:link-alt: link to Getting Started
+:img-top: ../../_static/images/index_icon_getting_started.png
 :text-align: center
-```console
-pip install matplotlib
-```
+**Get Started**
 :::
-:::{grid-item-card} Install with conda:
+
+:::{grid-item-card}
+:link: gallery
+:link-type: ref
+:link-alt: link to Gallery
+:img-top: ../../_static/images/index_icon_gallery.png
 :text-align: center
-```console
-conda install -c conda-forge magpylib
-```
+**Gallery**
 :::
+
+:::{grid-item-card}
+:link: docu
+:link-type: ref
+:link-alt: link to Documentation
+:img-top: ../../_static/images/index_icon_docu.png
+:text-align: center
+**Docu**
+:::
+
+:::{grid-item-card}
+:link: https://github.com/magpylib/magpylib
+:link-alt: link to Github
+:img-top: ../../_static/images/index_icon_github.png
+:text-align: center
+**Project**
+:::
+
+:::{grid-item-card}
+:link: contributing
+:link-type: ref
+:link-alt: link to Contribution Guide
+:img-top: ../../_static/images/index_icon_contributing.png
+:text-align: center
+**Contribute**
+:::
+
+:::{grid-item-card}
+:link: https://www.sciencedirect.com/science/article/pii/S2352711020300170
+:link-alt: link to Journal
+:img-top: ../../_static/images/index_icon_academic.png
+:text-align: center
+**Paper**
+:::
+
+```{toctree}
+:maxdepth: 2
+:hidden:
+
+_pages/reso_getting_started.md
+_pages/gallery/gallery_index.md
+_pages/docu/docu_index.md
+_pages/reso_physics.md
+_pages/reso_contributing.md
+_pages/reso_code_of_conduct.md
+_pages/reso_license.md
+_pages/reso_changelog.md
+_pages/reso_site_notice.md
+```
+
 ::::
 
-Magpylib supports *Python3.8+* and relies on common scientific computation libraries *Numpy*, *Scipy*, *Matplotlib* and *Plotly*. Optionally, *Pyvista* is recommended as graphical backend.
+<!-- ## How can I cite this library ?
 
-## Quickstart
-
-Here is an example how to use Magpylib
-
-```python
-import magpylib as magpy
-
-# Create a Cuboid magnet with magnetization (polarization) of 1000 mT pointing
-# in x-direction and sides of 1,2 and 3 mm respectively.
-
-cube = magpy.magnet.Cuboid(magnetization=(1000,0,0), dimension=(1,2,3))
-
-# By default, the magnet position is (0,0,0) and its orientation is the unit
-# rotation (given by a scipy rotation object), which corresponds to magnet sides
-# parallel to global coordinate axes.
-
-print(cube.position)                   # -> [0. 0. 0.]
-print(cube.orientation.as_rotvec())    # -> [0. 0. 0.]
-
-# Manipulate object position and orientation through the respective attributes,
-# or by using the powerful `move` and `rotate` methods.
-
-cube.move((0,0,-2))
-cube.rotate_from_angax(angle=45, axis='z')
-print(cube.position)                            # -> [0. 0. -2.]
-print(cube.orientation.as_rotvec(degrees=True)) # -> [0. 0. 45.]
-
-# Compute the magnetic field in units of mT at a set of observer positions. Magpylib
-# makes use of vectorized computation. Hand over all field computation instances,
-# e.g. different observer positions, at one funtion call. Avoid Python loops !!!
-
-observers = [(0,0,0), (1,0,0), (2,0,0)]
-B = magpy.getB(cube, observers)
-print(B.round()) # -> [[-91. -91.   0.]
-                 #      [  1. -38.  84.]
-                 #      [ 18. -14.  26.]]
-
-# Sensors are observer objects that can have their own position and orientation.
-# Compute the H-field in units of kA/m.
-
-sensor = magpy.Sensor(position=(0,0,0))
-sensor.rotate_from_angax(angle=45, axis=(1,1,1))
-H = magpy.getH(cube, sensor)
-print(H.round()) # -> [-95. -36. -14.]
-
-# Position and orientation attributes of Magpylib objects can be vectors of
-# multiple positions/orientations refered to as "paths". When computing the
-# magnetic field of an object with a path, it is computed at every path index.
-
-cube.position = [(0,0,-2), (1,0,-2), (2,0,-2)]
-B = cube.getB(sensor)
-print(B.round()) # -> [[-119.  -45.  -18.]
-                 #      [   8.  -73.  -55.]
-                 #      [  15.  -30.   -8.]]
-
-# When several objects are involved and things are getting complex, make use of
-# the `show` function to view your system through Matplotlib, Plotly or Pyvista backends.
-
-magpy.show(cube, sensor, backend='pyvista')
-```
-
-Other important features include
-
-* **Collections**: Group multiple objects for common manipulation
-* **Complex magnet shapes**: Create magnets with arbitrary shapes
-* **Graphics**: Styling options, graphic backends, animations, and 3D models
-* **CustomSource**: Integrate your own field implementation
-* **Direct interface**: Bypass the object oriented interface (max speed)
-
-## How can I cite this library ?
-
-We would be happy if you give us credit for our efforts. A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
+Thank you for considering to give credit! A valid bibtex entry for the [2020 open-access paper](https://www.sciencedirect.com/science/article/pii/S2352711020300170) would be
 
 ```latex
 @article{ortner2020magpylib,
@@ -149,31 +117,9 @@ We would be happy if you give us credit for our efforts. A valid bibtex entry fo
   year={2020},
   publisher={Elsevier}
 }
-```
+``` -->
 
-## Table of Contents
 
-```{toctree}
-:maxdepth: 2
-:caption: DOCUMENTATION
-
-_pages/docu_classes.md
-_pages/docu_pos_ori.md
-_pages/docu_field_comp.md
-_pages/docu_graphic_styles.md
-```
-
-```{toctree}
-:maxdepth: 2
-:caption: RESSOURCES
-
-_pages/gallery/gallery_index.md
-_pages/reso_physics.md
-_pages/reso_changelog.md
-_pages/reso_contributing.md
-_pages/reso_code_of_conduct.md
-_pages/reso_license.md
-```
 
 
 <!-- 

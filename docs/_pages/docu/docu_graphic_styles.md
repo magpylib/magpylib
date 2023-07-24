@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -10,6 +11,8 @@ kernelspec:
   language: python
   name: python3
 ---
+
+(docu-graphics)=
 
 # Graphic and Styles
 

@@ -56,6 +56,30 @@ This is the example gallery and there is some text here
 :img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
 :::
 
+:::{grid-item-card} Complex magnet shapes from Convex Hull
+:text-align: center
+:link: gallery-ext-complex-shapes-convex-hull
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_convex_hull.png
+:::
+
+:::{grid-item-card} Complex magnet shapes with Pyvista
+:text-align: center
+:link: gallery-ext-complex-shapes-pv
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_pv.png
+:::
+
+:::{grid-item-card} Complex magnet shapes with Triangles
+:text-align: center
+:link: gallery-ext-complex-shapes-triangle
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
+:::
+
 ::::
 
 ## Applications

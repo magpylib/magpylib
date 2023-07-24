@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
