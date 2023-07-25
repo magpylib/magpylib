@@ -1,6 +1,6 @@
 (gallery)=
 
-# Example Galleries
+# Example Gallery
 
 This is the example gallery and there is some text here
 

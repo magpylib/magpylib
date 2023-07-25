@@ -35,7 +35,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :gutter: 2
 
 :::{grid-item-card}
-:link: getting-started
+:link: get-started
 :link-type: ref
 :link-alt: link to Getting Started
 :img-top: ../../_static/images/index_icon_getting_started.png
@@ -90,7 +90,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :maxdepth: 2
 :hidden:
 
-_pages/reso_getting_started.md
+_pages/reso_get_started.md
 _pages/gallery/gallery_index.md
 _pages/docu/docu_index.md
 _pages/reso_physics.md
