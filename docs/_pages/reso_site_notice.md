@@ -2,8 +2,4 @@
 
 # Site Notice
 
-owned by sal
-
-thanks to XXX
-
-cite my paper
+Magpylib is developed at [Silicon Austria Labs](https://silicon-austria-labs.com/).

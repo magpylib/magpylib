@@ -11,6 +11,8 @@ kernelspec:
   name: python3
 ---
 
+TODO: explain remanence VS magnetization
+
 (physcomp)=
 
 # Physics and Computation

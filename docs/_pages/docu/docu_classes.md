@@ -1,5 +1,4 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -16,16 +15,15 @@ kernelspec:
 
 # The Magpylib Classes
 
+The most convenient way of working with Magpylib is through the **object oriented interface** where Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods.
 
-(intro-magpylib-objects)=
+## Base object properties
 
-## The Magpylib classes
+By default all objects are initialized with `position=(0,0,0)`, `orientation=None` (=unit rotation), and default graphic `style` settings. See [Position and Orientation](docu-position) and [Styles](docu-graphics) for more information about these properties.
 
-The most convenient way of working with Magpylib is through the **object oriented interface**. Magpylib objects represent magnetic field sources, sensors and collections with various defining attributes and methods. By default all objects are initialized with `position=(0,0,0)`, `orientation=None`, and default graphic `style` settings. Additional `**kwargs` mostly include style shortcuts, see {ref}`intro-graphic-output`. The following classes are implemented:
+## Magnets
 
-**Magnets**
-
-All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization vector in the local object coordinates in units of mT. It is often referred to as the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
+All magnet objects have the `magnetization` attribute which must be of the format $(m_x, m_y, m_z)$ and denotes the homogeneous magnetization/polarizaion vector in the local object coordinates in units of mT. It typically corresponds to the remanence ($B_r=\mu_0 M$) in material data sheets. All magnets can be used as Magpylib `sources` input.
 
 - **`Cuboid`**`(magnetization, dimension, position, orientation, style)` represents a magnet with cuboid shape. `dimension` has the format $(a,b,c)$ and denotes the sides of the cuboid in units of mm. By default the center of the cuboid lies in the origin of the global coordinates, and the sides are parallel to the coordinate axes.
 
