@@ -561,7 +561,7 @@ def process_show_input_objs(objs, **kwargs):
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
-        flat_objs.extend(obj["objects"])
+        flat_objs.extend(format_obj_input(obj["objects"], allow="sources+sensors"))
         if obj["row"] is not None:
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
