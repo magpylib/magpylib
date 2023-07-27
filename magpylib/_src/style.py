@@ -2,6 +2,8 @@
 # pylint: disable=C0302
 # pylint: disable=too-many-instance-attributes
 # pylint: disable=cyclic-import
+import warnings
+
 import numpy as np
 
 from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
@@ -628,13 +630,12 @@ class Magnetization(MagicProperties):
     show : bool, default=None
         If True show magnetization direction.
 
-    size: float, default=None
-        Arrow size of the magnetization direction (for the matplotlib backend)
-        only applies if `show=True`.
-
     color: dict or MagnetizationColor object, default=None
         Color properties showing the magnetization direction (for the plotly backend).
         Only applies if `show=True`.
+
+    arrow: dict or Arrow object, default=None,
+        Arrow properties. Only applies if mode='arrow'.
 
     mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
@@ -660,16 +661,23 @@ class Magnetization(MagicProperties):
 
     @property
     def size(self):
-        """Positive float for ratio of arrow size to magnet size."""
-        return self._size
+        """Deprecated (please use arrow.size): Positive float for ratio of arrow size to magnet size."""
+        warnings.warn(
+            "`magnetization.size` is deprecated and will be removed in magpylib 5.0."
+            " Please use `magnetization.arrow.size`",
+            DeprecationWarning,
+        )
+        return self.arrow.size
 
     @size.setter
     def size(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._size = val
+        if val is not None:
+            warnings.warn(
+                "`magnetization.size` is deprecated and will be removed in magpylib 5.0."
+                " Please use `magnetization.arrow.size`",
+                DeprecationWarning,
+            )
+            self.arrow.size = val
 
     @property
     def color(self):
@@ -681,6 +689,15 @@ class Magnetization(MagicProperties):
     @color.setter
     def color(self, val):
         self._color = validate_property_class(val, "color", MagnetizationColor, self)
+
+    @property
+    def arrow(self):
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
+        return self._arrow
+
+    @arrow.setter
+    def arrow(self, val):
+        self._arrow = validate_property_class(val, "magnetization", Arrow, self)
 
     @property
     def mode(self):
@@ -1692,7 +1709,12 @@ class Arrow(Line):
         Show/Hide arrow
 
     size: float, default=None
-        Positive number defining the size of the arrows.
+        Positive number defining the size of the arrows. Effective value depends on the
+        `sizemode` parameter.
+
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the arrow size. If 'absolute', the `size` parameters
+        becomes the arrow length in millimeters.
 
     offset: float, default=0.5
         Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
@@ -1709,6 +1731,8 @@ class Arrow(Line):
     width: float, default=None
         Positive number that defines the line width.
     """
+
+    _allowed_sizemodes = ("scaled", "absolute")
 
     def __init__(self, show=None, size=None, **kwargs):
         super().__init__(show=show, size=size, **kwargs)
@@ -1738,6 +1762,19 @@ class Arrow(Line):
             f"but received {repr(val)} instead."
         )
         self._size = val
+
+    @property
+    def sizemode(self):
+        """Positive number defining the sizemode of the arrows."""
+        return self._sizemode
+
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in self._allowed_sizemodes, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{self._allowed_sizemodes},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
 
     @property
     def offset(self):

@@ -55,7 +55,15 @@ DEFAULTS = {
             "magnet": {
                 "magnetization": {
                     "show": True,
-                    "size": 1,
+                    "arrow": {
+                        "show": True,
+                        "size": 1,
+                        "sizemode": "scaled",
+                        "offset": 1,
+                        "width": 2,
+                        "style": "solid",
+                        "color": None,
+                    },
                     "color": {
                         "north": "#E71111",
                         "middle": "#DDDDDD",
@@ -70,6 +78,7 @@ DEFAULTS = {
                 "arrow": {
                     "show": True,
                     "size": 1,
+                    "sizemode": "scaled",
                     "offset": 0.5,
                     "width": 2,
                     "style": "solid",
