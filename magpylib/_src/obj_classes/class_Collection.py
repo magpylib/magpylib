@@ -120,7 +120,7 @@ def collection_tree_generator(
 class BaseCollection(BaseDisplayRepr):
     """Collection base class without BaseGeo properties"""
 
-    _draw_func = None
+    get_trace = None
 
     def __init__(self, *children, override_parent=False):
         BaseDisplayRepr.__init__(self)
