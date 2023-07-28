@@ -667,11 +667,6 @@ class Magnetization(MagicProperties):
     @size.setter
     def size(self, val):
         if val is not None:
-            warnings.warn(
-                "`magnetization.size` is deprecated and will be removed in magpylib 5.0."
-                " Please use `magnetization.arrow.size`",
-                DeprecationWarning,
-            )
             self.arrow.size = val
 
     @property
