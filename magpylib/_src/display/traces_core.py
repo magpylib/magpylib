@@ -67,9 +67,7 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     style = obj.style
     default_suffix = (
-        f" ({unit_prefix(obj.current)}A)"
-        if obj.current is not None
-        else " (Current not initialized)"
+        f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
     )
     traces = []
     for kind in ("arrow", "line"):
@@ -77,10 +75,11 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
+                current = 0 if obj.current is None else obj.current
                 x, y, z = draw_arrow_from_vertices(
-                    obj.vertices,
-                    np.sign(obj.current),
-                    kind_style.size,
+                    vertices=obj.vertices,
+                    sign=np.sign(current),
+                    arrow_size=kind_style.size,
                     arrow_pos=style.arrow.offset,
                     scaled=kind_style.sizemode == "scaled",
                     include_line=False,
@@ -109,9 +108,7 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
     """
     style = obj.style
     default_suffix = (
-        f" ({unit_prefix(obj.current)}A)"
-        if obj.current is not None
-        else " (Current not initialized)"
+        f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
     )
     traces = []
     for kind in ("arrow", "line"):
@@ -121,10 +118,11 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
 
             if kind == "arrow":
                 angle_pos_deg = 360 * np.round(style.arrow.offset * base) / base
+                current = 0 if obj.current is None else obj.current
                 vertices = draw_arrow_on_circle(
-                    np.sign(obj.current),
-                    obj.diameter,
-                    style.arrow.size,
+                    sign=np.sign(current),
+                    diameter=obj.diameter,
+                    arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
                     angle_pos_deg=angle_pos_deg,
                 )

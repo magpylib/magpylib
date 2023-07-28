@@ -121,8 +121,8 @@ def draw_arrowed_line(
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
     arrow_shift = arrow_pos - 0.5
-    hy = sign * arrow_size
-    hx = abs(0.6 * hy)
+    hx = 0.6 * arrow_size
+    hy = np.sign(sign) * arrow_size
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
@@ -191,8 +191,8 @@ def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=
         hy = 0.2 * arrow_size
     else:
         hy = arrow_size / diameter * 2
+    hx = 0.6 * hy
     hy *= np.sign(sign)
-    hx = 0.6 * abs(hy)
     x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
     y = np.array([-hy, 0, -hy]) * diameter / 2
     z = np.zeros(x.shape)
