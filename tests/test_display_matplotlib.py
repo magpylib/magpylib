@@ -571,3 +571,26 @@ def test_unset_excitations():
         style_magnetization_mode="color+arrow",
         return_fig=True,
     )
+
+
+def test_unset_objs():
+    """test completely unset objects"""
+    objs = [
+        magpy.magnet.Cuboid(),
+        magpy.magnet.Cylinder(),
+        magpy.magnet.CylinderSegment(),
+        magpy.magnet.Sphere(),
+        magpy.magnet.Tetrahedron(),
+        # magpy.magnet.TriangularMesh(), no possible yet
+        magpy.misc.Triangle(),
+        magpy.misc.Dipole(),
+        magpy.current.Line(),
+        magpy.current.Loop(),
+    ]
+
+    for i, o in enumerate(objs):
+        o.move((1.5 * i, 0, 0))
+    magpy.show(
+        *objs,
+        return_fig=True,
+    )
