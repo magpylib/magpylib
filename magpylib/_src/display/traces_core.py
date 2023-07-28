@@ -66,11 +66,17 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     provided arguments.
     """
     style = obj.style
-    default_suffix = (
-        f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
-    )
-    traces = []
+    if obj.vertices is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = " (no vertices)"
+        trace["name"] = get_label(obj, default_suffix=default_suffix)
+        return {**trace, **kwargs}
+
     for kind in ("arrow", "line"):
+        traces = []
+        default_suffix = (
+            f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
+        )
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
@@ -107,11 +113,16 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
     provided arguments.
     """
     style = obj.style
-    default_suffix = (
-        f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
-    )
-    traces = []
+    if obj.diameter is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = " (no dimension)"
+        trace["name"] = get_label(obj, default_suffix=default_suffix)
+        return {**trace, **kwargs}
     for kind in ("arrow", "line"):
+        traces = []
+        default_suffix = (
+            f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
+        )
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
