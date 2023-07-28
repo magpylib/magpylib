@@ -29,7 +29,14 @@ def test_Cuboid_display():
     """testing display"""
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
-    src.show(style_path_frames=5, return_fig=True)
+    src.show(
+        style_path_frames=5,
+        style_magnetization_arrow_sizemode="absolute",
+        style_magnetization_arrow_color="cyan",
+        style_magnetization_arrow_style="dashed",
+        style_magnetization_arrow_width=3,
+        return_fig=True,
+    )
 
     with patch("matplotlib.pyplot.show"):
         x = src.show(style_path_show=False, style_magnetization_mode="color+arrow")

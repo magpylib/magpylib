@@ -35,7 +35,7 @@ bad_inputs = {
     "display_style_base_model3d_showdefault": ("notbool",),
     "display_style_base_color": ("wrongcolor",),  # color
     "display_style_magnet_magnetization_show": ("notbool",),
-    "display_style_magnet_magnetization_size": (-1,),  # float>=0
+    "display_style_magnet_magnetization_arrow_size": (-1,),  # float>=0
     "display_style_magnet_magnetization_color_north": ("wrongcolor",),
     "display_style_magnet_magnetization_color_middle": ("wrongcolor",),
     "display_style_magnet_magnetization_color_south": ("wrongcolor",),
