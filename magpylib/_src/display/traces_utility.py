@@ -472,9 +472,10 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                     # for 2d meshes, nothing special needed
                     pass
                 pts = pts.reshape(-1, 3)
-                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                for v, min_, max_ in zip(ranges.values(), *min_max):
-                    v.extend([min_, max_])
+                if pts.size != 0:
+                    min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
+                    for v, min_, max_ in zip(ranges.values(), *min_max):
+                        v.extend([min_, max_])
         if trace3d_found:
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
             size = np.diff(r, axis=1)
