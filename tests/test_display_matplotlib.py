@@ -544,3 +544,30 @@ def test_show_context_reset():
         assert s.show_return_value is None
         s.show(magpy.Sensor(), return_fig=True)
     assert isinstance(s.show_return_value, mplFig)
+
+
+def test_unset_excitations():
+    """test show if mag, curr or mom are not set"""
+
+    objs = [
+        magpy.magnet.Cuboid(dimension=(1, 1, 1)),
+        magpy.magnet.Cylinder(dimension=(1, 1)),
+        magpy.magnet.CylinderSegment(dimension=(0, 1, 1, 45, 120)),
+        magpy.magnet.Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]),
+        magpy.magnet.TriangularMesh(
+            vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            faces=((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
+        ),
+        magpy.magnet.Sphere(diameter=1),
+        magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
+        magpy.misc.Dipole(),
+        magpy.current.Line(vertices=[[0, -1, 0], [0, 1, 0]]),
+        magpy.current.Loop(diameter=1, current=0),
+    ]
+    for i, o in enumerate(objs):
+        o.move((i * 1.5, 0, 0))
+    magpy.show(
+        *objs,
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
