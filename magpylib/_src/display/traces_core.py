@@ -153,33 +153,37 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     provided arguments.
     """
     style = obj.style
-    moment = obj.moment
+    moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None:
         size *= autosize
-    trace = make_BaseArrow(
-        "plotly-dict",
-        base=10,
-        diameter=0.3 * size,
-        height=size,
-        pivot=style.pivot,
-        color=style.color,
-    )
-    default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
+    if moment_mag == 0:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = " (no moment)"
+    else:
+        default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
+        trace = make_BaseArrow(
+            "plotly-dict",
+            base=10,
+            diameter=0.3 * size,
+            height=size,
+            pivot=style.pivot,
+            color=style.color,
+        )
+        nvec = np.array(moment) / moment_mag
+        zaxis = np.array([0, 0, 1])
+        cross = np.cross(nvec, zaxis)
+        n = np.linalg.norm(cross)
+        if n == 0:
+            n = 1
+            cross = np.array([-np.sign(nvec[-1]), 0, 0])
+        dot = np.dot(nvec, zaxis)
+        t = np.arccos(dot)
+        vec = -t * cross / n
+        mag_orient = RotScipy.from_rotvec(vec)
+        trace = place_and_orient_model3d(trace, orientation=mag_orient, **kwargs)
     trace["name"] = get_label(obj, default_suffix=default_suffix)
-    nvec = np.array(moment) / moment_mag
-    zaxis = np.array([0, 0, 1])
-    cross = np.cross(nvec, zaxis)
-    n = np.linalg.norm(cross)
-    if n == 0:
-        n = 1
-        cross = np.array([-np.sign(nvec[-1]), 0, 0])
-    dot = np.dot(nvec, zaxis)
-    t = np.arccos(dot)
-    vec = -t * cross / n
-    mag_orient = RotScipy.from_rotvec(vec)
-    trace = place_and_orient_model3d(trace, orientation=mag_orient, **kwargs)
     return {**trace, **kwargs}
 
 
@@ -413,7 +417,10 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     faces = np.array([[0, 1, 2]])
     # if magnetization is normal to the triangle, add a second triangle slightly above to enable
     # proper color gradient visualization. Otherwise only the middle color is shown.
-    if np.all(np.cross(obj.magnetization, vec) == 0):
+    magnetization = (
+        np.array([0.0, 0.0, 0.0]) if obj.magnetization is None else obj.magnetization
+    )
+    if np.all(np.cross(magnetization, vec) == 0):
         epsilon = 1e-3 * vec
         vert = np.concatenate([vert - epsilon, vert + epsilon])
         side_faces = [
