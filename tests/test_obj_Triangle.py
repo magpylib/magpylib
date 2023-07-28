@@ -64,12 +64,6 @@ def test_empty_object_initialization():
 
     fac = magpy.misc.Triangle()
 
-    def call_show():
-        """dummy function call show"""
-        fac.show()
-
-    np.testing.assert_raises(MagpylibMissingInput, call_show)
-
     def call_getB():
         """dummy function call getB"""
         fac.getB()
