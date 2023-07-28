@@ -173,10 +173,6 @@ def _show(
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
-    # test if all source dimensions and excitations have been initialized
-    check_dimensions(obj_list_flat)
-    check_excitations(obj_list_flat)
-
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
 
@@ -194,13 +190,14 @@ def _show(
     )
 
     if markers:
-        objects = list(objects) + [
+        objects = [
+            *objects,
             {
                 "objects": [MagpyMarkers(*markers)],
                 "row": 1,
                 "col": 1,
                 "output": "model3d",
-            }
+            },
         ]
 
     if backend == "auto":
