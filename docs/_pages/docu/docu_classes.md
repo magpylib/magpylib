@@ -1,15 +1,3 @@
----
-jupytext:
-  text_representation:
-    extension: .md
-    format_name: myst
-    format_version: 0.13
-    jupytext_version: 1.14.5
-kernelspec:
-  display_name: Python 3
-  language: python
-  name: python3
----
 
 (docu-classes)=
 
@@ -188,11 +176,11 @@ At initialization the mesh integrity is automatically checked, and all faces are
 which are all by default set to `"warn"`. Options are `"skip"` (don't perform check), `"ignore"` (ignore if check fails), `"warn"` (warn if check fails), `"raise"` (raise error if check fails).
 
 Results of the checks are stored in the following object attributes
-* <span style="color: orange">**status_open**</span> can be `True`, `False` or `"unchecked"`
+* <span style="color: orange">**status_open**</span> can be `True`, `False` or `None` (unchecked)
 * <span style="color: orange">**status_open_data**</span> contatins an array of open edges
-* <span style="color: orange">**status_disconnected**</span> can be `True`, `False` or `"unchecked"`
+* <span style="color: orange">**status_disconnected**</span> can be `True`, `False` or `None` (unchecked)
 * <span style="color: orange">**status_disconnected_data**</span> contains an array of mesh parts
-* <span style="color: orange">**status_selfintersecting**</span> can be `True`, `False` or `"unchecked"`
+* <span style="color: orange">**status_selfintersecting**</span> can be `True`, `None` or `None` (unchecked)
 * <span style="color: orange">**status_selfintersecting_data**</span> contains an array of self-intersecting faces
 * <span style="color: orange">**status_reoriented**</span> can be `True` or `False`
 
