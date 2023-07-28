@@ -1,4 +1,5 @@
 """ Display function codes"""
+# pylint: disable=too-many-branches
 from collections import defaultdict
 from functools import lru_cache
 from itertools import cycle
@@ -13,7 +14,20 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-# pylint: disable=too-many-branches
+def get_label(obj, default_suffix="", default_name=None, style=None):
+    """provides legend entry based on name and suffix"""
+    style = obj.style if style is None else style
+    default_name = obj.__class__.__name__ if default_name is None else default_name
+    name = default_name if style.label is None else style.label
+    if style.description.show and style.description.text is None:
+        name_suffix = default_suffix
+    elif not style.description.show:
+        name_suffix = ""
+    else:
+        name_suffix = f" ({style.description.text})"
+    return f"{name}{name_suffix}"
+
+
 def place_and_orient_model3d(
     model_kwargs,
     model_args=None,
@@ -136,8 +150,7 @@ def draw_arrowed_line(
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
         arrow = R.apply(arrow)
-    x, y, z = (arrow + pos).T
-    return x, y, z
+    return arrow + pos
 
 
 def draw_arrow_from_vertices(
@@ -155,7 +168,7 @@ def draw_arrow_from_vertices(
                 arrow_size=arrow_size,
                 arrow_pos=arrow_pos,
                 include_line=include_line,
-            )
+            ).T
             for vec, pos in zip(vectors, positions)
         ],
         axis=1,
@@ -258,6 +271,20 @@ def get_flatten_objects_properties_recursive(
             "legendtext": parent_label,
         }
         if isCollection:
+            suffs = []
+            if subobj.children_all:
+                nums = {
+                    "sensor": len(subobj.sensors_all),
+                    "source": len(subobj.sources_all),
+                }
+                for name, num in nums.items():
+                    if num > 0:
+                        suffs.append(f"{num} {name}{'s'[:num^1]}")
+            else:
+                suffs.append("no children")
+            label = get_label(
+                subobj, default_suffix=f" ({', '.join(suffs)})", style=style
+            )
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -265,7 +292,7 @@ def get_flatten_objects_properties_recursive(
                     color_cycle=color_cycle,
                     parent_legendgroup=legendgroup,
                     parent_color=style.color,
-                    parent_label=style.label,
+                    parent_label=label,
                     **kwargs,
                 )
             )
@@ -534,7 +561,7 @@ def process_show_input_objs(objs, **kwargs):
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
-        flat_objs.extend(obj["objects"])
+        flat_objs.extend(format_obj_input(obj["objects"], allow="sources+sensors"))
         if obj["row"] is not None:
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
