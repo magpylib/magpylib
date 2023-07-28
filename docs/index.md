@@ -93,7 +93,6 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 _pages/reso_get_started.md
 _pages/gallery/gallery_index.md
 _pages/docu/docu_index.md
-_pages/reso_physics.md
 _pages/reso_contributing.md
 _pages/reso_code_of_conduct.md
 _pages/reso_license.md

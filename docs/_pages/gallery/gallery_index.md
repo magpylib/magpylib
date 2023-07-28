@@ -48,14 +48,6 @@ This is the example gallery and there is some text here
 :img-bottom: ../../_static/images/gallery_icon_ext_field_interpolation.png
 :::
 
-:::{grid-item-card} Custom class: Quadrupole
-:text-align: center
-:link: gallery-ext-custom-quadrupole
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
-:::
-
 :::{grid-item-card} Complex magnet shapes from Convex Hull
 :text-align: center
 :link: gallery-ext-complex-shapes-convex-hull
@@ -75,6 +67,14 @@ This is the example gallery and there is some text here
 :::{grid-item-card} Complex magnet shapes with Triangles
 :text-align: center
 :link: gallery-ext-complex-shapes-triangle
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
+:::
+
+:::{grid-item-card} TriangularMesh examples
+:text-align: center
+:link: gallery-ext-trimesh
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
@@ -101,6 +101,45 @@ This is the example gallery and there is some text here
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_app_coil_field.png
+:::
+
+::::
+
+## Tutorials
+
+::::{grid} 3
+:gutter: 5
+
+:::{grid-item-card} Collection
+:text-align: center
+:link: gallery-tutorial-collection
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_app_end_of_shaft.png
+:::
+
+:::{grid-item-card} Trimesh
+:text-align: center
+:link: galler-tutorial-trimesh
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_app_coil_field.png
+:::
+
+:::{grid-item-card} CustomSource
+:text-align: center
+:link: gallery-tutorial-custom
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
+:::
+
+:::{grid-item-card} Sensors
+:text-align: center
+:link: gallery-tutorial-sensors
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
 :::
 
 ::::

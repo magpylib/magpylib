@@ -13,6 +13,9 @@ kernelspec:
 
 TODO: explain remanence VS magnetization
 
+(phys-remanence)=
+
+
 (physcomp)=
 
 # Physics and Computation

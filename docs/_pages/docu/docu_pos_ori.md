@@ -14,9 +14,11 @@ kernelspec:
 
 (docu-position)=
 
-# Position, Orientation, Paths
+# Position, Orientation and Paths
 
 (intro-position-and-orientation)=
+
+## Local and Global coordinates
 
 ## Position and orientation
 

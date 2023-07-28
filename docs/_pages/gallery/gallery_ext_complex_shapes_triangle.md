@@ -1,5 +1,4 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -16,7 +15,9 @@ kernelspec:
 
 # Complex shapes with Triangle
 
-## Example: Triangular prism magnet
+When multiple Triangles with similar magnetization vector form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field.
+
+## Triangular prism magnet
 
 Consider a prism with triangular base that is magnetized orthogonal to the base. All surface normals of the sides of the prism are orthogonal to the magnetization vector. As a result the sides do not contribute to the magnetic field because their charge density disappears. Only top and bottom surfaces contribute. One must be very careful when defining those surfaces in such a way that the surface normals point outwards. For this purpose the surface normal of `Triangle` objects is graphically displayed by default. The following examples shows how the `Triangle` class can be used to create a prism magnet object.
 
@@ -40,7 +41,7 @@ prism.show(
 )
 ```
 
-## Example: Cuboctahedron magnet
+## Cuboctahedron magnet
 
 More complex bodies are easy constructed from `Triangle` objects. The following code shows how a magnet with cuboctahedral shape can be constructed. Be aware that the B-field requires addition of the magnetization vector on the inside.
 

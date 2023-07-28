@@ -11,9 +11,9 @@ kernelspec:
   language: python
   name: python3
 ---
-
+(docu-direct-interface)=
+(docu-field-comp-core)=
 (docu-field-computation)=
-
 # Field Computation
 
 Magnetic field computation in Magpylib is achieved through:

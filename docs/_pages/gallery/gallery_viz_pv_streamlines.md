@@ -18,6 +18,8 @@ kernelspec:
 
 something something
 
+also show how to generate streamlines from a point set
+
 ```{code-cell} ipython3
 import numpy as np
 import pyvista as pv
