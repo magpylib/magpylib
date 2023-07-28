@@ -80,7 +80,7 @@ DEFAULTS = {
                     "size": 1,
                     "sizemode": "scaled",
                     "offset": 0.5,
-                    "width": 2,
+                    "width": 1,
                     "style": "solid",
                     "color": None,
                 },
