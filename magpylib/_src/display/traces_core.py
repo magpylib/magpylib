@@ -280,10 +280,14 @@ def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
     provided arguments.
     """
     style = obj.style
-    trace = make_BaseTetrahedron(
-        "plotly-dict", vertices=obj.vertices, color=style.color
-    )
-    trace["name"] = get_label(obj)
+    if obj.vertices is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = " (no vertices)"
+    else:
+        trace = make_BaseTetrahedron(
+            "plotly-dict", vertices=obj.vertices, color=style.color
+        )
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
