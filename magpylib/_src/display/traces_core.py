@@ -284,6 +284,7 @@ def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
         trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = " (no vertices)"
     else:
+        default_suffix = ""
         trace = make_BaseTetrahedron(
             "plotly-dict", vertices=obj.vertices, color=style.color
         )
@@ -417,32 +418,40 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     style = obj.style
     vert = obj.vertices
-    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
-    faces = np.array([[0, 1, 2]])
-    # if magnetization is normal to the triangle, add a second triangle slightly above to enable
-    # proper color gradient visualization. Otherwise only the middle color is shown.
-    magnetization = (
-        np.array([0.0, 0.0, 0.0]) if obj.magnetization is None else obj.magnetization
-    )
-    if np.all(np.cross(magnetization, vec) == 0):
-        epsilon = 1e-3 * vec
-        vert = np.concatenate([vert - epsilon, vert + epsilon])
-        side_faces = [
-            [0, 1, 3],
-            [1, 2, 4],
-            [2, 0, 5],
-            [1, 4, 3],
-            [2, 5, 4],
-            [0, 3, 5],
-        ]
-        faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
 
-    trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vert, faces=faces, color=style.color
-    )
-    trace["name"] = get_label(obj)
+    if vert is None:
+        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        default_suffix = " (no vertices)"
+    else:
+        default_suffix = ""
+        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        faces = np.array([[0, 1, 2]])
+        # if magnetization is normal to the triangle, add a second triangle slightly above to enable
+        # proper color gradient visualization. Otherwise only the middle color is shown.
+        magnetization = (
+            np.array([0.0, 0.0, 0.0])
+            if obj.magnetization is None
+            else obj.magnetization
+        )
+        if np.all(np.cross(magnetization, vec) == 0):
+            epsilon = 1e-3 * vec
+            vert = np.concatenate([vert - epsilon, vert + epsilon])
+            side_faces = [
+                [0, 1, 3],
+                [1, 2, 4],
+                [2, 0, 5],
+                [1, 4, 3],
+                [2, 5, 4],
+                [0, 3, 5],
+            ]
+            faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
+
+        trace = make_BaseTriangularMesh(
+            "plotly-dict", vertices=vert, faces=faces, color=style.color
+        )
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     traces = [{**trace, **kwargs}]
-    if style.orientation.show:
+    if vert is not None and style.orientation.show:
         traces.append(make_triangle_orientations(obj, **kwargs))
     return traces
 
