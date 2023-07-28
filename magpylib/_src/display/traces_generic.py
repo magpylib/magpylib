@@ -80,7 +80,9 @@ def update_magnet_mesh(
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
     mag_color = mag_style.color
-    if magnetization is not None and mag_style.show:
+    if magnetization is None:
+        magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
+    if mag_style.show:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
         color_middle = mag_color.middle
         if mag_color.mode == "tricycle":
