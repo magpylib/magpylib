@@ -310,8 +310,10 @@ def test_circular_line_display():
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
-    src2.show(canvas=ax2, return_fig=True)
-    src3.show(canvas=ax2, style_arrow_size=0, return_fig=True)
+    src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
+    src3.show(
+        canvas=ax2, style_arrow_sizemode="absolute", style_arrow_size=0, return_fig=True
+    )
     src4.show(canvas=ax2, style_path_frames=2, return_fig=True)
 
 
