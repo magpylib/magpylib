@@ -1,5 +1,5 @@
 """Magnet Cylinder class code"""
-from magpylib._src.display.traces_generic import make_Cylinder
+from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -80,7 +80,7 @@ class Cylinder(BaseMagnet):
 
     _field_func = staticmethod(magnet_cylinder_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_Cylinder
+    get_trace = make_Cylinder
 
     def __init__(
         self,

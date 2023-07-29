@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
-from magpylib._src.display.traces_generic import make_TriangularMesh
+from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
@@ -109,7 +109,7 @@ class TriangularMesh(BaseMagnet):
 
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
-    _draw_func = make_TriangularMesh
+    get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
     def __init__(

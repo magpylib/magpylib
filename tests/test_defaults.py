@@ -208,7 +208,6 @@ def test_defaults_good_inputs(key, value, expected):
     "style_class",
     [
         "base",
-        "base_description",
         "base_model3d",
         "base_path",
         "base_path_line",

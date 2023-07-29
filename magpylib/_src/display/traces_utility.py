@@ -1,4 +1,6 @@
 """ Display function codes"""
+# pylint: disable=too-many-branches
+from collections import defaultdict
 from functools import lru_cache
 from itertools import cycle
 from typing import Tuple
@@ -12,7 +14,20 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-# pylint: disable=too-many-branches
+def get_label(obj, default_suffix="", default_name=None, style=None):
+    """provides legend entry based on name and suffix"""
+    style = obj.style if style is None else style
+    default_name = obj.__class__.__name__ if default_name is None else default_name
+    name = default_name if style.label is None else style.label
+    if style.description.show and style.description.text is None:
+        name_suffix = default_suffix
+    elif not style.description.show:
+        name_suffix = ""
+    else:
+        name_suffix = f" ({style.description.text})"
+    return f"{name}{name_suffix}"
+
+
 def place_and_orient_model3d(
     model_kwargs,
     model_args=None,
@@ -86,7 +101,13 @@ def place_and_orient_model3d(
 
 
 def draw_arrowed_line(
-    vec, pos, sign=1, arrow_size=1, arrow_pos=0.5, pivot="middle"
+    vec,
+    pos,
+    sign=1,
+    arrow_size=1,
+    arrow_pos=0.5,
+    pivot="middle",
+    include_line=True,
 ) -> Tuple:
     """
     Provides x,y,z coordinates of an arrow drawn in the x-y-plane (z=0), showing up the y-axis and
@@ -109,21 +130,19 @@ def draw_arrowed_line(
         if pivot == "tail"
         else (0, 0, 0)
     )
-    arrow = (
-        np.array(
-            [
-                [0, -0.5, 0],
-                [0, arrow_shift, 0],
-                [-hx, arrow_shift - hy, 0],
-                [0, arrow_shift, 0],
-                [hx, arrow_shift - hy, 0],
-                [0, arrow_shift, 0],
-                [0, 0.5, 0],
-            ]
-            + np.array(anchor)
-        )
-        * norm
-    )
+    arrow = [
+        [0, arrow_shift, 0],
+        [-hx, arrow_shift - hy, 0],
+        [0, arrow_shift, 0],
+        [hx, arrow_shift - hy, 0],
+        [0, arrow_shift, 0],
+    ]
+    if include_line:
+        arrow = [[0, -0.5, 0], *arrow, [0, 0.5, 0]]
+    else:
+        arrow = [[0, -0.5, 0], [np.nan] * 3, *arrow, [np.nan] * 3, [0, 0.5, 0]]
+    arrow = (np.array(arrow) + np.array(anchor)) * norm
+
     if n == 0 and dot == -1:
         R = RotScipy.from_rotvec([0, 0, np.pi])
         arrow = R.apply(arrow)
@@ -131,39 +150,44 @@ def draw_arrowed_line(
         t = np.arccos(dot)
         R = RotScipy.from_rotvec(-t * cross / n)
         arrow = R.apply(arrow)
-    x, y, z = (arrow + pos).T
-    return x, y, z
+    return arrow + pos
 
 
-def draw_arrow_from_vertices(vertices, current, arrow_size):
+def draw_arrow_from_vertices(
+    vertices, current, arrow_size, arrow_pos=0.5, include_line=True
+):
     """returns scatter coordinates of arrows between input vertices"""
     vectors = np.diff(vertices, axis=0)
     positions = vertices[:-1] + vectors / 2
     vertices = np.concatenate(
         [
-            draw_arrowed_line(vec, pos, np.sign(current), arrow_size=arrow_size)
+            draw_arrowed_line(
+                vec,
+                pos,
+                np.sign(current),
+                arrow_size=arrow_size,
+                arrow_pos=arrow_pos,
+                include_line=include_line,
+            ).T
             for vec, pos in zip(vectors, positions)
         ],
         axis=1,
     )
 
-    return vertices
+    return vertices.T
 
 
-def draw_arrowed_circle(current, diameter, arrow_size, vert):
+def draw_arrow_on_circle(sign, diameter, arrow_size, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
-    t = np.linspace(0, 2 * np.pi, vert)
-    x = np.cos(t)
-    y = np.sin(t)
-    if arrow_size != 0:
-        hy = 0.2 * np.sign(current) * arrow_size
-        hx = 0.15 * arrow_size
-        x = np.hstack([x, [1 + hx, 1, 1 - hx]])
-        y = np.hstack([y, [-hy, 0, -hy]])
-    x = x * diameter / 2
-    y = y * diameter / 2
+    hy = 0.2 * np.sign(sign) * arrow_size
+    hx = 0.15 * arrow_size
+    x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
+    y = np.array([-hy, 0, -hy]) * diameter / 2
     z = np.zeros(x.shape)
-    vertices = np.array([x, y, z])
+    vertices = np.array([x, y, z]).T
+    if angle_pos_deg != 0:
+        rot = RotScipy.from_euler("z", angle_pos_deg, degrees=True)
+        vertices = rot.apply(vertices)
     return vertices
 
 
@@ -247,6 +271,20 @@ def get_flatten_objects_properties_recursive(
             "legendtext": parent_label,
         }
         if isCollection:
+            suffs = []
+            if subobj.children_all:
+                nums = {
+                    "sensor": len(subobj.sensors_all),
+                    "source": len(subobj.sources_all),
+                }
+                for name, num in nums.items():
+                    if num > 0:
+                        suffs.append(f"{num} {name}{'s'[:num^1]}")
+            else:
+                suffs.append("no children")
+            label = get_label(
+                subobj, default_suffix=f" ({', '.join(suffs)})", style=style
+            )
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -254,7 +292,7 @@ def get_flatten_objects_properties_recursive(
                     color_cycle=color_cycle,
                     parent_legendgroup=legendgroup,
                     parent_color=style.color,
-                    parent_label=style.label,
+                    parent_label=label,
                     **kwargs,
                 )
             )
@@ -298,21 +336,31 @@ def merge_scatter3d(*traces):
     return merged_trace
 
 
+def aggregate_by_trace_type(traces):
+    """aggregate traces by type"""
+    result_dict = defaultdict(list)
+    for item in traces:
+        result_dict[item["type"]].append(item)
+    yield from result_dict.items()
+
+
 def merge_traces(*traces):
     """Merges a list of plotly 3d-traces. Supported trace types are `mesh3d` and `scatter3d`.
     All traces have be of the same type when merging. Keys are taken from the first object, other
     keys from further objects are ignored.
     """
-    if len(traces) > 1:
-        if traces[0]["type"] == "mesh3d":
-            trace = merge_mesh3d(*traces)
-        elif traces[0]["type"] == "scatter3d":
-            trace = merge_scatter3d(*traces)
-    elif len(traces) == 1:
-        trace = traces[0]
-    else:
-        trace = []
-    return trace
+    new_traces = []
+    for ttype, tlist in aggregate_by_trace_type(traces):
+        if len(tlist) > 1:
+            if ttype == "mesh3d":
+                new_traces.append(merge_mesh3d(*tlist))
+            elif ttype == "scatter3d":
+                new_traces.append(merge_scatter3d(*tlist))
+            else:
+                new_traces.extend(tlist)
+        elif len(tlist) == 1:
+            new_traces.append(tlist[0])
+    return new_traces
 
 
 def getIntensity(vertices, axis) -> np.ndarray:
@@ -407,10 +455,11 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                 pts = np.array([t[k] for k in coords], dtype="float64").T
                 try:  # for mesh3d, use only vertices part of faces for range calculation
                     inds = np.array([t[k] for k in "ijk"], dtype="int64").T
-                    pts = pts[inds].reshape(-1, 3)
+                    pts = pts[inds]
                 except KeyError:
                     # for 2d meshes, nothing special needed
                     pass
+                pts = pts.reshape(-1, 3)
                 min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
                 for v, min_, max_ in zip(ranges.values(), *min_max):
                     v.extend([min_, max_])
@@ -450,7 +499,7 @@ def group_traces(*traces):
             separator="_",
         )
         gr = [tr["type"]]
-        for k in common_keys + spec_keys[tr["type"]]:
+        for k in [*common_keys, *spec_keys.get(tr["type"], [])]:
             if k == "facecolor":
                 v = tr.get(k, None) is None
             else:
@@ -463,7 +512,7 @@ def group_traces(*traces):
 
     traces = []
     for group in mesh_groups.values():
-        traces.extend([merge_traces(*group)])
+        traces.extend(merge_traces(*group))
     return traces
 
 
@@ -512,7 +561,7 @@ def process_show_input_objs(objs, **kwargs):
         obj["objects"] = format_obj_input(
             obj["objects"], allow="sources+sensors+collections"
         )
-        flat_objs.extend(obj["objects"])
+        flat_objs.extend(format_obj_input(obj["objects"], allow="sources+sensors"))
         if obj["row"] is not None:
             max_rows = max(max_rows, obj["row"])
         if obj["col"] is not None:
