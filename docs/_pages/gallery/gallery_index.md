@@ -72,13 +72,6 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
 :::
 
-:::{grid-item-card} TriangularMesh examples
-:text-align: center
-:link: gallery-ext-trimesh
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
-:::
 
 ::::
 
@@ -115,7 +108,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-tutorial-collection
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_app_end_of_shaft.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 :::{grid-item-card} Trimesh
@@ -123,7 +116,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: galler-tutorial-trimesh
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_app_coil_field.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 :::{grid-item-card} CustomSource
@@ -131,7 +124,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-tutorial-custom
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 :::{grid-item-card} Sensors
@@ -139,7 +132,15 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-tutorial-sensors
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_custom_quadrupole.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} Paths
+:text-align: center
+:link: gallery-tutorial-paths
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 ::::
