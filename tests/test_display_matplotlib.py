@@ -581,7 +581,7 @@ def test_unset_objs():
         magpy.magnet.CylinderSegment(),
         magpy.magnet.Sphere(),
         magpy.magnet.Tetrahedron(),
-        # magpy.magnet.TriangularMesh(), no possible yet
+        # magpy.magnet.TriangularMesh(), not possible yet
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
         magpy.current.Line(),
