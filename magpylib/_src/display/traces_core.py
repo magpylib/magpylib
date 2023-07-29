@@ -79,9 +79,10 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
             if kind == "arrow":
                 x, y, z = draw_arrow_from_vertices(
                     obj.vertices,
-                    obj.current,
+                    np.sign(obj.current),
                     kind_style.size,
                     arrow_pos=style.arrow.offset,
+                    scaled=kind_style.sizemode == "scaled",
                     include_line=False,
                 ).T
             else:
@@ -124,6 +125,7 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
                     np.sign(obj.current),
                     obj.diameter,
                     style.arrow.size,
+                    scaled=kind_style.sizemode == "scaled",
                     angle_pos_deg=angle_pos_deg,
                 )
                 x, y, z = vertices.T

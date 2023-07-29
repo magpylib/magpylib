@@ -22,7 +22,7 @@ def test_draw_arrow_from_vertices():
             [-1.0, 1.0, 1.0],
         ]
     )
-    result = draw_arrow_from_vertices(vertices, current=1, arrow_size=1)
+    result = draw_arrow_from_vertices(vertices, sign=1, arrow_size=1)
     expected = np.array(
         [
             [-1.0, 1.0, 1.0],

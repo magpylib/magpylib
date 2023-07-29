@@ -104,7 +104,7 @@ def draw_arrowed_line(
     vec,
     pos,
     sign=1,
-    arrow_size=1,
+    arrow_size=0.1,
     arrow_pos=0.5,
     pivot="middle",
     include_line=True,
@@ -121,8 +121,8 @@ def draw_arrowed_line(
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
     arrow_shift = arrow_pos - 0.5
-    hy = sign * 0.1 * arrow_size
-    hx = 0.06 * arrow_size
+    hy = sign * arrow_size
+    hx = abs(0.6 * hy)
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
@@ -154,22 +154,30 @@ def draw_arrowed_line(
 
 
 def draw_arrow_from_vertices(
-    vertices, current, arrow_size, arrow_pos=0.5, include_line=True
+    vertices, sign, arrow_size, arrow_pos=0.5, scaled=True, include_line=True
 ):
     """returns scatter coordinates of arrows between input vertices"""
     vectors = np.diff(vertices, axis=0)
+    if scaled:
+        arrow_sizes = [arrow_size * 0.1] * (len(vertices) - 1)
+    else:
+        vec_lens = np.linalg.norm(vectors, axis=1)
+        mask0 = vec_lens == 0
+        vec_lens[mask0] = 1
+        arrow_sizes = arrow_size / vec_lens
+        arrow_sizes[mask0] = 0
     positions = vertices[:-1] + vectors / 2
     vertices = np.concatenate(
         [
             draw_arrowed_line(
                 vec,
                 pos,
-                np.sign(current),
-                arrow_size=arrow_size,
+                sign,
+                arrow_size=siz,
                 arrow_pos=arrow_pos,
                 include_line=include_line,
             ).T
-            for vec, pos in zip(vectors, positions)
+            for vec, pos, siz in zip(vectors, positions, arrow_sizes)
         ],
         axis=1,
     )
@@ -177,10 +185,14 @@ def draw_arrow_from_vertices(
     return vertices.T
 
 
-def draw_arrow_on_circle(sign, diameter, arrow_size, angle_pos_deg=0):
+def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=0):
     """draws an oriented circle with an arrow"""
-    hy = 0.2 * np.sign(sign) * arrow_size
-    hx = 0.15 * arrow_size
+    if scaled:
+        hy = 0.2 * arrow_size
+    else:
+        hy = arrow_size / diameter * 2
+    hy *= np.sign(sign)
+    hx = 0.6 * abs(hy)
     x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
     y = np.array([-hy, 0, -hy]) * diameter / 2
     z = np.zeros(x.shape)
