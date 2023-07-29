@@ -72,8 +72,8 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
         trace["name"] = get_label(obj, default_suffix=default_suffix)
         return {**trace, **kwargs}
 
+    traces = []
     for kind in ("arrow", "line"):
-        traces = []
         default_suffix = (
             f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
         )
@@ -118,8 +118,8 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
         default_suffix = " (no dimension)"
         trace["name"] = get_label(obj, default_suffix=default_suffix)
         return {**trace, **kwargs}
+    traces = []
     for kind in ("arrow", "line"):
-        traces = []
         default_suffix = (
             f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
         )
