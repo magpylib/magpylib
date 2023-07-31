@@ -243,8 +243,18 @@ class BaseGeo(BaseTransform):
         in the form of a style dictionary.
         """
         if getattr(self, "_style", None) is None:
-            self._style = self._validate_style(self._style_kwargs)
+            self._style = self._style_class()
+        if self._style_kwargs:
+            style_kwargs = self._style_kwargs.copy()
             self._style_kwargs = {}
+            try:
+                self._style.update(style_kwargs)
+            except (AttributeError, ValueError) as e:
+                e.args = (
+                    f"{self!r} has been initialized with some invalid style arguments.\n"
+                    + str(e),
+                )
+                raise
         return self._style
 
     @style.setter

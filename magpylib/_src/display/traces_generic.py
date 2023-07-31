@@ -738,7 +738,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
                     orig_style = None
                     try:
                         # temporary replace style attribute
-                        orig_style = obj._style
+                        orig_style = obj.style
                         obj._style = params.pop("style", None)
                         out_traces = get_generic_traces(
                             obj,
@@ -770,7 +770,7 @@ def get_frames(
     """
     # infer title if necessary
     if objs:
-        style = getattr(objs[0]["objects"][0], "style", None)
+        style = objs[0]["objects"][0].style
         label = getattr(style, "label", None)
         title = label if len(objs[0]["objects"]) == 1 else None
     else:
