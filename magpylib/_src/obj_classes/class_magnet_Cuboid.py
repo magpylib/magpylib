@@ -17,14 +17,14 @@ class Cuboid(BaseMagnet):
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     dimension: array_like, shape (3,), default=`None`
-        Length of the cuboid sides [a,b,c] in units of [mm].
+        Length of the cuboid sides [a,b,c] in units of mm.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -45,9 +45,9 @@ class Cuboid(BaseMagnet):
 
     Examples
     --------
-    `Cuboid` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    cubical magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] sides
-    at the observer position (1,1,1) given in units of [mm]:
+    `Cuboid` magnets are magnetic field sources. Below we compute the H-field (kA/m) of a
+    cubical magnet with magnetization (100,200,300) in units of mT and 1 mm sides
+    at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cuboid(magnetization=(100,200,300), dimension=(1,1,1))
@@ -100,12 +100,12 @@ class Cuboid(BaseMagnet):
     # property getters and setters
     @property
     def dimension(self):
-        """Length of the cuboid sides [a,b,c] in units of [mm]."""
+        """Length of the cuboid sides [a,b,c] in units of mm."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cuboid dimension (a,b,c), shape (3,), [mm]."""
+        """Set Cuboid dimension (a,b,c), shape (3,), mm."""
         self._dimension = check_format_input_vector(
             dim,
             dims=(1,),

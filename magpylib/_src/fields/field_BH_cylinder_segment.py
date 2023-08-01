@@ -2140,16 +2140,16 @@ def magnet_cylinder_segment_core(
     Parameters
     ----------
     mag: ndarray, shape (n,3)
-        magnetization vector (M, phi, th) in spherical CS, units: [mT] [rad]
+        magnetization vector (M, phi, th) in spherical CS, units: mT rad
     obs_pos : ndarray, shape (n,3)
-        observer positions (r,phi,z) in cy CS, units: [mm] [rad]
+        observer positions (r,phi,z) in cy CS, units: mm rad
     dim: ndarray, shape (n,6)
-        segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: [mm] [rad]
+        segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm rad
 
     Returns
     -------
     H-field: ndarray
-        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of [kA/m].
+        H-field in cylindrical coordinates (Hr, Hphi, Hz), shape (n,3) in units of kA/m.
 
     Notes
     -----
@@ -2360,23 +2360,23 @@ def magnet_cylinder_segment_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT].
+        Homogeneous magnetization vector in units of mT.
 
     dimension: ndarray, shape (n,5)
         Cylinder segment dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
-        height h in units of [mm] and the two segment angles phi1 and phi2 in units of [deg].
+        height h in units of mm and the two segment angles phi1 and phi2 in units of deg.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------

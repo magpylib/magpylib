@@ -72,14 +72,14 @@ fig1.show()
 # show sensor output in plotly
 fig2 = go.Figure()
 df = sens.getB(magnet, output="dataframe")
-df["angle [deg]"] = angles[df["path"]]
+df["angle (deg)"] = angles[df["path"]]
 
 fig2 = px.line(
     df,
-    x="angle [deg]",
+    x="angle (deg)",
     y=["Bx", "By"],
     line_dash="pixel",
-    labels={"value": "Field [mT]"},
+    labels={"value": "Field (mT)"},
 )
 fig2.show()
 ```

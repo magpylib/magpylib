@@ -132,8 +132,8 @@ plt.legend()
 plt.grid(color='.9')
 plt.gca().set(
     title='Field at sensor - real (color), interpolated (dashed)',
-    xlabel='sensor rotation angle [deg]',
-    ylabel='[mT]',
+    xlabel='sensor rotation angle (deg)',
+    ylabel='(mT)',
 )
 
 plt.show()

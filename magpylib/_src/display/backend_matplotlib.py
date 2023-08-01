@@ -174,7 +174,7 @@ def display_matplotlib(
             kwargs = tr.get("kwargs", {})
             getattr(ax, constructor)(*args, **kwargs)
         ax.set(
-            **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+            **{f"{k}label": f"{k} (mm)" for k in "xyz"},
             **{f"{k}lim": r for k, r in zip("xyz", ranges)},
         )
 
