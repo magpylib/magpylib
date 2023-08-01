@@ -122,8 +122,12 @@ def current_line_field(
     ntot = len(current)
     field_all = np.zeros((ntot, 3))
 
-    # Check for zero-length segments
-    mask0 = np.all(segment_start == segment_end, axis=1)
+    # Check for zero-length segments (or discontinuous)
+    mask_nan_start = np.isnan(segment_start).all(axis=1)
+    mask_nan_end = np.isnan(segment_end).all(axis=1)
+    mask_equal = np.all(segment_start == segment_end, axis=1)
+    mask0 = mask_equal | mask_nan_start | mask_nan_end
+
     if np.all(mask0):
         return field_all
 
