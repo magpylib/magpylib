@@ -1,14 +1,40 @@
-(docu)=
+(docu-index)=
 
 # Documentation
+
+::::{grid} 3
+:gutter: 4
+
+:::{grid-item-card} magpylib
+:link: docu-magpylib
+:link-type: ref
+:img-top: ../../_static/images/docu_index_icon_magpylib.png
+The Magpylib package
+:::
+
+:::{grid-item-card} magpylib.show
+:link: docu-magpylib-show
+:link-type: ref
+:img-top: ../../_static/images/docu_index_icon_magpylib_show.png
+Magpylib Graphics and Vizualization
+:::
+
+:::{grid-item-card} Physics and Computation
+:link: docu-physics
+:link-type: ref
+:img-top: ../../_static/images/docu_index_icon_physics.png
+Magpylib physics and computation background
+:::
+
+::::
+
+## Index
 
 ```{toctree}
 :maxdepth: 2
 
-docu_classes.md
-docu_position.md
-docu_field_comp.md
-docu_graphic_styles.md
+docu_magpylib.md
+docu_magpylib_show.md
 docu_physics.md
 ```
 

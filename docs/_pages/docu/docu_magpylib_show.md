@@ -11,7 +11,7 @@ kernelspec:
   language: python
   name: python3
 ---
-
+(docu-magpylib-show)=
 (docu-graphics)=
 
 # Graphic and Styles

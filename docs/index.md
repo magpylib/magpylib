@@ -53,12 +53,12 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :::
 
 :::{grid-item-card}
-:link: docu
+:link: docu-index
 :link-type: ref
 :link-alt: link to Documentation
 :img-top: ../../_static/images/index_icon_docu.png
 :text-align: center
-**Docu**
+**Docs**
 :::
 
 :::{grid-item-card}
