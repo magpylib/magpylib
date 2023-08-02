@@ -121,27 +121,35 @@ def make_mag_arrows(obj):
 
     # vector length, color and magnetization
     style = obj.style
-    if hasattr(obj, "diameter"):
-        length = obj.diameter  # Sphere
-    elif isinstance(obj, magpy.misc.Triangle):
-        length = np.amax(obj.vertices) - np.amin(obj.vertices)
-    elif hasattr(obj, "mesh"):
-        length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
-    elif hasattr(obj, "vertices"):
-        length = np.amax(np.ptp(obj.vertices, axis=0))
-    else:  # Cuboid, Cylinder, CylinderSegment
-        length = np.amax(obj.dimension[:3])
-    length *= 1.8 * style.magnetization.size
+    arrow = style.magnetization.arrow
+    length = 1
+    color = style.color if arrow.color is None else arrow.color
+    if arrow.sizemode == "scaled":
+        if hasattr(obj, "diameter"):
+            length = obj.diameter  # Sphere
+        elif isinstance(obj, magpy.misc.Triangle):
+            length = np.amax(obj.vertices) - np.amin(obj.vertices)
+        elif hasattr(obj, "mesh"):
+            length = np.amax(np.ptp(obj.mesh.reshape(-1, 3), axis=0))
+        elif hasattr(obj, "vertices"):
+            length = np.amax(np.ptp(obj.vertices, axis=0))
+        else:  # Cuboid, Cylinder, CylinderSegment
+            length = np.amax(obj.dimension[:3])
+        length *= 1.5
+    length *= arrow.size
     mag = obj.magnetization
     # collect all draw positions and directions
     pos = getattr(obj, "_barycenter", obj._position)[0] - obj._position[0]
     direc = mag / (np.linalg.norm(mag) + 1e-6) * length
-    x, y, z = draw_arrowed_line(direc, pos, sign=1, arrow_pos=1, pivot="tail").T
+    x, y, z = draw_arrowed_line(
+        direc, pos, sign=1, arrow_pos=arrow.offset, pivot="tail"
+    ).T
     trace = {
         "type": "scatter3d",
         "mode": "lines",
-        "line_color": style.color,
-        "opacity": style.opacity,
+        "line_width": arrow.width,
+        "line_dash": arrow.style,
+        "line_color": color,
         "x": x,
         "y": y,
         "z": z,
