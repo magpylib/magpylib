@@ -143,4 +143,12 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
+:::{grid-item-card} Field Computation
+:text-align: center
+:link: gallery-tutorial-field-computation
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
 ::::
