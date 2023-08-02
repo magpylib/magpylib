@@ -14,17 +14,21 @@ class Cuboid(BaseMagnet):
     to the global coordinate basis vectors and the geometric center of the Cuboid
     is located in the origin.
 
+    Units can be chosen freely. B-field output unit is the same as magnetization
+    input unit. Computation is indepentend of Length-unit. See online documentation
+    for fore information
+
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
+        Magnetization (polarizaion) vector (mu0*M, remanence field) in arbitrary
+        units given in the local object coordinates (rotates with object).
 
     dimension: array_like, shape (3,), default=`None`
-        Length of the cuboid sides [a,b,c] in units of mm.
+        Length of the cuboid sides [a,b,c] in arbitrary units.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in arbitrary units. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
