@@ -58,11 +58,7 @@ class CylinderSegment(BaseMagnet):
     Examples
     --------
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-<<<<<<< HEAD
-    H-field (kA/m) of such a cylinder segment magnet with magnetization (100,200,300)
-=======
     H-field kA/m of such a cylinder segment magnet with magnetization (100,200,300)
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     in units of mT, inner radius 1 mm, outer radius 2 mm, height 1 mm, and
     section angles 0 and 45 deg at the observer position (2,2,2) in units of mm:
 

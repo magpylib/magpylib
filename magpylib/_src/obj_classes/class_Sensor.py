@@ -152,11 +152,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-<<<<<<< HEAD
-        B-field (mT) as seen by the sensor in the center of a circular current loop:
-=======
         B-field in units of mT as seen by the sensor in the center of a circular current loop:
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
@@ -231,11 +227,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-<<<<<<< HEAD
-        H-field (kA/m) as seen by the sensor in the center of a circular current loop:
-=======
         H-field in kA/m as seen by the sensor in the center of a circular current loop:
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()

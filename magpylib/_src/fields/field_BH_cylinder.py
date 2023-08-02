@@ -87,7 +87,7 @@ def fieldH_cylinder_diametral(
     dim: ndarray, shape (n,2)
         dimension of cylinder (d, h), diameter and height, in units of mm
     tetta: ndarray, shape (n,)
-        angle between magnetization vector and x-axis in rad. M = (cos(tetta), sin(tetta), 0)
+        angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
     obs_pos: ndarray, shape (n,3)
         position of observer (r,phi,z) in cylindrical coordinates in units of mm and rad
 
@@ -410,7 +410,7 @@ def magnet_cylinder_field(
 #     dim: ndarray, shape (n,2)
 #         dimension of cylinder (d, h), diameter and height, in units of mm
 #     tetta: ndarray, shape (n,)
-#         angle between magnetization vector and x-axis in rad. M = (cos(tetta), sin(tetta), 0)
+#         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
 #     obs_pos: ndarray, shape (n,3)
 #         position of observer (r,phi,z) in cylindrical coordinates in units of mm and rad
 #     niter: int

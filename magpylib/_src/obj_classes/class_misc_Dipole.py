@@ -43,15 +43,9 @@ class Dipole(BaseSource):
 
     Examples
     --------
-<<<<<<< HEAD
-    `Dipole` objects are magnetic field sources. In this example we compute the H-field (kA/m)
-    of such a magnetic dipole with a moment of (100,100,100) mT*mm^2 at an observer position
-    (1,1,1) given in units of mm:
-=======
     `Dipole` objects are magnetic field sources. In this example we compute the H-field kA/m
     of such a magnetic dipole with a moment of (100,100,100) in units of mT*mm^2 at an
     observer position (1,1,1) given in units of mm:
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     >>> import magpylib as magpy
     >>> src = magpy.misc.Dipole(moment=(100,100,100))

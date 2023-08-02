@@ -2140,19 +2140,11 @@ def magnet_cylinder_segment_core(
     Parameters
     ----------
     mag: ndarray, shape (n,3)
-<<<<<<< HEAD
-        magnetization vector (M, phi, th) in spherical CS, units: mT rad
-    obs_pos : ndarray, shape (n,3)
-        observer positions (r,phi,z) in cy CS, units: mm rad
-    dim: ndarray, shape (n,6)
-        segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm rad
-=======
         magnetization vector (M, phi, th) in spherical CS, units: mT, rad
     obs_pos : ndarray, shape (n,3)
         observer positions (r,phi,z) in cy CS, units: mm rad
     dim: ndarray, shape (n,6)
         segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm, rad
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     Returns
     -------

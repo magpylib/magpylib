@@ -45,11 +45,7 @@ class Sphere(BaseMagnet):
 
     Examples
     --------
-<<<<<<< HEAD
-    `Sphere` objects are magnetic field sources. In this example we compute the H-field (kA/m)
-=======
     `Sphere` objects are magnetic field sources. In this example we compute the H-field kA/m
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     of a spherical magnet with magnetization (100,200,300) in units of mT and diameter
     of 1 mm at the observer position (1,1,1) given in units of mm:
 
@@ -109,11 +105,7 @@ class Sphere(BaseMagnet):
 
     @diameter.setter
     def diameter(self, dia):
-<<<<<<< HEAD
-        """Set Sphere diameter, float, (mm)."""
-=======
         """Set Sphere diameter, float, mm."""
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",

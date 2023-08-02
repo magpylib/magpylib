@@ -286,13 +286,6 @@ def display_matplotlib(
             constructor = tr["constructor"]
             args = tr.get("args", ())
             kwargs = tr.get("kwargs", {})
-<<<<<<< HEAD
-            getattr(ax, constructor)(*args, **kwargs)
-        ax.set(
-            **{f"{k}label": f"{k} (mm)" for k in "xyz"},
-            **{f"{k}lim": r for k, r in zip("xyz", ranges)},
-        )
-=======
             if frame_ind == 0:
                 if row_col_num not in count_with_labels:
                     count_with_labels[row_col_num] = 0
@@ -325,7 +318,6 @@ def display_matplotlib(
                     )
             else:
                 ax.legend(loc="best")
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     def animate(ind):  # pragma: no cover
         for ax in axes.values():

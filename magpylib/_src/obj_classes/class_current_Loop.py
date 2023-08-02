@@ -44,11 +44,7 @@ class Loop(BaseCurrent):
 
     Examples
     --------
-<<<<<<< HEAD
-    `Loop` objects are magnetic field sources. In this example we compute the H-field (kA/m)
-=======
     `Loop` objects are magnetic field sources. In this example we compute the H-field kA/m
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     of such a current loop with 100 A current and a diameter of 2 mm at the observer position
     (1,1,1) given in units of mm:
 
@@ -108,11 +104,7 @@ class Loop(BaseCurrent):
 
     @diameter.setter
     def diameter(self, dia):
-<<<<<<< HEAD
-        """Set Loop loop diameter, float, (mm)."""
-=======
         """Set Loop loop diameter, float, mm."""
->>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
