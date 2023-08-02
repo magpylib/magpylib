@@ -179,6 +179,11 @@ class Animation(MagicProperties):
     slider: bool, default = True
         If True, an interactive slider will be displayed and stay in sync with the animation, will
         be hidden otherwise.
+
+    output: str, default = None
+        The path where to store the animation. Must end with `.mp4` or `.gif`. If only the suffix
+        is used, the file is only store in a temporary folder and deleted after the animation is
+        done.
     """
 
     @property
@@ -245,6 +250,23 @@ class Animation(MagicProperties):
             f" but received {repr(val)} instead."
         )
         self._slider = val
+
+    @property
+    def output(self):
+        """Animation output type"""
+        return self._output
+
+    @output.setter
+    def output(self, val):
+        if val is not None:
+            val = str(val)
+            valid = val.endswith("mp4") or val.endswith("gif")
+            assert val is None or valid, (
+                f"The `output` property of {type(self).__name__} must be a either `mp4` or `gif` "
+                "or a valid path ending with `.mp4` or `.gif`"
+                f" but received {repr(val)} instead."
+            )
+        self._output = val
 
 
 default_settings = DefaultConfig()

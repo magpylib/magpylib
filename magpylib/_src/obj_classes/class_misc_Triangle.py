@@ -2,7 +2,7 @@
 """
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_Triangle
+from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -55,8 +55,13 @@ class Triangle(BaseMagnet):
 
     Examples
     --------
+<<<<<<< HEAD
     `Triangle` objects are magnetic field sources. Below we compute the H-field (kA/m) of a
     Triangle object with magnetization (100,200,300) in units of mT dimensions defined
+=======
+    `Triangle` objects are magnetic field sources. Below we compute the H-field in kA/m of a
+    Triangle object with magnetization (100,200,300) in units of mT, dimensions defined
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     through the vertices (0,0,0), (1,0,0) and (0,1,0) in units of mm at the
     observer position (1,1,1) given in units of mm:
 
@@ -93,7 +98,7 @@ class Triangle(BaseMagnet):
 
     _field_func = staticmethod(triangle_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 2}
-    _draw_func = make_Triangle
+    get_trace = make_Triangle
     _style_class = TriangleStyle
 
     def __init__(
@@ -118,7 +123,11 @@ class Triangle(BaseMagnet):
 
     @vertices.setter
     def vertices(self, val):
+<<<<<<< HEAD
         """Set face vertices (a,b,c), shape (3,3), (mm)."""
+=======
+        """Set face vertices (a,b,c), shape (3,3), mm."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._vertices = check_format_input_vector(
             val,
             dims=(2,),

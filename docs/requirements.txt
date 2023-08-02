@@ -1,13 +1,15 @@
 -e .
 pandas
-sphinx==4.4.0
+sphinx==5.3
 sphinx-copybutton
 sphinx-book-theme
 myst-nb
-sphinx-panels
+sphinx-design
 sphinx-thebe
 jupytext
 numpy-stl
 pyvista==0.37
 panel
+jupyterlab-myst
 sphinx-favicon
+sphinx-gallery

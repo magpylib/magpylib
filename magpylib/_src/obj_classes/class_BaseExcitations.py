@@ -202,7 +202,11 @@ class BaseMagnet(BaseSource):
 
     @magnetization.setter
     def magnetization(self, mag):
+<<<<<<< HEAD
         """Set magnetization vector, array_like, shape (3,), unit (mT)."""
+=======
+        """Set magnetization vector, array_like, shape (3,), unit mT."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._magnetization = check_format_input_vector(
             mag,
             dims=(1,),
@@ -229,7 +233,11 @@ class BaseCurrent(BaseSource):
 
     @current.setter
     def current(self, current):
+<<<<<<< HEAD
         """Set current value, scalar, unit (A)."""
+=======
+        """Set current value, scalar, unit A."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         # input type and init check
         self._current = check_format_input_scalar(
             current,

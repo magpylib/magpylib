@@ -1,9 +1,9 @@
 All notable changes to magpylib are documented here.
 
 
-# Releases
+# Changelog
 
-## [4.3.x] 
+## [4.3.x]
 - include self-intersection check in `TriangularMesh` ([#589](https://github.com/magpylib/magpylib/issues/589)).
 
 ## [4.3.0] - 2023-06-25
@@ -222,7 +222,7 @@ This is a major update that includes
 - Renamed attributes (parameters cannot be initialized in their short forms anymore):
     - `angle` and `axis` are replaced by `orientation`
     - `dimension` is replaced by `diameter` for Loop and Sphere classes.
-    - `angle`&`axis` are replaced by `orientation` (see [Added](#Added) Section)
+    - `angle`&`axis` are replaced by `orientation`.
 
 - Modified rotate methods:
   - The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(rotation, anchor, increment, start)` method where `rotation` ist a scipy `Rotation` object.

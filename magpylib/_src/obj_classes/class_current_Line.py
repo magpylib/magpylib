@@ -1,5 +1,5 @@
 """Line current class code"""
-from magpylib._src.display.traces_generic import make_Line
+from magpylib._src.display.traces_core import make_Line
 from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -45,7 +45,11 @@ class Line(BaseCurrent):
 
     Examples
     --------
+<<<<<<< HEAD
     `Line` objects are magnetic field sources. In this example we compute the H-field (kA/m)
+=======
+    `Line` objects are magnetic field sources. In this example we compute the H-field kA/m
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
     units of mm:
 
@@ -89,7 +93,7 @@ class Line(BaseCurrent):
         "segment_start": 2,
         "segment_end": 2,
     }
-    _draw_func = make_Line
+    get_trace = make_Line
 
     def __init__(
         self,
@@ -118,5 +122,9 @@ class Line(BaseCurrent):
 
     @vertices.setter
     def vertices(self, vert):
+<<<<<<< HEAD
         """Set Line vertices, array_like, (mm)."""
+=======
+        """Set Line vertices, array_like, mm."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._vertices = check_format_input_vertices(vert)

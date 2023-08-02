@@ -1,0 +1,8 @@
+#galleryimg {
+    background: red;
+}
+
+/* fix image transparency in docu WTF? */
+html[data-theme=dark] .bd-content img:not(.only-dark):not(.dark-light) {
+    background: none;
+}

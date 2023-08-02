@@ -4,7 +4,7 @@ import warnings
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
-from magpylib._src.display.traces_generic import make_TriangularMesh
+from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
@@ -38,7 +38,11 @@ class TriangularMesh(BaseMagnet):
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (n,3)
+<<<<<<< HEAD
         A set of points in units of m in the local object coordinates from which the
+=======
+        A set of points in units of mm in the local object coordinates from which the
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         triangular faces of the mesh are constructed by the additional `faces`input.
 
     faces: ndarray, shape (n,3)
@@ -73,6 +77,10 @@ class TriangularMesh(BaseMagnet):
         If `True`, check if mesh is self-intersecting.
         Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
+    check_selfintersecting: bool, optional
+        If `True`, the provided set of facets is validated by checking if the body is not
+        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
 
@@ -105,7 +113,7 @@ class TriangularMesh(BaseMagnet):
 
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
-    _draw_func = make_TriangularMesh
+    get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
     def __init__(

@@ -1,5 +1,5 @@
 """Sensor class code"""
-from magpylib._src.display.traces_generic import make_Sensor
+from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -76,7 +76,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     _style_class = SensorStyle
     _autosize = True
-    _draw_func = make_Sensor
+    get_trace = make_Sensor
 
     def __init__(
         self,
@@ -152,7 +152,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
+<<<<<<< HEAD
         B-field (mT) as seen by the sensor in the center of a circular current loop:
+=======
+        B-field in units of mT as seen by the sensor in the center of a circular current loop:
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
@@ -227,7 +231,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
+<<<<<<< HEAD
         H-field (kA/m) as seen by the sensor in the center of a circular current loop:
+=======
+        H-field in kA/m as seen by the sensor in the center of a circular current loop:
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()

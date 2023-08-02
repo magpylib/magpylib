@@ -543,7 +543,11 @@ def getB(
     output="ndarray",
     **kwargs,
 ):
+<<<<<<< HEAD
     """Compute B-field in mT for given sources and observers.
+=======
+    """Compute B-field in units of mT for given sources and observers.
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -585,8 +589,10 @@ def getB(
         `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
 
-    Other Parameters (Direct interface)
-    -----------------------------------
+    See Also
+    --------
+    *Direct-interface
+
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
         Source position(s) in the global coordinates in units of mm.
 
@@ -645,7 +651,11 @@ def getB(
 
     Examples
     --------
+<<<<<<< HEAD
     In this example we compute the B-field (mT) of a spherical magnet and a current loop
+=======
+    In this example we compute the B-field in units of mT of a spherical magnet and a current loop
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
@@ -747,15 +757,17 @@ def getH(
     pixel_agg: str, default=`None`
         Reference to a compatible numpy aggregator function like `'min'` or `'mean'`,
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
-        With this option, observer inputs with different (pixel) shapes are allowed.
+        With this option, observers input with different (pixel) shapes is allowed.
 
     output: str, default='ndarray'
         Output type, which must be one of `('ndarray', 'dataframe')`. By default a
         `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
 
-    Other Parameters (Direct interface)
-    -----------------------------------
+    See Also
+    --------
+    *Direct-interface
+
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
         Source position(s) in the global coordinates in units of mm.
 

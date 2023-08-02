@@ -1,5 +1,5 @@
 """Dipole class code"""
-from magpylib._src.display.traces_generic import make_Dipole
+from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
@@ -43,9 +43,15 @@ class Dipole(BaseSource):
 
     Examples
     --------
+<<<<<<< HEAD
     `Dipole` objects are magnetic field sources. In this example we compute the H-field (kA/m)
     of such a magnetic dipole with a moment of (100,100,100) mT*mm^2 at an observer position
     (1,1,1) given in units of mm:
+=======
+    `Dipole` objects are magnetic field sources. In this example we compute the H-field kA/m
+    of such a magnetic dipole with a moment of (100,100,100) in units of mT*mm^2 at an
+    observer position (1,1,1) given in units of mm:
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     >>> import magpylib as magpy
     >>> src = magpy.misc.Dipole(moment=(100,100,100))
@@ -79,7 +85,7 @@ class Dipole(BaseSource):
     _field_func = staticmethod(dipole_field)
     _field_func_kwargs_ndim = {"moment": 2}
     _style_class = DipoleStyle
-    _draw_func = make_Dipole
+    get_trace = make_Dipole
     _autosize = True
 
     def __init__(

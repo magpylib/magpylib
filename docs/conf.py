@@ -73,7 +73,7 @@ from magpylib import __version__ as release
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = "4.4.0"
+needs_sphinx = "5.3.0"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -89,6 +89,7 @@ extensions = [
     "myst_nb",
     "sphinx_thebe",
     "sphinx_favicon",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -97,7 +98,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -107,7 +108,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -139,7 +140,11 @@ html_theme_options = {
     "use_source_button": True,
     "use_edit_page_button": True,
     "use_issues_button": True,
-    "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "thebe": True,
+        "notebook_interface": "jupyterlab",
+    },
     "icon_links": [
         {
             "name": "Github",
@@ -166,6 +171,7 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -257,7 +263,10 @@ epub_exclude_files = ["search.html"]
 
 # -- Markdown enable
 
-source_suffix = [".rst", ".md"]
+# source_suffix = [".rst", ".md"]
+# source_parsers = {
+#     '.md': 'recommonmark.parser.CommonMarkParser',
+# }
 
 # html_js_files = [
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
@@ -282,25 +291,8 @@ copybutton_prompt_is_regexp = True
 
 html_js_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
-    "https://unpkg.com/thebe@latest/lib/index.js",
+    # "https://unpkg.com/thebe@latest/lib/index.js",
 ]
-
-mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"
-mathjax2_config = {
-    "tex2jax": {
-        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
-        "processEscapes": True,
-        "ignoreClass": "document",
-        "processClass": "math|output_area",
-    }
-}
-
-# needed for sphinx >= 4.3
-mathjax_options = {
-    "async": "async",
-}
-
-myst_update_mathjax = False
 
 suppress_warnings = ["mystnb.unknown_mime_type"]
 
@@ -309,3 +301,26 @@ favicons = [
     "images/favicons/favicon-32x32.png",
     "images/favicons/icon.ico",
 ]
+
+
+# sphinx gallery settings
+# sphinx_gallery_conf = {
+#     # convert rst to md for ipynb
+#     # "pypandoc": True,
+#     # path to your example scripts
+#     "examples_dirs": "../examples",
+#     # path to where to save gallery generated output
+#     "gallery_dirs": "auto_examples",
+#     # Remove the "Download all examples" button from the top level gallery
+#     "download_all_examples": False,
+#     # # Remove sphinx configuration comments from code blocks
+#     # "remove_config_comments": True,
+#     # # Sort gallery example by file name instead of number of lines (default)
+#     # "within_subsection_order": FileNameSortKey,
+#     # Modules for which function level galleries are created.  In
+#     "doc_module": "pyvista",
+#     "image_scrapers": ("pyvista", "matplotlib"),
+# }
+
+# import pyvista
+# pyvista.BUILDING_GALLERY = True

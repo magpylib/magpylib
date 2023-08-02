@@ -9,6 +9,7 @@ DEFAULTS = {
             "maxframes": 200,
             "time": 5,
             "slider": True,
+            "output": None,
         },
         "backend": "auto",
         "colorsequence": (
@@ -65,7 +66,17 @@ DEFAULTS = {
                     "mode": "auto",
                 }
             },
-            "current": {"arrow": {"show": True, "size": 1, "width": 2}},
+            "current": {
+                "arrow": {
+                    "show": True,
+                    "size": 1,
+                    "offset": 0.5,
+                    "width": 2,
+                    "style": "solid",
+                    "color": None,
+                },
+                "line": {"show": True, "width": 2, "style": "solid", "color": None},
+            },
             "sensor": {
                 "size": 1,
                 "pixel": {"size": 1, "color": None, "symbol": "o"},
