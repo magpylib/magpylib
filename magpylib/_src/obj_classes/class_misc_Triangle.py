@@ -55,8 +55,13 @@ class Triangle(BaseMagnet):
 
     Examples
     --------
+<<<<<<< HEAD
+    `Triangle` objects are magnetic field sources. Below we compute the H-field (kA/m) of a
+    Triangle object with magnetization (100,200,300) in units of mT dimensions defined
+=======
     `Triangle` objects are magnetic field sources. Below we compute the H-field in kA/m of a
     Triangle object with magnetization (100,200,300) in units of mT, dimensions defined
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     through the vertices (0,0,0), (1,0,0) and (0,1,0) in units of mm at the
     observer position (1,1,1) given in units of mm:
 
@@ -118,7 +123,11 @@ class Triangle(BaseMagnet):
 
     @vertices.setter
     def vertices(self, val):
+<<<<<<< HEAD
+        """Set face vertices (a,b,c), shape (3,3), (mm)."""
+=======
         """Set face vertices (a,b,c), shape (3,3), mm."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._vertices = check_format_input_vector(
             val,
             dims=(2,),

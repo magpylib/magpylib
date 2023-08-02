@@ -543,7 +543,11 @@ def getB(
     output="ndarray",
     **kwargs,
 ):
+<<<<<<< HEAD
+    """Compute B-field in mT for given sources and observers.
+=======
     """Compute B-field in units of mT for given sources and observers.
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -647,7 +651,11 @@ def getB(
 
     Examples
     --------
+<<<<<<< HEAD
+    In this example we compute the B-field (mT) of a spherical magnet and a current loop
+=======
     In this example we compute the B-field in units of mT of a spherical magnet and a current loop
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy

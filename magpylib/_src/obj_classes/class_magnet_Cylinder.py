@@ -45,7 +45,11 @@ class Cylinder(BaseMagnet):
 
     Examples
     --------
+<<<<<<< HEAD
+    `Cylinder` magnets are magnetic field sources. Below we compute the H-field (kA/m) of a
+=======
     `Cylinder` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
     cylinder magnet with magnetization (100,200,300) in units of mT and 1 mm diameter and height
     at the observer position (1,1,1) given in units of mm:
 

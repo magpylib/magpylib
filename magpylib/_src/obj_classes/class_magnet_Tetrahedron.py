@@ -54,10 +54,17 @@ class Tetrahedron(BaseMagnet):
 
     Examples
     --------
+<<<<<<< HEAD
+    `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field (kA/m) of a
+    tetrahedron magnet with magnetization (100,200,300) in units of mT dimensions defined
+    through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of mm at the
+    observer position (1,1,1) given in units of m:
+=======
     `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
     tetrahedron magnet with magnetization (100,200,300) in units of mT dimensions defined
     through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of mm at the
     observer position (1,1,1) given in units of mm:
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
 
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
@@ -117,7 +124,11 @@ class Tetrahedron(BaseMagnet):
 
     @vertices.setter
     def vertices(self, dim):
+<<<<<<< HEAD
+        """Set Tetrahedron vertices (a,b,c), shape (3,), mm."""
+=======
         """Set Tetrahedron vertices (a,b,c), shape (3,), (mm)."""
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         self._vertices = check_format_input_vector(
             dim,
             dims=(2,),

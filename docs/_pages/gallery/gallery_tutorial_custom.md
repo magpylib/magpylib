@@ -34,6 +34,10 @@ import magpylib as magpy
 
 While each of these features can be used individually, the combination of the two (own source class with own 3D representation) enables a high level of customization in Magpylib. Such user-defined objects will feel like native Magpylib objects and can be used in combination with all other features, which is demonstrated in the following example:
 
+<<<<<<< HEAD:docs/examples/examples_04_custom_source.md
+The class `CustomSource` allows users to integrate their own custom-object field computation into the Magpylib interface. For this, the argument `field_func` must be provided with a function that is then automatically called with `getB` and `getH`. This custom field function is treated like a core function. It must have the positional arguments `field` (with values `'B'` or `'H'`), and `observers` (must accept array_like, shape (n,3)) and return the B-field in units of mT and the H-field in units of kA/m with a similar shape. A fundamental example how to create a custom source object is shown below:
+=======
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c:docs/_pages/gallery/gallery_tutorial_custom.md
 
 ```{code-cell} ipython3
 import numpy as np
@@ -136,7 +140,7 @@ ax2.set(
     ylabel='z-position (mm)',
     aspect=1,
 )
-fig.colorbar(cp, label='[$charge/mm^2$]', ax=ax2)
+fig.colorbar(cp, label='($charge/mm^2$)', ax=ax2)
 
 plt.tight_layout()
 plt.show()

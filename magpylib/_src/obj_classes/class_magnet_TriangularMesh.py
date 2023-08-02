@@ -38,7 +38,11 @@ class TriangularMesh(BaseMagnet):
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (n,3)
+<<<<<<< HEAD
+        A set of points in units of m in the local object coordinates from which the
+=======
         A set of points in units of mm in the local object coordinates from which the
+>>>>>>> 0ad604af38a3349f58f35e8e8e911c4eb2961e3c
         triangular faces of the mesh are constructed by the additional `faces`input.
 
     faces: ndarray, shape (n,3)
