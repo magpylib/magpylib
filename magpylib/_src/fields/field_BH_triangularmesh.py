@@ -162,7 +162,7 @@ def is_facet_inwards(face, faces):
     orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
-    eps = 1e-6  # unfortunately this must be quite a 'large' number :(
+    eps = 1e-5  # unfortunately this must be quite a 'large' number :(
     check_point = face.mean(axis=0) + orient * eps
 
     # find out if first point is inwards

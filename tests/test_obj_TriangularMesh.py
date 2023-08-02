@@ -445,3 +445,20 @@ def test_bad_mode_input():
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000), polydata=pv.Octahedron(), check_open="badinput"
         )
+
+
+def test_orientation_edge_case():
+    """test reorientation edge case"""
+
+    # reorientation may fail if the face orientation vector is two small
+    # see issue #636
+
+    def points(r0):
+        return [(r0 * np.cos(t), r0 * np.sin(t), 10) for t in ts] + [(0, 0, 0)]
+
+    ts = np.linspace(0, 2 * np.pi, 5)
+    sens = magpy.Sensor(position=(0, 0, -0.1))
+    cone1 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(12))
+    cone2 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(13))
+
+    np.testing.assert_array_equal(cone1.faces, cone2.faces)
