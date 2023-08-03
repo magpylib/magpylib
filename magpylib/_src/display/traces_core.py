@@ -70,7 +70,7 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     if obj.vertices is None:
         default_suffix = " (no vertices)"
         name = get_label(obj, default_suffix=default_suffix)
-        trace = create_null_dim_trace(name=name)
+        trace = create_null_dim_trace(color=style.color, name=name)
         return {**trace, **kwargs}
 
     traces = []
@@ -117,7 +117,7 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
     if obj.diameter is None:
         default_suffix = " (no dimension)"
         name = get_label(obj, default_suffix=default_suffix)
-        trace = create_null_dim_trace(name=name)
+        trace = create_null_dim_trace(color=style.color, name=name)
         return {**trace, **kwargs}
     traces = []
     for kind in ("arrow", "line"):
@@ -171,7 +171,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     if autosize is not None:
         size *= autosize
     if moment_mag == 0:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no moment)"
     else:
         default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
@@ -206,7 +206,7 @@ def make_Cuboid(obj, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         trace = make_BaseCuboid(
@@ -225,7 +225,7 @@ def make_Cylinder(obj, base=50, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         diameter, height = obj.dimension
@@ -249,7 +249,7 @@ def make_CylinderSegment(obj, vertices=25, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         d = [
@@ -271,7 +271,7 @@ def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
     style = obj.style
 
     if obj.diameter is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
 
         default_suffix = " (no dimension)"
     else:
@@ -294,7 +294,7 @@ def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.vertices is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no vertices)"
     else:
         default_suffix = ""
@@ -433,7 +433,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     vert = obj.vertices
 
     if vert is None:
-        trace = create_null_dim_trace()
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no vertices)"
     else:
         default_suffix = ""

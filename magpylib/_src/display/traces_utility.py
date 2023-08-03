@@ -725,7 +725,7 @@ def slice_mesh_from_colorscale(trace, axis, colorscale):
     return {**trace, **merge_mesh3d(*traces)}
 
 
-def create_null_dim_trace(**kwargs):
+def create_null_dim_trace(color=None, **kwargs):
     """Returns a simple trace with single markers"""
     trace = {
         "type": "scatter3d",
@@ -733,6 +733,8 @@ def create_null_dim_trace(**kwargs):
         "y": [0],
         "z": [0],
         "mode": "markers",
-        "marker_size": 5,
+        "marker_size": 10,
     }
+    if color is not None:
+        trace["marker_color"] = color
     return {**trace, **kwargs}
