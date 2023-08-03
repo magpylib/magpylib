@@ -534,7 +534,7 @@ def get_generic_traces(
         scatter_path = make_path(input_obj)
         path_traces_generic.append(scatter_path)
 
-    path_traces_generic.extend(group_traces(*path_traces_generic))
+    path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
         tr.update(row=row, col=col)
