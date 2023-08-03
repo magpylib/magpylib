@@ -29,6 +29,7 @@ from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetra
 from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
 )
+from magpylib._src.display.traces_utility import create_null_dim_trace
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import get_label
@@ -67,9 +68,9 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     style = obj.style
     if obj.vertices is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = " (no vertices)"
-        trace["name"] = get_label(obj, default_suffix=default_suffix)
+        name = get_label(obj, default_suffix=default_suffix)
+        trace = create_null_dim_trace(name=name)
         return {**trace, **kwargs}
 
     traces = []
@@ -114,9 +115,9 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
     """
     style = obj.style
     if obj.diameter is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
         default_suffix = " (no dimension)"
-        trace["name"] = get_label(obj, default_suffix=default_suffix)
+        name = get_label(obj, default_suffix=default_suffix)
+        trace = create_null_dim_trace(name=name)
         return {**trace, **kwargs}
     traces = []
     for kind in ("arrow", "line"):
@@ -170,7 +171,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     if autosize is not None:
         size *= autosize
     if moment_mag == 0:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no moment)"
     else:
         default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
@@ -205,7 +206,7 @@ def make_Cuboid(obj, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no dimension)"
     else:
         trace = make_BaseCuboid(
@@ -224,7 +225,7 @@ def make_Cylinder(obj, base=50, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no dimension)"
     else:
         diameter, height = obj.dimension
@@ -248,7 +249,7 @@ def make_CylinderSegment(obj, vertices=25, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no dimension)"
     else:
         d = [
@@ -270,7 +271,8 @@ def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
     style = obj.style
 
     if obj.diameter is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
+
         default_suffix = " (no dimension)"
     else:
         vertices = min(max(vertices, 3), 20)
@@ -292,7 +294,7 @@ def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.vertices is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no vertices)"
     else:
         default_suffix = ""
@@ -431,7 +433,7 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     vert = obj.vertices
 
     if vert is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace()
         default_suffix = " (no vertices)"
     else:
         default_suffix = ""
