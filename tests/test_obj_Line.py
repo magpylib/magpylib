@@ -83,3 +83,36 @@ def test_line_position_bug():
     B2 = col.getB(poso)
 
     assert np.allclose(B1, B2)
+
+
+def test_discontinous_line():
+    """test discontinuous line"""
+    line_1 = magpy.current.Line(
+        current=1,
+        vertices=[
+            [0, 0, 0],
+            [0, 0, 1],
+        ],
+    )
+    line_2 = magpy.current.Line(
+        current=1,
+        vertices=[
+            [1, 0, 0],
+            [1, 0, 1],
+        ],
+    )
+    line_12 = magpy.current.Line(
+        current=1,
+        vertices=[
+            [None, None, None],
+            *line_1.vertices.tolist(),
+            [None, None, None],
+            [None, None, None],
+            *line_2.vertices.tolist(),
+            [None, None, None],
+        ],
+    )
+
+    B1 = magpy.getB((line_1, line_2), (0, 0, 0), sumup=True)
+    B2 = line_12.getB((0, 0, 0))
+    np.testing.assert_allclose(B1, B2)
