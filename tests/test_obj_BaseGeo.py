@@ -337,6 +337,10 @@ def test_scipy_from_methods():
 def test_style():
     """test when setting wrong style class"""
     bg = BaseGeo((0, 0, 0), None)
+    bg.style = {"color": "red"}
+    bg.style = {"label": "mylabel"}
+    assert bg.style.color == "red"
+    assert bg.style.label == "mylabel"
     with pytest.raises(ValueError):
         bg.style = "wrong class"
 

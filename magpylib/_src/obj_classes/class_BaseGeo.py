@@ -263,14 +263,15 @@ class BaseGeo(BaseTransform):
 
     def _validate_style(self, val=None):
         val = {} if val is None else val
+        style = self.style  # triggers style creation
         if isinstance(val, dict):
-            val = self._style_class(**val)
-        if not isinstance(val, self._style_class):
+            style.update(val)
+        elif not isinstance(val, self._style_class):
             raise ValueError(
                 f"Input parameter `style` must be of type {self._style_class}.\n"
                 f"Instead received type {type(val)}"
             )
-        return val
+        return style
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):
