@@ -339,13 +339,26 @@ def merge_scatter3d(*traces):
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken
     from the first object, other keys from further objects are ignored.
     """
-    merged_trace = {}
-    for k in "xyz":
-        merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
-    for k, v in traces[0].items():
-        if k not in merged_trace:
-            merged_trace[k] = v
-    return merged_trace
+    if traces:
+        if len(traces) == 1:
+            return traces[0]
+        mode = traces[0].get("mode")
+        mode = "" if mode is None else mode
+        if not mode:
+            traces[0]["mode"] = "markers"
+        no_gap = "line" not in mode
+
+        merged_trace = {}
+        for k in "xyz":
+            if no_gap:
+                stack = [b[k] for b in traces]
+            else:
+                stack = [pts for b in traces for pts in [[None], b[k]]]
+            merged_trace[k] = np.hstack(stack)
+        for k, v in traces[0].items():
+            if k not in merged_trace:
+                merged_trace[k] = v
+        return merged_trace
 
 
 def aggregate_by_trace_type(traces):
