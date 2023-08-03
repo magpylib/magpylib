@@ -110,7 +110,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         if "lines" not in mode:
             props["ls"] = ""
         if "markers" in mode:
-            if not props["marker"]:
+            if not props.get("marker", None):
                 props["marker"] = "o"
         else:
             props["marker"] = None
