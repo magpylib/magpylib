@@ -8,6 +8,7 @@ import pyvista
 
 import magpylib as magpy
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import merge_scatter3d
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -89,3 +90,13 @@ def test_infer_backend(canvas, is_notebook_result, backend):
         from magpylib._src.display.display import infer_backend
 
         assert infer_backend(canvas) == backend
+
+
+def test_merge_scatter3d():
+    """test_merge_scatter3d"""
+
+    def get_traces(n):
+        return [{"type": "scatter3d", "x": [i], "y": [i], "z": [i]} for i in range(n)]
+
+    merge_scatter3d(*get_traces(1))
+    merge_scatter3d(*get_traces(3))

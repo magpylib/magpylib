@@ -191,7 +191,15 @@ def test_TringularMesh_display():
     src = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(1000, 0, 0), points=points
     )
-    src.show(backend="matplotlib", style_description_show=False, return_fig=True)
+    src.show(
+        backend="matplotlib",
+        style_description_show=False,
+        style_mesh_open_show=True,
+        style_mesh_disconnected_show=True,
+        style_mesh_selfintersecting_show=True,
+        style_orientation_show=True,
+        return_fig=True,
+    )
 
     # test display of disconnected and open mesh elements
     polydata = pv.Text3D("AB")  # create disconnected mesh
@@ -212,6 +220,7 @@ def test_TringularMesh_display():
     src.show(
         style_mesh_open_show=True,
         style_mesh_disconnected_show=True,
+        style_orientation_show=True,
         style_magnetization_mode="color+arrow",
         backend="matplotlib",
         return_fig=True,
