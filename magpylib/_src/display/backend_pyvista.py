@@ -124,7 +124,8 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
         marker_size = marker.get("size", trace.get("marker_size", None))
         marker_size = 1 if marker_size is None else marker_size
         marker_symbol = marker.get("symbol", trace.get("marker_symbol", None))
-        mode = trace.get("mode", "markers+lines")
+        mode = trace.get("mode", None)
+        mode = "markers" if mode is None else mode
         if trace["type"] == "scatter3d":
             points = np.array([trace[k] for k in "xyz"], dtype=float).T
             if "lines" in mode:
