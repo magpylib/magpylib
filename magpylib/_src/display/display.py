@@ -11,8 +11,6 @@ from magpylib._src.defaults.defaults_utility import get_defaults_dict
 from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_generic import MagpyMarkers
 from magpylib._src.display.traces_utility import process_show_input_objs
-from magpylib._src.input_checks import check_dimensions
-from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_backend
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.input_checks import check_input_animation
@@ -173,10 +171,6 @@ def _show(
     kwargs["max_rows"], kwargs["max_cols"] = max_rows, max_cols
     kwargs["subplot_specs"] = subplot_specs
 
-    # test if all source dimensions and excitations have been initialized
-    check_dimensions(obj_list_flat)
-    check_excitations(obj_list_flat)
-
     # test if every individual obj_path is good
     test_path_format(obj_list_flat)
 
@@ -194,13 +188,14 @@ def _show(
     )
 
     if markers:
-        objects = list(objects) + [
+        objects = [
+            *objects,
             {
                 "objects": [MagpyMarkers(*markers)],
                 "row": 1,
                 "col": 1,
                 "output": "model3d",
-            }
+            },
         ]
 
     if backend == "auto":

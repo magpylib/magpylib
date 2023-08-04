@@ -457,7 +457,6 @@ def test_orientation_edge_case():
         return [(r0 * np.cos(t), r0 * np.sin(t), 10) for t in ts] + [(0, 0, 0)]
 
     ts = np.linspace(0, 2 * np.pi, 5)
-    sens = magpy.Sensor(position=(0, 0, -0.1))
     cone1 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(12))
     cone2 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(13))
 

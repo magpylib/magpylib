@@ -141,6 +141,8 @@ class Tetrahedron(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = np.mean(vertices, axis=0)
+        centroid = (
+            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter

@@ -42,7 +42,7 @@ DEFAULTS = {
             "base": {
                 "path": {
                     "line": {"width": 1, "style": "solid", "color": None},
-                    "marker": {"size": 2, "symbol": "o", "color": None},
+                    "marker": {"size": 3, "symbol": "o", "color": None},
                     "show": True,
                     "frames": None,
                     "numbering": False,

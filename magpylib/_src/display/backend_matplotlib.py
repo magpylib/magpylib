@@ -35,6 +35,16 @@ LINE_STYLES_TO_MATPLOTLIB = {
     "longdashdot": "loosely dashdotted",
 }
 
+SCATTER_KWARGS_LOOKUPS = {
+    "ls": ("line", "dash"),
+    "lw": ("line", "width"),
+    "color": ("line", "color"),
+    "marker": ("marker", "symbol"),
+    "mfc": ("marker", "color"),
+    "mec": ("marker", "color"),
+    "ms": ("marker", "size"),
+}
+
 
 def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
@@ -64,15 +74,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
     elif "scatter" in trace["type"]:
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
-            for k, v in {
-                "ls": ("line", "dash"),
-                "lw": ("line", "width"),
-                "color": ("line", "color"),
-                "marker": ("marker", "symbol"),
-                "mfc": ("marker", "color"),
-                "mec": ("marker", "color"),
-                "ms": ("marker", "size"),
-            }.items()
+            for k, v in SCATTER_KWARGS_LOOKUPS.items()
         }
         coords_str = "xyz"
         if trace["type"] == "scatter":
@@ -104,19 +106,22 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 props["marker"], props["marker"]
             )
         mode = trace.get("mode", None)
-        if mode is not None:
-            if "lines" not in mode:
-                props["ls"] = ""
-            if "markers" not in mode:
-                props["marker"] = None
-            if "text" in mode and trace.get("text", False):
-                for *coords_s, txt in zip(*coords, trace["text"]):
-                    traces_mpl.append(
-                        {
-                            "constructor": "text",
-                            "args": (*coords_s, txt),
-                        }
-                    )
+        mode = "markers" if mode is None else mode
+        if "lines" not in mode:
+            props["ls"] = ""
+        if "markers" in mode:
+            if not props.get("marker", None):
+                props["marker"] = "o"
+        else:
+            props["marker"] = None
+        if "text" in mode and trace.get("text", False):
+            for *coords_s, txt in zip(*coords, trace["text"]):
+                traces_mpl.append(
+                    {
+                        "constructor": "text",
+                        "args": (*coords_s, txt),
+                    }
+                )
         traces_mpl.append(
             {
                 "constructor": "plot",

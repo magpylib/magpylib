@@ -241,9 +241,11 @@ def test_bad_default_classes():
         magpy.defaults.display.style = "wrong input"
 
 
-# def test_resetting_defaults():
-#     """test setting and resetting the config"""
-#     magpy.defaults.checkinputs = False
-#     assert magpy.defaults.checkinputs is False, "setting config failed"
-#     magpy.defaults.reset()
-#     assert magpy.defaults.checkinputs is True, "resetting config failed"
+def test_bad_deferred_style():
+    """test error raise on deferred style attribution"""
+    c = magpy.magnet.Cuboid(style_badstyle="ASDF")
+    with pytest.raises(
+        AttributeError,
+        match=r".* has been initialized with some invalid style arguments.*",
+    ):
+        magpy.show(c)  # style property gets called, style kwargs applied

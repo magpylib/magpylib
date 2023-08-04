@@ -191,7 +191,15 @@ def test_TringularMesh_display():
     src = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(1000, 0, 0), points=points
     )
-    src.show(backend="matplotlib", style_description_show=False, return_fig=True)
+    src.show(
+        backend="matplotlib",
+        style_description_show=False,
+        style_mesh_open_show=True,
+        style_mesh_disconnected_show=True,
+        style_mesh_selfintersecting_show=True,
+        style_orientation_show=True,
+        return_fig=True,
+    )
 
     # test display of disconnected and open mesh elements
     polydata = pv.Text3D("AB")  # create disconnected mesh
@@ -212,6 +220,7 @@ def test_TringularMesh_display():
     src.show(
         style_mesh_open_show=True,
         style_mesh_disconnected_show=True,
+        style_orientation_show=True,
         style_magnetization_mode="color+arrow",
         backend="matplotlib",
         return_fig=True,
@@ -310,8 +319,10 @@ def test_circular_line_display():
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
-    src2.show(canvas=ax2, return_fig=True)
-    src3.show(canvas=ax2, style_arrow_size=0, return_fig=True)
+    src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
+    src3.show(
+        canvas=ax2, style_arrow_sizemode="absolute", style_arrow_size=0, return_fig=True
+    )
     src4.show(canvas=ax2, style_path_frames=2, return_fig=True)
 
 
@@ -544,3 +555,53 @@ def test_show_context_reset():
         assert s.show_return_value is None
         s.show(magpy.Sensor(), return_fig=True)
     assert isinstance(s.show_return_value, mplFig)
+
+
+def test_unset_excitations():
+    """test show if mag, curr or mom are not set"""
+
+    objs = [
+        magpy.magnet.Cuboid(dimension=(1, 1, 1)),
+        magpy.magnet.Cylinder(dimension=(1, 1)),
+        magpy.magnet.CylinderSegment(dimension=(0, 1, 1, 45, 120)),
+        magpy.magnet.Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]),
+        magpy.magnet.TriangularMesh(
+            vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            faces=((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
+        ),
+        magpy.magnet.Sphere(diameter=1),
+        magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
+        magpy.misc.Dipole(),
+        magpy.current.Line(vertices=[[0, -1, 0], [0, 1, 0]]),
+        magpy.current.Loop(diameter=1, current=0),
+    ]
+    for i, o in enumerate(objs):
+        o.move((i * 1.5, 0, 0))
+    magpy.show(
+        *objs,
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
+
+
+def test_unset_objs():
+    """test completely unset objects"""
+    objs = [
+        magpy.magnet.Cuboid(),
+        magpy.magnet.Cylinder(),
+        magpy.magnet.CylinderSegment(),
+        magpy.magnet.Sphere(),
+        magpy.magnet.Tetrahedron(),
+        # magpy.magnet.TriangularMesh(), not possible yet
+        magpy.misc.Triangle(),
+        magpy.misc.Dipole(),
+        magpy.current.Line(),
+        magpy.current.Loop(),
+    ]
+
+    for i, o in enumerate(objs):
+        o.move((1.5 * i, 0, 0))
+    magpy.show(
+        *objs,
+        return_fig=True,
+    )
