@@ -5,21 +5,21 @@
 ::::{grid} 3
 :gutter: 4
 
-:::{grid-item-card} magpylib
+:::{grid-item-card} {ref}`docu-magpylib`
 :link: docu-magpylib
 :link-type: ref
 :img-top: ../../_static/images/docu_index_icon_magpylib.png
 Fundamentals and magnetic field computation
 :::
 
-:::{grid-item-card} magpylib.show
+:::{grid-item-card} {ref}`docu-graphics`
 :link: docu-magpylib-show
 :link-type: ref
 :img-top: ../../_static/images/docu_index_icon_magpylib_show.png
-Magpylib graphics and styles
+Magpylib graphics, styles, and backend
 :::
 
-:::{grid-item-card} Physics and Computation
+:::{grid-item-card} {ref}`docu-physics`
 :link: docu-physics
 :link-type: ref
 :img-top: ../../_static/images/docu_index_icon_physics.png
@@ -27,8 +27,6 @@ Physics and computation background
 :::
 
 ::::
-
-## Index
 
 ```{toctree}
 :maxdepth: 2

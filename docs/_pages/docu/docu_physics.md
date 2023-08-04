@@ -13,7 +13,7 @@ kernelspec:
 
 (docu-physics)=
 
-# Physics and Computation
+# Physics
 
 ## When can you use Magpylib ?
 
@@ -90,7 +90,7 @@ Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programm
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 ```
 
-The objective oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docu-direct-interface`.
+The object oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docu-direct-interface`.
 
 The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 

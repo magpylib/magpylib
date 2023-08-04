@@ -294,7 +294,9 @@ html_js_files = [
     # "https://unpkg.com/thebe@latest/lib/index.js",
 ]
 
-suppress_warnings = ["mystnb.unknown_mime_type"]
+suppress_warnings = [
+    "mystnb.unknown_mime_type",
+]
 
 favicons = [
     "images/favicons/favicon-16x16.png",

@@ -4,7 +4,7 @@
 (docu-magpylib)=
 (docu-io)=
 
-# Magpylib
+# Magpylib API
 
 <hr style="border:3px solid gray">
 

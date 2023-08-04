@@ -1,7 +1,3 @@
----
-orphan: True
----
-
 # The Magpylib Documentation
 
 ::::{grid}
