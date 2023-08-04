@@ -13,8 +13,7 @@ kernelspec:
 
 (gallery-tutorial-field-computation)=
 
-# Field Computation
-
+# Field computation - How to
 
 **Example 1:** As expressed by the old v2 slogan *"The magnetic field is only three lines of code away"*, this example demonstrates the most fundamental field computation:
 

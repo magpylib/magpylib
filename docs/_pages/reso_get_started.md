@@ -11,8 +11,6 @@ kernelspec:
   name: python3
 ---
 
-**TODO: links to documentation**
-
 (get-started)=
 
 # Get Started
@@ -40,19 +38,20 @@ conda install -c conda-forge magpylib
 
 ## Magpylib fundamentals
 
-Learn the fundamentals in 5 minutes. This requires a basic understanding of the Python programming language, the [Numpy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
+Learn the Magpylib fundamentals in 5 minutes. This requires a basic understanding of the Python programming language, the [Numpy array class](https://numpy.org/doc/stable/) and the [Scipy Rotation class](https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html).
 
 ### Step 1: Create sources and observers as Python objects
 
 ```python
 import magpylib as magpy
 
-# Create a Cuboid magnet with magnetization (polarization) of 1000 mT pointing
-# in x-direction and sides of 1,2 and 3 mm respectively.
+# Create a Cuboid magnet with magnetic polarization
+# of 1000 mT pointing in x-direction and sides of
+# 1,2 and 3 mm respectively.
 
 cube = magpy.magnet.Cuboid(magnetization=(1000,0,0), dimension=(1,2,3))
 
-# Create a Sensor that measures the field at its position
+# Create a Sensor for measuring the field
 
 sensor = magpy.Sensor()
 ```
@@ -60,13 +59,15 @@ sensor = magpy.Sensor()
 ### Step2: Manipulate object position and orientation
 
 ```python
-# By default, the position of a Magpylib object is (0,0,0) and its orientation is the unit
-# rotation, given by a scipy rotation object with unit rotation.
+# By default, the position of a Magpylib object is
+# (0,0,0) and its orientation is the unit rotation,
+# given by a scipy rotation object.
 
 print(cube.position)                   # -> [0. 0. 0.]
 print(cube.orientation.as_rotvec())    # -> [0. 0. 0.]
 
-# Manipulate object position and orientation through the respective attributes:
+# Manipulate object position and orientation through
+# the respective attributes:
 
 from scipy.spatial.transform import Rotation as R
 cube.position = (1,0,0)
@@ -75,8 +76,8 @@ cube.orientation = R.from_rotvec((0,0,45), degrees=True)
 print(cube.position)                            # -> [1. 0.  0.]
 print(cube.orientation.as_rotvec(degrees=True)) # -> [0. 0. 45.]
 
-# Apply relative motion with the powerful `move` and `rotate` methods.
-
+# Apply relative motion with the powerful `move`
+# and `rotate` methods.
 sensor.move((-1,0,0))
 sensor.rotate_from_angax(angle=-45, axis='z')
 
@@ -87,8 +88,8 @@ print(sensor.orientation.as_rotvec(degrees=True)) # -> [ 0.  0. -45.]
 ### Step 3: View your system
 
 ```python
-# Make use of the `show` function to view your system through Matplotlib, Plotly
-# or Pyvista backends.
+# Use the `show` function to view your system
+# through Matplotlib, Plotly or Pyvista backends.
 
 magpy.show(cube, sensor, backend='plotly')
 ```
@@ -98,17 +99,19 @@ magpy.show(cube, sensor, backend='plotly')
 ### Step 4: Compute the magnetic field
 
 ```python
-# Compute the B-field in units of mT at a set of points.
+# Compute the B-field in units of mT for some points.
 
 points = [(0,0,-1), (0,0,0), (0,0,1)]
 B = magpy.getB(cube, points)
+
 print(B.round()) # -> [[263.  68.  81.]
                  #     [276.  52.   0.]
                  #     [263.  68. -81.]]
 
-# Compute the H-field at a sensor in units of kA/m.
+# Compute the H-field in units of kA/m at the sensor.
 
 H = magpy.getH(cube, sensor)
+
 print(H.round()) # -> [220.  41.   0.]
 ```
 
@@ -119,22 +122,19 @@ Magpylib makes use of vectorized computation (massive speedup). This requires th
 ## Other important features
 
 :::{dropdown} Paths
-Magpylib position and orientation attributes can store multiple values that are referred to as paths. The field will automatically be computed for all path positions. Use this to model a moving source.
+Magpylib position and orientation attributes can store multiple values that are referred to as paths. The field will automatically be computed for all path positions. Use this to model objects moving to multiple locations.
 
 ```python
 import numpy as np
 import magpylib as magpy
 
 # Create magnet
-
 sphere = magpy.magnet.Sphere(diameter=1, magnetization=(0,0,1000))
 
 # Assign a path
-
 sphere.position = np.linspace((-2,0,0), (2,0,0), 7)
 
 # The field is automatically computed for every path position
-
 B = sphere.getB((0,0,1))
 print(B.round())  # ->[[  4.   0.  -1.]
                   #    [ 13.   0.   1.]
@@ -155,16 +155,13 @@ Magpylib objects can be grouped into Collections. An operation applied to a Coll
 import magpylib as magpy
 
 # Create objects
-
 obj1 = magpy.Sensor()
 obj2 = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,2,3))
 
 # Group objects
-
 coll = magpy.Collection(obj1, obj2)
 
 # Manipulate Collection
-
 coll.move((1,2,3))
 
 print(obj1.position.round()) # -> [1. 2. 3.]
@@ -207,12 +204,15 @@ Magpylib offers many ways to customize the graphic output.
 ```python
 import magpylib as magpy
 
+# create Cuboid magnet with custom style
 cube = magpy.magnet.Cuboid(
     magnetization=(0,0,1000),
     dimension=(1,1,1),
     style_color='r',
     style_magnetization_mode='arrow'
 )
+
+# create Cylinder magnet with custom style
 cyl = magpy.magnet.Cylinder(
     magnetization=(0,0,1000),
     dimension=(1,1),
@@ -240,7 +240,7 @@ import magpylib as magpy
 cube = magpy.magnet.Cuboid(magnetization=(0,0,1000), dimension=(1,1,1))
 cube.rotate_from_angax(angle=np.linspace(10,360,18), axis='x')
 
-# Animation with show
+# Generate an animation with `show`
 cube.show(animation=True, backend="plotly")
 ```
 <img src="../_static/images/getting_started_animation.png" width=50%>
@@ -249,17 +249,19 @@ cube.show(animation=True, backend="plotly")
 
 
 :::{dropdown} Direct interface
-Bypass the object oriented interface for maximal performance
+Magpylib's object oriented interface is convenient to work with but is also slowed down by object initialization and handling. The direct interface bypasses this load and enables field computation for a set of input parameters.
 
 ```python
 import magpylib as magpy
 
+# Compute the magnetic field via the direct interface.
 B = magpy.getB(
     sources="Cuboid",
     observers=[(-1,0,1), (0,0,1), (1,0,1)],
     dimension=(1,1,1),
     magnetization=(0,0,1000)
 )
+
 print(B.round()) # -> [[-43.   0.  14.]
                  #     [  0.   0. 135.]
                  #     [ 43.   0.  14.]]

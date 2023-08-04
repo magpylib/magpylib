@@ -1,43 +1,51 @@
 
-(docu-magpylib)=
-
 <hr style="border:3px solid gray">
 
+(docu-magpylib)=
 (docu-io)=
 
-# I/O
+# Magpylib
+
+<hr style="border:3px solid gray">
 
 ## Types
 
 Magpylib requires no special input format. All scalar types (`int`, `float`, ...) and vector types (`list`, `tuple`, `np.ndarray`, ... ) are accepted. Magpylib returns everything as `np.ndarray`.
 
+(docu-units)=
 ## Units
 
-Length inputs can have arbitrary dimension due to the scaling property - _"a magnet with 1 mm sides creates the same field at 1 mm distance as a magnet with 1 m sides at 1 m distance"_.
-
-Magnetic field outputs are directly proportional to `magnetization`, `current`, and dipole `moment` inputs. For example, when the `magnetization` input unit is T (or mT), then the `getB` output unit is also T (or mT). The following table shows how input and putput units are connected.
+For historical reasons Magpylib is by default set up for the following units
 
 ::::{grid} 3
 :::{grid-item}
-:columns: 2
+:columns: 1
 :::
 
 :::{grid-item}
-:columns: 8
-| INPUT | B - FIELD | H - FIELD  |
+:columns: 10
+| PHYSICAL QUANTITY | MAGPYLIB PARAMETER | UNIT |
 |:---:|:---:|:---:|
-| `magnetization` in **mT**      | **mT**    | **kA/m**   |
-| `current` in **A**             | **mT**    | **kA/m**   |
-| dipole `moment` in **mT*mm^3** | **mT**    | **kA/m**   |
+| magnetic polarization  | `magnetization`               | **mT**      |
+| electric current       | `current`                     | **A**       |
+| magnetic dipole moment | `moment`                      | **mT*mm^3** |
+| B-field                | `getB()`                      | **mT**      |
+| H-field                | `getH()`                      | **kA/m**    |
+| length-inputs          | `position`, `dimension`, ...  | **mm**      |
+| angle-inputs           | `angle`, `dimension`, ...     | **deg**     |
 :::
 
-:::{grid-item}
-:columns: 2
-:::
 ::::
 
-Be careful that you do not mix units up when working with different source types.
+```{warning}
+Unfortunately Magpylib contributes to the naming confusion in magnetism that is explained well [here](https://www.e-magnetica.pl/doku.php/confusion_between_b_and_h). The input `magnetization` in Magpylib refers to the magnetic polarization (and not the magnetization), the difference being only in the physical unit.
+```
 
+The analytical solutions are scale invariant - _"a magnet with 1 mm sides creates the same field at 1 mm distance as a magnet with 1 m sides at 1 m distance"_. The choice of length input unit is therefore not relevant.
+
+In addition, `getB` returns the same unit as given by the `magnetization` input. When the magnetization is given in mT, then `getH` returns kA/m which is simply related by factor of $\frac{10}{4\pi}$.
+
+In {ref}`phys-remanence` the connection between the `magnetization` input and the remanence field of a magnet is explained.
 
 <!-- ################################################################## -->
 <!-- ################################################################## -->
@@ -49,6 +57,8 @@ Be careful that you do not mix units up when working with different source types
 (docu-classes)=
 
 # The Magpylib Classes
+
+<hr style="border:3px solid gray">
 
 In Magpylib's object oriented interface magnetic field **sources** (generate the field) and **observers** (read the field) are created as Python objects with various defining attributes and methods.
 
@@ -103,7 +113,7 @@ Magpylib objects span a local reference frame, and all object properties are def
 
 ## Magnet classes
 
-All magnets are sources. They have the <span style="color: orange">**magnetization**</span> attribute which is of the format $(m_x, m_y, m_z)$ and denotes a homogeneous magnetization/polarization vector in the local object coordinates. Information how this is related to material properties from data sheets is found in the [Physics and Computation](phys-remanence) section.
+All magnets are sources. They have the <span style="color: orange">**magnetization**</span> attribute which is of the format $(m_x, m_y, m_z)$ and denotes a homogeneous magnetization/polarization vector in the local object coordinates in arbitrary units. Information how this is related to material properties from data sheets is found in the [Physics and Computation](phys-remanence) section.
 
 
 ### Cuboid
@@ -114,7 +124,7 @@ magpy.magnet.Cuboid(magnetization, dimension, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Cuboid` objects represent magnets with cuboid shape. The <span style="color: orange">**dimension**</span> attribute has the format $(a,b,c)$ and denotes the sides of the cuboid. The center of the cuboid lies in the origin of the local coordinates, and the sides are parallel to the coordinate axes.
+`Cuboid` objects represent magnets with cuboid shape. The <span style="color: orange">**dimension**</span> attribute has the format $(a,b,c)$ and denotes the sides of the cuboid in arbitrary length units. The center of the cuboid lies in the origin of the local coordinates, and the sides are parallel to the coordinate axes.
 :::
 :::{grid-item}
 :columns: 3
@@ -131,7 +141,7 @@ magpy.magnet.Cylinder(magnetization, dimension, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Cylinder` objects represent magnets with cylindrical shape. The <span style="color: orange">**dimension**</span> attribute has the format $(d,h)$ and denotes diameter and height of the cylinder. The center of the cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
+`Cylinder` objects represent magnets with cylindrical shape. The <span style="color: orange">**dimension**</span> attribute has the format $(d,h)$ and denotes diameter and height of the cylinder in arbitrary length units. The center of the cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
 :::
 :::{grid-item}
 :columns: 3
@@ -148,7 +158,7 @@ magpy.magnet.CylinderSegment(magnetization, dimension, position, orientation, st
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`CylinderSegment`represents a magnet with the shape of a cylindrical ring section. The <span style="color: orange">**dimension**</span> attribute has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height and the two section angles $\varphi_1<\varphi_2$ in deg. The center of the full cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
+`CylinderSegment`represents a magnet with the shape of a cylindrical ring section. The <span style="color: orange">**dimension**</span> attribute has the format $(r_1,r_2,h,\varphi_1,\varphi_2)$ and denotes inner radius, outer radius and height in arbitrary length units, and the two section angles $\varphi_1<\varphi_2$ in deg. The center of the full cylinder lies in the origin of the local coordinates, and the cylinder axis coincides with the z-axis.
 :::
 :::{grid-item}
 :columns: 3
@@ -169,7 +179,7 @@ magpy.magnet.Sphere(magnetization, diameter, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Sphere` represents a magnet of spherical shape. The <span style="color: orange">**diameter**</span> attribute is the sphere diameter $d$. The center of the sphere lies in the origin of the local coordinates.
+`Sphere` represents a magnet of spherical shape. The <span style="color: orange">**diameter**</span> attribute is the sphere diameter $d$ in arbitrary length units. The center of the sphere lies in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -186,7 +196,7 @@ magpy.magnet.Tetrahedron(magnetization, vertices, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Tetrahedron` represents a magnet of tetrahedral shape. The <span style="color: orange">**vertices**</span> attribute stores the four corner points $(P_1, P_2, P_3, P_4)$ in the local object coordinates.
+`Tetrahedron` represents a magnet of tetrahedral shape. The <span style="color: orange">**vertices**</span> attribute stores the four corner points $(P_1, P_2, P_3, P_4)$ in the local object coordinates in arbitrary length units.
 :::
 :::{grid-item}
 :columns: 3
@@ -207,7 +217,7 @@ magpy.magnet.TriangularMesh(magnetization, vertices, faces, position, orientatio
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`TriangularMesh` represents a magnet with surface given by a triangular mesh. The mesh is defined by the <span style="color: orange">**vertices**</span> attribute, an array of all unique corner points $(P_1, P_2, ...)$, and the <span style="color: orange">**faces**</span> attribute, which is an array of index-triplets that define individual faces $(F_1, F_2, ...)$. The property <span style="color: orange">**mesh**</span> returns an array of all faces as point-triples $[(P_1^1, P_2^1, P_3^1), (P_1^2, P_2^2, P_3^2), ...]$.
+`TriangularMesh` represents a magnet with surface given by a triangular mesh. The mesh is defined by the <span style="color: orange">**vertices**</span> attribute, an array of all unique corner points $(P_1, P_2, ...)$ in arbitrary length units, and the <span style="color: orange">**faces**</span> attribute, which is an array of index-triplets that define individual faces $(F_1, F_2, ...)$. The property <span style="color: orange">**mesh**</span> returns an array of all faces as point-triples $[(P_1^1, P_2^1, P_3^1), (P_1^2, P_2^2, P_3^2), ...]$.
 
 At initialization the mesh integrity is automatically checked, and all faces are reoriented to point outwards. These actions are controlled via the kwargs
 * <span style="color: orange">**check_open**</span>
@@ -257,7 +267,7 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 
 ## Current classes
 
-All currents are sources. Current objects have the <span style="color: orange">**current**</span> attribute which is a scalar that denotes the electrical current.
+All currents are sources. Current objects have the <span style="color: orange">**current**</span> attribute which is a scalar that denotes the electrical current in arbitrary units.
 
 ### Loop
 ```python
@@ -267,7 +277,7 @@ magpy.current.Loop(current, diameter, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Current` represents a circular line current loop. The <span style="color: orange">**diameter**</span> attribute is the loop diameter $d$. The loop lies in the xy-plane with it's center in the origin of the local coordinates.
+`Current` represents a circular line current loop. The <span style="color: orange">**diameter**</span> attribute is the loop diameter $d$ in arbitrary length units. The loop lies in the xy-plane with it's center in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -283,7 +293,7 @@ magpy.current.Line(current, vertices, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Line` represents a set of line current segments that flow from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(P_1, P_2, ...)$ given in the local coordinates.
+`Line` represents a set of line current segments that flow from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(P_1, P_2, ...)$ given in the local coordinates in arbitrary length units.
 :::
 :::{grid-item}
 :columns: 3
@@ -306,7 +316,7 @@ magpy.misc.Dipole(moment, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Dipole` represents a magnetic dipole moment with the <span style="color: orange">**moment**</span> attribute that describes the magnetic dipole moment $m=(m_x,m_y,m_z)$ which lies in the origin of the local coordinates.
+`Dipole` represents a magnetic dipole moment with the <span style="color: orange">**moment**</span> attribute that describes the magnetic dipole moment $m=(m_x,m_y,m_z)$ in arbitrary units which lies in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -314,7 +324,7 @@ magpy.misc.Dipole(moment, position, orientation, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** For homogeneous magnets the relation moment=magnetization$\times$volume holds. 
+**Info:** For homogeneous magnets the relation moment=magnetization$\times$volume holds.
 :::
 ::::
 
@@ -327,7 +337,7 @@ magpy.misc.Triangle(magnetization, vertices, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Triangle` represents a triangular surface with a homogeneous charge density given by the projection of the magnetization vector onto the surface normal. The <span style="color: orange">**magnetization**</span> attribute stores the magnetization vector $(m_x,m_y,m_z)$. The <span style="color: orange">**vertices**</span> attribute is a set of the three triangle corners $(P_1, P_2, P_3)$ in the local coordinates.
+`Triangle` represents a triangular surface with a homogeneous charge density given by the projection of the magnetization vector onto the surface normal. The <span style="color: orange">**magnetization**</span> attribute stores the magnetization vector $(m_x,m_y,m_z)$  in arbitrary units. The <span style="color: orange">**vertices**</span> attribute is a set of the three triangle corners $(P_1, P_2, P_3)$ in arbitrary length units in the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
@@ -348,7 +358,7 @@ magpy.misc.CustomSource(field_func, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`CustomSource` is used to create user defined sources with their own field functions. The argument <span style="color: orange">**field_func**</span> takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docu-field-comp-core). It must have the positional arguments `field` with values `"B"` or `"H"`, and `observers` (must accept array_like, shape (n,3)) and return the B-field and the H-field with a similar shape.
+`CustomSource` is used to create user defined sources with their own field functions. The argument <span style="color: orange">**field_func**</span> takes a function that is then automatically called for the field computation. This custom field function is treated like a [core function](docu-field-comp-core). It must have the positional arguments `field` with values `"B"` or `"H"`, and `observers` (must accept array with shape (n,3)) and return the B-field and the H-field with a similar shape.
 :::
 :::{grid-item}
 :columns: 3
@@ -372,7 +382,7 @@ magpy.Sensor(position, pixel, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Sensor` represents a 3D magnetic field sensor and can be used as Magpylib `observers` input. The <span style="color: orange">**pixel**</span> attribute is an array of positions $(P_1, P_2, ...)$ in the local sensor coordinates where the field is computed. By default `pixel=(0,0,0)` and the sensor simply returns the field at it's position.
+`Sensor` represents a 3D magnetic field sensor and can be used as Magpylib `observers` input. The <span style="color: orange">**pixel**</span> attribute is an array of positions $(P_1, P_2, ...)$ in arbitrary length units in the local sensor coordinates where the field is computed. By default `pixel=(0,0,0)` and the sensor simply returns the field at it's position.
 :::
 :::{grid-item}
 :columns: 3
@@ -439,6 +449,7 @@ A tutorial {ref}`gallery-tutorial-collection` is provided in the example gallery
 
 # Position, Orientation, and Paths
 
+<hr style="border:3px solid gray">
 
 ::::{grid} 2
 
@@ -519,96 +530,35 @@ print(sensor.position)                                    # the input with the e
 #   --> [[ 1.  1.  1.]  [ 3.  3. 13.]  [ 4.  4. 24.]]     # starting at index 1.
 ```
 
-Several extensions of the `rotate` method give a lot of flexibility with object rotation:
+Several extensions of the `rotate` method give a lot of flexibility with object rotation. They all feature the arguments `anchor` and `start` which work as described above.
 
 :::{dropdown} <span style="color: orange">**rotate_from_angax(**</span>`angle`, `axis`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
-`angle`: scalar or array_like with shape (n,)
-    Angle(s) of rotation in units of deg (by default).
-
-`axis`: str or array_like, shape (3,)
-    The direction of the axis of rotation. Input can be a vector of shape (3,) or a string 'x', 'y' or 'z' to denote respective directions.
-
-`anchor`: None, 0 or array_like with shape (3,) or (n,3), default=None
-    The axis of rotation passes through the anchor point given in units of mm. By default (anchor=None) the object will rotate about its own center. anchor=0 rotates the object about the origin (0,0,0).
-
-`start`: int or str, default='auto'
-    Starting index when applying operations. See 'General move/rotate behavior' above for details.
-
-`degrees`: bool, default=True
-    Interpret input in units of deg or rad.
+* `angle`: scalar or array with shape (n). Angle(s) of rotation.
+* `axis`: array of shape (3,) or string. The direction of the rotation axis. String input can be 'x', 'y' or 'z' to denote respective directions.
+* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
 
 :::{dropdown} <span style="color: orange">**rotate_from_rotvec(**</span>`rotvec`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
-`rotvec` : array_like, shape (n,3) or (3,)
-    Rotation input. Rotation vector direction is the rotation axis, vector length is the rotation angle in units of rad.
-
-`anchor`: None, 0 or array_like with shape (3,) or (n,3), default=None
-    The axis of rotation passes through the anchor point given in units of mm. By default (anchor=None) the object will rotate about its own center. anchor=0 rotates the object about the origin (0,0,0).
-
-`start`: int or str, default='auto'
-    Starting index when applying operations. See 'General move/rotate behavior' above for details.
-
-`degrees`: bool, default=True
-    Interpret input in units of deg or rad.
+* `rotvec` : array with shape (n,3) or (3,). The rotation vector direction is the rotation axis and the vector length is the rotation angle in units of deg.
+* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
 
 :::{dropdown} <span style="color: orange">**rotate_from_euler(**</span> `angle`, `seq`, `anchor=None`, `start="auto"`, `degrees=True` <span style="color: orange">**)**</span>
-angle: int, float or array_like with shape (n,)
-    Angle(s) of rotation in units of deg (by default).
-`seq` : string
-    Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
-
-`anchor`: None, 0 or array_like with shape (3,) or (n,3), default=None
-    The axis of rotation passes through the anchor point given in units of mm. By default (anchor=None) the object will rotate about its own center. anchor=0 rotates the object about the origin (0,0,0).
-
-`start`: int or str, default='auto'
-    Starting index when applying operations. See 'General move/rotate behavior' above for details.
-
-`degrees`: bool, default=True
-    Interpret input in units of deg or rad.
+* `angle`: scalar or array with shape (n). Angle(s) of rotation in units of deg (by default).
+* `seq` : string. Specifies sequence of axes for rotations. Up to 3 characters belonging to the set {'X', 'Y', 'Z'} for intrinsic rotations, or {'x', 'y', 'z'} for extrinsic rotations. Extrinsic and intrinsic rotations cannot be mixed in one function call.
+* `degrees`: bool, default=True. Interpret angle input in units of deg (True) or rad (False).
 :::
 
 :::{dropdown} <span style="color: orange">**rotate_from_quat(**</span>`quat`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
-`quat` : array_like, shape (n,4) or (4,)
-    Rotation input in quaternion form.
-
-`anchor`: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-    The axis of rotation passes through the anchor point given in units of mm.
-    By default (`anchor=None`) the object will rotate about its own center.
-    `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-`start`: int or str, default=`'auto'`
-    Starting index when applying operations. See 'General move/rotate behavior' above
-    for details.
+* `quat` : array with shape (n,4) or (4,). Rotation input in quaternion form.
 :::
 
 :::{dropdown} <span style="color: orange">**rotate_from_mrp(**</span>`matrix`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
-`matrix` : array_like, shape (n,3,3) or (3,3)
-    Rotation input. See scipy.spatial.transform.Rotation for details.
-
-`anchor`: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-    The axis of rotation passes through the anchor point given in units of mm.
-    By default (`anchor=None`) the object will rotate about its own center.
-    `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-`start`: int or str, default=`'auto'`
-    Starting index when applying operations. See 'General move/rotate behavior' above
-    for details.
+* `matrix` : array with shape (n,3,3) or (3,3). Rotation matrix. See scipy.spatial.transform.Rotation for details.
 :::
 
 :::{dropdown} <span style="color: orange">**rotate_from_mrp(**</span>`mrp`, `anchor=None`, `start="auto"` <span style="color: orange">**)**</span>
-`mrp` : array_like, shape (n,3) or (3,)
-    Rotation input. See scipy Rotation package for details on Modified Rodrigues
-    Parameters (MRPs).
-
-`anchor`: `None`, `0` or array_like with shape (3,) or (n,3), default=`None`
-    The axis of rotation passes through the anchor point given in units of mm.
-    By default (`anchor=None`) the object will rotate about its own center.
-    `anchor=0` rotates the object about the origin `(0,0,0)`.
-
-`start`: int or str, default=`'auto'`
-    Starting index when applying operations. See 'General move/rotate behavior' above
-    for details.
+* `mrp` : array with shape (n,3) or (3,). Modified Rodrigues parameter input. See scipy Rotation package for details.
 :::
 
 When objects with different path lengths are combined, e.g. when computing the field, the shorter paths are treated as static beyond their end to make the computation sensible. Internally, Magpylib follows a philosophy of edge-padding and end-slicing when adjusting paths.
@@ -638,10 +588,12 @@ The tutorial {ref}`gallery-tutorial-paths` shows intuative good practice example
 (docu-field-computation)=
 # Field Computation
 
-Magnetic field computation is the central functionality of Magpylib. It evolves about the two top-level functions
+<hr style="border:3px solid gray">
+
+Magnetic field computation in Magpylib is done via two top-level functions
 
 ::::{grid}
-:gutter: 4
+:gutter: 2
 
 :::{grid-item}
 :columns: 1
@@ -673,7 +625,7 @@ Magnetic field computation is the central functionality of Magpylib. It evolves 
 
 ::::
 
-which compute the magnetic field generated by `sources` as seen by the `observers` in their local coordinates. `sources` can be any Magpylib source object (e.g. Magnets) or a flat list thereof. `observers` can be an array of position vectors with shape `(n1,n2,n3,...,3)`, any Magpylib observer object (e.g. Sensors), or a flat list thereof.
+that compute the magnetic field generated by `sources` as seen by the `observers` in their local coordinates. `sources` can be any Magpylib source object (e.g. magnets) or a flat list thereof. `observers` can be an array of position vectors with shape `(n1,n2,n3,...,3)`, any Magpylib observer object (e.g. sensors), or a flat list thereof. The following code shows a minimal example for Magplyib field computation.
 
 ::::{grid}
 :gutter: 5
@@ -687,7 +639,7 @@ which compute the magnetic field generated by `sources` as seen by the `observer
 ```python
 import magpylib as magpy
 
-# define source and observer
+# define source and observer objects
 loop = magpy.current.Loop(current=1, diameter=1)
 sens = magpy.Sensor()
 
@@ -700,13 +652,16 @@ print(B)
 :::
 ::::
 
+The physical unit returned by `getB` and `getH` corresponds to the source excitation input units. For example, when magnet `magnetization` is given in mT, `getB` returns the B-field in units of mT and `getH` the H-field in units of kA/m. This is described in detail in {ref}`docu-units`.
+
 The output of a field computation `magpy.getB(sources, observers)` is by default a Numpy array of shape `(l, m, k, n1, n2, n3, ..., 3)` where `l` is the number of input sources, `m` the (maximal) object path length, `k` the number of observers, `n1,n2,n3,...` the sensor pixel shape or the shape of the observer position array input and `3` the three magnetic field components $(B_x, B_y, B_z)$.
 
-With `squeeze=True` all axes of length 1 in the output (e.g. only a single source) are eliminated.
 
-With `pixel_agg` one can select a compatible numpy aggregator function (e.g. `"min"`, `"mean"`) that is applied to the output. For example, with `pixel_agg="mean"` the mean field of all observer points is returned. Only with this option it is possible to supply `getB` and `getH` with multiple observers that have different pixel shapes.
+* `squeeze`: If True (default) all axes of length 1 in the output (e.g. only a single source) are squeezed.
 
-With `output` it is possible to choose the output format. Options are `"ndarray"` (returns a numpy array) and `"dataframe"` (returns a 2D-table pandas DataFrame).
+* `pixel_agg`: Select a compatible numpy aggregator function (e.g. `"min"`, `"mean"`) that is applied to the output. For example, with `pixel_agg="mean"` the mean field of all observer points is returned. Only with this option it is possible to supply `getB` and `getH` with multiple observers that have different pixel shapes.
+
+* `output`: Change the output format. Options are `"ndarray"` (default, returns a Numpy ndarray) and `"dataframe"` (returns a 2D-table Pandas DataFrame).
 
 ```{note}
 Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs. 
@@ -720,13 +675,13 @@ The tutorial {ref}`gallery-tutorial-field-computation` shows good practices with
 (docu-direct-interface)=
 ## Direct interface
 
-Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is achieved by providing the following inputs to the top level functions `getB` and `getH`,
+Users can bypass the object oriented functionality of Magpylib and instead compute the field for n given parameter sets. This is done by providing the following inputs to the top level functions `getB` and `getH`,
 
-1. `sources`: a string denoting the source type
-2. `observers`: array_like of shape (3,) or (n,3) giving the observer positions
-3. `kwargs`: a dictionary with inputs of shape (x,) or (n,x)
+1. `sources`: a string denoting the source type. Allowed values are the Magpylib source class names, see {ref}`docu-classes`.
+2. `observers`: array-like of shape (3,) or (n,3) giving the observer positions.
+3. `kwargs`: a dictionary with inputs of shape (x,) or (n,x). Must include all mandatory class-specific inputs. By default, `position=(0,0,0)` and `orientation=None`(=unit rotation).
 
-The allowed values for `sources` are similar to the Magpylib source class names, e.g. `"Cuboid"`, see {ref}`docu-classes`. The `kwargs` must include all mandatory class-specific inputs. All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to create a set of n computation instances. The field is returned in the shape (n,3). 
+All "scalar" inputs of shape (x,) are automatically tiled up to shape (n,x) to create a set of n computation instances. The field is returned in the shape (n,3). The following code demonstrates the direct interface.
 
 ::::{grid}
 :gutter: 5
@@ -757,7 +712,7 @@ print(B.round())
 ::::
 
 ```{note}
-The direct interface is potentially faster than the object oriented one if users know how to generate the input array efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
+The direct interface is potentially faster than the object oriented one if users know how to generate the input arrays efficiently with numpy (e.g. `np.arange`, `np.linspace`, `np.tile`, `np.repeat`, ...).
 ```
 
 
@@ -798,7 +753,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 :::
 ::::
 
-The input `field` is either `"B"` or `"H`. All other inputs must be Numpy ndarrays of shape (n,x). Details can be found in the respective function docstrings.
+The input `field` is either `"B"` or `"H`. All other inputs must be Numpy ndarrays of shape (n,x). Their meaning is similar as above. Details can be found in the respective function docstrings. The following example demonstrates the core interface.
 
 ::::{grid}
 :gutter: 5
@@ -832,93 +787,6 @@ print(B.round())
 
 ## Field computation workflow
 
+The Magpylib field computation internal workflow and different approaches of the three interfaces is outlined in the following sketch.
+
 ![](../../_static/images/docu_field_comp_flow.png)
-
-## Superposition
-
-something something
-<!-- 
-
-
-
-
-
-(intro-direct-interface)=
-
-
-(examples-complex-forms)=
-
-## Complex shapes - Superposition
-
-The [**superposition principle**](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in Magneto statics when there is no material response, and simply means that the total field created by multiple magnets and currents is the sum of the individual fields.
-
-It is critical to understand that the superposition principle holds for the magnetization itself. When two magnets overlap geometrically, the magnetization in the overlap region is given by the vector sum of the two individual magnetizations.
-
-(examples-union-operation)=
-
-### Union operation
-
-Based on the superposition principle we can build complex forms by aligning simple base shapes (no overlap), similar to a geometric union. This is demonstrated in the following example, where a hollow cylinder magnet is constructed from cuboids. The field is then compare to the exact solution implemented through `CylinderSegment`.
-
-```{code-cell} ipython3
-import numpy as np
-import matplotlib.pyplot as plt
-import magpylib as magpy
-from magpylib.magnet import Cuboid, CylinderSegment
-
-fig = plt.figure(figsize=(14,5))
-ax1 = fig.add_subplot(131, projection='3d', elev=24)
-ax2 = fig.add_subplot(132, projection='3d', elev=24)
-ax3 = fig.add_subplot(133)
-
-sensor = magpy.Sensor(position=np.linspace((-4,0,3), (4,0,3), 50))
-
-# ring with cuboid shapes
-ts = np.linspace(-3, 3, 31)
-grid = [(x,y,0) for x in ts for y in ts]
-
-coll = magpy.Collection()
-for pos in grid:
-    r = np.sqrt(pos[0]**2 + pos[1]**2)
-    if 2<r<3:
-        coll.add(Cuboid(magnetization=(0,0,100), dimension=(.2,.2,1), position=pos))
-magpy.show(coll, sensor, canvas=ax1, style_magnetization_show=False)
-
-# ring with CylinderSegment
-ring = CylinderSegment(magnetization=(0,0,100), dimension=(2,3,1,0,360))
-magpy.show(ring, sensor, canvas=ax2, style_magnetization_show=False)
-
-# compare field at sensor
-ax3.plot(sensor.getB(coll).T[2], label='Bz from Cuboids')
-ax3.plot(sensor.getB(ring).T[2], ls='--', label='Bz from CylinderSegment')
-ax3.grid(color='.9')
-ax3.legend()
-
-plt.tight_layout()
-plt.show()
-```
-
-Construction of complex forms from base shapes is a powerful tool, however, there is always a geometry approximation error, visible in the above figure. The error can be reduced by increasing the discretization finesse, but this also requires additional computation effort.
-
-### Cut-out operation
-
-When two objects with opposing magnetization vectors of similar amplitude overlap, they will just cancel in the overlap region. This enables geometric cut-out operations. In the following example we construct an exact hollow cylinder solution from two concentric cylinder shapes with opposite magnetizations, and compare the result to the `CylinderSegment` class solution.
-
-```{code-cell} ipython3
-from magpylib.magnet import Cylinder, CylinderSegment
-
-# ring from CylinderSegment
-ring0 = CylinderSegment(magnetization=(0,0,100), dimension=(2,3,1,0,360))
-
-# ring with cut-out
-inner = Cylinder(magnetization=(0,0,-100), dimension=(4,1))
-outer = Cylinder(magnetization=(0,0, 100), dimension=(6,1))
-ring1 = inner + outer
-
-print('getB from Cylindersegment', ring0.getB((1,2,3)))
-print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
-```
-
-Note that, it is faster to compute the `Cylinder` field two times than computing the complex `CylinderSegment` field one time. This is why Magpylib automatically falls back to the `Cylinder` solution whenever `CylinderSegment` is called with 360 deg section angles. Unfortunately, cut-out operations cannot be displayed graphically at the moment, but {ref}`examples-own-3d-models` offer a solution here.
-
-Finally, it is explained in {ref}`examples-triangle`, how complex shapes are achieved based on triangular meshes. -->

@@ -14,19 +14,19 @@ You are most welcome to become a project contributor by helping us with coding. 
 2. Edit your new repository (good practice: clone to local machine, edit, push changes).
 3. Rebase your new repository (or pull from upstream) regularly to include upstream changes.
 4. Once your changes are complete (see [Coding requirements](coding-requ) below), or you want some feedback, make a pull request (PR) targeting the Magpylib repository. Explain your feature in the PR, and/or refer to the respective issue that you address. Add illustrative code examples.
-5. Once a PR is created, our pipelines tests will automatically check your code. A Magpylib member will review your contributions and discuss your changes. Possible improvements will be requested.
+5. Once a PR is created, our pipeline tests will automatically check your code. A Magpylib member will review your contributions and discuss your changes. Possible improvements will be requested.
 6. When satisfied, the reviewer will merge your PR and you become an official Magpylib contributor.
 
 (coding-requ)=
 ## Coding requirements
 
-- All code is well documented and all top level doc strings abide the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
+- All code is well documented and all top level doc strings abide by the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
 - All unit tests are running. We recommend using the [Pytest](https://docs.pytest.org/en/7.4.x/) package.
 - New unit tests are written aiming for 100% code coverage. We use [Coverage](https://coverage.readthedocs.io/en/) to test this.
 - [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and there are no formatting issues reportet (e.g. line-to-long).
 - Your code is PEP8 compliant and formatted with [Black](https://black.readthedocs.io/en/stable/) default settings.
 
-We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks that apply important code checks.
+We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks that apply important code checks which each commit.
 
 ## For your orientation
 

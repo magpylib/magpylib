@@ -11,20 +11,15 @@ kernelspec:
   name: python3
 ---
 
-TODO: explain remanence VS magnetization
-
 (docu-physics)=
-
-(phys-remanence)=
 
 # Physics and Computation
 
 ## When can you use Magpylib ?
-The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few % (long magnet shapes are better, large distance from magnet is better). Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current. For more details check out the :ref:`docu-physics` section.
+
+The expressions used in Magpylib describe perfectly homogeneous magnets, surface charges, and line currents with natural boundary conditions. Magpylib is at its best when dealing with static air-coils (no eddy currents, no soft-magnetic cores) and high grade permanent magnets (Ferrite, NdFeB, SmCo or similar materials). When **magnet** permeabilities are below $\mu_r < 1.1$ the error typically undercuts few %. Demagnetization factors are not included. The line **current** solutions give the exact same field as outside of a wire that carries a homogeneous current.
 
 ## The analytical solutions
-
-**Permanent Magnets**
 
 Magnetic field computations in Magpylib are based on known analytical solutions (closed form expressions) to permanent magnet and current problems. The Magpylib implementations are based on the following literature references:
 
@@ -48,8 +43,6 @@ $$
 
 where ${\bf r}$ denotes the position, $V$ is the magnetized volume with surface $S$ and normal vector ${\bf n}$ onto the surface. This solution is derived in detail e.g. in \[Jackson1999\].
 
-**Currents**
-
 The fields of currents are directly derived using the law of Biot-Savart with the current distribution ${\bf J}({\bf r})$:
 
 $$
@@ -60,11 +53,11 @@ In some special cases (simple shapes, homogeneous magnetizations and current dis
 
 ## Accuracy of the Solutions and Demagnetization
 
-**Line currents:**
+### Line currents:
 
 The magnetic field of a wire carrying a homogeneous current density is (on the outside) similar to the field of a line current positioned in the center of the wire, which carries the same total current. Current distributions become inhomogeneous at bends of the wire or when eddy currents (finite frequencies) are involved.
 
-**Magnets and Demagnetization**
+### Magnets and Demagnetization
 
 The analytical solutions are exact when bodies have a homogeneous magnetization. However, real materials always have a material response which results in an inhomogeneous magnetization even when the initial magnetization is perfectly homogeneous. There is a lot of literature on such [demagnetization effects](https://en.wikipedia.org/wiki/Demagnetizing_field).
 
@@ -74,25 +67,18 @@ Error estimation as a result of the material response is evaluated in more detai
 
 Demagnetization factors can be used to compensate a large part of the demagnetization effect. Analytical expressions for the demagnetization factors of cuboids can be found at [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html).
 
-**Soft-Magnetic Materials**
+(phys-remanence)=
+### Modelling a datasheet magnet
+
+The material remanence, often found in data sheets, simply corresponds to the material magnetization/polarizaion when not under the influence of external fields. This can never happen, as the material itself generates a magnetic field. Such self-interactions result in self-demagnetization that can be approximated using the demagnetization factors and the material permeability (or susceptibility).
+
+For example, a cube with 1 mm sides has a demagnetization factor is 0.333, see [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html). When the remanence field of this cube is 1 T, and its suszetibility is 0.1, the magnetization resulting from self-interaction is reduced to 1 T - 0.3333*0.1 T = 0.9667 T, assuming linear material laws.
+
+It must be understood that the change in magnetization resulting from self-interaction has a homogeneous contribution which is approximated by the demagnetization factor, and an inhomogeneous contribution which cannot be modeled easily with analytical solutions. The inhomogeneous part, however, is typically an order of magnitude lower than the homogenous part. You can use the Magpylib extension [Magpylib material response](https://github.com/magpylib/magpylib-material-response) to model the self-interactions.
+
+### Soft-Magnetic Materials
 
 Soft-magnetic materials like iron or steel with large permeabilities $\mu_r \sim 1000$ and low remanence fields are dominated by the material response. It is not possible to describe such bodies with analytical solutions. However, recent developments showed that the Magnetostatic Method of Moments can be a powerful tool in combination with Magpylib to compute such a material response. An integration into Magpylib is planned for the future.
-
-(docu-units-scaling)=
-
-## Units and scaling property
-
-Magpylib uses the following physical units:
-
-- mT: for the B-field and the magnetization (µ0\*M).
-- kA/m: for the H-field.
-- mm: for position and length inputs.
-- deg: for angle inputs by default.
-- A: for current inputs.
-
-However, the analytical solutions scale in such a way that the magnetic field is the same when the system scales in size. This means that a 1-meter sized magnet in a distance of 1-meter produces the same field as a 1-millimeter sized magnet in a distance of 1-millimeter. The choice of position/length input dimension is therefore not relevant - the Magpylib choice of mm is a result of history and practical considerations when working with position and orientation systems.
-
-In addition, `getB` returns the unit of the input magnetization. The Magpylib choice of mT (theoretical physicists will point out that it is µ0\*M) is historical and convenient. When the magnetization is given in mT, then `getH` returns kA/m which is simply related by factor of $\frac{10}{4\pi}$. Of course, `getB` also adds the magnet magnetization when computing the field inside the magnet, while `getH` does not.
 
 
 (docu-performance)=
@@ -104,7 +90,7 @@ Magpylib code is fully [vectorized](https://en.wikipedia.org/wiki/Array_programm
 Maximal performance is achieved when `.getB(sources, observers)` is called only a single time in your program. Try not to use loops.
 ```
 
-The objective oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`intro-direct-interface`.
+The objective oriented interface comes with an overhead. If you want to achieve maximal performance this overhead can be avoided with {ref}`docu-direct-interface`.
 
 The analytical solutions provide extreme performance. Single field evaluations take of the order of `100 µs`. For large input arrays (e.g. many observer positions or many similar magnets) the computation time drops below `1 µs` per evaluation point on single state-of-the-art x86 mobile cores (tested on `Intel Core i5-8365U @ 1.60GHz`), depending on the source type.
 
