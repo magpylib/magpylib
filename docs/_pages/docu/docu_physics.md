@@ -70,9 +70,9 @@ Demagnetization factors can be used to compensate a large part of the demagnetiz
 (phys-remanence)=
 ### Modelling a datasheet magnet
 
-The material remanence, often found in data sheets, simply corresponds to the material magnetization/polarizaion when not under the influence of external fields. This can never happen, as the material itself generates a magnetic field. Such self-interactions result in self-demagnetization that can be approximated using the demagnetization factors and the material permeability (or susceptibility).
+The material remanence, often found in data sheets, simply corresponds to the material magnetization/polarization when not under the influence of external fields. This can never happen, as the material itself generates a magnetic field. Such self-interactions result in self-demagnetization that can be approximated using the demagnetization factors and the material permeability (or susceptibility).
 
-For example, a cube with 1 mm sides has a demagnetization factor is 0.333, see [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html). When the remanence field of this cube is 1 T, and its suszetibility is 0.1, the magnetization resulting from self-interaction is reduced to 1 T - 0.3333*0.1 T = 0.9667 T, assuming linear material laws.
+For example, a cube with 1 mm sides has a demagnetization factor is 0.333, see [magpar.net](http://www.magpar.net/static/magpar/doc/html/demagcalc.html). When the remanence field of this cube is 1 T, and its susceptibility is 0.1, the magnetization resulting from self-interaction is reduced to 1 T - 0.3333*0.1 T = 0.9667 T, assuming linear material laws.
 
 It must be understood that the change in magnetization resulting from self-interaction has a homogeneous contribution which is approximated by the demagnetization factor, and an inhomogeneous contribution which cannot be modeled easily with analytical solutions. The inhomogeneous part, however, is typically an order of magnitude lower than the homogenous part. You can use the Magpylib extension [Magpylib material response](https://github.com/magpylib/magpylib-material-response) to model the self-interactions.
 
@@ -96,7 +96,7 @@ The analytical solutions provide extreme performance. Single field evaluations t
 
 ## Numerical stability
 
-Many expressions provided in the literature have very questionable numerical stability. Many of these problems are fixed in Magpylib, but one should be aware that accuracy can be a problem very close to objects, close the z-axis in cylindrical symmetries, at adge extensions, and at large distances. We are working on fixing these problems. Some details can be found in \[Ortner2022\].
+Many expressions provided in the literature have very questionable numerical stability. Many of these problems are fixed in Magpylib, but one should be aware that accuracy can be a problem very close to objects, close the z-axis in cylindrical symmetries, at edge extensions, and at large distances. We are working on fixing these problems. Some details can be found in \[Ortner2022\].
 
 **References**
 

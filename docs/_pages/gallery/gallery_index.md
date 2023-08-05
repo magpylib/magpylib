@@ -4,7 +4,7 @@
 
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 
-## Vizualizations
+## Visualizations
 
 ::::{grid} 3
 :gutter: 5
@@ -17,7 +17,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_viz_mpl_streamplot.png
 :::
 
-:::{grid-item-card} Fieldlines with Pyvista streamlines
+:::{grid-item-card} Field lines with Pyvista streamlines
 :text-align: center
 :link: gallery-viz-pv-streamlines
 :link-type: ref

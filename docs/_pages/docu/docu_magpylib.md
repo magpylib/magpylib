@@ -77,9 +77,9 @@ The following basic properties are shared by all Magpylib classes:
 See {ref}`docu-position` for more information on these features.
 
 
-* The <span style="color: orange">**style**</span> attribute includes all settings for graphical object representation. 
+* The <span style="color: orange">**style**</span> attribute includes all settings for graphical object representation.
 
-* The <span style="color: orange">**show()**</span> method gives quick access to the graphical represenation.
+* The <span style="color: orange">**show()**</span> method gives quick access to the graphical representation.
 
 See {ref}`docu-graphics` for more information on graphic output, default styles and customization possibilities.
 
@@ -229,7 +229,7 @@ which are all by default set to `"warn"`. Options are `"skip"` (don't perform ch
 
 Results of the checks are stored in the following object attributes
 * <span style="color: orange">**status_open**</span> can be `True`, `False` or `None` (unchecked)
-* <span style="color: orange">**status_open_data**</span> contatins an array of open edges
+* <span style="color: orange">**status_open_data**</span> contains an array of open edges
 * <span style="color: orange">**status_disconnected**</span> can be `True`, `False` or `None` (unchecked)
 * <span style="color: orange">**status_disconnected_data**</span> contains an array of mesh parts
 * <span style="color: orange">**status_selfintersecting**</span> can be `True`, `None` or `None` (unchecked)
@@ -257,7 +257,7 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 :::
 :::{grid-item}
 :columns: 12
-**Info:** While the checks may be disabled, the field computation garantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. A tutorial {ref}`galler-tutorial-trimesh` is provided in the gallery.
+**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. A tutorial {ref}`galler-tutorial-trimesh` is provided in the gallery.
 :::
 ::::
 
@@ -465,7 +465,7 @@ Here Magpylib helps out. All Magpylib objects lie in a global Cartesian coordina
 :::
 ::::
 
-Position and orientation of all Magpylib objects are defind by the two attributes
+Position and orientation of all Magpylib objects are defined by the two attributes
 
 ::::{grid} 2
 :::{grid-item-card}
@@ -492,7 +492,7 @@ Magpylib offers two powerful methods for object manipulation:
 :::{grid-item-card}
 :columns: 5
 :shadow: none
-<span style="color: orange">**move(**</span>`displacement`, `start="auto"`<span style="color: orange">**)**</span> -  move object by `displacment` input. `displacement` is a position vector (scalar input) or a set of position vectors (vector input).
+<span style="color: orange">**move(**</span>`displacement`, `start="auto"`<span style="color: orange">**)**</span> -  move object by `displacement` input. `displacement` is a position vector (scalar input) or a set of position vectors (vector input).
 :::
 :::{grid-item-card}
 :columns: 7
@@ -576,7 +576,7 @@ When objects with different path lengths are combined, e.g. when computing the f
 :::
 ::::
 
-The tutorial {ref}`gallery-tutorial-paths` shows intuative good practice examples of the important functionality described in this section.
+The tutorial {ref}`gallery-tutorial-paths` shows intuitive good practice examples of the important functionality described in this section.
 
 
 <!-- ################################################################## -->
@@ -664,7 +664,7 @@ The output of a field computation `magpy.getB(sources, observers)` is by default
 * `output`: Change the output format. Options are `"ndarray"` (default, returns a Numpy ndarray) and `"dataframe"` (returns a 2D-table Pandas DataFrame).
 
 ```{note}
-Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs. 
+Magpylib collects all inputs (object parameters), and vectorizes them for the computation which reduces the computation time dramatically for large inputs.
 
 Try to make all field computations with as few calls to `getB` and `getH` as possible. Avoid Python loops at all costs!
 ```

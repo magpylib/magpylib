@@ -42,7 +42,7 @@ coil2 = coil1.copy(position=(0,0,5))
 # helmholtz consists of two coils
 helmholtz = coil1 + coil2
 
-# move the helmholz
+# move the helmholtz
 helmholtz.position = np.linspace((0,0,0), (10,0,0), 30)
 helmholtz.rotate_from_angax(np.linspace(0,180,30), 'x', start=0)
 
