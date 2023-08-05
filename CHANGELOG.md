@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [4.4.0] - Unreleased
+## [4.4.0dev] - Unreleased
 - Included self-intersection check in `TriangularMesh` ([#622](https://github.com/magpylib/magpylib/pull/622)).
 - Fixed incorrect edge case of TriangularMesh reorientation ([#644](https://github.com/magpylib/magpylib/pull/644))
 - Discontinuous segments in `current.Line` are now accepted and correctly treated as separate lines ([#632](https://github.com/magpylib/magpylib/pull/632), [#642](https://github.com/magpylib/magpylib/pull/642)).
@@ -419,7 +419,7 @@ The first official release of the magpylib library.
 
 ---
 
-[Unreleased]:https://github.com/magpylib/magpylib/compare/4.3.0...HEAD
+[4.4.0dev]:https://github.com/magpylib/magpylib/compare/4.3.0...HEAD
 [4.3.0]:https://github.com/magpylib/magpylib/compare/4.2.0...4.3.0
 [4.2.0]:https://github.com/magpylib/magpylib/compare/4.1.2...4.2.0
 [4.1.2]:https://github.com/magpylib/magpylib/compare/4.1.1...4.1.2
