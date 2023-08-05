@@ -10,7 +10,7 @@ from magpylib._src.input_checks import check_field_input
 
 def check_chirality(points: np.ndarray) -> np.ndarray:
     """
-    Checks if quartupel of points (p0,p1,p2,p3) that forms tetrahedron is arranged in a way
+    Checks if quadruple of points (p0,p1,p2,p3) that forms tetrahedron is arranged in a way
     that the vectors p0p1, p0p2, p0p3 form a right-handed system
 
     Parameters

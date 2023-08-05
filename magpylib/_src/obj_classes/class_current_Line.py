@@ -11,7 +11,7 @@ class Line(BaseCurrent):
     Can be used as `sources` input for magnetic field computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
-    When `position=(0,0,0)` and `orientation=None` global and local coordinates conincide.
+    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
 
     Parameters
     ----------

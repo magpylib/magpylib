@@ -16,7 +16,7 @@ class CylinderSegment(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
-    the cylinder axis conincides with the global z-axis. Section angle 0
+    the cylinder axis coincides with the global z-axis. Section angle 0
     corresponds to an x-z plane section of the cylinder.
 
     Parameters

@@ -250,10 +250,10 @@ def getBH_level2(
     pix_nums = [
         int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
-    pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
+    pix_inds = np.cumsum([0] + pix_nums)  # cumulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
-    # check which sensors have unit roation
+    # check which sensors have unit rotation
     #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0, 0, 0, 1.0])
@@ -274,7 +274,7 @@ def getBH_level2(
 
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
-    #   postion/orientation of the object (static paths)
+    #   position/orientation of the object (static paths)
     path_lengths = [len(obj._position) for obj in obj_list]
     max_path_len = max(path_lengths)
 

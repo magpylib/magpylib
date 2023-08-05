@@ -9,7 +9,7 @@ analytical expressions and therefore extremely fast. A user friendly
 geometry interface enables convenient relative positioning between sources
 and observers.
 
-Help us develop the packge further - we appreciate any feedback !
+Help us develop the package further - we appreciate any feedback !
 
 Resources
 ---------

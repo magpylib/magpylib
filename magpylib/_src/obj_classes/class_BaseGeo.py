@@ -320,7 +320,7 @@ class BaseGeo(BaseTransform):
 
     def copy(self, **kwargs):
         """Returns a copy of the current object instance. The `copy` method returns a deep copy of
-        the object, that is independant of the original object.
+        the object, that is independent of the original object.
 
         Parameters
         ----------

@@ -112,7 +112,7 @@ def current_line_field(
 
     Notes
     -----
-    Field computation via law of Biot Savart. See also countless online ressources.
+    Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements

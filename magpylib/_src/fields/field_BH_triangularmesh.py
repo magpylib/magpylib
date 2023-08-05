@@ -350,7 +350,7 @@ def segments_intersect_facets(segments, facets, eps=1e-6):
         otherwise some triangles may be detected as intersecting themselves.
     """
     if eps <= 0:  # pragma: no cover
-        raise ValueError("eps must be stricly positive")
+        raise ValueError("eps must be strictly positive")
 
     s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
 
@@ -523,7 +523,7 @@ def magnet_trimesh_field(
     in_out: {'auto', 'inside', 'outside'}
         Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
         calculation. By default `in_out='auto'` and the inside/outside mask is automatically
-        generated using a ray tracing algorigthm to determine which observers are inside and which
+        generated using a ray tracing algorithm to determine which observers are inside and which
         are outside the closed body. For performance reasons, one can define `in_out='outside'`
         or `in_out='inside'` if it is known in advance that all observers satisfy the same
         condition.
@@ -569,7 +569,7 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar meshs for inside-outise evaluation and adding B
+            # group similar meshs for inside-outside evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1

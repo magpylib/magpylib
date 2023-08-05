@@ -137,7 +137,7 @@ def apply_move(target_object, displacement, start="auto"):
         appended/merged with the existing path.
     start: int, str, default=`'auto'`
         start=i applies an operation starting at the i'th path index.
-        With start='auto' and scalar input the wole path is moved. With
+        With start='auto' and scalar input the whole path is moved. With
         start='auto' and vector input the input is appended.
 
     Returns
