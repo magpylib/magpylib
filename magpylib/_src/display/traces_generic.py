@@ -80,7 +80,9 @@ def update_magnet_mesh(
     the colorscales colors, remesh it and merge with assigning facecolor for each part.
     """
     mag_color = mag_style.color
-    if magnetization is not None and mag_style.show:
+    if magnetization is None:
+        magnetization = np.array([0.0, 0.0, 0.0], dtype=float)
+    if mag_style.show:
         vertices = np.array([mesh_dict[k] for k in "xyz"]).T
         color_middle = mag_color.middle
         if mag_color.mode == "tricycle":
@@ -95,8 +97,11 @@ def update_magnet_mesh(
             color_south=mag_color.south,
         )
         if color_slicing:
-            tr = slice_mesh_from_colorscale(mesh_dict, magnetization, cs)
-            mesh_dict.update(tr)
+            if np.all(magnetization) == 0:
+                mesh_dict["color"] = mag_color.middle
+            else:
+                tr = slice_mesh_from_colorscale(mesh_dict, magnetization, cs)
+                mesh_dict.update(tr)
         else:
             mesh_dict["colorscale"] = cs
             mesh_dict["intensity"] = getIntensity(
@@ -413,11 +418,11 @@ def get_generic_traces(
     is_mag_arrows = False
     is_mag = hasattr(input_obj, "magnetization") and hasattr(style, "magnetization")
     if is_mag and style.magnetization.show:
-        mag = style.magnetization
-        if mag.mode == "auto":
-            mag.mode = "color"  # if mag_color_grad_apt else "arrow"
-        is_mag_arrows = "arrow" in mag.mode
-        mag.show = "color" in mag.mode
+        magstyl = style.magnetization
+        if magstyl.mode == "auto":
+            magstyl.mode = "color"  # if mag_color_grad_apt else "arrow"
+        is_mag_arrows = "arrow" in magstyl.mode
+        magstyl.show = "color" in magstyl.mode
 
     make_func = getattr(input_obj, "get_trace", None)
     make_func_kwargs = {"legendgroup": legendgroup, **kwargs}
@@ -486,8 +491,11 @@ def get_generic_traces(
                 traces_generic.append(tr_generic)
 
     if is_mag_arrows:
-        mag_arrow_tr = make_mag_arrows(input_obj)
-        traces_generic.append(mag_arrow_tr)
+        mag = input_obj.magnetization
+        mag = np.array([0.0, 0.0, 0.0]) if mag is None else mag
+        if not np.all(mag == 0):
+            mag_arrow_tr = make_mag_arrows(input_obj)
+            traces_generic.append(mag_arrow_tr)
 
     path_traces_generic = []
     for tr in traces_generic:
@@ -526,7 +534,7 @@ def get_generic_traces(
         scatter_path = make_path(input_obj)
         path_traces_generic.append(scatter_path)
 
-    path_traces_generic.extend(group_traces(*path_traces_generic))
+    path_traces_generic = group_traces(*path_traces_generic)
 
     for tr in path_traces_generic:
         tr.update(row=row, col=col)
@@ -730,7 +738,7 @@ def get_row_col_traces(flat_objs_props, extra_backend=False, autosize=None, **kw
                     orig_style = None
                     try:
                         # temporary replace style attribute
-                        orig_style = obj._style
+                        orig_style = obj.style
                         obj._style = params.pop("style", None)
                         out_traces = get_generic_traces(
                             obj,
@@ -762,7 +770,7 @@ def get_frames(
     """
     # infer title if necessary
     if objs:
-        style = getattr(objs[0]["objects"][0], "style", None)
+        style = objs[0]["objects"][0].style
         label = getattr(style, "label", None)
         title = label if len(objs[0]["objects"]) == 1 else None
     else:

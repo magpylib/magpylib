@@ -121,8 +121,8 @@ def draw_arrowed_line(
     dot = np.dot(nvec, yaxis)
     n = np.linalg.norm(cross)
     arrow_shift = arrow_pos - 0.5
-    hy = sign * arrow_size
-    hx = abs(0.6 * hy)
+    hx = 0.6 * arrow_size
+    hy = np.sign(sign) * arrow_size
     anchor = (
         (0, -0.5, 0)
         if pivot == "tip"
@@ -191,8 +191,8 @@ def draw_arrow_on_circle(sign, diameter, arrow_size, scaled=True, angle_pos_deg=
         hy = 0.2 * arrow_size
     else:
         hy = arrow_size / diameter * 2
+    hx = 0.6 * hy
     hy *= np.sign(sign)
-    hx = 0.6 * abs(hy)
     x = np.array([1 + hx, 1, 1 - hx]) * diameter / 2
     y = np.array([-hy, 0, -hy]) * diameter / 2
     z = np.zeros(x.shape)
@@ -339,9 +339,21 @@ def merge_scatter3d(*traces):
     `None` vertex to prevent line connection between objects to be concatenated. Keys are taken
     from the first object, other keys from further objects are ignored.
     """
+    if len(traces) == 1:
+        return traces[0]
+    mode = traces[0].get("mode")
+    mode = "" if mode is None else mode
+    if not mode:
+        traces[0]["mode"] = "markers"
+    no_gap = "line" not in mode
+
     merged_trace = {}
     for k in "xyz":
-        merged_trace[k] = np.hstack([pts for b in traces for pts in [[None], b[k]]])
+        if no_gap:
+            stack = [b[k] for b in traces]
+        else:
+            stack = [pts for b in traces for pts in [[None], b[k]]]
+        merged_trace[k] = np.hstack(stack)
     for k, v in traces[0].items():
         if k not in merged_trace:
             merged_trace[k] = v
@@ -472,9 +484,10 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                     # for 2d meshes, nothing special needed
                     pass
                 pts = pts.reshape(-1, 3)
-                min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
-                for v, min_, max_ in zip(ranges.values(), *min_max):
-                    v.extend([min_, max_])
+                if pts.size != 0:
+                    min_max = np.nanmin(pts, axis=0), np.nanmax(pts, axis=0)
+                    for v, min_, max_ in zip(ranges.values(), *min_max):
+                        v.extend([min_, max_])
         if trace3d_found:
             r = np.array([[np.nanmin(v), np.nanmax(v)] for v in ranges.values()])
             size = np.diff(r, axis=1)
@@ -709,3 +722,18 @@ def slice_mesh_from_colorscale(trace, axis, colorscale):
         trace_temp.update(facecolor=np.array([color] * len(tl)))
         traces.append(trace_temp)
     return {**trace, **merge_mesh3d(*traces)}
+
+
+def create_null_dim_trace(color=None, **kwargs):
+    """Returns a simple trace with single markers"""
+    trace = {
+        "type": "scatter3d",
+        "x": [0],
+        "y": [0],
+        "z": [0],
+        "mode": "markers",
+        "marker_size": 10,
+    }
+    if color is not None:
+        trace["marker_color"] = color
+    return {**trace, **kwargs}

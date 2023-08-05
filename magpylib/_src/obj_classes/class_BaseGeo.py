@@ -243,8 +243,18 @@ class BaseGeo(BaseTransform):
         in the form of a style dictionary.
         """
         if getattr(self, "_style", None) is None:
-            self._style = self._validate_style(self._style_kwargs)
+            self._style = self._style_class()
+        if self._style_kwargs:
+            style_kwargs = self._style_kwargs.copy()
             self._style_kwargs = {}
+            try:
+                self._style.update(style_kwargs)
+            except (AttributeError, ValueError) as e:
+                e.args = (
+                    f"{self!r} has been initialized with some invalid style arguments.\n"
+                    + str(e),
+                )
+                raise
         return self._style
 
     @style.setter
@@ -253,14 +263,15 @@ class BaseGeo(BaseTransform):
 
     def _validate_style(self, val=None):
         val = {} if val is None else val
+        style = self.style  # triggers style creation
         if isinstance(val, dict):
-            val = self._style_class(**val)
-        if not isinstance(val, self._style_class):
+            style.update(val)
+        elif not isinstance(val, self._style_class):
             raise ValueError(
                 f"Input parameter `style` must be of type {self._style_class}.\n"
                 f"Instead received type {type(val)}"
             )
-        return val
+        return style
 
     # dunders -------------------------------------------------------
     def __add__(self, obj):

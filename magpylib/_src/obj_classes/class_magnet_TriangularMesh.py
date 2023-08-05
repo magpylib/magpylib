@@ -465,7 +465,11 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
-        centroid = calculate_centroid(vertices, faces)
+        centroid = (
+            np.array([0.0, 0.0, 0.0])
+            if vertices is None
+            else calculate_centroid(vertices, faces)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
