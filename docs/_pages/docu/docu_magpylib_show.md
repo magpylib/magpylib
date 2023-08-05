@@ -422,28 +422,39 @@ Once modified, the library default can always be restored with the `magpylib.sty
 import magpylib as magpy
 from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+magpy.defaults.reset()
 
-print('Default magnetization style')
+cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = Cylinder(magnetization=(0, -1, 0), dimension=(1, 1), position=(2, 0, 0))
+sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4, 0, 0))
+
+print("Default magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
 
 user_defined_style = {
-    'show': True,
-    "size": 0.5,
-    'color': {
-        'transition': 0,
-        'mode': 'tricolor',
-        'middle': 'white',
-        'north': 'magenta',
-        'south': 'turquoise',
-    },
+    "show": True,
     "mode": "arrow+color",
+    "size": 0.9,
+    "arrow": {
+        "color": "black",
+        "offset": 0.8,
+        "show": True,
+        "size": 2,
+        "sizemode": "scaled",
+        "style": "solid",
+        "width": 3,
+    },
+    "color": {
+        "transition": 0,
+        "mode": "tricolor",
+        "middle": "white",
+        "north": "magenta",
+        "south": "turquoise",
+    },
 }
 magpy.defaults.display.style.magnet.magnetization = user_defined_style
 
-print('Custom magnetization style')
+print("Custom magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
