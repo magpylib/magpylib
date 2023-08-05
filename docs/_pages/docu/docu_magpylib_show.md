@@ -1,5 +1,4 @@
 ---
-orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -10,15 +9,13 @@ kernelspec:
   display_name: Python 3
   language: python
   name: python3
+orphan: true
 ---
+
 (docu-magpylib-show)=
 (docu-graphics)=
 
 # Graphics
-
-(intro-graphic-output)=
-
-## Graphic output
 
 Once all Magpylib objects and their paths have been created, **`show`** provides a convenient way to graphically display the geometric arrangement using the Matplotlib (default) and Plotly packages. When `show` is called, it generates a new figure which is then automatically displayed.
 
@@ -27,73 +24,70 @@ The desired graphic backend is selected with the `backend` keyword argument. To 
 The following example shows the graphical representation of various Magpylib objects and their paths using the default Matplotlib graphic backend.
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, CylinderSegment, Sphere, Tetrahedron, TriangularMesh
-from magpylib.current import Loop, Line
-from magpylib.misc import Dipole, Triangle
+import numpy as np
 import pyvista as pv
 
-objects = [
-    Cuboid(
-        magnetization=(0,-100,0),
-        dimension=(1,1,1),
-        position=(-6,0,0),
+objects = {
+    "Cuboid": magpy.magnet.Cuboid(
+        magnetization=(0, -100, 0),
+        dimension=(1, 1, 1),
+        position=(-6, 0, 0),
     ),
-    Cylinder(
-        magnetization=(0,0,100),
-        dimension=(1,1),
-        position=(-5,0,0),
+    "Cylinder": magpy.magnet.Cylinder(
+        magnetization=(0, 0, 100),
+        dimension=(1, 1),
+        position=(-5, 0, 0),
     ),
-    CylinderSegment(
-        magnetization=(0,0,100),
-        dimension=(.3,1,1,0,140),
-        position=(-3,0,0),
+    "CylinderSegment": magpy.magnet.CylinderSegment(
+        magnetization=(0, 0, 100),
+        dimension=(0.3, 1, 1, 0, 140),
+        position=(-3, 0, 0),
     ),
-    Sphere(
-        magnetization=(0,0,100),
+    "Sphere": magpy.magnet.Sphere(
+        magnetization=(0, 0, 100),
         diameter=1,
-        position=(-1,0,0),
+        position=(-1, 0, 0),
     ),
-    Tetrahedron(
-        magnetization=(0,0,100),
-        vertices=((-1,0,0), (1,0,0), (0,-1,0), (0,-1,-1)),
-        position=(-4,0,4)
+    "Tetrahedron": magpy.magnet.Tetrahedron(
+        magnetization=(0, 0, 100),
+        vertices=((-1, 0, 0), (1, 0, 0), (0, -1, 0), (0, -1, -1)),
+        position=(-4, 0, 4),
     ),
-    Loop(
-        current=1,
-        diameter=1,
-        position=(4,0,0),
-    ),
-    Line(
-        current=1,
-        vertices=[(1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)],
-        position=(1,0,0),
-    ),
-    Dipole(
-        moment=(0,0,100),
-        position=(3,0,0),
-    ),
-    Triangle(
-        magnetization=(0,0,100),
-        vertices=((-1,0,0), (1,0,0), (0,1,0)),
-        position=(2,0,4),
-    ),
-    TriangularMesh.from_pyvista(
-        magnetization=(0,0,100),
+    "TriangularMesh": magpy.magnet.TriangularMesh.from_pyvista(
+        magnetization=(0, 0, 100),
         polydata=pv.Dodecahedron(),
-        position=(-1,0,4),
+        position=(-1, 0, 4),
     ),
-    magpy.Sensor(
-        pixel=[(0,0,z) for z in (-.5,0,.5)],
-        position=(0,-3,0),
+    "Loop": magpy.current.Loop(
+        current=1,
+        diameter=1,
+        position=(4, 0, 0),
     ),
-]
+    "Line": magpy.current.Line(
+        current=1,
+        vertices=[(1, 0, 0), (0, 1, 0), (-1, 0, 0), (0, -1, 0), (1, 0, 0)],
+        position=(1, 0, 0),
+    ),
+    "Dipole": magpy.misc.Dipole(
+        moment=(0, 0, 100),
+        position=(3, 0, 0),
+    ),
+    "Triangle": magpy.misc.Triangle(
+        magnetization=(0, 0, 100),
+        vertices=((-1, 0, 0), (1, 0, 0), (0, 1, 0)),
+        position=(2, 0, 4),
+    ),
+    "Sensor": magpy.Sensor(
+        pixel=[(0, 0, z) for z in (-0.5, 0, 0.5)],
+        position=(0, -3, 0),
+    ),
+}
 
-objects[5].move(np.linspace((0,0,0), (0,0,7), 20))
-objects[0].rotate_from_angax(np.linspace(0, 90, 20), 'z', anchor=0)
+objects["Loop"].move(np.linspace((0, 0, 0), (0, 0, 5), 20))
+objects["Cuboid"].rotate_from_angax(np.linspace(0, 90, 20), "z", anchor=0)
 
-magpy.show(objects)
+magpy.show(*objects.values())
 ```
 
 Notice that, objects and their paths are automatically assigned different colors, the magnetization vector, current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.
@@ -104,23 +98,22 @@ Some practical ways to set styles are shown in the next example:
 
 ```{code-cell} ipython3
 import magpylib as magpy
-from magpylib.magnet import Cuboid
 
-cube1 = Cuboid(magnetization=(0,0,1), dimension=(2,4,4))
-cube2 = cube1.copy(position=(3,0,0))
-cube3 = cube1.copy(position=(6,0,0))
+cube1 = magpy.magnet.Cuboid(magnetization=(0, 0, 1), dimension=(2, 4, 4))
+cube2 = cube1.copy(position=(3, 0, 0))
+cube3 = cube1.copy(position=(6, 0, 0))
 
 # change the default
-magpy.defaults.display.style.base.color = 'crimson'
+magpy.defaults.display.style.base.color = "crimson"
 
 # set individual style through properties
-cube2.style.color = 'orangered'
+cube2.style.color = "orangered"
 
 # set individual style using update with style dictionary
-cube3.style.update({'color': 'gold'})
+cube3.style.update({"color": "gold"})
 
 # set individual style at initialization with underscore magic
-cube4 = cube1.copy(position=(9,0,0), style_color='linen')
+cube4 = cube1.copy(position=(9, 0, 0), style_color="linen")
 
 # show with local style override
 magpy.show(cube1, cube2, cube3, cube4, style_magnetization_show=False)
@@ -130,12 +123,11 @@ The hierarchy that decides about the final graphic object representation, a list
 
 
 (examples-backends-canvas)=
+## Graphic backend
 
-# Graphics - Backend, canvas, return_fig
 
 The graphic backend refers to the plotting library that is used for graphic output. Canvas refers to the frame/window/canvas/axes object the graphic output is forwarded to.
 
-## Graphic backend
 
 Magpylib supports several common graphic backends.
 
@@ -144,8 +136,6 @@ from magpylib import SUPPORTED_PLOTTING_BACKENDS
 
 SUPPORTED_PLOTTING_BACKENDS
 ```
-
-+++ {"user_expressions": []}
 
 The installation default is set to `'auto'`. In this case the backend is dynamically inferred depending on the current running environment (terminal or notebook), the available installed backend libraries and the set canvas:
 
@@ -241,9 +231,7 @@ import numpy as np
 
 # setup matplotlib figure and subplots
 fig = plt.figure(figsize=(10, 4))
-ax1 = fig.add_subplot(
-    121,
-)  # 2D-axis
+ax1 = fig.add_subplot(121)  # 2D-axis
 ax2 = fig.add_subplot(122, projection="3d")  # 3D-axis
 
 # define sources and paths
@@ -373,10 +361,8 @@ pl.enable_anti_aliasing("ssaa")
 pl.show()
 ```
 
-
-
 (examples-graphic-styles)=
-# Graphics - Styles
+## Styles
 
 The graphic styles define how Magpylib objects are displayed visually when calling `show`. They can be fine-tuned and individualized in many ways.
 
@@ -387,7 +373,7 @@ There are multiple hierarchy levels that decide about the final graphical repres
 3. Object **individual styles** will take precedence over these values.
 4. Setting a **local style** in `show()` will take precedence over all other settings.
 
-## Setting the default style
+### Setting the default style
 
 The default style is stored in `magpylib.defaults.display.style`. Default styles can be set as properties,
 
@@ -420,13 +406,14 @@ Once modified, the library default can always be restored with the `magpylib.sty
 
 ```{code-cell} ipython3
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, Sphere
 
 magpy.defaults.reset()
 
-cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-cylinder = Cylinder(magnetization=(0, -1, 0), dimension=(1, 1), position=(2, 0, 0))
-sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4, 0, 0))
+cube = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = magpy.magnet.Cylinder(
+    magnetization=(0, -1, 0), dimension=(1, 1), position=(2, 0, 0)
+)
+sphere = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4, 0, 0))
 
 print("Default magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
@@ -458,7 +445,7 @@ print("Custom magnetization style")
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
-## Magic underscore notation
+### Magic underscore notation
 <!-- +++ {"tags": [], "jp-MarkdownHeadingCollapsed": true} -->
 
 To facilitate working with deeply nested properties, all style constructors and object style methods support the magic underscore notation. It enables referencing nested properties by joining together multiple property names with underscores. This feature mainly helps reduce the code verbosity and is heavily inspired by the `plotly` implementation (see [plotly underscore notation](https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation)).
@@ -474,7 +461,7 @@ magpy.defaults.display.style.magnet = {
 }
 ```
 
-or directly as kwargs in the `update` method as,
+or directly as named keywords in the `update` method as,
 
 ```python
 import magpylib as magpy
@@ -485,12 +472,12 @@ magpy.defaults.display.style.magnet.update(
 )
 ```
 
-## Setting individual styles
+### Setting individual styles
 
 Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be omitted.
 
 ```{warning}
-Users should be aware that specifying individual style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s).
+Users should be aware that specifying individual style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s). There is however the possibility to define styles without affecting the object creation time, but only if the style is defined in the initialization (e.g.: `magpy.magne.Cuboid(..., style_label="MyCuboid")`). In this case the style attribute creation is deferred to when is is called the first time, typically when calling the `show` function, or accessing the `style` attribute of the object.
 While this may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
@@ -498,31 +485,31 @@ In the following example the individual style of `cube` is set at initialization
 
 ```{code-cell} ipython3
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-magpy.defaults.reset() # reset defaults defined in previous example
+magpy.defaults.reset()  # reset defaults defined in previous example
 
-cube = Cuboid(
+cube = magpy.magnet.Cuboid(
     magnetization=(1, 0, 0),
     dimension=(1, 1, 1),
-    style_magnetization_color_mode='tricycle',
+    style_magnetization_color_mode="tricycle",
 )
-cylinder = Cylinder(
+cylinder = magpy.magnet.Cylinder(
     magnetization=(0, 1, 0),
-    dimension=(1, 1), position=(2,0,0),
+    dimension=(1, 1),
+    position=(2, 0, 0),
 )
-sphere = Sphere(
+sphere = magpy.magnet.Sphere(
     magnetization=(0, 1, 1),
     diameter=1,
-    position=(4,0,0),
+    position=(4, 0, 0),
 )
 
-sphere.style.magnetization.color.mode='bicolor'
+sphere.style.magnetization.color.mode = "bicolor"
 
 magpy.show(cube, cylinder, sphere, backend="plotly")
 ```
 
-## Setting style via collections
+### Setting style via collections
 
 When displaying collections, the collection object `color` property will be automatically assigned to all its children and override the default style. An example that demonstrates this is {ref}`examples-union-operation`. In addition, it is possible to modify the individual style properties of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
 
@@ -530,13 +517,12 @@ In the following example we show how the french magnetization style is applied t
 
 ```{code-cell} ipython3
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-magpy.defaults.reset() # reset defaults defined in previous example
+magpy.defaults.reset()  # reset defaults defined in previous example
 
-cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2, 0, 0))
+sphere = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4, 0, 0))
 
 coll = cube + cylinder
 
@@ -545,17 +531,16 @@ coll.set_children_styles(magnetization_color_south="blue")
 magpy.show(coll, sphere, backend="plotly")
 ```
 
-## Local style override
+### Local style override
 
 Finally it is possible to hand style input to the `show` function directly and locally override the given properties for this specific `show` output. Default or individual style attributes will not be modified. Such inputs must start with the `style` prefix and the object family specifier must be omitted. Naturally underscore magic is supported.
 
 ```{code-cell} ipython3
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, Sphere
 
-cube = Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
-cylinder = Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2,0,0))
-sphere = Sphere(magnetization=(0, 1, 1), diameter=1, position=(4,0,0))
+cube = magpy.magnet.Cuboid(magnetization=(1, 0, 0), dimension=(1, 1, 1))
+cylinder = magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(1, 1), position=(2, 0, 0))
+sphere = magpy.magnet.Sphere(magnetization=(0, 1, 1), diameter=1, position=(4, 0, 0))
 
 # use local style override
 magpy.show(cube, cylinder, sphere, backend="plotly", style_magnetization_show=False)
@@ -563,19 +548,18 @@ magpy.show(cube, cylinder, sphere, backend="plotly", style_magnetization_show=Fa
 
 (examples-list-of-styles)=
 
-## List of styles
+### List of styles
 
 ```{code-cell} ipython3
-magpy.defaults.display.style.as_dict(flatten=True, separator='.')
+magpy.defaults.display.style.as_dict(flatten=True, separator=".")
 ```
-
 
 (examples-3d-models)=
 
-# Graphics - 3D models and CAD
+## Special 3D models
 
 (examples-own-3d-models)=
-## Custom 3D models
+### Custom 3D models
 
 Each Magpylib object has a default 3D representation that is displayed with `show`. Users can add a custom 3D model to any Magpylib object with help of the `style.model3d.add_trace` method. The new trace is stored in `style.model3d.data`. User-defined traces move with the object just like the default models do. The default trace can be hidden with the command `obj.model3d.showdefault=False`. When using the `'generic'` backend, custom traces are automatically translated into any other backend. If a specific backend is used, it will only show when called with the corresponding backend.
 
@@ -593,117 +577,120 @@ The input `trace` is a dictionary which includes all necessary information for p
 The following example shows how a **generic** trace is constructed with  `Mesh3d` and `Scatter3d` and is displayed with three different backends:
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
+import numpy as np
 import pyvista as pv
 
-pv.set_jupyter_backend('panel') # improve rendering in a jupyter notebook
+pv.set_jupyter_backend("panel")  # improve rendering in a jupyter notebook
 
 # Mesh3d trace #########################
 
 trace_mesh3d = {
-    'backend': 'generic',
-    'constructor': 'Mesh3d',
-    'kwargs': {
-        'x': (1, 0, -1, 0),
-        'y': (-.5, 1.2, -.5, 0),
-        'z': (-.5, -.5, -.5, 1),
-        'i': (0, 0, 0, 1),
-        'j': (1, 1, 2, 2),
-        'k': (2, 3, 3, 3),
+    "backend": "generic",
+    "constructor": "Mesh3d",
+    "kwargs": {
+        "x": (1, 0, -1, 0),
+        "y": (-0.5, 1.2, -0.5, 0),
+        "z": (-0.5, -0.5, -0.5, 1),
+        "i": (0, 0, 0, 1),
+        "j": (1, 1, 2, 2),
+        "k": (2, 3, 3, 3),
         #'opacity': 0.5,
     },
 }
-coll = magpy.Collection(position=(0,-3,0), style_label="'Mesh3d' trace")
+coll = magpy.Collection(position=(0, -3, 0), style_label="'Mesh3d' trace")
 coll.style.model3d.add_trace(trace_mesh3d)
 
 # Scatter3d trace ######################
 
-ts = np.linspace(0, 2*np.pi, 30)
+ts = np.linspace(0, 2 * np.pi, 30)
 trace_scatter3d = {
-    'backend': 'generic',
-    'constructor': 'Scatter3d',
-    'kwargs': {
-        'x': np.cos(ts),
-        'y': np.zeros(30),
-        'z': np.sin(ts),
-        'mode': 'lines',
-    }
+    "backend": "generic",
+    "constructor": "Scatter3d",
+    "kwargs": {
+        "x": np.cos(ts),
+        "y": np.zeros(30),
+        "z": np.sin(ts),
+        "mode": "lines",
+    },
 }
-dipole = magpy.misc.Dipole(moment=(0,0,1), style_label="'Scatter3d' trace", style_size=6)
+dipole = magpy.misc.Dipole(
+    moment=(0, 0, 1), style_label="'Scatter3d' trace", style_size=6
+)
 dipole.style.model3d.add_trace(trace_scatter3d)
 
-magpy.show(coll, dipole, backend='matplotlib')
-magpy.show(coll, dipole, backend='plotly')
-magpy.show(coll, dipole, backend='pyvista')
+magpy.show(coll, dipole, backend="matplotlib")
+magpy.show(coll, dipole, backend="plotly")
+magpy.show(coll, dipole, backend="pyvista")
 ```
 
 It is possible to have multiple user-defined traces that will be displayed at the same time. In addition, the following code shows how to quickly copy and manipulate trace dictionaries and `Trace3d` objects,
 
 ```{code-cell} ipython3
 import copy
-dipole.style.size=3
+
+dipole.style.size = 3
 
 # generate new trace from dictionary
 trace2 = copy.deepcopy(trace_scatter3d)
-trace2['kwargs']['y'] = np.sin(ts)
-trace2['kwargs']['z'] = np.zeros(30)
+trace2["kwargs"]["y"] = np.sin(ts)
+trace2["kwargs"]["z"] = np.zeros(30)
 
 dipole.style.model3d.add_trace(trace2)
 
 # generate new trace from Trace3d object
 trace3 = dipole.style.model3d.data[1].copy()
-trace3.kwargs['x'] = np.zeros(30)
-trace3.kwargs['z'] = np.cos(ts)
+trace3.kwargs["x"] = np.zeros(30)
+trace3.kwargs["z"] = np.cos(ts)
 
 dipole.style.model3d.add_trace(trace3)
 
-dipole.show(dipole, backend='matplotlib')
+dipole.show(dipole, backend="matplotlib")
 ```
 
 **Matplotlib** plotting functions often use positional arguments for $(x,y,z)$ input, that are handed over from `args=(x,y,z)` in `trace`. The following examples show how to construct traces with `plot`, `plot_surface` and `plot_trisurf`:
 
 ```{code-cell} ipython3
-import numpy as np
+import magpylib as magpy
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
-import magpylib as magpy
+import numpy as np
 
 # plot trace ###########################
 
-ts = np.linspace(-10,10,100)
+ts = np.linspace(-10, 10, 100)
 xs = np.cos(ts)
 ys = np.sin(ts)
-zs = ts/20
+zs = ts / 20
 
 trace_plot = {
-    'backend': 'matplotlib',
-    'constructor': 'plot',
-    'args': (xs,ys,zs),
-    'kwargs': {'ls': '--', 'lw': 2},
+    "backend": "matplotlib",
+    "constructor": "plot",
+    "args": (xs, ys, zs),
+    "kwargs": {"ls": "--", "lw": 2},
 }
-magnet = magpy.magnet.Cylinder(magnetization=(0,0,1), dimension=(.5,1))
+magnet = magpy.magnet.Cylinder(magnetization=(0, 0, 1), dimension=(0.5, 1))
 magnet.style.model3d.add_trace(trace_plot)
 
 # plot_surface trace ###################
 
-u, v = np.mgrid[0:2 * np.pi:30j, 0:np.pi:20j]
+u, v = np.mgrid[0 : 2 * np.pi : 30j, 0 : np.pi : 20j]
 xs = np.cos(u) * np.sin(v)
 ys = np.sin(u) * np.sin(v)
 zs = np.cos(v)
 
 trace_surf = {
-    'backend': 'matplotlib',
-    'constructor': 'plot_surface',
-    'args': (xs,ys,zs),
-    'kwargs': {'cmap': plt.cm.YlGnBu_r},
+    "backend": "matplotlib",
+    "constructor": "plot_surface",
+    "args": (xs, ys, zs),
+    "kwargs": {"cmap": plt.cm.YlGnBu_r},
 }
-ball = magpy.Collection(position=(-3,0,0))
+ball = magpy.Collection(position=(-3, 0, 0))
 ball.style.model3d.add_trace(trace_surf)
 
 # plot_trisurf trace ###################
 
-u, v = np.mgrid[0:2*np.pi:50j, -.5:.5:10j]
+u, v = np.mgrid[0 : 2 * np.pi : 50j, -0.5:0.5:10j]
 u, v = u.flatten(), v.flatten()
 
 xs = (1 + 0.5 * v * np.cos(u / 2.0)) * np.cos(u)
@@ -713,21 +700,21 @@ zs = 0.5 * v * np.sin(u / 2.0)
 tri = mtri.Triangulation(u, v)
 
 trace_trisurf = {
-    'backend': 'matplotlib',
-    'constructor': 'plot_trisurf',
-    'args': (xs,ys,zs),
-    'kwargs': {
-        'triangles': tri.triangles,
-        'cmap': plt.cm.coolwarm,
+    "backend": "matplotlib",
+    "constructor": "plot_trisurf",
+    "args": (xs, ys, zs),
+    "kwargs": {
+        "triangles": tri.triangles,
+        "cmap": plt.cm.coolwarm,
     },
 }
-mobius = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3,0,0))
+mobius = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3, 0, 0))
 mobius.style.model3d.add_trace(trace_trisurf)
 
 magpy.show(magnet, ball, mobius, zoom=5, backend="matplotlib")
 ```
 
-## Pre-defined 3D models
+### Pre-defined 3D models
 
 Automatic trace generators are provided for several basic 3D models in `magpylib.graphics.model3d`. If no backend is specified, it defaults back to `'generic'`. They can be used as follows,
 
@@ -740,9 +727,9 @@ trace_prism = model3d.make_Prism(
     base=6,
     diameter=2,
     height=1,
-    position=(-3,0,0),
+    position=(-3, 0, 0),
 )
-obj0 = magpy.Sensor(style_model3d_showdefault=False, style_label='Prism')
+obj0 = magpy.Sensor(style_model3d_showdefault=False, style_label="Prism")
 obj0.style.model3d.add_trace(trace_prism)
 
 # pyramid trace #################################
@@ -750,33 +737,33 @@ trace_pyramid = model3d.make_Pyramid(
     base=30,
     diameter=2,
     height=1,
-    position=(3,0,0),
+    position=(3, 0, 0),
 )
-obj1 = magpy.Sensor(style_model3d_showdefault=False, style_label='Pyramid')
+obj1 = magpy.Sensor(style_model3d_showdefault=False, style_label="Pyramid")
 obj1.style.model3d.add_trace(trace_pyramid)
 
 # cuboid trace ##################################
 trace_cuboid = model3d.make_Cuboid(
-    dimension=(2,2,2),
-    position=(0,3,0),
+    dimension=(2, 2, 2),
+    position=(0, 3, 0),
 )
-obj2 = magpy.Sensor(style_model3d_showdefault=False, style_label='Cuboid')
+obj2 = magpy.Sensor(style_model3d_showdefault=False, style_label="Cuboid")
 obj2.style.model3d.add_trace(trace_cuboid)
 
 # cylinder segment trace ########################
 trace_cylinder_segment = model3d.make_CylinderSegment(
     dimension=(1, 2, 1, 140, 220),
-    position=(1,0,-3),
+    position=(1, 0, -3),
 )
-obj3 = magpy.Sensor(style_model3d_showdefault=False, style_label='Cylinder Segment')
+obj3 = magpy.Sensor(style_model3d_showdefault=False, style_label="Cylinder Segment")
 obj3.style.model3d.add_trace(trace_cylinder_segment)
 
 # ellipsoid trace ###############################
 trace_ellipsoid = model3d.make_Ellipsoid(
-    dimension=(2,2,2),
-    position=(0,0,3),
+    dimension=(2, 2, 2),
+    position=(0, 0, 3),
 )
-obj4 = magpy.Sensor(style_model3d_showdefault=False, style_label='Ellipsoid')
+obj4 = magpy.Sensor(style_model3d_showdefault=False, style_label="Ellipsoid")
 obj4.style.model3d.add_trace(trace_ellipsoid)
 
 # arrow trace ###################################
@@ -784,17 +771,17 @@ trace_arrow = model3d.make_Arrow(
     base=30,
     diameter=0.6,
     height=2,
-    position=(0,-3,0),
+    position=(0, -3, 0),
 )
-obj5 = magpy.Sensor(style_model3d_showdefault=False, style_label='Arrow')
+obj5 = magpy.Sensor(style_model3d_showdefault=False, style_label="Arrow")
 obj5.style.model3d.add_trace(trace_arrow)
 
-magpy.show(obj0, obj1, obj2, obj3, obj4, obj5, backend='plotly')
+magpy.show(obj0, obj1, obj2, obj3, obj4, obj5, backend="plotly")
 ```
 
 (examples-adding-CAD-model)=
 
-## Adding a CAD model
+### Adding a CAD model
 
 As shown in {ref}`examples-3d-models`, it is possible to attach custom 3D model representations to any Magpylib object. In the example below we show how a standard CAD model can be transformed into a generic Magpylib graphic trace, and displayed by both `matplotlib` and `plotly` backends.
 
@@ -805,21 +792,21 @@ The code below requires installation of the `numpy-stl` package.
 ```{code-cell} ipython3
 import os
 import tempfile
-import requests
-import numpy as np
-from stl import mesh  # requires installation of numpy-stl
+
 import magpylib as magpy
+import numpy as np
+import requests
 from matplotlib.colors import to_hex
+from stl import mesh  # requires installation of numpy-stl
 
 
 def bin_color_to_hex(x):
-    """ transform binary rgb into hex color"""
+    """transform binary rgb into hex color"""
     sb = f"{x:015b}"[::-1]
-    r = int(sb[:5], base=2)/31
-    g = int(sb[5:10], base=2)/31
-    b = int(sb[10:15], base=2)/31
-    return to_hex((r,g,b))
-
+    r = int(sb[:5], base=2) / 31
+    g = int(sb[5:10], base=2) / 31
+    b = int(sb[10:15], base=2) / 31
+    return to_hex((r, g, b))
 
 
 def trace_from_stl(stl_file):
@@ -832,7 +819,9 @@ def trace_from_stl(stl_file):
 
     # extract vertices and triangulation
     p, q, r = stl_mesh.vectors.shape
-    vertices, ixr = np.unique(stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0)
+    vertices, ixr = np.unique(
+        stl_mesh.vectors.reshape(p * q, r), return_inverse=True, axis=0
+    )
     i = np.take(ixr, [3 * k for k in range(p)])
     j = np.take(ixr, [3 * k + 1 for k in range(p)])
     k = np.take(ixr, [3 * k + 2 for k in range(p)])
@@ -842,9 +831,9 @@ def trace_from_stl(stl_file):
     colors = stl_mesh.attr.flatten()
     facecolor = np.array([bin_color_to_hex(c) for c in colors]).T
     trace = {
-        'backend': 'generic',
-        'constructor': 'mesh3d',
-        'kwargs': dict(x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor),
+        "backend": "generic",
+        "constructor": "mesh3d",
+        "kwargs": dict(x=x, y=y, z=z, i=i, j=j, k=k, facecolor=facecolor),
     }
     return trace
 
@@ -862,25 +851,24 @@ with tempfile.TemporaryDirectory() as temp:
     trace = trace_from_stl(fn)
 
 # create sensor and add CAD model
-sensor = magpy.Sensor(style_label='PG-SSO-3 package')
+sensor = magpy.Sensor(style_label="PG-SSO-3 package")
 sensor.style.model3d.add_trace(trace)
 
 # create magnet and sensor path
-magnet = magpy.magnet.Cylinder(magnetization=(0,0,100), dimension=(15,20))
-sensor.position = np.linspace((-15,0,8), (-15,0,-4), 21)
-sensor.rotate_from_angax(np.linspace(0, 180, 21), 'z', anchor=0, start=0)
+magnet = magpy.magnet.Cylinder(magnetization=(0, 0, 100), dimension=(15, 20))
+sensor.position = np.linspace((-15, 0, 8), (-15, 0, -4), 21)
+sensor.rotate_from_angax(np.linspace(0, 180, 21), "z", anchor=0, start=0)
 
 # display with matplotlib and plotly backends
 args = (sensor, magnet)
 kwargs = dict(style_path_frames=5)
-magpy.show(args, **kwargs,  backend="matplotlib")
+magpy.show(args, **kwargs, backend="matplotlib")
 magpy.show(args, **kwargs, backend="plotly")
 ```
 
-
 (examples-animation)=
 
-# Graphics - Animate paths
+## Animate paths
 
 With some backends, paths can automatically be animated with `show(animation=True)`. Animations can be fine-tuned with the following properties:
 
@@ -893,33 +881,34 @@ Ideally, the animation will show all path steps, but when e.g. `time` and `fps` 
 The following example demonstrates the animation feature,
 
 ```{code-cell} ipython3
-import numpy as np
 import magpylib as magpy
-from magpylib.magnet import Cuboid, Cylinder, Sphere
+import numpy as np
 
 # define objects with paths
 coll = magpy.Collection(
-    Cuboid(magnetization=(0,1,0), dimension=(2,2,2)),
-    Cylinder(magnetization=(0,1,0), dimension=(2,2)),
-    Sphere(magnetization=(0,1,0), diameter=2),
+    magpy.magnet.Cuboid(magnetization=(0, 1, 0), dimension=(2, 2, 2)),
+    magpy.magnet.Cylinder(magnetization=(0, 1, 0), dimension=(2, 2)),
+    magpy.magnet.Sphere(magnetization=(0, 1, 0), diameter=2),
 )
 
 start_positions = np.array([(1.414, 0, 1), (-1, -1, 1), (-1, 1, 1)])
 for pos, src in zip(start_positions, coll):
-    src.position = np.linspace(pos, pos*5, 50)
-    src.rotate_from_angax(np.linspace(0, 360, 50), 'z', anchor=0, start=0)
+    src.position = np.linspace(pos, pos * 5, 50)
+    src.rotate_from_angax(np.linspace(0, 360, 50), "z", anchor=0, start=0)
 
 ts = np.linspace(-0.6, 0.6, 5)
 sensor = magpy.Sensor(pixel=[(x, y, 0) for x in ts for y in ts])
-sensor.position = np.linspace((0,0,-5), (0,0,5), 20)
+sensor.position = np.linspace((0, 0, -5), (0, 0, 5), 20)
 
 # show with animation
-magpy.show(coll, sensor,
+magpy.show(
+    coll,
+    sensor,
     animation=3,
     animation_fps=20,
     animation_slider=True,
-    backend='plotly',
-    showlegend=False,      # kwarg to plotly
+    backend="plotly",
+    showlegend=False,  # kwarg to plotly
 )
 ```
 
@@ -928,4 +917,3 @@ Notice that the sensor, with the shorter path stops before the magnets do. This 
 ```{warning}
 Even with some implemented failsafes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
 ```
-
