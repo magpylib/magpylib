@@ -4,22 +4,22 @@
 
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 
-## Vizualizations
+## Visualizations
 
 ::::{grid} 3
 :gutter: 5
 
-:::{grid-item-card} B-Field with Matplotlib streamplot
+:::{grid-item-card} {ref}`gallery-vis-mpl-streamplot`
 :text-align: center
-:link: gallery-viz-mpl-streamplot
+:link: gallery-vis-mpl-streamplot
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_viz_mpl_streamplot.png
 :::
 
-:::{grid-item-card} Fieldlines with Pyvista streamlines
+:::{grid-item-card} {ref}`gallery-vis-pv-streamlines`
 :text-align: center
-:link: gallery-viz-pv-streamlines
+:link: gallery-vis-pv-streamlines
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_viz_pv_streamlines.png
@@ -96,7 +96,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 ::::{grid} 3
 :gutter: 5
 
-:::{grid-item-card} End-of-shaft position detection
+:::{grid-item-card} {ref}`gallery-app-end-of-shaft`
 :text-align: center
 :link: gallery-app-end-of-shaft
 :link-type: ref
@@ -104,12 +104,28 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_app_end_of_shaft.png
 :::
 
-:::{grid-item-card} Coil field
+:::{grid-item-card} {ref}`gallery-app-halbach`
 :text-align: center
-:link: gallery-app-coil-field
+:link: gallery-app-halbach
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_app_coil_field.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`gallery-app-helmholtz`
+:text-align: center
+:link: gallery-app-helmholtz
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`gallery-app-scales`
+:text-align: center
+:link: gallery-app-scales
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 ::::

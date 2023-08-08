@@ -12,35 +12,31 @@ kernelspec:
   name: python3
 ---
 
-(gallery-viz-pv-streamlines)=
+(gallery-vis-pv-streamlines)=
 
-# Streamlines
+# B-Field lines with Pyvista streamlines
 
-something something
-
-also show how to generate streamlines from a point set
+Pyvista offers field-line computation and visualization in 3D. In addition to the field computation, Magpylib offers magnet visualization that seamlessly integrates into a Pyvista plotting scene.
 
 ```{code-cell} ipython3
-import numpy as np
 import pyvista as pv
-
 import magpylib as magpy
 
-# create a magnet with Magpylib
-magnet = magpy.magnet.Cylinder((0, 0, 1000), (11, 4))
+# Create a magnet with Magpylib
+magnet = magpy.magnet.Cylinder((0, 0, 1000), (10, 4))
 
-# create a grid with Pyvista
+# Create a 3D grid with Pyvista
 grid = pv.UniformGrid(
-    dimensions=(21, 21, 21),
-    spacing=(2, 2, 2),
+    dimensions=(41, 41, 41),
+    spacing=(1, 1, 1),
     origin=(-20, -20, -20),
 )
 
-# compute B-field and add as data to grid
+# Compute B-field and add as data to grid
 grid["B"] = magnet.getB(grid.points)
 
-# compute field lines
-seed = pv.Disc(inner=1, outer=4, r_res=2, c_res=6)
+# Compute the field lines
+seed = pv.Disc(inner=1, outer=3, r_res=1, c_res=6)
 strl = grid.streamlines_from_source(
     seed,
     vectors="B",
@@ -49,10 +45,13 @@ strl = grid.streamlines_from_source(
     integration_direction="both",
 )
 
-# create plotting scene
+# Create a Pyvista plotting scene
 pl = pv.Plotter()
 
-# add legend to scene
+# Add magnet to scene
+magpy.show(magnet, canvas=pl, backend="pyvista")
+
+# Prepare legend parameters
 legend_args = {
     "title": "B (mT)",
     "title_font_size": 20,
@@ -61,18 +60,14 @@ legend_args = {
     "vertical": True,
 }
 
-# add magnet to scene
-magpy.show(magnet, canvas=pl, backend="pyvista")
-
-# add streamlines to scene
+# Add streamlines and legend to scene
 pl.add_mesh(
     strl.tube(radius=0.2),
     cmap="bwr",
     scalar_bar_args=legend_args,
 )
 
-# display scene
+# Prepare and show scene
 pl.camera.position = (30, 30, 20)
-pl.set_background("white")
 pl.show()
 ```

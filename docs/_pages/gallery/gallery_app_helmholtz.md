@@ -5,16 +5,23 @@ jupytext:
     extension: .md
     format_name: myst
     format_version: 0.13
-    jupytext_version: 1.14.0
+    jupytext_version: 1.13.7
 kernelspec:
   display_name: Python 3
   language: python
   name: python3
 ---
-(gallery-app-coil-field)=
 
-# Magnetic field lines
+(gallery-app-helmholtz)=
 
+# Helmholtz Coils
+
+- coil modeling
+- vizualization of homogenity
+
+
+
+<!-- 
 In this example we model the **magnetic field of a coil**, and show how to display it with spectacular **field line** representations.
 
 ## Coil models
@@ -182,4 +189,4 @@ pl.add_mesh(
 pl.camera.position=(160, 10, -10)
 pl.set_background("white")
 pl.show()
-```
+``` -->
