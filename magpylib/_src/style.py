@@ -77,8 +77,7 @@ def get_style(obj, default_settings, **kwargs):
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
-    obj_style = getattr(obj, "style", None)
-    style = obj_style.copy() if obj_style is not None else BaseStyle()
+    style = obj.style.copy()
     style_kwargs_specific = {
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
@@ -784,7 +783,7 @@ class MagnetizationColor(MagicProperties):
     def transition(self, val):
         assert (
             val is None or isinstance(val, (float, int)) and 0 <= val <= 1
-        ), "color transition must be a value betwen 0 and 1"
+        ), "color transition must be a value between 0 and 1"
         self._transition = val
 
     @property

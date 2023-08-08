@@ -281,10 +281,10 @@ def check_format_input_angle(inp):
 def check_format_input_scalar(
     inp, sig_name, sig_type, allow_None=False, forbid_negative=False
 ):
-    """check sclar input and return in formatted form
+    """check scalar input and return in formatted form
     - must be scalar or None (if allowed)
     - must be float compatible
-    - tranform into float
+    - transform into float
     """
     if allow_None:
         if inp is None:
@@ -580,61 +580,26 @@ def check_format_input_obj(
 
 def check_dimensions(sources):
     """check if all sources have dimension (or similar) initialized"""
-    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
-    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
-    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
-    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
-    from magpylib._src.obj_classes.class_current_Line import Line
-    from magpylib._src.obj_classes.class_current_Loop import Loop
-    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
-
     for src in sources:
-        if isinstance(src, (Cuboid, Cylinder, CylinderSegment)):
-            if src.dimension is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `dimension` of {src} must be set."
-                )
-        elif isinstance(src, (Sphere, Loop)):
-            if src.diameter is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `diameter` of {src} must be set."
-                )
-        elif isinstance(src, (Line, Tetrahedron)):
-            if src.vertices is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `vertices` of {src} must be set."
-                )
+        for arg in ("dimension", "diameter", "vertices"):
+            if hasattr(src, arg):
+                if getattr(src, arg) is None:
+                    raise MagpylibMissingInput(
+                        f"Parameter `{arg}` of {src} must be set."
+                    )
+                break
 
 
-def check_excitations(sources, custom_field=None):
-    """check if all sources have exitation initialized"""
-    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet, BaseCurrent
-    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
-
+def check_excitations(sources):
+    """check if all sources have excitation initialized"""
     for src in sources:
-        if isinstance(src, CustomSource) and (custom_field is not None):
-            if src.field_func is None:
-                raise MagpylibMissingInput(
-                    f"Cannot compute {custom_field}-field because input parameter"
-                    f"`field_func` of {src} has undefined {custom_field}-field computation."
-                )
-            if src.field_func(custom_field, np.zeros((1, 3))) is None:
-                raise MagpylibMissingInput(
-                    f"Cannot compute {custom_field}-field because input parameter"
-                    f"`field_func` of {src} has undefined {custom_field}-field computation."
-                )
-        elif isinstance(src, BaseMagnet):
-            if src.magnetization is None:
-                raise MagpylibMissingInput(
-                    f"Parameter `magnetization` of {src} must be set."
-                )
-        elif isinstance(src, BaseCurrent):
-            if src.current is None:
-                raise MagpylibMissingInput(f"Parameter `current` of {src} must be set.")
-        elif isinstance(src, Dipole):
-            if src.moment is None:
-                raise MagpylibMissingInput(f"Parameter `moment` of {src} must be set.")
+        for arg in ("magnetization", "current", "moment"):
+            if hasattr(src, arg):
+                if getattr(src, arg) is None:
+                    raise MagpylibMissingInput(
+                        f"Parameter `{arg}` of {src} must be set."
+                    )
+                break
 
 
 def check_format_pixel_agg(pixel_agg):

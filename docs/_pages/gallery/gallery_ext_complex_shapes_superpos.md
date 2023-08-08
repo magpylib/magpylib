@@ -90,7 +90,7 @@ inner = Cylinder(magnetization=(0,0,-100), dimension=(4,1))
 outer = Cylinder(magnetization=(0,0, 100), dimension=(6,1))
 ring1 = inner + outer
 
-print('getB from Cylindersegment', ring0.getB((1,2,3)))
+print('getB from CylinderSegment', ring0.getB((1,2,3)))
 print('getB from Cylinder cut-out', ring1.getB((1,2,3)))
 ```
 

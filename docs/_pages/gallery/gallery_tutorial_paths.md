@@ -15,7 +15,7 @@ kernelspec:
 
 # Working with Paths
 
-The position and orientation attributes are key elements of Mapylib. The documentation section {ref}`docu-position` describes their workings. While the definition seems abstract, working with them is quite intuitive. In this tutorial we show good practice examples.
+The position and orientation attributes are key elements of Magpylib. The documentation section {ref}`docu-position` describes their workings. While the definition seems abstract, working with them is quite intuitive. In this tutorial we show good practice examples.
 
 ## Assigning absolute paths
 

@@ -50,6 +50,7 @@ import numpy as np
 from scipy.spatial.transform import Rotation as R
 
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.input_checks import check_dimensions
 from magpylib._src.input_checks import check_excitations
 from magpylib._src.input_checks import check_format_input_observers
@@ -141,7 +142,8 @@ def getBH_level1(
     BH = field_func(field=field, observers=pos_rel_rot, **kwargs)
 
     # transform field back into global CS
-    BH = orientation.apply(BH)
+    if BH is not None:  # catch non-implemented field_func a level above
+        BH = orientation.apply(BH)
 
     return BH
 
@@ -221,7 +223,7 @@ def getBH_level2(
 
     # test if all source dimensions and excitations are initialized
     check_dimensions(src_list)
-    check_excitations(src_list, field)
+    check_excitations(src_list)
 
     # make sure that TriangularMesh sources have a closed mesh when getB is called - warn if not
     if field == "B":
@@ -248,10 +250,10 @@ def getBH_level2(
     pix_nums = [
         int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
-    pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
+    pix_inds = np.cumsum([0] + pix_nums)  # cumulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
-    # check which sensors have unit roation
+    # check which sensors have unit rotation
     #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0, 0, 0, 1.0])
@@ -272,7 +274,7 @@ def getBH_level2(
 
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
-    #   postion/orientation of the object (static paths)
+    #   position/orientation of the object (static paths)
     path_lengths = [len(obj._position) for obj in obj_list]
     max_path_len = max(path_lengths)
 
@@ -312,6 +314,11 @@ def getBH_level2(
     field_func_groups = {}
     for ind, src in enumerate(src_list):
         group_key = src.field_func
+        if group_key is None:
+            raise MagpylibMissingInput(
+                f"Cannot compute {field}-field because "
+                f"`field_func` of {src} has undefined {field}-field computation."
+            )
         if group_key not in field_func_groups:
             field_func_groups[group_key] = {
                 "sources": [],
@@ -329,6 +336,11 @@ def getBH_level2(
         B_group = getBH_level1(
             field_func=field_func, field=field, **src_dict
         )  # compute field
+        if B_group is None:
+            raise MagpylibMissingInput(
+                f"Cannot compute {field}-field because "
+                f"`field_func` {field_func} has undefined {field}-field computation."
+            )
         B_group = B_group.reshape(
             (lg, max_path_len, n_pix, 3)
         )  # reshape (2% slower for large arrays)
@@ -529,7 +541,7 @@ def getBH_dict_level2(
     # compute and return B
     B = getBH_level1(field=field, field_func=field_func, **kwargs)
 
-    if squeeze:
+    if B is not None and squeeze:
         return np.squeeze(B)
     return B
 

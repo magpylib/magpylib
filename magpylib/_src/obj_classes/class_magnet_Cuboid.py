@@ -15,13 +15,13 @@ class Cuboid(BaseMagnet):
     is located in the origin.
 
     Units can be chosen freely. B-field output unit is the same as magnetization
-    input unit. Computation is indepentend of Length-unit. See online documentation
+    input unit. Computation is independend of Length-unit. See online documentation
     for fore information
 
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization (polarizaion) vector (mu0*M, remanence field) in arbitrary
+        Magnetization (polarization) vector (mu0*M, remanence field) in arbitrary
         units given in the local object coordinates (rotates with object).
 
     dimension: array_like, shape (3,), default=`None`

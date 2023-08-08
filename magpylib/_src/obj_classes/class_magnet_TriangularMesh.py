@@ -75,7 +75,7 @@ class TriangularMesh(BaseMagnet):
 
     check_selfintersecting: bool, optional
         If `True`, the provided set of facets is validated by checking if the body is not
-        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+        self-intersecting. Can be deactivated for performance reasons by setting it to `False`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -465,7 +465,11 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
-        centroid = calculate_centroid(vertices, faces)
+        centroid = (
+            np.array([0.0, 0.0, 0.0])
+            if vertices is None
+            else calculate_centroid(vertices, faces)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
@@ -553,17 +557,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -638,17 +642,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -740,17 +744,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -840,17 +844,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.

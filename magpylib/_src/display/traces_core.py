@@ -29,6 +29,7 @@ from magpylib._src.display.traces_base import make_Tetrahedron as make_BaseTetra
 from magpylib._src.display.traces_base import (
     make_TriangularMesh as make_BaseTriangularMesh,
 )
+from magpylib._src.display.traces_utility import create_null_dim_trace
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
 from magpylib._src.display.traces_utility import draw_arrow_on_circle
 from magpylib._src.display.traces_utility import get_label
@@ -66,21 +67,26 @@ def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     provided arguments.
     """
     style = obj.style
-    default_suffix = (
-        f" ({unit_prefix(obj.current)}A)"
-        if obj.current is not None
-        else " (Current not initialized)"
-    )
+    if obj.vertices is None:
+        default_suffix = " (no vertices)"
+        name = get_label(obj, default_suffix=default_suffix)
+        trace = create_null_dim_trace(color=style.color, name=name)
+        return {**trace, **kwargs}
+
     traces = []
     for kind in ("arrow", "line"):
+        default_suffix = (
+            f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
+        )
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
             if kind == "arrow":
+                current = 0 if obj.current is None else obj.current
                 x, y, z = draw_arrow_from_vertices(
-                    obj.vertices,
-                    np.sign(obj.current),
-                    kind_style.size,
+                    vertices=obj.vertices,
+                    sign=np.sign(current),
+                    arrow_size=kind_style.size,
                     arrow_pos=style.arrow.offset,
                     scaled=kind_style.sizemode == "scaled",
                     include_line=False,
@@ -108,23 +114,27 @@ def make_Loop(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, An
     provided arguments.
     """
     style = obj.style
-    default_suffix = (
-        f" ({unit_prefix(obj.current)}A)"
-        if obj.current is not None
-        else " (Current not initialized)"
-    )
+    if obj.diameter is None:
+        default_suffix = " (no dimension)"
+        name = get_label(obj, default_suffix=default_suffix)
+        trace = create_null_dim_trace(color=style.color, name=name)
+        return {**trace, **kwargs}
     traces = []
     for kind in ("arrow", "line"):
+        default_suffix = (
+            f" ({unit_prefix(obj.current)}A)" if obj.current else " (no current)"
+        )
         kind_style = getattr(style, kind)
         if kind_style.show:
             color = style.color if kind_style.color is None else kind_style.color
 
             if kind == "arrow":
                 angle_pos_deg = 360 * np.round(style.arrow.offset * base) / base
+                current = 0 if obj.current is None else obj.current
                 vertices = draw_arrow_on_circle(
-                    np.sign(obj.current),
-                    obj.diameter,
-                    style.arrow.size,
+                    sign=np.sign(current),
+                    diameter=obj.diameter,
+                    arrow_size=style.arrow.size,
                     scaled=kind_style.sizemode == "scaled",
                     angle_pos_deg=angle_pos_deg,
                 )
@@ -155,33 +165,37 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     provided arguments.
     """
     style = obj.style
-    moment = obj.moment
+    moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
     moment_mag = np.linalg.norm(moment)
     size = style.size
     if autosize is not None:
         size *= autosize
-    trace = make_BaseArrow(
-        "plotly-dict",
-        base=10,
-        diameter=0.3 * size,
-        height=size,
-        pivot=style.pivot,
-        color=style.color,
-    )
-    default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
+    if moment_mag == 0:
+        trace = create_null_dim_trace(color=style.color)
+        default_suffix = " (no moment)"
+    else:
+        default_suffix = f" (moment={unit_prefix(moment_mag)}mT mm³)"
+        trace = make_BaseArrow(
+            "plotly-dict",
+            base=10,
+            diameter=0.3 * size,
+            height=size,
+            pivot=style.pivot,
+            color=style.color,
+        )
+        nvec = np.array(moment) / moment_mag
+        zaxis = np.array([0, 0, 1])
+        cross = np.cross(nvec, zaxis)
+        n = np.linalg.norm(cross)
+        if n == 0:
+            n = 1
+            cross = np.array([-np.sign(nvec[-1]), 0, 0])
+        dot = np.dot(nvec, zaxis)
+        t = np.arccos(dot)
+        vec = -t * cross / n
+        mag_orient = RotScipy.from_rotvec(vec)
+        trace = place_and_orient_model3d(trace, orientation=mag_orient, **kwargs)
     trace["name"] = get_label(obj, default_suffix=default_suffix)
-    nvec = np.array(moment) / moment_mag
-    zaxis = np.array([0, 0, 1])
-    cross = np.cross(nvec, zaxis)
-    n = np.linalg.norm(cross)
-    if n == 0:
-        n = 1
-        cross = np.array([-np.sign(nvec[-1]), 0, 0])
-    dot = np.dot(nvec, zaxis)
-    t = np.arccos(dot)
-    vec = -t * cross / n
-    mag_orient = RotScipy.from_rotvec(vec)
-    trace = place_and_orient_model3d(trace, orientation=mag_orient, **kwargs)
     return {**trace, **kwargs}
 
 
@@ -192,7 +206,7 @@ def make_Cuboid(obj, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         trace = make_BaseCuboid(
@@ -211,7 +225,7 @@ def make_Cylinder(obj, base=50, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         diameter, height = obj.dimension
@@ -235,7 +249,7 @@ def make_CylinderSegment(obj, vertices=25, **kwargs) -> Dict[str, Any]:
     """
     style = obj.style
     if obj.dimension is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace(color=style.color)
         default_suffix = " (no dimension)"
     else:
         d = [
@@ -257,7 +271,8 @@ def make_Sphere(obj, vertices=15, **kwargs) -> Dict[str, Any]:
     style = obj.style
 
     if obj.diameter is None:
-        trace = {"type": "scatter3d", "x": [0], "y": [0], "z": [0]}
+        trace = create_null_dim_trace(color=style.color)
+
         default_suffix = " (no dimension)"
     else:
         vertices = min(max(vertices, 3), 20)
@@ -278,10 +293,15 @@ def make_Tetrahedron(obj, **kwargs) -> Dict[str, Any]:
     provided arguments.
     """
     style = obj.style
-    trace = make_BaseTetrahedron(
-        "plotly-dict", vertices=obj.vertices, color=style.color
-    )
-    trace["name"] = get_label(obj)
+    if obj.vertices is None:
+        trace = create_null_dim_trace(color=style.color)
+        default_suffix = " (no vertices)"
+    else:
+        default_suffix = ""
+        trace = make_BaseTetrahedron(
+            "plotly-dict", vertices=obj.vertices, color=style.color
+        )
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     return {**trace, **kwargs}
 
 
@@ -411,29 +431,40 @@ def make_Triangle(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
     style = obj.style
     vert = obj.vertices
-    vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
-    faces = np.array([[0, 1, 2]])
-    # if magnetization is normal to the triangle, add a second triangle slightly above to enable
-    # proper color gradient visualization. Otherwise only the middle color is shown.
-    if np.all(np.cross(obj.magnetization, vec) == 0):
-        epsilon = 1e-3 * vec
-        vert = np.concatenate([vert - epsilon, vert + epsilon])
-        side_faces = [
-            [0, 1, 3],
-            [1, 2, 4],
-            [2, 0, 5],
-            [1, 4, 3],
-            [2, 5, 4],
-            [0, 3, 5],
-        ]
-        faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
 
-    trace = make_BaseTriangularMesh(
-        "plotly-dict", vertices=vert, faces=faces, color=style.color
-    )
-    trace["name"] = get_label(obj)
+    if vert is None:
+        trace = create_null_dim_trace(color=style.color)
+        default_suffix = " (no vertices)"
+    else:
+        default_suffix = ""
+        vec = np.cross(vert[1] - vert[0], vert[2] - vert[1])
+        faces = np.array([[0, 1, 2]])
+        # if magnetization is normal to the triangle, add a second triangle slightly above to enable
+        # proper color gradient visualization. Otherwise only the middle color is shown.
+        magnetization = (
+            np.array([0.0, 0.0, 0.0])
+            if obj.magnetization is None
+            else obj.magnetization
+        )
+        if np.all(np.cross(magnetization, vec) == 0):
+            epsilon = 1e-3 * vec
+            vert = np.concatenate([vert - epsilon, vert + epsilon])
+            side_faces = [
+                [0, 1, 3],
+                [1, 2, 4],
+                [2, 0, 5],
+                [1, 4, 3],
+                [2, 5, 4],
+                [0, 3, 5],
+            ]
+            faces = np.concatenate([faces, [[3, 4, 5]], side_faces])
+
+        trace = make_BaseTriangularMesh(
+            "plotly-dict", vertices=vert, faces=faces, color=style.color
+        )
+    trace["name"] = get_label(obj, default_suffix=default_suffix)
     traces = [{**trace, **kwargs}]
-    if style.orientation.show:
+    if vert is not None and style.orientation.show:
         traces.append(make_triangle_orientations(obj, **kwargs))
     return traces
 

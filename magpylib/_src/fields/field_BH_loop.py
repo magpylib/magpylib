@@ -58,7 +58,7 @@ def current_loop_field(
 
     Notes
     -----
-    Implementation based on "Numerically stable and computationally efficinet expression for
+    Implementation based on "Numerically stable and computationally efficient expression for
     the magnetic field of a current loop.", M.Ortner et al, Submitted to MDPI Magnetism, 2022
     """
 

@@ -97,7 +97,7 @@ def magnet_cuboid_field(
     mask2 = (a * b * c).astype(bool)
 
     # SPECIAL CASE 3: observer lies on-edge/corner
-    # -> 1e-15 to account for numerical inprecision when e.g. rotating
+    # -> 1e-15 to account for numerical imprecision when e.g. rotating
     # -> /a /b /c to account for the "missing" scaling (1e-15 is large when
     #    a is e.g. 1e-15 itself)
 

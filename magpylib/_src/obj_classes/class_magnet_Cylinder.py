@@ -12,7 +12,7 @@ class Cylinder(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
-    the cylinder axis conincides with the global z-axis.
+    the cylinder axis coincides with the global z-axis.
 
     Parameters
     ----------

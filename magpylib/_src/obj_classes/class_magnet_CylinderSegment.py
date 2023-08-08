@@ -16,7 +16,7 @@ class CylinderSegment(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
-    the cylinder axis conincides with the global z-axis. Section angle 0
+    the cylinder axis coincides with the global z-axis. Section angle 0
     corresponds to an x-z plane section of the cylinder.
 
     Parameters
@@ -142,15 +142,23 @@ class CylinderSegment(BaseMagnet):
         Input checks should make sure:
             -360 < phi1 < phi2 < 360 and 0 < r1 < r2
         """
-        r1, r2, _, phi1, phi2 = dimension
-        alpha = np.deg2rad((phi2 - phi1) / 2)
-        phi = np.deg2rad((phi1 + phi2) / 2)
-        # get centroid x for unrotated annular sector
-        centroid_x = (
-            2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
-        )
-        # get centroid for rotated annular sector
-        x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
-        centroid = np.array([x, y, z])
+        if dimension is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            r1, r2, _, phi1, phi2 = dimension
+            alpha = np.deg2rad((phi2 - phi1) / 2)
+            phi = np.deg2rad((phi1 + phi2) / 2)
+            # get centroid x for unrotated annular sector
+            centroid_x = (
+                2
+                / 3
+                * np.sin(alpha)
+                / alpha
+                * (r2**3 - r1**3)
+                / (r2**2 - r1**2)
+            )
+            # get centroid for rotated annular sector
+            x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
+            centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter

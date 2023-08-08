@@ -337,6 +337,10 @@ def test_scipy_from_methods():
 def test_style():
     """test when setting wrong style class"""
     bg = BaseGeo((0, 0, 0), None)
+    bg.style = {"color": "red"}
+    bg.style = {"label": "mylabel"}
+    assert bg.style.color == "red"
+    assert bg.style.label == "mylabel"
     with pytest.raises(ValueError):
         bg.style = "wrong class"
 
@@ -542,3 +546,22 @@ def test_describe():
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
     assert desc == test
+
+
+def test_unset_describe():
+    """test describe completely unset objects"""
+    objs = [
+        magpy.magnet.Cuboid(),
+        magpy.magnet.Cylinder(),
+        magpy.magnet.CylinderSegment(),
+        magpy.magnet.Sphere(),
+        magpy.magnet.Tetrahedron(),
+        # magpy.magnet.TriangularMesh(), not possible yet
+        magpy.misc.Triangle(),
+        magpy.misc.Dipole(),
+        magpy.current.Line(),
+        magpy.current.Loop(),
+    ]
+
+    for o in objs:
+        o.describe()
