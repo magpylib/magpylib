@@ -27,7 +27,21 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ::::
 
-## Extensions
+## Complex Magnet Shapes
+
+::::{grid} 3
+:gutter: 5
+
+:::{grid-item-card} {ref}`gallery-shapes-superpos`
+:text-align: center
+:link: gallery-shapes-superpos
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_superpos.png
+:::
+::::
+
+## Other
 
 ::::{grid} 3
 :gutter: 5
@@ -72,13 +86,7 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
 :::
 
-:::{grid-item-card} Complex magnet shapes using superposition
-:text-align: center
-:link: gallery-ext-complex-shapes-superposition
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_superpos.png
-:::
+
 
 :::{grid-item-card} Inhomogeneous Magnetizations
 :text-align: center
