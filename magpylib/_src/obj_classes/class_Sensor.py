@@ -1,5 +1,5 @@
 """Sensor class code"""
-from magpylib._src.display.traces_generic import make_Sensor
+from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -76,7 +76,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     _style_class = SensorStyle
     _autosize = True
-    _draw_func = make_Sensor
+    get_trace = make_Sensor
 
     def __init__(
         self,

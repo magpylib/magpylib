@@ -257,11 +257,34 @@ def test_disconnected_mesh():
             polydata=pv.Text3D("AB"),
             check_disconnected="raise",
         )
-    with pytest.warns(UserWarning, match=r"Disconnected mesh detected in .*."):
-        magpy.magnet.TriangularMesh.from_pyvista(
+
+
+def test_selfintersecting_triangular_mesh():
+    """raises Error if self intersecting"""
+    # cube with closed with an inverted pyramid crossing the opposite face.
+    selfintersecting_mesh3d = {
+        "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
+        "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
+        "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
+        "i": [7, 0, 0, 0, 2, 6, 4, 0, 3, 7, 4, 5, 6, 7],
+        "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
+        "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
+    }
+    vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
+    faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
+    with pytest.raises(ValueError, match=r"Self-intersecting mesh detected in .*."):
+        magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
-            polydata=pv.Text3D("AB"),
-            check_disconnected="warn",
+            vertices=vertices,
+            faces=faces,
+            check_selfintersecting="raise",
+        )
+    with pytest.warns(UserWarning, match=r"Self-intersecting mesh detected in .*."):
+        magpy.magnet.TriangularMesh(
+            magnetization=(0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_selfintersecting="warn",
         )
 
 
@@ -414,6 +437,7 @@ def test_reorient_on_closed_but_disconnected_mesh():
 
 
 def test_bad_mode_input():
+    """test bad mode input"""
     with pytest.raises(
         ValueError,
         match=r"The `check_open mode` argument .*, instead received 'badinput'.",
@@ -421,3 +445,19 @@ def test_bad_mode_input():
         magpy.magnet.TriangularMesh.from_pyvista(
             magnetization=(0, 0, 1000), polydata=pv.Octahedron(), check_open="badinput"
         )
+
+
+def test_orientation_edge_case():
+    """test reorientation edge case"""
+
+    # reorientation may fail if the face orientation vector is two small
+    # see issue #636
+
+    def points(r0):
+        return [(r0 * np.cos(t), r0 * np.sin(t), 10) for t in ts] + [(0, 0, 0)]
+
+    ts = np.linspace(0, 2 * np.pi, 5)
+    cone1 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(12))
+    cone2 = magpy.magnet.TriangularMesh.from_ConvexHull((0, 0, 1), points(13))
+
+    np.testing.assert_array_equal(cone1.faces, cone2.faces)

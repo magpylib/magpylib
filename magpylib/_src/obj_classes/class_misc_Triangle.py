@@ -2,7 +2,7 @@
 """
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_Triangle
+from magpylib._src.display.traces_core import make_Triangle
 from magpylib._src.fields.field_BH_triangle import triangle_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -93,7 +93,7 @@ class Triangle(BaseMagnet):
 
     _field_func = staticmethod(triangle_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "vertices": 2}
-    _draw_func = make_Triangle
+    get_trace = make_Triangle
     _style_class = TriangleStyle
 
     def __init__(
@@ -141,6 +141,8 @@ class Triangle(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of the Triangle object."""
-        centroid = np.mean(vertices, axis=0)
+        centroid = (
+            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter

@@ -8,6 +8,7 @@ import pyvista
 
 import magpylib as magpy
 from magpylib._src.display.traces_utility import draw_arrow_from_vertices
+from magpylib._src.display.traces_utility import merge_scatter3d
 from magpylib._src.exceptions import MagpylibBadUserInput
 
 
@@ -22,7 +23,7 @@ def test_draw_arrow_from_vertices():
             [-1.0, 1.0, 1.0],
         ]
     )
-    result = draw_arrow_from_vertices(vertices, current=1, arrow_size=1)
+    result = draw_arrow_from_vertices(vertices, sign=1, arrow_size=1)
     expected = np.array(
         [
             [-1.0, 1.0, 1.0],
@@ -54,7 +55,7 @@ def test_draw_arrow_from_vertices():
             [-1.0, 1.0, 0.0],
             [-1.0, 1.0, 1.0],
         ]
-    ).T
+    )
 
     np.testing.assert_allclose(
         result, expected, err_msg="draw arrow from vertices failed"
@@ -89,3 +90,13 @@ def test_infer_backend(canvas, is_notebook_result, backend):
         from magpylib._src.display.display import infer_backend
 
         assert infer_backend(canvas) == backend
+
+
+def test_merge_scatter3d():
+    """test_merge_scatter3d"""
+
+    def get_traces(n):
+        return [{"type": "scatter3d", "x": [i], "y": [i], "z": [i]} for i in range(n)]
+
+    merge_scatter3d(*get_traces(1))
+    merge_scatter3d(*get_traces(3))

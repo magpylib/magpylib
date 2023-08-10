@@ -4,13 +4,14 @@ import warnings
 import numpy as np
 from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
-from magpylib._src.display.traces_generic import make_TriangularMesh
+from magpylib._src.display.traces_core import make_TriangularMesh
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_triangularmesh import calculate_centroid
 from magpylib._src.fields.field_BH_triangularmesh import fix_trimesh_orientation
 from magpylib._src.fields.field_BH_triangularmesh import (
     get_disconnected_faces_subsets,
 )
+from magpylib._src.fields.field_BH_triangularmesh import get_intersecting_triangles
 from magpylib._src.fields.field_BH_triangularmesh import get_open_edges
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.input_checks import check_format_input_vector
@@ -19,6 +20,9 @@ from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
 from magpylib._src.obj_classes.class_Collection import Collection
 from magpylib._src.obj_classes.class_misc_Triangle import Triangle
 from magpylib._src.style import TriangularMeshStyle
+
+# pylint: disable=too-many-instance-attributes
+# pylint: disable=too-many-public-methods
 
 
 class TriangularMesh(BaseMagnet):
@@ -49,16 +53,29 @@ class TriangularMesh(BaseMagnet):
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
 
-    reorient_faces: bool, default=`True`
+    reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
         If `True`, check and fix the orientation of each triangle.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
-    check_open: bool, default=`True`
-        Only a closed mesh guarantees a physical magnet.
-        If `True`, raise error if mesh is not closed.
+    check_open: bool or string, default=`True`
+        Only a closed mesh guarantees correct B-field computation.
+        If `True`, check if mesh is open.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
 
-    check_disconnected: bool, default=`True`
-        If `True` raise an error if mesh is not connected.
+    check_disconnected: bool or string, default=`True`
+        Individual magnets should be connected bodies to avoid confusion.
+        If `True`, check if mesh is disconnected.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
+
+    check_selfintersecting: bool or string, default=`True`
+        a proper body cannot have a self-intersecting mesh.
+        If `True`, check if mesh is self-intersecting.
+        Options are `'skip'`(=`False`), `'warn'`(=`True`), `'raise'`, `'ignore'`.
+
+    check_selfintersecting: bool, optional
+        If `True`, the provided set of facets is validated by checking if the body is not
+        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -92,7 +109,7 @@ class TriangularMesh(BaseMagnet):
 
     _field_func = staticmethod(magnet_trimesh_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
-    _draw_func = make_TriangularMesh
+    get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
     def __init__(
@@ -104,6 +121,7 @@ class TriangularMesh(BaseMagnet):
         orientation=None,
         check_open="warn",
         check_disconnected="warn",
+        check_selfintersecting="warn",
         reorient_faces="warn",
         show_progress=False,
         style=None,
@@ -113,12 +131,15 @@ class TriangularMesh(BaseMagnet):
         self._status_disconnected = None
         self._status_open = None
         self._status_reoriented = False
+        self._status_selfintersecting = None
         self._status_disconnected_data = None
         self._status_open_data = None
+        self._status_selfintersecting_data = None
 
         self.check_open(mode=check_open)
         self.check_disconnected(mode=check_disconnected)
         self.reorient_faces(mode=reorient_faces, show_progress=show_progress)
+        self.check_selfintersecting(mode=check_selfintersecting)
 
         # inherit
         super().__init__(position, orientation, magnetization, style, **kwargs)
@@ -141,17 +162,17 @@ class TriangularMesh(BaseMagnet):
 
     @property
     def status_open(self):
-        """Return closed satus"""
+        """Return open status"""
         return self._status_open
 
     @property
     def status_disconnected(self):
-        """Return connected satus"""
+        """Return disconnected status"""
         return self._status_disconnected
 
     @property
     def status_reoriented(self):
-        """Return reoriented satus"""
+        """Return reoriented status"""
         return self._status_reoriented
 
     @staticmethod
@@ -265,6 +286,55 @@ class TriangularMesh(BaseMagnet):
                     raise ValueError(msg)
         return self._status_disconnected
 
+    def check_selfintersecting(self, mode="warn"):
+        """Check whether the mesh is self-intersecting.
+
+        This function checks if the mesh is self-intersecting. If the mesh is self-intersecting,
+        it issues a warning or raises a ValueError, depending on the 'mode' parameter.
+        If 'mode' is set to 'ignore', it does not issue a warning or raise an error.
+
+        Parameters
+        ----------
+        mode : str, optional
+            Controls how to handle if the mesh is self-intersecting.
+            Accepted values are "warn", "raise", or "ignore".
+            If "warn", a warning is issued. If "raise", a ValueError is raised.
+            If "ignore", no action is taken. By default "warn".
+
+        Returns
+        -------
+        bool
+            True if the mesh is self-intersecting, False otherwise.
+
+        Raises
+        ------
+        ValueError
+            If 'mode' is not one of the accepted values or if 'mode' is "raise" and the mesh
+            is self-intersecting.
+
+        Warns
+        -----
+        UserWarning
+            If the mesh is self-intersecting and 'mode' is "warn".
+        """
+        mode = self._validate_mode_arg(mode, arg_name="check_selfintersecting mode")
+        if mode != "skip" and self._status_selfintersecting is None:
+            self._status_selfintersecting = len(self.get_selfintersecting_faces()) > 1
+            if self._status_selfintersecting:
+                msg = (
+                    f"Self-intersecting mesh detected in {self!r}. "
+                    "This check can be disabled at initialization with "
+                    "check_selfintersecting='skip'. "
+                    "Intersecting faces can be display in show() with "
+                    "style_mesh_selfintersecting_show=True. "
+                    "Parts are stored in the status_selfintersecting_data property."
+                )
+                if mode == "warn":
+                    warnings.warn(msg)
+                elif mode == "raise":
+                    raise ValueError(msg)
+        return self._status_selfintersecting
+
     def reorient_faces(self, mode="warn", show_progress=False):
         """Correctly reorients the mesh's faces.
 
@@ -347,6 +417,22 @@ class TriangularMesh(BaseMagnet):
             self._status_open_data = get_open_edges(self._faces)
         return self._status_open_data
 
+    def get_selfintersecting_faces(self):
+        """
+        Obtain and return the potential self intersecting faces indices. If the mesh has n
+        intersecting faces, returns a corresponding 1D array length n faces indices.
+
+        Returns
+        -------
+        status_open_data : numpy.ndarray
+            Open edges data.
+        """
+        if self._status_selfintersecting_data is None:
+            self._status_selfintersecting_data = get_intersecting_triangles(
+                self._vertices, self._faces
+            )
+        return self._status_selfintersecting_data
+
     @property
     def status_disconnected_data(self):
         """Status for connectedness (faces subsets)"""
@@ -356,6 +442,16 @@ class TriangularMesh(BaseMagnet):
     def status_open_data(self):
         """Status for openness (open edges)"""
         return self._status_open_data
+
+    @property
+    def status_selfintersecting(self):
+        """Is-selfintersecting boolean check"""
+        return self._status_selfintersecting
+
+    @property
+    def status_selfintersecting_data(self):
+        """return self-intersecting faces"""
+        return self._status_selfintersecting_data
 
     @property
     def _barycenter(self):
@@ -372,7 +468,11 @@ class TriangularMesh(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices, faces):
         """Returns the barycenter of a tetrahedron."""
-        centroid = calculate_centroid(vertices, faces)
+        centroid = (
+            np.array([0.0, 0.0, 0.0])
+            if vertices is None
+            else calculate_centroid(vertices, faces)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter
 
@@ -467,6 +567,11 @@ class TriangularMesh(BaseMagnet):
             If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
+        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is self-intersecting and "warn", a warning is issued.
+            If the mesh is self-intersecting and "raise", a ValueError is raised.
+            If "ignore", no mesh check is perfomed.
+
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
 
@@ -545,6 +650,11 @@ class TriangularMesh(BaseMagnet):
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
+            If "ignore", no mesh check is perfomed.
+
+        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is self-intersecting and "warn", a warning is issued.
+            If the mesh is self-intersecting and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`
@@ -644,6 +754,11 @@ class TriangularMesh(BaseMagnet):
             If the mesh is disconnected and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
+        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is self-intersecting and "warn", a warning is issued.
+            If the mesh is self-intersecting and "raise", a ValueError is raised.
+            If "ignore", no mesh check is perfomed.
+
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
 
@@ -737,6 +852,11 @@ class TriangularMesh(BaseMagnet):
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
+            If "ignore", no mesh check is perfomed.
+
+        check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
+            If the mesh is self-intersecting and "warn", a warning is issued.
+            If the mesh is self-intersecting and "raise", a ValueError is raised.
             If "ignore", no mesh check is perfomed.
 
         parent: `Collection` object or `None`

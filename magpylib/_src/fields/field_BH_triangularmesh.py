@@ -5,6 +5,7 @@ Computation details in function docstrings.
 # pylint: disable=too-many-nested-blocks
 # pylance: disable=Code is unreachable
 import numpy as np
+import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
 
@@ -163,7 +164,7 @@ def is_facet_inwards(face, faces):
     orient /= np.linalg.norm(orient)  # for single facet numpy is fine
 
     # create a check point by displacing the facet center in facet orientation direction
-    eps = 1e-6  # unfortunately this must be quite a 'large' number :(
+    eps = 1e-5  # unfortunately this must be quite a 'large' number :(
     check_point = face.mean(axis=0) + orient * eps
 
     # find out if first point is inwards
@@ -360,6 +361,100 @@ def lines_end_in_trimesh(lines: np.ndarray, faces: np.ndarray) -> np.ndarray:
     inside2 = np.any(result_touch, axis=1)
 
     return inside1 | inside2
+
+
+def segments_intersect_facets(segments, facets, eps=1e-6):
+    """Pair-wise detect if set of segments intersect set of facets.
+
+    Parameters
+    -----------
+    segments: np.ndarray, shape (n,3,3)
+        Set of segments.
+
+    facets: np.ndarray, shape (n,3,3)
+        Set of facets.
+
+    eps: float
+        Point to point tolerance detection. Must be strictly positive,
+        otherwise some triangles may be detected as intersecting themselves.
+    """
+    if eps <= 0:  # pragma: no cover
+        raise ValueError("eps must be stricly positive")
+
+    s, t = segments.swapaxes(0, 1), facets.swapaxes(0, 1)
+
+    # compute the normals to each triangle
+    normals = np.cross(t[2] - t[0], t[2] - t[1])
+    normals /= np.linalg.norm(normals, axis=1, keepdims=True)
+
+    # get sign of each segment endpoint, if the sign changes then we know this
+    # segment crosses the plane which contains a triangle. If the value is zero
+    # the endpoint of the segment lies on the plane.
+    g1 = np.sum(normals * (s[0] - t[2]), axis=1)
+    g2 = np.sum(normals * (s[1] - t[2]), axis=1)
+
+    # determine segments which cross the plane of a triangle.
+    #  -> 1 if the sign of the end points of s is
+    # different AND one of end points of s is not a vertex of t
+    cross = (np.sign(g1) != np.sign(g2)) * (np.abs(g1) > eps) * (np.abs(g2) > eps)
+
+    v = []  # get signed volumes
+    for i, j in zip((0, 1, 2), (1, 2, 0)):
+        sv = np.sum((t[i] - s[1]) * np.cross(t[j] - s[1], s[0] - s[1]), axis=1)
+        v.append(np.sign(sv))
+
+    # same volume if s and t have same sign in v0, v1 and v2
+    same_volume = np.logical_and((v[0] == v[1]), (v[1] == v[2]))
+
+    return cross * same_volume
+
+
+def get_intersecting_triangles(vertices, triangles, r=None, r_factor=1.5, eps=1e-6):
+    """Return intersecting triangles indices from a triangular mesh described
+    by vertices and triangles indices.
+
+    Parameters
+    ----------
+    vertices: np.ndarray, shape (n,3)
+        Vertices/points of the mesh.
+
+    triangles: np.ndarray, shape (n,3), dtype int
+        Triples of vertices indices that build each triangle of the mesh.
+
+    r: float or None
+        The radius of the ball-point query for the k-d tree. If None:
+        r=max_distance_between_center_and_vertices*2
+
+    r_factor: float
+        The factor by which to multiply the radius `r` of the ball-point query.
+        Note that increasing this value will drastically augment computation
+        time.
+
+    eps: float
+        Point to point tolerance detection. Must be strictly positive,
+        otherwise some triangles may be detected as intersecting themselves.
+    """
+    if r_factor < 1:  # pragma: no cover
+        raise ValueError("r_factor must be greater or equal to 1")
+
+    vertices = vertices.astype(np.float32)
+    facets = vertices[triangles]
+    centers = np.mean(facets, axis=1)
+
+    if r is None:
+        r = r_factor * np.sqrt(((facets - centers[:, None, :]) ** 2).sum(-1)).max()
+
+    kdtree = scipy.spatial.KDTree(centers)
+    near = kdtree.query_ball_point(centers, r, return_sorted=False, workers=-1)
+    tria1 = np.concatenate(near)
+    tria2 = np.repeat(np.arange(len(near)), [len(n) for n in near])
+    pairs = np.stack([tria1, tria2], axis=1)
+    pairs = pairs[pairs[:, 0] != pairs[:, 1]]  # remove check against itself
+    f1, f2 = facets[pairs[:, 0]], facets[pairs[:, 1]]
+    sums = 0
+    for inds in [[0, 1], [1, 2], [2, 0]]:
+        sums += segments_intersect_facets(f1[:, inds], f2, eps=eps)
+    return np.unique(pairs[sums > 0])
 
 
 def mask_inside_enclosing_box(points: np.ndarray, vertices: np.ndarray) -> np.ndarray:

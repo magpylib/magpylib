@@ -4,18 +4,18 @@
 # pylint: disable=cyclic-import
 import numpy as np
 
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 
 
 def get_families(obj):
-    "get obj families"
+    """get obj families"""
     # pylint: disable=import-outside-toplevel
     # pylint: disable=possibly-unused-variable
     # pylint: disable=redefined-outer-name
@@ -77,8 +77,7 @@ def get_style(obj, default_settings, **kwargs):
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
-    obj_style = getattr(obj, "style", None)
-    style = obj_style.copy() if obj_style is not None else BaseStyle()
+    style = obj.style.copy()
     style_kwargs_specific = {
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
@@ -86,6 +85,63 @@ def get_style(obj, default_settings, **kwargs):
     style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
 
     return style
+
+
+class Line(MagicProperties):
+    """Defines line styling properties.
+
+    Parameters
+    ----------
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    def __init__(self, style=None, color=None, width=None, **kwargs):
+        super().__init__(style=style, color=color, width=width, **kwargs)
+
+    @property
+    def style(self):
+        """Line style."""
+        return self._style
+
+    @style.setter
+    def style(self, val):
+        assert val is None or val in ALLOWED_LINESTYLES, (
+            f"The `style` property of {type(self).__name__} must be one of "
+            f"{ALLOWED_LINESTYLES},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._style = val
+
+    @property
+    def color(self):
+        """Line color."""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val)
+
+    @property
+    def width(self):
+        """Positive number that defines the line width."""
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._width = val
 
 
 class BaseStyle(MagicProperties):
@@ -152,9 +208,12 @@ class BaseStyle(MagicProperties):
 
     @description.setter
     def description(self, val):
-        self._description = validate_property_class(
-            val, "description", Description, self
-        )
+        if isinstance(val, str):
+            self._description = Description(text=val)
+        else:
+            self._description = validate_property_class(
+                val, "description", Description, self
+            )
 
     @property
     def color(self):
@@ -568,13 +627,12 @@ class Magnetization(MagicProperties):
     show : bool, default=None
         If True show magnetization direction.
 
-    size: float, default=None
-        Arrow size of the magnetization direction (for the matplotlib backend)
-        only applies if `show=True`.
-
     color: dict or MagnetizationColor object, default=None
         Color properties showing the magnetization direction (for the plotly backend).
         Only applies if `show=True`.
+
+    arrow: dict or Arrow object, default=None,
+        Arrow properties. Only applies if mode='arrow'.
 
     mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
@@ -600,16 +658,13 @@ class Magnetization(MagicProperties):
 
     @property
     def size(self):
-        """Positive float for ratio of arrow size to magnet size."""
-        return self._size
+        """Deprecated (please use arrow.size): Arrow size property."""
+        return self.arrow.size
 
     @size.setter
     def size(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._size = val
+        if val is not None:
+            self.arrow.size = val
 
     @property
     def color(self):
@@ -621,6 +676,15 @@ class Magnetization(MagicProperties):
     @color.setter
     def color(self, val):
         self._color = validate_property_class(val, "color", MagnetizationColor, self)
+
+    @property
+    def arrow(self):
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
+        return self._arrow
+
+    @arrow.setter
+    def arrow(self, val):
+        self._arrow = validate_property_class(val, "magnetization", Arrow, self)
 
     @property
     def mode(self):
@@ -946,6 +1010,24 @@ class DisconnectedMesh(MagicProperties, MarkerLineProperties):
         self._colorsequence = val
 
 
+class SelfIntersectingMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of SelfIntersectingMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
 class TriMesh(MagicProperties):
     """Defines TriMesh mesh properties.
 
@@ -959,6 +1041,9 @@ class TriMesh(MagicProperties):
 
     disconnected: dict or DisconnectedMesh, default=None
         Shows disconnected bodies of a TriangularMesh object, if any.
+
+    selfintersecting: dict or SelfIntersectingMesh, default=None
+        Shows self-intersecting triangles of a TriangularMesh object, if any.
     """
 
     @property
@@ -994,6 +1079,19 @@ class TriMesh(MagicProperties):
     def disconnected(self, val):
         self._disconnected = validate_property_class(
             val, "disconnected", DisconnectedMesh, self
+        )
+
+    @property
+    def selfintersecting(self):
+        """`SelfIntersectingMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._selfintersecting
+
+    @selfintersecting.setter
+    def selfintersecting(self, val):
+        self._selfintersecting = validate_property_class(
+            val, "selfintersecting", SelfIntersectingMesh, self
         )
 
 
@@ -1502,9 +1600,9 @@ class Pixel(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
@@ -1516,17 +1614,29 @@ class CurrentProperties:
     Parameters
     ----------
     arrow: dict or `Arrow` object, default=None
-        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
+        `Arrow` object or dict with `show, size, width, style, color` properties/keys.
+
+    line: dict or `Line` object, default=None
+        `Line` object or dict with `show, width, style, color` properties/keys.
     """
 
     @property
     def arrow(self):
-        """`Arrow` object or dict with `'show'`, `'size'` properties/keys."""
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
         return self._arrow
 
     @arrow.setter
     def arrow(self, val):
         self._arrow = validate_property_class(val, "current", Arrow, self)
+
+    @property
+    def line(self):
+        """`Line` object or dict with `show, width, style, color` properties/keys."""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", CurrentLine, self)
 
 
 class DefaultCurrent(MagicProperties, CurrentProperties):
@@ -1577,20 +1687,39 @@ class CurrentStyle(BaseStyle, CurrentProperties):
         super().__init__(**kwargs)
 
 
-class Arrow(MagicProperties):
+class Arrow(Line):
     """Defines styling properties of current arrows.
 
     Parameters
     ----------
     show: bool, default=None
-        If True current direction is shown with an arrow.
+        Show/Hide arrow
 
     size: float, default=None
-        Positive number defining the size of the arrows.
+        Positive number defining the size of the arrows. Effective value depends on the
+        `sizemode` parameter.
+
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the arrow size. If 'absolute', the `size` parameters
+        becomes the arrow length in millimeters.
+
+    offset: float, default=0.5
+        Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
 
     width: float, default=None
-        Positive number that defines the arrow line width.
+        Positive number that defines the line width.
     """
+
+    _allowed_sizemodes = ("scaled", "absolute")
 
     def __init__(self, show=None, size=None, **kwargs):
         super().__init__(show=show, size=size, **kwargs)
@@ -1622,17 +1751,66 @@ class Arrow(MagicProperties):
         self._size = val
 
     @property
-    def width(self):
-        """Positive number that defines the arrow line width."""
-        return self._width
+    def sizemode(self):
+        """Positive number defining the sizemode of the arrows."""
+        return self._sizemode
 
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in self._allowed_sizemodes, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{self._allowed_sizemodes},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
+
+    @property
+    def offset(self):
+        """Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+        """
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        assert val is None or (isinstance(val, (float, int))) and 0 <= val <= 1, (
+            "The `offset` property must valid number between 0 and 1\n"
             f"but received {repr(val)} instead."
         )
-        self._width = val
+        self._offset = val
+
+
+class CurrentLine(Line):
+    """Defines styling properties of current lines.
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/Hide arrow
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    @property
+    def show(self):
+        """Show/hide current line."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
 
 
 class Marker(MagicProperties):
@@ -1680,9 +1858,9 @@ class Marker(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
@@ -1888,63 +2066,6 @@ but received {repr(val)} instead"""
             f"but received {repr(val)} instead."
         )
         self._numbering = val
-
-
-class Line(MagicProperties):
-    """Defines line styling properties.
-
-    Parameters
-    ----------
-    style: str, default=None
-        Can be one of:
-        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
-        'loosely dotted', 'loosely dashdotted']`
-
-    color: str, default=None
-        Line color.
-
-    width: float, default=None
-        Positive number that defines the line width.
-    """
-
-    def __init__(self, style=None, color=None, width=None, **kwargs):
-        super().__init__(style=style, color=color, width=width, **kwargs)
-
-    @property
-    def style(self):
-        """Line style."""
-        return self._style
-
-    @style.setter
-    def style(self, val):
-        assert val is None or val in LINESTYLES_MATPLOTLIB_TO_PLOTLY, (
-            f"The `style` property of {type(self).__name__} must be one of "
-            f"{list(LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())},\n"
-            f"but received {repr(val)} instead."
-        )
-        self._style = val
-
-    @property
-    def color(self):
-        """Line color."""
-        return self._color
-
-    @color.setter
-    def color(self, val):
-        self._color = color_validator(val)
-
-    @property
-    def width(self):
-        """Positive number that defines the line width."""
-        return self._width
-
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._width = val
 
 
 class DisplayStyle(MagicProperties):

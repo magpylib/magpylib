@@ -1,13 +1,18 @@
 import re
+from unittest.mock import patch
 
-import matplotlib
+import matplotlib  # noreorder
+
+matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 import matplotlib.tri as mtri
 import numpy as np
 import pytest
 import pyvista as pv
+from matplotlib.figure import Figure as mplFig
 
 import magpylib as magpy
+from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
 from magpylib.magnet import Cuboid
 from magpylib.magnet import Cylinder
@@ -24,9 +29,16 @@ def test_Cuboid_display():
     """testing display"""
     src = Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
-    src.show(style_path_frames=5, return_fig=True)
+    src.show(
+        style_path_frames=5,
+        style_magnetization_arrow_sizemode="absolute",
+        style_magnetization_arrow_color="cyan",
+        style_magnetization_arrow_style="dashed",
+        style_magnetization_arrow_width=3,
+        return_fig=True,
+    )
 
-    with plt.ion():
+    with patch("matplotlib.pyplot.show"):
         x = src.show(style_path_show=False, style_magnetization_mode="color+arrow")
     assert x is None  # only place where return_fig=False, for testcov
 
@@ -179,7 +191,15 @@ def test_TringularMesh_display():
     src = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(1000, 0, 0), points=points
     )
-    src.show(backend="matplotlib", style_description_show=False, return_fig=True)
+    src.show(
+        backend="matplotlib",
+        style_description_show=False,
+        style_mesh_open_show=True,
+        style_mesh_disconnected_show=True,
+        style_mesh_selfintersecting_show=True,
+        style_orientation_show=True,
+        return_fig=True,
+    )
 
     # test display of disconnected and open mesh elements
     polydata = pv.Text3D("AB")  # create disconnected mesh
@@ -200,6 +220,7 @@ def test_TringularMesh_display():
     src.show(
         style_mesh_open_show=True,
         style_mesh_disconnected_show=True,
+        style_orientation_show=True,
         style_magnetization_mode="color+arrow",
         backend="matplotlib",
         return_fig=True,
@@ -229,6 +250,40 @@ def test_TringularMesh_display():
             r"Unchecked disconnected mesh status in .* detected", str(record[2].message)
         )
         assert re.match(r"Disconnected mesh detected in .*.", str(record[3].message))
+
+    # test self-intersecting display
+    selfintersecting_mesh3d = {
+        "x": [-1.0, -1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, 0.0],
+        "y": [-1.0, 1.0, 1.0, -1.0, -1.0, 1.0, 1.0, -1.0, 0.0],
+        "z": [-1.0, -1.0, -1.0, -1.0, 1.0, 1.0, 1.0, 1.0, -2.0],
+        "i": [7, 0, 0, 0, 2, 6, 4, 0, 3, 7, 4, 5, 6, 7],
+        "j": [0, 7, 1, 2, 1, 2, 5, 5, 2, 2, 5, 6, 7, 4],
+        "k": [3, 4, 2, 3, 5, 5, 0, 1, 7, 6, 8, 8, 8, 8],
+    }
+    vertices = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "xyz"]).T
+    faces = np.array([v for k, v in selfintersecting_mesh3d.items() if k in "ijk"]).T
+    with pytest.warns(UserWarning) as record:
+        magpy.magnet.TriangularMesh(
+            (0, 0, 1000),
+            vertices=vertices,
+            faces=faces,
+            check_open="warn",
+            check_disconnected="warn",
+            check_selfintersecting="skip",
+            reorient_faces=True,
+        ).show(
+            style_mesh_selfintersecting_show=True,
+            backend="matplotlib",
+            return_fig=True,
+        )
+        assert len(record) == 2
+        assert re.match(
+            r"Unchecked selfintersecting mesh status in .* detected",
+            str(record[0].message),
+        )
+        assert re.match(
+            r"Self-intersecting mesh detected in .*.", str(record[1].message)
+        )
 
 
 def test_col_display():
@@ -264,8 +319,10 @@ def test_circular_line_display():
     src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
-    src2.show(canvas=ax2, return_fig=True)
-    src3.show(canvas=ax2, style_arrow_size=0, return_fig=True)
+    src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
+    src3.show(
+        canvas=ax2, style_arrow_sizemode="absolute", style_arrow_size=0, return_fig=True
+    )
     src4.show(canvas=ax2, style_path_frames=2, return_fig=True)
 
 
@@ -401,3 +458,150 @@ def test_mpl_animation():
     anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
+
+
+def test_subplots():
+    """test subplots"""
+    sensor = magpy.Sensor(
+        pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
+    )
+    sensor.style.label = "Sensor1"
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+
+    # define paths
+    sensor.position = np.linspace((0, 0, -3), (0, 0, 3), 100)
+    cyl1.position = (4, 0, 0)
+    cyl1.rotate_from_angax(angle=np.linspace(0, 300, 100), start=0, axis="z", anchor=0)
+    cyl2 = cyl1.copy().move((0, 0, 5))
+    objs = cyl1, cyl2, sensor
+
+    # with implicit axes
+    fig = plt.figure(figsize=(20, 4))
+    with magpy.show_context(
+        backend="matplotlib", canvas=fig, animation=False, sumup=True, pixel_agg="mean"
+    ) as s:
+        s.show(*objs, col=1, output=("Bx", "By", "Bz"))  # from context
+        magpy.show(cyl1, col=2)  # directly
+        magpy.show({"objects": [cyl1, cyl2], "col": 3})  # as dict
+
+    # with given axes in figure
+    fig = plt.figure(figsize=(20, 4))
+    fig.add_subplot(121, projection="3d")
+    magpy.show(cyl1, col=2, canvas=fig)
+
+
+def test_bad_show_inputs():
+    """bad show inputs"""
+
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+
+    # test bad canvas
+    with pytest.raises(TypeError, match=r"The `canvas` parameter must be one of .*"):
+        magpy.show(cyl1, canvas="bad_canvas_input", backend="matplotlib")
+
+    # test bad axes canvas with rows
+    fig = plt.figure(figsize=(20, 4))
+    ax = fig.add_subplot(131, projection="3d")
+    with pytest.raises(
+        ValueError,
+        match=(
+            r"Provided canvas is an instance of `matplotlib.axes.Axes` "
+            r"and does not support `rows`.*"
+        ),
+    ):
+        magpy.show(cyl1, canvas=ax, col=2, backend="matplotlib")
+
+    # test conflicting output types
+    sensor = magpy.Sensor(
+        pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
+    )
+    cyl1 = magpy.magnet.Cylinder(
+        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+    )
+    with pytest.raises(
+        ValueError,
+        match=r"Row/Col .* received conflicting output types.*",
+    ):
+        with magpy.show_context(animation=False, sumup=True, pixel_agg="mean") as s:
+            s.show(cyl1, sensor, col=1, output="Bx")
+            s.show(cyl1, sensor, col=1)
+
+    # test unsupported specific args for some backends
+    with pytest.warns(
+        UserWarning,
+        match=r"The 'plotly' backend does not support 'animation_output'.*",
+    ):
+        sensor = magpy.Sensor(
+            position=np.linspace((0, 0, -0.2), (0, 0, 0.2), 200), style_size=1.5
+        )
+        magpy.show(
+            sensor,
+            backend="plotly",
+            col=1,
+            animation=True,
+            animation_output="gif",
+            return_fig=True,
+        )
+
+
+def test_show_context_reset():
+    """show context reset"""
+    ctx.reset(reset_show_return_value=True)
+    with magpy.show_context(backend="matplotlib") as s:
+        assert s.show_return_value is None
+        s.show(magpy.Sensor(), return_fig=True)
+    assert isinstance(s.show_return_value, mplFig)
+
+
+def test_unset_excitations():
+    """test show if mag, curr or mom are not set"""
+
+    objs = [
+        magpy.magnet.Cuboid(dimension=(1, 1, 1)),
+        magpy.magnet.Cylinder(dimension=(1, 1)),
+        magpy.magnet.CylinderSegment(dimension=(0, 1, 1, 45, 120)),
+        magpy.magnet.Tetrahedron(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]),
+        magpy.magnet.TriangularMesh(
+            vertices=((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+            faces=((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
+        ),
+        magpy.magnet.Sphere(diameter=1),
+        magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
+        magpy.misc.Dipole(),
+        magpy.current.Line(vertices=[[0, -1, 0], [0, 1, 0]]),
+        magpy.current.Loop(diameter=1, current=0),
+    ]
+    for i, o in enumerate(objs):
+        o.move((i * 1.5, 0, 0))
+    magpy.show(
+        *objs,
+        style_magnetization_mode="color+arrow",
+        return_fig=True,
+    )
+
+
+def test_unset_objs():
+    """test completely unset objects"""
+    objs = [
+        magpy.magnet.Cuboid(),
+        magpy.magnet.Cylinder(),
+        magpy.magnet.CylinderSegment(),
+        magpy.magnet.Sphere(),
+        magpy.magnet.Tetrahedron(),
+        # magpy.magnet.TriangularMesh(), not possible yet
+        magpy.misc.Triangle(),
+        magpy.misc.Dipole(),
+        magpy.current.Line(),
+        magpy.current.Loop(),
+    ]
+
+    for i, o in enumerate(objs):
+        o.move((1.5 * i, 0, 0))
+    magpy.show(
+        *objs,
+        return_fig=True,
+    )

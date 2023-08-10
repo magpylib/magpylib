@@ -1,7 +1,7 @@
 """Magnet Tetrahedron class code"""
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_Tetrahedron
+from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -91,7 +91,7 @@ class Tetrahedron(BaseMagnet):
 
     _field_func = staticmethod(magnet_tetrahedron_field)
     _field_func_kwargs_ndim = {"magnetization": 1, "vertices": 3}
-    _draw_func = make_Tetrahedron
+    get_trace = make_Tetrahedron
 
     def __init__(
         self,
@@ -141,6 +141,8 @@ class Tetrahedron(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = np.mean(vertices, axis=0)
+        centroid = (
+            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter

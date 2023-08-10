@@ -9,6 +9,7 @@ DEFAULTS = {
             "maxframes": 200,
             "time": 5,
             "slider": True,
+            "output": None,
         },
         "backend": "auto",
         "colorsequence": (
@@ -17,7 +18,6 @@ DEFAULTS = {
             "#1CA71C",
             "#FB0D0D",
             "#DA16FF",
-            "#222A2A",
             "#B68100",
             "#750D86",
             "#EB663B",
@@ -36,12 +36,13 @@ DEFAULTS = {
             "#6C4516",
             "#0D2A63",
             "#AF0038",
+            "#222A2A",
         ),
         "style": {
             "base": {
                 "path": {
                     "line": {"width": 1, "style": "solid", "color": None},
-                    "marker": {"size": 2, "symbol": "o", "color": None},
+                    "marker": {"size": 3, "symbol": "o", "color": None},
                     "show": True,
                     "frames": None,
                     "numbering": False,
@@ -54,7 +55,15 @@ DEFAULTS = {
             "magnet": {
                 "magnetization": {
                     "show": True,
-                    "size": 1,
+                    "arrow": {
+                        "show": True,
+                        "size": 1,
+                        "sizemode": "scaled",
+                        "offset": 1,
+                        "width": 2,
+                        "style": "solid",
+                        "color": None,
+                    },
                     "color": {
                         "north": "#E71111",
                         "middle": "#DDDDDD",
@@ -65,7 +74,18 @@ DEFAULTS = {
                     "mode": "auto",
                 }
             },
-            "current": {"arrow": {"show": True, "size": 1, "width": 2}},
+            "current": {
+                "arrow": {
+                    "show": True,
+                    "size": 1,
+                    "sizemode": "scaled",
+                    "offset": 0.5,
+                    "width": 1,
+                    "style": "solid",
+                    "color": None,
+                },
+                "line": {"show": True, "width": 2, "style": "solid", "color": None},
+            },
             "sensor": {
                 "size": 1,
                 "pixel": {"size": 1, "color": None, "symbol": "o"},
@@ -128,6 +148,11 @@ DEFAULTS = {
                             "magenta",
                             "yellow",
                         ),
+                    },
+                    "selfintersecting": {
+                        "show": False,
+                        "line": {"width": 2, "style": "solid", "color": "magenta"},
+                        "marker": {"size": 1, "symbol": "o", "color": "black"},
                     },
                 },
             },

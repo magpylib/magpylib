@@ -3,6 +3,10 @@ All notable changes to magpylib are documented here.
 
 # Releases
 
+## [4.4.0] 
+- include self-intersection check in `TriangularMesh` ([#589](https://github.com/magpylib/magpylib/issues/589)).
+- disconnected line
+
 ## [4.3.0] - 2023-06-25
 - New `TriangularMesh` magnet class added to conveniently work with triangular surface meshes instead of large collections of individual `Triangle` objects. The `TriangularMesh` class performs important checks (closed, connected, oriented) and can directly import pyvista objects and for convex hull bodies. ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
 - Added magnetization coloring for `matplotlib` backend ([#597](https://github.com/magpylib/magpylib/pull/597))
@@ -15,7 +19,7 @@ All notable changes to magpylib are documented here.
 - Change pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
-- Add `magnetization.mode` style to allow showing magnetization direction for any backend [#576](https://github.com/magpylib/magpylib/pull/576))
+- Add `magnetization.mode` style to allow showing magnetization direction for any backend ([#576](https://github.com/magpylib/magpylib/pull/576))
 - Documentation changes:
     - Correct conda install command
     - Integration of Triangle and Tetrahedron
@@ -219,7 +223,7 @@ This is a major update that includes
 - Renamed attributes (parameters cannot be initialized in their short forms anymore):
     - `angle` and `axis` are replaced by `orientation`
     - `dimension` is replaced by `diameter` for Loop and Sphere classes.
-    - `angle`&`axis` are replaced by `orientation` (see [Added](#Added) Section)
+    - `angle`&`axis` are replaced by `orientation` (see [Added](### Added) Section)
 
 - Modified rotate methods:
   - The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(rotation, anchor, increment, start)` method where `rotation` ist a scipy `Rotation` object.

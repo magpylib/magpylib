@@ -1,7 +1,7 @@
 """Magnet Cylinder class code"""
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_CylinderSegment
+from magpylib._src.display.traces_core import make_CylinderSegment
 from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
 )
@@ -93,7 +93,7 @@ class CylinderSegment(BaseMagnet):
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_CylinderSegment
+    get_trace = make_CylinderSegment
 
     def __init__(
         self,
@@ -142,15 +142,23 @@ class CylinderSegment(BaseMagnet):
         Input checks should make sure:
             -360 < phi1 < phi2 < 360 and 0 < r1 < r2
         """
-        r1, r2, _, phi1, phi2 = dimension
-        alpha = np.deg2rad((phi2 - phi1) / 2)
-        phi = np.deg2rad((phi1 + phi2) / 2)
-        # get centroid x for unrotated annular sector
-        centroid_x = (
-            2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
-        )
-        # get centroid for rotated annular sector
-        x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
-        centroid = np.array([x, y, z])
+        if dimension is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            r1, r2, _, phi1, phi2 = dimension
+            alpha = np.deg2rad((phi2 - phi1) / 2)
+            phi = np.deg2rad((phi1 + phi2) / 2)
+            # get centroid x for unrotated annular sector
+            centroid_x = (
+                2
+                / 3
+                * np.sin(alpha)
+                / alpha
+                * (r2**3 - r1**3)
+                / (r2**2 - r1**2)
+            )
+            # get centroid for rotated annular sector
+            x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
+            centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter

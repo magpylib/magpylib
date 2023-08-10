@@ -2,9 +2,9 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.defaults.defaults_classes import DefaultConfig
-from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.style import DisplayStyle
 
 
@@ -15,6 +15,7 @@ bad_inputs = {
     "display_animation_time": (0,),  # int>0
     "display_animation_maxframes": (0,),  # int>0
     "display_animation_slider": ("notbool"),  # bool
+    "display_animation_output": ("filename.badext", "badext"),  # bool
     "display_backend": ("plotty",),  # str typo
     "display_colorsequence": (["#2E91E5", "wrongcolor"], 123),  # iterable of colors
     "display_style_base_path_line_width": (-1,),  # float>=0
@@ -34,7 +35,7 @@ bad_inputs = {
     "display_style_base_model3d_showdefault": ("notbool",),
     "display_style_base_color": ("wrongcolor",),  # color
     "display_style_magnet_magnetization_show": ("notbool",),
-    "display_style_magnet_magnetization_size": (-1,),  # float>=0
+    "display_style_magnet_magnetization_arrow_size": (-1,),  # float>=0
     "display_style_magnet_magnetization_color_north": ("wrongcolor",),
     "display_style_magnet_magnetization_color_middle": ("wrongcolor",),
     "display_style_magnet_magnetization_color_south": ("wrongcolor",),
@@ -109,16 +110,17 @@ good_inputs = {
     "display_animation_time": (10,),  # int>0
     "display_animation_maxframes": (200,),  # int>0
     "display_animation_slider": (True, False),  # bool
+    "display_animation_output": ("filename.mp4", "gif"),  # bool
     "display_backend": ["auto", *SUPPORTED_PLOTTING_BACKENDS],  # str typo
     "display_colorsequence": (
         ("#2e91e5", "#0d2a63"),
         ("blue", "red"),
     ),  # ]),  # iterable of colors
     "display_style_base_path_line_width": (0, 1),  # float>=0
-    "display_style_base_path_line_style": LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_line_style": ALLOWED_LINESTYLES,
     "display_style_base_path_line_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_marker_size": (0, 1),  # float>=0
-    "display_style_base_path_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_base_path_marker_symbol": ALLOWED_SYMBOLS,
     "display_style_base_path_marker_color": ("blue", "#2E91E5"),  # color
     "display_style_base_path_show": (True, False),  # bool
     "display_style_base_path_frames": (-1, (1, 3)),  # int or iterable
@@ -158,7 +160,7 @@ good_inputs = {
     "display_style_sensor_arrows_z_show": (True, False),
     "display_style_sensor_pixel_size": (0, 1),  # float>=0
     "display_style_sensor_pixel_color": ("blue", "#2E91E5"),
-    "display_style_sensor_pixel_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_sensor_pixel_symbol": ALLOWED_SYMBOLS,
     "display_style_dipole_size": (0, 1),  # float>=0
     "display_style_dipole_pivot": (
         "middle",
@@ -172,7 +174,7 @@ good_inputs = {
     "display_style_triangle_orientation_symbol": ("cone", "arrow3d"),
     "display_style_markers_marker_size": (0, 1),  # float>=0
     "display_style_markers_marker_color": ("blue", "#2E91E5"),
-    "display_style_markers_marker_symbol": SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys(),
+    "display_style_markers_marker_symbol": ALLOWED_SYMBOLS,
 }
 
 
@@ -206,7 +208,6 @@ def test_defaults_good_inputs(key, value, expected):
     "style_class",
     [
         "base",
-        "base_description",
         "base_model3d",
         "base_path",
         "base_path_line",
@@ -240,9 +241,11 @@ def test_bad_default_classes():
         magpy.defaults.display.style = "wrong input"
 
 
-# def test_resetting_defaults():
-#     """test setting and resetting the config"""
-#     magpy.defaults.checkinputs = False
-#     assert magpy.defaults.checkinputs is False, "setting config failed"
-#     magpy.defaults.reset()
-#     assert magpy.defaults.checkinputs is True, "resetting config failed"
+def test_bad_deferred_style():
+    """test error raise on deferred style attribution"""
+    c = magpy.magnet.Cuboid(style_badstyle="ASDF")
+    with pytest.raises(
+        AttributeError,
+        match=r".* has been initialized with some invalid style arguments.*",
+    ):
+        magpy.show(c)  # style property gets called, style kwargs applied
