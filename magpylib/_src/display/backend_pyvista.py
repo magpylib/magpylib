@@ -247,7 +247,6 @@ def display_pyvista(
         )
 
     charts = {}
-    print(jupyter_backend)
     jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
