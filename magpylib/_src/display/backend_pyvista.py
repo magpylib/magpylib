@@ -214,19 +214,25 @@ def display_pyvista(
     data,
     canvas=None,
     return_fig=False,
-    window_size=None,
     jupyter_backend=None,
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
     repeat=False,
     legend_max_items=20,
+    fig_kwargs=None,
+    show_kwargs=None,
     mp4_quality=5,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the pyvista library."""
 
     frames = data["frames"]
+
+    fig_kwargs = {} if not fig_kwargs else fig_kwargs
+    show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {**show_kwargs}
+
     animation = bool(len(frames) > 1)
     max_rows = max_rows if max_rows is not None else 1
     max_cols = max_cols if max_cols is not None else 1
@@ -237,10 +243,12 @@ def display_pyvista(
         canvas = pv.Plotter(
             shape=(max_rows, max_cols),
             off_screen=animation,
-            window_size=window_size,
+            **fig_kwargs,
         )
 
     charts = {}
+    print(jupyter_backend)
+    jupyter_backend = show_kwargs.pop("jupyter_backend", jupyter_backend)
     if jupyter_backend is None:
         jupyter_backend = pv.global_theme.jupyter_backend
     jupyter_backend_2D_compatible = (
@@ -333,5 +341,5 @@ def display_pyvista(
     if return_fig and not show_canvas:
         return canvas
     if show_canvas:
-        canvas.show(jupyter_backend=jupyter_backend)  # pragma: no cover
+        canvas.show(jupyter_backend=jupyter_backend, **show_kwargs)  # pragma: no cover
     return None

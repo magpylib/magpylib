@@ -207,15 +207,20 @@ def display_matplotlib(
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
-    dpi=80,
-    figsize=None,
     antialiased=True,
     legend_max_items=20,
+    fig_kwargs=None,
+    show_kwargs=None,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the matplotlib library."""
     frames = data["frames"]
     ranges = data["ranges"]
+
+    fig_kwargs = {} if not fig_kwargs else fig_kwargs
+    fig_kwargs = {"dpi": 80, **fig_kwargs}
+    show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {**show_kwargs}
 
     for fr in frames:
         new_data = []
@@ -229,13 +234,13 @@ def display_matplotlib(
     axes = {}
     if canvas is None:
         show_canvas = True
-        if figsize is None:
+        if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
             if legend_max_items != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
-            figsize = (figsize[0] * ratio, figsize[1])
-        fig = plt.figure(dpi=dpi, figsize=figsize)
+            fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+        fig = plt.figure(**fig_kwargs)
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
@@ -351,7 +356,7 @@ def display_matplotlib(
         show_canvas = False
         out += (anim,)
     if show_canvas:
-        plt.show()
+        plt.show(**show_kwargs)
 
     if out:
         return out[0] if len(out) == 1 else out

@@ -303,9 +303,16 @@ def display_plotly(
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
+    fig_kwargs=None,
+    show_kwargs=None,
     **kwargs,
 ):
     """Display objects and paths graphically using the plotly library."""
+
+    fig_kwargs = {} if not fig_kwargs else fig_kwargs
+    show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {"renderer": renderer, **show_kwargs}
+
     fig = canvas
     show_fig = False
     extra_data = False
@@ -326,7 +333,6 @@ def display_plotly(
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
 
-    layout, kwargs = extract_layout_kwargs(kwargs)
     frames = data["frames"]
     for fr in frames:
         new_data = []
@@ -372,10 +378,10 @@ def display_plotly(
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",
             )
-        fig.update_layout(layout)
+        fig.update(fig_kwargs)
 
     if return_fig and not show_fig:
         return fig
     if show_fig:
-        fig.show(renderer=renderer)
+        fig.show(**show_kwargs)
     return None
