@@ -97,7 +97,7 @@ def update_magnet_mesh(
             color_south=mag_color.south,
         )
         if color_slicing:
-            if np.all(magnetization) == 0:
+            if np.all(magnetization == 0):
                 mesh_dict["color"] = mag_color.middle
             else:
                 tr = slice_mesh_from_colorscale(mesh_dict, magnetization, cs)

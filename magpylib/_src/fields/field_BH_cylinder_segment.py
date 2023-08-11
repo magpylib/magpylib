@@ -39,7 +39,7 @@ def close(arg1: np.ndarray, arg2: np.ndarray) -> np.ndarray:
     input: ndarray, shape (n,) or numpy-interpretable scalar
     output: ndarray, dtype=bool
     """
-    return np.isclose(arg1, arg2, rtol=1e-14, atol=1e-14)
+    return np.isclose(arg1, arg2, rtol=1e-12, atol=1e-12)
 
 
 def determine_cases(r, phi, z, r1, phi1, z1):
