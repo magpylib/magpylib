@@ -19,7 +19,7 @@ orphan: true
 
 Once all Magpylib objects and their paths have been created, **`show`** provides a convenient way to graphically display the geometric arrangement using the Matplotlib (default) and Plotly packages. When `show` is called, it generates a new figure which is then automatically displayed.
 
-The desired graphic backend is selected with the `backend` keyword argument. To bring the output to a given, user-defined figure, the `canvas` kwarg is used. This is demonstrated in {ref}`examples-backends-canvas`.
+The desired graphic backend is selected with the `backend` keyword argument. To bring the output to a given, user-defined figure, the `canvas` argument is used. This is demonstrated in {ref}`examples-backends-canvas`.
 
 The following example shows the graphical representation of various Magpylib objects and their paths using the default Matplotlib graphic backend.
 
@@ -195,7 +195,7 @@ for backend in magpy.SUPPORTED_PLOTTING_BACKENDS:
 
 ### Output in custom figure
 
-When calling `show`, a figure is automatically generated and displayed. It is also possible to display the `show` output on a given user-defined canvas with the `canvas` kwarg.
+When calling `show`, a figure is automatically generated and displayed. It is also possible to display the `show` output on a given user-defined canvas with the `canvas` argument.
 
 In the following example we show how to combine a 2D field plot with the 3D `show` output in **Matplotlib**:
 
@@ -424,7 +424,7 @@ magpy.show(cube, cylinder, sphere, backend="plotly")
 
 To facilitate working with deeply nested properties, all style constructors and object style methods support the magic underscore notation. It enables referencing nested properties by joining together multiple property names with underscores. This feature mainly helps reduce the code verbosity and is heavily inspired by the `plotly` implementation (see [plotly underscore notation](https://plotly.com/python/creating-and-updating-figures/#magic-underscore-notation)).
 
-With magic underscore notation, the previous examples can be written as,
+With magic underscore notation, the previous examples can be written as:
 
 ```python
 import magpylib as magpy
@@ -435,7 +435,7 @@ magpy.defaults.display.style.magnet = {
 }
 ```
 
-or directly as named keywords in the `update` method as,
+or directly as named keywords in the `update` method as:
 
 ```python
 import magpylib as magpy
@@ -715,7 +715,7 @@ with magpy.show_context(cyl1, cyl2, sensor):
 with magpy.show_context(cyl1, cyl2, sensor):
     magpy.show(col=1, output="Hxy", sumup=False)
     magpy.show(col=2, output="Byz", sumup=False)
-    
+
 # display field data with context manager , no sumup, no pixel_agg
 with magpy.show_context(cyl1, cyl2, sensor, sumup=False):
     magpy.show(col=1, output="H", pixel_agg=None)
