@@ -305,7 +305,7 @@ def display_plotly(
     subplot_specs=None,
     fig_kwargs=None,
     show_kwargs=None,
-    **kwargs,
+    **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the plotly library."""
 
