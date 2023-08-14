@@ -11,9 +11,9 @@ kernelspec:
   name: python3
 ---
 
-(gallery-ext-complex-shapes-triangle)=
+(gallery-shapes-triangle)=
 
-# Complex shapes with Triangle
+# Triangular Mesh
 
 When multiple Triangles with similar magnetization vector form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field.
 

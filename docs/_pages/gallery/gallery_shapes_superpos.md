@@ -14,7 +14,7 @@ kernelspec:
 
 (gallery-shapes-superpos)=
 
-# With Superposition
+# Superposition
 
 The [superposition principle](https://en.wikipedia.org/wiki/Superposition_principle) states that the net response caused by two or more stimuli is the sum of the responses caused by each stimulus individually. This principle holds in magnetostatics when there is no material response, and simply states that the total field created by multiple magnets and currents is the sum of the individual fields.
 

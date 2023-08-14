@@ -1,6 +1,6 @@
 (gallery)=
 
-# Example Gallery
+# Examples and Tutorials
 
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 
@@ -25,6 +25,22 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_viz_pv_streamlines.png
 :::
 
+:::{grid-item-card} {ref}`gallery-vis-animations`
+:text-align: center
+:link: gallery-vis-animations
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`gallery-vis-subplots`
+:text-align: center
+:link: gallery-vis-subplots
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
 ::::
 
 ## Complex Magnet Shapes
@@ -37,9 +53,43 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link: gallery-shapes-superpos
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_superpos.png
+:img-bottom: ../../_static/images/gallery_icon_shapes_superpos.png
 :::
+
+:::{grid-item-card} {ref}`gallery-shapes-convex-hull`
+:text-align: center
+:link: gallery-shapes-convex-hull
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_shapes_convex_hull.png
+:::
+
+:::{grid-item-card} {ref}`gallery-shapes-pyvista`
+:text-align: center
+:link: gallery-shapes-pyvista
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_shapes_pyvista.png
+:::
+
+:::{grid-item-card} {ref}`gallery-shapes-triangle`
+:text-align: center
+:link: gallery-shapes-triangle
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} {ref}`gallery-shapes-3d-models`
+:text-align: center
+:link: gallery-shapes-3d-models
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
 ::::
+
 
 ## Other
 
@@ -62,32 +112,6 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_ext_field_interpolation.png
 :::
 
-:::{grid-item-card} Complex magnet shapes from Convex Hull
-:text-align: center
-:link: gallery-ext-complex-shapes-convex-hull
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_convex_hull.png
-:::
-
-:::{grid-item-card} Complex magnet shapes with Pyvista
-:text-align: center
-:link: gallery-ext-complex-shapes-pv
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_pv.png
-:::
-
-:::{grid-item-card} Complex magnet shapes with Triangles
-:text-align: center
-:link: gallery-ext-complex-shapes-triangle
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_complex_shapes_triangle.png
-:::
-
-
-
 :::{grid-item-card} Inhomogeneous Magnetizations
 :text-align: center
 :link: gallery-ext-inhomo-mag
@@ -95,7 +119,6 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
-
 
 ::::
 
