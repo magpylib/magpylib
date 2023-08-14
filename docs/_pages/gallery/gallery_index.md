@@ -1,6 +1,6 @@
 (gallery)=
 
-# Examples and Tutorials
+# Example Gallery
 
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
 
