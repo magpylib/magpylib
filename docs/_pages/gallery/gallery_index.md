@@ -1,8 +1,63 @@
 (gallery)=
 
-# Example Gallery
+# Examples and Tutorials
 
 Notice that most examples use  interactive notebooks via [sphinx-thebe](https://sphinx-thebe.readthedocs.io/en/latest/), see 🚀.
+## Tutorials
+
+::::{grid} 3
+:gutter: 5
+
+:::{grid-item-card} {ref}`gallery-tutorial-paths`
+:text-align: center
+:link: gallery-tutorial-paths
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} Sensors
+:text-align: center
+:link: gallery-tutorial-sensors
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} Field Computation
+:text-align: center
+:link: gallery-tutorial-field-computation
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+:::{grid-item-card} Collection
+:text-align: center
+:link: gallery-tutorial-collection
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} Trimesh
+:text-align: center
+:link: galler-tutorial-trimesh
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+:::{grid-item-card} CustomSource
+:text-align: center
+:link: gallery-tutorial-custom
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:::
+
+
+
+::::
 
 ## Visualizations
 
@@ -91,28 +146,28 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 ::::
 
 
-## Other
+## Miscellaneous
 
 ::::{grid} 3
 :gutter: 5
 
-:::{grid-item-card} Compounds: Subclassing Collections
+:::{grid-item-card} {ref}`gallery-misc-compound`
 :text-align: center
-:link: gallery-ext-compound
+:link: gallery-misc-compound
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_compound.png
+:img-bottom: ../../_static/images/gallery_icon_misc_compound.png
 :::
 
-:::{grid-item-card} Interpolation of FE field
+:::{grid-item-card} Interpolation of FE Field
 :text-align: center
 :link: gallery-ext-field-interpolation
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_ext_field_interpolation.png
+:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
-:::{grid-item-card} Inhomogeneous Magnetizations
+:::{grid-item-card} Inhomogeneous Magnetization
 :text-align: center
 :link: gallery-ext-inhomo-mag
 :link-type: ref
@@ -161,57 +216,3 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 
 ::::
 
-## Tutorials
-
-::::{grid} 3
-:gutter: 5
-
-:::{grid-item-card} Collection
-:text-align: center
-:link: gallery-tutorial-collection
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} Trimesh
-:text-align: center
-:link: galler-tutorial-trimesh
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} CustomSource
-:text-align: center
-:link: gallery-tutorial-custom
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} Sensors
-:text-align: center
-:link: gallery-tutorial-sensors
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} Paths
-:text-align: center
-:link: gallery-tutorial-paths
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} Field Computation
-:text-align: center
-:link: gallery-tutorial-field-computation
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-::::

@@ -35,6 +35,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: get-started
 :link-type: ref
 :link-alt: link to Getting Started
@@ -45,16 +46,18 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: gallery
 :link-type: ref
-:link-alt: link to Gallery
+:link-alt: link to Examples
 :img-top: ../../_static/images/index_icon_gallery.png
 :text-align: center
-**Gallery**
+**Examples**
 :::
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: docu-index
 :link-type: ref
 :link-alt: link to Documentation
@@ -65,6 +68,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: contributing
 :link-type: ref
 :link-alt: link to Contribution Guide
@@ -75,6 +79,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: https://github.com/magpylib/magpylib
 :link-alt: link to Github
 :img-top: ../../_static/images/index_icon_github.png
@@ -84,6 +89,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 :::{grid-item-card}
 :columns: 2
+:padding: 1
 :link: https://www.sciencedirect.com/science/article/pii/S2352711020300170
 :link-alt: link to Journal
 :img-top: ../../_static/images/index_icon_academic.png
