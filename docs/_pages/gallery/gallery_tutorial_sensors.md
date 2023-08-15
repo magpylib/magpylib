@@ -15,4 +15,6 @@ kernelspec:
 
 # Working with Sensors
 
+explain how sensors are useful - VS position grid
+
 show sensor tolerances (rotation) that can only be modelled using sensor objects
