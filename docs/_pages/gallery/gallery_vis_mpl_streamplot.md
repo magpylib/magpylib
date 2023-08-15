@@ -14,7 +14,7 @@ kernelspec:
 
 (gallery-vis-mpl-streamplot)=
 
-# B-Field with Matplotlib Streamplot
+# Matplotlib Streamplot
 
 ## Example 1: Cuboid Magnet
 

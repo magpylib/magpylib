@@ -1,5 +1,5 @@
 
 (gallery-ext-inhomo-mag)=
-## Inhomogeneous magnetizations
+# Inhomogeneous magnetizations
 
-Halbach !!!! here
+din spec example

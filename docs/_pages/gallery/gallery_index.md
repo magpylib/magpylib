@@ -64,20 +64,20 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_shapes_convex_hull.png
 :::
 
+:::{grid-item-card} {ref}`gallery-shapes-triangle`
+:text-align: center
+:link: gallery-shapes-triangle
+:link-type: ref
+:link-alt: link to example
+:img-bottom: ../../_static/images/gallery_icon_shapes_triangle.png
+:::
+
 :::{grid-item-card} {ref}`gallery-shapes-pyvista`
 :text-align: center
 :link: gallery-shapes-pyvista
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_shapes_pyvista.png
-:::
-
-:::{grid-item-card} {ref}`gallery-shapes-triangle`
-:text-align: center
-:link: gallery-shapes-triangle
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
 :::{grid-item-card} {ref}`gallery-shapes-3d-models`
