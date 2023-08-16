@@ -383,6 +383,33 @@ def get_generic_traces_2D(
     return traces
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    extr = model["model3d"]
+    model_kwargs = {"color": model["kwargs"]["color"]}
+    model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
+    model_args = extr.args() if callable(extr.args) else extr.args
+    trace3d = {
+        "constructor": extr.constructor,
+        "kwargs": model_kwargs,
+        "args": model_args,
+        "row": model["kwargs"]["row"],
+        "col": model["kwargs"]["col"],
+    }
+    kwargs, args = place_and_orient_model3d(
+        model_kwargs=model_kwargs,
+        model_args=model_args,
+        orientation=model["orientation"],
+        position=model["position"],
+        coordsargs=extr.coordsargs,
+        scale=extr.scale,
+        return_model_args=True,
+    )
+    trace3d["kwargs"].update(kwargs)
+    trace3d["args"] = args
+    return trace3d
+
+
 def get_generic_traces(
     input_obj,
     autosize=None,
@@ -530,6 +557,7 @@ def get_generic_traces(
                         "col": col,
                     },
                 }
+                tr_generic = process_extra_trace(tr_generic)
                 path_traces_extra_non_generic_backend.append(tr_generic)
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:

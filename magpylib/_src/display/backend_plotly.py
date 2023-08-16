@@ -250,12 +250,9 @@ def generic_trace_to_plotly(trace):
 
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
-    extr = model["model3d"]
+    ttype = model["constructor"].lower()
     kwargs = model["kwargs"]
-    trace3d = {**kwargs}
-    ttype = extr.constructor.lower()
-    trace_kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
-    trace3d.update({"type": ttype, **trace_kwargs})
+    trace3d = {"type": ttype, **model["kwargs"]}
     if ttype == "scatter3d":
         for k in ("marker", "line"):
             trace3d[f"{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
@@ -269,17 +266,7 @@ def process_extra_trace(model):
     trace3d = {
         k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
     }
-    trace3d.update(
-        linearize_dict(
-            place_and_orient_model3d(
-                model_kwargs=trace3d,
-                orientation=model["orientation"],
-                position=model["position"],
-                scale=extr.scale,
-            ),
-            separator="_",
-        )
-    )
+    trace3d.update(linearize_dict(trace3d, separator="_"))
     return trace3d
 
 

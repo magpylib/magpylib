@@ -152,33 +152,6 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
     return traces_mpl
 
 
-def process_extra_trace(model):
-    "process extra trace attached to some magpylib object"
-    extr = model["model3d"]
-    model_kwargs = {"color": model["kwargs"]["color"]}
-    model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
-    model_args = extr.args() if callable(extr.args) else extr.args
-    trace3d = {
-        "constructor": extr.constructor,
-        "kwargs": model_kwargs,
-        "args": model_args,
-        "row": model["kwargs"]["row"],
-        "col": model["kwargs"]["col"],
-    }
-    kwargs, args = place_and_orient_model3d(
-        model_kwargs=model_kwargs,
-        model_args=model_args,
-        orientation=model["orientation"],
-        position=model["position"],
-        coordsargs=extr.coordsargs,
-        scale=extr.scale,
-        return_model_args=True,
-    )
-    trace3d["kwargs"].update(kwargs)
-    trace3d["args"] = args
-    return trace3d
-
-
 def extract_axis_from_row_col(fig, row, col):
     "Return axis from row and col values"
 
@@ -227,7 +200,7 @@ def display_matplotlib(
         for tr in fr["data"]:
             new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
         for model in fr["extra_backend_traces"]:
-            new_data.append(process_extra_trace(model))
+            new_data.append(model)
         fr["data"] = new_data
 
     show_canvas = False

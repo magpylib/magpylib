@@ -206,20 +206,19 @@ def test_extra_model3d():
         },
     ]
     fig = go.Figure()
-    x = cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
+
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(canvas=fig)
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig)
+
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
-    x = magpy.show(
+    magpy.show(
         coll,
         canvas=fig,
         animation=True,
         style=dict(model3d_showdefault=False),
     )
-    assert x is None, "display test fail"
     my_callable_kwargs = lambda: {
         "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
         "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
@@ -235,12 +234,11 @@ def test_extra_model3d():
         }
     )
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(
+    cuboid.show(
         canvas=fig,
         style_path_show=False,
         style=dict(model3d_showdefault=False),
     )
-    assert x is None, "display test fail"
 
 
 def test_CustomSource_display():

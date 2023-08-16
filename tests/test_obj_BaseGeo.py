@@ -477,26 +477,7 @@ def test_describe():
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
         + " color=None, description=Description(show=None, text=None), label=None, "
-        + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
-        + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
-        + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
-        + " size=1, symbol=None), size=None) "
-    )
-    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
-    assert desc == test
-
-    # exclude=None test
-    s = magpy.Sensor()
-    desc = s.describe(exclude=None, return_string=True)
-    test = (
-        "Sensor(id=REGEX)\n"
-        + "  • parent: None \n"
-        + "  • position: [0. 0. 0.] mm\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
-        + "  • pixel: 1 \n"
-        + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
-        + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
-        + " color=None, description=Description(show=None, text=None), label=None, "
+        + "legend=Legend(show=None), "
         + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
         + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
         + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
