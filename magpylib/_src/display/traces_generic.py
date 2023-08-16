@@ -388,6 +388,7 @@ def get_generic_traces(
     autosize=None,
     legendgroup=None,
     legendtext=None,
+    showlegend=None,
     supports_colorgradient=True,
     extra_backend=False,
     row=1,
@@ -523,6 +524,7 @@ def get_generic_traces(
                         "opacity": style.opacity,
                         "color": style.color,
                         "legendgroup": legendgroup,
+                        "showlegend": showlegend,
                         "name": legendtext,
                         "row": row,
                         "col": col,
@@ -536,6 +538,7 @@ def get_generic_traces(
 
     path_traces_generic = group_traces(*path_traces_generic)
 
+    showlegend = style.legend.show if showlegend is None else style.legend.show
     for tr in path_traces_generic:
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
@@ -547,6 +550,8 @@ def get_generic_traces(
             tr["name"] = legendtext
         elif "name" not in tr:
             tr["name"] = style.label
+        if tr.get("showlegend", None) is not False:
+            tr["showlegend"] = showlegend
         if tr.get("facecolor", None) is not None:
             # this allows merging of 3d meshes, ignoring different colors
             tr["color"] = None
@@ -565,14 +570,18 @@ def clean_legendgroups(frames, clean_2d=False):
                 lg = tr.get("legendgroup", None)
                 if lg is not None and lg not in legendgroups:
                     legendgroups.append(lg)
-                    tr["showlegend"] = True
+                    tr_showlegend = tr.get("showlegend", None)
+                    tr["showlegend"] = True if tr_showlegend is None else tr_showlegend
                 elif lg is not None:  # and tr.legendgrouptitle.text is None:
                     tr["showlegend"] = False
         for tr in fr["extra_backend_traces"]:
             lg = tr["kwargs"].get("legendgroup", None)
             if lg is not None and lg not in legendgroups:
                 legendgroups.append(lg)
-                tr["kwargs"]["showlegend"] = True
+                tr_showlegend = tr["kwargs"].get("showlegend", None)
+                tr["kwargs"]["showlegend"] = (
+                    True if tr_showlegend is None else tr_showlegend
+                )
             elif lg is not None:  # and tr.legendgrouptitle.text is None:
                 tr["kwargs"]["showlegend"] = False
 

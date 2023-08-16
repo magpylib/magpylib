@@ -258,6 +258,7 @@ def get_flatten_objects_properties_recursive(
     parent_legendgroup=None,
     parent_color=None,
     parent_label=None,
+    parent_showlegend=None,
     **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
@@ -281,6 +282,7 @@ def get_flatten_objects_properties_recursive(
             "legendgroup": legendgroup,
             "style": style,
             "legendtext": parent_label,
+            "showlegend": parent_showlegend,
         }
         if isCollection:
             suffs = []
@@ -305,6 +307,7 @@ def get_flatten_objects_properties_recursive(
                     parent_legendgroup=legendgroup,
                     parent_color=style.color,
                     parent_label=label,
+                    parent_showlegend=style.legend.show,
                     **kwargs,
                 )
             )
