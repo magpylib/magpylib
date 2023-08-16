@@ -147,10 +147,12 @@ def generic_trace_to_pyvista(trace, jupyter_backend=None):
                 }
                 traces_pv.append(trace_pv_marker)
             if "text" in mode and trace.get("text", False):
+                txt = trace["text"]
+                txt = [txt] * len(points) if isinstance(txt, str) else txt
                 trace_pv_text = {
                     "type": "point_labels",
                     "points": points,
-                    "labels": trace["text"],
+                    "labels": txt,
                     "always_visible": True,
                 }
                 traces_pv.append(trace_pv_text)

@@ -115,7 +115,9 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         else:
             props["marker"] = None
         if "text" in mode and trace.get("text", False):
-            for *coords_s, txt in zip(*coords, trace["text"]):
+            txt = trace["text"]
+            txt = [txt] * len(coords) if isinstance(txt, str) else txt
+            for *coords_s, txt in zip(*coords, txt):
                 traces_mpl.append(
                     {
                         "constructor": "text",
