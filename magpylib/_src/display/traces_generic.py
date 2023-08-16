@@ -732,7 +732,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         flat_objs_props, **kwargs
     )
     traces = [t for tr in traces_dict.values() for t in tr]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
+    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     if autosize is None or autosize == "return":
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
 
@@ -858,7 +858,7 @@ def get_frames(
 
     clean_legendgroups(frames)
     traces = [t for frame in frames for t in frame["data"]]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
+    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     out = {
         "frames": frames,
         "ranges": ranges,

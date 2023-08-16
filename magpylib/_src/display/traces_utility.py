@@ -47,6 +47,37 @@ def place_and_orient_model3d(
     if model_args is None:
         model_args = ()
     new_model_args = list(model_args)
+    vertices, coordsargs, useargs = get_vertices_from_model(
+        model_kwargs, model_args, coordsargs
+    )
+
+    # sometimes traces come as (n,m,3) shape
+    vert_shape = vertices.shape
+    vertices = np.reshape(vertices, (3, -1))
+
+    vertices = vertices.T
+
+    if orientation is not None:
+        vertices = orientation.apply(vertices)
+    new_vertices = (vertices * scale + position).T
+    new_vertices = np.reshape(new_vertices, vert_shape)
+    for i, k in enumerate("xyz"):
+        key = coordsargs[k]
+        if useargs:
+            ind = int(key[5])
+            new_model_args[ind] = new_vertices[i]
+        else:
+            new_model_dict[key] = new_vertices[i]
+    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
+
+    out = (new_model_kwargs,)
+    if return_model_args:
+        out += (new_model_args,)
+    return out[0] if len(out) == 1 else out
+
+
+def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
+    """get vertices from model kwargs and args"""
     if model_args:
         if coordsargs is None:  # matplotlib default
             coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
@@ -74,30 +105,7 @@ def place_and_orient_model3d(
         vertices.append(v)
 
     vertices = np.array(vertices)
-
-    # sometimes traces come as (n,m,3) shape
-    vert_shape = vertices.shape
-    vertices = np.reshape(vertices, (3, -1))
-
-    vertices = vertices.T
-
-    if orientation is not None:
-        vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T
-    new_vertices = np.reshape(new_vertices, vert_shape)
-    for i, k in enumerate("xyz"):
-        key = coordsargs[k]
-        if useargs:
-            ind = int(key[5])
-            new_model_args[ind] = new_vertices[i]
-        else:
-            new_model_dict[key] = new_vertices[i]
-    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
-
-    out = (new_model_kwargs,)
-    if return_model_args:
-        out += (new_model_args,)
-    return out[0] if len(out) == 1 else out
+    return vertices, coordsargs, useargs
 
 
 def draw_arrowed_line(
@@ -477,6 +485,13 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
         ranges = {k: [] for k in "xyz"}
         for tr in traces:
             coords = "xyz"
+            if "constructor" in tr:
+                verts, *_ = get_vertices_from_model(
+                    model_args=tr.get("args", None),
+                    model_kwargs=tr.get("kwargs", None),
+                    coordsargs=tr.get("coordsargs", None),
+                )
+                tr = {k: v for k, v in zip("xyz", verts)}
             if "z" in tr:  # only extend range for 3d traces
                 trace3d_found = True
                 pts = np.array([tr[k] for k in coords], dtype="float64").T
