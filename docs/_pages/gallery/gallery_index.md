@@ -31,12 +31,13 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
-:::{grid-item-card} Collection
+
+:::{grid-item-card} {ref}`gallery-tutorial-collection`
 :text-align: center
 :link: gallery-tutorial-collection
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_tutorial_collection.png
 :::
 
 :::{grid-item-card} Trimesh
@@ -159,12 +160,12 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_misc_compound.png
 :::
 
-:::{grid-item-card} Interpolation of FE Field
+:::{grid-item-card} {ref}`gallery-misc-field-interpolation`
 :text-align: center
-:link: gallery-ext-field-interpolation
+:link: gallery-misc-field-interpolation
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_misc_field_interpolation.png
 :::
 
 :::{grid-item-card} Inhomogeneous Magnetization
