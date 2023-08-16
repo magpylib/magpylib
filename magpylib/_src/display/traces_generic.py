@@ -386,15 +386,13 @@ def get_generic_traces_2D(
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     extr = model["model3d"]
-    model_kwargs = {"color": model["kwargs"]["color"]}
-    model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
+    model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
     model_args = extr.args() if callable(extr.args) else extr.args
     trace3d = {
         "constructor": extr.constructor,
         "kwargs": model_kwargs,
         "args": model_args,
-        "row": model["kwargs"]["row"],
-        "col": model["kwargs"]["col"],
+        "kwargs_extra": model["kwargs_extra"],
     }
     kwargs, args = place_and_orient_model3d(
         model_kwargs=model_kwargs,
@@ -537,36 +535,12 @@ def get_generic_traces(
             temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    for extr in extra_model3d_traces:
-        if not extr.show:
-            continue
-        extr.update(extr.updatefunc())  # update before checking backend
-        if extr.backend == extra_backend:
-            for orient, pos in zip(orientations, positions):
-                tr_generic = {
-                    "model3d": extr,
-                    "position": pos,
-                    "orientation": orient,
-                    "kwargs": {
-                        "opacity": style.opacity,
-                        "color": style.color,
-                        "legendgroup": legendgroup,
-                        "showlegend": showlegend,
-                        "name": legendtext,
-                        "row": row,
-                        "col": col,
-                    },
-                }
-                tr_generic = process_extra_trace(tr_generic)
-                path_traces_extra_non_generic_backend.append(tr_generic)
-
     if np.array(input_obj.position).ndim > 1 and style.path.show:
         scatter_path = make_path(input_obj)
         path_traces_generic.append(scatter_path)
 
     path_traces_generic = group_traces(*path_traces_generic)
 
-    showlegend = style.legend.show if showlegend is None else style.legend.show
     for tr in path_traces_generic:
         tr.update(row=row, col=col)
         if tr.get("opacity", None) is None:
@@ -578,13 +552,44 @@ def get_generic_traces(
             tr["name"] = legendtext
         elif "name" not in tr:
             tr["name"] = style.label
-        if tr.get("showlegend", None) is not False:
-            tr["showlegend"] = showlegend
         if tr.get("facecolor", None) is not None:
             # this allows merging of 3d meshes, ignoring different colors
             tr["color"] = None
+        tr_showleg = tr.get("showlegend", None)
+        tr_showleg = True if tr_showleg is None else tr_showleg
+        tr["showlegend"] = showlegend if tr_showleg is True else False
     out = {"generic": path_traces_generic}
+
+    label = style.label if style.label else f"{input_obj}"
+    label = f"{label} ({style.description.text})" if style.description.text else label
     if extra_backend:
+        count = 0
+        tr_showleg = showlegend is not False and (
+            not style.model3d.showdefault and make_func is not None
+        )
+        for extr in extra_model3d_traces:
+            if not extr.show:
+                continue
+            extr.update(extr.updatefunc())  # update before checking backend
+            if extr.backend == extra_backend:
+                for orient, pos in zip(orientations, positions):
+                    count += 1
+                    tr_generic = {
+                        "model3d": extr,
+                        "position": pos,
+                        "orientation": orient,
+                        "kwargs_extra": {
+                            "opacity": style.opacity,
+                            "color": style.color,
+                            "legendgroup": legendgroup,
+                            "showlegend": True if showlegend is None else showlegend,
+                            "name": legendtext if legendtext else label,
+                            "row": row,
+                            "col": col,
+                        },
+                    }
+                    tr_generic = process_extra_trace(tr_generic)
+                    path_traces_extra_non_generic_backend.append(tr_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
@@ -592,26 +597,26 @@ def get_generic_traces(
 def clean_legendgroups(frames, clean_2d=False):
     """removes legend duplicates for a plotly figure"""
     for fr in frames:
-        legendgroups = []
+        legendgroups = set()
         for tr in fr["data"]:
             if "z" in tr or clean_2d:
                 lg = tr.get("legendgroup", None)
                 if lg is not None and lg not in legendgroups:
-                    legendgroups.append(lg)
+                    legendgroups.add(lg)
                     tr_showlegend = tr.get("showlegend", None)
                     tr["showlegend"] = True if tr_showlegend is None else tr_showlegend
                 elif lg is not None:  # and tr.legendgrouptitle.text is None:
                     tr["showlegend"] = False
         for tr in fr["extra_backend_traces"]:
-            lg = tr["kwargs"].get("legendgroup", None)
+            lg = tr["kwargs_extra"].get("legendgroup", None)
             if lg is not None and lg not in legendgroups:
-                legendgroups.append(lg)
-                tr_showlegend = tr["kwargs"].get("showlegend", None)
-                tr["kwargs"]["showlegend"] = (
+                legendgroups.add(lg)
+                tr_showlegend = tr["kwargs_extra"].get("showlegend", None)
+                tr["kwargs_extra"]["showlegend"] = (
                     True if tr_showlegend is None else tr_showlegend
                 )
             elif lg is not None:  # and tr.legendgrouptitle.text is None:
-                tr["kwargs"]["showlegend"] = False
+                tr["kwargs_extra"]["showlegend"] = False
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):

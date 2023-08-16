@@ -63,7 +63,7 @@ def match_args(ttype: str):
 
     Returns
     -------
-    list
+    set
         Names of the named arguments of the specified function.
     """
     func = getattr(go, ttype.capitalize())
@@ -74,7 +74,7 @@ def match_args(ttype: str):
         for name, param in params.items()
         if param.default != inspect.Parameter.empty
     ]
-    return named_args
+    return set(named_args)
 
 
 def apply_fig_ranges(fig, ranges, apply2d=True):
@@ -251,20 +251,24 @@ def generic_trace_to_plotly(trace):
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
     ttype = model["constructor"].lower()
-    kwargs = model["kwargs"]
-    trace3d = {"type": ttype, **model["kwargs"]}
+    kwargs = {**model["kwargs_extra"], **model["kwargs"]}
+    trace3d = {"type": ttype, **kwargs}
     if ttype == "scatter3d":
         for k in ("marker", "line"):
             trace3d[f"{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
-            trace3d.pop("color", None)
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
         trace3d["color"] = trace3d.get("color", kwargs["color"])
     # need to match parameters to the constructor
     # the color parameter is added by default  int the `traces_generic` module but is not
     # compatible with some traces (e.g. `go.Surface`)
+    allowed_prefs = match_args(ttype)
     trace3d = {
-        k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
+        k: v
+        for k, v in trace3d.items()
+        if k in {"row", "col", "type"}
+        or k in allowed_prefs
+        or ("_" in k and k.split("_")[0] in allowed_prefs)
     }
     trace3d.update(linearize_dict(trace3d, separator="_"))
     return trace3d

@@ -114,9 +114,9 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 props["marker"] = "o"
         else:
             props["marker"] = None
-        if "text" in mode and trace.get("text", False):
+        if "text" in mode and trace.get("text", False) and len(coords) > 0:
             txt = trace["text"]
-            txt = [txt] * len(coords) if isinstance(txt, str) else txt
+            txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
             for *coords_s, txt in zip(*coords, txt):
                 traces_mpl.append(
                     {
@@ -173,6 +173,20 @@ def extract_axis_from_row_col(fig, row, col):
     return ax
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    trace3d = model.copy()
+    kw = trace3d.pop("kwargs_extra")
+    trace3d.update({"row": kw["row"], "col": kw["col"]})
+    kw = {
+        "alpha": kw["opacity"],
+        "color": kw["color"],
+        "label": kw["name"] if kw["showlegend"] else "_no_legend",
+    }
+    trace3d["kwargs"] = {**kw, **trace3d["kwargs"]}
+    return trace3d
+
+
 def display_matplotlib(
     data,
     canvas=None,
@@ -202,7 +216,7 @@ def display_matplotlib(
         for tr in fr["data"]:
             new_data.extend(generic_trace_to_matplotlib(tr, antialiased=antialiased))
         for model in fr["extra_backend_traces"]:
-            new_data.append(model)
+            new_data.append(process_extra_trace(model))
         fr["data"] = new_data
 
     show_canvas = False
