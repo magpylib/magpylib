@@ -88,18 +88,32 @@ DEFAULTS = {
             },
             "sensor": {
                 "size": 1,
-                "pixel": {"size": 1, "color": None, "symbol": "o"},
+                "sizemode": "scaled",
+                "pixel": {
+                    "size": 1,
+                    "sizemode": "scaled",
+                    "color": None,
+                    "symbol": "o",
+                },
                 "arrows": {
                     "x": {"color": "red"},
                     "y": {"color": "green"},
                     "z": {"color": "blue"},
                 },
             },
-            "dipole": {"size": 1, "pivot": "middle"},
+            "dipole": {"size": 1, "sizemode": "scaled", "pivot": "middle"},
             "triangle": {
                 "magnetization": {
                     "show": True,
-                    "size": 1,
+                    "arrow": {
+                        "show": True,
+                        "size": 1,
+                        "sizemode": "scaled",
+                        "offset": 1,
+                        "width": 2,
+                        "style": "solid",
+                        "color": None,
+                    },
                     "color": {
                         "north": "#E71111",
                         "middle": "#DDDDDD",

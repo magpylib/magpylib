@@ -13,6 +13,8 @@ from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
 
+ALLOWED_SIZEMODES = ("scaled", "absolute")
+
 
 def get_families(obj):
     """get obj families"""
@@ -1449,6 +1451,10 @@ class SensorProperties:
     size: float, default=None
         Positive float for ratio of sensor to canvas size.
 
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
+        becomes the sensor size in millimeters.
+
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
 
@@ -1468,6 +1474,19 @@ class SensorProperties:
             f"but received {repr(val)} instead."
         )
         self._size = val
+
+    @property
+    def sizemode(self):
+        """Sizemode of the sensor."""
+        return self._sizemode
+
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in ALLOWED_SIZEMODES, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{ALLOWED_SIZEMODES},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
 
     @property
     def pixel(self):
@@ -1496,6 +1515,10 @@ class DefaultSensor(MagicProperties, SensorProperties):
     size: float, default=None
         Positive float for ratio of sensor to canvas size.
 
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the sensor size. If 'absolute', the `size` parameters
+        becomes the sensor size in millimeters.
+
     pixel: dict, Pixel, default=None
         `Pixel` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
 
@@ -1503,8 +1526,21 @@ class DefaultSensor(MagicProperties, SensorProperties):
         `ArrowCS` object or dict with equivalent key/value pairs (e.g. `color`, `size`).
     """
 
-    def __init__(self, size=None, pixel=None, arrows=None, **kwargs):
-        super().__init__(size=size, pixel=pixel, arrows=arrows, **kwargs)
+    def __init__(
+        self,
+        size=None,
+        sizemode=None,
+        pixel=None,
+        arrows=None,
+        **kwargs,
+    ):
+        super().__init__(
+            size=size,
+            sizemode=sizemode,
+            pixel=pixel,
+            arrows=arrows,
+            **kwargs,
+        )
 
 
 class SensorStyle(BaseStyle, SensorProperties):
@@ -1558,6 +1594,10 @@ class Pixel(MagicProperties):
         - matplotlib backend: Pixel size is the marker size.
         - plotly backend: Relative distance to nearest neighbor pixel.
 
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the pixel size. If 'absolute', the `size` parameters
+        becomes the pixel size in millimeters.
+
     color: str, default=None
         Defines the pixel color@property.
 
@@ -1566,8 +1606,14 @@ class Pixel(MagicProperties):
         Only applies for matplotlib plotting backend.
     """
 
-    def __init__(self, size=1, color=None, symbol=None, **kwargs):
-        super().__init__(size=size, color=color, symbol=symbol, **kwargs)
+    def __init__(self, size=1, sizemode=None, color=None, symbol=None, **kwargs):
+        super().__init__(
+            size=size,
+            sizemode=sizemode,
+            color=color,
+            symbol=symbol,
+            **kwargs,
+        )
 
     @property
     def size(self):
@@ -1583,6 +1629,19 @@ class Pixel(MagicProperties):
             f"but received {repr(val)} instead."
         )
         self._size = val
+
+    @property
+    def sizemode(self):
+        """Sizemode of the pixel."""
+        return self._sizemode
+
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in ALLOWED_SIZEMODES, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{ALLOWED_SIZEMODES},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
 
     @property
     def color(self):
@@ -1719,8 +1778,6 @@ class Arrow(Line):
         Positive number that defines the line width.
     """
 
-    _allowed_sizemodes = ("scaled", "absolute")
-
     def __init__(self, show=None, size=None, **kwargs):
         super().__init__(show=show, size=size, **kwargs)
 
@@ -1752,14 +1809,14 @@ class Arrow(Line):
 
     @property
     def sizemode(self):
-        """Positive number defining the sizemode of the arrows."""
+        """Sizemode of the arrows."""
         return self._sizemode
 
     @sizemode.setter
     def sizemode(self, val):
-        assert val is None or val in self._allowed_sizemodes, (
+        assert val is None or val in ALLOWED_SIZEMODES, (
             f"The `sizemode` property of {type(self).__name__} must be a one of "
-            f"{self._allowed_sizemodes},\nbut received {repr(val)} instead."
+            f"{ALLOWED_SIZEMODES},\nbut received {repr(val)} instead."
         )
         self._sizemode = val
 
@@ -1897,6 +1954,10 @@ class DipoleProperties:
     size: float
         Positive value for ratio of dipole size to canvas size.
 
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
+        becomes the dipole size in millimeters.
+
     pivot: str
         The part of the arrow that is anchored to the X, Y grid.
         The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
@@ -1916,6 +1977,19 @@ class DipoleProperties:
             f"but received {repr(val)} instead."
         )
         self._size = val
+
+    @property
+    def sizemode(self):
+        """Sizemode of the dipole."""
+        return self._sizemode
+
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in ALLOWED_SIZEMODES, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{ALLOWED_SIZEMODES},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
 
     @property
     def pivot(self):
@@ -1943,13 +2017,17 @@ class DefaultDipole(MagicProperties, DipoleProperties):
     size: float, default=None
         Positive float for ratio of dipole size to canvas size.
 
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the dipole size. If 'absolute', the `size` parameters
+        becomes the dipole size in millimeters.
+
     pivot: str, default=None
         The part of the arrow that is anchored to the X, Y grid.
         The arrow rotates about this point. Can be one of `['tail', 'middle', 'tip']`.
     """
 
-    def __init__(self, size=None, pivot=None, **kwargs):
-        super().__init__(size=size, pivot=pivot, **kwargs)
+    def __init__(self, size=None, sizemode=None, pivot=None, **kwargs):
+        super().__init__(size=size, sizemode=sizemode, pivot=pivot, **kwargs)
 
 
 class DipoleStyle(BaseStyle, DipoleProperties):
