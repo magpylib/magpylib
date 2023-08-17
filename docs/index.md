@@ -47,23 +47,23 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :::{grid-item-card}
 :columns: 2
 :padding: 1
-:link: gallery
-:link-type: ref
-:link-alt: link to Examples
-:img-top: _static/images/index_icon_gallery.png
-:text-align: center
-**Examples**
-:::
-
-:::{grid-item-card}
-:columns: 2
-:padding: 1
 :link: docu-index
 :link-type: ref
 :link-alt: link to Documentation
 :img-top: _static/images/index_icon_docu.png
 :text-align: center
 **Docs**
+:::
+
+:::{grid-item-card}
+:columns: 2
+:padding: 1
+:link: gallery
+:link-type: ref
+:link-alt: link to Examples
+:img-top: _static/images/index_icon_gallery.png
+:text-align: center
+**Examples**
 :::
 
 :::{grid-item-card}
@@ -105,8 +105,8 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 
 _pages/reso_news.md
 _pages/reso_get_started.md
-_pages/gallery/gallery_index.md
 _pages/docu/docu_index.md
+_pages/gallery/gallery_index.md
 _pages/reso_contributing.md
 _pages/reso_code_of_conduct.md
 _pages/reso_license.md
