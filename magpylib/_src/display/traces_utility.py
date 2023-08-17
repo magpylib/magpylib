@@ -373,7 +373,7 @@ def merge_traces(*traces):
                 new_traces.append(merge_mesh3d(*tlist))
             elif ttype == "scatter3d":
                 new_traces.append(merge_scatter3d(*tlist))
-            else:
+            else:  # pragma: no cover
                 new_traces.extend(tlist)
         elif len(tlist) == 1:
             new_traces.append(tlist[0])

@@ -180,6 +180,7 @@ class BaseStyle(MagicProperties):
         self,
         label=None,
         description=None,
+        legend=None,
         color=None,
         opacity=None,
         path=None,
@@ -189,6 +190,7 @@ class BaseStyle(MagicProperties):
         super().__init__(
             label=label,
             description=description,
+            legend=legend,
             color=color,
             opacity=opacity,
             path=path,
@@ -282,7 +284,7 @@ class Description(MagicProperties):
         Object description text.
 
     show: bool, default=None
-        If True, adds legend entry suffix based on value.
+        If True, adds legend entry based on value.
     """
 
     def __init__(self, text=None, show=None, **kwargs):
@@ -316,12 +318,12 @@ class Description(MagicProperties):
 
 
 class Legend(MagicProperties):
-    """Defines properties for a description object.
+    """Defines properties for a legend object.
 
     Parameters
     ----------
     show: bool, default=None
-        If True, adds legend entry suffix based on value.
+        If True, adds legend entry based on value.
     """
 
     def __init__(self, show=None, **kwargs):
@@ -329,7 +331,7 @@ class Legend(MagicProperties):
 
     @property
     def show(self):
-        """If True, adds legend entry suffix based on value."""
+        """If True, adds legend entry based on value."""
         return self._show
 
     @show.setter

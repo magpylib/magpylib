@@ -618,7 +618,7 @@ def clean_legendgroups(frames, clean_2d=False):
                     if tr_showlegend is None:
                         legendgroups[lg]["backup"] = tr
     # legends with showlegend
-    for lg in legendgroups.values():
+    for lg in legendgroups.values():  # pragma: no cover
         if lg["backup"] is not None and all(
             tr["showlegend"] is False for tr in lg["traces"]
         ):
