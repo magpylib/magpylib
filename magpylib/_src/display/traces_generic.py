@@ -20,7 +20,7 @@ from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
-from magpylib._src.display.traces_utility import get_label
+from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
@@ -65,9 +65,9 @@ class MagpyMarkers:
             **marker_kwargs,
             **kwargs,
         }
-        default_name = "Marker" if len(x) == 1 else "Markers"
-        default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
-        trace["name"] = get_label(self, default_suffix, default_name)
+        name = "Marker" if len(x) == 1 else "Markers"
+        suff = "" if len(x) == 1 else f" ({len(x)} points)"
+        trace["name"] = f"{name}{suff}"
         return trace
 
 
@@ -523,8 +523,7 @@ def get_generic_traces(
             mag_arrow_tr = make_mag_arrows(input_obj)
             traces_generic.append(mag_arrow_tr)
 
-    label = style.label if style.label else f"{input_obj}"
-    label = f"{label} ({style.description.text})" if style.description.text else label
+    legend_label = get_legend_label(input_obj)
 
     path_traces_generic = []
     for tr in traces_generic:
@@ -539,7 +538,7 @@ def get_generic_traces(
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
     if np.array(input_obj.position).ndim > 1 and style.path.show:
-        scatter_path = make_path(input_obj, label)
+        scatter_path = make_path(input_obj, legend_label)
         path_traces_generic.append(scatter_path)
 
     path_traces_generic = group_traces(*path_traces_generic)
@@ -554,7 +553,7 @@ def get_generic_traces(
         if legendtext is not None:
             tr["name"] = legendtext
         elif "name" not in tr:
-            tr["name"] = style.label
+            tr["name"] = legend_label
         if tr.get("facecolor", None) is not None:
             # this allows merging of 3d meshes, ignoring different colors
             tr["color"] = None
@@ -589,7 +588,7 @@ def get_generic_traces(
                             else None
                             if style.legend.show
                             else False,
-                            "name": legendtext if legendtext else label,
+                            "name": legendtext if legendtext else legend_label,
                             "row": row,
                             "col": col,
                         },

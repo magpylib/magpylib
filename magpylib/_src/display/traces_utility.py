@@ -14,18 +14,13 @@ from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-def get_label(obj, default_suffix="", default_name=None, style=None):
+def get_legend_label(obj, style=None, suffix=True):
     """provides legend entry based on name and suffix"""
     style = obj.style if style is None else style
-    default_name = obj.__class__.__name__ if default_name is None else default_name
-    name = default_name if style.label is None else style.label
-    if style.description.show and style.description.text is None:
-        name_suffix = default_suffix
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
-    return f"{name}{name_suffix}"
+    name = style.label if style.label else obj.__class__.__name__
+    desc = getattr(obj, "_default_style_description", "")
+    suff = f" ({desc})" if style.description.show and desc and suffix else ""
+    return f"{name}{suff}"
 
 
 def place_and_orient_model3d(
@@ -293,20 +288,7 @@ def get_flatten_objects_properties_recursive(
             "showlegend": parent_showlegend,
         }
         if isCollection:
-            suffs = []
-            if subobj.children_all:
-                nums = {
-                    "sensor": len(subobj.sensors_all),
-                    "source": len(subobj.sources_all),
-                }
-                for name, num in nums.items():
-                    if num > 0:
-                        suffs.append(f"{num} {name}{'s'[:num^1]}")
-            else:
-                suffs.append("no children")
-            label = get_label(
-                subobj, default_suffix=f" ({', '.join(suffs)})", style=style
-            )
+            label = get_legend_label(subobj, style=style)
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -491,7 +473,7 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
                     model_kwargs=tr.get("kwargs", None),
                     coordsargs=tr.get("coordsargs", None),
                 )
-                tr = {k: v for k, v in zip("xyz", verts)}
+                tr = dict(zip("xyz", verts))
             if "z" in tr:  # only extend range for 3d traces
                 trace3d_found = True
                 pts = np.array([tr[k] for k in coords], dtype="float64").T

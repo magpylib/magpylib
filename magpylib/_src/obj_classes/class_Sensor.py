@@ -1,4 +1,6 @@
 """Sensor class code"""
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
@@ -262,4 +264,18 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             pixel_agg=pixel_agg,
             output=output,
             field="H",
+        )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        pixel = np.array(self.pixel).reshape((-1, 3))
+        pix_uniq = np.unique(pixel, axis=0)
+        one_pix = pix_uniq.shape[0] == 1 and not (pix_uniq == 0).all()
+        return (
+            f" ({'x'.join(str(p) for p in self.pixel.shape[:-1])} pixels)"
+            if self.pixel.ndim != 1
+            else f" ({pixel[1:].shape[0]} pixel)"
+            if one_pix
+            else ""
         )

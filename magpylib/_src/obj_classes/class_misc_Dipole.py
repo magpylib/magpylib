@@ -1,9 +1,12 @@
 """Dipole class code"""
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
 from magpylib._src.style import DipoleStyle
+from magpylib._src.utility import unit_prefix
 
 
 class Dipole(BaseSource):
@@ -113,3 +116,12 @@ class Dipole(BaseSource):
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        moment = np.array([0.0, 0.0, 0.0]) if self.moment is None else self.moment
+        moment_mag = np.linalg.norm(moment)
+        if moment_mag == 0:
+            return "no moment"
+        return f"moment={unit_prefix(moment_mag)}mT mm³"
