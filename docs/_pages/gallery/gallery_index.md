@@ -16,20 +16,12 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_tutorial_paths.png
 :::
 
-:::{grid-item-card} Sensors
-:text-align: center
-:link: gallery-tutorial-sensors
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
-:::{grid-item-card} Field Computation
+:::{grid-item-card} {ref}`gallery-tutorial-field-computation`
 :text-align: center
 :link: gallery-tutorial-field-computation
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_tutorial_field_computation.png
 :::
 
 :::{grid-item-card} {ref}`gallery-tutorial-collection`
