@@ -477,6 +477,7 @@ def test_describe():
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
         + " color=None, description=Description(show=None, text=None), label=None, "
+        + "legend=Legend(show=None), "
         + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
         + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
         + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"

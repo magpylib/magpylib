@@ -7,6 +7,7 @@
 import numbers
 import warnings
 from collections import Counter
+from itertools import chain
 from itertools import cycle
 from typing import Tuple
 
@@ -19,7 +20,7 @@ from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import draw_arrowed_line
 from magpylib._src.display.traces_utility import get_flatten_objects_properties
-from magpylib._src.display.traces_utility import get_label
+from magpylib._src.display.traces_utility import get_legend_label
 from magpylib._src.display.traces_utility import get_rot_pos_from_path
 from magpylib._src.display.traces_utility import get_scene_ranges
 from magpylib._src.display.traces_utility import getColorscale
@@ -64,9 +65,9 @@ class MagpyMarkers:
             **marker_kwargs,
             **kwargs,
         }
-        default_name = "Marker" if len(x) == 1 else "Markers"
-        default_suffix = "" if len(x) == 1 else f" ({len(x)} points)"
-        trace["name"] = get_label(self, default_suffix, default_name)
+        name = "Marker" if len(x) == 1 else "Markers"
+        suff = "" if len(x) == 1 else f" ({len(x)} points)"
+        trace["name"] = f"{name}{suff}"
         return trace
 
 
@@ -163,7 +164,7 @@ def make_mag_arrows(obj):
     return trace
 
 
-def make_path(input_obj):
+def make_path(input_obj, label=None):
     """draw obj path based on path style properties"""
     style = input_obj.style
     x, y, z = np.array(input_obj.position).T
@@ -184,8 +185,7 @@ def make_path(input_obj):
         "x": x,
         "y": y,
         "z": z,
-        "name": f"Path: {input_obj}",
-        "showlegend": False,
+        "name": label,
         **{f"marker_{k}": v for k, v in marker.items()},
         **{f"line_{k}": v for k, v in line.items()},
         **txt_kwargs,
@@ -383,11 +383,37 @@ def get_generic_traces_2D(
     return traces
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    extr = model["model3d"]
+    model_kwargs = {**(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)}
+    model_args = extr.args() if callable(extr.args) else extr.args
+    trace3d = {
+        "constructor": extr.constructor,
+        "kwargs": model_kwargs,
+        "args": model_args,
+        "kwargs_extra": model["kwargs_extra"],
+    }
+    kwargs, args = place_and_orient_model3d(
+        model_kwargs=model_kwargs,
+        model_args=model_args,
+        orientation=model["orientation"],
+        position=model["position"],
+        coordsargs=extr.coordsargs,
+        scale=extr.scale,
+        return_model_args=True,
+    )
+    trace3d["kwargs"].update(kwargs)
+    trace3d["args"] = args
+    return trace3d
+
+
 def get_generic_traces(
     input_obj,
     autosize=None,
     legendgroup=None,
     legendtext=None,
+    showlegend=None,
     supports_colorgradient=True,
     extra_backend=False,
     row=1,
@@ -497,6 +523,8 @@ def get_generic_traces(
             mag_arrow_tr = make_mag_arrows(input_obj)
             traces_generic.append(mag_arrow_tr)
 
+    legend_label = get_legend_label(input_obj)
+
     path_traces_generic = []
     for tr in traces_generic:
         temp_rot_traces = []
@@ -509,29 +537,8 @@ def get_generic_traces(
             temp_rot_traces.append(tr1)
         path_traces_generic.extend(group_traces(*temp_rot_traces))
 
-    for extr in extra_model3d_traces:
-        if not extr.show:
-            continue
-        extr.update(extr.updatefunc())  # update before checking backend
-        if extr.backend == extra_backend:
-            for orient, pos in zip(orientations, positions):
-                tr_generic = {
-                    "model3d": extr,
-                    "position": pos,
-                    "orientation": orient,
-                    "kwargs": {
-                        "opacity": style.opacity,
-                        "color": style.color,
-                        "legendgroup": legendgroup,
-                        "name": legendtext,
-                        "row": row,
-                        "col": col,
-                    },
-                }
-                path_traces_extra_non_generic_backend.append(tr_generic)
-
     if np.array(input_obj.position).ndim > 1 and style.path.show:
-        scatter_path = make_path(input_obj)
+        scatter_path = make_path(input_obj, legend_label)
         path_traces_generic.append(scatter_path)
 
     path_traces_generic = group_traces(*path_traces_generic)
@@ -546,12 +553,48 @@ def get_generic_traces(
         if legendtext is not None:
             tr["name"] = legendtext
         elif "name" not in tr:
-            tr["name"] = style.label
+            tr["name"] = legend_label
         if tr.get("facecolor", None) is not None:
             # this allows merging of 3d meshes, ignoring different colors
             tr["color"] = None
+        tr_showleg = tr.get("showlegend", None)
+        # tr_showleg = True if tr_showleg is None else tr_showleg
+        tr["showlegend"] = (
+            showlegend
+            if showlegend is not None
+            else tr_showleg
+            if style.legend.show
+            else False
+        )
     out = {"generic": path_traces_generic}
+
     if extra_backend:
+        for extr in extra_model3d_traces:
+            if not extr.show:
+                continue
+            extr.update(extr.updatefunc())  # update before checking backend
+            if extr.backend == extra_backend:
+                for orient, pos in zip(orientations, positions):
+                    tr_generic = {
+                        "model3d": extr,
+                        "position": pos,
+                        "orientation": orient,
+                        "kwargs_extra": {
+                            "opacity": style.opacity,
+                            "color": style.color,
+                            "legendgroup": legendgroup,
+                            "showlegend": showlegend
+                            if showlegend is not None
+                            else None
+                            if style.legend.show
+                            else False,
+                            "name": legendtext if legendtext else legend_label,
+                            "row": row,
+                            "col": col,
+                        },
+                    }
+                    tr_generic = process_extra_trace(tr_generic)
+                    path_traces_extra_non_generic_backend.append(tr_generic)
         out.update({extra_backend: path_traces_extra_non_generic_backend})
     return out
 
@@ -559,22 +602,27 @@ def get_generic_traces(
 def clean_legendgroups(frames, clean_2d=False):
     """removes legend duplicates for a plotly figure"""
     for fr in frames:
-        legendgroups = []
-        for tr in fr["data"]:
-            if "z" in tr or clean_2d:
+        legendgroups = {}
+        for tr in chain(fr["data"], fr["extra_backend_traces"]):
+            if "z" in tr or clean_2d or "kwargs_extra" in tr:
+                tr = tr.get("kwargs_extra", tr)
                 lg = tr.get("legendgroup", None)
-                if lg is not None and lg not in legendgroups:
-                    legendgroups.append(lg)
-                    tr["showlegend"] = True
-                elif lg is not None:  # and tr.legendgrouptitle.text is None:
-                    tr["showlegend"] = False
-        for tr in fr["extra_backend_traces"]:
-            lg = tr["kwargs"].get("legendgroup", None)
-            if lg is not None and lg not in legendgroups:
-                legendgroups.append(lg)
-                tr["kwargs"]["showlegend"] = True
-            elif lg is not None:  # and tr.legendgrouptitle.text is None:
-                tr["kwargs"]["showlegend"] = False
+                if lg is not None:
+                    tr_showlegend = tr.get("showlegend", None)
+                    tr["showlegend"] = True if tr_showlegend is None else tr_showlegend
+                    if lg not in legendgroups:
+                        legendgroups[lg] = {"traces": [], "backup": None}
+                    else:  # tr.legendgrouptitle.text is None:
+                        tr["showlegend"] = False
+                    legendgroups[lg]["traces"].append(tr)
+                    if tr_showlegend is None:
+                        legendgroups[lg]["backup"] = tr
+    # legends with showlegend
+    for lg in legendgroups.values():  # pragma: no cover
+        if lg["backup"] is not None and all(
+            tr["showlegend"] is False for tr in lg["traces"]
+        ):
+            lg["backup"]["showlegend"] = True
 
 
 def process_animation_kwargs(obj_list, animation=False, **kwargs):
@@ -695,7 +743,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         flat_objs_props, **kwargs
     )
     traces = [t for tr in traces_dict.values() for t in tr]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
+    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     if autosize is None or autosize == "return":
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
 
@@ -821,7 +869,7 @@ def get_frames(
 
     clean_legendgroups(frames)
     traces = [t for frame in frames for t in frame["data"]]
-    ranges = get_scene_ranges(*traces, zoom=zoom)
+    ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     out = {
         "frames": frames,
         "ranges": ranges,

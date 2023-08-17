@@ -3,6 +3,7 @@ from magpylib._src.display.traces_core import make_Cuboid
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.utility import unit_prefix
 
 
 class Cuboid(BaseMagnet):
@@ -115,3 +116,11 @@ class Cuboid(BaseMagnet):
             allow_None=True,
             forbid_negative0=True,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.dimension is None:
+            return "no dimension"
+        d = [unit_prefix(d / 1000) for d in self.dimension]
+        return f"{d[0]}m|{d[1]}m|{d[2]}m"

@@ -3,6 +3,7 @@ from magpylib._src.display.traces_core import make_Loop
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.utility import unit_prefix
 
 
 class Loop(BaseCurrent):
@@ -112,3 +113,10 @@ class Loop(BaseCurrent):
             allow_None=True,
             forbid_negative=True,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.diameter is None:
+            return "no dimension"
+        return f"{unit_prefix(self.current)}A" if self.current else "no current"

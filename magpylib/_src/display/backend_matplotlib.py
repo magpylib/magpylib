@@ -10,7 +10,6 @@ import matplotlib.pyplot as plt
 import numpy as np
 from matplotlib.animation import FuncAnimation
 
-from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
 
 if os.getenv("MAGPYLIB_MPL_SVG") == "true":  # pragma: no cover
@@ -69,7 +68,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 },
             }
             if ind != 0:  # hide substrace legends except first
-                tr["kwargs"]["label"] = "_no_legend_"
+                tr["kwargs"]["label"] = "_nolegend_"
             traces_mpl.append(tr)
     elif "scatter" in trace["type"]:
         props = {
@@ -114,8 +113,10 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 props["marker"] = "o"
         else:
             props["marker"] = None
-        if "text" in mode and trace.get("text", False):
-            for *coords_s, txt in zip(*coords, trace["text"]):
+        if "text" in mode and trace.get("text", False) and len(coords) > 0:
+            txt = trace["text"]
+            txt = [txt] * len(coords[0]) if isinstance(txt, str) else txt
+            for *coords_s, txt in zip(*coords, txt):
                 traces_mpl.append(
                     {
                         "constructor": "text",
@@ -148,35 +149,8 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                     if leg_title is not None:
                         tr["kwargs"]["label"] += f" ({leg_title})"
             else:
-                tr["kwargs"]["label"] = "_no_legend"
+                tr["kwargs"]["label"] = "_nolegend_"
     return traces_mpl
-
-
-def process_extra_trace(model):
-    "process extra trace attached to some magpylib object"
-    extr = model["model3d"]
-    model_kwargs = {"color": model["kwargs"]["color"]}
-    model_kwargs.update(extr.kwargs() if callable(extr.kwargs) else extr.kwargs)
-    model_args = extr.args() if callable(extr.args) else extr.args
-    trace3d = {
-        "constructor": extr.constructor,
-        "kwargs": model_kwargs,
-        "args": model_args,
-        "row": model["kwargs"]["row"],
-        "col": model["kwargs"]["col"],
-    }
-    kwargs, args = place_and_orient_model3d(
-        model_kwargs=model_kwargs,
-        model_args=model_args,
-        orientation=model["orientation"],
-        position=model["position"],
-        coordsargs=extr.coordsargs,
-        scale=extr.scale,
-        return_model_args=True,
-    )
-    trace3d["kwargs"].update(kwargs)
-    trace3d["args"] = args
-    return trace3d
 
 
 def extract_axis_from_row_col(fig, row, col):
@@ -198,6 +172,20 @@ def extract_axis_from_row_col(fig, row, col):
     return ax
 
 
+def process_extra_trace(model):
+    "process extra trace attached to some magpylib object"
+    trace3d = model.copy()
+    kw = trace3d.pop("kwargs_extra")
+    trace3d.update({"row": kw["row"], "col": kw["col"]})
+    kw = {
+        "alpha": kw["opacity"],
+        "color": kw["color"],
+        "label": kw["name"] if kw["showlegend"] else "_nolegend_",
+    }
+    trace3d["kwargs"] = {**kw, **trace3d["kwargs"]}
+    return trace3d
+
+
 def display_matplotlib(
     data,
     canvas=None,
@@ -207,15 +195,20 @@ def display_matplotlib(
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
-    dpi=80,
-    figsize=None,
     antialiased=True,
-    legend_max_items=20,
+    legend_maxitems=20,
+    fig_kwargs=None,
+    show_kwargs=None,
     **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the matplotlib library."""
     frames = data["frames"]
     ranges = data["ranges"]
+
+    fig_kwargs = {} if not fig_kwargs else fig_kwargs
+    fig_kwargs = {"dpi": 80, **fig_kwargs}
+    show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {**show_kwargs}
 
     for fr in frames:
         new_data = []
@@ -229,13 +222,13 @@ def display_matplotlib(
     axes = {}
     if canvas is None:
         show_canvas = True
-        if figsize is None:
+        if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
-            if legend_max_items != 0:
+            if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
-            figsize = (figsize[0] * ratio, figsize[1])
-        fig = plt.figure(dpi=dpi, figsize=figsize)
+            fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
+        fig = plt.figure(**fig_kwargs)
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
@@ -316,11 +309,15 @@ def display_matplotlib(
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))
-                if 0 < count <= legend_max_items:
-                    ax.legend(
-                        bbox_to_anchor=(1.04, 1),
-                        loc="upper left",
-                    )
+                if 0 < count <= legend_maxitems:
+                    try:
+                        ax.legend(
+                            bbox_to_anchor=(1.04, 1),
+                            loc="upper left",
+                        )
+                    except AttributeError:
+                        # see https://github.com/matplotlib/matplotlib/pull/25565
+                        pass
             else:
                 ax.legend(loc="best")
 
@@ -351,7 +348,7 @@ def display_matplotlib(
         show_canvas = False
         out += (anim,)
     if show_canvas:
-        plt.show()
+        plt.show(**show_kwargs)
 
     if out:
         return out[0] if len(out) == 1 else out

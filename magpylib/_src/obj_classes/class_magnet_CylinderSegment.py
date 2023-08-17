@@ -7,6 +7,7 @@ from magpylib._src.fields.field_BH_cylinder_segment import (
 )
 from magpylib._src.input_checks import check_format_input_cylinder_segment
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.utility import unit_prefix
 
 
 class CylinderSegment(BaseMagnet):
@@ -162,3 +163,14 @@ class CylinderSegment(BaseMagnet):
             centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.dimension is None:
+            return "no dimension"
+        d = [
+            unit_prefix(d / (1000 if i < 3 else 1))
+            for i, d in enumerate(self.dimension)
+        ]
+        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"

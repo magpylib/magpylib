@@ -48,6 +48,7 @@ DEFAULTS = {
                     "numbering": False,
                 },
                 "description": {"show": True, "text": None},
+                "legend": {"show": True},
                 "opacity": 1,
                 "model3d": {"showdefault": True, "data": []},
                 "color": None,
