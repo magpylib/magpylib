@@ -39,7 +39,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :link: get-started
 :link-type: ref
 :link-alt: link to Getting Started
-:img-top: ../../_static/images/index_icon_getting_started.png
+:img-top: _static/images/index_icon_getting_started.png
 :text-align: center
 **Get Started**
 :::
@@ -50,7 +50,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :link: gallery
 :link-type: ref
 :link-alt: link to Examples
-:img-top: ../../_static/images/index_icon_gallery.png
+:img-top: _static/images/index_icon_gallery.png
 :text-align: center
 **Examples**
 :::
@@ -61,7 +61,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :link: docu-index
 :link-type: ref
 :link-alt: link to Documentation
-:img-top: ../../_static/images/index_icon_docu.png
+:img-top: _static/images/index_icon_docu.png
 :text-align: center
 **Docs**
 :::
@@ -72,7 +72,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :link: contributing
 :link-type: ref
 :link-alt: link to Contribution Guide
-:img-top: ../../_static/images/index_icon_contributing.png
+:img-top: _static/images/index_icon_contributing.png
 :text-align: center
 **Contribute**
 :::
@@ -82,7 +82,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :padding: 1
 :link: https://github.com/magpylib/magpylib
 :link-alt: link to Github
-:img-top: ../../_static/images/index_icon_github.png
+:img-top: _static/images/index_icon_github.png
 :text-align: center
 **Project**
 :::
@@ -92,7 +92,7 @@ In Magpylib, **sources** (magnets, currents, ...) and **observers** (sensors, po
 :padding: 1
 :link: https://www.sciencedirect.com/science/article/pii/S2352711020300170
 :link-alt: link to Journal
-:img-top: ../../_static/images/index_icon_academic.png
+:img-top: _static/images/index_icon_academic.png
 :text-align: center
 **Paper**
 :::
