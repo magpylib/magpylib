@@ -68,7 +68,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                 },
             }
             if ind != 0:  # hide substrace legends except first
-                tr["kwargs"]["label"] = "_no_legend_"
+                tr["kwargs"]["label"] = "_nolegend_"
             traces_mpl.append(tr)
     elif "scatter" in trace["type"]:
         props = {
@@ -149,7 +149,7 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                     if leg_title is not None:
                         tr["kwargs"]["label"] += f" ({leg_title})"
             else:
-                tr["kwargs"]["label"] = "_no_legend"
+                tr["kwargs"]["label"] = "_nolegend_"
     return traces_mpl
 
 
@@ -180,7 +180,7 @@ def process_extra_trace(model):
     kw = {
         "alpha": kw["opacity"],
         "color": kw["color"],
-        "label": kw["name"] if kw["showlegend"] else "_no_legend",
+        "label": kw["name"] if kw["showlegend"] else "_nolegend_",
     }
     trace3d["kwargs"] = {**kw, **trace3d["kwargs"]}
     return trace3d
@@ -196,7 +196,7 @@ def display_matplotlib(
     max_cols=None,
     subplot_specs=None,
     antialiased=True,
-    legend_max_items=20,
+    legend_maxitems=20,
     fig_kwargs=None,
     show_kwargs=None,
     **kwargs,  # pylint: disable=unused-argument
@@ -225,7 +225,7 @@ def display_matplotlib(
         if fig_kwargs.get("figsize", None) is None:
             figsize = (8, 8)
             ratio = subplot_specs.shape[1] / subplot_specs.shape[0]
-            if legend_max_items != 0:
+            if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
         fig = plt.figure(**fig_kwargs)
@@ -309,11 +309,15 @@ def display_matplotlib(
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))
-                if 0 < count <= legend_max_items:
-                    ax.legend(
-                        bbox_to_anchor=(1.04, 1),
-                        loc="upper left",
-                    )
+                if 0 < count <= legend_maxitems:
+                    try:
+                        ax.legend(
+                            bbox_to_anchor=(1.04, 1),
+                            loc="upper left",
+                        )
+                    except AttributeError:
+                        # see https://github.com/matplotlib/matplotlib/pull/25565
+                        pass
             else:
                 ax.legend(loc="best")
 

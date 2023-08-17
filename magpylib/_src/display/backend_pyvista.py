@@ -221,7 +221,7 @@ def display_pyvista(
     max_cols=None,
     subplot_specs=None,
     repeat=False,
-    legend_max_items=20,
+    legend_maxitems=20,
     fig_kwargs=None,
     show_kwargs=None,
     mp4_quality=5,
@@ -288,7 +288,7 @@ def display_pyvista(
                             "2D plots. Empty plots will be shown instead"
                         )
         for rowcol, count in count_with_labels.items():
-            if 0 < count <= legend_max_items:
+            if 0 < count <= legend_maxitems:
                 row, col = rowcol
                 canvas.subplot(row, col)
                 if subplot_specs[row, col]["type"] == "scene":
