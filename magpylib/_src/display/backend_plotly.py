@@ -273,15 +273,6 @@ def process_extra_trace(model):
     return trace3d
 
 
-def extract_layout_kwargs(kwargs):
-    """Extract layout kwargs"""
-    layout = kwargs.pop("layout", {})
-    layout_kwargs = {k[7:]: v for k, v in kwargs.items() if k.startswith("layout")}
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("layout")}
-    layout.update(layout_kwargs)
-    return layout, kwargs
-
-
 def display_plotly(
     data,
     zoom=1,
