@@ -372,6 +372,7 @@ def make_mesh_lines(obj, mode, **kwargs) -> Dict[str, Any]:
         "x": x,
         "y": y,
         "z": z,
+        "mode": "markers+lines",
         "marker_color": marker.color,
         "marker_size": marker.size,
         "marker_symbol": marker.symbol,
