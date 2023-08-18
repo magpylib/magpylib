@@ -2,4 +2,4 @@
 
 # Site Notice
 
-Magpylib is developed at [Silicon Austria Labs](https://silicon-austria-labs.com/).
+Magpylib is supported by [Silicon Austria Labs](https://silicon-austria-labs.com/).
