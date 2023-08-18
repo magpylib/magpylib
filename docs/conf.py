@@ -61,7 +61,7 @@ def setup(app):
 
 project = "Magpylib"
 copyright = "2022, SAL - Silicon Austria Labs"
-author = "Michael Ortner <magpylib@gmail.com>"
+author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
 version = ""
@@ -212,7 +212,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "magpylib.tex", "magpylib Documentation", "Michael Ortner", "manual"),
+    (master_doc, "magpylib.tex", "magpylib Documentation", author, "manual"),
 ]
 
 
@@ -326,3 +326,8 @@ favicons = [
 
 # import pyvista
 # pyvista.BUILDING_GALLERY = True
+
+html_last_updated_fmt = ""
+html_show_copyright = False
+html_show_sphinx = False
+show_authors = False
