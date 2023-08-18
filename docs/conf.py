@@ -61,7 +61,7 @@ def setup(app):
 
 project = "Magpylib"
 copyright = "2022, SAL - Silicon Austria Labs"
-author = "Michael Ortner <magpylib@gmail.com>"
+author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
 version = ""
@@ -89,6 +89,7 @@ extensions = [
     "myst_nb",
     "sphinx_thebe",
     "sphinx_favicon",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -97,7 +98,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -170,6 +171,7 @@ html_theme_options = {
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -210,7 +212,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "magpylib.tex", "magpylib Documentation", "Michael Ortner", "manual"),
+    (master_doc, "magpylib.tex", "magpylib Documentation", author, "manual"),
 ]
 
 
@@ -261,7 +263,10 @@ epub_exclude_files = ["search.html"]
 
 # -- Markdown enable
 
-source_suffix = [".rst", ".md"]
+# source_suffix = [".rst", ".md"]
+# source_parsers = {
+#     '.md': 'recommonmark.parser.CommonMarkParser',
+# }
 
 # html_js_files = [
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
@@ -289,10 +294,40 @@ html_js_files = [
     # "https://unpkg.com/thebe@latest/lib/index.js",
 ]
 
-suppress_warnings = ["mystnb.unknown_mime_type"]
+suppress_warnings = [
+    "mystnb.unknown_mime_type",
+]
 
 favicons = [
     "images/favicons/favicon-16x16.png",
     "images/favicons/favicon-32x32.png",
     "images/favicons/icon.ico",
 ]
+
+
+# sphinx gallery settings
+# sphinx_gallery_conf = {
+#     # convert rst to md for ipynb
+#     # "pypandoc": True,
+#     # path to your example scripts
+#     "examples_dirs": "../examples",
+#     # path to where to save gallery generated output
+#     "gallery_dirs": "auto_examples",
+#     # Remove the "Download all examples" button from the top level gallery
+#     "download_all_examples": False,
+#     # # Remove sphinx configuration comments from code blocks
+#     # "remove_config_comments": True,
+#     # # Sort gallery example by file name instead of number of lines (default)
+#     # "within_subsection_order": FileNameSortKey,
+#     # Modules for which function level galleries are created.  In
+#     "doc_module": "pyvista",
+#     "image_scrapers": ("pyvista", "matplotlib"),
+# }
+
+# import pyvista
+# pyvista.BUILDING_GALLERY = True
+
+html_last_updated_fmt = ""
+html_show_copyright = False
+html_show_sphinx = False
+show_authors = False

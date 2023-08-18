@@ -611,7 +611,7 @@ def extract_animation_properties(
     animation_slider,
     animation_output,
 ):
-    """Exctract animation properties"""
+    """Extract animation properties"""
     # pylint: disable=import-outside-toplevel
     from magpylib._src.obj_classes.class_Collection import Collection
 

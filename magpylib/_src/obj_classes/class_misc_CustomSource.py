@@ -15,12 +15,12 @@ class CustomSource(BaseSource):
     field_func: callable, default=`None`
         The function for B- and H-field computation must have the two positional arguments
         `field` and `observers`. With `field='B'` or `field='H'` the B- or H-field in units
-        of [mT] or [kA/m] must be returned respectively. The `observers` argument must
+        of mT or kA/m must be returned respectively. The `observers` argument must
         accept numpy ndarray inputs of shape (n,3), in which case the returned fields must
         be numpy ndarrays of shape (n,3) themselves.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -44,7 +44,7 @@ class CustomSource(BaseSource):
     With version 4 `CustomSource` objects enable users to define their own source
     objects, and to embedded them in the Magpylib object oriented interface. In this example
     we create a source that generates a constant field and evaluate the field at observer
-    position (1,1,1) given in [mm]:
+    position (1,1,1) given in mm:
 
     >>> import numpy as np
     >>> import magpylib as magpy
