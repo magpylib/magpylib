@@ -305,7 +305,7 @@ def display_matplotlib(
             count = count_with_labels.get(row_col_num, 0)
             if ax.name == "3d":
                 ax.set(
-                    **{f"{k}label": f"{k} [mm]" for k in "xyz"},
+                    **{f"{k}label": f"{k} (mm)" for k in "xyz"},
                     **{f"{k}lim": r for k, r in zip("xyz", ranges)},
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))

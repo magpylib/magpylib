@@ -154,7 +154,7 @@ class BaseGeo(BaseTransform):
     @property
     def position(self):
         """
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         """
         return np.squeeze(self._position)
@@ -320,7 +320,7 @@ class BaseGeo(BaseTransform):
 
     def copy(self, **kwargs):
         """Returns a copy of the current object instance. The `copy` method returns a deep copy of
-        the object, that is independant of the original object.
+        the object, that is independent of the original object.
 
         Parameters
         ----------

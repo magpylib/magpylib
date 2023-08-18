@@ -24,14 +24,14 @@ def fieldB_cylinder_axial(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of cylinder (d, h), diameter and height, in units of [mm]
+        dimension of cylinder (d, h), diameter and height, in units of mm
     pos_obs: ndarray, shape (n,2)
-        position of observer (r,z) in cylindrical coordinates in units of [mm]
+        position of observer (r,z) in cylindrical coordinates in units of mm
 
     Returns
     -------
     B-field: ndarray
-        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of [mT].
+        B-field array of shape (n,2) in cylindrical coordinates (Br,Bz) in units of mT.
     """
     n = len(z0)
 
@@ -85,16 +85,16 @@ def fieldH_cylinder_diametral(
     Parameters
     ----------
     dim: ndarray, shape (n,2)
-        dimension of cylinder (d, h), diameter and height, in units of [mm]
+        dimension of cylinder (d, h), diameter and height, in units of mm
     tetta: ndarray, shape (n,)
         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
     obs_pos: ndarray, shape (n,3)
-        position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+        position of observer (r,phi,z) in cylindrical coordinates in units of mm and rad
 
     Returns
     -------
     H-field: ndarray
-        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of [kA/m].
+        H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi, Hz) in units of kA/m.
     """
     # pylint: disable=too-many-statements
 
@@ -262,29 +262,29 @@ def magnet_cylinder_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT].
+        Homogeneous magnetization vector in units of mT.
 
     dimension: ndarray, shape (n,2)
-        Cylinder dimension (d,h) with diameter d and height h in units of [mm].
+        Cylinder dimension (d,h) with diameter d and height h in units of mm.
 
     observer: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------
@@ -408,18 +408,18 @@ def magnet_cylinder_field(
 #     Parameters
 #     ----------
 #     dim: ndarray, shape (n,2)
-#         dimension of cylinder (d, h), diameter and height, in units of [mm]
+#         dimension of cylinder (d, h), diameter and height, in units of mm
 #     tetta: ndarray, shape (n,)
 #         angle between magnetization vector and x-axis in [rad]. M = (cos(tetta), sin(tetta), 0)
 #     obs_pos: ndarray, shape (n,3)
-#         position of observer (r,phi,z) in cylindrical coordinates in units of [mm] and [rad]
+#         position of observer (r,phi,z) in cylindrical coordinates in units of mm and rad
 #     niter: int
 #         Iterations for Simpsons approximation of the final integral
 
 #     Returns
 #     -------
 #     H-field: ndarray
-#         H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of [kA/m].
+#         H-field array of shape (n,3) in cylindrical coordinates (Hr, Hphi Hz) in units of kA/m.
 
 #     Examples
 #     --------

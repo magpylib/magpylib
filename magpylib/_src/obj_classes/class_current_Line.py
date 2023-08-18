@@ -12,20 +12,20 @@ class Line(BaseCurrent):
     Can be used as `sources` input for magnetic field computation.
 
     The vertex positions are defined in the local object coordinates (rotate with object).
-    When `position=(0,0,0)` and `orientation=None` global and local coordinates conincide.
+    When `position=(0,0,0)` and `orientation=None` global and local coordinates coincide.
 
     Parameters
     ----------
     current: float, default=`None`
-        Electrical current in units of [A].
+        Electrical current in units of A.
 
     vertices: array_like, shape (n,3), default=`None`
-        The current flows along the vertices which are given in units of [mm] in the
+        The current flows along the vertices which are given in units of mm in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -46,9 +46,9 @@ class Line(BaseCurrent):
 
     Examples
     --------
-    `Line` objects are magnetic field sources. In this example we compute the H-field [kA/m]
-    of a square-shaped line-current with 1 [A] current at the observer position (1,1,1) given in
-    units of [mm]:
+    `Line` objects are magnetic field sources. In this example we compute the H-field kA/m
+    of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
+    units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.current.Line(
@@ -111,7 +111,7 @@ class Line(BaseCurrent):
     @property
     def vertices(self):
         """
-        The current flows along the vertices which are given in units of [mm] in the
+        The current flows along the vertices which are given in units of mm in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
         """
@@ -119,7 +119,7 @@ class Line(BaseCurrent):
 
     @vertices.setter
     def vertices(self, vert):
-        """Set Line vertices, array_like, [mm]."""
+        """Set Line vertices, array_like, mm."""
         self._vertices = check_format_input_vertices(vert)
 
     @property

@@ -307,9 +307,9 @@ def make_CylinderSegment(
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
-        the cylinder section angles in units of [deg] and h is the cylinder height
-        in units of [mm].
+        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
+        the cylinder section angles in units of deg and h is the cylinder height
+        in units of mm.
 
     vert : int, default=50
         Number of vertices along a the complete 360 degrees arc. The number along the phi1-phi2-arc

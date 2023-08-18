@@ -281,10 +281,10 @@ def check_format_input_angle(inp):
 def check_format_input_scalar(
     inp, sig_name, sig_type, allow_None=False, forbid_negative=False
 ):
-    """check sclar input and return in formatted form
+    """check scalar input and return in formatted form
     - must be scalar or None (if allowed)
     - must be float compatible
-    - tranform into float
+    - transform into float
     """
     if allow_None:
         if inp is None:
@@ -591,7 +591,7 @@ def check_dimensions(sources):
 
 
 def check_excitations(sources):
-    """check if all sources have exitation initialized"""
+    """check if all sources have excitation initialized"""
     for src in sources:
         for arg in ("magnetization", "current", "moment"):
             if hasattr(src, arg):
