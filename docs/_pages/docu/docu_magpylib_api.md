@@ -208,6 +208,7 @@ magpy.magnet.Tetrahedron(magnetization, vertices, position, orientation, style)
 :::
 ::::
 
+(docu-magpylib-api-trimesh)=
 
 ### TriangularMesh
 ```python
@@ -257,7 +258,7 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 :::
 :::{grid-item}
 :columns: 12
-**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. A tutorial {ref}`gallery-tutorial-trimesh` is provided in the gallery.
+**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. Examples of working with the `TriangularMesh` class are found in {ref}`gallery-shapes-triangle` and in {ref}`gallery-shapes-pyvista`.
 :::
 ::::
 
