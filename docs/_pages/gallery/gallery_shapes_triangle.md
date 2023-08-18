@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -145,3 +146,5 @@ magpy.show(
     style_mesh_grid_line_width=4
 )
 ```
+
+Details about the `TriangularMesh` class are discussed in {ref}`gallery-tutorial-trimesh`.

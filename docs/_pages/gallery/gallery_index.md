@@ -32,15 +32,15 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_tutorial_collection.png
 :::
 
-:::{grid-item-card} Trimesh
+:::{grid-item-card} {ref}`gallery-tutorial-trimesh`
 :text-align: center
-:link: galler-tutorial-trimesh
+:link: gallery-tutorial-trimesh
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_WIP.png
 :::
 
-:::{grid-item-card} CustomSource
+:::{grid-item-card} {ref}`gallery-tutorial-custom`
 :text-align: center
 :link: gallery-tutorial-custom
 :link-type: ref
@@ -160,9 +160,9 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_misc_field_interpolation.png
 :::
 
-:::{grid-item-card} Inhomogeneous Magnetization
+:::{grid-item-card} {ref}`gallery-misc-inhom`
 :text-align: center
-:link: gallery-ext-inhomo-mag
+:link: gallery-misc-inhom
 :link-type: ref
 :link-alt: link to example
 :img-bottom: ../../_static/images/gallery_icon_WIP.png

@@ -257,7 +257,7 @@ The method <span style="color: orange">**to_TriangleCollection()**</span> transf
 :::
 :::{grid-item}
 :columns: 12
-**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. A tutorial {ref}`galler-tutorial-trimesh` is provided in the gallery.
+**Info:** While the checks may be disabled, the field computation guarantees correct results only if the mesh is closed, connected, not self-intersecting and all faces are oriented outwards. A tutorial {ref}`gallery-tutorial-trimesh` is provided in the gallery.
 :::
 ::::
 
@@ -345,7 +345,7 @@ magpy.misc.Triangle(magnetization, vertices, position, orientation, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** When multiple Triangles with similar magnetization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field. This is demonstrated in the tutorial {ref}`gallery-ext-complex-shapes-triangle`.
+**Info:** When multiple Triangles with similar magnetization vectors form a closed surface, and all their orientations (right-hand-rule) point outwards, their total H-field is equivalent to the field of a homogeneous magnet of the same shape. The B-field is only correct on the outside of the body. On the inside the magnetization must be added to the field. This is demonstrated in the tutorial {ref}`gallery-shapes-triangle`.
 :::
 ::::
 
@@ -390,7 +390,7 @@ magpy.Sensor(position, pixel, orientation, style)
 :::
 :::{grid-item}
 :columns: 12
-**Info:** With sensors it is possible to give observers their own position and orientation. The field is always computed in the reference frame of the sensor, which might itself be moving in the global coordinate system. A tutorial {ref}`gallery-tutorial-sensors` is provided in the gallery.
+**Info:** With sensors it is possible to give observers their own position and orientation. The field is always computed in the reference frame of the sensor, which might itself be moving in the global coordinate system. This is demonstrated in {ref}`gallery-tutorial-field-computation-sensors`.
 :::
 ::::
 

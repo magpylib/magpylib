@@ -12,11 +12,11 @@ kernelspec:
   name: python3
 ---
 
-(galler-tutorial-trimesh)=
+(gallery-tutorial-trimesh)=
 
-# Working with TriangularMesh
+# TriangularMesh Class
 
-The `TriangularMesh` class is used to create magnets from triangular surface meshes, instead of assembling them from individual `Triangle` objects as described in {ref}`examples-triangle`. This class is initialized with the `vertices` (an array_like of positions) and the `faces` (an array_like of index triplets) inputs. In addition, a set of useful classmethods enables initialization from various inputs:
+The `TriangularMesh` class is used to create magnets from triangular surface meshes, instead of assembling them from individual `Triangle` objects as described in {ref}`gallery-shapes-triangle`. This class is initialized with the `vertices` (an array_like of positions) and the `faces` (an array_like of index triplets) inputs. In addition, a set of useful classmethods enables initialization from various inputs:
 
 - `TriangularMesh.from_mesh()`: from an array_like of triplets of vertices
 - `TriangularMesh.from_triangles()`: from a list of `Triangle` objects
@@ -67,7 +67,7 @@ tmesh_tetra.show()
 
 ## Prism magnet with open mesh
 
-In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`examples-triangle`. In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
+In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh, as described in {ref}`gallery-shapes-triangle`. In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
 
 ```{code-cell} ipython3
 import magpylib as magpy

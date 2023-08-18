@@ -32,7 +32,7 @@ Physics and computation background
 :maxdepth: 2
 :hidden:
 
-docu_magpylib.md
-docu_magpylib_show.md
+docu_magpylib_api.md
+docu_graphics.md
 docu_physics.md
 ```

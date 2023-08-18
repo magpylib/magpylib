@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -138,6 +139,8 @@ sensor.reset_path()
 print(sensor.position)
 print(sensor.orientation.as_quat())
 ```
+
+(gallery-tutorial-paths-edge-padding-end-slicing)=
 
 ## Edge-padding and end-slicing
 

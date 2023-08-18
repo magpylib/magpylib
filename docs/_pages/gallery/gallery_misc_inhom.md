@@ -12,12 +12,8 @@ kernelspec:
   name: python3
 ---
 
-(gallery-shapes-3d-models)=
+(gallery-misc-inhom)=
 
-# 3D Models
+# Inhomogeneous Magnetization
 
-cow - spider from pyvista examples
-
-CAD import
-
-...
+WIP: din spec example

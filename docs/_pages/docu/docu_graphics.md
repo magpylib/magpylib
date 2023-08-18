@@ -485,7 +485,7 @@ magpy.show(cube, cylinder, sphere, backend="plotly")
 
 ### Setting style via collections
 
-When displaying collections, the collection object `color` property will be automatically assigned to all its children and override the default style. An example that demonstrates this is {ref}`examples-union-operation`. In addition, it is possible to modify the individual style properties of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
+When displaying collections, the collection object `color` property will be automatically assigned to all its children and override the default style. In addition, it is possible to modify the individual style properties of all children with the `set_children_styles` method. Non-matching properties are simply ignored.
 
 In the following example we show how the french magnetization style is applied to all children in a collection,
 
@@ -574,7 +574,7 @@ magpy.show(
 )
 ```
 
-Notice that the sensor, with the shorter path stops before the magnets do. This is an example where {ref}`examples-edge-padding-end-slicing` is applied.
+Notice that the sensor, with the shorter path stops before the magnets do. This is an example where {ref}`gallery-tutorial-paths-edge-padding-end-slicing` is applied.
 
 ```{warning}
 Even with some implemented failsafes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.

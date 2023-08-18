@@ -1,4 +1,5 @@
 ---
+orphan: true
 jupytext:
   text_representation:
     extension: .md
@@ -62,6 +63,8 @@ for ax in [ax1,ax2]:
 plt.tight_layout()
 plt.show()
 ```
+
+(gallery-tutorial-field-computation-sensors)=
 
 ## Using Sensors
 
