@@ -350,6 +350,7 @@ magpy.misc.Triangle(magnetization, vertices, position, orientation, style)
 :::
 ::::
 
+(docu-magpylib-api-custom)=
 
 ### CustomSource
 ```python
