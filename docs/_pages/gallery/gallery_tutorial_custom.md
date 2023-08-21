@@ -19,7 +19,7 @@ kernelspec:
 The {ref}`docu-magpylib-api-custom` class was implemented to offer easy integration of user field implementations into Magpylibs object-oriented interface.
 
 ```{note}
-Obviously, any field implementation can be integrated to make use of the position-orientation interface. Specifically, fields where interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from this.
+Obviously, any field implementation can be integrated. Specifically, fields where superposition holds and interactions do not disturb the sources (e.g. electric, gravitational, ...) can benefit from Magpylibs position and orientation interface.
 ```
 
 ## Magnetic Monopole
@@ -27,12 +27,12 @@ Obviously, any field implementation can be integrated to make use of the positio
 In this example we create a class that represents the elusive magnetic monopole, which would have a magnetic field like this
 
 $$
-{\bf H} = Q_m \frac{{\bf r}}{|{\bf r}|^3}.
+{\bf B} = Q_m \frac{{\bf r}}{|{\bf r}|^3}.
 $$
 
 Here the monopole lies in the origin of the local coordinates, $Q_m$ is the monopole charge and ${\bf r}$ is the observer position.
 
-We simply create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and kA/m in the same shape.
+We create this field as a Python function and hand it over to a CustomSource `field_func` argument. The `field_func` input must be a callable with two positional arguments `field` (can be `'B'` or `'H'`) and `observers` (must accept ndarrays of shape (n,3)), and return the respective fields in units of mT and kA/m in the same shape.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -41,7 +41,16 @@ import magpylib as magpy
 # Create monopole field
 def mono_field(field, observers):
     """
+    Monopole field 
+
+    field: string, "B" or "H
+        return B or H-field
+
     observers: array_like of shape (n,3)
+        Observer positions
+    
+    Returns: np.ndarray, shape (n,3)
+        Magnetic monopole field
     """
     if field=="B":
         Qm = 1          # unit mT
@@ -90,58 +99,30 @@ plt.tight_layout()
 plt.show()
 ```
 
-## Subclassing CustomSource
+## Adding a 3D model
 
-In the above example it would be nice to make the field function dynamic so that any charge can be handed over without having to redefine the field. Here we sub-class `CustomSource` to achieve this. The new source class has `charge` as a property, and will seamlessly integrate into Magpylib.
+While the CustomSource is graphically represented by a simple marker by default, we can easily add a 3D model as described in {ref}`examples-own-3d-models`.
 
 ```{code-cell} ipython3
-class Monopole(magpy.misc.CustomSource):
-    """ Magnetic Monopole class
+# Load Sphere model
+trace_pole = magpy.graphics.model3d.make_Ellipsoid(
+    dimension=(.3,.3,.3),
+    )
 
-    Parameters
-    ----------
-    charge: float
-        Monopole charge
-    """
-    def __init__(self, charge):
-        super().__init__()
-        self._charge = charge
-        self._update()
+for mono in [mono1, mono2]:
+    # Turn off default model
+    mono.style.model3d.showdefault=False
 
-    def _update(self):
-        
-        def mono_field(field, observers):
-            """observers: array_like of shape (n,3)"""
-            chg = self._charge
-            if field=="H":
-                chg *= 10/4/np.pi  # unit kA/m
-            obs = np.array(observers).T
-            BH = chg * obs / np.linalg.norm(obs, axis=0)**3
-            return BH.T
+    # Add sphere model
+    mono.style.model3d.add_trace(trace_pole)
 
-        self.field_func = mono_field
-
-    @property
-    def charge(self):
-        """Number of cubes"""
-        return self._charge
-
-    @charge.setter
-    def charge(self, input):
-        """Set charge"""
-        self._charge = input
-        self._update()
-
-mono = Monopole(charge=1)
-print(mono.getB((1,0,0)))
-
-mono.charge=-1
-print(mono.getB((1,0,0)))
+# Display models
+magpy.show(mono1, mono2)
 ```
 
-## Style kwargs and 3D model
+## Subclassing CustomSource
 
-The only things that are now missing are the style kwargs and a nice 3D model. Both is easily achived by adding a few lines of code in the constructor. Kwargs are forwarded, and we make use of internally available traces and choose a sphere as 3D-model. Detailed information with 3D models are given in {ref}`examples-own-3d-models`.
+In the above example it would be nice to make the CustomSource dynamic, so that it would have a property `charge` that can be changed at will, rather than having to redefine the `field_func` and initialize a new object every time. In the following example we show how to sub-class `CustomSource` to achieve this. The problem is reminiscent of {ref}`gallery-misc-compound`. 
 
 ```{code-cell} ipython3
 class Monopole(magpy.misc.CustomSource):
@@ -150,7 +131,7 @@ class Monopole(magpy.misc.CustomSource):
     Parameters
     ----------
     charge: float
-        Monopole charge
+        Monopole charge in units of mT
     """
     def __init__(self, charge, **kwargs):
         super().__init__(**kwargs)  # hand over style kwargs
@@ -163,12 +144,14 @@ class Monopole(magpy.misc.CustomSource):
         self.style.model3d.showdefault=False
         self.style.model3d.add_trace(trace_pole)
 
+        # Add monopole field_func
         self._update()
 
     def _update(self):
+        """ Apply monopole field function """
         
         def mono_field(field, observers):
-            """observers: array_like of shape (n,3)"""
+            """ monopole field"""
             chg = self._charge
             if field=="H":
                 chg *= 10/4/np.pi  # unit kA/m
@@ -189,16 +172,21 @@ class Monopole(magpy.misc.CustomSource):
         self._charge = input
         self._update()
 
-mono = Monopole(charge=1, style_color="pink")
-mono.show()
+# Use new class
+mono = Monopole(charge=1)
+print(mono.getB((1,0,0)))
+
+# Make use of new property
+mono.charge = -1
+print(mono.getB((1,0,0)))
 ```
 
-Finally we exploit the custom class to have a look at the Quadrupole field, making use of some fancy vizualizations.
+The new class seamlessly integrates into the Magpylib interface as we show in the following example where we have a look at the Quadrupole field
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
 
-# Create some monopoles
+# Create a quadrupole from four monopoles
 mono1 = Monopole(charge= 1, style_color='r', position=( 1, 0, 0))
 mono2 = Monopole(charge= 1, style_color='r', position=(-1, 0, 0))
 mono3 = Monopole(charge=-1, style_color='b', position=( 0, 0, 1))
