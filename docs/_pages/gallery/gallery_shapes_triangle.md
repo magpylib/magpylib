@@ -105,7 +105,7 @@ magpy.show(
 )
 ```
 
-## Triangular Mesh Magnet
+## TriangularMesh
 
 While `Triangle` simply provides the field of a charged triangle and can be used to contruct complex forms, it is prone to error and tedious to work with when meshes become large. For this purpose the `TriangularMesh` class ensures proper and convenient magnet creation by automatically checking mesh integrity and by orienting the faces at initialization.
 
@@ -147,4 +147,59 @@ magpy.show(
 )
 ```
 
-Details about the `TriangularMesh` class are discussed in {ref}`gallery-tutorial-trimesh`.
+The `TriangularMesh` class is extremely powerful as it enables almost arbitrary magnet shapes. It is described in detail in {ref}`docu-magpylib-api-trimesh`. There are many ways to generate such triangular meshes. An example thereof is shown in {ref}`gallery-shapes-pyvista`.
+
+```{caution}
+* `getB` and `getH` compute the fields correctly only if the mesh is closed, not self-intersecting, and all faces are properly oriented outwards.
+
+* Input checks and face reorientation can be computationally expensive. The checks can individually be deactivated by setting `reorient_faces="skip"`, `check_open="skip"`, `check_disconnected="skip"`, and `check_selfintersecting="skip"` at initialization of `TriangularMesh` objects. The checks can also be performed by hand after initialization.
+
+* Meshing tools such as the [Pyvista](https://docs.pyvista.org/) library can be very convenient for building complex shapes, but often do not guarantee that the mesh is properly closed or connected - see {ref}`gallery-shapes-pyvista`.
+
+* Meshing tools often create meshes with a lot of faces, especially when working with curved surfaces. Keep in mind that the field computation takes of the order of a few microseconds per observer position per face, and that RAM is a limited resource.
+```
+
+## Open TriangularMesh
+
+In some cases it may be desirable to generate a `TriangularMesh` object from an open mesh (see Prism example above). In this case one has to be extremely careful because one cannot rely on the checks. Not to generate warnings or error messages, these checks can be disabled with `"skip"` or their outcome can be ignored with `"ignore"`. The `show` function can be used to view open edges and disconnected parts. In the following example we generate such an open mesh directly from `Triangle` objects.
+
+```{code-cell} ipython3
+import magpylib as magpy
+import numpy as np
+
+# Create top and bottom faces of a prism magnet
+top = magpy.misc.Triangle(
+    magnetization=(1000,0,0),
+    vertices= ((-1,-1,1), (1,-1,1), (0,2,1)),
+)
+bottom = magpy.misc.Triangle(
+    magnetization=(1000,0,0),
+    vertices= ((-1,-1,-1), (0,2,-1), (1,-1,-1)),
+)
+
+# Create prism with open edges
+prism = magpy.magnet.TriangularMesh.from_triangles(
+    magnetization=(0, 0, 1000),   # overrides triangles magnetization
+    triangles=[top, bottom],
+    check_open="ignore",          # check but ignore open mesh
+    check_disconnected="ignore",  # check but ignore disconnected mesh
+    reorient_faces="ignore",      # check but ignore non-orientable mesh
+)
+prism.style.label = "Open Prism",
+prism.style.magnetization.mode = "arrow"
+
+print("mesh status open:", prism.status_open)
+print("mesh status disconnected:", prism.status_disconnected)
+print("mesh status self-intersecting:", prism.status_selfintersecting)
+print("mesh status reoriented:", prism.status_reoriented)
+
+prism.show(
+    backend="plotly",
+    style_mesh_open_show=True,
+    style_mesh_disconnected_show=True,
+)
+```
+
+```{caution}
+Keep in mind that the inside-outside check will fail, so that `getB` may yield wrong results on the inside of the prism where the polarization vector should be added.
+```
