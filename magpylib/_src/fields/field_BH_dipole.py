@@ -19,19 +19,19 @@ def dipole_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     moment: ndarray, shape (n,3)
-        Dipole moment vector in units of [mT*mm^3].
+        Dipole moment vector in units of mT*mm^3.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of dipole in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of dipole in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------
@@ -48,7 +48,7 @@ def dipole_field(
 
     Notes
     -----
-    The field is similar to the outside-field of a spherical magnet with Volume = 1 [mm^3].
+    The field is similar to the outside-field of a spherical magnet with Volume = 1 mm^3.
     """
     bh = check_field_input(field, "dipole_field()")
 

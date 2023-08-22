@@ -1,5 +1,5 @@
 """Sensor class code"""
-from magpylib._src.display.traces_generic import make_Sensor
+from magpylib._src.display.traces_core import make_Sensor
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -21,12 +21,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Parameters
     ----------
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
         Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of [mm].
+        (rotate with object), in units of mm.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -47,7 +47,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Examples
     --------
     `Sensor` objects are observers for magnetic field computation. In this example we compute the
-    B-field in units of [mT] as seen by the sensor in the center of a circular current loop:
+    B-field in units of mT as seen by the sensor in the center of a circular current loop:
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
@@ -76,7 +76,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     _style_class = SensorStyle
     _autosize = True
-    _draw_func = make_Sensor
+    get_trace = make_Sensor
 
     def __init__(
         self,
@@ -86,7 +86,6 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.pixel = pixel
 
@@ -98,7 +97,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pixel(self):
         """Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of [mm].
+        (rotate with object), in units of mm.
         """
         return self._pixel
 
@@ -118,7 +117,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getB(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the B-field in units of [mT] as seen by the sensor.
+        """Compute the B-field in units of mT as seen by the sensor.
 
         Parameters
         ----------
@@ -147,13 +146,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             B-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of [mT]. Paths of objects that are shorter than
+            position (n1,n2,...) in units of mT. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        B-field [mT] as seen by the sensor in the center of a circular current loop:
+        B-field in units of mT as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
@@ -193,7 +192,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getH(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the H-field in units of [kA/m] as seen by the sensor.
+        """Compute the H-field in units of kA/m as seen by the sensor.
 
         Parameters
         ----------
@@ -222,13 +221,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             H-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of [kA/m]. Paths of objects that are shorter than
+            position (n1,n2,...) in units of kA/m. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        H-field [kA/m] as seen by the sensor in the center of a circular current loop:
+        H-field in kA/m as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()

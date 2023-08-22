@@ -479,6 +479,23 @@ def test_input_objects_field_func_bad():
     np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, gg)
 
 
+def test_missing_input_triangular_mesh():
+    """missing input checks for TriangularMesh"""
+
+    verts = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
+    tris = np.array([(0, 1, 2), (0, 1, 3), (1, 2, 3), (0, 2, 3)])
+
+    def trim():
+        magpy.magnet.TriangularMesh(faces=tris)
+
+    np.testing.assert_raises(MagpylibMissingInput, trim)
+
+    def trimm():
+        magpy.magnet.TriangularMesh(vertices=verts)
+
+    np.testing.assert_raises(MagpylibMissingInput, trimm)
+
+
 ###########################################################
 ###########################################################
 # DISPLAY
@@ -517,56 +534,6 @@ def test_input_show_backend_bad():
     ]
     for bad in bads:
         np.testing.assert_raises(MagpylibBadUserInput, magpy.show, x, backend=bad)
-
-
-def test_input_show_missing_parameters1():
-    """missing inputs"""
-    s = magpy.magnet.Cuboid()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Cylinder()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.CylinderSegment()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Sphere()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Loop()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Line()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.misc.Dipole()
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-
-
-def test_input_show_missing_parameters2():
-    """missing inputs"""
-    s = magpy.magnet.Cuboid(dimension=(1, 2, 3))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Cylinder(dimension=(1, 2))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.CylinderSegment(dimension=(1, 2, 3, 4, 5))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Sphere(diameter=1)
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Loop(diameter=1)
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Line(vertices=[(1, 2, 3)] * 2)
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-
-
-def test_input_show_missing_parameters3():
-    """missing inputs"""
-    s = magpy.magnet.Cuboid(magnetization=(1, 2, 3))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Cylinder(magnetization=(1, 2, 3))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.CylinderSegment(magnetization=(1, 2, 3))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.magnet.Sphere(magnetization=(1, 2, 3))
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Loop(current=1)
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
-    s = magpy.current.Line(current=1)
-    np.testing.assert_raises(MagpylibMissingInput, magpy.show, s)
 
 
 ###########################################################

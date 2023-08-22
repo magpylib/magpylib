@@ -21,6 +21,7 @@ os.environ["DISPLAY"] = ":99"
 os.environ["PYVISTA_OFF_SCREEN"] = "true"
 os.environ["PYVISTA_USE_IPYVTK"] = "true"
 
+os.environ["MAGPYLIB_MPL_SVG"] = "true"
 
 # Location of Sphinx files
 sys.path.insert(0, os.path.abspath("./../"))  ##Add the folder one level above
@@ -60,7 +61,7 @@ def setup(app):
 
 project = "Magpylib"
 copyright = "2022, SAL - Silicon Austria Labs"
-author = "Michael Ortner <magpylib@gmail.com>"
+author = "The Magpylib Project <magpylib@gmail.com>"
 
 # The short X.Y version
 version = ""
@@ -72,7 +73,7 @@ from magpylib import __version__ as release
 
 # If your documentation needs a minimal Sphinx version, state it here.
 #
-needs_sphinx = "4.4.0"
+needs_sphinx = "5.3.0"
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
@@ -84,13 +85,11 @@ extensions = [
     "sphinx.ext.autosummary",
     "sphinx.ext.ifconfig",
     "matplotlib.sphinxext.plot_directive",
-    # "nbsphinx",
-    # "sphinx_gallery.load_style",
     "sphinx_copybutton",
     "myst_nb",
     "sphinx_thebe",
-    # "myst_parser",
-    # "sphinx_panels",
+    "sphinx_favicon",
+    "sphinx_design",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -99,7 +98,7 @@ templates_path = ["_templates"]
 # The suffix(es) of source filenames.
 # You can specify multiple suffix as a list of string:
 #
-# source_suffix = ['.rst', '.md']
+source_suffix = [".rst", ".md"]
 
 # The master toctree document.
 master_doc = "index"
@@ -109,7 +108,7 @@ master_doc = "index"
 #
 # This is also used if you do content translation via gettext catalogs.
 # Usually you set "language" from the command line for these cases.
-language = None
+language = "en"
 
 # List of patterns, relative to source directory, that match files and
 # directories to ignore when looking for source files.
@@ -127,7 +126,7 @@ pygments_style = "sphinx"
 #
 html_theme = "sphinx_book_theme"
 
-html_logo = "./_static/images/magpylib_logo.png"
+html_logo = "./_static/images/magpylib_flag.png"
 # Theme options are theme-specific and customize the look and feel of a theme
 # further.  For a list of options available for each theme, see the
 # documentation.
@@ -138,12 +137,41 @@ html_theme_options = {
     "repository_branch": release,
     "use_repository_button": True,
     "use_download_button": True,
-    "launch_buttons": {"binderhub_url": "https://mybinder.org", "thebe": True},
+    "use_source_button": True,
+    "use_edit_page_button": True,
+    "use_issues_button": True,
+    "launch_buttons": {
+        "binderhub_url": "https://mybinder.org",
+        "thebe": True,
+        "notebook_interface": "jupyterlab",
+    },
+    "icon_links": [
+        {
+            "name": "Github",
+            "url": "https://github.com/magpylib/magpylib",
+            "icon": "https://img.shields.io/github/stars/magpylib/magpylib?style=social",
+            "type": "url",
+        },
+        {
+            "name": "PyPI",
+            "url": "https://pypi.org/project/magpylib/",
+            "icon": "https://img.shields.io/pypi/v/magpylib",
+            "type": "url",
+        },
+        {
+            "name": "Conda",
+            "url": "https://anaconda.org/conda-forge/magpylib",
+            "icon": "https://img.shields.io/conda/vn/conda-forge/magpylib",
+            "type": "url",
+        },
+    ],
 }
+
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
 html_static_path = ["_static"]
+html_css_files = ["custom.css"]
 
 # Custom sidebar templates, must be a dictionary that maps document names
 # to template names.
@@ -184,7 +212,7 @@ latex_elements = {
 # (source start file, target name, title,
 #  author, documentclass [howto, manual, or own class]).
 latex_documents = [
-    (master_doc, "magpylib.tex", "magpylib Documentation", "Michael Ortner", "manual"),
+    (master_doc, "magpylib.tex", "magpylib Documentation", author, "manual"),
 ]
 
 
@@ -235,7 +263,10 @@ epub_exclude_files = ["search.html"]
 
 # -- Markdown enable
 
-source_suffix = [".rst", ".md"]
+# source_suffix = [".rst", ".md"]
+# source_parsers = {
+#     '.md': 'recommonmark.parser.CommonMarkParser',
+# }
 
 # html_js_files = [
 #    "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js"
@@ -260,22 +291,43 @@ copybutton_prompt_is_regexp = True
 
 html_js_files = [
     "https://cdnjs.cloudflare.com/ajax/libs/require.js/2.3.4/require.min.js",
-    "https://unpkg.com/thebe@latest/lib/index.js",
+    # "https://unpkg.com/thebe@latest/lib/index.js",
 ]
 
-mathjax_path = "https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.4/MathJax.js?config=TeX-MML-AM_CHTML"
-mathjax2_config = {
-    "tex2jax": {
-        "inlineMath": [["$", "$"], ["\\(", "\\)"]],
-        "processEscapes": True,
-        "ignoreClass": "document",
-        "processClass": "math|output_area",
-    }
-}
+suppress_warnings = [
+    "mystnb.unknown_mime_type",
+]
 
-# needed for sphinx >= 4.3
-mathjax_options = {
-    "async": "async",
-}
+favicons = [
+    "images/favicons/favicon-16x16.png",
+    "images/favicons/favicon-32x32.png",
+    "images/favicons/icon.ico",
+]
 
-myst_update_mathjax = False
+
+# sphinx gallery settings
+# sphinx_gallery_conf = {
+#     # convert rst to md for ipynb
+#     # "pypandoc": True,
+#     # path to your example scripts
+#     "examples_dirs": "../examples",
+#     # path to where to save gallery generated output
+#     "gallery_dirs": "auto_examples",
+#     # Remove the "Download all examples" button from the top level gallery
+#     "download_all_examples": False,
+#     # # Remove sphinx configuration comments from code blocks
+#     # "remove_config_comments": True,
+#     # # Sort gallery example by file name instead of number of lines (default)
+#     # "within_subsection_order": FileNameSortKey,
+#     # Modules for which function level galleries are created.  In
+#     "doc_module": "pyvista",
+#     "image_scrapers": ("pyvista", "matplotlib"),
+# }
+
+# import pyvista
+# pyvista.BUILDING_GALLERY = True
+
+html_last_updated_fmt = ""
+html_show_copyright = False
+html_show_sphinx = False
+show_authors = False

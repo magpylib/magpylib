@@ -1,9 +1,10 @@
 """BaseGeo class code"""
 # pylint: disable=cyclic-import
+# pylint: disable=too-many-branches
 import numpy as np
 
 from magpylib._src.display.display import show
-from magpylib._src.display.traces_generic import make_DefaultTrace
+from magpylib._src.display.traces_core import make_DefaultTrace
 
 UNITS = {
     "parent": None,
@@ -20,7 +21,7 @@ class BaseDisplayRepr:
     """Provides the show and repr methods for all objects"""
 
     show = show
-    _draw_func = make_DefaultTrace
+    get_trace = make_DefaultTrace
 
     def _property_names_generator(self):
         """returns a generator with class properties only"""
@@ -61,10 +62,18 @@ class BaseDisplayRepr:
                 elif k == "pixel":
                     val = getattr(self, "pixel")
                     px_shape = val.shape[:-1]
-                    val_str = f"{int(np.product(px_shape))}"
+                    val_str = f"{int(np.prod(px_shape))}"
                     if val.ndim > 2:
                         val_str += f" ({'x'.join(str(p) for p in px_shape)})"
                     val = val_str
+                elif k == "status_disconnected_data":
+                    val = getattr(self, k)
+                    if val is not None:
+                        val = f"{len(val)} part{'s'[:len(val)^1]}"
+                elif isinstance(getattr(self, k), (list, tuple, np.ndarray)):
+                    val = np.array(getattr(self, k))
+                    if np.prod(val.shape) > 4:
+                        val = f"shape{val.shape}"
                 else:
                     val = getattr(self, k)
                 lines.append(f"  • {k}: {val} {unit_str}")

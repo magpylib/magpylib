@@ -120,10 +120,9 @@ def collection_tree_generator(
 class BaseCollection(BaseDisplayRepr):
     """Collection base class without BaseGeo properties"""
 
-    _draw_func = None
+    get_trace = None
 
     def __init__(self, *children, override_parent=False):
-
         BaseDisplayRepr.__init__(self)
 
         self._children = []
@@ -517,7 +516,7 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute B-field in [mT] for given sources and observers.
+        """Compute B-field in mT for given sources and observers.
 
         Parameters
         ----------
@@ -545,7 +544,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             B-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of [mT]. Sensor pixel positions are equivalent
+            position (n1,n2,...) in units of mT. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
             considered as static beyond their end.
 
@@ -588,7 +587,7 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute H-field in [kA/m] for given sources and observers.
+        """Compute H-field in kA/m for given sources and observers.
 
         Parameters
         ----------
@@ -616,7 +615,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             H-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of [kA/m]. Sensor pixel positions are equivalent
+            position (n1,n2,...) in units of kA/m. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
             considered as static beyond their end.
 
@@ -680,14 +679,14 @@ class Collection(BaseGeo, BaseCollection):
     sensors: `Sensor` objects
         An ordered list of all sensor objects in the collection.
 
-    sources: source objects
-        An ordered list of all source objects`(magnets, currents, misc) in the collection.
+    sources: `Source` objects
+        An ordered list of all source objects (magnets, currents, misc) in the collection.
 
     collections: `Collection` objects
         An ordered list of all collection objects in the collection.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`

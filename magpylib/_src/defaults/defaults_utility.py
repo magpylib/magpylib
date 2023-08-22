@@ -1,6 +1,7 @@
 """utilities for creating property classes"""
 import collections.abc
 from copy import deepcopy
+from functools import lru_cache
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
@@ -8,32 +9,24 @@ from magpylib._src.defaults.defaults_values import DEFAULTS
 SUPPORTED_PLOTTING_BACKENDS = ("matplotlib", "plotly", "pyvista", "mayavi")
 
 
-SYMBOLS_MATPLOTLIB_TO_PLOTLY = {
-    ".": "circle",
-    "o": "circle",
-    "+": "cross",
-    "D": "diamond",
-    "d": "diamond",
-    "s": "square",
-    "x": "x",
-}
+ALLOWED_SYMBOLS = (".", "+", "D", "d", "s", "x", "o")
 
-LINESTYLES_MATPLOTLIB_TO_PLOTLY = {
-    "solid": "solid",
-    "-": "solid",
-    "dashed": "dash",
-    "--": "dash",
-    "dashdot": "dashdot",
-    "-.": "dashdot",
-    "dotted": "dot",
-    ".": "dot",
-    ":": "dot",
-    (0, (1, 1)): "dot",
-    "loosely dotted": "longdash",
-    "loosely dashdotted": "longdashdot",
-}
+ALLOWED_LINESTYLES = (
+    "solid",
+    "dashed",
+    "dotted",
+    "dashdot",
+    "loosely dotted",
+    "loosely dashdotted",
+    "-",
+    "--",
+    "-.",
+    ".",
+    ":",
+    (0, (1, 1)),
+)
 
-COLORS_MATPLOTLIB_TO_PLOTLY = {
+COLORS_SHORT_TO_LONG = {
     "r": "red",
     "g": "green",
     "b": "blue",
@@ -44,10 +37,28 @@ COLORS_MATPLOTLIB_TO_PLOTLY = {
     "w": "white",
 }
 
-SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY = {
-    "line_width": 2.2,
-    "marker_size": 0.7,
-}
+
+class _DefaultType:
+    """Special keyword value.
+
+    The instance of this class may be used as the default value assigned to a
+    keyword if no other obvious default (e.g., `None`) is suitable,
+
+    """
+
+    __instance = None
+
+    def __new__(cls):
+        # ensure that only one instance exists
+        if not cls.__instance:
+            cls.__instance = super().__new__(cls)
+        return cls.__instance
+
+    def __repr__(self):  # pragma: no cover
+        return "<default>"
+
+
+_DefaultValue = _DefaultType()
 
 
 def get_defaults_dict(arg=None) -> dict:
@@ -188,6 +199,7 @@ def linearize_dict(kwargs, separator=".") -> dict:
     return dict_
 
 
+@lru_cache(maxsize=1000)
 def color_validator(color_input, allow_None=True, parent_name=""):
     """validates color inputs based on chosen `backend', allows `None` by default.
 
@@ -213,7 +225,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     color_input_original = color_input
     if not allow_None or color_input is not None:
         # pylint: disable=import-outside-toplevel
-        color_input = COLORS_MATPLOTLIB_TO_PLOTLY.get(color_input, color_input)
+        color_input = COLORS_SHORT_TO_LONG.get(color_input, color_input)
         import re
 
         hex_fail = True
@@ -232,7 +244,6 @@ def color_validator(color_input, allow_None=True, parent_name=""):
             pass
 
         if isinstance(color_input, (tuple, list)):
-
             if len(color_input) == 4:  # do not allow opacity values for now
                 color_input = color_input[:-1]
             if len(color_input) != 3:

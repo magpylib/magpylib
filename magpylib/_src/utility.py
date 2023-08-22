@@ -351,3 +351,39 @@ def get_registered_sources():
         for k, v in get_subclasses(BaseSource, recursive=True).items()
         if not v in (BaseCurrent, BaseMagnet, BaseSource)
     }
+
+
+def is_notebook() -> bool:  # pragma: no cover
+    """Check if execution is within a IPython environment"""
+    # pylint: disable=import-outside-toplevel
+    try:
+        from IPython import get_ipython
+
+        shell = get_ipython().__class__.__name__
+        if shell == "ZMQInteractiveShell":
+            return True  # Jupyter notebook or qtconsole
+        if shell == "TerminalInteractiveShell":
+            return False  # Terminal running IPython
+        return False  # Other type (?)
+    except NameError:
+        return False  # Probably standard Python interpreter
+
+
+def open_animation(filepath, embed=True):
+    """Display video or gif file using tkinter or IPython"""
+    # pylint: disable=import-outside-toplevel
+    if is_notebook():
+        if filepath.endswith(".gif"):
+            from IPython.display import Image as IPyImage, display
+
+            display(IPyImage(data=filepath, embed=embed))
+        elif filepath.endswith(".mp4"):
+            from IPython.display import Video, display
+
+            display(Video(data=filepath, embed=embed))
+        else:  # pragma: no cover
+            raise TypeError("Filetype not supported, only 'mp4 or 'gif' allowed")
+    else:
+        import webbrowser
+
+        webbrowser.open(filepath)

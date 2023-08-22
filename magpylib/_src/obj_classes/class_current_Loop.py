@@ -1,5 +1,5 @@
 """Loop current class code"""
-from magpylib._src.display.traces_generic import make_Loop
+from magpylib._src.display.traces_core import make_Loop
 from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -17,13 +17,13 @@ class Loop(BaseCurrent):
     Parameters
     ----------
     current: float, default=`None`
-        Electrical current in units of [A].
+        Electrical current in units of A.
 
     diameter: float, default=`None`
-        Diameter of the loop in units of [mm].
+        Diameter of the loop in units of mm.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -44,9 +44,9 @@ class Loop(BaseCurrent):
 
     Examples
     --------
-    `Loop` objects are magnetic field sources. In this example we compute the H-field [kA/m]
-    of such a current loop with 100 [A] current and a diameter of 2 [mm] at the observer position
-    (1,1,1) given in units of [mm]:
+    `Loop` objects are magnetic field sources. In this example we compute the H-field kA/m
+    of such a current loop with 100 A current and a diameter of 2 mm at the observer position
+    (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.current.Loop(current=100, diameter=2)
@@ -79,7 +79,7 @@ class Loop(BaseCurrent):
 
     _field_func = staticmethod(current_loop_field)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
-    _draw_func = make_Loop
+    get_trace = make_Loop
 
     def __init__(
         self,
@@ -90,7 +90,6 @@ class Loop(BaseCurrent):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.diameter = diameter
 
@@ -100,12 +99,12 @@ class Loop(BaseCurrent):
     # property getters and setters
     @property
     def diameter(self):
-        """Diameter of the loop in units of [mm]."""
+        """Diameter of the loop in units of mm."""
         return self._diameter
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Loop loop diameter, float, [mm]."""
+        """Set Loop loop diameter, float, mm."""
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",

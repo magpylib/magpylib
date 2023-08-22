@@ -6,6 +6,7 @@ from scipy.spatial import ConvexHull  # pylint: disable=no-name-in-module
 
 from magpylib._src.display.traces_utility import merge_mesh3d
 from magpylib._src.display.traces_utility import place_and_orient_model3d
+from magpylib._src.fields.field_BH_tetrahedron import check_chirality
 
 
 def base_validator(name, value, conditions):
@@ -306,9 +307,9 @@ def make_CylinderSegment(
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
-        the cylinder section angles in units of [deg] and h is the cylinder height
-        in units of [mm].
+        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
+        the cylinder section angles in units of deg and h is the cylinder height
+        in units of mm.
 
     vert : int, default=50
         Number of vertices along a the complete 360 degrees arc. The number along the phi1-phi2-arc
@@ -595,16 +596,10 @@ def make_Tetrahedron(
         A dictionary with necessary key/value pairs with the necessary information to construct
         a 3D-model.
     """
-    x, y, z = np.array(vertices).T
-    trace = {
-        "i": np.array([0, 0, 1, 2]),
-        "j": np.array([1, 1, 2, 0]),
-        "k": np.array([2, 3, 3, 3]),
-        "x": x,
-        "y": y,
-        "z": z,
-    }
-
+    # create triangles implying right vertices chirality
+    triangles = np.array([[0, 2, 1], [0, 3, 2], [1, 3, 0], [1, 2, 3]])
+    points = check_chirality(np.array([vertices]))[0]
+    trace = dict(zip("xyzijk", [*points.T, *triangles.T]))
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)
 
@@ -612,7 +607,7 @@ def make_Tetrahedron(
 def make_TriangularMesh(
     backend="generic",
     vertices=None,
-    triangles=None,
+    faces=None,
     position=None,
     orientation=None,
     show=True,
@@ -632,7 +627,7 @@ def make_TriangularMesh(
         Vertices (x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4), in the relative
         coordinate system of the triangular mesh.
 
-    triangles: ndarray, shape (4,3)
+    faces: ndarray, shape (4,3)
         For each triangle, the indices of the three points that make up the triangle, ordered in an
         anticlockwise manner. If not specified, a `scipy.spatial.ConvexHull` triangulation is
         calculated.
@@ -662,10 +657,10 @@ def make_TriangularMesh(
     """
     vertices = np.array(vertices)
     x, y, z = vertices.T
-    if triangles is None:
+    if faces is None:
         hull = ConvexHull(vertices)
-        triangles = hull.simplices
-    i, j, k = np.array(triangles).T
+        faces = hull.simplices
+    i, j, k = np.array(faces).T
     trace = {"x": x, "y": y, "z": z, "i": i, "j": j, "k": k}
     trace = place_and_orient_model3d(trace, orientation=orientation, position=position)
     return get_model(trace, backend=backend, show=show, scale=scale, kwargs=kwargs)

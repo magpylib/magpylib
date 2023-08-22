@@ -1,15 +1,29 @@
 All notable changes to magpylib are documented here.
 
 
-# Releases
+# Changelog
+
+## [4.4.0dev] - Unreleased
+- Included self-intersection check in `TriangularMesh` ([#622](https://github.com/magpylib/magpylib/pull/622)).
+- Fixed incorrect edge case of TriangularMesh reorientation ([#644](https://github.com/magpylib/magpylib/pull/644))
+- Discontinuous segments in `current.Line` are now accepted and correctly treated as separate lines ([#632](https://github.com/magpylib/magpylib/pull/632), [#642](https://github.com/magpylib/magpylib/pull/642)).
+- Objects can now be displayed with missing dimension and/or excitation ([#640](https://github.com/magpylib/magpylib/pull/640)).
+- Added magnetization and current arrows `sizemode` styling option (absolute or scaled) ([#639](https://github.com/magpylib/magpylib/pull/639)).
+- `Collection` objects now also have a default description when displayed (number of chidren) ([#634](https://github.com/magpylib/magpylib/pull/634)).
+
+## [4.3.0] - 2023-06-25
+- New `TriangularMesh` magnet class added to conveniently work with triangular surface meshes instead of large collections of individual `Triangle` objects. The `TriangularMesh` class performs important checks (closed, connected, oriented) and can directly import pyvista objects and for convex hull bodies. ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
+- Added magnetization coloring for `matplotlib` backend ([#597](https://github.com/magpylib/magpylib/pull/597))
+- New automatic backend behavior, set to a dynamic default `auto` depending on the current environment and the given `canvas`, if provided. ([#617](https://github.com/magpylib/magpylib/pull/617))
+- Drop python 3.7 support, following python life cycle. ([#616](https://github.com/magpylib/magpylib/pull/616))
 
 ## [4.2.0] - 2023-01-27
-- (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular facets. ([#568](https://github.com/magpylib/magpylib/issues/568))
+- (Re)introducing the powerful `misc.Triangle` class that can be used to compute magnetic fields of arbitrarily shaped bodies by approximating their surface with triangular faces. ([#568](https://github.com/magpylib/magpylib/issues/568))
 - Introducing the `magnet.Tetrahedron` class as a derivate of the Triangle class. ([#289](https://github.com/magpylib/magpylib/issues/289))
 - Change pyvista plotting defaults when using `show(backend='pyvista')` to fit better with other libraries. ([#551](https://github.com/magpylib/magpylib/issues/551))
 - Added code of conduct attempting to align with NumFocus standards ([#558](https://github.com/magpylib/magpylib/issues/558))
 - Improved Loop field computation in terms of performance and numerical stability ([#374](https://github.com/magpylib/magpylib/issues/374))
-- Add `magnetization.mode` style to allow showing magnetization direction for any backend [#576](https://github.com/magpylib/magpylib/pull/576))
+- Add `magnetization.mode` style to allow showing magnetization direction for any backend ([#576](https://github.com/magpylib/magpylib/pull/576))
 - Documentation changes:
     - Correct conda install command
     - Integration of Triangle and Tetrahedron
@@ -213,7 +227,7 @@ This is a major update that includes
 - Renamed attributes (parameters cannot be initialized in their short forms anymore):
     - `angle` and `axis` are replaced by `orientation`
     - `dimension` is replaced by `diameter` for Loop and Sphere classes.
-    - `angle`&`axis` are replaced by `orientation` (see [Added](#Added) Section)
+    - `angle`&`axis` are replaced by `orientation`.
 
 - Modified rotate methods:
   - The class methods `.rotate(angle, axis, anchor)` have been replaced by a new `.rotate(rotation, anchor, increment, start)` method where `rotation` ist a scipy `Rotation` object.
@@ -242,7 +256,7 @@ This is a major update that includes
       - Objects with shorter paths will be considered as static once their path ends while other paths still continue.
     4. `magpylib.getBv(**kwargs)` gives direct access to the field formulas and mostly replaces the `getBv_XXX()` functionality of v2. All inputs must be arrays of length N or of length 1 (statics will be tiled).
   - While `getBv` is the fastest way to compute the fields it is much more convenient to use `getB()` which mostly provides the same performance. Specifically,the new `getB()` automatically groups all inputs for combined vectorized evaluation. This leads to a massive speedup when dealing with large Collections of similar sources.
-  - In addition to `getB`, the new `getH` returns the field in [kA/m].
+  - In addition to `getB`, the new `getH` returns the field in kA/m.
 
 ### Removed
 - the kwarg `niter=50` does not exist anymore for the Cylinder field computation. The functionality was completely replaced by the config setting `Config.ITER_CYLINDER=50`.
@@ -405,6 +419,8 @@ The first official release of the magpylib library.
 
 ---
 
+[4.4.0dev]:https://github.com/magpylib/magpylib/compare/4.3.0...HEAD
+[4.3.0]:https://github.com/magpylib/magpylib/compare/4.2.0...4.3.0
 [4.2.0]:https://github.com/magpylib/magpylib/compare/4.1.2...4.2.0
 [4.1.2]:https://github.com/magpylib/magpylib/compare/4.1.1...4.1.2
 [4.1.1]:https://github.com/magpylib/magpylib/compare/4.1.0...4.1.1

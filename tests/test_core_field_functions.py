@@ -1,7 +1,9 @@
 import numpy as np
+import pytest
 from numpy.testing import assert_allclose
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
@@ -382,7 +384,7 @@ def test_triangle1():
 
 
 def test_triangle2():
-    """test core single triangle vs same surface split up into 4 triangles"""
+    """test core single triangle vs same surface split up into 4 triangular faces"""
     obs = np.array([(3, 4, 5)])
     mag = np.array([(111, 222, 333)])
     fac = np.array(
@@ -545,3 +547,73 @@ def test_triangle6():
 
     for b in [b1, b2, b3]:
         np.testing.assert_equal(b, np.array([[np.nan] * 3]))
+
+
+@pytest.mark.parametrize(
+    ("module", "class_", "missing_arg"),
+    [
+        ("magnet", "Cuboid", "dimension"),
+        ("magnet", "Cylinder", "dimension"),
+        ("magnet", "CylinderSegment", "dimension"),
+        ("magnet", "Sphere", "diameter"),
+        ("magnet", "Tetrahedron", "vertices"),
+        ("magnet", "TriangularMesh", "vertices"),
+        ("current", "Loop", "diameter"),
+        ("current", "Line", "vertices"),
+        ("misc", "Triangle", "vertices"),
+    ],
+)
+def test_getB_on_missing_dimensions(module, class_, missing_arg):
+    """test_getB_on_missing_dimensions"""
+    with pytest.raises(
+        MagpylibMissingInput,
+        match=rf"Parameter `{missing_arg}` of .* must be set.",
+    ):
+        getattr(getattr(magpy, module), class_)().getB([0, 0, 0])
+
+
+@pytest.mark.parametrize(
+    ("module", "class_", "missing_arg", "kwargs"),
+    [
+        ("magnet", "Cuboid", "magnetization", {"dimension": (1, 1, 1)}),
+        ("magnet", "Cylinder", "magnetization", {"dimension": (1, 1)}),
+        (
+            "magnet",
+            "CylinderSegment",
+            "magnetization",
+            {"dimension": (0, 1, 1, 45, 120)},
+        ),
+        ("magnet", "Sphere", "magnetization", {"diameter": 1}),
+        (
+            "magnet",
+            "Tetrahedron",
+            "magnetization",
+            {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]},
+        ),
+        (
+            "magnet",
+            "TriangularMesh",
+            "magnetization",
+            {
+                "vertices": ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+                "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
+            },
+        ),
+        ("current", "Loop", "current", {"diameter": 1}),
+        ("current", "Line", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
+        (
+            "misc",
+            "Triangle",
+            "magnetization",
+            {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0)]},
+        ),
+        ("misc", "Dipole", "moment", {}),
+    ],
+)
+def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
+    """test_getB_on_missing_excitations"""
+    with pytest.raises(
+        MagpylibMissingInput,
+        match=rf"Parameter `{missing_arg}` of .* must be set.",
+    ):
+        getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])

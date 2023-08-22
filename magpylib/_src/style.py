@@ -4,14 +4,47 @@
 # pylint: disable=cyclic-import
 import numpy as np
 
+from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
+from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import color_validator
 from magpylib._src.defaults.defaults_utility import get_defaults_dict
-from magpylib._src.defaults.defaults_utility import LINESTYLES_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import MagicProperties
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
-from magpylib._src.defaults.defaults_utility import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.defaults.defaults_utility import validate_style_keys
+
+
+def get_families(obj):
+    """get obj families"""
+    # pylint: disable=import-outside-toplevel
+    # pylint: disable=possibly-unused-variable
+    # pylint: disable=redefined-outer-name
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet as Magnet
+    from magpylib._src.obj_classes.class_magnet_Cuboid import Cuboid
+    from magpylib._src.obj_classes.class_magnet_Cylinder import Cylinder
+    from magpylib._src.obj_classes.class_magnet_Sphere import Sphere
+    from magpylib._src.obj_classes.class_magnet_CylinderSegment import CylinderSegment
+    from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
+    from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
+    from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
+    from magpylib._src.obj_classes.class_current_Loop import Loop
+    from magpylib._src.obj_classes.class_current_Line import Line
+    from magpylib._src.obj_classes.class_misc_Dipole import Dipole
+    from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource
+    from magpylib._src.obj_classes.class_misc_Triangle import Triangle
+    from magpylib._src.obj_classes.class_Sensor import Sensor
+    from magpylib._src.display.traces_generic import MagpyMarkers as Markers
+
+    loc = locals()
+    obj_families = []
+    for item, val in loc.items():
+        if not item.startswith("_"):
+            try:
+                if isinstance(obj, val):
+                    obj_families.append(item.lower())
+            except TypeError:
+                pass
+    return obj_families
 
 
 def get_style(obj, default_settings, **kwargs):
@@ -20,31 +53,7 @@ def get_style(obj, default_settings, **kwargs):
     - style from object
     - style from kwargs arguments
     """
-    # pylint: disable=import-outside-toplevel
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseMagnet as MagpyMagnet,
-    )
-    from magpylib._src.obj_classes.class_BaseExcitations import (
-        BaseCurrent as MagpyCurrent,
-    )
-    from magpylib._src.obj_classes.class_misc_Dipole import Dipole as MagpyDipole
-    from magpylib._src.obj_classes.class_misc_Triangle import Triangle as MagpyTriangle
-    from magpylib._src.obj_classes.class_Sensor import Sensor as MagpySensor
-    from magpylib._src.display.traces_generic import MagpyMarkers
-
-    families = {
-        "triangle": MagpyTriangle,
-        "magnet": MagpyMagnet,
-        "current": MagpyCurrent,
-        "dipole": MagpyDipole,
-        "sensor": MagpySensor,
-        "markers": MagpyMarkers,
-    }
-    obj_family = None
-    for fam, cls in families.items():
-        if isinstance(obj, cls):
-            obj_family = fam
-            break
+    obj_families = get_families(obj)
     # parse kwargs into style an non-style arguments
     style_kwargs = kwargs.get("style", {})
     style_kwargs.update(
@@ -54,27 +63,85 @@ def get_style(obj, default_settings, **kwargs):
     # retrieve default style dictionary, local import to avoid circular import
     # pylint: disable=import-outside-toplevel
 
-    styles_by_family = default_settings.display.style.as_dict()
+    default_style = default_settings.display.style
+    base_style_flat = default_style.base.as_dict(flatten=True, separator="_")
 
     # construct object specific dictionary base on style family and default style
-    obj_style_default_dict = {
-        **styles_by_family["base"],
-        **dict(styles_by_family.get(obj_family, {}).items()),
-    }
+    for obj_family in obj_families:
+        family_style = getattr(default_style, obj_family, {})
+        if family_style:
+            family_dict = family_style.as_dict(flatten=True, separator="_")
+            base_style_flat.update(
+                {k: v for k, v in family_dict.items() if v is not None}
+            )
     style_kwargs = validate_style_keys(style_kwargs)
 
     # create style class instance and update based on precedence
-    obj_style = getattr(obj, "style", None)
-    style = obj_style.copy() if obj_style is not None else BaseStyle()
+    style = obj.style.copy()
     style_kwargs_specific = {
         k: v for k, v in style_kwargs.items() if k.split("_")[0] in style.as_dict()
     }
     style.update(**style_kwargs_specific, _match_properties=True)
-    style.update(
-        **obj_style_default_dict, _match_properties=False, _replace_None_only=True
-    )
+    style.update(**base_style_flat, _match_properties=False, _replace_None_only=True)
 
     return style
+
+
+class Line(MagicProperties):
+    """Defines line styling properties.
+
+    Parameters
+    ----------
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    def __init__(self, style=None, color=None, width=None, **kwargs):
+        super().__init__(style=style, color=color, width=width, **kwargs)
+
+    @property
+    def style(self):
+        """Line style."""
+        return self._style
+
+    @style.setter
+    def style(self, val):
+        assert val is None or val in ALLOWED_LINESTYLES, (
+            f"The `style` property of {type(self).__name__} must be one of "
+            f"{ALLOWED_LINESTYLES},\n"
+            f"but received {repr(val)} instead."
+        )
+        self._style = val
+
+    @property
+    def color(self):
+        """Line color."""
+        return self._color
+
+    @color.setter
+    def color(self, val):
+        self._color = color_validator(val)
+
+    @property
+    def width(self):
+        """Positive number that defines the line width."""
+        return self._width
+
+    @width.setter
+    def width(self, val):
+        assert val is None or isinstance(val, (int, float)) and val >= 0, (
+            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._width = val
 
 
 class BaseStyle(MagicProperties):
@@ -141,9 +208,12 @@ class BaseStyle(MagicProperties):
 
     @description.setter
     def description(self, val):
-        self._description = validate_property_class(
-            val, "description", Description, self
-        )
+        if isinstance(val, str):
+            self._description = Description(text=val)
+        else:
+            self._description = validate_property_class(
+                val, "description", Description, self
+            )
 
     @property
     def color(self):
@@ -439,7 +509,8 @@ class Trace3d(MagicProperties):
     @property
     def constructor(self):
         """Model constructor function or method to be called to build a 3D-model object
-        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend."""
+        (e.g. 'plot_trisurf', 'Mesh3d). Must be in accordance with the given plotting backend.
+        """
         return self._constructor
 
     @constructor.setter
@@ -556,13 +627,12 @@ class Magnetization(MagicProperties):
     show : bool, default=None
         If True show magnetization direction.
 
-    size: float, default=None
-        Arrow size of the magnetization direction (for the matplotlib backend)
-        only applies if `show=True`.
-
     color: dict or MagnetizationColor object, default=None
         Color properties showing the magnetization direction (for the plotly backend).
         Only applies if `show=True`.
+
+    arrow: dict or Arrow object, default=None,
+        Arrow properties. Only applies if mode='arrow'.
 
     mode: {"auto", "arrow", "color", "arrow+color"}, default="auto"
         Magnetization can be displayed via arrows, color or both. By default `mode='auto'` means
@@ -588,16 +658,13 @@ class Magnetization(MagicProperties):
 
     @property
     def size(self):
-        """Positive float for ratio of arrow size to magnet size."""
-        return self._size
+        """Deprecated (please use arrow.size): Arrow size property."""
+        return self.arrow.size
 
     @size.setter
     def size(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `size` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._size = val
+        if val is not None:
+            self.arrow.size = val
 
     @property
     def color(self):
@@ -609,6 +676,15 @@ class Magnetization(MagicProperties):
     @color.setter
     def color(self, val):
         self._color = validate_property_class(val, "color", MagnetizationColor, self)
+
+    @property
+    def arrow(self):
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
+        return self._arrow
+
+    @arrow.setter
+    def arrow(self, val):
+        self._arrow = validate_property_class(val, "magnetization", Arrow, self)
 
     @property
     def mode(self):
@@ -707,7 +783,7 @@ class MagnetizationColor(MagicProperties):
     def transition(self, val):
         assert (
             val is None or isinstance(val, (float, int)) and 0 <= val <= 1
-        ), "color transition must be a value betwen 0 and 1"
+        ), "color transition must be a value between 0 and 1"
         self._transition = val
 
     @property
@@ -754,7 +830,7 @@ class MagnetProperties:
         )
 
 
-class Magnet(MagicProperties, MagnetProperties):
+class DefaultMagnet(MagicProperties, MagnetProperties):
     """Defines styling properties of homogeneous magnet classes.
 
     Parameters
@@ -802,6 +878,223 @@ class MagnetStyle(BaseStyle, MagnetProperties):
         super().__init__(**kwargs)
 
 
+class MarkerLineProperties:
+    """Defines styling properties of Markers and Lines."""
+
+    @property
+    def show(self):
+        """Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+        """
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+    @property
+    def marker(self):
+        """`Markers` object with 'color', 'symbol', 'size' properties."""
+        return self._marker
+
+    @marker.setter
+    def marker(self, val):
+        self._marker = validate_property_class(val, "marker", Marker, self)
+
+    @property
+    def line(self):
+        """`Line` object with 'color', 'type', 'width' properties."""
+        return self._line
+
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", Line, self)
+
+
+class GridMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of GridMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class OpenMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of OpenMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class DisconnectedMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of DisconnectedMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    colorsequence: iterable, default=["red", "blue", "green", "cyan", "magenta", "yellow"]
+        An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
+        A color may be specified by
+      - a hex string (e.g. '#ff0000')
+      - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+      - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+      - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+      - a named CSS color
+    """
+
+    @property
+    def colorsequence(self):
+        """An iterable of color values used to cycle trough for every disconnected part of
+        disconnected triangular mesh object.
+          A color may be specified by
+        - a hex string (e.g. '#ff0000')
+        - an rgb/rgba string (e.g. 'rgb(255,0,0)')
+        - an hsl/hsla string (e.g. 'hsl(0,100%,50%)')
+        - an hsv/hsva string (e.g. 'hsv(0,100%,100%)')
+        - a named CSS color"""
+        return self._colorsequence
+
+    @colorsequence.setter
+    def colorsequence(self, val):
+        if val is not None:
+            name = type(self).__name__
+            try:
+                val = tuple(
+                    color_validator(c, allow_None=False, parent_name=f"{name}")
+                    for c in val
+                )
+            except TypeError as err:
+                raise ValueError(
+                    f"The `colorsequence` property of {name} must be an "
+                    f"iterable of colors but received {val!r} instead"
+                ) from err
+
+        self._colorsequence = val
+
+
+class SelfIntersectingMesh(MagicProperties, MarkerLineProperties):
+    """Defines styling properties of SelfIntersectingMesh objects
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/hide Lines and Markers
+
+    marker: dict or `Markers` object, default=None
+        `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+
+    line: dict or `Line` object, default=None
+        `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
+        key/value pairs.
+    """
+
+
+class TriMesh(MagicProperties):
+    """Defines TriMesh mesh properties.
+
+    Parameters
+    ----------
+    grid: dict or GridMesh,  default=None
+        All mesh vertices and edges of a TriangularMesh object.
+
+    open: dict or OpenMesh,  default=None
+        Shows open mesh vertices and edges of a TriangularMesh object, if any.
+
+    disconnected: dict or DisconnectedMesh, default=None
+        Shows disconnected bodies of a TriangularMesh object, if any.
+
+    selfintersecting: dict or SelfIntersectingMesh, default=None
+        Shows self-intersecting triangles of a TriangularMesh object, if any.
+    """
+
+    @property
+    def grid(self):
+        """GridMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._grid
+
+    @grid.setter
+    def grid(self, val):
+        self._grid = validate_property_class(val, "grid", GridMesh, self)
+
+    @property
+    def open(self):
+        """OpenMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._open
+
+    @open.setter
+    def open(self, val):
+        self._open = validate_property_class(val, "open", OpenMesh, self)
+
+    @property
+    def disconnected(self):
+        """`DisconnectedMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._disconnected
+
+    @disconnected.setter
+    def disconnected(self, val):
+        self._disconnected = validate_property_class(
+            val, "disconnected", DisconnectedMesh, self
+        )
+
+    @property
+    def selfintersecting(self):
+        """`SelfIntersectingMesh` instance with `'show'` property
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._selfintersecting
+
+    @selfintersecting.setter
+    def selfintersecting(self, val):
+        self._selfintersecting = validate_property_class(
+            val, "selfintersecting", SelfIntersectingMesh, self
+        )
+
+
 class Orientation(MagicProperties):
     """Defines Triangle orientation properties.
 
@@ -822,7 +1115,7 @@ class Orientation(MagicProperties):
         and 1 with the base.
 
     symbol: {"cone", "arrow3d"}:
-        Orientation symbol for the triangular facets.
+        Orientation symbol for the triangular faces.
     """
 
     _allowed_symbols = ("cone", "arrow3d")
@@ -916,8 +1209,8 @@ class TriangleProperties:
         )
 
 
-class Triangle(MagicProperties, MagnetProperties, TriangleProperties):
-    """Defines styling properties of homogeneous magnet classes.
+class DefaultTriangle(MagicProperties, MagnetProperties, TriangleProperties):
+    """Defines styling properties of the Triangle class.
 
     Parameters
     ----------
@@ -967,6 +1260,88 @@ class TriangleStyle(MagnetStyle, TriangleProperties):
 
     orientation: dict or Orientation,  default=None,
         Orientation styling of triangles.
+    """
+
+    def __init__(self, orientation=None, **kwargs):
+        super().__init__(orientation=orientation, **kwargs)
+
+
+class TriangularMeshProperties:
+    """Defines TriangularMesh properties."""
+
+    @property
+    def mesh(self):
+        """`TriMesh` instance with `'show', 'markers', 'line'` properties
+        or a dictionary with equivalent key/value pairs.
+        """
+        return self._mesh
+
+    @mesh.setter
+    def mesh(self, val):
+        self._mesh = validate_property_class(val, "mesh", TriMesh, self)
+
+
+class DefaultTriangularMesh(
+    MagicProperties, MagnetProperties, TriangleProperties, TriangularMeshProperties
+):
+    """Defines styling properties of homogeneous TriangularMesh magnet classes.
+
+    Parameters
+    ----------
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None
+        Orientation of triangles styling with `'show'`, `'size'`, `'color', `'pivot'`, `'symbol'``
+        properties or a dictionary with equivalent key/value pairs.
+
+    mesh: dict or TriMesh, default=None
+        TriMesh styling properties (e.g. `'grid', 'open', 'disconnected'`)
+    """
+
+    def __init__(self, magnetization=None, orientation=None, mesh=None, **kwargs):
+        super().__init__(
+            magnetization=magnetization, orientation=orientation, mesh=mesh, **kwargs
+        )
+
+
+class TriangularMeshStyle(MagnetStyle, TriangleProperties, TriangularMeshProperties):
+    """Defines styling properties of the TriangularMesh magnet class.
+
+    Parameters
+    ----------
+    label: str, default=None
+        Label of the class instance, e.g. to be displayed in the legend.
+
+    description: dict or `Description` object, default=None
+        Object description properties.
+
+    color: str, default=None
+        A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
+
+    opacity: float, default=None
+        Object opacity between 0 and 1, where 1 is fully opaque and 0 is fully transparent.
+
+    path: dict or `Path` object, default=None
+        An instance of `Path` or dictionary of equivalent key/value pairs, defining the object
+        path marker and path line properties.
+
+    model3d: list of `Trace3d` objects, default=None
+        A list of traces where each is an instance of `Trace3d` or dictionary of equivalent
+        key/value pairs. Defines properties for an additional user-defined model3d object which is
+        positioned relatively to the main object to be displayed and moved automatically with it.
+        This feature also allows the user to replace the original 3d representation of the object.
+
+    magnetization: dict or Magnetization, default=None
+        Magnetization styling with `'show'`, `'size'`, `'color'` properties
+        or a dictionary with equivalent key/value pairs.
+
+    orientation: dict or Orientation,  default=None,
+        Orientation styling of triangles.
+
+    mesh: dict or TriMesh,  default=None,
+        mesh styling of triangles.
     """
 
     def __init__(self, orientation=None, **kwargs):
@@ -1113,7 +1488,7 @@ class SensorProperties:
         self._arrows = validate_property_class(val, "arrows", ArrowCS, self)
 
 
-class Sensor(MagicProperties, SensorProperties):
+class DefaultSensor(MagicProperties, SensorProperties):
     """Defines styling properties of the Sensor class.
 
     Parameters
@@ -1225,9 +1600,9 @@ class Pixel(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
@@ -1239,20 +1614,32 @@ class CurrentProperties:
     Parameters
     ----------
     arrow: dict or `Arrow` object, default=None
-        `Arrow` object or dict with `'show'`, `'size'` properties/keys.
+        `Arrow` object or dict with `show, size, width, style, color` properties/keys.
+
+    line: dict or `Line` object, default=None
+        `Line` object or dict with `show, width, style, color` properties/keys.
     """
 
     @property
     def arrow(self):
-        """`Arrow` object or dict with `'show'`, `'size'` properties/keys."""
+        """`Arrow` object or dict with `show, size, width, style, color` properties/keys."""
         return self._arrow
 
     @arrow.setter
     def arrow(self, val):
         self._arrow = validate_property_class(val, "current", Arrow, self)
 
+    @property
+    def line(self):
+        """`Line` object or dict with `show, width, style, color` properties/keys."""
+        return self._line
 
-class Current(MagicProperties, CurrentProperties):
+    @line.setter
+    def line(self, val):
+        self._line = validate_property_class(val, "line", CurrentLine, self)
+
+
+class DefaultCurrent(MagicProperties, CurrentProperties):
     """Defines the specific styling properties of line current classes.
 
     Parameters
@@ -1300,20 +1687,39 @@ class CurrentStyle(BaseStyle, CurrentProperties):
         super().__init__(**kwargs)
 
 
-class Arrow(MagicProperties):
+class Arrow(Line):
     """Defines styling properties of current arrows.
 
     Parameters
     ----------
     show: bool, default=None
-        If True current direction is shown with an arrow.
+        Show/Hide arrow
 
     size: float, default=None
-        Positive number defining the size of the arrows.
+        Positive number defining the size of the arrows. Effective value depends on the
+        `sizemode` parameter.
+
+    sizemode: {'scaled', 'absolute'}, default='scaled'
+        Defines the scale reference for the arrow size. If 'absolute', the `size` parameters
+        becomes the arrow length in millimeters.
+
+    offset: float, default=0.5
+        Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
 
     width: float, default=None
-        Positive number that defines the arrow line width.
+        Positive number that defines the line width.
     """
+
+    _allowed_sizemodes = ("scaled", "absolute")
 
     def __init__(self, show=None, size=None, **kwargs):
         super().__init__(show=show, size=size, **kwargs)
@@ -1345,17 +1751,66 @@ class Arrow(MagicProperties):
         self._size = val
 
     @property
-    def width(self):
-        """Positive number that defines the arrow line width."""
-        return self._width
+    def sizemode(self):
+        """Positive number defining the sizemode of the arrows."""
+        return self._sizemode
 
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
+    @sizemode.setter
+    def sizemode(self, val):
+        assert val is None or val in self._allowed_sizemodes, (
+            f"The `sizemode` property of {type(self).__name__} must be a one of "
+            f"{self._allowed_sizemodes},\nbut received {repr(val)} instead."
+        )
+        self._sizemode = val
+
+    @property
+    def offset(self):
+        """Defines the arrow offset. `offset=0` results in the arrow head to be coincident to start
+        of the line, and `offset=1` with the end.
+        """
+        return self._offset
+
+    @offset.setter
+    def offset(self, val):
+        assert val is None or (isinstance(val, (float, int))) and 0 <= val <= 1, (
+            "The `offset` property must valid number between 0 and 1\n"
             f"but received {repr(val)} instead."
         )
-        self._width = val
+        self._offset = val
+
+
+class CurrentLine(Line):
+    """Defines styling properties of current lines.
+
+    Parameters
+    ----------
+    show: bool, default=None
+        Show/Hide arrow
+
+    style: str, default=None
+        Can be one of:
+        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
+        'loosely dotted', 'loosely dashdotted']`
+
+    color: str, default=None
+        Line color.
+
+    width: float, default=None
+        Positive number that defines the line width.
+    """
+
+    @property
+    def show(self):
+        """Show/hide current line."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
 
 
 class Marker(MagicProperties):
@@ -1403,15 +1858,15 @@ class Marker(MagicProperties):
 
     @symbol.setter
     def symbol(self, val):
-        assert val is None or val in SYMBOLS_MATPLOTLIB_TO_PLOTLY, (
+        assert val is None or val in ALLOWED_SYMBOLS, (
             f"The `symbol` property of {type(self).__name__} must be one of"
-            f"{list(SYMBOLS_MATPLOTLIB_TO_PLOTLY.keys())},\n"
+            f"{ALLOWED_SYMBOLS},\n"
             f"but received {repr(val)} instead."
         )
         self._symbol = val
 
 
-class Markers(BaseStyle):
+class DefaultMarkers(BaseStyle):
     """Defines styling properties of the markers trace.
 
     Parameters
@@ -1479,7 +1934,7 @@ class DipoleProperties:
         self._pivot = val
 
 
-class Dipole(MagicProperties, DipoleProperties):
+class DefaultDipole(MagicProperties, DipoleProperties):
     """
     Defines styling properties of dipoles.
 
@@ -1536,11 +1991,17 @@ class DipoleStyle(BaseStyle, DipoleProperties):
         super().__init__(**kwargs)
 
 
-class Path(MagicProperties):
+class Path(MagicProperties, MarkerLineProperties):
     """Defines styling properties of an object's path.
 
     Parameters
     ----------
+    show: bool, default=None
+        Show/hide path.
+        - False: Shows object(s) at final path position and hides paths lines and markers.
+        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
+        parameters.
+
     marker: dict or `Markers` object, default=None
         `Markers` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
@@ -1548,12 +2009,6 @@ class Path(MagicProperties):
     line: dict or `Line` object, default=None
         `Line` object with 'color', 'symbol', 'size' properties, or dictionary with equivalent
         key/value pairs.
-
-    show: bool, default=None
-        Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
 
     frames: int or array_like, shape (n,), default=None
         Show copies of the 3D-model along the given path indices.
@@ -1565,51 +2020,16 @@ class Path(MagicProperties):
     """
 
     def __init__(
-        self, marker=None, line=None, frames=None, show=None, numbering=None, **kwargs
+        self, show=None, marker=None, line=None, frames=None, numbering=None, **kwargs
     ):
         super().__init__(
+            show=show,
             marker=marker,
             line=line,
             frames=frames,
-            show=show,
             numbering=numbering,
             **kwargs,
         )
-
-    @property
-    def marker(self):
-        """`Markers` object with 'color', 'symbol', 'size' properties."""
-        return self._marker
-
-    @marker.setter
-    def marker(self, val):
-        self._marker = validate_property_class(val, "marker", Marker, self)
-
-    @property
-    def line(self):
-        """`Line` object with 'color', 'type', 'width' properties."""
-        return self._line
-
-    @line.setter
-    def line(self, val):
-        self._line = validate_property_class(val, "line", Line, self)
-
-    @property
-    def show(self):
-        """Show/hide path.
-        - False: Shows object(s) at final path position and hides paths lines and markers.
-        - True: Shows object(s) shows object paths depending on `line`, `marker` and `frames`
-        parameters.
-        """
-        return self._show
-
-    @show.setter
-    def show(self, val):
-        assert val is None or isinstance(val, bool), (
-            f"The `show` property of {type(self).__name__} must be either True or False,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._show = val
 
     @property
     def frames(self):
@@ -1646,63 +2066,6 @@ but received {repr(val)} instead"""
             f"but received {repr(val)} instead."
         )
         self._numbering = val
-
-
-class Line(MagicProperties):
-    """Defines line styling properties.
-
-    Parameters
-    ----------
-    style: str, default=None
-        Can be one of:
-        `['solid', '-', 'dashed', '--', 'dashdot', '-.', 'dotted', '.', (0, (1, 1)),
-        'loosely dotted', 'loosely dashdotted']`
-
-    color: str, default=None
-        Line color.
-
-    width: float, default=None
-        Positive number that defines the line width.
-    """
-
-    def __init__(self, style=None, color=None, width=None, **kwargs):
-        super().__init__(style=style, color=color, width=width, **kwargs)
-
-    @property
-    def style(self):
-        """Line style."""
-        return self._style
-
-    @style.setter
-    def style(self, val):
-        assert val is None or val in LINESTYLES_MATPLOTLIB_TO_PLOTLY, (
-            f"The `style` property of {type(self).__name__} must be one of "
-            f"{list(LINESTYLES_MATPLOTLIB_TO_PLOTLY.keys())},\n"
-            f"but received {repr(val)} instead."
-        )
-        self._style = val
-
-    @property
-    def color(self):
-        """Line color."""
-        return self._color
-
-    @color.setter
-    def color(self, val):
-        self._color = color_validator(val)
-
-    @property
-    def width(self):
-        """Positive number that defines the line width."""
-        return self._width
-
-    @width.setter
-    def width(self, val):
-        assert val is None or isinstance(val, (int, float)) and val >= 0, (
-            f"The `width` property of {type(self).__name__} must be a positive number,\n"
-            f"but received {repr(val)} instead."
-        )
-        self._width = val
 
 
 class DisplayStyle(MagicProperties):
@@ -1772,54 +2135,65 @@ class DisplayStyle(MagicProperties):
 
     @property
     def magnet(self):
-        """Magnet class."""
+        """Magnet default style class."""
         return self._magnet
 
     @magnet.setter
     def magnet(self, val):
-        self._magnet = validate_property_class(val, "magnet", Magnet, self)
+        self._magnet = validate_property_class(val, "magnet", DefaultMagnet, self)
+
+    @property
+    def triangularmesh(self):
+        """TriangularMesh default style class."""
+        return self._triangularmesh
+
+    @triangularmesh.setter
+    def triangularmesh(self, val):
+        self._triangularmesh = validate_property_class(
+            val, "triangularmesh", DefaultTriangularMesh, self
+        )
 
     @property
     def current(self):
-        """Current class."""
+        """Current default style class."""
         return self._current
 
     @current.setter
     def current(self, val):
-        self._current = validate_property_class(val, "current", Current, self)
+        self._current = validate_property_class(val, "current", DefaultCurrent, self)
 
     @property
     def dipole(self):
-        """Dipole class."""
+        """Dipole default style class."""
         return self._dipole
 
     @dipole.setter
     def dipole(self, val):
-        self._dipole = validate_property_class(val, "dipole", Dipole, self)
+        self._dipole = validate_property_class(val, "dipole", DefaultDipole, self)
 
     @property
     def triangle(self):
-        """Triangle class."""
+        """Triangle default style class."""
         return self._triangle
 
     @triangle.setter
     def triangle(self, val):
-        self._triangle = validate_property_class(val, "triangle", Triangle, self)
+        self._triangle = validate_property_class(val, "triangle", DefaultTriangle, self)
 
     @property
     def sensor(self):
-        """Sensor class."""
+        """Sensor default style class."""
         return self._sensor
 
     @sensor.setter
     def sensor(self, val):
-        self._sensor = validate_property_class(val, "sensor", Sensor, self)
+        self._sensor = validate_property_class(val, "sensor", DefaultSensor, self)
 
     @property
     def markers(self):
-        """Markers class."""
+        """Markers default style class."""
         return self._markers
 
     @markers.setter
     def markers(self, val):
-        self._markers = validate_property_class(val, "markers", Markers, self)
+        self._markers = validate_property_class(val, "markers", DefaultMarkers, self)

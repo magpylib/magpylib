@@ -1,5 +1,5 @@
 """Magnet Cylinder class code"""
-from magpylib._src.display.traces_generic import make_Cylinder
+from magpylib._src.display.traces_core import make_Cylinder
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -12,19 +12,19 @@ class Cylinder(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
-    the cylinder axis conincides with the global z-axis.
+    the cylinder axis coincides with the global z-axis.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     dimension: array_like, shape (2,), default=`None`
-        Dimension (d,h) denote diameter and height of the cylinder in units of [mm].
+        Dimension (d,h) denote diameter and height of the cylinder in units of mm.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -45,9 +45,9 @@ class Cylinder(BaseMagnet):
 
     Examples
     --------
-    `Cylinder` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    cylinder magnet with magnetization (100,200,300) in units of [mT] and 1 [mm] diameter and height
-    at the observer position (1,1,1) given in units of [mm]:
+    `Cylinder` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
+    cylinder magnet with magnetization (100,200,300) in units of mT and 1 mm diameter and height
+    at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Cylinder(magnetization=(100,200,300), dimension=(1,1))
@@ -80,7 +80,7 @@ class Cylinder(BaseMagnet):
 
     _field_func = staticmethod(magnet_cylinder_field)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_Cylinder
+    get_trace = make_Cylinder
 
     def __init__(
         self,
@@ -91,7 +91,6 @@ class Cylinder(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.dimension = dimension
 
@@ -101,12 +100,12 @@ class Cylinder(BaseMagnet):
     # property getters and setters
     @property
     def dimension(self):
-        """Dimension (d,h) denote diameter and height of the cylinder in units of [mm]."""
+        """Dimension (d,h) denote diameter and height of the cylinder in units of mm."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (d,h) in units of [mm]."""
+        """Set Cylinder dimension (d,h) in units of mm."""
         self._dimension = check_format_input_vector(
             dim,
             dims=(1,),

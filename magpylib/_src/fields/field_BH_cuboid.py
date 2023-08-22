@@ -18,22 +18,22 @@ def magnet_cuboid_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of [mT].
+        Homogeneous magnetization vector in units of mT.
 
     dimension: ndarray, shape (n,3)
-        Cuboid side lengths in units of [mm].
+        Cuboid side lengths in units of mm.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------
@@ -97,7 +97,7 @@ def magnet_cuboid_field(
     mask2 = (a * b * c).astype(bool)
 
     # SPECIAL CASE 3: observer lies on-edge/corner
-    # -> 1e-15 to account for numerical inprecision when e.g. rotating
+    # -> 1e-15 to account for numerical imprecision when e.g. rotating
     # -> /a /b /c to account for the "missing" scaling (1e-15 is large when
     #    a is e.g. 1e-15 itself)
 

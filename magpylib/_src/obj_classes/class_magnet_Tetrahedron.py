@@ -1,7 +1,7 @@
 """Magnet Tetrahedron class code"""
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_Tetrahedron
+from magpylib._src.display.traces_core import make_Tetrahedron
 from magpylib._src.fields.field_BH_tetrahedron import magnet_tetrahedron_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
@@ -20,7 +20,7 @@ class Tetrahedron(BaseMagnet):
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (4,3)
@@ -28,7 +28,7 @@ class Tetrahedron(BaseMagnet):
         coordinate system of the tetrahedron.
 
     position: array_like, shape (3,) or (m,3)
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         When setting vertices, the initial position is set to the barycenter.
 
@@ -54,10 +54,10 @@ class Tetrahedron(BaseMagnet):
 
     Examples
     --------
-    `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field [kA/m] of a
-    tetrahedron magnet with magnetization (100,200,300) in units of [mT] dimensions defined
-    through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of [mm] at the
-    observer position (1,1,1) given in units of [mm]:
+    `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
+    tetrahedron magnet with magnetization (100,200,300) in units of mT dimensions defined
+    through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of mm at the
+    observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> verts = [(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
@@ -91,7 +91,7 @@ class Tetrahedron(BaseMagnet):
 
     _field_func = staticmethod(magnet_tetrahedron_field)
     _field_func_kwargs_ndim = {"magnetization": 1, "vertices": 3}
-    _draw_func = make_Tetrahedron
+    get_trace = make_Tetrahedron
 
     def __init__(
         self,
@@ -102,7 +102,6 @@ class Tetrahedron(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.vertices = vertices
         self._object_type = "Tetrahedron"
@@ -113,12 +112,12 @@ class Tetrahedron(BaseMagnet):
     # property getters and setters
     @property
     def vertices(self):
-        """Length of the Tetrahedron sides [a,b,c] in units of [mm]."""
+        """Length of the Tetrahedron sides [a,b,c] in units of mm."""
         return self._vertices
 
     @vertices.setter
     def vertices(self, dim):
-        """Set Tetrahedron vertices (a,b,c), shape (3,), [mm]."""
+        """Set Tetrahedron vertices (a,b,c), shape (3,), (mm)."""
         self._vertices = check_format_input_vector(
             dim,
             dims=(2,),
@@ -142,6 +141,8 @@ class Tetrahedron(BaseMagnet):
     @staticmethod
     def _get_barycenter(position, orientation, vertices):
         """Returns the barycenter of a tetrahedron."""
-        centroid = np.mean(vertices, axis=0)
+        centroid = (
+            np.array([0.0, 0.0, 0.0]) if vertices is None else np.mean(vertices, axis=0)
+        )
         barycenter = orientation.apply(centroid) + position
         return barycenter

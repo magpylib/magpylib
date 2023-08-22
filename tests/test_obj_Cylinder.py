@@ -68,7 +68,6 @@ def test_Cylinder_getBH():
     dim5 = [(0, 0.5, 2, 0, 360), (0, 1, 3, 0, 360), (0.0000001, 1.5, 4, 0, 360)]
 
     for d2, d5 in zip(dim2, dim5):
-
         src1 = magpy.magnet.Cylinder(mag, d2)
         src2 = magpy.magnet.CylinderSegment(mag, d5)
         B0 = src1.getB(poso)

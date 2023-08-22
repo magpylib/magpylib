@@ -1,5 +1,5 @@
 """Dipole class code"""
-from magpylib._src.display.traces_generic import make_Dipole
+from magpylib._src.display.traces_core import make_Dipole
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseExcitations import BaseSource
@@ -16,13 +16,13 @@ class Dipole(BaseSource):
 
     Parameters
     ----------
-    moment: array_like, shape (3,), unit [mT*mm^3], default=`None`
-        Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates.
+    moment: array_like, shape (3,), unit mT*mm^3, default=`None`
+        Magnetic dipole moment in units of mT*mm^3 given in the local object coordinates.
         For homogeneous magnets the relation moment=magnetization*volume holds. The dipole
         moment of a Loop object is pi**2/10*diameter**2*current.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -43,9 +43,9 @@ class Dipole(BaseSource):
 
     Examples
     --------
-    `Dipole` objects are magnetic field sources. In this example we compute the H-field [kA/m]
-    of such a magnetic dipole with a moment of (100,100,100) [mT*mm^2] at an observer position
-    (1,1,1) given in units of [mm]:
+    `Dipole` objects are magnetic field sources. In this example we compute the H-field kA/m
+    of such a magnetic dipole with a moment of (100,100,100) in units of mT*mm^2 at an
+    observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.misc.Dipole(moment=(100,100,100))
@@ -79,7 +79,7 @@ class Dipole(BaseSource):
     _field_func = staticmethod(dipole_field)
     _field_func_kwargs_ndim = {"moment": 2}
     _style_class = DipoleStyle
-    _draw_func = make_Dipole
+    get_trace = make_Dipole
     _autosize = True
 
     def __init__(
@@ -99,12 +99,12 @@ class Dipole(BaseSource):
     # property getters and setters
     @property
     def moment(self):
-        """Magnetic dipole moment in units of [mT*mm^3] given in the local object coordinates."""
+        """Magnetic dipole moment in units of mT*mm^3 given in the local object coordinates."""
         return self._moment
 
     @moment.setter
     def moment(self, mom):
-        """Set dipole moment vector, shape (3,), unit [mT*mm^3]."""
+        """Set dipole moment vector, shape (3,), unit mT*mm^3."""
         self._moment = check_format_input_vector(
             mom,
             dims=(1,),

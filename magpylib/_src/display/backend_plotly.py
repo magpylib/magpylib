@@ -1,6 +1,10 @@
-""" plotly draw-functionalities"""
+"""plotly backend"""
 # pylint: disable=C0302
 # pylint: disable=too-many-branches
+import inspect
+from functools import lru_cache
+
+import numpy as np
 
 try:
     import plotly.graph_objects as go
@@ -11,18 +15,71 @@ except ImportError as missing_module:  # pragma: no cover
     ) from missing_module
 
 from magpylib._src.defaults.defaults_classes import default_settings as Config
-from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import get_scene_ranges
-from magpylib._src.defaults.defaults_utility import SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.style import LINESTYLES_MATPLOTLIB_TO_PLOTLY
-from magpylib._src.style import SYMBOLS_MATPLOTLIB_TO_PLOTLY
 
 
-def apply_fig_ranges(fig, ranges):
+SYMBOLS_TO_PLOTLY = {
+    ".": "circle",
+    "o": "circle",
+    "+": "cross",
+    "D": "diamond",
+    "d": "diamond",
+    "s": "square",
+    "x": "x",
+}
+
+LINESTYLES_TO_PLOTLY = {
+    "solid": "solid",
+    "-": "solid",
+    "dashed": "dash",
+    "--": "dash",
+    "dashdot": "dashdot",
+    "-.": "dashdot",
+    "dotted": "dot",
+    ".": "dot",
+    ":": "dot",
+    (0, (1, 1)): "dot",
+    "loosely dotted": "longdash",
+    "loosely dashdotted": "longdashdot",
+}
+
+SIZE_FACTORS_TO_PLOTLY = {
+    "line_width": 2.2,
+    "marker_size": 0.7,
+}
+
+
+@lru_cache(maxsize=None)  # Cache all results
+def match_args(ttype: str):
+    """
+    Return named arguments of a Plotly graph object function.
+
+    Parameters
+    ----------
+    ttype : str
+        Type of Plotly graph object (e.g., 'scatter' for go.Scatter).
+
+    Returns
+    -------
+    list
+        Names of the named arguments of the specified function.
+    """
+    func = getattr(go, ttype.capitalize())
+    sig = inspect.signature(func)
+    params = sig.parameters
+    named_args = [
+        name
+        for name, param in params.items()
+        if param.default != inspect.Parameter.empty
+    ]
+    return named_args
+
+
+def apply_fig_ranges(fig, ranges, apply2d=True):
     """This is a helper function which applies the ranges properties of the provided `fig` object
-    according to a certain zoom level. All three space direction will be equal and match the
+    according to a provided ranges. All three space direction will be equal and match the
     maximum of the ranges needed to display all objects, including their paths.
 
     Parameters
@@ -30,8 +87,8 @@ def apply_fig_ranges(fig, ranges):
     ranges: array of dimension=(3,2)
         min and max graph range
 
-    zoom: float, default = 1
-        When zoom=0 all objects are just inside the 3D-axes.
+    apply2d: bool, default = True
+        applies fixed range also on 2d traces
 
     Returns
     -------
@@ -39,13 +96,39 @@ def apply_fig_ranges(fig, ranges):
     """
     fig.update_scenes(
         **{
-            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} [mm]"}
+            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} (mm)"}
             for i, k in enumerate("xyz")
         },
         aspectratio={k: 1 for k in "xyz"},
         aspectmode="manual",
         camera_eye={"x": 1, "y": -1.5, "z": 1.4},
     )
+    if apply2d:
+        apply_2d_ranges(fig)
+
+
+def apply_2d_ranges(fig, factor=0.05):
+    """Apply Figure ranges of 2d plots"""
+    traces = fig.data
+    ranges = {}
+    for t in traces:
+        for k in "xy":
+            try:
+                ax_str = getattr(t, f"{k}axis")
+                ax_suff = ax_str.replace(k, "")
+                if ax_suff not in ranges:
+                    ranges[ax_suff] = {"x": [], "y": []}
+                vals = getattr(t, k)
+                ranges[ax_suff][k].append([min(vals), max(vals)])
+            except AttributeError:
+                pass
+    for ax, r in ranges.items():
+        for k in "xy":
+            m, M = [np.min(r[k]), np.max(r[k])]
+            getattr(fig.layout, f"{k}axis{ax}").range = [
+                m - (M - m) * factor,
+                M + (M - m) * factor,
+            ]
 
 
 def animate_path(
@@ -55,6 +138,8 @@ def animate_path(
     frame_duration,
     animation_slider=False,
     update_layout=True,
+    rows=None,
+    cols=None,
 ):
     """This is a helper function which attaches plotly frames to the provided `fig` object
     according to a certain zoom level. All three space direction will be equal and match the
@@ -127,7 +212,11 @@ def animate_path(
     # update fig
     fig.frames = frames
     frame0 = fig.frames[0]
-    fig.add_traces(frame0.data)
+    fig.add_traces(
+        frame0.data,
+        rows=rows,
+        cols=cols,
+    )
     title = frame0.layout.title.text
     if update_layout:
         fig.update_layout(
@@ -142,17 +231,20 @@ def animate_path(
 
 def generic_trace_to_plotly(trace):
     """Transform a generic trace into a plotly trace"""
-    if trace["type"] == "scatter3d":
-        if "line_width" in trace:
-            trace["line_width"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["line_width"]
+    if "scatter" in trace["type"]:
+        if trace.get("line_width", None):
+            trace["line_width"] *= SIZE_FACTORS_TO_PLOTLY["line_width"]
         dash = trace.get("line_dash", None)
         if dash is not None:
-            trace["line_dash"] = LINESTYLES_MATPLOTLIB_TO_PLOTLY.get(dash, dash)
+            trace["line_dash"] = LINESTYLES_TO_PLOTLY.get(dash, "solid")
         symb = trace.get("marker_symbol", None)
         if symb is not None:
-            trace["marker_symbol"] = SYMBOLS_MATPLOTLIB_TO_PLOTLY.get(symb, symb)
+            trace["marker_symbol"] = SYMBOLS_TO_PLOTLY.get(symb, "circle")
         if "marker_size" in trace:
-            trace["marker_size"] *= SIZE_FACTORS_MATPLOTLIB_TO_PLOTLY["marker_size"]
+            trace["marker_size"] = (
+                np.array(trace["marker_size"], dtype="float")
+                * SIZE_FACTORS_TO_PLOTLY["marker_size"]
+            )
     return trace
 
 
@@ -171,6 +263,12 @@ def process_extra_trace(model):
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
         trace3d["color"] = trace3d.get("color", kwargs["color"])
+    # need to match parameters to the constructor
+    # the color parameter is added by default  int the `traces_generic` module but is not
+    # compatible with some traces (e.g. `go.Surface`)
+    trace3d = {
+        k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
+    }
     trace3d.update(
         linearize_dict(
             place_and_orient_model3d(
@@ -195,19 +293,19 @@ def extract_layout_kwargs(kwargs):
 
 
 def display_plotly(
-    *obj_list,
+    data,
     zoom=1,
     canvas=None,
     renderer=None,
-    animation=False,
     colorsequence=None,
     return_fig=False,
     update_layout=True,
+    max_rows=None,
+    max_cols=None,
+    subplot_specs=None,
     **kwargs,
 ):
-
     """Display objects and paths graphically using the plotly library."""
-
     fig = canvas
     show_fig = False
     extra_data = False
@@ -216,18 +314,19 @@ def display_plotly(
             show_fig = True
         fig = go.Figure()
 
+    if not (max_rows is None and max_cols is None):
+        # pylint: disable=protected-access
+        if fig._grid_ref is None:
+            fig = fig.set_subplots(
+                rows=max_rows,
+                cols=max_cols,
+                specs=subplot_specs.tolist(),
+            )
+
     if colorsequence is None:
         colorsequence = Config.display.colorsequence
 
     layout, kwargs = extract_layout_kwargs(kwargs)
-    data = get_frames(
-        objs=obj_list,
-        colorsequence=colorsequence,
-        zoom=zoom,
-        animation=animation,
-        extra_backend="plotly",
-        **kwargs,
-    )
     frames = data["frames"]
     for fr in frames:
         new_data = []
@@ -239,10 +338,21 @@ def display_plotly(
         fr["data"] = new_data
         fr.pop("extra_backend_traces", None)
     with fig.batch_update():
-        if len(frames) == 1:
-            fig.add_traces(frames[0]["data"])
+        for frame in frames:
+            rows_list = []
+            cols_list = []
+            for tr in frame["data"]:
+                row = tr.pop("row", None)
+                col = tr.pop("col", None)
+                rows_list.append(row)
+                cols_list.append(col)
+        if max_rows is None and max_cols is None:
+            rows_list = cols_list = None
+        isanimation = len(frames) != 1
+        if not isanimation:
+            fig.add_traces(frames[0]["data"], rows=rows_list, cols=cols_list)
         else:
-            animation_slider = data.get("animation_slider", False)
+            animation_slider = data["input_kwargs"].get("animation_slider", False)
             animate_path(
                 fig,
                 frames,
@@ -250,13 +360,18 @@ def display_plotly(
                 data["frame_duration"],
                 animation_slider=animation_slider,
                 update_layout=update_layout,
+                rows=rows_list,
+                cols=cols_list,
             )
         ranges = data["ranges"]
         if extra_data:
             ranges = get_scene_ranges(*frames[0]["data"], zoom=zoom)
         if update_layout:
-            apply_fig_ranges(fig, ranges)
-            fig.update_layout(legend_itemsizing="constant")
+            apply_fig_ranges(fig, ranges, apply2d=isanimation)
+            fig.update_layout(
+                legend_itemsizing="constant",
+                # legend_groupclick="toggleitem",
+            )
         fig.update_layout(layout)
 
     if return_fig and not show_fig:

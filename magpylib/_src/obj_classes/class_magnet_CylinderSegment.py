@@ -1,7 +1,7 @@
 """Magnet Cylinder class code"""
 import numpy as np
 
-from magpylib._src.display.traces_generic import make_CylinderSegment
+from magpylib._src.display.traces_core import make_CylinderSegment
 from magpylib._src.fields.field_BH_cylinder_segment import (
     magnet_cylinder_segment_field_internal,
 )
@@ -16,23 +16,23 @@ class CylinderSegment(BaseMagnet):
 
     When `position=(0,0,0)` and `orientation=None` the geometric center of the
     cylinder lies in the origin of the global coordinate system and
-    the cylinder axis conincides with the global z-axis. Section angle 0
+    the cylinder axis coincides with the global z-axis. Section angle 0
     corresponds to an x-z plane section of the cylinder.
 
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     dimension: array_like, shape (5,), default=`None`
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
-        the cylinder section angles in units of [deg] and h is the cylinder height
-        in units of [mm].
+        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
+        the cylinder section angles in units of deg and h is the cylinder height
+        in units of mm.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     barycenter: array_like, shape (3,)
@@ -58,9 +58,9 @@ class CylinderSegment(BaseMagnet):
     Examples
     --------
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-    H-field [kA/m] of such a cylinder segment magnet with magnetization (100,200,300)
-    in units of [mT], inner radius 1 [mm], outer radius 2 [mm], height 1 [mm], and
-    section angles 0 and 45 [deg] at the observer position (2,2,2) in units of [mm]:
+    H-field kA/m of such a cylinder segment magnet with magnetization (100,200,300)
+    in units of mT, inner radius 1 mm, outer radius 2 mm, height 1 mm, and
+    section angles 0 and 45 deg at the observer position (2,2,2) in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.CylinderSegment(magnetization=(100,200,300), dimension=(1,2,1,0,45))
@@ -93,7 +93,7 @@ class CylinderSegment(BaseMagnet):
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)
     _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
-    _draw_func = make_CylinderSegment
+    get_trace = make_CylinderSegment
 
     def __init__(
         self,
@@ -104,7 +104,6 @@ class CylinderSegment(BaseMagnet):
         style=None,
         **kwargs,
     ):
-
         # instance attributes
         self.dimension = dimension
 
@@ -116,15 +115,15 @@ class CylinderSegment(BaseMagnet):
     def dimension(self):
         """
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of [mm], phi1<phi2 denote
-        the cylinder section angles in units of [deg] and h is the cylinder height
-        in units of [mm].
+        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
+        the cylinder section angles in units of deg and h is the cylinder height
+        in units of mm.
         """
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), [mm, deg]."""
+        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), (mm, deg)."""
         self._dimension = check_format_input_cylinder_segment(dim)
 
     @property
@@ -143,15 +142,23 @@ class CylinderSegment(BaseMagnet):
         Input checks should make sure:
             -360 < phi1 < phi2 < 360 and 0 < r1 < r2
         """
-        r1, r2, _, phi1, phi2 = dimension
-        alpha = np.deg2rad((phi2 - phi1) / 2)
-        phi = np.deg2rad((phi1 + phi2) / 2)
-        # get centroid x for unrotated annular sector
-        centroid_x = (
-            2 / 3 * np.sin(alpha) / alpha * (r2**3 - r1**3) / (r2**2 - r1**2)
-        )
-        # get centroid for rotated annular sector
-        x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
-        centroid = np.array([x, y, z])
+        if dimension is None:
+            centroid = np.array([0.0, 0.0, 0.0])
+        else:
+            r1, r2, _, phi1, phi2 = dimension
+            alpha = np.deg2rad((phi2 - phi1) / 2)
+            phi = np.deg2rad((phi1 + phi2) / 2)
+            # get centroid x for unrotated annular sector
+            centroid_x = (
+                2
+                / 3
+                * np.sin(alpha)
+                / alpha
+                * (r2**3 - r1**3)
+                / (r2**2 - r1**2)
+            )
+            # get centroid for rotated annular sector
+            x, y, z = centroid_x * np.cos(phi), centroid_x * np.sin(phi), 0
+            centroid = np.array([x, y, z])
         barycenter = orientation.apply(centroid) + position
         return barycenter
