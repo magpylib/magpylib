@@ -484,3 +484,12 @@ RegisteredBackend(
     supports_colorgradient=True,
     supports_animation_output=True,
 )
+
+RegisteredBackend(
+    name="mayavi",
+    show_func_getter=get_show_func("mayavi"),
+    supports_animation=True,
+    supports_subplots=False,
+    supports_colorgradient=True,
+    supports_animation_output=False,
+)

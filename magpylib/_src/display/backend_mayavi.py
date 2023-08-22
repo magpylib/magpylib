@@ -10,13 +10,12 @@ except ImportError as missing_module:  # pragma: no cover
         """In order to use the mayavi plotting backend, you need to install mayavi via pip or
         conda, see https://docs.enthought.com/mayavi/mayavi/installation.html"""
     ) from missing_module
-from magpylib._src.display.traces_generic import get_frames
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
-
+from magpylib._src.utility import is_notebook
 
 # from magpylib._src.utility import format_obj_input
 
-SYMBOLS = {
+SYMBOLS_MAYAVI = {
     "circle": "2dcircle",
     "cross": "2dcross",
     "diamond": "2ddiamond",
@@ -101,7 +100,7 @@ def generic_trace_to_mayavi(trace):
                 marker_symbol = marker.get(
                     "symbol", trace.get("marker_symbol", "2dcross")
                 )
-                marker_symbol = SYMBOLS.get(marker_symbol, "2dcross")
+                marker_symbol = SYMBOLS_MAYAVI.get(marker_symbol, "2dcross")
                 trace_mvi1 = {"constructor": "points3d", **trace_mvi_base}
                 trace_mvi1["kwargs"] = {
                     "scale_factor": 0.2 * marker_size,
@@ -131,37 +130,28 @@ def generic_trace_to_mayavi(trace):
 
 
 def display_mayavi(
-    *obj_list,
-    zoom=0,
+    data,
     canvas=None,
-    animation=False,
-    colorsequence=None,
     return_fig=False,
-    **kwargs,
+    legend_max_items=20,
+    **kwargs,  # pylint: disable=unused-argument
 ):
-
     """Display objects and paths graphically using the mayavi library."""
 
     # flat_obj_list = format_obj_input(obj_list)
 
+    frames = data["frames"]
+    animation = bool(len(frames) > 1)
+    in_notebook_env = is_notebook()
+    if in_notebook_env:
+        mlab.init_notebook()
     show_canvas = False
     if canvas is None:
         if not return_fig:
-            show_canvas = True
-        fig = mlab.figure()
-    else:
-        fig = canvas
-    fig.scene.camera.zoom(zoom)
-    data = get_frames(
-        objs=obj_list,
-        colorsequence=colorsequence,
-        zoom=zoom,
-        animation=animation,
-        extra_backend="pyvista",
-        mag_arrows=False,
-        **kwargs,
-    )
-    frames = data["frames"]
+            show_canvas = True  # pragma: no cover
+        canvas = mlab.figure()
+    fig = canvas
+
     for fr in frames:
         new_data = []
         for tr in fr["data"]:
@@ -201,7 +191,11 @@ def display_mayavi(
                     yield
 
         anim()
+    if in_notebook_env and not return_fig:
+        # pylint: disable=import-outside-toplevel
+        from IPython.display import display
 
+        display(fig)
     if return_fig and not show_canvas:
         return fig
     if show_canvas:
