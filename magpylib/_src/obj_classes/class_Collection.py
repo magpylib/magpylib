@@ -657,6 +657,22 @@ class BaseCollection(BaseDisplayRepr):
             field="H",
         )
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        items = []
+        if self.children_all:
+            nums = {
+                "sensor": len(self.sensors_all),
+                "source": len(self.sources_all),
+            }
+            for name, num in nums.items():
+                if num > 0:
+                    items.append(f"{num} {name}{'s'[:num^1]}")
+        else:
+            items.append("no children")
+        return ", ".join(items)
+
 
 class Collection(BaseGeo, BaseCollection):
     """Group multiple children (sources, sensors and collections) in a collection for

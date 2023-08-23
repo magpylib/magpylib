@@ -895,3 +895,9 @@ class TriangularMesh(BaseMagnet):
             style=style,
             **kwargs,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        ntri = len(self.faces)
+        return f"{ntri} face{'s'[:ntri^1]}"

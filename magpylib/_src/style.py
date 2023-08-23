@@ -155,6 +155,10 @@ class BaseStyle(MagicProperties):
     description: dict or `Description` object, default=None
         Object description properties.
 
+    legend: dict or `Legend` object, default=None
+        Object legend properties when displayed in a plot. Legend has the `{label} ({description})`
+        format.
+
     color: str, default=None
         A valid css color. Can also be one of `['r', 'g', 'b', 'y', 'm', 'c', 'k', 'w']`.
 
@@ -176,6 +180,7 @@ class BaseStyle(MagicProperties):
         self,
         label=None,
         description=None,
+        legend=None,
         color=None,
         opacity=None,
         path=None,
@@ -185,6 +190,7 @@ class BaseStyle(MagicProperties):
         super().__init__(
             label=label,
             description=description,
+            legend=legend,
             color=color,
             opacity=opacity,
             path=path,
@@ -214,6 +220,18 @@ class BaseStyle(MagicProperties):
             self._description = validate_property_class(
                 val, "description", Description, self
             )
+
+    @property
+    def legend(self):
+        """Legend with 'show' property."""
+        return self._legend
+
+    @legend.setter
+    def legend(self, val):
+        if isinstance(val, str):
+            self._legend = Legend(text=val)
+        else:
+            self._legend = validate_property_class(val, "legend", Legend, self)
 
     @property
     def color(self):
@@ -266,7 +284,7 @@ class Description(MagicProperties):
         Object description text.
 
     show: bool, default=None
-        If True, adds legend entry suffix based on value.
+        If True, adds legend entry based on value.
     """
 
     def __init__(self, text=None, show=None, **kwargs):
@@ -288,6 +306,32 @@ class Description(MagicProperties):
     @property
     def show(self):
         """If True, adds legend entry suffix based on value."""
+        return self._show
+
+    @show.setter
+    def show(self, val):
+        assert val is None or isinstance(val, bool), (
+            f"The `show` property of {type(self).__name__} must be either True or False,\n"
+            f"but received {repr(val)} instead."
+        )
+        self._show = val
+
+
+class Legend(MagicProperties):
+    """Defines properties for a legend object.
+
+    Parameters
+    ----------
+    show: bool, default=None
+        If True, adds legend entry based on value.
+    """
+
+    def __init__(self, show=None, **kwargs):
+        super().__init__(show=show, **kwargs)
+
+    @property
+    def show(self):
+        """If True, adds legend entry based on value."""
         return self._show
 
     @show.setter
