@@ -3,6 +3,7 @@ from magpylib._src.display.traces_core import make_Line
 from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
+from magpylib._src.utility import unit_prefix
 
 
 class Line(BaseCurrent):
@@ -120,3 +121,10 @@ class Line(BaseCurrent):
     def vertices(self, vert):
         """Set Line vertices, array_like, mm."""
         self._vertices = check_format_input_vertices(vert)
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return f"{unit_prefix(self.current)}A" if self.current else "no current"

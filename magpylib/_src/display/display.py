@@ -87,7 +87,31 @@ class RegisteredBackend:
             for k, v in kwargs.items()
             if any(k.startswith(arg) for arg in disp_args)
         }
-        show_kwargs = {k: v for k, v in kwargs.items() if k not in frame_kwargs}
+        kwargs = {k: v for k, v in kwargs.items() if k not in frame_kwargs}
+        backend_kwargs = {
+            k[len(backend) + 1 :]: v
+            for k, v in kwargs.items()
+            if k.startswith(f"{backend.lower()}_")
+        }
+        backend_kwargs = {**kwargs.pop(backend, {}), **backend_kwargs}
+        kwargs = {k: v for k, v in kwargs.items() if not k.startswith(backend)}
+        fig_kwargs = {
+            **kwargs.pop("fig", {}),
+            **{k[4:]: v for k, v in kwargs.items() if k.startswith("fig_")},
+            **backend_kwargs.pop("fig", {}),
+            **{k[4:]: v for k, v in backend_kwargs.items() if k.startswith("fig_")},
+        }
+        show_kwargs = {
+            **kwargs.pop("show", {}),
+            **{k[5:]: v for k, v in kwargs.items() if k.startswith("show_")},
+            **backend_kwargs.pop("show", {}),
+            **{k[5:]: v for k, v in backend_kwargs.items() if k.startswith("show_")},
+        }
+        kwargs = {
+            k: v
+            for k, v in kwargs.items()
+            if not (k.startswith("fig") or k.startswith("show"))
+        }
         data = get_frames(
             objs,
             supports_colorgradient=self.supports["colorgradient"],
@@ -102,7 +126,9 @@ class RegisteredBackend:
             max_rows=max_rows,
             max_cols=max_cols,
             subplot_specs=subplot_specs,
-            **show_kwargs,
+            fig_kwargs=fig_kwargs,
+            show_kwargs=show_kwargs,
+            **kwargs,
         )
 
 

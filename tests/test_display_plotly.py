@@ -206,20 +206,19 @@ def test_extra_model3d():
         },
     ]
     fig = go.Figure()
-    x = cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
+
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(canvas=fig)
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig)
+
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
-    x = magpy.show(
+    magpy.show(
         coll,
         canvas=fig,
         animation=True,
         style=dict(model3d_showdefault=False),
     )
-    assert x is None, "display test fail"
     my_callable_kwargs = lambda: {
         "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
         "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
@@ -235,12 +234,11 @@ def test_extra_model3d():
         }
     )
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(
+    cuboid.show(
         canvas=fig,
         style_path_show=False,
         style=dict(model3d_showdefault=False),
     )
-    assert x is None, "display test fail"
 
 
 def test_CustomSource_display():
@@ -320,3 +318,64 @@ def test_subplots():
         ValueError, match=r"The `output` parameter must start with 'B' or 'H'.*"
     ):
         magpy.show(*objs, canvas=fig, output="bad_output")
+
+
+def test_legends():
+    """test legends"""
+    f = 0.5
+    N = 3
+    xs = f * np.array([-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1])
+    ys = f * np.array([-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])
+    zs = f * np.array([-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1])
+    trace_plotly = dict(
+        backend="plotly",
+        constructor="scatter3d",
+        kwargs={"x": xs, "y": ys, "z": zs, "mode": "lines"},
+    )
+    c = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), style_label="Plotly extra trace")
+    c.style.model3d.add_trace(trace_plotly)
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.showlegend for t in fig.data] == [False, False]
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.showlegend for t in fig.data] == [True, False]
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"]
+    assert [t.showlegend for t in fig.data] == [True]
+
+    c.rotate_from_angax([10 * i for i in range(N)], "y", start=0, anchor=(0, 0, 10))
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 4
+    assert [t.showlegend for t in fig.data] == [True, False, False, False]

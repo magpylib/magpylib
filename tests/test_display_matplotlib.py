@@ -58,7 +58,11 @@ def test_Cylinder_display():
     src.show(canvas=ax, style_path_frames=[], backend="matplotlib")
 
     src.show(
-        canvas=ax, style_path_frames=[1, 5, 6], backend="matplotlib", return_fig=True
+        canvas=ax,
+        style_path_frames=[1, 5, 6],
+        style_path_numbering=True,
+        backend="matplotlib",
+        return_fig=True,
     )
 
 
