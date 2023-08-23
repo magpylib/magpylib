@@ -481,7 +481,7 @@ def test_describe():
         + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
         + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
         + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
-        + " size=1, symbol=None), size=None) "
+        + " size=1, sizemode=None, symbol=None), size=None, sizemode=None) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test

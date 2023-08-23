@@ -228,7 +228,7 @@ def display_matplotlib(
             if legend_maxitems != 0:
                 ratio *= 1.5  # extend horizontal ratio if legend is present
             fig_kwargs["figsize"] = (figsize[0] * ratio, figsize[1])
-        fig = plt.figure(**fig_kwargs)
+        fig = plt.figure(**{"tight_layout": True, **fig_kwargs})
     elif isinstance(canvas, matplotlib.axes.Axes):
         fig = canvas.get_figure()
         if max_rows is not None or max_cols is not None:
@@ -339,7 +339,7 @@ def display_matplotlib(
             blit=False,
             repeat=repeat,
         )
-    plt.tight_layout()
+
     out = ()
     if return_fig:
         show_canvas = False

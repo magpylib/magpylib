@@ -153,7 +153,7 @@ def make_Dipole(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     moment = np.array([0.0, 0.0, 0.0]) if obj.moment is None else obj.moment
     moment_mag = np.linalg.norm(moment)
     size = style.size
-    if autosize is not None:
+    if autosize is not None and style.sizemode == "scaled":
         size *= autosize
     if moment_mag == 0:
         trace = create_null_dim_trace(color=style.color)
@@ -557,7 +557,7 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     )
     no_pix = pixel.shape[0] == 1 and (pixel == 0).all()
     one_pix = pixel.shape[0] == 1 and not (pixel == 0).all()
-    if autosize is not None:
+    if autosize is not None and style.sizemode == "scaled":
         dim *= autosize
     if no_pix:
         dim_ext = dim
@@ -576,11 +576,13 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     if not no_pix:
         pixel_color = style.pixel.color
         pixel_size = style.pixel.size
-        combs = np.array(list(combinations(pixel, 2)))
-        vecs = np.diff(combs, axis=1)
-        dists = np.linalg.norm(vecs, axis=2)
-        min_dist = np.min(dists)
-        pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
+        pixel_dim = 1
+        if style.pixel.sizemode == "scaled":
+            combs = np.array(list(combinations(pixel, 2)))
+            vecs = np.diff(combs, axis=1)
+            dists = np.linalg.norm(vecs, axis=2)
+            min_dist = np.min(dists)
+            pixel_dim = dim_ext / 5 if min_dist == 0 else min_dist / 2
         if pixel_size > 0:
             pixel_dim *= pixel_size
             poss = pixel[1:] if one_pix else pixel
