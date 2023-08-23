@@ -22,9 +22,9 @@ def current_vertices_field(
 
     ### Args:
     - bh (boolean): True=B, False=H
-    - current (ndarray n): current on line in units of [A]
+    - current (ndarray n): current on line in units of A
     - vertex_sets (list of len n): n vertex sets (each of shape (mi,3))
-    - pos_obs (ndarray nx3): n observer positions in units of [mm]
+    - pos_obs (ndarray nx3): n observer positions in units of mm
 
     ### Returns:
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
@@ -74,25 +74,25 @@ def current_line_field(
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of [mT], if `field='H'` return H-field
-        in units of [kA/m].
+        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
+        in units of kA/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
     current: ndarray, shape (n,)
-        Electrical current in units of [A].
+        Electrical current in units of A.
 
     start: ndarray, shape (n,3)
-        Line start positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Line start positions (x,y,z) in Cartesian coordinates in units of mm.
 
     end: ndarray, shape (n,3)
-        Line end positions (x,y,z) in Cartesian coordinates in units of [mm].
+        Line end positions (x,y,z) in Cartesian coordinates in units of mm.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of [mT]/[kA/m].
+        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
 
     Examples
     --------
@@ -112,7 +112,7 @@ def current_line_field(
 
     Notes
     -----
-    Field computation via law of Biot Savart. See also countless online ressources.
+    Field computation via law of Biot Savart. See also countless online resources.
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements

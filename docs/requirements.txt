@@ -12,3 +12,4 @@ pyvista==0.37
 panel
 jupyterlab-myst
 sphinx-favicon
+sphinx-gallery

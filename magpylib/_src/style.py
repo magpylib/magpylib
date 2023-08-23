@@ -827,7 +827,7 @@ class MagnetizationColor(MagicProperties):
     def transition(self, val):
         assert (
             val is None or isinstance(val, (float, int)) and 0 <= val <= 1
-        ), "color transition must be a value betwen 0 and 1"
+        ), "color transition must be a value between 0 and 1"
         self._transition = val
 
     @property
