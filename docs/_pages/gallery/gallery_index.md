@@ -32,25 +32,16 @@ Notice that most examples use  interactive notebooks via [sphinx-thebe](https://
 :img-bottom: ../../_static/images/gallery_icon_tutorial_collection.png
 :::
 
-:::{grid-item-card} {ref}`gallery-tutorial-trimesh`
-:text-align: center
-:link: gallery-tutorial-trimesh
-:link-type: ref
-:link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
-:::
-
 :::{grid-item-card} {ref}`gallery-tutorial-custom`
 :text-align: center
 :link: gallery-tutorial-custom
 :link-type: ref
 :link-alt: link to example
-:img-bottom: ../../_static/images/gallery_icon_WIP.png
+:img-bottom: ../../_static/images/gallery_icon_tutorial_custom.png
 :::
 
-
-
 ::::
+
 
 ## Visualizations
 
