@@ -4,10 +4,12 @@
 # pylint: disable=import-outside-toplevel
 # pylint: disable=wrong-import-position
 import os
+from collections import Counter
 
 import matplotlib
 import matplotlib.pyplot as plt
 import numpy as np
+from matplotlib import patches
 from matplotlib.animation import FuncAnimation
 
 from magpylib._src.display.traces_utility import subdivide_mesh_by_facecolor
@@ -45,18 +47,59 @@ SCATTER_KWARGS_LOOKUPS = {
 }
 
 
+class StripedHandler:
+    """
+    Handler for creating a striped legend key using given color data.
+
+    Parameters
+    ----------
+    color_data : dict
+        Dictionary containing color names as keys and their respective proportions as values.
+
+    Attributes
+    ----------
+    colors : list
+        List of colors extracted from the color_data dictionary.
+    proportions : list
+        Normalized list of proportions extracted from the color_data dictionary.
+    """
+
+    def __init__(self, color_data):
+        total = sum(color_data.values())
+        self.colors = list(color_data.keys())
+        self.proportions = [value / total for value in color_data.values()]
+
+    def legend_artist(self, legend, orig_handle, fontsize, handlebox):
+        # pylint: disable=unused-argument
+        """Create custom legend key"""
+        x0, y0 = handlebox.xdescent, handlebox.ydescent
+        width, height = handlebox.width, handlebox.height
+        patch_width = width
+        current_position = x0
+
+        for color, proportion in zip(self.colors, self.proportions):
+            handlebox.add_artist(
+                patches.Rectangle(
+                    [current_position, y0], patch_width * proportion, height, fc=color
+                )
+            )
+            current_position += patch_width * proportion
+
+
 def generic_trace_to_matplotlib(trace, antialiased=True):
     """Transform a generic trace into a matplotlib trace"""
     traces_mpl = []
     leg_title = trace.get("legendgrouptitle_text", None)
+    showlegend = trace.get("showlegend", True)
     if trace["type"] == "mesh3d":
         subtraces = [trace]
-        if trace.get("facecolor", None) is not None:
+        has_facecolor = trace.get("facecolor", None) is not None
+        if has_facecolor:
             subtraces = subdivide_mesh_by_facecolor(trace)
         for ind, subtrace in enumerate(subtraces):
             x, y, z = np.array([subtrace[k] for k in "xyz"], dtype=float)
             triangles = np.array([subtrace[k] for k in "ijk"]).T
-            tr = {
+            tr_mesh = {
                 "constructor": "plot_trisurf",
                 "args": (x, y, z),
                 "kwargs": {
@@ -67,9 +110,11 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
                     "antialiased": antialiased,
                 },
             }
+            if showlegend and has_facecolor:
+                tr_mesh["legend_handler"] = StripedHandler(Counter(trace["facecolor"]))
             if ind != 0:  # hide substrace legends except first
-                tr["kwargs"]["label"] = "_nolegend_"
-            traces_mpl.append(tr)
+                tr_mesh["kwargs"]["label"] = "_nolegend_"
+            traces_mpl.append(tr_mesh)
     elif "scatter" in trace["type"]:
         props = {
             k: trace.get(v[0], {}).get(v[1], trace.get("_".join(v), None))
@@ -137,19 +182,18 @@ def generic_trace_to_matplotlib(trace, antialiased=True):
         raise ValueError(
             f"Trace type {trace['type']!r} cannot be transformed into matplotlib trace"
         )
-    showlegend = trace.get("showlegend", True)
-    for tr in traces_mpl:
-        tr["row"] = trace.get("row", 1)
-        tr["col"] = trace.get("col", 1)
-        tr["kwargs"] = tr.get("kwargs", {})
-        if tr["constructor"] != "text":
+    for tr_mesh in traces_mpl:
+        tr_mesh["row"] = trace.get("row", 1)
+        tr_mesh["col"] = trace.get("col", 1)
+        tr_mesh["kwargs"] = tr_mesh.get("kwargs", {})
+        if tr_mesh["constructor"] != "text":
             if showlegend:
-                if "label" not in tr["kwargs"]:
-                    tr["kwargs"]["label"] = trace.get("name", "")
+                if "label" not in tr_mesh["kwargs"]:
+                    tr_mesh["kwargs"]["label"] = trace.get("name", "")
                     if leg_title is not None:
-                        tr["kwargs"]["label"] += f" ({leg_title})"
+                        tr_mesh["kwargs"]["label"] += f" ({leg_title})"
             else:
-                tr["kwargs"]["label"] = "_nolegend_"
+                tr_mesh["kwargs"]["label"] = "_nolegend"
     return traces_mpl
 
 
@@ -278,6 +322,7 @@ def display_matplotlib(
 
     def draw_frame(frame_ind):
         count_with_labels = {}
+        handler_map = {}
         for tr in frames[frame_ind]["data"]:
             row_col_num = (tr["row"], tr["col"])
             ax = axes[row_col_num]
@@ -291,6 +336,8 @@ def display_matplotlib(
                 if label and not label.startswith("_"):
                     count_with_labels[row_col_num] += 1
             trace = getattr(ax, constructor)(*args, **kwargs)
+            if "legend_handler" in tr:
+                handler_map[trace] = tr["legend_handler"]
             if constructor == "plot_trisurf":
                 # 'Poly3DCollection' object has no attribute '_edgecolors2d'
                 for arg in ("face", "edge"):
@@ -310,11 +357,11 @@ def display_matplotlib(
                 )
                 ax.set_box_aspect(aspect=(1, 1, 1))
                 if 0 < count <= legend_maxitems:
+                    lg_kw = {"bbox_to_anchor": (1.04, 1), "loc": "upper left"}
+                    if handler_map:
+                        lg_kw["handler_map"] = handler_map
                     try:
-                        ax.legend(
-                            bbox_to_anchor=(1.04, 1),
-                            loc="upper left",
-                        )
+                        ax.legend(**lg_kw)
                     except AttributeError:
                         # see https://github.com/matplotlib/matplotlib/pull/25565
                         pass
