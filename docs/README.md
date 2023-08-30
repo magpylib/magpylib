@@ -1,6 +1,6 @@
 ## About Magpylib Documentation
 
-The Documentation is built with [Sphinx](http://www.sphinx-doc.org/en/main/) v5.3.0. and the configuration file is [conf.py](./conf.py). Files get converted to `.html` files by Sphinx during build time. Images, web code and videos are kept in the [_static](./_static) folder.
+The Documentation is built with [Sphinx](http://www.sphinx-doc.org/en/main/) v5.3.0 and the configuration file is [conf.py](./conf.py). Files get converted to `.html` files by Sphinx during build time. Images, web code and videos are kept in the [_static](./_static) folder.
 
 ### API docs
  The docstring format is under the [Numpy Convention](https://sphinxcontrib-napoleon.readthedocs.io/en/latest/example_numpy.html). Sphinx is configured to read Docstring information from the codebase and convert it into pages utilizing the [autodoc extension](http://www.sphinx-doc.org/en/main/usage/extensions/autodoc.html). The generated files are created at build time and put into a folder called `_autogen`
