@@ -70,7 +70,7 @@ plt.show()
 
 The `Sensor` class enables relative positioning of observer grids in the global coordinate system. The observer grid is stored in the `pixel` parameter of the sensor object which is `(0,0,0)` by default (sensor position = observer position).
 
-The following example shows a moving and rotating sensor with two pixel. At the same time, the source objects are moving to demonstrate the versatility of the field computation.
+The following example shows a moving and rotating sensor with two pixels. At the same time, the source objects are moving to demonstrate the versatility of the field computation.
 
 ```{code-cell} ipython3
 import numpy as np

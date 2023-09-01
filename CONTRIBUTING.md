@@ -1,6 +1,6 @@
 # Contribute
 
-The success of Magpylib relies on its user-friedliness. Your feedback and participation in discussions is strongly encouraged. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in our informal [Discussions](https://github.com/magpylib/magpylib/discussions) channel on GitHub.
+The success of Magpylib relies on its user-friendliness. Your feedback and participation in discussions is strongly encouraged. Ask questions about Magpylib. Tell us what you like and what you dislike. Start general discussions in our informal [Discussions](https://github.com/magpylib/magpylib/discussions) channel on GitHub.
 
 We use GitHub [Issues and Milestones](https://github.com/magpylib/magpylib/issues) to plan and track the Magpylib project. Open new Issues to report a bug, to point out a problem, or to  make a feature request, e.g. following a fruitful discussion. Within the Issue we will together define in detail what should be done. For small bug fixes, code cleanups, and other small improvements its not necessary to create issues.
 
@@ -23,7 +23,7 @@ You are most welcome to become a project contributor by helping us with coding. 
 - All code is well documented and all top level doc strings abide by the [Numpy docstring style](https://numpydoc.readthedocs.io/en/latest/format.html).
 - All unit tests are running. We recommend using the [Pytest](https://docs.pytest.org/en/7.4.x/) package.
 - New unit tests are written aiming for 100% code coverage. We use [Coverage](https://coverage.readthedocs.io/en/) to test this.
-- [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and there are no formatting issues reportet (e.g. line-to-long).
+- [Pylint](https://pylint.readthedocs.io/en/stable/) rates your code 10/10 and there are no formatting issues reported (e.g. line-too-long).
 - Your code is PEP8 compliant and formatted with [Black](https://black.readthedocs.io/en/stable/) default settings.
 
 We strongly suggest that you use the [Pre-Commit](https://pre-commit.com/) hooks that apply important code checks which each commit.
