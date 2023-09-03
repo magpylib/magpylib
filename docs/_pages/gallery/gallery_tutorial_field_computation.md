@@ -181,6 +181,8 @@ fig = px.line(
 fig.show()
 ```
 
+(gallery-tutorial-field-computation-direct-interface)=
+
 ## Direct Interface
 
 All above computations demonstrate the convenient object oriented interface of Magpylib. However, there are instances when it is better to work with the direct interface instead.
