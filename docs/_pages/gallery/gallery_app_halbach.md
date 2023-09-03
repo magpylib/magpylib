@@ -17,4 +17,4 @@ kernelspec:
 # Halbach Magnets
 
 - halbach ring with fine discretization
-- discreete halbach cylinder models
+- discrete halbach cylinder models

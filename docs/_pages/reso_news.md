@@ -2,6 +2,14 @@
 
 # News
 
+## Release of version 4.4.0
+**03.09.2023**
+
+- Version 4.4 is now released. Most notable changes:
+    - the `style_legend_show` option to disable the automatic legend without having to refer to own canvas
+    - the styling option for current lines and magnetization arrows.
+- Bunch of bugfixes, other graphic improvements
+
 ## New Documentation
 **18.08.2023**
 
