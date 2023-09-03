@@ -94,7 +94,7 @@ Be aware that the above code is not very performant, but quite readable. The fol
 
 ## Example 2 - Hollow Cylinder Magnet
 
-A nice vizualizaion is achieved by combining `streamplot` with `contourf`. In this example we show the B-field of a hollow Cylinder magnet with diametral magnetization in the xy-symmetry plane.
+A nice visualizaion is achieved by combining `streamplot` with `contourf`. In this example we show the B-field of a hollow Cylinder magnet with diametral magnetization in the xy-symmetry plane.
 
 ```{code-cell} ipython3
 import numpy as np

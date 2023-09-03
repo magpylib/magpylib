@@ -16,7 +16,7 @@ kernelspec:
 
 # Pyvista Bodies
 
-[Pyvista](https://docs.pyvista.org/version/stable/) is a powerful open-source tool for the creation and vizualization of meshes. Pyvista `PolyData` objects can be directly transformed into Magylib `TriangularMesh` magnets via the classmethod `from_pyvista`.
+[Pyvista](https://docs.pyvista.org/version/stable/) is a powerful open-source tool for the creation and visualization of meshes. Pyvista `PolyData` objects can be directly transformed into Magpylib `TriangularMesh` magnets via the classmethod `from_pyvista`.
 
 ```{note}
 The Pyvista library used in the following examples is not automatically installed with Magpylib. A Pyvista installation guide is found [here](https://docs.pyvista.org/getting-started/installation.html).
