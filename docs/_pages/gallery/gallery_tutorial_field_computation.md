@@ -30,7 +30,7 @@ print(B.round(decimals=3))
 
 ## Field on a Grid
 
-When handed multiple observer positions, `getB` and `getH` will return the field in the shape of the input. In the following example, B- and H-field of a diametrally magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
+When handed multiple observer positions, `getB` and `getH` will return the field in the shape of the input. In the following example, B- and H-field of a diametrically magnetized cylinder magnet are computed on a position grid in the symmetry plane, and are then displayed using Matplotlib.
 
 ```{code-cell} ipython3
 import numpy as np

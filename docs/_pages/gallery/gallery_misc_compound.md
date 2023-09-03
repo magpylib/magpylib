@@ -56,7 +56,7 @@ class MagnetRing(magpy.Collection):
         # Store existing path
         pos_temp = self.position
         ori_temp = self.orientation
-        
+
         # Clean up old object properties
         self.reset_path()
         self.children = []
@@ -123,7 +123,7 @@ magpy.show(ring, sensor, backend='plotly')
 
 In the above example, the trace is constructed in `_update`, every time the parameter `cubes` is modified. This can lead to an unwanted computational overhead, especially as the construction is only necessary for graphical representation.
 
-To make our compounds ready for heavy computation, while retaining Magpylib graphic posibilities, it is possible to provide a trace which will only be constructed when `show` is called. The following modification of the above example demonstrates this:
+To make our compounds ready for heavy computation, while retaining Magpylib graphic possibilities, it is possible to provide a trace which will only be constructed when `show` is called. The following modification of the above example demonstrates this:
 
 ```{code-cell} ipython3
 class MagnetRingAdv(magpy.Collection):
