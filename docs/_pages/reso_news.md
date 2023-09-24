@@ -6,6 +6,7 @@
 **03.09.2023**
 
 - Version 4.4 is now released. Most notable changes:
+    - dynamic multi-plots with `show_context`
     - the `style_legend_show` option to disable the automatic legend without having to refer to own canvas
     - the styling option for current lines and magnetization arrows.
 - Bunch of bugfixes, other graphic improvements
