@@ -30,7 +30,7 @@ fig, ax = plt.subplots()
 
 # Create an observer grid in the xz-symmetry plane
 ts = np.linspace(-5,5,40)
-grid = np.array([[(x,0,z) for x in ts] for z in ts]) # slow code
+grid = np.array([[(x,0,z) for x in ts] for z in ts]) # slow Python loop
 
 # Compute the B-field of a cube magnet on the grid
 cube = magpy.magnet.Cuboid(magnetization=(500, 0, 500), dimension=(2, 2, 2))
@@ -48,25 +48,6 @@ splt = ax.streamplot(
     density=1,
     linewidth=log10_norm_B*2,
     cmap="autumn",
-)
-
-# Add colorbar with logarithmic labels
-cb = fig.colorbar(splt.lines, ax=ax, label="|B| (mT)")
-ticks = np.array([3,10,30,100,300])
-cb.set_ticks(np.log10(ticks))
-cb.set_ticklabels(ticks)
-
-# Outline magnet boundary
-ax.plot([1, 1, -1, -1, 1], [1, -1, -1, 1, 1], "k--", lw=2)
-
-# Figure styling
-ax.set(
-    xlabel="x-position (mm)",
-    ylabel="z-position (mm)",
-)
-
-plt.tight_layout()
-plt.show()
 )
 
 # Add colorbar with logarithmic labels
