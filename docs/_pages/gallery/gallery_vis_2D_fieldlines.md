@@ -12,7 +12,7 @@ kernelspec:
   name: python3
 ---
 
-(gallery-vis-2D-streamlines)=
+(gallery-vis-2D-fieldlines)=
 
 # HEADLINE
 
