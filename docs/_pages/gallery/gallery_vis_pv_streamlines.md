@@ -22,6 +22,9 @@ Pyvista offers field-line computation and visualization in 3D. In addition to th
 import pyvista as pv
 import magpylib as magpy
 
+# This line is only needed for pyvista rendering in a jupyter notebook
+pv.set_jupyter_backend("panel")
+
 # Create a magnet with Magpylib
 magnet = magpy.magnet.Cylinder((0, 0, 1000), (10, 4))
 

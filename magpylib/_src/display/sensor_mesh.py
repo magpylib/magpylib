@@ -149,7 +149,7 @@ def get_sensor_mesh(
         ]
     )
     indices = ((0, 12), (12, 68), (68, 124), (124, 180))
-    show = (center_show, x_show, z_show, y_show)
+    show = (center_show, x_show, y_show, z_show)
     for k in ("i", "j", "k", "facecolor"):
         t = []
         for i, s in zip(indices, show):

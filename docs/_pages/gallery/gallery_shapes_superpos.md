@@ -67,10 +67,9 @@ sensor = magpy.Sensor()
 sensor.position = np.linspace((7,-10,0), (7,10,0), 100)
 
 # Plot
-with magpy.show_context(magnet, sensor, backend='plotly', showlegend=False) as s:
+with magpy.show_context(magnet, sensor, backend='plotly', style_legend_show=False) as s:
     s.show(col=1)
     s.show(output='B', col=2)
-
 ```
 
 

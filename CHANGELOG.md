@@ -3,13 +3,19 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [4.4.0dev] - Unreleased
+## [4.4.0] - 2023-09-03
 - Included self-intersection check in `TriangularMesh` ([#622](https://github.com/magpylib/magpylib/pull/622)).
 - Fixed incorrect edge case of TriangularMesh reorientation ([#644](https://github.com/magpylib/magpylib/pull/644))
 - Discontinuous segments in `current.Line` are now accepted and correctly treated as separate lines ([#632](https://github.com/magpylib/magpylib/pull/632), [#642](https://github.com/magpylib/magpylib/pull/642)).
 - Objects can now be displayed with missing dimension and/or excitation ([#640](https://github.com/magpylib/magpylib/pull/640)).
 - Added magnetization and current arrows `sizemode` styling option (absolute or scaled) ([#639](https://github.com/magpylib/magpylib/pull/639)).
 - `Collection` objects now also have a default description when displayed (number of chidren) ([#634](https://github.com/magpylib/magpylib/pull/634)).
+- Many minor graphic improvements ([#663](https://github.com/magpylib/magpylib/pull/663), [#649](https://github.com/magpylib/magpylib/issues/649), [#653](https://github.com/magpylib/magpylib/issues/653), []()]
+- `legend` style option [#650](https://github.com/magpylib/magpylib/issues/650))
+- Changed unit naming in text to comply with DIN Norm 641 [#614](https://github.com/magpylib/magpylib/issues/614)
+- Improving the documentation now boasting a contribution guide, a news-blog, an example and tutorial gallery, a getting started section and many other improvements ([#621](https://github.com/magpylib/magpylib/issues/621), [#596](https://github.com/magpylib/magpylib/issues/596), [#580](https://github.com/magpylib/magpylib/issues/580))
+- Improved numerical stability of `CylinderSegement`, ([#648](https://github.com/magpylib/magpylib/issues/648), [#651](https://github.com/magpylib/magpylib/issues/651))
+
 
 ## [4.3.0] - 2023-06-25
 - New `TriangularMesh` magnet class added to conveniently work with triangular surface meshes instead of large collections of individual `Triangle` objects. The `TriangularMesh` class performs important checks (closed, connected, oriented) and can directly import pyvista objects and for convex hull bodies. ([#569](https://github.com/magpylib/magpylib/issues/569), [#598](https://github.com/magpylib/magpylib/pull/598)).
@@ -419,7 +425,7 @@ The first official release of the magpylib library.
 
 ---
 
-[4.4.0dev]:https://github.com/magpylib/magpylib/compare/4.3.0...HEAD
+[4.4.0]:https://github.com/magpylib/magpylib/compare/4.3.0...HEAD
 [4.3.0]:https://github.com/magpylib/magpylib/compare/4.2.0...4.3.0
 [4.2.0]:https://github.com/magpylib/magpylib/compare/4.1.2...4.2.0
 [4.1.2]:https://github.com/magpylib/magpylib/compare/4.1.1...4.1.2
