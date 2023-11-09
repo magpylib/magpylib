@@ -3,7 +3,7 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
-## [4.1.1rc0] - 2023-11-08
+## [4.4.1rc0] - 2023-11-08
 - Fix axis mismatch on show/hide of sensor arrows ([#679](https://github.com/magpylib/magpylib/pull/679))
 - Documentation improvements ([#673](https://github.com/magpylib/magpylib/pull/673))
 
@@ -430,7 +430,7 @@ The first official release of the magpylib library.
 
 ---
 
-[4.1.1rc0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.1.1rc0
+[4.4.1rc0]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1rc0
 [4.4.0]:https://github.com/magpylib/magpylib/compare/4.3.0...4.4.0
 [4.3.0]:https://github.com/magpylib/magpylib/compare/4.2.0...4.3.0
 [4.2.0]:https://github.com/magpylib/magpylib/compare/4.1.2...4.2.0
