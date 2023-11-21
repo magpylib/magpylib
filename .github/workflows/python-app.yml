@@ -25,6 +25,7 @@ jobs:
           if [ "$RUNNER_OS" == "Linux" ]; then
             apt update
             sudo apt-get install -y libgl1-mesa-dev xvfb ffmpeg
+          fi
       - name: Run pylint test
         run: pylint --rcfile='./.pylintrc' magpylib
       - name: Run code test coverage suite
