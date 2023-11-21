@@ -22,8 +22,9 @@ jobs:
         run: mkdir test-results && pip install tox && pip install pylint
       - name: Specific dependencies for pyvista
         run: |
-          apt update
-          sudo apt-get install -y libgl1-mesa-dev xvfb ffmpeg
+          if [ "$RUNNER_OS" == "Linux" ]; then
+            apt update
+            sudo apt-get install -y libgl1-mesa-dev xvfb ffmpeg
       - name: Run pylint test
         run: pylint --rcfile='./.pylintrc' magpylib
       - name: Run code test coverage suite
