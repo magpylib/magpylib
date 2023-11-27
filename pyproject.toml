@@ -54,7 +54,9 @@ doc = [
     "sphinx-book-theme",
 ]
 test = [
+    "tox",
     "pytest",
+    "pylint",
     "coverage",
     "pandas",
     "pyvista",
