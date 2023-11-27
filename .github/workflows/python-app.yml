@@ -14,7 +14,7 @@ jobs:
       - name: Set up testing tools and environment for pylint
         run: |
           python -m pip install --upgrade pip
-          pip install pylint
+          pip install .[test]
       - name: Run pylint test
         run: pylint --rcfile='./.pylintrc' magpylib
 
