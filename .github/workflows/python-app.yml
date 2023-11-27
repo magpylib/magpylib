@@ -35,7 +35,7 @@ jobs:
       - name: Setup testing tools and environment
         run: |
           python -m pip install --upgrade pip
-          pip install tox
+          pip install .[test]
       - name: Setup headless display
         uses: pyvista/setup-headless-display-action@v2
       - name: Run code test coverage suite
