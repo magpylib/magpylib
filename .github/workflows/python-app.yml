@@ -3,6 +3,21 @@ name: Python package
 on: [push]
 
 jobs:
+  pylint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Setup Python
+        uses: actions/setup-python@v4
+        with:
+          python-version: "3.8"
+      - name: Set up testing tools and environment for pylint
+        run: |
+          python -m pip install --upgrade pip
+          pip install pylint
+      - name: Run pylint test
+        run: pylint --rcfile='./.pylintrc' magpylib
+
   build:
     runs-on: ${{ matrix.os }}
     strategy:
@@ -16,13 +31,11 @@ jobs:
         uses: actions/setup-python@v4
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Set up testing tools and environment
+      - name: Setup testing tools and environment
         run: |
           python -m pip install --upgrade pip
-          pip install .[test]
+          pip install tox
       - name: Setup headless display
         uses: pyvista/setup-headless-display-action@v2
-      - name: Run pylint test
-        run: pylint --rcfile='./.pylintrc' magpylib
       - name: Run code test coverage suite
         run: tox -e py
