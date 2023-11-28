@@ -42,7 +42,6 @@ jobs:
         run: tox -e py
 
   publish:
-
     name: Publish to PyPi
     needs: build
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
