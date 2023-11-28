@@ -21,7 +21,7 @@ maintainers = [
 description = "Free Python3 package to compute magnetic fields."
 readme = "README.md"
 license = {file = "LICENSE"}
-keywords = ["egg", "bacon", "sausage", "tomatoes", "Lobster Thermidor"]
+keywords = ["magnetism", "physics", "analytical", "electromagnetic", "magnetic-field", "B-field"]
 classifiers = [
     "Development Status :: 5 - Production/Stable",
     "Programming Language :: Python :: 3",
