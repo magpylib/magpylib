@@ -63,6 +63,7 @@ test = [
     "ipygany",
     "imageio[tifffile]",
     "kaleido",
+    "jupyterlab",
 ]
 binder = [
     "jupytext",
