@@ -39,19 +39,19 @@ classifiers = [
 code_style = [
     "pre-commit",
 ]
-doc = [
+docs = [
     "sphinx==5.3",
-    "pandas",
-    "myst-nb",
     "sphinx-design",
     "sphinx-thebe",
-    "numpy-stl",
-    "pyvista==0.37",
-    "panel",
     "sphinx-favicon",
     "sphinx-gallery",
     "sphinx-copybutton",
     "sphinx-book-theme",
+    "myst-nb",
+    "pandas",
+    "numpy-stl",
+    "pyvista==0.37",
+    "panel",
 ]
 test = [
     "tox",

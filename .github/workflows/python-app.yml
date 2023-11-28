@@ -1,7 +1,6 @@
 name: Python package
 
-on:
-  - push
+on: [push, pull_request]
 
 jobs:
   pylint:
@@ -41,3 +40,26 @@ jobs:
         uses: pyvista/setup-headless-display-action@v2
       - name: Run code test coverage suite
         run: tox -e py
+
+  publish:
+
+    name: Publish to PyPi
+    needs: build
+    if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
+    runs-on: ubuntu-latest
+    permissions:
+      # IMPORTANT: this permission is mandatory for trusted publishing
+      id-token: write
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v4
+      - name: Set up Python 3.8
+        uses: actions/setup-python@v4
+        with:
+          python-version: 3.8
+      - name: Build package
+        run: |
+          pip install wheel
+          python setup.py sdist bdist_wheel
+      - name: Publish
+        uses: pypa/gh-action-pypi-publish@release/v1
