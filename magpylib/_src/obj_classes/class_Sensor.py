@@ -8,6 +8,7 @@ from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 from magpylib._src.style import SensorStyle
 from magpylib._src.utility import format_star_input
+from magpylib._src.exceptions import MagpylibBadUserInput
 
 
 class Sensor(BaseGeo, BaseDisplayRepr):
@@ -22,13 +23,17 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     Parameters
     ----------
-    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
-        `position` and `orientation` attributes together represent an object path.
 
     pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
         Sensor pixel (=sensing elements) positions in the local object coordinates
         (rotate with object), in units of mm.
+
+    handedness: {"right", "left"}
+        Object local coordinate system handedness. If "left", the x-axis is flipped.
+
+    position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
+        Object position(s) in the global coordinates in units of mm. For m>1, the
+        `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -82,14 +87,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     def __init__(
         self,
-        position=(0, 0, 0),
         pixel=(0, 0, 0),
+        handedness="right",
+        position=(0, 0, 0),
         orientation=None,
         style=None,
         **kwargs,
     ):
         # instance attributes
         self.pixel = pixel
+        self.handedness = handedness
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -115,6 +122,20 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             sig_name="pixel",
             sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)",
         )
+
+    @property
+    def handedness(self):
+        """Sensor handedness in the local object coordinates."""
+        return self._handedness
+
+    @handedness.setter
+    def handedness(self, val):
+        """Set Sensor handedness in the local object coordinates."""
+        if val not in {"right", "left"}:
+            raise MagpylibBadUserInput(
+                "Sensor `handedness` must be either `'right'` or `'left'`"
+            )
+        self._handedness = val
 
     def getB(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
