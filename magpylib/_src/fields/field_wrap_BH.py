@@ -382,11 +382,9 @@ def getBH_level2(
                 )
             Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
             # overwrite Bpart in B
-            B[:, :, pix_slice] = np.reshape(
-                Bpart_flat_rot, Bpart_orig_shape
-            )
+            B[:, :, pix_slice] = np.reshape(Bpart_flat_rot, Bpart_orig_shape)
         if sens.handedness == "left":
-            B[...,pix_slice,0] *= -1
+            B[..., pix_slice, 0] *= -1
 
     # rearrange sensor-pixel shape
     if pix_all_same:

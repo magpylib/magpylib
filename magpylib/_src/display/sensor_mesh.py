@@ -1,5 +1,6 @@
-import numpy as np
 from copy import deepcopy
+
+import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
 # fmt: off
@@ -116,6 +117,7 @@ _DEFAULT_TRACE = {
 }
 # fmt: on
 
+
 def get_sensor_mesh(
     x_color="red",
     y_color="green",
@@ -126,7 +128,7 @@ def get_sensor_mesh(
     z_show=True,
     center_show=True,
     colorize_tails=True,
-    handedness = "right",
+    handedness="right",
 ):
     """
     returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
@@ -143,9 +145,9 @@ def get_sensor_mesh(
     trace = deepcopy(_DEFAULT_TRACE)
     if handedness == "left":
         t = trace
-        pts = np.array([t["x"],t["y"],t["z"]]).T
-        rot = RotScipy.from_euler("y",-90, degrees=True)
-        t["x"],t["y"],t["z"] = rot.apply(pts).T
+        pts = np.array([t["x"], t["y"], t["z"]]).T
+        rot = RotScipy.from_euler("y", -90, degrees=True)
+        t["x"], t["y"], t["z"] = rot.apply(pts).T
         x_color, z_color = z_color, x_color
         x_color_tail, z_color_tail = z_color_tail, x_color_tail
         x_show, z_show = z_show, x_show

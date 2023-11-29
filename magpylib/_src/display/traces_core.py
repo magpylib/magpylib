@@ -547,7 +547,9 @@ def make_Sensor(obj, autosize=None, **kwargs) -> Dict[str, Any]:
     pixel = obj.pixel
     pixel = np.unique(np.array(pixel).reshape((-1, 3)), axis=0)
     style_arrows = style.arrows.as_dict(flatten=True, separator="_")
-    sensor = get_sensor_mesh(**style_arrows, center_color=style.color, handedness=obj.handedness)
+    sensor = get_sensor_mesh(
+        **style_arrows, center_color=style.color, handedness=obj.handedness
+    )
     vertices = np.array([sensor[k] for k in "xyz"]).T
     if style.color is not None:
         sensor["facecolor"][sensor["facecolor"] == "rgb(238,238,238)"] = style.color
