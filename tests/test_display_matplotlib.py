@@ -102,7 +102,7 @@ def test_Tetrahedron_display():
 def test_Sensor_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
-    sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
+    sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)], handedness="left")
     sens.style.arrows.z.color = "magenta"
     sens.style.arrows.z.show = False
     poz = np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33)
