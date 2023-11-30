@@ -263,7 +263,6 @@ def test_sensor_handedness():
     pixel = np.array([[x, y, z] for x in ls(N[0]) for y in ls(N[1]) for z in ls(N[2])])
     pixel = pixel.reshape(*N, 3)
     c = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 1, 0))
-    d = 2
     sr = magpy.Sensor(
         pixel=pixel,
         position=(-1, 0, 0),
