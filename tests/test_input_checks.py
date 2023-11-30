@@ -112,9 +112,7 @@ def test_input_objects_orientation_bad():
         True,
     ]
     for bad in bads:
-        np.testing.assert_raises(
-            MagpylibBadUserInput, magpy.Sensor, (0, 0, 0), (0, 0, 0), bad
-        )
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, orientation=bad)
 
 
 def test_input_objects_current_good():
