@@ -17,11 +17,11 @@ kernelspec:
 # Helmholtz Coils
 
 - coil modeling
-- vizualization of homogenity
+- visualization of homogeneity
 
 
 
-<!-- 
+<!--
 In this example we model the **magnetic field of a coil**, and show how to display it with spectacular **field line** representations.
 
 ## Coil models

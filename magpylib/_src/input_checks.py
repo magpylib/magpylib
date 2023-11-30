@@ -157,7 +157,7 @@ def validate_field_func(val):
             if not isinstance(out, np.ndarray):
                 raise MagpylibBadUserInput(
                     "Input parameter `field_func` must be a callable that returns B- and H-field"
-                    "as numpy ndarray.\n"
+                    " as numpy ndarray.\n"
                     f"Instead it returns type {type(out)} for {field}-field."
                 )
             if out.shape != (2, 3):

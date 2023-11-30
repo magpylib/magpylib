@@ -20,7 +20,7 @@ kernelspec:
 The top level class `Collection` allows users to group objects by reference for common manipulation. The idea is that
 
 1. A collection spans its own local frame of reference with position and orientation, to which the children are added. Thus, any operation applied to the collection is individually applied to all its children.
-2.  The collection itself behaves like a single Magpylib object (can be source and/or observer)
+2. The collection itself behaves like a single Magpylib object (can be source and/or observer).
 3. All children inside the collection can be individually addressed and manipulated at all times.
 4. Collections have their own `style` attributes, their paths are displayed in `show`, and all children are automatically assigned their parent color.
 
@@ -64,7 +64,7 @@ print(f"sensors:     {coll.sensors}")
 print(f"collections: {coll.collections}")
 ```
 
-The **`describe`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e. when containing other collections.
+The **`describe`** method is a very convenient way to view a Collection structure, especially when the collection is nested, i.e., when containing other collections.
 
 ```{code-cell} ipython3
 # Add more objects
@@ -104,7 +104,7 @@ print(f"c1.parent:   {c1.parent}")
 print(f"c1.children: {c1.children}")
 ```
 
-Rather than adding objects to a collection, as described above, one can also set the `parent` parameter. A Magpylib object can only have a single parent, i.e. it can only be part of a single collection. As a result, changing the parent will automatically remove the object from it's previous collection.
+Rather than adding objects to a collection, as described above, one can also set the `parent` parameter. A Magpylib object can only have a single parent, i.e., it can only be part of a single collection. As a result, changing the parent will automatically remove the object from its previous collection.
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -199,7 +199,7 @@ for coil in [coil1, coil2]:
 magpy.show(*helmholtz, animation=True, style_path_show=False)
 ```
 
-For magnetic field computation a collection with source children behaves like a single source object, and a collection with sensor children behaves like a flat list of it's sensors when provided as `sources` and `observers` input respectively.
+For magnetic field computation, a collection with source children behaves like a single source object, and a collection with sensor children behaves like a flat list of its sensors when provided as `sources` and `observers` input respectively.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -218,7 +218,7 @@ plt.show()
 
 ## Efficient 3D Models
 
-The graphical backend libraries were not designed for complex 3D graphic output. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections, is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
+The graphical backend libraries were not designed for complex 3D graphic output. As a result, it becomes often inconvenient and slow when attempting to display many 3D objects. One solution to this problem when dealing with large collections is to represent the latter by a single encompassing body, and to deactivate the individual 3D models of all children.
 
 ```{code-cell} ipython3
 import magpylib as magpy

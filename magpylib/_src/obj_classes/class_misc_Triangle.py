@@ -146,3 +146,10 @@ class Triangle(BaseMagnet):
         )
         barycenter = orientation.apply(centroid) + position
         return barycenter
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.vertices is None:
+            return "no vertices"
+        return ""

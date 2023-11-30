@@ -32,8 +32,9 @@ points = [(-2,-2,0), (-2,2,0), (2,-2,0), (2,2,0), (0,0,3)]
 tmesh_pyramid = magpy.magnet.TriangularMesh.from_ConvexHull(
     magnetization=(0, 0, 1000),
     points=points,
+    style_label="Pyramid Magnet",
 )
 
 # Display graphically
-tmesh_pyramid.show(backend='plotly')
+tmesh_pyramid.show(backend="plotly")
 ```

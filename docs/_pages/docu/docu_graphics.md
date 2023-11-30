@@ -90,9 +90,9 @@ objects["Cuboid"].rotate_from_angax(np.linspace(0, 90, 20), "z", anchor=0)
 magpy.show(*objects.values())
 ```
 
-Notice that, objects and their paths are automatically assigned different colors, the magnetization is shown by coloring the poles (default) or by an arrow (via styles). Current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.
+Notice that objects and their paths are automatically assigned different colors, the magnetization is shown by coloring the poles (default) or by an arrow (via styles). Current directions and dipole objects are indicated by arrows and sensors are shown as tri-colored coordinate cross with pixel as markers.
 
-How objects are represented graphically (color, line thickness, ect.) is defined by their **style** properties. The default style, which can be seen above, is accessed and manipulated through `magpy.defaults.display.style`. In addition, each object can have an individual style, which takes precedence over the default setting. A local style override is also possible by passing style arguments directly to `show`.
+How objects are represented graphically (color, line thickness, etc.) is defined by their **style** properties. The default style, which can be seen above, is accessed and manipulated through `magpy.defaults.display.style`. In addition, each object can have an individual style, which takes precedence over the default setting. A local style override is also possible by passing style arguments directly to `show`.
 
 The hierarchy that decides about the final graphic object representation, a list of all style parameters and other options for tuning the `show`-output are described in {ref}`examples-graphic-styles` and {ref}`examples-animation`.
 
@@ -451,7 +451,7 @@ magpy.defaults.display.style.magnet.update(
 Any Magpylib object can have its own individual style that will take precedence over the default values when `show` is called. When setting individual styles, the object family specifier such as `magnet` or `current` which is required for the defaults settings, but is implicitly defined by the object type, can be omitted.
 
 ```{warning}
-Users should be aware that specifying individual style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s). There is however the possibility to define styles without affecting the object creation time, but only if the style is defined in the initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). In this case the style attribute creation is deferred to when is is called the first time, typically when calling the `show` function, or accessing the `style` attribute of the object.
+Users should be aware that specifying individual style attributes massively increases object initializing time (from <50 to 100-500 $\mu$s). There is however the possibility to define styles without affecting the object creation time, but only if the style is defined in the initialization (e.g.: `magpy.magnet.Cuboid(..., style_label="MyCuboid")`). In this case the style attribute creation is deferred to when it is called the first time, typically when calling the `show` function, or accessing the `style` attribute of the object.
 While this may not be noticeable for a small number of objects, it is best to avoid setting styles until it is plotting time.
 ```
 
@@ -574,7 +574,7 @@ magpy.show(
 )
 ```
 
-Notice that the sensor, with the shorter path stops before the magnets do. This is an example where {ref}`gallery-tutorial-paths-edge-padding-end-slicing` is applied.
+Notice that the sensor with the shorter path stops before the magnets do. This is an example where {ref}`gallery-tutorial-paths-edge-padding-end-slicing` is applied.
 
 ```{warning}
 Even with some implemented failsafes, such as a maximum frame rate and frame count, there is no guarantee that the animation will be rendered properly. This is particularly relevant when the user tries to animate many objects and/or many path positions at the same time.
@@ -624,7 +624,7 @@ magpy.show(
 
 ### Subplots via context manager `magpylib.show_context`
 
-In order to make the subplot syntax more convenient we introduced the new `show_context` native python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to now how many rows and columns are been demanded by the user, which single calls to the `show` would not keep track of.
+In order to make the subplot syntax more convenient we introduced the new `show_context` native Python context manager. It allows to defer calls to the `show` function while passing additional arguments. This is necessary for Magpylib to know how many rows and columns are been demanded by the user, which single calls to the `show` would not keep track of.
 
 The above example becomes:
 
@@ -686,8 +686,8 @@ with magpy.show_context():
 +++
 
 In addition the usual 3D models, it is also possible to draw 2D scatter plots of magnetic field data. This is achieved by assigning the `output` argument in the `show` function.
-By default`output='model3d'` displays the 3D representations of the objects. If output is a tuple of strings it must be a combination of 'B' or 'H' and 'x', 'y' and/or 'z'. When having multiple coordinates, the field value is the combined vector length (e.g. `('Bx', 'Hxy', 'Byz')`). `'Bxy'` is equivalent to `sqrt(|Bx|^2 + |By|^2)`. A 2D line plot is then represented accordingly if the objects contain at least one source and one sensor.
-By default source outputs are summed up and sensor pixel, if any, are aggregated by mean (`pixel_agg="mean"`).
+By default `output='model3d'` displays the 3D representations of the objects. If output is a tuple of strings, it must be a combination of 'B' or 'H' and 'x', 'y' and/or 'z'. When having multiple coordinates, the field value is the combined vector length (e.g. `('Bx', 'Hxy', 'Byz')`). `'Bxy'` is equivalent to `sqrt(|Bx|^2 + |By|^2)`. A 2D line plot is then represented accordingly if the objects contain at least one source and one sensor.
+By default source outputs are summed up and sensor pixels, if any, are aggregated by mean (`pixel_agg="mean"`).
 
 ```{code-cell} ipython3
 import magpylib as magpy
@@ -711,12 +711,12 @@ with magpy.show_context(cyl1, cyl2, sensor):
     magpy.show(col=1, output=("Hx", "Hy", "Hz"))
     magpy.show(col=2, output=("Bx", "By", "Bz"))
 
-# display field data with context manager , no sumup
+# display field data with context manager, no sumup
 with magpy.show_context(cyl1, cyl2, sensor):
     magpy.show(col=1, output="Hxy", sumup=False)
     magpy.show(col=2, output="Byz", sumup=False)
 
-# display field data with context manager , no sumup, no pixel_agg
+# display field data with context manager, no sumup, no pixel_agg
 with magpy.show_context(cyl1, cyl2, sensor, sumup=False):
     magpy.show(col=1, output="H", pixel_agg=None)
     magpy.show(col=2, output="B", pixel_agg=None)
@@ -743,7 +743,7 @@ cyl1.position = (4, 0, 0)
 cyl1.rotate_from_angax(angle=np.linspace(0, 300, N), start=0, axis="z", anchor=0)
 cyl2 = cyl1.copy().move((0, 0, 5))
 
-# display field data with context manager , no sumup, no pixel_agg
+# display field data with context manager, no sumup, no pixel_agg
 with magpy.show_context(cyl1, cyl2, sensor, animation=True, style_pixel_size=0.2):
     magpy.show(col=1)
     magpy.show(col=2, output="Bx")
@@ -764,7 +764,7 @@ The input `trace` is a dictionary which includes all necessary information for p
 2. `'constructor'`: name of the plotting constructor from the respective backend, e.g. plotly `'Mesh3d'` or matplotlib `'plot_surface'`
 3. `'args'`: default `None`, positional arguments handed to constructor
 4. `'kwargs'`: default `None`, keyword arguments handed to constructor
-5. `'coordsargs'`: tells magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
+5. `'coordsargs'`: tells Magpylib which input corresponds to which coordinate direction, so that geometric representation becomes possible. By default `{'x': 'x', 'y': 'y', 'z': 'z'}` for the `'generic'` backend and Plotly backend,  and `{'x': 'args[0]', 'y': 'args[1]', 'z': 'args[2]'}` for the Matplotlib backend.
 6. `'show'`: default `True`, toggle if this trace should be displayed
 7. `'scale'`: default 1, object geometric scaling factor
 8. `'updatefunc'`: default `None`, updates the trace parameters when `show` is called. Used to generate  dynamic traces.

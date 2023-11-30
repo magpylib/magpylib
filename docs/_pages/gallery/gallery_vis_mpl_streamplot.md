@@ -18,7 +18,7 @@ kernelspec:
 
 ## Example 1: Cuboid Magnet
 
-In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be carefult that streamlines can only display two components of the field. In the following example the third component is always zero - but this is generally not the case.
+In this example we show the B-field of a cuboid magnet using Matplotlib streamlines. Streamlines are not magnetic field lines in the sense that the field amplitude cannot be derived from their density. However, Matplotlib streamlines can show the field amplitude via color and line thickness. One must be carefult that streamlines can only display two components of the field. In the following example the third field component is always zero - but this is generally not the case.
 
 ```{code-cell} ipython3
 import matplotlib.pyplot as plt
@@ -29,8 +29,8 @@ import magpylib as magpy
 fig, ax = plt.subplots()
 
 # Create an observer grid in the xz-symmetry plane
-X, Z = np.mgrid[-5:5:40j, -5:5:40j].transpose((0, 2, 1))
-grid = np.stack([X, np.zeros((40, 40)), Z], axis=2)
+ts = np.linspace(-5,5,40)
+grid = np.array([[(x,0,z) for x in ts] for z in ts]) # slow Python loop
 
 # Compute the B-field of a cube magnet on the grid
 cube = magpy.magnet.Cuboid(magnetization=(500, 0, 500), dimension=(2, 2, 2))
@@ -40,8 +40,8 @@ log10_norm_B = np.log10(np.linalg.norm(B, axis=2))
 # Display the B-field with streamplot using log10-scaled
 # color function and linewidth
 splt = ax.streamplot(
-    X,
-    Z,
+    grid[:,:,0],
+    grid[:,:,2],
     B[:, :, 0],
     B[:, :, 2],
     color=log10_norm_B,
@@ -69,9 +69,13 @@ plt.tight_layout()
 plt.show()
 ```
 
+```{note}
+Be aware that the above code is not very performant, but quite readable. The following example creates the grid with numpy commands only instead of Python loops, and uses the {ref}`gallery-tutorial-field-computation-direct-interface` for field computation.
+```
+
 ## Example 2 - Hollow Cylinder Magnet
 
-A nice vizualizaion is achieved by combining streamplot with contourf. In this example we show the B-field of a hollow Cylinder magnet with diametral magnetization in the xy-symmetry plane.
+A nice visualizaion is achieved by combining `streamplot` with `contourf`. In this example we show the B-field of a hollow Cylinder magnet with diametral magnetization in the xy-symmetry plane.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -81,17 +85,18 @@ import magpylib as magpy
 # Create a Matplotlib figure
 fig, ax = plt.subplots()
 
-# Create an observer grid in the xy-symmetry plane
+# Create an observer grid in the xy-symmetry plane - using pure numpy
 X, Y = np.mgrid[-5:5:100j, -5:5:100j].transpose((0, 2, 1))
 grid = np.stack([X, Y, np.zeros((100, 100))], axis=2)
 
-# Create a hollow cylinder magnet
-cyl1 = magpy.magnet.Cylinder(magnetization=( 100,0,0), dimension=(6,5))
-cyl2 = magpy.magnet.Cylinder(magnetization=(-100,0,0), dimension=(4,5))
-magnet = magpy.Collection(cyl1, cyl2)
-
-# Compute magnetic field on grid
-B = magnet.getB(grid)
+# Compute magnetic field on grid - using the direct interface
+B = magpy.getB(
+    "CylinderSegment",
+    observers=grid.reshape(-1,3),
+    dimension=(2,3,5,0,360),
+    magnetization=(100,0,0),
+)
+B = B.reshape(grid.shape)
 normB = np.linalg.norm(B, axis=2)
 
 # combine streamplot with contourf

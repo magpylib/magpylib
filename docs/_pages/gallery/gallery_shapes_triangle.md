@@ -105,7 +105,7 @@ magpy.show(
 )
 ```
 
-## TriangularMesh
+## TriangularMesh class
 
 While `Triangle` simply provides the field of a charged triangle and can be used to contruct complex forms, it is prone to error and tedious to work with when meshes become large. For this purpose the `TriangularMesh` class ensures proper and convenient magnet creation by automatically checking mesh integrity and by orienting the faces at initialization.
 
