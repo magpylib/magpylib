@@ -144,10 +144,10 @@ def get_sensor_mesh(
     N, N2 = 56, 18
     trace = deepcopy(_DEFAULT_TRACE)
     if handedness == "left":
-        t = trace
-        pts = np.array([t["x"], t["y"], t["z"]]).T
+        pts = np.array([trace[k] for k in "xyz"]).T
         rot = RotScipy.from_euler("y", -90, degrees=True)
-        t["x"], t["y"], t["z"] = rot.apply(pts).T
+        x, y, z = rot.apply(pts).T
+        trace.update(x=x, y=y, z=z)
         x_color, z_color = z_color, x_color
         x_color_tail, z_color_tail = z_color_tail, x_color_tail
         x_show, z_show = z_show, x_show
