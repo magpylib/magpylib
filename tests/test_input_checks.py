@@ -42,7 +42,7 @@ def test_input_objects_position_bad():
         True,
     ]
     for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, bad)
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, position=bad)
 
 
 def test_input_objects_pixel_good():
@@ -77,7 +77,7 @@ def test_input_objects_pixel_bad():
         True,
     ]
     for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, (0, 0, 0), bad)
+        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, pixel=bad)
 
 
 def test_input_objects_orientation_good():
