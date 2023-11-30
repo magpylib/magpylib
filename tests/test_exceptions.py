@@ -22,7 +22,7 @@ def getBHv_unknown_source_type():
         dimension=(0, 2, 1, 0, 360),
         position=(0, 0, -0.5),
         field="B",
-        **GETBH_KWARGS
+        **GETBH_KWARGS,
     )
 
 
@@ -131,7 +131,7 @@ def getBHv_bad_input1():
         field="B",
         magnetization=x2,
         dimension=x,
-        **GETBH_KWARGS
+        **GETBH_KWARGS,
     )
 
 
@@ -144,7 +144,7 @@ def getBHv_bad_input2():
         field="B",
         magnetization=x,
         dimension=x,
-        **GETBH_KWARGS
+        **GETBH_KWARGS,
     )
 
 
@@ -158,7 +158,7 @@ def getBHv_bad_input3():
         field="B",
         magnetization=x,
         dimension=x,
-        **GETBH_KWARGS
+        **GETBH_KWARGS,
     )
 
 
