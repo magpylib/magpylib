@@ -24,16 +24,13 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Parameters
     ----------
 
-    pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
-        Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of mm.
-
-    handedness: {"right", "left"}
-        Object local coordinate system handedness. If "left", the x-axis is flipped.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
+
+    pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
+        Sensor pixel (=sensing elements) positions in the local object coordinates
+        (rotate with object), in units of mm.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -46,6 +43,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     style: dict
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
+
+    handedness: {"right", "left"}
+        Object local coordinate system handedness. If "left", the x-axis is flipped.
 
     Returns
     -------
@@ -87,11 +87,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     def __init__(
         self,
-        pixel=(0, 0, 0),
-        handedness="right",
         position=(0, 0, 0),
+        pixel=(0, 0, 0),
         orientation=None,
         style=None,
+        handedness="right",
         **kwargs,
     ):
         # instance attributes
