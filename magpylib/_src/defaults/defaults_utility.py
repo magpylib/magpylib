@@ -98,11 +98,13 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
     dict
         updated dictionary
     """
+    if not isinstance(d, collections.abc.Mapping):
+        if d is None or not replace_None_only:
+            d = u.copy()
+        return d
+    d = d.copy()
     for k, v in u.items():
-        if not isinstance(d, collections.abc.Mapping):
-            if d is None or not replace_None_only:
-                d = u
-        elif k in d or not same_keys_only:
+        if k in d or not same_keys_only:
             if isinstance(v, collections.abc.Mapping):
                 r = update_nested_dict(
                     d.get(k, {}),
