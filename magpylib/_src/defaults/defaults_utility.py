@@ -421,7 +421,7 @@ class MagicProperties:
         """
         if arg is None:
             arg = {}
-        else:_
+        else:
             arg = arg.copy()
         arg.update(kwargs)
         arg = magic_to_dict(arg)
