@@ -419,12 +419,8 @@ class MagicProperties:
         -------
         self
         """
-        if arg is None:
-            arg = {}
-        else:
-            arg = arg.copy()
-        arg.update(kwargs)
-        arg = magic_to_dict(arg)
+        arg = {} if arg is None else arg.copy()
+        arg = magic_to_dict({**arg, **kwargs})
         current_dict = self.as_dict()
         new_dict = update_nested_dict(
             current_dict,
