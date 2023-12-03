@@ -216,7 +216,7 @@ def test_open_mesh():
 
     with warnings.catch_warnings():  # no warning should be issued!
         warnings.simplefilter("error")
-        mesh = magpy.magnet.TriangularMesh(
+        magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
