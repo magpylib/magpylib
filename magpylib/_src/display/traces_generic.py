@@ -506,8 +506,6 @@ def get_generic_traces(
                         )
                 elif ttype == "mesh3d":
                     tr_generic["showscale"] = tr_generic.get("showscale", False)
-                    if "facecolor" in obj_extr_trace:
-                        ttype = "mesh3d_facecolor"
                     tr_generic["color"] = tr_generic.get("color", style.color)
                 else:  # pragma: no cover
                     raise ValueError(
