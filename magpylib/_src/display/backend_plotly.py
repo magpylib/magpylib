@@ -14,7 +14,6 @@ except ImportError as missing_module:  # pragma: no cover
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
 
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.display.traces_utility import get_scene_ranges
 
