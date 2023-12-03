@@ -278,7 +278,6 @@ def display_plotly(
     zoom=1,
     canvas=None,
     renderer=None,
-    colorsequence=None,
     return_fig=False,
     update_layout=True,
     max_rows=None,
@@ -310,9 +309,6 @@ def display_plotly(
                 cols=max_cols,
                 specs=subplot_specs.tolist(),
             )
-
-    if colorsequence is None:
-        colorsequence = Config.display.colorsequence
 
     frames = data["frames"]
     for fr in frames:
