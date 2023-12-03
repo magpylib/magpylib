@@ -254,7 +254,6 @@ def get_generic_traces_2D(
     sumup=True,
     pixel_agg=None,
     style_path_frames=None,
-    flat_objs_props=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
@@ -754,7 +753,6 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         traces2d = get_generic_traces_2D(
             **objs_2d,
             style_path_frames=style_path_frames,
-            flat_objs_props=flat_objs_props,
         )
         traces.extend(traces2d)
     return traces, autosize, ranges, extra_backend_traces
