@@ -317,8 +317,6 @@ def get_generic_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        props = flat_objs_props.get(obj, {})
-        style = props.get("style", None)
         style = obj.style
         label = getattr(style, "label", None)
         label = repr(obj) if not label else label
