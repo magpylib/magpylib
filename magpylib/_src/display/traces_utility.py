@@ -226,6 +226,8 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.arange(path_len, dtype=int)[::-show_path]
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
+    else:  # pragma: no cover
+        raise ValueError(f"Invalid show_path value ({show_path})")
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:
