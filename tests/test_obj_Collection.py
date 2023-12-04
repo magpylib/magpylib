@@ -120,7 +120,6 @@ def test_Collection_basics():
 )
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
-    # pylint: disable=unused-variable
     # pylint: disable=eval-used
 
     src1 = magpy.magnet.Cuboid(
@@ -136,51 +135,50 @@ def test_col_getB(test_input, expected):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    mixed_col = sens_col + src_col
+    locals()["mixed_col"]  = sens_col + src_col
     assert eval(test_input) == expected
 
 
 @pytest.mark.parametrize(
-    "test_input,expected",
+    "test_input",
     [
-        ("src1.getB()", pytest.raises(MagpylibBadUserInput)),
-        ("src1.getB(src1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(src1,src1)", pytest.raises(MagpylibBadUserInput)),
-        ("src1.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(src1,src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("sens1.getB()", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens1,src1)", pytest.raises(MagpylibBadUserInput)),
-        ("sens1.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens1,sens1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens1,mixed_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens1,src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("sens1.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens1,sens_col)", pytest.raises(MagpylibBadUserInput)),
-        ("mixed_col.getB(src1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(mixed_col,src1)", pytest.raises(MagpylibBadUserInput)),
-        ("mixed_col.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
-        ("mixed_col.getB(mixed_col)", pytest.raises(MagpylibBadUserInput)),
-        ("mixed_col.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(mixed_col,src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("mixed_col.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
-        ("src_col.getB()", pytest.raises(MagpylibBadUserInput)),
-        ("src_col.getB(src1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(src_col,src1)", pytest.raises(MagpylibBadUserInput)),
-        ("src_col.getB(src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(src_col,src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("sens_col.getB()", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens_col,src1)", pytest.raises(MagpylibBadUserInput)),
-        ("sens_col.getB(sens1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens_col,sens1)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens_col,mixed_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens_col,src_col)", pytest.raises(MagpylibBadUserInput)),
-        ("sens_col.getB(sens_col)", pytest.raises(MagpylibBadUserInput)),
-        ("magpy.getB(sens_col,sens_col)", pytest.raises(MagpylibBadUserInput)),
+        "src1.getB()",
+        "src1.getB(src1)",
+        "magpy.getB(src1,src1)",
+        "src1.getB(src_col)",
+        "magpy.getB(src1,src_col)",
+        "sens1.getB()",
+        "magpy.getB(sens1,src1)",
+        "sens1.getB(sens1)",
+        "magpy.getB(sens1,sens1)",
+        "magpy.getB(sens1,mixed_col)",
+        "magpy.getB(sens1,src_col)",
+        "sens1.getB(sens_col)",
+        "magpy.getB(sens1,sens_col)",
+        "mixed_col.getB(src1)",
+        "magpy.getB(mixed_col,src1)",
+        "mixed_col.getB(sens1)",
+        "mixed_col.getB(mixed_col)",
+        "mixed_col.getB(src_col)",
+        "magpy.getB(mixed_col,src_col)",
+        "mixed_col.getB(sens_col)",
+        "src_col.getB()",
+        "src_col.getB(src1)",
+        "magpy.getB(src_col,src1)",
+        "src_col.getB(src_col)",
+        "magpy.getB(src_col,src_col)",
+        "sens_col.getB()",
+        "magpy.getB(sens_col,src1)",
+        "sens_col.getB(sens1)",
+        "magpy.getB(sens_col,sens1)",
+        "magpy.getB(sens_col,mixed_col)",
+        "magpy.getB(sens_col,src_col)",
+        "sens_col.getB(sens_col)",
+        "magpy.getB(sens_col,sens_col)",
     ],
 )
-def test_bad_col_getB_inputs(test_input, expected):
+def test_bad_col_getB_inputs(test_input):
     """more undocumented Collection checking"""
-    # pylint: disable=unused-variable
     # pylint: disable=eval-used
 
     src1 = magpy.magnet.Cuboid(
@@ -198,8 +196,8 @@ def test_bad_col_getB_inputs(test_input, expected):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    mixed_col = sens_col + src_col
-    with expected:
+    locals()["mixed_col"] = sens_col + src_col
+    with pytest.raises(MagpylibBadUserInput):
         assert eval(test_input) is not None
 
 
