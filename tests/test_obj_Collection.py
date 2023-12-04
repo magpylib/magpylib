@@ -135,7 +135,7 @@ def test_col_getB(test_input, expected):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    locals()["mixed_col"]  = sens_col + src_col
+    locals()["mixed_col"] = sens_col + src_col
     assert eval(test_input) == expected
 
 
