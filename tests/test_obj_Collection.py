@@ -120,8 +120,6 @@ def test_Collection_basics():
 )
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
-    # pylint: disable=eval-used
-
     src1 = magpy.magnet.Cuboid(
         magnetization=(1, 0, 1), dimension=(8, 4, 6), position=(0, 0, 0)
     )
@@ -135,8 +133,23 @@ def test_col_getB(test_input, expected):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    locals()["mixed_col"] = sens_col + src_col
-    assert eval(test_input) == expected
+    mixed_col = sens_col + src_col
+    variables = {
+        "np": np,
+        "magpy": magpy,
+        "src1": src1,
+        "src2": src2,
+        "sens1": sens1,
+        "sens2": sens2,
+        "sens3": sens3,
+        "sens4": sens4,
+        "sens_col": sens_col,
+        "src_col": src_col,
+        "mixed_col": mixed_col,
+    }
+
+    # pylint: disable=eval-used
+    assert eval(test_input, variables) == expected
 
 
 @pytest.mark.parametrize(
@@ -196,9 +209,21 @@ def test_bad_col_getB_inputs(test_input):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    locals()["mixed_col"] = sens_col + src_col
+    mixed_col = sens_col + src_col
+    variables = {
+        "magpy": magpy,
+        "src1": src1,
+        "src2": src2,
+        "sens1": sens1,
+        "sens2": sens2,
+        "sens3": sens3,
+        "sens4": sens4,
+        "sens_col": sens_col,
+        "src_col": src_col,
+        "mixed_col": mixed_col,
+    }
     with pytest.raises(MagpylibBadUserInput):
-        assert eval(test_input) is not None
+        assert eval(test_input,variables) is not None
 
 
 def test_col_get_item():
