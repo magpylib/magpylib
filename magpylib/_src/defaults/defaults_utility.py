@@ -241,7 +241,8 @@ def color_validator(color_input, allow_None=True, parent_name=""):
                 raise ValueError(msg)
             c = int(c * 255)
             color_input = f"#{c:02x}{c:02x}{c:02x}"
-        except:
+        except Exception:
+            # if fail continue other possibilities
             pass
 
         if isinstance(color_input, (tuple, list)):
