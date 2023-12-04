@@ -102,7 +102,7 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
         if d is None or not replace_None_only:
             d = u.copy()
         return d
-    new = d.copy()
+    new = deepcopy(d)
     for k, v in u.items():
         if k in new or not same_keys_only:
             if isinstance(v, collections.abc.Mapping):
