@@ -266,7 +266,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
                     c = color_input[4:-1].split(",")
                     c = tuple(int(c) for c in c)
                     color_input = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
-                except:
+                except Exception:
                     pass
             re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
             hex_fail = not re_hex.fullmatch(color_input)
