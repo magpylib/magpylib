@@ -4,10 +4,6 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib.magnet import Cuboid
-from magpylib.magnet import Cylinder
-from magpylib.magnet import CylinderSegment
-from magpylib.magnet import Sphere
 
 # pylint: disable=assignment-from-no-return
 # pylint: disable=no-member
@@ -17,7 +13,7 @@ def test_Cylinder_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -35,7 +31,7 @@ def test_CylinderSegment_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -53,7 +49,7 @@ def test_Sphere_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere((1, 2, 3), 2)
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -65,7 +61,7 @@ def test_Sphere_display():
 def test_Cuboid_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     x = src.show(style_path_frames=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
@@ -176,7 +172,7 @@ def test_display_bad_style_kwargs():
 def test_extra_model3d():
     """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
-    cuboid = Cuboid((1, 2, 3), (1, 2, 3))
+    cuboid = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
     cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
@@ -264,7 +260,7 @@ def test_display_warnings():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
@@ -272,7 +268,7 @@ def test_display_warnings():
         src.show(canvas=fig, animation=5, animation_fps=3)
     with pytest.warns(UserWarning):  # max frames surpassed
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     with pytest.warns(UserWarning):  # no object path detected
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
@@ -282,7 +278,7 @@ def test_bad_animation_value():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 

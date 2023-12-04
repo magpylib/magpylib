@@ -5,7 +5,6 @@ import numpy as np
 
 import magpylib as magpy
 from magpylib._src.obj_classes.class_Sensor import Sensor
-from magpylib.magnet import Cuboid
 
 
 # # # """data generation for test_Cuboid()"""
@@ -62,15 +61,15 @@ def test_Cuboid_basics():
 
 def test_Cuboid_add():
     """testing __add__"""
-    src1 = Cuboid((1, 2, 3), (1, 2, 3))
-    src2 = Cuboid((1, 2, 3), (1, 2, 3))
+    src1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src2 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     col = src1 + src2
     assert isinstance(col, magpy.Collection), "adding cuboides fail"
 
 
 def test_Cuboid_squeeze():
     """testing squeeze output"""
-    src1 = Cuboid((1, 1, 1), (1, 1, 1))
+    src1 = magpy.magnet.Cuboid((1, 1, 1), (1, 1, 1))
     sensor = Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -85,7 +84,7 @@ def test_Cuboid_squeeze():
 
 def test_repr_cuboid():
     """test __repr__"""
-    pm1 = Cuboid((1, 2, 3), (1, 2, 3))
+    pm1 = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     pm1.style.label = "cuboid_01"
     assert repr(pm1)[:6] == "Cuboid", "Cuboid repr failed"
     assert "label='cuboid_01'" in repr(pm1), "Cuboid repr failed"

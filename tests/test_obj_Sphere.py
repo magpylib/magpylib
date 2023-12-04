@@ -4,8 +4,6 @@ import pickle
 import numpy as np
 
 import magpylib as magpy
-from magpylib import Collection
-from magpylib.magnet import Sphere
 
 # # """data generation for test_Sphere()"""
 
@@ -47,7 +45,7 @@ def test_Sphere_basics():
     for mag, dim, ang, ax, anch, mov, poso in zip(
         mags, dims, angs, axs, anchs, movs, posos
     ):
-        pm = Sphere(mag, dim)
+        pm = magpy.magnet.Sphere(mag, dim)
 
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
@@ -61,15 +59,15 @@ def test_Sphere_basics():
 
 def test_Sphere_add():
     """testing __add__"""
-    src1 = Sphere(magnetization=(1, 2, 3), diameter=11)
-    src2 = Sphere((1, 2, 3), 11)
+    src1 = magpy.magnet.Sphere(magnetization=(1, 2, 3), diameter=11)
+    src2 = magpy.magnet.Sphere((1, 2, 3), 11)
     col = src1 + src2
-    assert isinstance(col, Collection), "adding cuboids fail"
+    assert isinstance(col, magpy.Collection), "adding cuboids fail"
 
 
 def test_Sphere_squeeze():
     """testing squeeze output"""
-    src1 = Sphere((1, 1, 1), 1)
+    src1 = magpy.magnet.Sphere((1, 1, 1), 1)
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)

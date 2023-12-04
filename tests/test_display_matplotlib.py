@@ -15,10 +15,6 @@ from matplotlib.figure import Figure as mplFig
 import magpylib as magpy
 from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
-from magpylib.magnet import Cuboid
-from magpylib.magnet import Cylinder
-from magpylib.magnet import CylinderSegment
-from magpylib.magnet import Sphere
 
 
 # pylint: disable=assignment-from-no-return
@@ -30,7 +26,7 @@ magpy.defaults.reset()
 
 def test_Cuboid_display():
     """testing display"""
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     src.show(
         style_path_frames=5,
@@ -50,7 +46,7 @@ def test_Cylinder_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
 
     # hide path
@@ -72,7 +68,7 @@ def test_Cylinder_display():
 def test_CylinderSegment_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
-    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
@@ -83,7 +79,7 @@ def test_Sphere_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere((1, 2, 3), 2)
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
