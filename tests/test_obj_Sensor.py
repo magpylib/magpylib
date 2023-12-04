@@ -128,6 +128,6 @@ def test_pixel3():
     p2 = [[(1, 2, 3)]]
     for pos_vec in [p0, p1, p2]:
         np.testing.assert_allclose(
-            src.getB(Sensor(pixel=pos_vec), squeeze=False),
+            src.getB(magpy.Sensor(pixel=pos_vec), squeeze=False),
             src.getB(pos_vec, squeeze=False),
         )
