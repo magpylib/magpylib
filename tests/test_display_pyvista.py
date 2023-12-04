@@ -26,7 +26,7 @@ try:
             imageio.plugins.ffmpeg.download()
         else:
             raise err
-except:  # noqa: E722
+except Exception:  # noqa: E722
     # skip test if ffmpeg cannot be loaded
     ffmpeg_failed = True
 
