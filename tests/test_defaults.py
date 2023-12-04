@@ -1,7 +1,7 @@
 import pytest
 
 import magpylib as magpy
-from magpylib._src.defaults.defaults_classes import DefaultConfig
+from magpylib._src.defaults.defaults_classes import DefaultSettings
 from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import SUPPORTED_PLOTTING_BACKENDS
@@ -95,7 +95,7 @@ def get_bad_test_data():
 )
 def test_defaults_bad_inputs(key, value, expected_errortype):
     """testing defaults setting on bad inputs"""
-    c = DefaultConfig().reset()
+    c = DefaultSettings().reset()
     with expected_errortype:
         c.update(**{key: value})
 
@@ -196,7 +196,7 @@ def get_good_test_data():
 )
 def test_defaults_good_inputs(key, value, expected):
     """testing defaults setting on bad inputs"""
-    c = DefaultConfig()
+    c = DefaultSettings()
     c.update(**{key: value})
     v0 = c
     for v in key.split("_"):

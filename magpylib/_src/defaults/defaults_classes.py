@@ -6,7 +6,7 @@ from magpylib._src.defaults.defaults_utility import validate_property_class
 from magpylib._src.style import DisplayStyle
 
 
-class DefaultConfig(MagicProperties):
+class DefaultSettings(MagicProperties):
     """Library default settings.
 
     Parameters
@@ -269,4 +269,4 @@ class Animation(MagicProperties):
         self._output = val
 
 
-default_settings = DefaultConfig()
+default_settings = DefaultSettings()

@@ -14,7 +14,7 @@ from typing import Tuple
 import numpy as np
 
 import magpylib as magpy
-from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -637,7 +637,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         warnings.warn("No path to be animated detected, displaying standard plot")
 
     # pylint: disable=no-member
-    anim_def = Config.display.animation.copy()
+    anim_def = default_settings.display.animation.copy()
     anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
@@ -726,7 +726,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
     """
     if colorsequence is None:
         # pylint: disable=no-member
-        colorsequence = Config.display.colorsequence
+        colorsequence = default_settings.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
 
@@ -743,7 +743,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
     ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     if autosize is None or autosize == "return":
         # pylint: disable=no-member
-        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+        autosize = np.mean(np.diff(ranges)) / default_settings.display.autosizefactor
 
     traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
         traces_to_resize_dict, autosize=autosize, **kwargs
