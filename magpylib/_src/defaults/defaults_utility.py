@@ -1,7 +1,10 @@
 """utilities for creating property classes"""
 import collections.abc
+import re
 from copy import deepcopy
 from functools import lru_cache
+
+from matplotlib.colors import CSS4_COLORS as mcolors
 
 from magpylib._src.defaults.defaults_values import DEFAULTS
 
@@ -223,69 +226,64 @@ def color_validator(color_input, allow_None=True, parent_name=""):
     ValueError
         raises ValueError inf validation fails
     """
-    color_input_original = color_input
-    if not allow_None or color_input is not None:
-        # pylint: disable=import-outside-toplevel
-        color_input = COLORS_SHORT_TO_LONG.get(color_input, color_input)
-        import re
+    if allow_None and color_input is None:
+        return color_input
 
-        hex_fail = True
-        # pylint: disable=broad-exception-caught
-        try:  # check if greyscale
-            c = float(color_input)
-            if c < 0 or c > 1:
-                msg = (
-                    "When setting a grey tone, value must be between 0 and 1"
-                    f"""\n   Received value: '{color_input_original}'"""
-                )
-                raise ValueError(msg)
-            c = int(c * 255)
-            color_input = f"#{c:02x}{c:02x}{c:02x}"
-        except Exception:
-            # if fail continue other possibilities
-            pass
-
-        if isinstance(color_input, (tuple, list)):
-            if len(color_input) == 4:  # do not allow opacity values for now
-                color_input = color_input[:-1]
-            if len(color_input) != 3:
-                raise ValueError(
-                    "Input color must be of shape (3,) or (4,)."
-                    f"Instead received {color_input}"
-                )
+    fail = True
+    # check if greyscale
+    isfloat = True
+    try:
+        float(color_input)
+    except (ValueError, TypeError):
+        isfloat = False
+    if isfloat:
+        color_new = color_input = float(color_input)
+        if 0 <= color_new <= 1:
+            c = int(color_new * 255)
+            color_new = f"#{c:02x}{c:02x}{c:02x}"
+    elif isinstance(color_input, (tuple, list)):
+        color_new = tuple(color_input)
+        if len(color_new) == 4:  # trim opacity
+            color_new = color_new[:-1]
+        if len(color_new) == 3:
             # transform matplotlib colors scaled from 0-1 to rgb colors
-            if not isinstance(color_input[0], int):
-                color_input = [int(255 * c) for c in color_input]
-            c = tuple(color_input)
-            color_input = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+            if all(isinstance(c, float) for c in color_new):
+                c = [int(255 * c) for c in color_new]
+                color_new = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+            if all(isinstance(c, int) for c in color_new):
+                c = tuple(color_new)
+                color_new = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+    else:
+        color_new = color_input
+    if isinstance(color_new, str):
+        color_new = COLORS_SHORT_TO_LONG.get(color_new, color_new)
+        color_new = color_new.replace(" ", "").lower()
+        if color_new.startswith("rgb"):
+            color_new = color_new[4:-1].split(",")
+            try:
+                for i, c in enumerate(color_new):
+                    color_new[i] = int(c)
+            except (ValueError, TypeError):
+                color_new = ""
+            if len(color_new) == 3:
+                c = tuple(color_new)
+                color_new = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
+        re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
+        fail = not re_hex.fullmatch(color_new)
 
-        if isinstance(color_input, str):
-            color_input = color_input.replace(" ", "").lower()
-            if color_input.startswith("rgb"):
-                try:
-                    c = color_input[4:-1].split(",")
-                    c = tuple(int(c) for c in c)
-                    color_input = f"#{c[0]:02x}{c[1]:02x}{c[2]:02x}"
-                except Exception:
-                    pass
-            re_hex = re.compile(r"#([A-Fa-f0-9]{6}|[A-Fa-f0-9]{3})")
-            hex_fail = not re_hex.fullmatch(color_input)
-
-        from matplotlib.colors import CSS4_COLORS as mcolors
-
-        if hex_fail and str(color_input) not in mcolors:
-            raise ValueError(
-                f"""\nInvalid value of type '{type(color_input)}' """
-                f"""received for the color property of {parent_name}"""
-                f"""\n   Received value: '{color_input_original}'"""
-                f"""\n\nThe 'color' property is a color and may be specified as:\n"""
-                """    - A hex string (e.g. '#ff0000')\n"""
-                """    - A rgb string (e.g. 'rgb(185,204,255))\n"""
-                """    - A rgb tuple (e.g. (120,125,126))\n"""
-                """    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"""
-                f"""    - A named CSS color:\n{list(mcolors.keys())}"""
-            )
-    return color_input
+    if fail and str(color_new) not in mcolors:
+        raise ValueError(
+            f"Invalid value of type '{type(color_input)}' "
+            f"received for the color property of {parent_name}"
+            f"\n   Received value: {color_input!r}"
+            f"\n\nThe 'color' property is a color and may be specified as:\n"
+            "    - A hex string (e.g. '#ff0000')\n"
+            "    - A rgb string (e.g. 'rgb(185,204,255)')\n"
+            "    - A rgb tuple (e.g. (120,125,126))\n"
+            "    - A number between 0 and 1 (for grey scale) (e.g. '.5' or .8)\n"
+            f"    - A named CSS color:\n{list(mcolors.keys())}"
+        )
+    return color_new
 
 
 def validate_property_class(val, name, class_, parent):
