@@ -223,7 +223,7 @@ def test_bad_col_getB_inputs(test_input):
         "mixed_col": mixed_col,
     }
     with pytest.raises(MagpylibBadUserInput):
-        assert eval(test_input,variables) is not None
+        assert eval(test_input, variables) is not None
 
 
 def test_col_get_item():
