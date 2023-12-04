@@ -409,6 +409,7 @@ def getBH_level2(
 
     if output == "dataframe":
         # pylint: disable=import-outside-toplevel
+        # pylint: disable=no-member
         import pandas as pd
 
         if sumup and len(sources) > 1:

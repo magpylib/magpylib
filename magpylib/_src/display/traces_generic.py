@@ -636,6 +636,7 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         animation = False
         warnings.warn("No path to be animated detected, displaying standard plot")
 
+    # pylint: disable=no-member
     anim_def = Config.display.animation.copy()
     anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
@@ -724,6 +725,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
     if colorsequence is None:
+        # pylint: disable=no-member
         colorsequence = Config.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
@@ -740,6 +742,7 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
     traces = [t for tr in traces_dict.values() for t in tr]
     ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     if autosize is None or autosize == "return":
+        # pylint: disable=no-member
         autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
 
     traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
