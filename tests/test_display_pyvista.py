@@ -14,7 +14,9 @@ try:
 except ModuleNotFoundError:
     HAS_IMAGEIO = False
 
+# pylint: disable=no-member
 
+# pylint: disable=broad-exception-caught
 ffmpeg_failed = False
 try:
     try:
@@ -104,8 +106,8 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
             with tempfile.NamedTemporaryFile(suffix=f".{extension}") as temp:
                 animation_output = temp.name if filename else extension
                 magpy.show(
-                    dict(objects=objs, col=1, output=("Bx", "By", "Bz")),
-                    dict(objects=objs, col=2),
+                    {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+                    {"objects": objs, "col": 2},
                     backend="pyvista",
                     animation=True,
                     sumup=True,

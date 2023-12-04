@@ -40,9 +40,8 @@ from magpylib.magnet import Cuboid
 def test_Cuboid_basics():
     """test Cuboid fundamentals"""
     # data generated in comment above
-    data = pickle.load(
-        open(os.path.abspath("./tests/testdata/testdata_Cuboid.p"), "rb")
-    )
+    with open(os.path.abspath("./tests/testdata/testdata_Cuboid.p"), "rb") as f:
+        data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
@@ -88,8 +87,8 @@ def test_repr_cuboid():
     """test __repr__"""
     pm1 = Cuboid((1, 2, 3), (1, 2, 3))
     pm1.style.label = "cuboid_01"
-    assert pm1.__repr__()[:6] == "Cuboid", "Cuboid repr failed"
-    assert "label='cuboid_01'" in pm1.__repr__(), "Cuboid repr failed"
+    assert repr(pm1)[:6] == "Cuboid", "Cuboid repr failed"
+    assert "label='cuboid_01'" in repr(pm1), "Cuboid repr failed"
 
 
 def test_cuboid_object_vs_lib():

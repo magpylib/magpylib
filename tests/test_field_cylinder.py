@@ -8,7 +8,7 @@ import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 
-
+# pylint: disable="pointless-string-statement"
 # creating test data
 """ import os
 import numpy as np

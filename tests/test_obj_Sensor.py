@@ -69,7 +69,7 @@ def test_Sensor_squeeze():
 def test_repr():
     """test __repr__"""
     sens = magpy.Sensor()
-    assert sens.__repr__()[:6] == "Sensor", "Sensor repr failed"
+    assert repr(sens)[:6] == "Sensor", "Sensor repr failed"
 
 
 def test_pixel1():

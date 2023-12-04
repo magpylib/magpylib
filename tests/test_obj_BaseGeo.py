@@ -9,9 +9,11 @@ import magpylib as magpy
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 
 
+# pylint: disable=no-member
+
+
 def test_BaseGeo_basics():
     """fundamental usage test"""
-    # pylint: disable=no-member
 
     ptest = np.array(
         [
@@ -277,7 +279,10 @@ def test_path_functionality3():
 
 def test_scipy_from_methods():
     """test all rotation methods inspired from scipy implemented in BaseTransform"""
-    cube = lambda: magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
+
+    def cube():
+        return magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
+
     angs_deg = np.linspace(0, 360, 10)
     angs = np.deg2rad(angs_deg)
     rot = R.from_rotvec((np.array([[0, 0, 1]] * 10).T * angs).T)
@@ -346,7 +351,7 @@ def test_style():
 
 def test_kwargs():
     """test kwargs inputs, only relevant for styles"""
-    bg = BaseGeo((0, 0, 0), None, style=dict(label="label_01"), style_label="label_02")
+    bg = BaseGeo((0, 0, 0), None, style={"label": "label_01"}, style_label="label_02")
     assert bg.style.label == "label_02"
 
     with pytest.raises(TypeError):
@@ -359,7 +364,7 @@ def test_copy():
     bg2 = BaseGeo((1, 2, 3), None)  # has no style
     bg3 = BaseGeo((4, 6, 8), style_color="blue")  # has style but label is None
     bg1c = bg1.copy()
-    bg2c = bg2.copy(position=(10, 0, 0), style=dict(color="red"), style_color="orange")
+    bg2c = bg2.copy(position=(10, 0, 0), style={"color": "red"}, style_color="orange")
     bg3c = bg3.copy()
 
     # original object should not be affected"

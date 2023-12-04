@@ -1,3 +1,4 @@
+# pylint: disable="wrong-import-position"
 import re
 from unittest.mock import patch
 
@@ -21,6 +22,8 @@ from magpylib.magnet import Sphere
 
 
 # pylint: disable=assignment-from-no-return
+# pylint: disable=unnecessary-lambda-assignment
+# pylint: disable=no-member
 
 magpy.defaults.reset()
 
@@ -335,12 +338,12 @@ def test_matplotlib_model3d_extra():
 
     # using "plot"
     xs, ys, zs = [(1, 2)] * 3
-    trace1 = dict(
-        backend="matplotlib",
-        constructor="plot",
-        args=(xs, ys, zs),
-        kwargs=dict(ls="-"),
-    )
+    trace1 = {
+        "backend": "matplotlib",
+        "constructor": "plot",
+        "args": (xs, ys, zs),
+        "kwargs": {"ls": "-"},
+    }
     obj1 = magpy.misc.Dipole(moment=(0, 0, 1))
     obj1.style.model3d.add_trace(**trace1)
 
@@ -349,14 +352,12 @@ def test_matplotlib_model3d_extra():
     xs = np.cos(u) * np.sin(v)
     ys = np.sin(u) * np.sin(v)
     zs = np.cos(v)
-    trace2 = dict(
-        backend="matplotlib",
-        constructor="plot_surface",
-        args=(xs, ys, zs),
-        kwargs=dict(
-            cmap=plt.cm.YlGnBu_r,  # pylint: disable=no-member
-        ),
-    )
+    trace2 = {
+        "backend": "matplotlib",
+        "constructor": "plot_surface",
+        "args": (xs, ys, zs),
+        "kwargs": {"cmap": plt.cm.YlGnBu_r},  # pylint: disable=no-member},
+    }
     obj2 = magpy.Collection()
     obj2.style.model3d.add_trace(**trace2)
 
@@ -367,15 +368,15 @@ def test_matplotlib_model3d_extra():
     ys = (1 + 0.5 * v * np.cos(u / 2.0)) * np.sin(u)
     zs = 0.5 * v * np.sin(u / 2.0)
     tri = mtri.Triangulation(u, v)
-    trace3 = dict(
-        backend="matplotlib",
-        constructor="plot_trisurf",
-        args=lambda: (xs, ys, zs),  # test callable args
-        kwargs=dict(
-            triangles=tri.triangles,
-            cmap=plt.cm.Spectral,  # pylint: disable=no-member
-        ),
-    )
+    trace3 = {
+        "backend": "matplotlib",
+        "constructor": "plot_trisurf",
+        "args": lambda: (xs, ys, zs),  # test callable args,
+        "kwargs": {
+            "triangles": tri.triangles,
+            "cmap": plt.cm.Spectral,  # pylint: disable=no-member
+        },
+    }
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3, 0, 0))
     obj3.style.model3d.add_trace(**trace3)
 
@@ -387,12 +388,12 @@ def test_matplotlib_model3d_extra_bad_input():
     """test display extra model3d"""
 
     xs, ys, zs = [(1, 2)] * 3
-    trace = dict(
-        backend="matplotlib",
-        constructor="plot",
-        kwargs={"xs": xs, "ys": ys, "zs": zs},
-        coordsargs={"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
-    )
+    trace = {
+        "backend": "matplotlib",
+        "constructor": "plot",
+        "kwargs": {"xs": xs, "ys": ys, "zs": zs},
+        "coordsargs": {"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
+    }
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
     with pytest.raises(ValueError):
         obj.style.model3d.add_trace(**trace)
@@ -458,6 +459,7 @@ def test_mpl_animation():
     fig, anim = c.show(
         backend="matplotlib", animation=True, return_animation=True, return_fig=True
     )
+    # pylint: disable=protected-access
     anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)

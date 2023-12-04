@@ -1,16 +1,14 @@
-from doctest import REPORT_CDIFF
-
 import numpy as np
+import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib._src.exceptions import MagpylibMissingInput
 
 
 def test_Tetrahedron_repr():
     """Tetrahedron repr test"""
     tetra = magpy.magnet.Tetrahedron()
-    assert tetra.__repr__()[:11] == "Tetrahedron", "Tetrahedron repr failed"
+    assert repr(tetra)[:11] == "Tetrahedron", "Tetrahedron repr failed"
 
 
 def test_tetra_input():
@@ -41,24 +39,20 @@ def test_tetra_input():
     np.testing.assert_allclose(h, hh)
 
 
-def test_tetra_bad_inputs():
-    """test obj-oriented triangle vs cube"""
-
-    bad_inputs = [
+@pytest.mark.parametrize(
+    "vertices",
+    [
         1,
         [[(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)]] * 2,
         [(1, 1, -1), (1, 1, 1), (-1, 1, 1)],
         "123",
-    ]
+    ],
+)
+def test_tetra_bad_inputs(vertices):
+    """test obj-oriented triangle vs cube"""
 
-    mag = (111, 222, 333)
-    for bad in bad_inputs:
-
-        def test_function():
-            """bad vert input"""
-            magpy.magnet.Tetrahedron(mag, bad)
-
-        np.testing.assert_raises(MagpylibBadUserInput, test_function)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.magnet.Tetrahedron((111, 222, 333), vertices)
 
 
 def test_tetra_barycenter():

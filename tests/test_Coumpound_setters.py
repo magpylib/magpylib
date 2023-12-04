@@ -10,6 +10,8 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.display.traces_base import make_Prism
 
+# pylint: disable=no-member
+
 magpy.defaults.display.backend = "plotly"
 
 # def create_compound_test_data(path=None):

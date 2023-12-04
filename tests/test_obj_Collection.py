@@ -9,6 +9,10 @@ from scipy.spatial.transform import Rotation as R
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 
+# pylint: disable=unnecessary-lambda
+# pylint: disable=unnecessary-lambda-assignment
+# pylint: disable=no-member
+
 # # # GENERATE TESTDATA
 # # N = 5
 # # mags = (np.random.rand(N,6,3)-0.5)*1000
@@ -47,9 +51,8 @@ def test_Collection_basics():
     """test Collection fundamentals, test against magpylib2 fields"""
     # pylint: disable=pointless-statement
     # data generated below
-    data = pickle.load(
-        open(os.path.abspath("./tests/testdata/testdata_Collection.p"), "rb")
-    )
+    with open(os.path.abspath("./tests/testdata/testdata_Collection.p"), "rb") as f:
+        data = pickle.load(f)
     mags, dims2, dims3, posos, angs, axs, anchs, movs, rvs, _ = data
 
     B1, B2 = [], []
@@ -386,7 +389,6 @@ def test_collection_describe():
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
-    # pylint: disable=unnecessary-lambda
     x = lambda: magpy.magnet.Cuboid()
     y = lambda: magpy.current.Loop()
     z = lambda: magpy.misc.CustomSource()

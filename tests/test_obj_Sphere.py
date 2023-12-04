@@ -39,9 +39,8 @@ from magpylib.magnet import Sphere
 def test_Sphere_basics():
     """test Cuboid fundamentals, test against magpylib2 fields"""
     # data generated below
-    data = pickle.load(
-        open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb")
-    )
+    with open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb") as f:
+        data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
@@ -86,7 +85,7 @@ def test_Sphere_squeeze():
 def test_repr():
     """test __repr__"""
     pm3 = magpy.magnet.Sphere((1, 2, 3), 3)
-    assert pm3.__repr__()[:6] == "Sphere", "Sphere repr failed"
+    assert repr(pm3)[:6] == "Sphere", "Sphere repr failed"
 
 
 def test_sphere_object_vs_lib():

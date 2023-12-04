@@ -30,13 +30,13 @@ def test_Cylinder_squeeze():
 def test_repr():
     """test __repr__"""
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
-    assert pm2.__repr__()[:8] == "Cylinder", "Cylinder repr failed"
+    assert repr(pm2)[:8] == "Cylinder", "Cylinder repr failed"
 
 
 def test_repr2():
     """test __repr__"""
     pm2 = magpy.magnet.CylinderSegment((1, 2, 3), (2, 3, 1, 0, 45))
-    assert pm2.__repr__()[:15] == "CylinderSegment", "CylinderSegment repr failed"
+    assert repr(pm2)[:15] == "CylinderSegment", "CylinderSegment repr failed"
 
 
 def test_Cylinder_getBH():

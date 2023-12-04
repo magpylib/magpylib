@@ -3,6 +3,9 @@ import numpy as np
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 
+# pylint: disable=unnecessary-lambda-assignment
+# pylint: disable=no-member
+
 
 def test_parent_setter():
     """setting and removing a parent"""

@@ -64,10 +64,19 @@ def test_getB_level2_input_shape22():
     mag = (1, 2, 3)
     dim_cuboid = (1, 2, 3)
     dim_cyl = (1, 2)
-    pm1 = lambda: magpy.magnet.Cuboid(mag, dim_cuboid)
-    pm2 = lambda: magpy.magnet.Cuboid(mag, dim_cuboid)
-    pm3 = lambda: magpy.magnet.Cylinder(mag, dim_cyl)
-    pm4 = lambda: magpy.magnet.Cylinder(mag, dim_cyl)
+
+    def pm1():
+        return magpy.magnet.Cuboid(mag, dim_cuboid)
+
+    def pm2():
+        return magpy.magnet.Cuboid(mag, dim_cuboid)
+
+    def pm3():
+        return magpy.magnet.Cylinder(mag, dim_cyl)
+
+    def pm4():
+        return magpy.magnet.Cylinder(mag, dim_cyl)
+
     col1 = magpy.Collection(pm1())
     col2 = magpy.Collection(pm1(), pm2())
     col3 = magpy.Collection(pm1(), pm2(), pm3())

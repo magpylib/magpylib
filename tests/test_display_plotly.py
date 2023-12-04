@@ -10,6 +10,7 @@ from magpylib.magnet import CylinderSegment
 from magpylib.magnet import Sphere
 
 # pylint: disable=assignment-from-no-return
+# pylint: disable=no-member
 
 
 def test_Cylinder_display():
@@ -206,7 +207,7 @@ def test_extra_model3d():
         },
     ]
     fig = go.Figure()
-    cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
+    cuboid.show(canvas=fig, style={"model3d_showdefault": True})
 
     cuboid.style.model3d.data[0].show = False
     cuboid.show(canvas=fig)
@@ -217,14 +218,17 @@ def test_extra_model3d():
         coll,
         canvas=fig,
         animation=True,
-        style=dict(model3d_showdefault=False),
+        style={"model3d_showdefault": False},
     )
-    my_callable_kwargs = lambda: {
-        "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
-        "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
-        "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
-        "mode": "lines",
-    }
+
+    def my_callable_kwargs():
+        return {
+            "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+            "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+            "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+            "mode": "lines",
+        }
+
     cuboid.style.model3d.add_trace(
         **{
             "backend": "plotly",
@@ -237,14 +241,14 @@ def test_extra_model3d():
     cuboid.show(
         canvas=fig,
         style_path_show=False,
-        style=dict(model3d_showdefault=False),
+        style={"model3d_showdefault": False},
     )
 
 
 def test_CustomSource_display():
     """testing display"""
     fig = go.Figure()
-    cs = magpy.misc.CustomSource(style=dict(color="blue"))
+    cs = magpy.misc.CustomSource(style={"color": "blue"})
     x = cs.show(canvas=fig, backend="plotly")
     assert x is None, "display test fail"
 
@@ -327,11 +331,11 @@ def test_legends():
     xs = f * np.array([-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1])
     ys = f * np.array([-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])
     zs = f * np.array([-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1])
-    trace_plotly = dict(
-        backend="plotly",
-        constructor="scatter3d",
-        kwargs={"x": xs, "y": ys, "z": zs, "mode": "lines"},
-    )
+    trace_plotly = {
+        "backend": "plotly",
+        "constructor": "scatter3d",
+        "kwargs": {"x": xs, "y": ys, "z": zs, "mode": "lines"},
+    }
     c = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), style_label="Plotly extra trace")
     c.style.model3d.add_trace(trace_plotly)
 

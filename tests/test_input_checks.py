@@ -877,7 +877,7 @@ def test_input_collection_remove_bad(children):
 
 
 def test_input_collection_bad_errors_arg():
-    # bad errors input
+    """bad errors input"""
     x1 = magpy.Sensor()
     col = magpy.Collection()
     with pytest.raises(MagpylibBadUserInput):
