@@ -1,5 +1,4 @@
 import re
-import textwrap
 
 import numpy as np
 import pytest
