@@ -1,19 +1,21 @@
 import numpy as np
+import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.exceptions import MagpylibMissingInput
 
+# pylint: disable=unnecessary-lambda-assignment
 
 ###########################################################
 ###########################################################
 # OBJECT INPUTS
 
 
-def test_input_objects_position_good():
-    """good input: magpy.Sensor(position=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "position",
+    [
         (1, 2, 3),
         (0, 0, 0),
         ((1, 2, 3), (2, 3, 4)),
@@ -23,31 +25,38 @@ def test_input_objects_position_good():
         [(2, 3, 4), (3, 4, 5)],
         np.array((1, 2, 3)),
         np.array(((1, 2, 3), (2, 3, 4))),
-    ]
-    for good in goods:
-        sens = magpy.Sensor(position=good)
-        np.testing.assert_allclose(sens.position, np.squeeze(np.array(good)))
+    ],
+)
+def test_input_objects_position_good(position):
+    """good input: magpy.Sensor(position=position)"""
+
+    sens = magpy.Sensor(position=position)
+    np.testing.assert_allclose(sens.position, np.squeeze(np.array(position)))
 
 
-def test_input_objects_position_bad():
-    """bad input: magpy.Sensor(position=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "position",
+    [
         (1, 2),
         (1, 2, 3, 4),
         [(1, 2, 3, 4)] * 2,
         (((1, 2, 3), (1, 2, 3)), ((1, 2, 3), (1, 2, 3))),
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         True,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, bad)
+    ],
+)
+def test_input_objects_position_bad(position):
+    """bad input: magpy.Sensor(position=position)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.Sensor(position=position)
 
 
-def test_input_objects_pixel_good():
-    """good input: magpy.Sensor(pixel=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "pixel",
+    [
         (1, -2, 3),
         (0, 0, 0),
         ((1, 2, 3), (2, 3, 4)),
@@ -59,67 +68,79 @@ def test_input_objects_pixel_good():
         [(2, 3, 4), (3, 4, 5)],
         np.array((1, 2, -3)),
         np.array(((1, -2, 3), (2, 3, 4))),
-    ]
-    for good in goods:
-        sens = magpy.Sensor(pixel=good)
-        np.testing.assert_allclose(sens.pixel, good)
+    ],
+)
+def test_input_objects_pixel_good(pixel):
+    """good input: magpy.Sensor(pixel=pixel)"""
+
+    sens = magpy.Sensor(pixel=pixel)
+    np.testing.assert_allclose(sens.pixel, pixel)
 
 
-def test_input_objects_pixel_bad():
-    """bad input: magpy.Sensor(pixel=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "pixel",
+    [
         (1, 2),
         (1, 2, 3, 4),
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         True,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.Sensor, (0, 0, 0), bad)
+    ],
+)
+def test_input_objects_pixel_bad(pixel):
+    """bad input: magpy.Sensor(pixel=pixel)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.Sensor((0, 0, 0), pixel=pixel)
 
 
-def test_input_objects_orientation_good():
-    """good input: magpy.Sensor(orientation=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "orientation_rotvec",
+    [
         None,
         (0.1, 0.2, 0.3),
         (0, 0, 0),
         [(0.1, 0.2, 0.3)],
         [(0.1, 0.2, 0.3)] * 5,
-    ]
-    for good in goods:
-        if good is None:
-            sens = magpy.Sensor(orientation=None)
-            np.testing.assert_allclose(sens.orientation.as_rotvec(), (0, 0, 0))
-        else:
-            sens = magpy.Sensor(orientation=R.from_rotvec(good))
-            np.testing.assert_allclose(
-                sens.orientation.as_rotvec(), np.squeeze(np.array(good))
-            )
+    ],
+)
+def test_input_objects_orientation_good(orientation_rotvec):
+    """good input: magpy.Sensor(orientation=orientation_rotvec)"""
+
+    if orientation_rotvec is None:
+        sens = magpy.Sensor(orientation=None)
+        np.testing.assert_allclose(sens.orientation.as_rotvec(), (0, 0, 0))
+    else:
+        sens = magpy.Sensor(orientation=R.from_rotvec(orientation_rotvec))
+        np.testing.assert_allclose(
+            sens.orientation.as_rotvec(), np.squeeze(np.array(orientation_rotvec))
+        )
 
 
-def test_input_objects_orientation_bad():
-    """bad input: magpy.Sensor(orientation=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "orientation_rotvec",
+    [
         (1, 2),
         (1, 2, 3, 4),
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         True,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(
-            MagpylibBadUserInput, magpy.Sensor, (0, 0, 0), (0, 0, 0), bad
-        )
+    ],
+)
+def test_input_objects_orientation_bad(orientation_rotvec):
+    """bad input: magpy.Sensor(orientation=orientation_rotvec)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.Sensor((0, 0, 0), (0, 0, 0), orientation=orientation_rotvec)
 
 
-def test_input_objects_current_good():
-    """good input: magpy.current.Loop(inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "current",
+    [
         None,
         0,
         1,
@@ -128,166 +149,194 @@ def test_input_objects_current_good():
         -1,
         -1.123,
         True,
-    ]
-    for good in goods:
-        src = magpy.current.Loop(good)
-        if good is None:
-            assert src.current is None
-        else:
-            np.testing.assert_allclose(src.current, good)
+    ],
+)
+def test_input_objects_current_good(current):
+    """good input: magpy.current.Loop(current)"""
+
+    src = magpy.current.Loop(current)
+    if current is None:
+        assert src.current is None
+    else:
+        np.testing.assert_allclose(src.current, current)
 
 
-def test_input_objects_current_bad():
-    """bad input: magpy.current.Loop(inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "current",
+    [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.current.Loop, bad)
+        {"woot": 15},
+    ],
+)
+def test_input_objects_current_bad(current):
+    """bad input: magpy.current.Loop(current)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.current.Loop(current)
 
 
-def test_input_objects_diameter_good():
+@pytest.mark.parametrize(
+    "diameter",
+    [
+        None,
+        0,
+        1,
+        1.2,
+        np.array([1, 2, 3])[1],
+        True,
+    ],
+)
+def test_input_objects_diameter_good(diameter):
     """good input: magpy.current.Loop(diameter=inp)"""
-    goods = [
-        None,
-        0,
-        1,
-        1.2,
-        np.array([1, 2, 3])[1],
-        True,
-    ]
-    for good in goods:
-        src = magpy.current.Loop(diameter=good)
-        if good is None:
-            assert src.diameter is None
-        else:
-            np.testing.assert_allclose(src.diameter, good)
+
+    src = magpy.current.Loop(diameter=diameter)
+    if diameter is None:
+        assert src.diameter is None
+    else:
+        np.testing.assert_allclose(src.diameter, diameter)
 
 
-def test_input_objects_diameter_bad():
-    """bad input: magpy.current.Loop(diameter=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "diameter",
+    [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         -1,
         -1.123,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.current.Loop(diameter=bad)
+    ],
+)
+def test_input_objects_diameter_bad(diameter):
+    """bad input: magpy.current.Loop(diameter=diameter)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.current.Loop(diameter=diameter)
 
 
-def test_input_objects_vertices_good():
-    """good input: magpy.current.Line(vertices=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "vertices",
+    [
         None,
         ((0, 0, 0), (0, 0, 0)),
         ((1, 2, 3), (2, 3, 4)),
         [(2, 3, 4), (-1, -2, -3)] * 2,
         [[2, 3, 4], [3, 4, 5]],
         np.array(((1, 2, 3), (2, 3, 4))),
-    ]
-    for good in goods:
-        src = magpy.current.Line(vertices=good)
-        if good is None:
-            assert src.vertices is None
-        else:
-            np.testing.assert_allclose(src.vertices, good)
+    ],
+)
+def test_input_objects_vertices_good(vertices):
+    """good input: magpy.current.Line(vertices=vertices)"""
+
+    src = magpy.current.Line(vertices=vertices)
+    if vertices is None:
+        assert src.vertices is None
+    else:
+        np.testing.assert_allclose(src.vertices, vertices)
 
 
-def test_input_objects_vertices_bad():
-    """bad input: magpy.current.Line(vertices=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "vertices",
+    [
         (1, 2),
         [(1, 2, 3, 4)] * 2,
         [(1, 2, 3)],
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         0,
         -1.123,
         True,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.current.Line(vertices=bad)
+    ],
+)
+def test_input_objects_vertices_bad(vertices):
+    """bad input: magpy.current.Line(vertices=vertices)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.current.Line(vertices=vertices)
 
 
-def test_input_objects_magnetization_moment_good():
-    """
-    good input:
-        magpy.magnet.Cuboid(magnetization=inp),
-        magpy.misc.Dipole(moment=inp)
-    """
-    goods = [
+@pytest.mark.parametrize(
+    "moment",
+    [
         None,
         (1, 2, 3),
         (0, 0, 0),
         [-1, -2, -3],
         np.array((1, 2, 3)),
-    ]
-    for good in goods:
-        src = magpy.magnet.Cuboid(good)
-        src2 = magpy.misc.Dipole(good)
-        if good is None:
-            assert src.magnetization is None
-            assert src2.moment is None
-        else:
-            np.testing.assert_allclose(src.magnetization, good)
-            np.testing.assert_allclose(src2.moment, good)
+    ],
+)
+def test_input_objects_magnetization_moment_good(moment):
+    """
+    good input:
+        magpy.magnet.Cuboid(magnetization=moment),
+        magpy.misc.Dipole(moment=moment)
+    """
+
+    src = magpy.magnet.Cuboid(moment)
+    src2 = magpy.misc.Dipole(moment)
+    if moment is None:
+        assert src.magnetization is None
+        assert src2.moment is None
+    else:
+        np.testing.assert_allclose(src.magnetization, moment)
+        np.testing.assert_allclose(src2.moment, moment)
 
 
-def test_input_objects_magnetization_moment_bad():
-    """
-    bad input:
-        magpy.magnet.Cuboid(magnetization=inp),
-        magpy.misc.Dipole(moment=inp)
-    """
-    bads = [
+@pytest.mark.parametrize(
+    "moment",
+    [
         (1, 2),
         [1, 2, 3, 4],
         [(1, 2, 3)] * 2,
         np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         0,
         -1.123,
         True,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.magnet.Cuboid(magnetization=bad)
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.misc.Dipole(moment=bad)
+    ],
+)
+def test_input_objects_magnetization_moment_bad(moment):
+    """
+    bad input:
+        magpy.magnet.Cuboid(magnetization=moment),
+        magpy.misc.Dipole(moment=moment)
+    """
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.magnet.Cuboid(magnetization=moment)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.misc.Dipole(moment=moment)
 
 
-def test_input_objects_dimension_cuboid_good():
-    """good input: magpy.magnet.Cuboid(dimension=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         None,
         (1, 2, 3),
         [11, 22, 33],
         np.array((1, 2, 3)),
-    ]
-    for good in goods:
-        src = magpy.magnet.Cuboid(dimension=good)
-        if good is None:
-            assert src.dimension is None
-        else:
-            np.testing.assert_allclose(src.dimension, good)
+    ],
+)
+def test_input_objects_dimension_cuboid_good(dimension):
+    """good input: magpy.magnet.Cuboid(dimension=dimension)"""
+
+    src = magpy.magnet.Cuboid(dimension=dimension)
+    if dimension is None:
+        assert src.dimension is None
+    else:
+        np.testing.assert_allclose(src.dimension, dimension)
 
 
-def test_input_objects_dimension_cuboid_bad():
-    """bad input: magpy.magnet.Cuboid(dimension=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         [-1, 2, 3],
         (0, 1, 2),
         (1, 2),
@@ -296,34 +345,40 @@ def test_input_objects_dimension_cuboid_bad():
         np.array([(1, 2, 3)] * 2),
         "x",
         ["x", "y", "z"],
-        dict(woot=15),
+        {"woot": 15},
         0,
         True,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.magnet.Cuboid(dimension=bad)
+    ],
+)
+def test_input_objects_dimension_cuboid_bad(dimension):
+    """bad input: magpy.magnet.Cuboid(dimension=dimension)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.magnet.Cuboid(dimension=dimension)
 
 
-def test_input_objects_dimension_cylinder_good():
-    """good input: magpy.magnet.Cylinder(dimension=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         None,
         (1, 2),
         [11, 22],
         np.array((1, 2)),
-    ]
-    for good in goods:
-        src = magpy.magnet.Cylinder(dimension=good)
-        if good is None:
-            assert src.dimension is None
-        else:
-            np.testing.assert_allclose(src.dimension, good)
+    ],
+)
+def test_input_objects_dimension_cylinder_good(dimension):
+    """good input: magpy.magnet.Cylinder(dimension=dimension)"""
+
+    src = magpy.magnet.Cylinder(dimension=dimension)
+    if dimension is None:
+        assert src.dimension is None
+    else:
+        np.testing.assert_allclose(src.dimension, dimension)
 
 
-def test_input_objects_dimension_cylinder_bad():
-    """bad input: magpy.magnet.Cylinder(dimension=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         [-1, 2],
         (0, 1),
         (1,),
@@ -332,18 +387,21 @@ def test_input_objects_dimension_cylinder_bad():
         np.array([(2, 3)] * 2),
         "x",
         ["x", "y"],
-        dict(woot=15),
+        {"woot": 15},
         0,
         True,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.magnet.Cylinder(dimension=bad)
+    ],
+)
+def test_input_objects_dimension_cylinder_bad(dimension):
+    """bad input: magpy.magnet.Cylinder(dimension=dimension)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.magnet.Cylinder(dimension=dimension)
 
 
-def test_input_objects_dimension_cylinderSegment_good():
-    """good input: magpy.magnet.CylinderSegment(dimension=inp)"""
-    goods = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         None,
         (0, 2, 3, 0, 50),
         (1, 2, 3, 40, 50),
@@ -352,18 +410,21 @@ def test_input_objects_dimension_cylinderSegment_good():
         np.array((1, 2, 3, 4, 5)),
         [11, 22, 33, -44, -33],
         (0, 2, 3, -10, 0),
-    ]
-    for good in goods:
-        src = magpy.magnet.CylinderSegment(dimension=good)
-        if good is None:
-            assert src.dimension is None
-        else:
-            np.testing.assert_allclose(src.dimension, good)
+    ],
+)
+def test_input_objects_dimension_cylinderSegment_good(dimension):
+    """good input: magpy.magnet.CylinderSegment(dimension=dimension)"""
+
+    src = magpy.magnet.CylinderSegment(dimension=dimension)
+    if dimension is None:
+        assert src.dimension is None
+    else:
+        np.testing.assert_allclose(src.dimension, dimension)
 
 
-def test_input_objects_dimension_cylinderSegment_bad():
-    """good input: magpy.magnet.CylinderSegment(dimension=inp)"""
-    bads = [
+@pytest.mark.parametrize(
+    "dimension",
+    [
         (1, 2, 3, 4),
         (1, 2, 3, 4, 5, 6),
         (0, 0, 3, 4, 5),
@@ -376,13 +437,16 @@ def test_input_objects_dimension_cylinderSegment_bad():
         np.array([(1, 2, 3, 4, 5)] * 2),
         "x",
         ["x", "y", "z", 1, 2],
-        dict(woot=15),
+        {"woot": 15},
         0,
         True,
-    ]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            magpy.magnet.CylinderSegment(dimension=bad)
+    ],
+)
+def test_input_objects_dimension_cylinderSegment_bad(dimension):
+    """good input: magpy.magnet.CylinderSegment(dimension=dimension)"""
+
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.magnet.CylinderSegment(dimension=dimension)
 
 
 def test_input_objects_field_func_good():
@@ -431,52 +495,27 @@ def test_input_objects_field_func_good():
     np.testing.assert_allclose(src.getH((1, 2, 3)), (1, 2, 3))
 
 
-def test_input_objects_field_func_bad():
+@pytest.mark.parametrize(
+    "func",
+    [
+        1,  # non callable
+        lambda fieldd, observers, whatever: None,  # bad arg names
+        lambda field, observers: 1 if field == "B" else None,  # no ndarray return on B
+        lambda field, observers: 1
+        if field == "H"
+        else observers,  # no ndarray return on H
+        lambda field, observers: np.array([1, 2, 3])
+        if field == "B"
+        else None,  # bad return shape on B
+        lambda field, observers: np.array([1, 2, 3])
+        if field == "H"
+        else observers,  # bad return shape on H
+    ],
+)
+def test_input_objects_field_func_bad(func):
     """bad input: magpy.misc.CustomSource(field_func=f)"""
-    # pylint: disable=unused-argument
-
-    # non callable
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, 1)
-
-    # bad arg names
-    def ff(fieldd, observers, whatever):
-        """ff"""
-
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, ff)
-
-    # no ndarray return on B
-    def fff(field, observers):
-        """fff"""
-        if field == "B":
-            return 1
-
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, fff)
-
-    # no ndarray return on H
-    def ffff(field, observers):
-        """ffff"""
-        if field == "H":
-            return 1
-        return observers
-
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, ffff)
-
-    # bad return shape on B
-    def g(field, observers):
-        """g"""
-        if field == "B":
-            return np.array([1, 2, 3])
-
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, g)
-
-    # bad return shape on H
-    def gg(field, observers):
-        """gg"""
-        if field == "H":
-            return np.array([1, 2, 3])
-        return observers
-
-    np.testing.assert_raises(MagpylibBadUserInput, magpy.misc.CustomSource, gg)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.misc.CustomSource(func)
 
 
 def test_missing_input_triangular_mesh():
@@ -485,15 +524,11 @@ def test_missing_input_triangular_mesh():
     verts = np.array([(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
     tris = np.array([(0, 1, 2), (0, 1, 3), (1, 2, 3), (0, 2, 3)])
 
-    def trim():
+    with pytest.raises(MagpylibMissingInput):
         magpy.magnet.TriangularMesh(faces=tris)
 
-    np.testing.assert_raises(MagpylibMissingInput, trim)
-
-    def trimm():
+    with pytest.raises(MagpylibMissingInput):
         magpy.magnet.TriangularMesh(vertices=verts)
-
-    np.testing.assert_raises(MagpylibMissingInput, trimm)
 
 
 ###########################################################
@@ -501,39 +536,48 @@ def test_missing_input_triangular_mesh():
 # DISPLAY
 
 
-def test_input_show_zoom_bad():
+@pytest.mark.parametrize(
+    "zoom",
+    [
+        (1, 2, 3),
+        -1,
+    ],
+)
+def test_input_show_zoom_bad(zoom):
     """bad show zoom inputs"""
     x = magpy.Sensor()
-    bads = [
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.show(x, zoom=zoom)
+
+
+@pytest.mark.parametrize(
+    "animation",
+    [
         (1, 2, 3),
         -1,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.show, x, zoom=bad)
-
-
-def test_input_show_animation_bad():
+    ],
+)
+def test_input_show_animation_bad(animation):
     """bad show animation inputs"""
     x = magpy.Sensor()
-    bads = [
-        (1, 2, 3),
-        -1,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.show, x, animation=bad)
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.show(x, animation=animation)
 
 
-def test_input_show_backend_bad():
-    """bad show backend inputs"""
-    x = magpy.Sensor()
-    bads = [
+@pytest.mark.parametrize(
+    "backend",
+    [
         (1, 2, 3),
         -1,
         "x",
         True,
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.show, x, backend=bad)
+    ],
+)
+def test_input_show_backend_bad(backend):
+    """bad show backend inputs"""
+    x = magpy.Sensor()
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.show(x, backend=backend)
 
 
 ###########################################################
@@ -541,9 +585,9 @@ def test_input_show_backend_bad():
 # MOVE ROTATE
 
 
-def test_input_move_start_good():
-    """good start inputs"""
-    goods = [
+@pytest.mark.parametrize(
+    "start_value",
+    [
         "auto",
         0,
         1,
@@ -551,16 +595,18 @@ def test_input_move_start_good():
         -2,
         -250,
         np.array((1, 2, 3))[0],
-    ]
-    for good in goods:
-        x = magpy.Sensor(position=[(0, 0, i) for i in range(10)])
-        x.move((1, 0, 0), start=good)
-        assert isinstance(x.position, np.ndarray)
+    ],
+)
+def test_input_move_start_good(start_value):
+    """good start inputs"""
+    x = magpy.Sensor(position=[(0, 0, i) for i in range(10)])
+    x.move((1, 0, 0), start=start_value)
+    assert isinstance(x.position, np.ndarray)
 
 
-def test_input_move_start_bad():
-    """bad start inputs"""
-    bads = [
+@pytest.mark.parametrize(
+    "start_value",
+    [
         1.1,
         1.0,
         "x",
@@ -568,28 +614,29 @@ def test_input_move_start_bad():
         [11],
         (1,),
         np.array([(1, 2, 3, 4, 5)] * 2),
-        dict(woot=15),
-    ]
-    for bad in bads:
-        x = magpy.Sensor(position=[(0, 0, i) for i in range(10)])
-        np.testing.assert_raises(MagpylibBadUserInput, x.move, (1, 1, 1), start=bad)
+        {"woot": 15},
+    ],
+)
+def test_input_move_start_bad(start_value):
+    """bad start inputs"""
+    x = magpy.Sensor(position=[(0, 0, i) for i in range(10)])
+    with pytest.raises(MagpylibBadUserInput):
+        x.move((1, 1, 1), start=start_value)
 
 
-def test_input_rotate_degrees_good():
+@pytest.mark.parametrize("degrees", [True, False])
+def test_input_rotate_degrees_good(degrees):
     """good degrees inputs"""
-    goods = [
-        True,
-        False,
-    ]
-    for good in goods:
-        x = magpy.Sensor()
-        x.rotate_from_angax(10, "z", degrees=good)
-        assert isinstance(x.position, np.ndarray)
+    x = magpy.Sensor(position=(0, 0, 1))
+    x.rotate_from_angax(ang := 1.2345, "y", degrees=degrees, anchor=0)
+    if degrees:
+        ang = np.deg2rad(ang)
+    np.testing.assert_allclose(x.position, [np.sin(ang), 0, np.cos(ang)])
 
 
-def test_input_rotate_degrees_bad():
-    """bad degrees inputs"""
-    bads = [
+@pytest.mark.parametrize(
+    "degrees",
+    [
         1,
         0,
         1.1,
@@ -599,18 +646,19 @@ def test_input_rotate_degrees_bad():
         [True],
         (1,),
         np.array([(1, 2, 3, 4, 5)] * 2),
-        dict(woot=15),
-    ]
-    for bad in bads:
-        x = magpy.Sensor()
-        np.testing.assert_raises(
-            MagpylibBadUserInput, x.rotate_from_angax, 10, "z", degrees=bad
-        )
+        {"woot": 15},
+    ],
+)
+def test_input_rotate_degrees_bad(degrees):
+    """bad degrees inputs"""
+    x = magpy.Sensor()
+    with pytest.raises(MagpylibBadUserInput):
+        x.rotate_from_angax(10, "z", degrees=degrees)
 
 
-def test_input_rotate_axis_good():
-    """good rotate axis inputs"""
-    goods = [
+@pytest.mark.parametrize(
+    "axis",
+    [
         (1, 2, 3),
         (0, 0, 1),
         [0, 0, 1],
@@ -618,16 +666,18 @@ def test_input_rotate_axis_good():
         "x",
         "y",
         "z",
-    ]
-    for good in goods:
-        x = magpy.Sensor()
-        x.rotate_from_angax(10, good)
-        assert isinstance(x.position, np.ndarray)
+    ],
+)
+def test_input_rotate_axis_good(axis):
+    """good rotate axis inputs"""
+    x = magpy.Sensor()
+    x.rotate_from_angax(10, axis)
+    assert isinstance(x.position, np.ndarray)
 
 
-def test_input_rotate_axis_bad():
-    """bad rotate axis inputs"""
-    bads = [
+@pytest.mark.parametrize(
+    "axis",
+    [
         (0, 0, 0),
         (1, 2),
         (1, 2, 3, 4),
@@ -637,239 +687,236 @@ def test_input_rotate_axis_bad():
         None,
         True,
         np.array([(1, 2, 3, 4, 5)] * 2),
-        dict(woot=15),
-    ]
-    for bad in bads:
-        x = magpy.Sensor()
-        np.testing.assert_raises(MagpylibBadUserInput, x.rotate_from_angax, 10, bad)
+        {"woot": 15},
+    ],
+)
+def test_input_rotate_axis_bad(axis):
+    """bad rotate axis inputs"""
+    x = magpy.Sensor()
+    with pytest.raises(MagpylibBadUserInput):
+        x.rotate_from_angax(10, axis)
 
 
-def test_input_observers_good():
+@pytest.mark.parametrize(
+    "observers",
+    [
+        magpy.Sensor(),
+        magpy.Collection(magpy.Sensor()),
+        magpy.Collection(magpy.Sensor(), magpy.Sensor()),
+        (1, 2, 3),
+        [(1, 2, 3)] * 2,
+        [[(1, 2, 3)] * 2] * 3,
+        [magpy.Sensor(), magpy.Collection(magpy.Sensor())],
+        [magpy.Sensor(), magpy.Collection(magpy.Sensor(), magpy.Sensor())],
+        [magpy.Sensor(), (1, 2, 3)],
+        [magpy.Sensor(pixel=[[(1, 2, 3)] * 2] * 3), [[(1, 2, 3)] * 2] * 3],
+        [(1, 2, 3), magpy.Collection(magpy.Sensor())],
+        [(1, 2, 3), magpy.Collection(magpy.Sensor(), magpy.Sensor())],
+        [magpy.Sensor(), magpy.Collection(magpy.Sensor()), (1, 2, 3)],
+        [magpy.Sensor(), magpy.Collection(magpy.Sensor()), magpy.Sensor(), (1, 2, 3)],
+    ],
+)
+def test_input_observers_good(observers):
     """good observers input"""
-    pos_vec1 = (1, 2, 3)
-    pos_vec2 = [(1, 2, 3)] * 2
-    pos_vec3 = [[(1, 2, 3)] * 2] * 3
-    sens1 = magpy.Sensor()
-    sens2 = magpy.Sensor()
-    sens3 = magpy.Sensor()
-    sens4 = magpy.Sensor(pixel=pos_vec3)
-    coll1 = magpy.Collection(sens1)
-    coll2 = magpy.Collection(sens2, sens3)
-
-    goods = [
-        sens1,
-        coll1,
-        coll2,
-        pos_vec1,
-        pos_vec2,
-        pos_vec3,
-        [sens1, coll1],
-        [sens1, coll2],
-        [sens1, pos_vec1],
-        [sens4, pos_vec3],
-        [pos_vec1, coll1],
-        [pos_vec1, coll2],
-        [sens1, coll1, pos_vec1],
-        [sens1, coll1, sens2, pos_vec1],
-    ]
-
     src = magpy.misc.Dipole((1, 2, 3))
-    for good in goods:
-        B = src.getB(good)
-        assert isinstance(B, np.ndarray)
+    B = src.getB(observers)
+    assert isinstance(B, np.ndarray)
 
 
-def test_input_observers_bad():
-    """bad observers input"""
-    pos_vec1 = (1, 2, 3)
-    pos_vec2 = [(1, 2, 3)] * 2
-    sens1 = magpy.Sensor()
-    coll1 = magpy.Collection(sens1)
-
-    bads = [
+@pytest.mark.parametrize(
+    "observers",
+    [
         "a",
         None,
         [],
         ("a", "b", "c"),
         [("a", "b", "c")],
         magpy.misc.Dipole((1, 2, 3)),
-        [pos_vec1, pos_vec2],
-        [sens1, pos_vec2],
-        [pos_vec2, coll1],
+        [(1, 2, 3), [(1, 2, 3)] * 2],
+        [magpy.Sensor(), [(1, 2, 3)] * 2],
+        [[(1, 2, 3)] * 2, magpy.Collection(magpy.Sensor())],
         [magpy.Sensor(pixel=(1, 2, 3)), ("a", "b", "c")],
-    ]
+    ],
+)
+def test_input_observers_bad(observers):
+    """bad observers input"""
     src = magpy.misc.Dipole((1, 2, 3))
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, src.getB, bad)
+    with pytest.raises(MagpylibBadUserInput):
+        src.getB(observers)
 
 
-def test_input_collection_good():
+@pytest.mark.parametrize(
+    "children",
+    [
+        [magpy.Sensor()],
+        [magpy.magnet.Cuboid()],
+        [magpy.Collection()],
+        [magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection()],
+        [
+            magpy.Sensor(),
+            magpy.Sensor(),
+            magpy.magnet.Cuboid(),
+            magpy.magnet.Cuboid(),
+            magpy.Collection(),
+            magpy.Collection(),
+        ],
+        [[magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection()]],
+        [(magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection())],
+    ],
+)
+def test_input_collection_good(children):
     """good inputs: collection(inp)"""
-    # pylint: disable=unnecessary-lambda
-    x = lambda: magpy.Sensor()
-    s = lambda: magpy.magnet.Cuboid()
-    c = lambda: magpy.Collection()
-
-    goods = [  # unpacked
-        [x()],
-        [s()],
-        [c()],
-        [x(), s(), c()],
-        [x(), x(), s(), s(), c(), c()],
-        [[x(), s(), c()]],
-        [(x(), s(), c())],
-    ]
-
-    for good in goods:
-        col = magpy.Collection(*good)
-        assert isinstance(col, magpy.Collection)
+    col = magpy.Collection(*children)
+    assert isinstance(col, magpy.Collection)
 
 
-def test_input_collection_bad():
+@pytest.mark.parametrize(
+    "children",
+    [
+        "some_string",
+        None,
+        True,
+        1,
+        np.array((1, 2, 3)),
+        [magpy.Sensor(), [magpy.magnet.Cuboid(), magpy.Collection()]],
+    ],
+)
+def test_input_collection_bad(children):
     """bad inputs: collection(inp)"""
-    # pylint: disable=unnecessary-lambda
-    x = lambda: magpy.Sensor()
-    s = lambda: magpy.magnet.Cuboid()
-    c = lambda: magpy.Collection()
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.Collection(children)
 
-    bads = [
+
+@pytest.mark.parametrize(
+    "children",
+    [
+        [magpy.Sensor()],
+        [magpy.magnet.Cuboid()],
+        [magpy.Collection()],
+        [magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection()],
+        [
+            magpy.Sensor(),
+            magpy.Sensor(),
+            magpy.magnet.Cuboid(),
+            magpy.magnet.Cuboid(),
+            magpy.Collection(),
+            magpy.Collection(),
+        ],
+        [[magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection()]],
+        [(magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection())],
+    ],
+)
+def test_input_collection_add_good(children):
+    """good inputs: collection.add(children)"""
+    col = magpy.Collection()
+    col.add(*children)
+    assert isinstance(col, magpy.Collection)
+
+
+@pytest.mark.parametrize(
+    "children",
+    [
         "some_string",
         None,
         True,
         1,
         np.array((1, 2, 3)),
-        [x(), [s(), c()]],
-    ]
-    for bad in bads:
-        np.testing.assert_raises(MagpylibBadUserInput, magpy.Collection, bad)
+        ([magpy.Sensor(), [magpy.magnet.Cuboid(), magpy.Collection()]],),
+    ],
+)
+def test_input_collection_add_bad(children):
+    """bad inputs: collection.add(children)"""
+    col = magpy.Collection()
+    with pytest.raises(MagpylibBadUserInput):
+        col.add(children)
 
 
-def test_input_collection_add_good():
-    """good inputs: collection.add(inp)"""
-    # pylint: disable=unnecessary-lambda
-    x = lambda: magpy.Sensor()
-    s = lambda: magpy.magnet.Cuboid()
-    c = lambda: magpy.Collection()
-
-    goods = [  # unpacked
-        [x()],
-        [s()],
-        [c()],
-        [x(), s(), c()],
-        [x(), x(), s(), s(), c(), c()],
-        [[x(), s(), c()]],
-        [(x(), s(), c())],
-    ]
-
-    for good in goods:
-        col = magpy.Collection()
-        col.add(*good)
-        assert isinstance(col, magpy.Collection)
+@pytest.mark.parametrize(
+    "children",
+    [
+        [magpy.Sensor()],
+        [magpy.magnet.Cuboid()],
+        [magpy.Collection()],
+        [magpy.Sensor(), magpy.magnet.Cuboid(), magpy.Collection()],
+        [[magpy.Sensor(), magpy.magnet.Cuboid()]],
+        [(magpy.Sensor(), magpy.magnet.Cuboid())],
+    ],
+)
+def test_input_collection_remove_good(children):
+    """good inputs: collection.remove(children)"""
+    col = magpy.Collection(*children)
+    assert col.children == (
+        list(children[0]) if isinstance(children[0], (tuple, list)) else children
+    )
+    col.remove(*children)
+    assert not col.children
 
 
-def test_input_collection_add_bad():
-    """bad inputs: collection.add(inp)"""
-    # pylint: disable=unnecessary-lambda
-    x = lambda: magpy.Sensor()
-    s = lambda: magpy.magnet.Cuboid()
-    c = lambda: magpy.Collection()
-
-    bads = [
+@pytest.mark.parametrize(
+    "children",
+    [
         "some_string",
         None,
         True,
         1,
         np.array((1, 2, 3)),
-        [x(), [s(), c()]],
-    ]
-    for bad in bads:
-        col = magpy.Collection()
-        np.testing.assert_raises(MagpylibBadUserInput, col.add, bad)
-
-
-def test_input_collection_remove_good():
-    """good inputs: collection.remove(inp)"""
-    x = magpy.Sensor()
-    s = magpy.magnet.Cuboid()
-    c = magpy.Collection()
-
-    goods = [  # unpacked
-        [x],
-        [s],
-        [c],
-        [x, s, c],
-        [[x, s]],
-        [(x, s)],
-    ]
-
-    for good in goods:
-        col = magpy.Collection(*good)
-        assert col.children == (
-            list(good[0]) if isinstance(good[0], (tuple, list)) else good
-        )
-        col.remove(*good)
-        assert not col.children
-
-
-def test_input_collection_remove_bad():
-    """bad inputs: collection.remove(inp)"""
+        [magpy.Sensor(), [magpy.Sensor()]],
+    ],
+)
+def test_input_collection_remove_bad(children):
+    """bad inputs: collection.remove(children)"""
     x1 = magpy.Sensor()
     x2 = magpy.Sensor()
     s1 = magpy.magnet.Cuboid()
     s2 = magpy.magnet.Cuboid()
     c1 = magpy.Collection()
-    c2 = magpy.Collection()
     col = magpy.Collection(x1, x2, s1, s2, c1)
 
-    bads = ["some_string", None, True, 1, np.array((1, 2, 3)), [x1, [x2]]]
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            col.remove(bad)
+    with pytest.raises(MagpylibBadUserInput):
+        col.remove(children)
 
+
+def test_input_collection_bad_errors_arg():
     # bad errors input
-    with np.testing.assert_raises(MagpylibBadUserInput):
-        col.remove(c2, errors="w00t")
+    x1 = magpy.Sensor()
+    col = magpy.Collection()
+    with pytest.raises(MagpylibBadUserInput):
+        col.remove(x1, errors="w00t")
 
 
-def test_input_basegeo_parent_setter_good():
-    """good inputs: obj.parent=inp"""
+@pytest.mark.parametrize("parent", [magpy.Collection(), None])
+def test_input_basegeo_parent_setter_good(parent):
+    """good inputs: obj.parent=parent"""
     x = magpy.Sensor()
-    c = magpy.Collection()
-
-    goods = [
-        c,
-        None,
-    ]
-
-    for good in goods:
-        x.parent = good
-        assert x.parent == good
+    x.parent = parent
+    assert x.parent == parent
 
 
-def test_input_basegeo_parent_setter_bad():
-    """bad inputs: obj.parent=inp"""
-    x = magpy.Sensor()
-    c = magpy.Collection()
-
-    bads = [
+@pytest.mark.parametrize(
+    "parent",
+    [
         "some_string",
         [],
         True,
         1,
         np.array((1, 2, 3)),
-        [c],
+        [magpy.Collection()],
         magpy.Sensor(),
         magpy.magnet.Cuboid(),
-    ]
+    ],
+)
+def test_input_basegeo_parent_setter_bad(parent):
+    """bad inputs: obj.parent=parent"""
+    x = magpy.Sensor()
 
-    for bad in bads:
-        with np.testing.assert_raises(MagpylibBadUserInput):
-            x.parent = bad
+    with pytest.raises(MagpylibBadUserInput):
+        x.parent = parent
 
     # when obj is good but has already a parent
     x = magpy.Sensor()
     magpy.Collection(x)
-    with np.testing.assert_raises(MagpylibBadUserInput):
+
+    with pytest.raises(MagpylibBadUserInput):
         magpy.Collection(x)
 
 
@@ -878,22 +925,18 @@ def test_input_basegeo_parent_setter_bad():
 # GET BH
 
 
-def test_input_getBH_field_good():
+@pytest.mark.parametrize("field", ["B", "H"])
+def test_input_getBH_field_good(field):
     """good getBH field inputs"""
-    goods = [
-        "B",
-        "H",
-    ]
-    for good in goods:
-        moms = np.array([[1, 2, 3]])
-        obs = np.array([[1, 2, 3]])
-        B = magpy.core.dipole_field(good, obs, moms)
-        assert isinstance(B, np.ndarray)
+    moms = np.array([[1, 2, 3]])
+    obs = np.array([[1, 2, 3]])
+    B = magpy.core.dipole_field(field, obs, moms)
+    assert isinstance(B, np.ndarray)
 
 
-def test_input_getBH_field_bad():
-    """bad getBH field inputs"""
-    bads = [
+@pytest.mark.parametrize(
+    "field",
+    [
         1,
         0,
         1.1,
@@ -903,15 +946,12 @@ def test_input_getBH_field_bad():
         [True],
         (1,),
         np.array([(1, 2, 3, 4, 5)] * 2),
-        dict(woot=15),
-    ]
-    for bad in bads:
-        moms = np.array([[1, 2, 3]])
-        obs = np.array([[1, 2, 3]])
-        np.testing.assert_raises(
-            MagpylibBadUserInput,
-            magpy.core.dipole_field,
-            bad,
-            obs,
-            moms,
-        )
+        {"woot": 15},
+    ],
+)
+def test_input_getBH_field_bad(field):
+    """bad getBH field inputs"""
+    moms = np.array([[1, 2, 3]])
+    obs = np.array([[1, 2, 3]])
+    with pytest.raises(MagpylibBadUserInput):
+        magpy.core.dipole_field(field, obs, moms)
