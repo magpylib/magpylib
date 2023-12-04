@@ -102,21 +102,21 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
         if d is None or not replace_None_only:
             d = u.copy()
         return d
-    new = deepcopy(d)
+    new_dict = deepcopy(d)
     for k, v in u.items():
-        if k in new or not same_keys_only:
+        if k in new_dict or not same_keys_only:
             if isinstance(v, collections.abc.Mapping):
                 r = update_nested_dict(
-                    new.get(k, {}),
+                    new_dict.get(k, {}),
                     v,
                     same_keys_only=same_keys_only,
                     replace_None_only=replace_None_only,
                 )
-                new[k] = r
-            elif new.get(k, None) is None or not replace_None_only:
-                if not same_keys_only or k in new:
-                    new[k] = u[k]
-    return new
+                new_dict[k] = r
+            elif new_dict.get(k, None) is None or not replace_None_only:
+                if not same_keys_only or k in new_dict:
+                    new_dict[k] = u[k]
+    return new_dict
 
 
 def magic_to_dict(kwargs, separator="_") -> dict:
