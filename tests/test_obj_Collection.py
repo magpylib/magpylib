@@ -120,7 +120,6 @@ def test_Collection_basics():
 )
 def test_col_getB(test_input, expected):
     """testing some Collection stuff with getB"""
-    # pylint: disable=unused-variable
     # pylint: disable=eval-used
 
     src1 = magpy.magnet.Cuboid(
@@ -136,7 +135,7 @@ def test_col_getB(test_input, expected):
 
     sens_col = sens1 + sens2 + sens3 + sens4
     src_col = src1 + src2
-    mixed_col = sens_col + src_col
+    _ = sens_col + src_col
     assert eval(test_input) == expected
 
 
