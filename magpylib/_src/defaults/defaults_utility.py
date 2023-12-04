@@ -230,7 +230,7 @@ def color_validator(color_input, allow_None=True, parent_name=""):
         import re
 
         hex_fail = True
-        # pylint: disable=W0702
+        # pylint: disable=broad-exception-caught
         try:  # check if greyscale
             c = float(color_input)
             if c < 0 or c > 1:
