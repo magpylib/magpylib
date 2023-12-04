@@ -1,10 +1,6 @@
 name: Python package
 
-on:
-  push:
-    branches: [ "main", "*code-ql*"]
-  pull_request:
-    branches: [ "main", "*code-ql*"]
+on: [push, pull_request]
 
 concurrency:
   group: check-${{ github.ref }}
