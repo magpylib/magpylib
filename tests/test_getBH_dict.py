@@ -399,12 +399,9 @@ def test_subclassing():
     # pylint: disable=unused-variable
     class MyCuboid(magpy.magnet.Cuboid):
         """Test subclass"""
-    MyCuboid((0,0,1000), (1,1,1))
-    B1 = magpy.getB(
-        "Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
-    )
-    B2 = magpy.getB(
-        "MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
-    )
+
+    MyCuboid((0, 0, 1000), (1, 1, 1))
+    B1 = magpy.getB("Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
+    B2 = magpy.getB("MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
 
     np.testing.assert_allclose(B1, B2)
