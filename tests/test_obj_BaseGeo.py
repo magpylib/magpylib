@@ -355,7 +355,7 @@ def test_kwargs():
     assert bg.style.label == "label_02"
 
     with pytest.raises(TypeError):
-        bg = BaseGeo((0, 0, 0), None, styl_label="label_02")
+        BaseGeo((0, 0, 0), None, styl_label="label_02")
 
 
 def test_copy():

@@ -30,6 +30,7 @@ def test_getB_interfaces1():
     np.testing.assert_allclose(B1, B_test)
 
     B_test = sens.getB(src)
+    np.testing.assert_allclose(B1, B_test)
 
 
 def test_getB_interfaces2():

@@ -1,7 +1,6 @@
 import numpy as np
 
 import magpylib as magpy
-from magpylib import Sensor
 
 
 def test_sensor1():
@@ -82,20 +81,20 @@ def test_pixel1():
 
     # squeeze=False Bshape of nbare pixel must be (1,1,1,1,3)
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=(1, 2, 3)), squeeze=False).shape,
+        src.getB(magpy.Sensor(pixel=(1, 2, 3)), squeeze=False).shape,
         (1, 1, 1, 1, 3),
     )
 
     # squeeze=False Bshape of [(1,2,3)] must then also be (1,1,1,1,3)
     src = magpy.misc.Dipole((1, 2, 3))
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=[(1, 2, 3)]), squeeze=False).shape,
+        src.getB(magpy.Sensor(pixel=[(1, 2, 3)]), squeeze=False).shape,
         (1, 1, 1, 1, 3),
     )
 
     # squeeze=False Bshape of [[(1,2,3)]] must be (1,1,1,1,1,3)
     np.testing.assert_allclose(
-        src.getB(Sensor(pixel=[[(1, 2, 3)]]), squeeze=False).shape,
+        src.getB(magpy.Sensor(pixel=[[(1, 2, 3)]]), squeeze=False).shape,
         (1, 1, 1, 1, 1, 3),
     )
 
@@ -112,7 +111,7 @@ def test_pixel2():
     # input pos_vec == Sensor(pixel=pos_vec)
     for pos_vec in [p0, p1, p2]:
         np.testing.assert_allclose(
-            Sensor(pixel=pos_vec).pixel,
+            magpy.Sensor(pixel=pos_vec).pixel,
             pos_vec,
         )
 
