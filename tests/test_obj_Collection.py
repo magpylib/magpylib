@@ -387,13 +387,9 @@ def test_collection_describe():
     ]
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
-    x = lambda: magpy.magnet.Cuboid()
-    y = lambda: magpy.current.Loop()
-    z = lambda: magpy.misc.CustomSource()
-
-    c = magpy.Collection(*[x() for _ in range(100)])
-    c.add(*[y() for _ in range(50)])
-    c.add(*[z() for _ in range(25)])
+    c = magpy.Collection(*[magpy.magnet.Cuboid() for _ in range(100)])
+    c.add(*[magpy.current.Loop() for _ in range(50)])
+    c.add(*[magpy.misc.CustomSource() for _ in range(25)])
 
     desc = c.describe(format="type+label", return_string=True).split("\n")
     test = [
