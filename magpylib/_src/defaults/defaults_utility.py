@@ -110,13 +110,12 @@ def update_nested_dict(d, u, same_keys_only=False, replace_None_only=False) -> d
     for k, v in u.items():
         if k in new_dict or not same_keys_only:
             if isinstance(v, collections.abc.Mapping):
-                r = update_nested_dict(
+                new_dict[k] = update_nested_dict(
                     new_dict.get(k, {}),
                     v,
                     same_keys_only=same_keys_only,
                     replace_None_only=replace_None_only,
                 )
-                new_dict[k] = r
             elif new_dict.get(k, None) is None or not replace_None_only:
                 if not same_keys_only or k in new_dict:
                     new_dict[k] = u[k]
