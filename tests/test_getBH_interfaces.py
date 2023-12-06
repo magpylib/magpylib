@@ -255,3 +255,33 @@ def test_getBH_bad_output_type():
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     with pytest.raises(ValueError):
         src.getB((0, 0, 0), output="bad_output_type")
+
+
+def test_sensor_handedness():
+    k = 0.1
+    N = [5, 4, 3]
+    ls = lambda n: np.linspace(-k / 2, k / 2, n)
+    pixel = np.array([[x, y, z] for x in ls(N[0]) for y in ls(N[1]) for z in ls(N[2])])
+    pixel = pixel.reshape(*N, 3)
+    c = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 1, 0))
+    sr = magpy.Sensor(
+        pixel=pixel,
+        position=(-1, 0, 0),
+        style_label="Sensor (right-handed)",
+        style_sizemode="absolute",
+    )
+    sl = sr.copy(
+        handedness="left",
+        style_label="Sensor (left-handed)",
+    )
+    sc = magpy.Collection(sr, sl)
+    sc.rotate_from_angax(np.linspace(0, 90, 6), "y", start=0)
+    # magpy.show(c, *sc)
+    B = c.getB(sc)
+
+    assert B.shape == (6, 2, 5, 4, 3, 3)
+    # second index is sensor index, ...,1:3 -> y&z from each sensor must be equal
+    np.testing.assert_allclose(B[:, 0, ..., 1:3], B[:, 1, ..., 1:3])
+
+    # second index is sensor index, ...,0 -> x from sl must opposite of x from sr
+    np.testing.assert_allclose(B[:, 0, ..., 0], -B[:, 1, ..., 0])

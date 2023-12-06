@@ -361,9 +361,10 @@ def getBH_level2(
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
     for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
+        pix_slice = slice(pix_inds[sens_ind], pix_inds[sens_ind + 1])
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
-            Bpart = B[:, :, pix_inds[sens_ind] : pix_inds[sens_ind + 1]]
+            Bpart = B[:, :, pix_slice]
             # change shape to (P,3) for rot package
             Bpart_orig_shape = Bpart.shape
             Bpart_flat = np.reshape(Bpart, (-1, 3))
@@ -381,9 +382,9 @@ def getBH_level2(
                 )
             Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
             # overwrite Bpart in B
-            B[:, :, pix_inds[sens_ind] : pix_inds[sens_ind + 1]] = np.reshape(
-                Bpart_flat_rot, Bpart_orig_shape
-            )
+            B[:, :, pix_slice] = np.reshape(Bpart_flat_rot, Bpart_orig_shape)
+        if sens.handedness == "left":
+            B[..., pix_slice, 0] *= -1
 
     # rearrange sensor-pixel shape
     if pix_all_same:
