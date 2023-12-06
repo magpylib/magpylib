@@ -3,6 +3,9 @@ All notable changes to magpylib are documented here.
 
 # Changelog
 
+## [UNRELEASED]
+- Add optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
+-
 ## [4.4.1] - 2023-11-09
 - Fix deployment release ([#682](https://github.com/magpylib/magpylib/pull/682))
 - Fix axis mismatch on show/hide of sensor arrows ([#679](https://github.com/magpylib/magpylib/pull/679))
@@ -431,6 +434,7 @@ The first official release of the magpylib library.
 
 ---
 
+[UNRELEASED]:https://github.com/magpylib/magpylib/compare/4.4.1...HEAD
 [4.4.1]:https://github.com/magpylib/magpylib/compare/4.4.0...4.4.1
 [4.4.0]:https://github.com/magpylib/magpylib/compare/4.3.0...4.4.0
 [4.3.0]:https://github.com/magpylib/magpylib/compare/4.2.0...4.3.0
