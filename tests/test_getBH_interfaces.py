@@ -5,6 +5,7 @@ import magpylib as magpy
 
 # pylint: disable=unnecessary-lambda-assignment
 
+
 def test_getB_interfaces1():
     """self-consistent test of different possibilities for computing the field"""
     src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
