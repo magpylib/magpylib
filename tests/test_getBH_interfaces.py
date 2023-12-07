@@ -3,6 +3,7 @@ import pytest
 
 import magpylib as magpy
 
+# pylint: disable=unnecessary-lambda-assignment
 
 def test_getB_interfaces1():
     """self-consistent test of different possibilities for computing the field"""
@@ -258,11 +259,12 @@ def test_getBH_bad_output_type():
 
 
 def test_sensor_handedness():
+    """test sensor handedness"""
     k = 0.1
     N = [5, 4, 3]
     ls = lambda n: np.linspace(-k / 2, k / 2, n)
     pixel = np.array([[x, y, z] for x in ls(N[0]) for y in ls(N[1]) for z in ls(N[2])])
-    pixel = pixel.reshape(*N, 3)
+    pixel = pixel.reshape((*N, 3))
     c = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 1, 0))
     sr = magpy.Sensor(
         pixel=pixel,
