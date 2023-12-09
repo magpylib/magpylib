@@ -16,6 +16,8 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
 
+# pylint: disable=no-member
+
 #################################################################
 #################################################################
 # FUNDAMENTAL CHECKS

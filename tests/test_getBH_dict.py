@@ -2,13 +2,8 @@ import numpy as np
 import pytest
 from scipy.spatial.transform import Rotation as R
 
-import magpylib
-from magpylib import getB
-from magpylib import getH
+import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib.magnet import Cuboid
-from magpylib.magnet import Cylinder
-from magpylib.magnet import Sphere
 
 
 def test_getB_dict1():
@@ -17,7 +12,7 @@ def test_getB_dict1():
     mag = [111, 222, 333]
     dim = [3, 3]
 
-    pm = Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(mag, dim)
     pm.move(np.linspace((0.5, 0, 0), (7.5, 0, 0), 15), start=-1)
     pm.rotate_from_angax(np.linspace(0, 666, 25), "y", anchor=0)
     pm.move([(0, x, 0) for x in np.linspace(0, 5, 5)], start=-1)
@@ -27,7 +22,7 @@ def test_getB_dict1():
     rot = pm.orientation
 
     dic = {"magnetization": mag, "dimension": dim, "position": pos, "orientation": rot}
-    B1 = getB("Cylinder", pos_obs, **dic)
+    B1 = magpy.getB("Cylinder", pos_obs, **dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
@@ -40,10 +35,10 @@ def test_getB_dict2():
     pos = [(1, 1, 1), (2, 2, 2), (3, 3, 3), (5, 5, 5)]
 
     dic = {"magnetization": mag, "dimension": dim, "position": pos}
-    B1 = getB("Cylinder", pos_obs, **dic)
+    B1 = magpy.getB("Cylinder", pos_obs, **dic)
 
-    pm = Cylinder(mag, dim, position=pos)
-    B2 = getB([pm], pos_obs)
+    pm = magpy.magnet.Cylinder(mag, dim, position=pos)
+    B2 = magpy.getB([pm], pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
@@ -58,9 +53,9 @@ def test_getH_dict1():
         "magnetization": mag,
         "dimension": dim,
     }
-    B1 = getH("Cylinder", pos_obs, **dic)
+    B1 = magpy.getH("Cylinder", pos_obs, **dic)
 
-    pm = Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(mag, dim)
     B2 = pm.getH(pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -78,11 +73,11 @@ def test_getB_dict3():
     rot = R.from_quat([(t, 0.2, 0.3, 0.4) for t in np.linspace(0, 0.1, n)])
 
     dic = {"magnetization": mag, "dimension": dim, "position": pos, "orientation": rot}
-    B1 = getB("Cuboid", pos_obs, **dic)
+    B1 = magpy.getB("Cuboid", pos_obs, **dic)
 
     B2 = []
     for i in range(n):
-        pm = Cuboid(mag[i], dim, pos, rot[i])
+        pm = magpy.magnet.Cuboid(mag[i], dim, pos, rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
@@ -96,12 +91,12 @@ def test_getH_dict3():
     dim = 3
 
     dic = {"magnetization": mag, "diameter": dim}
-    B1 = getH("Sphere", pos_obs, **dic)
+    B1 = magpy.getH("Sphere", pos_obs, **dic)
 
     B2 = []
     for i in range(3):
-        pm = Sphere(mag[i], dim)
-        B2 += [getH([pm], pos_obs)]
+        pm = magpy.magnet.Sphere(mag[i], dim)
+        B2 += [magpy.getH([pm], pos_obs)]
     B2 = np.array(B2)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -119,11 +114,11 @@ def test_getB_dict4():
     rot = R.from_quat([(t, 0.2, 0.3, 0.4) for t in np.linspace(0, 0.1, n)])
 
     dic = {"magnetization": mag, "diameter": dim, "position": pos, "orientation": rot}
-    B1 = getB("Sphere", pos_obs, **dic)
+    B1 = magpy.getB("Sphere", pos_obs, **dic)
 
     B2 = []
     for i in range(n):
-        pm = Sphere(mag[i], dim, pos, rot[i])
+        pm = magpy.magnet.Sphere(mag[i], dim, pos, rot[i])
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
@@ -132,32 +127,32 @@ def test_getB_dict4():
 
 def test_geBHv_dipole():
     """test if Dipole implementation gives correct output"""
-    B = getB("Dipole", (1, 1, 1), moment=(1, 2, 3))
+    B = magpy.getB("Dipole", (1, 1, 1), moment=(1, 2, 3))
     Btest = np.array([0.07657346, 0.06125877, 0.04594407])
     assert np.allclose(B, Btest)
 
-    H = getH("Dipole", (1, 1, 1), moment=(1, 2, 3))
+    H = magpy.getH("Dipole", (1, 1, 1), moment=(1, 2, 3))
     Htest = np.array([0.06093522, 0.04874818, 0.03656113])
     assert np.allclose(H, Htest)
 
 
 def test_geBHv_circular():
     """test if Loop implementation gives correct output"""
-    B = getB("Loop", (0, 0, 0), current=1, diameter=2)
+    B = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
     Btest = np.array([0, 0, 0.6283185307179586])
     assert np.allclose(B, Btest)
 
-    H = getH("Loop", (0, 0, 0), current=1, diameter=2)
+    H = magpy.getH("Loop", (0, 0, 0), current=1, diameter=2)
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
     assert np.allclose(H, Htest)
 
 
 def test_getBHv_squeeze():
     """test if squeeze works"""
-    B1 = getB("Loop", (0, 0, 0), current=1, diameter=2)
-    B2 = getB("Loop", [(0, 0, 0)], current=1, diameter=2)
-    B3 = getB("Loop", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
-    B4 = getB("Loop", [(0, 0, 0)] * 2, current=1, diameter=2)
+    B1 = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
+    B2 = magpy.getB("Loop", [(0, 0, 0)], current=1, diameter=2)
+    B3 = magpy.getB("Loop", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
+    B4 = magpy.getB("Loop", [(0, 0, 0)] * 2, current=1, diameter=2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1
@@ -167,7 +162,7 @@ def test_getBHv_squeeze():
 
 def test_getBHv_line():
     """test getBHv with Line"""
-    H = getH(
+    H = magpy.getH(
         "Line",
         [(1, 1, 1), (1, 2, 3), (2, 2, 2)],
         current=1,
@@ -188,13 +183,13 @@ def test_getBHv_line2():
     x = 0.14142136
 
     # z-line on x=1
-    B1 = getB(
+    B1 = magpy.getB(
         "Line", (0, 0, 0), current=1, segment_start=(1, 0, -1), segment_end=(1, 0, 1)
     )
     assert np.allclose(B1, np.array([0, -x, 0]))
 
     # move z-line to x=-1
-    B2 = getB(
+    B2 = magpy.getB(
         "Line",
         (0, 0, 0),
         position=(-2, 0, 0),
@@ -206,7 +201,7 @@ def test_getBHv_line2():
 
     # rotate 1
     rot = R.from_euler("z", 90, degrees=True)
-    B3 = getB(
+    B3 = magpy.getB(
         "Line",
         (0, 0, 0),
         orientation=rot,
@@ -218,7 +213,7 @@ def test_getBHv_line2():
 
     # rotate 2
     rot = R.from_euler("x", 90, degrees=True)
-    B4 = getB(
+    B4 = magpy.getB(
         "Line",
         (0, 0, 0),
         orientation=rot,
@@ -230,7 +225,7 @@ def test_getBHv_line2():
 
     # rotate 3
     rot = R.from_euler("y", 90, degrees=True)
-    B5 = getB(
+    B5 = magpy.getB(
         "Line",
         (0, 0, 0),
         orientation=rot,
@@ -241,7 +236,7 @@ def test_getBHv_line2():
     assert np.allclose(B5, np.array([0, -x, 0]))
 
     # "scalar" vertices tiling
-    B = getB(
+    B = magpy.getB(
         "Line",
         observers=[(0, 0, 0)] * 5,
         current=1,
@@ -259,7 +254,7 @@ def test_getBHv_line2():
         [(0, 0, 0), (3, 3, 3), (-3, 4, -5)],
         [(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)],
     ]
-    B1 = getB(
+    B1 = magpy.getB(
         "Line",
         observers=observers,
         current=current,
@@ -267,7 +262,7 @@ def test_getBHv_line2():
     )
     B2 = np.array(
         [
-            getB(
+            magpy.getB(
                 "Line",
                 observers=observers,
                 current=current,
@@ -322,7 +317,7 @@ def test_BHv_Cylinder_FEM():
     )
 
     # compare against FEM
-    B = getB(
+    B = magpy.getB(
         "CylinderSegment",
         obsp,
         dimension=(1, 2, 1, 90, 360),
@@ -337,7 +332,7 @@ def test_BHv_Cylinder_FEM():
 def test_BHv_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
-    B1 = getB(
+    B1 = magpy.getB(
         "CylinderSegment",
         (1, 2, 3),
         dimension=[(0, 1, 2, 20, 120), (0, 1, 2, 120, 220), (0, 1, 2, 220, 380)],
@@ -346,7 +341,7 @@ def test_BHv_solid_cylinder():
     B1 = np.sum(B1, axis=0)
 
     # one big cylinder
-    B2 = getB(
+    B2 = magpy.getB(
         "CylinderSegment",
         (1, 2, 3),
         dimension=(0, 1, 2, 0, 360),
@@ -354,7 +349,7 @@ def test_BHv_solid_cylinder():
     )
 
     # compute with solid cylinder code
-    B3 = getB(
+    B3 = magpy.getB(
         "Cylinder",
         (1, 2, 3),
         dimension=(2, 2),
@@ -371,7 +366,7 @@ def test_getB_dict_over_getB():
     mag = [111, 222, 333]
     dim = [3, 3]
 
-    pm = Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(mag, dim)
     pm.move(np.linspace((0.5, 0, 0), (7.5, 0, 0), 15))
     pm.rotate_from_angax(np.linspace(0, 666, 25), "y", anchor=0)
     pm.move([(0, x, 0) for x in np.linspace(0, 5, 5)])
@@ -388,28 +383,25 @@ def test_getB_dict_over_getB():
         "position": pos,
         "orientation": rot,
     }
-    B1 = magpylib.getB(**dic)
+    B1 = magpy.getB(**dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
     # test for kwargs if sources is not a string
     dic["sources"] = pm
     with pytest.raises(MagpylibBadUserInput):
-        magpylib.getB(**dic)
+        magpy.getB(**dic)
 
 
 def test_subclassing():
     """Test side effects of suclasssing a source"""
 
     # pylint: disable=unused-variable
-    class MyCuboid(magpylib.magnet.Cuboid):
+    class MyCuboid(magpy.magnet.Cuboid):
         """Test subclass"""
 
-    B1 = magpylib.getB(
-        "Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
-    )
-    B2 = magpylib.getB(
-        "MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1)
-    )
+    MyCuboid((0, 0, 1000), (1, 1, 1))
+    B1 = magpy.getB("Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
+    B2 = magpy.getB("MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
 
     np.testing.assert_allclose(B1, B2)

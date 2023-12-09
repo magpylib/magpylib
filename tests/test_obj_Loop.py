@@ -60,4 +60,4 @@ def test_Loop_basic_H():
 def test_repr():
     """test __repr__"""
     dip = magpy.current.Loop(current=1, diameter=1)
-    assert dip.__repr__()[:4] == "Loop", "Loop repr failed"
+    assert repr(dip)[:4] == "Loop", "Loop repr failed"

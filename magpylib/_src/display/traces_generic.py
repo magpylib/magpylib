@@ -14,7 +14,7 @@ from typing import Tuple
 import numpy as np
 
 import magpylib as magpy
-from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import ALLOWED_LINESTYLES
 from magpylib._src.defaults.defaults_utility import ALLOWED_SYMBOLS
 from magpylib._src.defaults.defaults_utility import linearize_dict
@@ -254,7 +254,6 @@ def get_generic_traces_2D(
     sumup=True,
     pixel_agg=None,
     style_path_frames=None,
-    flat_objs_props=None,
 ):
     """draws and animates sensor values over a path in a subplot"""
     # pylint: disable=import-outside-toplevel
@@ -317,8 +316,6 @@ def get_generic_traces_2D(
         return obj_lst_str
 
     def get_label_and_color(obj):
-        props = flat_objs_props.get(obj, {})
-        style = props.get("style", None)
         style = obj.style
         label = getattr(style, "label", None)
         label = repr(obj) if not label else label
@@ -506,8 +503,6 @@ def get_generic_traces(
                         )
                 elif ttype == "mesh3d":
                     tr_generic["showscale"] = tr_generic.get("showscale", False)
-                    if "facecolor" in obj_extr_trace:
-                        ttype = "mesh3d_facecolor"
                     tr_generic["color"] = tr_generic.get("color", style.color)
                 else:  # pragma: no cover
                     raise ValueError(
@@ -641,7 +636,8 @@ def process_animation_kwargs(obj_list, animation=False, **kwargs):
         animation = False
         warnings.warn("No path to be animated detected, displaying standard plot")
 
-    anim_def = Config.display.animation.copy()
+    # pylint: disable=no-member
+    anim_def = default_settings.display.animation.copy()
     anim_def.update({k[10:]: v for k, v in kwargs.items()}, _match_properties=False)
     animation_kwargs = {f"animation_{k}": v for k, v in anim_def.as_dict().items()}
     kwargs = {k: v for k, v in kwargs.items() if not k.startswith("animation")}
@@ -729,7 +725,8 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         returns the traces in a obj/traces_list dictionary and updated kwargs
     """
     if colorsequence is None:
-        colorsequence = Config.display.colorsequence
+        # pylint: disable=no-member
+        colorsequence = default_settings.display.colorsequence
     # dipoles and sensors use autosize, the trace building has to be put at the back of the queue.
     # autosize is calculated from the other traces overall scene range
 
@@ -745,7 +742,8 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
     traces = [t for tr in traces_dict.values() for t in tr]
     ranges = get_scene_ranges(*traces, *extra_backend_traces, zoom=zoom)
     if autosize is None or autosize == "return":
-        autosize = np.mean(np.diff(ranges)) / Config.display.autosizefactor
+        # pylint: disable=no-member
+        autosize = np.mean(np.diff(ranges)) / default_settings.display.autosizefactor
 
     traces_dict_2, _, extra_backend_traces2 = get_row_col_traces(
         traces_to_resize_dict, autosize=autosize, **kwargs
@@ -758,7 +756,6 @@ def draw_frame(objs, colorsequence=None, zoom=0.0, autosize=None, **kwargs) -> T
         traces2d = get_generic_traces_2D(
             **objs_2d,
             style_path_frames=style_path_frames,
-            flat_objs_props=flat_objs_props,
         )
         traces.extend(traces2d)
     return traces, autosize, ranges, extra_backend_traces

@@ -45,7 +45,7 @@ def test_Line_basic3():
 def test_Line_repr():
     """Line repr test"""
     line = magpy.current.Line(current=100, vertices=[(1, 1, -1), (1, 1, 1)])
-    assert line.__repr__()[:4] == "Line", "Line repr failed"
+    assert repr(line)[:4] == "Line", "Line repr failed"
 
 
 def test_Line_specials():

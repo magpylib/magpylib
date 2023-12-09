@@ -1,6 +1,6 @@
 name: Python package
 
-on: [push, pull_request]
+on: [pull_request]
 
 concurrency:
   group: check-${{ github.ref }}
@@ -20,7 +20,7 @@ jobs:
           python -m pip install --upgrade pip
           pip install .[test]
       - name: Run pylint test
-        run: pylint --rcfile='./.pylintrc' magpylib
+        run: pylint --rcfile='./.pylintrc' magpylib tests
 
   test:
     name: test with ${{ matrix.py }} on ${{ matrix.os }}

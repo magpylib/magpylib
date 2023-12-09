@@ -3,12 +3,13 @@
 import os
 
 import numpy as np
-import plotly.graph_objects as go
 import pytest
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.display.traces_base import make_Prism
+
+# pylint: disable=no-member
 
 magpy.defaults.display.backend = "plotly"
 
@@ -54,9 +55,14 @@ magpy.defaults.display.backend = "plotly"
 
 def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
     """creates a basic Collection Compound object with a rotary arrangement of cuboid magnets"""
-    cs_lambda = lambda: magpy.magnet.Cuboid(
-        (1, 0, 0), dimension=[height] * 3, position=(diameter / 2, 0, 0)
-    )
+
+    def cs_lambda():
+        return magpy.magnet.Cuboid(
+            (1, 0, 0),
+            dimension=[height] * 3,
+            position=(diameter / 2, 0, 0),
+        )
+
     s0 = cs_lambda().rotate_from_angax(
         np.linspace(0.0, 360.0, Ncubes, endpoint=False), "z", anchor=(0, 0, 0), start=0
     )
@@ -82,11 +88,11 @@ def make_wheel(Ncubes=6, height=10, diameter=36, path_len=5, label=None):
         color="blue",
     )
 
-    c.style.model3d.data = [trace]
+    c.style.model3d.data = [trace]  # pylint: disable=no-member
     return c
 
 
-def create_compound_set(show=False, **kwargs):
+def create_compound_set(**kwargs):
     """creates a styled Collection Compound object with a rotary arrangement of cuboid magnets.
     A copy is created to show the difference when applying position and/or orientation setters over
     kwargs."""
@@ -128,13 +134,12 @@ COMPOUND_DATA = np.load(file, allow_pickle=True).item()
 
 @pytest.mark.parametrize(
     "setters_inputs, pos_orient_as_matrix_expected",
-    [
-        (si, po)
-        for si, po in zip(
+    list(
+        zip(
             COMPOUND_DATA["setters_inputs"],
             COMPOUND_DATA["pos_orient_as_matrix_expected"],
         )
-    ],
+    ),
     ids=COMPOUND_DATA["test_names"],
 )
 def test_compound_setters(setters_inputs, pos_orient_as_matrix_expected):
