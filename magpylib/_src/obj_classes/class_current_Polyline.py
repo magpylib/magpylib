@@ -135,6 +135,7 @@ class Polyline(BaseCurrent):
 class Line(Polyline):
     """Line is deprecated, see Polyline"""
 
+    # pylint: disable=method-hidden
     @staticmethod
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""

@@ -127,6 +127,7 @@ class CircularLoop(BaseCurrent):
 class Loop(CircularLoop):
     """Loop is deprecated, see CircularLoop"""
 
+    # pylint: disable=method-hidden
     @staticmethod
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""
