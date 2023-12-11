@@ -5,13 +5,11 @@
 ---
 
 <div>
-<a href="https://dev.azure.com/magpylib/magpylib/_build/latest?definitionId=1&branchName=main"> <img src="https://dev.azure.com/magpylib/magpylib/_apis/build/status/magpylib.magpylib?branchName=main">
+<a href="https://opensource.org/licenses/BSD-2-Clause"> <img src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg">
 </a>
-<a href="https://circleci.com/gh/magpylib/magpylib"> <img src="https://circleci.com/gh/magpylib/magpylib.svg?style=svg">
+<a href="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml"> <img src="https://github.com/magpylib/magpylib/actions/workflows/python-app.yml/badge.svg">
 </a>
 <a href="https://magpylib.readthedocs.io/en/latest/"> <img src="https://readthedocs.org/projects/magpylib/badge/?version=latest">
-</a>
-<a href="https://opensource.org/licenses/BSD-2-Clause"> <img src="https://img.shields.io/badge/License-BSD_2--Clause-orange.svg">
 </a>
 <a href="https://codecov.io/gh/magpylib/magpylib"> <img src="https://codecov.io/gh/magpylib/magpylib/branch/main/graph/badge.svg">
 </a>
