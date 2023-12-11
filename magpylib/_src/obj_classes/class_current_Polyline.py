@@ -135,13 +135,23 @@ class Polyline(BaseCurrent):
 class Line(Polyline):
     """Line is deprecated, see Polyline"""
 
+    @staticmethod
+    def _field_func(*args, **kwargs):
+        """Catch Deprecation warning in getBH_dict"""
+        _deprecation_warn()
+        return current_vertices_field(*args, **kwargs)
+
     def __init__(self, *args, **kwargs):
-        warnings.warn(
-            (
-                "Line is deprecated and will be removed in a future version, "
-                "use Polyline instead."
-            ),
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        _deprecation_warn()
         super().__init__(*args, **kwargs)
+
+
+def _deprecation_warn():
+    warnings.warn(
+        (
+            "Line is deprecated and will be removed in a future version, "
+            "use Polyline instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )

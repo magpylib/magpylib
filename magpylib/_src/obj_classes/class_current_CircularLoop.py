@@ -127,13 +127,23 @@ class CircularLoop(BaseCurrent):
 class Loop(CircularLoop):
     """Loop is deprecated, see CircularLoop"""
 
+    @staticmethod
+    def _field_func(*args, **kwargs):
+        """Catch Deprecation warning in getBH_dict"""
+        _deprecation_warn()
+        return current_circular_loop_field(*args, **kwargs)
+
     def __init__(self, *args, **kwargs):
-        warnings.warn(
-            (
-                "Loop is deprecated  and will be removed in a future version, "
-                "use CircularLoop instead."
-            ),
-            DeprecationWarning,
-            stacklevel=2,
-        )
+        _deprecation_warn()
         super().__init__(*args, **kwargs)
+
+
+def _deprecation_warn():
+    warnings.warn(
+        (
+            "Loop is deprecated  and will be removed in a future version, "
+            "use CircularLoop instead."
+        ),
+        DeprecationWarning,
+        stacklevel=2,
+    )
