@@ -223,7 +223,7 @@ def current_line_field(*args, **kwargs):
     warnings.warn(
         (
             "current_line_field is deprecated and will be removed in a future version, "
-            "use current_polyline_field instead"
+            "use current_polyline_field instead."
         ),
         DeprecationWarning,
     )

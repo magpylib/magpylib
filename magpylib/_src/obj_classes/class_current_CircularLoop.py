@@ -131,7 +131,7 @@ class Loop(CircularLoop):
         warnings.warn(
             (
                 "Loop is deprecated  and will be removed in a future version, "
-                "use CircularLoop instead"
+                "use CircularLoop instead."
             ),
             DeprecationWarning,
         )

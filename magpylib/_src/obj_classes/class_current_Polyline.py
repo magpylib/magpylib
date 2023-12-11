@@ -139,7 +139,7 @@ class Line(Polyline):
         warnings.warn(
             (
                 "Line is deprecated and will be removed in a future version, "
-                "use Polyline instead"
+                "use Polyline instead."
             ),
             DeprecationWarning,
         )
