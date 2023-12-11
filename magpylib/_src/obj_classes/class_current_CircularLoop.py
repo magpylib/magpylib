@@ -1,4 +1,6 @@
 """CircularCircularLoop current class code"""
+import warnings
+
 from magpylib._src.display.traces_core import make_CircularLoop
 from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
@@ -120,3 +122,14 @@ class CircularLoop(BaseCurrent):
         if self.diameter is None:
             return "no dimension"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+
+class Loop(CircularLoop):
+    """Loop is deprecated, see CircularLoop"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            "Loop is deprecated, use CircularLoop instead",
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

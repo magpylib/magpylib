@@ -2,6 +2,8 @@
 Implementations of analytical expressions for the magnetic field of
 a circular current loop. Computation details in function docstrings.
 """
+import warnings
+
 import numpy as np
 
 from magpylib._src.fields.special_cel import cel_iter
@@ -130,3 +132,13 @@ def current_circular_loop_field(
         return B_cart
 
     return B_cart / np.pi * 2.5
+
+
+def current_loop_field(*args, **kwargs):
+    """current_loop_field is deprecated, see current_circular_loop_field"""
+
+    warnings.warn(
+        "Loop is deprecated, use CircularLoop instead",
+        DeprecationWarning,
+    )
+    return current_circular_loop_field(*args, **kwargs)

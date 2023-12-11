@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -60,4 +61,14 @@ def test_CircularLoop_basic_H():
 def test_repr():
     """test __repr__"""
     dip = magpy.current.CircularLoop(current=1, diameter=1)
-    assert repr(dip)[:4] == "CircularLoop", "CircularLoop repr failed"
+    assert repr(dip)[:12] == "CircularLoop", "CircularLoop repr failed"
+
+
+def test_old_class_deprecation_warning():
+    """test old calss deprecation warning"""
+    with pytest.warns(DeprecationWarning):
+        old_class = magpy.current.Loop()
+
+    new_class = magpy.current.CircularLoop()
+    assert isinstance(old_class, magpy.current.CircularLoop)
+    assert isinstance(new_class, magpy.current.CircularLoop)

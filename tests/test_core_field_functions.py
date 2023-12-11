@@ -5,6 +5,7 @@ from numpy.testing import assert_allclose
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
+from magpylib._src.fields.field_BH_circular_loop import current_loop_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
@@ -163,7 +164,7 @@ def test_field_dipole2():
     )
 
 
-def test_field_loop():
+def test_field_circular_loop():
     """test if field function gives correct outputs"""
     # from hyperphysics
     # current = 1A
@@ -208,6 +209,10 @@ def test_field_loop():
     Htest = Btest * 10 / 4 / np.pi
     H = current_circular_loop_field("H", pos_test, current, dim)
     assert_allclose(H, Htest, rtol=1e-6)
+
+    with pytest.warns(DeprecationWarning):
+        B = current_loop_field("B", pos_test, current, dim)
+    assert_allclose(B, Btest, rtol=1e-6)
 
 
 def test_field_loop2():
