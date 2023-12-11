@@ -46,7 +46,7 @@ def test_CircularLoop_basic_H():
     assert np.allclose(H, Htest)
 
 
-# def test_Cicular_problem_positions():
+# def test_Circular_problem_positions():
 #     """ CircularLoop on z and on loop
 #     """
 #     src = magpy.current.CircularLoop(current=1, diameter=2)
