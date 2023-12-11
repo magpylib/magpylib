@@ -22,7 +22,7 @@ The v2 slogan was *"The magnetic field is only three lines of code away"*, which
 
 ```{code-cell} ipython3
 import magpylib as magpy                          # Import Magpylib
-loop = magpy.current.Loop(current=1, diameter=1)  # Create magnetic source
+loop = magpy.current.CircularLoop(current=1, diameter=1)  # Create magnetic source
 B = magpy.getB(loop, observers=(0,0,0))           # Compute field
 
 print(B.round(decimals=3))
@@ -144,7 +144,7 @@ cube = magpy.magnet.Cuboid(
     dimension=(1, 1, 1),
     style_label='cube'
 )
-loop = magpy.current.Loop(
+loop = magpy.current.CircularLoop(
     current=200,
     diameter=2,
     style_label='loop',

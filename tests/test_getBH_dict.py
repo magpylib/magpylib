@@ -4,6 +4,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_getB_dict1():
@@ -125,7 +126,7 @@ def test_getB_dict4():
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
 
 
-def test_geBHv_dipole():
+def test_getBH_dipole():
     """test if Dipole implementation gives correct output"""
     B = magpy.getB("Dipole", (1, 1, 1), moment=(1, 2, 3))
     Btest = np.array([0.07657346, 0.06125877, 0.04594407])
@@ -136,23 +137,27 @@ def test_geBHv_dipole():
     assert np.allclose(H, Htest)
 
 
-def test_geBHv_circular():
-    """test if Loop implementation gives correct output"""
-    B = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
+def test_getBH_circular_loop():
+    """test if CircularLoop implementation gives correct output"""
+    B = magpy.getB("CircularLoop", (0, 0, 0), current=1, diameter=2)
     Btest = np.array([0, 0, 0.6283185307179586])
     assert np.allclose(B, Btest)
 
-    H = magpy.getH("Loop", (0, 0, 0), current=1, diameter=2)
+    H = magpy.getH("CircularLoop", (0, 0, 0), current=1, diameter=2)
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
     assert np.allclose(H, Htest)
 
+    with pytest.warns(MagpylibDeprecationWarning):
+        B = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
+    assert np.allclose(B, Btest)
 
-def test_getBHv_squeeze():
+
+def test_getBH_squeeze():
     """test if squeeze works"""
-    B1 = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
-    B2 = magpy.getB("Loop", [(0, 0, 0)], current=1, diameter=2)
-    B3 = magpy.getB("Loop", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
-    B4 = magpy.getB("Loop", [(0, 0, 0)] * 2, current=1, diameter=2)
+    B1 = magpy.getB("CircularLoop", (0, 0, 0), current=1, diameter=2)
+    B2 = magpy.getB("CircularLoop", [(0, 0, 0)], current=1, diameter=2)
+    B3 = magpy.getB("CircularLoop", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
+    B4 = magpy.getB("CircularLoop", [(0, 0, 0)] * 2, current=1, diameter=2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1
@@ -160,10 +165,10 @@ def test_getBHv_squeeze():
     assert B4.ndim == 2
 
 
-def test_getBHv_line():
-    """test getBHv with Line"""
+def test_getBH_polyline():
+    """test getBHv with Polyline"""
     H = magpy.getH(
-        "Line",
+        "Polyline",
         [(1, 1, 1), (1, 2, 3), (2, 2, 2)],
         current=1,
         segment_start=(0, 0, 0),
@@ -178,19 +183,31 @@ def test_getBHv_line():
     assert np.allclose(x, H)
 
 
-def test_getBHv_line2():
+def test_getBH_polyline2():
     """test line with pos and rot arguments"""
     x = 0.14142136
 
     # z-line on x=1
-    B1 = magpy.getB(
-        "Line", (0, 0, 0), current=1, segment_start=(1, 0, -1), segment_end=(1, 0, 1)
-    )
-    assert np.allclose(B1, np.array([0, -x, 0]))
+    def getB_line(name):
+        return magpy.getB(
+            name,
+            (0, 0, 0),
+            current=1,
+            segment_start=(1, 0, -1),
+            segment_end=(1, 0, 1),
+        )
+
+    B1 = getB_line("Polyline")
+    expected = np.array([0, -x, 0])
+    assert np.allclose(B1, expected)
+
+    with pytest.warns(MagpylibDeprecationWarning):
+        B1 = getB_line("Line")
+    assert np.allclose(B1, expected)
 
     # move z-line to x=-1
     B2 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         position=(-2, 0, 0),
         current=1,
@@ -202,7 +219,7 @@ def test_getBHv_line2():
     # rotate 1
     rot = R.from_euler("z", 90, degrees=True)
     B3 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -214,7 +231,7 @@ def test_getBHv_line2():
     # rotate 2
     rot = R.from_euler("x", 90, degrees=True)
     B4 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -226,7 +243,7 @@ def test_getBHv_line2():
     # rotate 3
     rot = R.from_euler("y", 90, degrees=True)
     B5 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -237,7 +254,7 @@ def test_getBHv_line2():
 
     # "scalar" vertices tiling
     B = magpy.getB(
-        "Line",
+        "Polyline",
         observers=[(0, 0, 0)] * 5,
         current=1,
         vertices=np.linspace((0, 5, 5), (5, 5, 5), 6),
@@ -255,7 +272,7 @@ def test_getBHv_line2():
         [(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)],
     ]
     B1 = magpy.getB(
-        "Line",
+        "Polyline",
         observers=observers,
         current=current,
         vertices=vertices,
@@ -263,7 +280,7 @@ def test_getBHv_line2():
     B2 = np.array(
         [
             magpy.getB(
-                "Line",
+                "Polyline",
                 observers=observers,
                 current=current,
                 vertices=v,
@@ -275,7 +292,7 @@ def test_getBHv_line2():
     np.testing.assert_allclose(B1, B2)
 
 
-def test_BHv_Cylinder_FEM():
+def test_getBH_Cylinder_FEM():
     """test against FEM"""
     ts = np.linspace(0, 2, 31)
     obsp = [(t, t, t) for t in ts]
@@ -329,7 +346,7 @@ def test_BHv_Cylinder_FEM():
     assert np.amax(err) < 0.01
 
 
-def test_BHv_solid_cylinder():
+def test_getBH_solid_cylinder():
     """compare multiple solid-cylinder solutions against each other"""
     # combine multiple slices to one big Cylinder
     B1 = magpy.getB(

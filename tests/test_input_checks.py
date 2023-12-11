@@ -152,9 +152,9 @@ def test_input_objects_orientation_bad(orientation_rotvec):
     ],
 )
 def test_input_objects_current_good(current):
-    """good input: magpy.current.Loop(current)"""
+    """good input: magpy.current.CircularLoop(current)"""
 
-    src = magpy.current.Loop(current)
+    src = magpy.current.CircularLoop(current)
     if current is None:
         assert src.current is None
     else:
@@ -172,10 +172,10 @@ def test_input_objects_current_good(current):
     ],
 )
 def test_input_objects_current_bad(current):
-    """bad input: magpy.current.Loop(current)"""
+    """bad input: magpy.current.CircularLoop(current)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.Loop(current)
+        magpy.current.CircularLoop(current)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +190,9 @@ def test_input_objects_current_bad(current):
     ],
 )
 def test_input_objects_diameter_good(diameter):
-    """good input: magpy.current.Loop(diameter=inp)"""
+    """good input: magpy.current.CircularLoop(diameter=inp)"""
 
-    src = magpy.current.Loop(diameter=diameter)
+    src = magpy.current.CircularLoop(diameter=diameter)
     if diameter is None:
         assert src.diameter is None
     else:
@@ -212,10 +212,10 @@ def test_input_objects_diameter_good(diameter):
     ],
 )
 def test_input_objects_diameter_bad(diameter):
-    """bad input: magpy.current.Loop(diameter=diameter)"""
+    """bad input: magpy.current.CircularLoop(diameter=diameter)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.Loop(diameter=diameter)
+        magpy.current.CircularLoop(diameter=diameter)
 
 
 @pytest.mark.parametrize(
@@ -230,9 +230,9 @@ def test_input_objects_diameter_bad(diameter):
     ],
 )
 def test_input_objects_vertices_good(vertices):
-    """good input: magpy.current.Line(vertices=vertices)"""
+    """good input: magpy.current.Polyline(vertices=vertices)"""
 
-    src = magpy.current.Line(vertices=vertices)
+    src = magpy.current.Polyline(vertices=vertices)
     if vertices is None:
         assert src.vertices is None
     else:
@@ -254,10 +254,10 @@ def test_input_objects_vertices_good(vertices):
     ],
 )
 def test_input_objects_vertices_bad(vertices):
-    """bad input: magpy.current.Line(vertices=vertices)"""
+    """bad input: magpy.current.Polyline(vertices=vertices)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.Line(vertices=vertices)
+        magpy.current.Polyline(vertices=vertices)
 
 
 @pytest.mark.parametrize(

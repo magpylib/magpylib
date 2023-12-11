@@ -571,7 +571,7 @@ def getB(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -622,7 +622,7 @@ def getB(
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Loop'` or `'Line'`!
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
@@ -631,15 +631,15 @@ def getB(
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Loop'`!
+        Only source_type == `'Sphere'` or `'CircularLoop'`!
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         End positions of line current segments in units of mm.
 
     Returns
@@ -665,7 +665,7 @@ def getB(
     at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Loop(current=100, diameter=2)
+    >>> src1 = magpy.current.CircularLoop(current=100, diameter=2)
     >>> src2 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1)
     >>> B = magpy.getB([src1, src2], (1,1,1))
     >>> print(B)
@@ -687,7 +687,7 @@ def getB(
     Through the direct interface we can compute the same fields for the loop as:
 
     >>> obs = [(1,1,1), (1,1,-1)]
-    >>> B = magpy.getB('Loop', obs, current=100, diameter=2)
+    >>> B = magpy.getB('CircularLoop', obs, current=100, diameter=2)
     >>> print(B)
     [[ 6.23597388  6.23597388  2.6697781 ]
      [-6.23597388 -6.23597388  2.6697781 ]]
@@ -695,7 +695,7 @@ def getB(
     But also for a set of four completely different instances:
 
     >>> B = magpy.getB(
-    ...     'Loop',
+    ...     'CircularLoop',
     ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
     ...     current=(11, 22, 33, 44),
     ...     diameter=(1, 2, 3, 4),
@@ -742,7 +742,7 @@ def getH(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -793,7 +793,7 @@ def getH(
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Loop'` or `'Line'`!
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
@@ -802,15 +802,15 @@ def getH(
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Loop'`!
+        Only source_type == `'Sphere'` or `'CircularLoop'`!
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         End positions of line current segments in units of mm.
 
     Returns
@@ -836,7 +836,7 @@ def getH(
     at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Loop(current=100, diameter=2)
+    >>> src1 = magpy.current.CircularLoop(current=100, diameter=2)
     >>> src2 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1)
     >>> H = magpy.getH([src1, src2], (1,1,1))
     >>> print(H)
@@ -858,7 +858,7 @@ def getH(
     Through the direct interface we can compute the same fields for the loop as:
 
     >>> obs = [(1,1,1), (1,1,-1)]
-    >>> H = magpy.getH('Loop', obs, current=100, diameter=2)
+    >>> H = magpy.getH('CircularLoop', obs, current=100, diameter=2)
     >>> print(H)
     [[ 4.96243034  4.96243034  2.12454191]
      [-4.96243034 -4.96243034  2.12454191]]
@@ -866,7 +866,7 @@ def getH(
     But also for a set of four completely different instances:
 
     >>> H = magpy.getH(
-    ...     'Loop',
+    ...     'CircularLoop',
     ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
     ...     current=(11, 22, 33, 44),
     ...     diameter=(1, 2, 3, 4),

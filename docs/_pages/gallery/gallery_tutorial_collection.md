@@ -175,7 +175,7 @@ import magpylib as magpy
 # Construct two coils from windings
 coil1 = magpy.Collection(style_label="coil1")
 for z in np.linspace(-.5, .5, 5):
-    coil1.add(magpy.current.Loop(current=1, diameter=20, position=(0,0,z)))
+    coil1.add(magpy.current.CircularLoop(current=1, diameter=20, position=(0,0,z)))
 coil1.position = (0,0,-5)
 coil2 = coil1.copy(position=(0,0,5))
 
