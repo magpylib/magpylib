@@ -507,9 +507,16 @@ def test_describe():
     assert desc == test
 
     # describe tringularmesh
-    s = magpy.magnet.TriangularMesh.from_pyvista(
+    points = [
+        (-1, -1, 0),
+        (-1, 1, 0),
+        (1, -1, 0),
+        (1, 1, 0),
+        (0, 0, 2),
+    ]
+    s = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(0, 0, 1000),
-        polydata=pv.Text3D("A"),
+        points=points,
         check_selfintersecting="skip",
     )
     desc = s.describe(return_string=True)
@@ -519,9 +526,9 @@ def test_describe():
         "  • position: [0. 0. 0.] mm\n"
         "  • orientation: [0. 0. 0.] degrees\n"
         "  • magnetization: [   0.    0. 1000.] mT\n"
-        "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
-        "  • faces: shape(52, 3) \n"
-        "  • mesh: shape(52, 3, 3) \n"
+        "  • barycenter: [0.         0.         0.46065534] \n"
+        "  • faces: shape(6, 3) \n"
+        "  • mesh: shape(6, 3, 3) \n"
         "  • status_disconnected: False \n"
         "  • status_disconnected_data: 1 part \n"
         "  • status_open: False \n"
@@ -529,7 +536,7 @@ def test_describe():
         "  • status_reoriented: True \n"
         "  • status_selfintersecting: None \n"
         "  • status_selfintersecting_data: None \n"
-        "  • vertices: shape(26, 3) "
+        "  • vertices: shape(5, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
