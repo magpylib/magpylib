@@ -1,19 +1,19 @@
-"""Loop current class code"""
-from magpylib._src.display.traces_core import make_Loop
-from magpylib._src.fields.field_BH_loop import current_loop_field
+"""CircularCircularLoop current class code"""
+from magpylib._src.display.traces_core import make_CircularLoop
+from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
 
-class Loop(BaseCurrent):
+class CircularLoop(BaseCurrent):
     """Circular current loop.
 
     Can be used as `sources` input for magnetic field computation.
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
-    the origin. The Loop class has a dipole moment of pi**2/10*diameter**2*current.
+    the origin. The CircularLoop class has a dipole moment of pi**2/10*diameter**2*current.
 
     Parameters
     ----------
@@ -41,16 +41,16 @@ class Loop(BaseCurrent):
 
     Returns
     -------
-    current source: `Loop` object
+    current source: `CircularLoop` object
 
     Examples
     --------
-    `Loop` objects are magnetic field sources. In this example we compute the H-field kA/m
+    `CircularLoop` objects are magnetic field sources. In this example we compute the H-field kA/m
     of such a current loop with 100 A current and a diameter of 2 mm at the observer position
     (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src = magpy.current.Loop(current=100, diameter=2)
+    >>> src = magpy.current.CircularLoop(current=100, diameter=2)
     >>> H = src.getH((1,1,1))
     >>> print(H)
     [4.96243034 4.96243034 2.12454191]
@@ -58,7 +58,7 @@ class Loop(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    Loop(id=...)
+    CircularLoop(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-1.44441884e-15  6.72068135e+00 -6.72068135e+00]
@@ -69,7 +69,7 @@ class Loop(BaseCurrent):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    Loop(id=...)
+    CircularLoop(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
@@ -78,9 +78,9 @@ class Loop(BaseCurrent):
      [-3.55802727e-17  1.65201495e-01 -1.65201495e-01]]
     """
 
-    _field_func = staticmethod(current_loop_field)
+    _field_func = staticmethod(current_circular_loop_field)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
-    get_trace = make_Loop
+    get_trace = make_CircularLoop
 
     def __init__(
         self,
@@ -105,7 +105,7 @@ class Loop(BaseCurrent):
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Loop loop diameter, float, mm."""
+        """Set CircularLoop loop diameter, float, mm."""
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",

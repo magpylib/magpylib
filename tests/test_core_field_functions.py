@@ -4,12 +4,12 @@ from numpy.testing import assert_allclose
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
+from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_line import current_line_field
 from magpylib._src.fields.field_BH_line import current_vertices_field
-from magpylib._src.fields.field_BH_loop import current_loop_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
 
@@ -201,12 +201,12 @@ def test_field_loop():
     current = np.array([1, 1] + [123] * 8)
     dim = np.array([2, 2] + [2] * 8)
 
-    B = current_loop_field("B", pos_test, current, dim)
+    B = current_circular_loop_field("B", pos_test, current, dim)
 
     assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest * 10 / 4 / np.pi
-    H = current_loop_field("H", pos_test, current, dim)
+    H = current_circular_loop_field("H", pos_test, current, dim)
     assert_allclose(H, Htest, rtol=1e-6)
 
 
@@ -215,12 +215,12 @@ def test_field_loop2():
     curr = np.array([1])
     dim = np.array([2])
     poso = np.array([[0, 0, 0]])
-    B = current_loop_field("B", poso, curr, dim)
+    B = current_circular_loop_field("B", poso, curr, dim)
 
     curr = np.array([1] * 2)
     dim = np.array([2] * 2)
     poso = np.array([[0, 0, 0]] * 2)
-    B2 = current_loop_field("B", poso, curr, dim)
+    B2 = current_circular_loop_field("B", poso, curr, dim)
 
     assert_allclose(B, (B2[0],))
     assert_allclose(B, (B2[1],))
@@ -232,7 +232,7 @@ def test_field_loop_specials():
     dia = np.array([2, 2, 0, 0, 2, 2])
     obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
-    B = current_loop_field("B", obs, cur, dia)
+    B = current_circular_loop_field("B", obs, cur, dia)
     Btest = [
         [0, 0, 0.62831853],
         [0, 0, 0],
@@ -558,7 +558,7 @@ def test_triangle6():
         ("magnet", "Sphere", "diameter"),
         ("magnet", "Tetrahedron", "vertices"),
         ("magnet", "TriangularMesh", "vertices"),
-        ("current", "Loop", "diameter"),
+        ("current", "CircularLoop", "diameter"),
         ("current", "Line", "vertices"),
         ("misc", "Triangle", "vertices"),
     ],
@@ -599,7 +599,7 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
                 "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
             },
         ),
-        ("current", "Loop", "current", {"diameter": 1}),
+        ("current", "CircularLoop", "current", {"diameter": 1}),
         ("current", "Line", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
         (
             "misc",

@@ -11,7 +11,7 @@ from magpylib._src.utility import cyl_field_to_cart
 
 
 # CORE
-def current_loop_field(
+def current_circular_loop_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
@@ -50,7 +50,7 @@ def current_loop_field(
     >>> cur = np.array([1,1,2])
     >>> dia = np.array([2,4,6])
     >>> obs = np.array([(1,1,1), (2,2,2), (3,3,3)])
-    >>> B = magpy.core.current_loop_field('B', obs, cur, dia)
+    >>> B = magpy.core.current_circular_loop_field('B', obs, cur, dia)
     >>> print(B)
     [[0.06235974 0.06235974 0.02669778]
      [0.03117987 0.03117987 0.01334889]
@@ -62,7 +62,7 @@ def current_loop_field(
     the magnetic field of a current loop.", M.Ortner et al, Submitted to MDPI Magnetism, 2022
     """
 
-    bh = check_field_input(field, "current_loop_field()")
+    bh = check_field_input(field, "current_circular_loop_field()")
 
     r, phi, z = cart_to_cyl_coordinates(observers)
     r0 = np.abs(diameter / 2)

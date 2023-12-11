@@ -3,7 +3,7 @@ import magpylib as magpy
 
 def test_bare_init():
     """test if magpylib object can be initilized without attributes"""
-    magpy.current.Loop()
+    magpy.current.CircularLoop()
     magpy.current.Line()
     magpy.magnet.Cuboid()
     magpy.magnet.Cylinder()

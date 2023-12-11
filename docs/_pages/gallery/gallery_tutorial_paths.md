@@ -166,10 +166,10 @@ print(sensor.orientation.as_rotvec())
 When the field is computed of `loop1` with path length 4 and `loop2` with path length 2, `loop2` will remain in position (= edge padding) while the other object is still in motion.
 
 ```{code-cell} ipython3
-from magpylib.current import Loop
+from magpylib.current import CircularLoop
 
-loop1 = Loop(current=1, diameter=1, position=[(0,0,i) for i in range(4)])
-loop2 = Loop(current=1, diameter=1, position=[(0,0,i) for i in range(2)])
+loop1 = CircularLoop(current=1, diameter=1, position=[(0,0,i) for i in range(4)])
+loop2 = CircularLoop(current=1, diameter=1, position=[(0,0,i) for i in range(2)])
 
 B = magpy.getB([loop1,loop2], (0,0,0))
 print(B)

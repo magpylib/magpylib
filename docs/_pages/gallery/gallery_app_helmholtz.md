@@ -26,7 +26,7 @@ In this example we model the **magnetic field of a coil**, and show how to displ
 
 ## Coil models
 
-**Model 1:** The coil consists of multiple windings, each of which can be modeled with a circular current loop which is realized by the `Loop` class. The individual windings are combined into a `Collection` which itself behaves like a single magnetic field source.
+**Model 1:** The coil consists of multiple windings, each of which can be modeled with a circular current loop which is realized by the `CircularLoop` class. The individual windings are combined into a `Collection` which itself behaves like a single magnetic field source.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -34,7 +34,7 @@ import magpylib as magpy
 
 coil1 = magpy.Collection()
 for z in np.linspace(-8, 8, 16):
-    winding = magpy.current.Loop(
+    winding = magpy.current.CircularLoop(
         current=100,
         diameter=10,
         position=(0,0,z),
@@ -138,7 +138,7 @@ pv.set_jupyter_backend('panel') # improve rending in a jupyter notebook
 
 coil1 = magpy.Collection()
 for z in np.linspace(-8, 8, 16):
-    winding = magpy.current.Loop(
+    winding = magpy.current.CircularLoop(
         current=100,
         diameter=10,
         position=(0,0,z),

@@ -3,9 +3,9 @@ import numpy as np
 import magpylib as magpy
 
 
-def test_Loop_basic_B():
-    """Basic Loop class test"""
-    src = magpy.current.Loop(current=123, diameter=2)
+def test_CircularLoop_basic_B():
+    """Basic CircularLoop class test"""
+    src = magpy.current.CircularLoop(current=123, diameter=2)
     sens = magpy.Sensor(position=(1, 2, 3))
 
     B = src.getB(sens)
@@ -13,9 +13,9 @@ def test_Loop_basic_B():
     assert np.allclose(B, Btest)
 
 
-def test_current_loop_field():
+def test_current_circular_loop_field():
     """test explicit field output values"""
-    s = magpy.current.Loop(current=1, diameter=1)
+    s = magpy.current.CircularLoop(current=1, diameter=1)
 
     B_c1d1z0 = 1.2566370614359172
     B_test = s.getB([0, 0, 0])
@@ -25,7 +25,7 @@ def test_current_loop_field():
     B_test = s.getB([0, 0, 1])
     assert abs(B_c1d1z1 - B_test[2]) < 1e-14
 
-    s = magpy.current.Loop(current=1, diameter=2)
+    s = magpy.current.CircularLoop(current=1, diameter=2)
     B_c1d2z0 = 0.6283185307179586
     B_test = s.getB([0, 0, 0])
     assert abs(B_c1d2z0 - B_test[2]) < 1e-14
@@ -35,9 +35,9 @@ def test_current_loop_field():
     assert abs(B_c1d2z1 - B_test[2]) < 1e-14
 
 
-def test_Loop_basic_H():
-    """Basic Loop class test"""
-    src = magpy.current.Loop(current=123, diameter=2)
+def test_CircularLoop_basic_H():
+    """Basic CircularLoop class test"""
+    src = magpy.current.CircularLoop(current=123, diameter=2)
     sens = magpy.Sensor(position=(1, 2, 3))
 
     H = src.getH(sens)
@@ -46,9 +46,9 @@ def test_Loop_basic_H():
 
 
 # def test_Cicular_problem_positions():
-#     """ Loop on z and on loop
+#     """ CircularLoop on z and on loop
 #     """
-#     src = magpy.current.Loop(current=1, diameter=2)
+#     src = magpy.current.CircularLoop(current=1, diameter=2)
 #     sens = magpy.Sensor()
 #     sens.move([[0,1,0],[1,0,0]], start=1)
 
@@ -59,5 +59,5 @@ def test_Loop_basic_H():
 
 def test_repr():
     """test __repr__"""
-    dip = magpy.current.Loop(current=1, diameter=1)
-    assert repr(dip)[:4] == "Loop", "Loop repr failed"
+    dip = magpy.current.CircularLoop(current=1, diameter=1)
+    assert repr(dip)[:4] == "CircularLoop", "CircularLoop repr failed"

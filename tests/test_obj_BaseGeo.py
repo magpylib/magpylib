@@ -548,7 +548,7 @@ def test_unset_describe():
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
         magpy.current.Line(),
-        magpy.current.Loop(),
+        magpy.current.CircularLoop(),
     ]
 
     for o in objs:

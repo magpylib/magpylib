@@ -294,7 +294,7 @@ def test_adding_sources():
     s2 = magpy.magnet.Cylinder()
     s3 = magpy.magnet.CylinderSegment()
     s4 = magpy.magnet.Sphere()
-    s5 = magpy.current.Loop()
+    s5 = magpy.current.CircularLoop()
     s6 = magpy.current.Line()
     s7 = magpy.misc.Dipole()
     x1 = magpy.Sensor()
@@ -308,7 +308,7 @@ def test_adding_sources():
     for src in c2:
         strs += str(src)[:3]
 
-    assert strs == "CubCylCylSphLooLinDipSenCol"
+    assert strs == "CubCylCylSphCirLinDipSenCol"
 
 
 def test_set_children_styles():
@@ -413,14 +413,14 @@ def test_collection_describe():
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
     c = magpy.Collection(*[magpy.magnet.Cuboid() for _ in range(100)])
-    c.add(*[magpy.current.Loop() for _ in range(50)])
+    c.add(*[magpy.current.CircularLoop() for _ in range(50)])
     c.add(*[magpy.misc.CustomSource() for _ in range(25)])
 
     desc = c.describe(format="type+label", return_string=True).split("\n")
     test = [
         "Collection nolabel",
         "├── 100x Cuboids",
-        "├── 50x Loops",
+        "├── 50x CircularLoops",
         "└── 25x CustomSources",
     ]
     assert test == desc
