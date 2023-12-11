@@ -4,15 +4,15 @@ from numpy.testing import assert_allclose
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
-from magpylib._src.fields.field_BH_circular_loop import current_loop_field
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
-from magpylib._src.fields.field_BH_dipole import dipole_field
-from magpylib._src.fields.field_BH_polyline import current_line_field
-from magpylib._src.fields.field_BH_polyline import current_polyline_field
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib.core import current_circular_loop_field
+from magpylib.core import current_line_field
+from magpylib.core import current_loop_field
+from magpylib.core import current_polyline_field
+from magpylib.core import dipole_field
+from magpylib.core import magnet_cuboid_field
+from magpylib.core import magnet_cylinder_segment_field
+from magpylib.core import magnet_sphere_field
 
 
 def test_magnet_cuboid_Bfield():
