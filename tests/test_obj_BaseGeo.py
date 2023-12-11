@@ -547,7 +547,7 @@ def test_unset_describe():
         # magpy.magnet.TriangularMesh(), not possible yet
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
-        magpy.current.Line(),
+        magpy.current.Polyline(),
         magpy.current.CircularLoop(),
     ]
 

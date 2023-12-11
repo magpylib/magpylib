@@ -148,8 +148,8 @@ def test_circular_line_display():
     src1 = magpy.current.CircularLoop(1, 2)
     src2 = magpy.current.CircularLoop(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     x = src1.show(canvas=fig, style_path_frames=2, style_arrow_show=False)
     assert x is None, "display test fail"

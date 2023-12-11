@@ -44,7 +44,7 @@ for z in np.linspace(-8, 8, 16):
 coil1.show()
 ```
 
-**Model 2:** The coil is in reality more like a spiral, which can be modeled using the `Line` class. However, a good spiral approximation requires many small line segments, which makes the computation slower.
+**Model 2:** The coil is in reality more like a spiral, which can be modeled using the `Polyline` class. However, a good spiral approximation requires many small line segments, which makes the computation slower.
 
 ```{code-cell} ipython3
 import numpy as np
@@ -52,7 +52,7 @@ import magpylib as magpy
 
 ts = np.linspace(-8, 8, 1000)
 vertices = np.c_[5*np.cos(ts*2*np.pi), 5*np.sin(ts*2*np.pi), ts]
-coil2 = magpy.current.Line(
+coil2 = magpy.current.Polyline(
     current=100,
     vertices=vertices
 )

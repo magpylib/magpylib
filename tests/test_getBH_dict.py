@@ -161,9 +161,9 @@ def test_getBHv_squeeze():
 
 
 def test_getBHv_line():
-    """test getBHv with Line"""
+    """test getBHv with Polyline"""
     H = magpy.getH(
-        "Line",
+        "Polyline",
         [(1, 1, 1), (1, 2, 3), (2, 2, 2)],
         current=1,
         segment_start=(0, 0, 0),
@@ -184,13 +184,17 @@ def test_getBHv_line2():
 
     # z-line on x=1
     B1 = magpy.getB(
-        "Line", (0, 0, 0), current=1, segment_start=(1, 0, -1), segment_end=(1, 0, 1)
+        "Polyline",
+        (0, 0, 0),
+        current=1,
+        segment_start=(1, 0, -1),
+        segment_end=(1, 0, 1),
     )
     assert np.allclose(B1, np.array([0, -x, 0]))
 
     # move z-line to x=-1
     B2 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         position=(-2, 0, 0),
         current=1,
@@ -202,7 +206,7 @@ def test_getBHv_line2():
     # rotate 1
     rot = R.from_euler("z", 90, degrees=True)
     B3 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -214,7 +218,7 @@ def test_getBHv_line2():
     # rotate 2
     rot = R.from_euler("x", 90, degrees=True)
     B4 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -226,7 +230,7 @@ def test_getBHv_line2():
     # rotate 3
     rot = R.from_euler("y", 90, degrees=True)
     B5 = magpy.getB(
-        "Line",
+        "Polyline",
         (0, 0, 0),
         orientation=rot,
         current=1,
@@ -237,7 +241,7 @@ def test_getBHv_line2():
 
     # "scalar" vertices tiling
     B = magpy.getB(
-        "Line",
+        "Polyline",
         observers=[(0, 0, 0)] * 5,
         current=1,
         vertices=np.linspace((0, 5, 5), (5, 5, 5), 6),
@@ -255,7 +259,7 @@ def test_getBHv_line2():
         [(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)],
     ]
     B1 = magpy.getB(
-        "Line",
+        "Polyline",
         observers=observers,
         current=current,
         vertices=vertices,
@@ -263,7 +267,7 @@ def test_getBHv_line2():
     B2 = np.array(
         [
             magpy.getB(
-                "Line",
+                "Polyline",
                 observers=observers,
                 current=current,
                 vertices=v,

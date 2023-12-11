@@ -1,12 +1,12 @@
-"""Line current class code"""
-from magpylib._src.display.traces_core import make_Line
+"""Polyline current class code"""
+from magpylib._src.display.traces_core import make_Polyline
 from magpylib._src.fields.field_BH_line import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
 
-class Line(BaseCurrent):
+class Polyline(BaseCurrent):
     """Current flowing in straight lines from vertex to vertex.
 
     Can be used as `sources` input for magnetic field computation.
@@ -42,16 +42,16 @@ class Line(BaseCurrent):
 
     Returns
     -------
-    current source: `Line` object
+    current source: `Polyline` object
 
     Examples
     --------
-    `Line` objects are magnetic field sources. In this example we compute the H-field kA/m
+    `Polyline` objects are magnetic field sources. In this example we compute the H-field kA/m
     of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
     units of mm:
 
     >>> import magpylib as magpy
-    >>> src = magpy.current.Line(
+    >>> src = magpy.current.Polyline(
     ...     current=1,
     ...     vertices=((1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)),
     ... )
@@ -62,7 +62,7 @@ class Line(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    Line(id=...)
+    Polyline(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
@@ -73,7 +73,7 @@ class Line(BaseCurrent):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    Line(id=...)
+    Polyline(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
@@ -90,7 +90,7 @@ class Line(BaseCurrent):
         "segment_start": 2,
         "segment_end": 2,
     }
-    get_trace = make_Line
+    get_trace = make_Polyline
 
     def __init__(
         self,
@@ -119,7 +119,7 @@ class Line(BaseCurrent):
 
     @vertices.setter
     def vertices(self, vert):
-        """Set Line vertices, array_like, mm."""
+        """Set Polyline vertices, array_like, mm."""
         self._vertices = check_format_input_vertices(vert)
 
     @property

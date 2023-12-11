@@ -58,9 +58,9 @@ def make_DefaultTrace(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any
     return {**trace, **kwargs}
 
 
-def make_Line(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
-    Creates the plotly scatter3d parameters for a Line current in a dictionary based on the
+    Creates the plotly scatter3d parameters for a Polyline current in a dictionary based on the
     provided arguments.
     """
     style = obj.style

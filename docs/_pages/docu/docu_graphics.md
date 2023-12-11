@@ -64,7 +64,7 @@ objects = {
         diameter=1,
         position=(4, 0, 0),
     ),
-    "Line": magpy.current.Line(
+    "Polyline": magpy.current.Polyline(
         current=1,
         vertices=[(1, 0, 0), (0, 1, 0), (-1, 0, 0), (0, -1, 0), (1, 0, 0)],
         position=(1, 0, 0),

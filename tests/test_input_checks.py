@@ -230,9 +230,9 @@ def test_input_objects_diameter_bad(diameter):
     ],
 )
 def test_input_objects_vertices_good(vertices):
-    """good input: magpy.current.Line(vertices=vertices)"""
+    """good input: magpy.current.Polyline(vertices=vertices)"""
 
-    src = magpy.current.Line(vertices=vertices)
+    src = magpy.current.Polyline(vertices=vertices)
     if vertices is None:
         assert src.vertices is None
     else:
@@ -254,10 +254,10 @@ def test_input_objects_vertices_good(vertices):
     ],
 )
 def test_input_objects_vertices_bad(vertices):
-    """bad input: magpy.current.Line(vertices=vertices)"""
+    """bad input: magpy.current.Polyline(vertices=vertices)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.Line(vertices=vertices)
+        magpy.current.Polyline(vertices=vertices)
 
 
 @pytest.mark.parametrize(

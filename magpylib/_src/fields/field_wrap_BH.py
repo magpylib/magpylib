@@ -571,7 +571,7 @@ def getB(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -622,7 +622,7 @@ def getB(
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'CircularLoop'` or `'Line'`!
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
@@ -635,11 +635,11 @@ def getB(
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         End positions of line current segments in units of mm.
 
     Returns
@@ -742,7 +742,7 @@ def getH(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -793,7 +793,7 @@ def getH(
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'CircularLoop'` or `'Line'`!
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
@@ -806,11 +806,11 @@ def getH(
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
+        Only source_type == `'Polyline'`!
         End positions of line current segments in units of mm.
 
     Returns

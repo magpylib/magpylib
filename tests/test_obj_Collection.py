@@ -295,7 +295,7 @@ def test_adding_sources():
     s3 = magpy.magnet.CylinderSegment()
     s4 = magpy.magnet.Sphere()
     s5 = magpy.current.CircularLoop()
-    s6 = magpy.current.Line()
+    s6 = magpy.current.Polyline()
     s7 = magpy.misc.Dipole()
     x1 = magpy.Sensor()
     c1 = magpy.Collection()

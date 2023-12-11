@@ -286,15 +286,15 @@ magpy.current.CircularLoop(current, diameter, position, orientation, style)
 :::
 ::::
 
-### Line
+### Polyline
 ```python
-magpy.current.Line(current, vertices, position, orientation, style)
+magpy.current.Polyline(current, vertices, position, orientation, style)
 ```
 
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Line` represents a set of line current segments that flow from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(P_1, P_2, ...)$ given in the local coordinates in arbitrary length units.
+`Polyline` represents a set of line current segments that flow from vertex to vertex. The <span style="color: orange">**vertices**</span> attribute is a vector of all vertices $(P_1, P_2, ...)$ given in the local coordinates in arbitrary length units.
 :::
 :::{grid-item}
 :columns: 3
@@ -727,7 +727,7 @@ At the heart of Magpylib lies a set of core functions that are our implementatio
 :gutter: 1
 
 :::{grid-item}
-<span style="color: orange">**current_line_field(**</span> `field`, `observers`, `current`, `segment_start`, `segment_end`<span style="color: orange">**)**</span>
+<span style="color: orange">**current_polyline_field(**</span> `field`, `observers`, `current`, `segment_start`, `segment_end`<span style="color: orange">**)**</span>
 :::
 :::{grid-item}
 <span style="color: orange">**current_circular_loop_field(**</span> `field`, `observers`, `current`, `diameter`<span style="color: orange">**)**</span>

@@ -179,7 +179,7 @@ def test_CircularLoop_vs_Cylinder_field():
     assert np.allclose(H1, H2)
 
 
-def test_Line_vs_CircularLoop():
+def test_Polyline_vs_CircularLoop():
     """show that line prodices the same as circular"""
 
     # finely approximated loop by lines
@@ -195,7 +195,7 @@ def test_Line_vs_CircularLoop():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = magpy.getB("Line", p, current=1, segment_start=ps, segment_end=pe)
+        Bl = magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
@@ -206,8 +206,8 @@ def test_Line_vs_CircularLoop():
     assert np.allclose(Bls, Bcs)
 
 
-def test_Line_vs_Infinite():
-    """compare line current result vs analytical solution to infinite Line"""
+def test_Polyline_vs_Infinite():
+    """compare line current result vs analytical solution to infinite Polyline"""
 
     pos_obs = np.array([(1.0, 2, 3), (-3, 2, -1), (2, -1, -4)])
 
@@ -224,7 +224,7 @@ def test_Line_vs_Infinite():
     pe = (0, 0, 1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [magpy.getB("Line", p, current=1, segment_start=ps, segment_end=pe)]
+        Bls += [magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)]
         Binfs += [Binf(1, p)]
     Bls = np.array(Bls)
     Binfs = np.array(Binfs)
