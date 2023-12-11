@@ -1,6 +1,8 @@
 """
 Implementations of analytical expressions of line current segments
 """
+import warnings
+
 import numpy as np
 from numpy.linalg import norm
 
@@ -17,7 +19,7 @@ def current_vertices_field(
 ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
-    input array for field_BH_line(), computes, sums and returns a single field for each
+    input array for field_BH_polyline(), computes, sums and returns a single field for each
     vertex-set at respective n observer positions.
 
     ### Args:
@@ -213,3 +215,16 @@ def current_polyline_field(
 
     # H: mT -> kA/m
     return field_all * 10 / 4 / np.pi
+
+
+def current_line_field(*args, **kwargs):
+    """current_loop_field is deprecated, see current_polyline_field"""
+
+    warnings.warn(
+        (
+            "current_line_field is deprecated and will be removed in a future version, "
+            "use current_polyline_field instead"
+        ),
+        DeprecationWarning,
+    )
+    return current_polyline_field(*args, **kwargs)

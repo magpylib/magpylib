@@ -1,6 +1,8 @@
 """Polyline current class code"""
+import warnings
+
 from magpylib._src.display.traces_core import make_Polyline
-from magpylib._src.fields.field_BH_line import current_vertices_field
+from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
@@ -128,3 +130,17 @@ class Polyline(BaseCurrent):
         if self.vertices is None:
             return "no vertices"
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
+
+
+class Line(Polyline):
+    """Line is deprecated, see Polyline"""
+
+    def __init__(self, *args, **kwargs):
+        warnings.warn(
+            (
+                "Line is deprecated and will be removed in a future version, "
+                "use Polyline instead"
+            ),
+            DeprecationWarning,
+        )
+        super().__init__(*args, **kwargs)

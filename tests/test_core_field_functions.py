@@ -9,8 +9,9 @@ from magpylib._src.fields.field_BH_circular_loop import current_loop_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 from magpylib._src.fields.field_BH_dipole import dipole_field
-from magpylib._src.fields.field_BH_line import current_polyline_field
-from magpylib._src.fields.field_BH_line import current_vertices_field
+from magpylib._src.fields.field_BH_polyline import current_line_field
+from magpylib._src.fields.field_BH_polyline import current_polyline_field
+from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 
 
@@ -301,6 +302,10 @@ def test_field_line():
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
     B7 = current_polyline_field("B", po4, c4, ps4, pe4)
     x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    assert_allclose(x7, B7, rtol=1e-6)
+
+    with pytest.warns(DeprecationWarning):
+        x7 = current_line_field("B", po4, c4, ps4, pe4)
     assert_allclose(x7, B7, rtol=1e-6)
 
 

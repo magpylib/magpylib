@@ -18,7 +18,7 @@ __all__ = [
 from magpylib._src.fields.field_BH_dipole import dipole_field
 from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
 from magpylib._src.fields.field_BH_circular_loop import current_loop_field
-from magpylib._src.fields.field_BH_line import current_polyline_field
+from magpylib._src.fields.field_BH_polyline import current_polyline_field
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field

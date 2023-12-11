@@ -308,7 +308,7 @@ def test_adding_sources():
     for src in c2:
         strs += str(src)[:3]
 
-    assert strs == "CubCylCylSphCirLinDipSenCol"
+    assert strs == "CubCylCylSphCirPolDipSenCol"
 
 
 def test_set_children_styles():

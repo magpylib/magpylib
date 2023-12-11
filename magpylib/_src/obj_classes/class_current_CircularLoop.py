@@ -129,7 +129,10 @@ class Loop(CircularLoop):
 
     def __init__(self, *args, **kwargs):
         warnings.warn(
-            "Loop is deprecated, use CircularLoop instead",
+            (
+                "Loop is deprecated  and will be removed in a future version, "
+                "use CircularLoop instead"
+            ),
             DeprecationWarning,
         )
         super().__init__(*args, **kwargs)

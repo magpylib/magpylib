@@ -138,7 +138,10 @@ def current_loop_field(*args, **kwargs):
     """current_loop_field is deprecated, see current_circular_loop_field"""
 
     warnings.warn(
-        "Loop is deprecated, use CircularLoop instead",
+        (
+            "current_loop_field is deprecated and will be removed in a future version, "
+            "use current_circular_loop_field instead"
+        ),
         DeprecationWarning,
     )
     return current_circular_loop_field(*args, **kwargs)

@@ -1,4 +1,5 @@
 import numpy as np
+import pytest
 
 import magpylib as magpy
 
@@ -116,3 +117,13 @@ def test_discontinous_line():
     B1 = magpy.getB((line_1, line_2), (0, 0, 0), sumup=True)
     B2 = line_12.getB((0, 0, 0))
     np.testing.assert_allclose(B1, B2)
+
+
+def test_old_Line_deprecation_warning():
+    """test old calss deprecation warning"""
+    with pytest.warns(DeprecationWarning):
+        old_class = magpy.current.Line()
+
+    new_class = magpy.current.Polyline()
+    assert isinstance(old_class, magpy.current.Polyline)
+    assert isinstance(new_class, magpy.current.Polyline)

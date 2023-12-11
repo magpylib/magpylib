@@ -64,7 +64,7 @@ def test_repr():
     assert repr(dip)[:12] == "CircularLoop", "CircularLoop repr failed"
 
 
-def test_old_class_deprecation_warning():
+def test_old_Loop_deprecation_warning():
     """test old calss deprecation warning"""
     with pytest.warns(DeprecationWarning):
         old_class = magpy.current.Loop()
