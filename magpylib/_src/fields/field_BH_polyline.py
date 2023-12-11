@@ -226,5 +226,6 @@ def current_line_field(*args, **kwargs):
             "use current_polyline_field instead."
         ),
         DeprecationWarning,
+        stacklevel=2,
     )
     return current_polyline_field(*args, **kwargs)

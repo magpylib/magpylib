@@ -142,5 +142,6 @@ class Line(Polyline):
                 "use Polyline instead."
             ),
             DeprecationWarning,
+            stacklevel=2,
         )
         super().__init__(*args, **kwargs)

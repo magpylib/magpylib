@@ -143,5 +143,6 @@ def current_loop_field(*args, **kwargs):
             "use current_circular_loop_field instead."
         ),
         DeprecationWarning,
+        stacklevel=2,
     )
     return current_circular_loop_field(*args, **kwargs)
