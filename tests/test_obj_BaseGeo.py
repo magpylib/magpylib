@@ -2,7 +2,6 @@ import re
 
 import numpy as np
 import pytest
-import pyvista as pv
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
