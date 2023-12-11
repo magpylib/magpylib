@@ -4,6 +4,7 @@ from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_getB_dict1():
@@ -146,7 +147,7 @@ def test_getBH_circular_loop():
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
     assert np.allclose(H, Htest)
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         B = magpy.getB("Loop", (0, 0, 0), current=1, diameter=2)
     assert np.allclose(B, Btest)
 
@@ -200,7 +201,7 @@ def test_getBH_polyline2():
     expected = np.array([0, -x, 0])
     assert np.allclose(B1, expected)
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         B1 = getB_line("Line")
     assert np.allclose(B1, expected)
 

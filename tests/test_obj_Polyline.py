@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_Polyline_basic1():
@@ -121,7 +122,7 @@ def test_discontinous_line():
 
 def test_old_Line_deprecation_warning():
     """test old calss deprecation warning"""
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         old_class = magpy.current.Line()
 
     new_class = magpy.current.Polyline()

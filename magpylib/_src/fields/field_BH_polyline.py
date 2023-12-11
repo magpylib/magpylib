@@ -6,6 +6,7 @@ import warnings
 import numpy as np
 from numpy.linalg import norm
 
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.input_checks import check_field_input
 
 
@@ -225,7 +226,7 @@ def current_line_field(*args, **kwargs):
             "current_line_field is deprecated and will be removed in a future version, "
             "use current_polyline_field instead."
         ),
-        DeprecationWarning,
+        MagpylibDeprecationWarning,
         stacklevel=2,
     )
     return current_polyline_field(*args, **kwargs)

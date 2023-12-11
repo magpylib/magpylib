@@ -3,6 +3,7 @@ import pytest
 from numpy.testing import assert_allclose
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib.core import current_circular_loop_field
@@ -211,7 +212,7 @@ def test_field_circular_loop():
     H = current_circular_loop_field("H", pos_test, current, dim)
     assert_allclose(H, Htest, rtol=1e-6)
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         B = current_loop_field("B", pos_test, current, dim)
     assert_allclose(B, Btest, rtol=1e-6)
 
@@ -304,7 +305,7 @@ def test_field_line():
     x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x7, B7, rtol=1e-6)
 
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         x7 = current_line_field("B", po4, c4, ps4, pe4)
     assert_allclose(x7, B7, rtol=1e-6)
 

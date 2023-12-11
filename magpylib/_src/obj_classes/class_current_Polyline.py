@@ -2,6 +2,7 @@
 import warnings
 
 from magpylib._src.display.traces_core import make_Polyline
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.input_checks import check_format_input_vertices
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -153,6 +154,6 @@ def _deprecation_warn():
             "Line is deprecated and will be removed in a future version, "
             "use Polyline instead."
         ),
-        DeprecationWarning,
+        MagpylibDeprecationWarning,
         stacklevel=2,
     )

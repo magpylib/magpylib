@@ -6,6 +6,7 @@ import warnings
 
 import numpy as np
 
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates
@@ -142,7 +143,7 @@ def current_loop_field(*args, **kwargs):
             "current_loop_field is deprecated and will be removed in a future version, "
             "use current_circular_loop_field instead."
         ),
-        DeprecationWarning,
+        MagpylibDeprecationWarning,
         stacklevel=2,
     )
     return current_circular_loop_field(*args, **kwargs)

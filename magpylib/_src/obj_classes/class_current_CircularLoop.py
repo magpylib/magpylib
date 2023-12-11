@@ -2,6 +2,7 @@
 import warnings
 
 from magpylib._src.display.traces_core import make_CircularLoop
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
@@ -145,6 +146,6 @@ def _deprecation_warn():
             "Loop is deprecated  and will be removed in a future version, "
             "use CircularLoop instead."
         ),
-        DeprecationWarning,
+        MagpylibDeprecationWarning,
         stacklevel=2,
     )

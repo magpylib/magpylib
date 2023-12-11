@@ -2,6 +2,7 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 
 
 def test_CircularLoop_basic_B():
@@ -66,7 +67,7 @@ def test_repr():
 
 def test_old_Loop_deprecation_warning():
     """test old calss deprecation warning"""
-    with pytest.warns(DeprecationWarning):
+    with pytest.warns(MagpylibDeprecationWarning):
         old_class = magpy.current.Loop()
 
     new_class = magpy.current.CircularLoop()
