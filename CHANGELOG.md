@@ -5,7 +5,9 @@ All notable changes to magpylib are documented here.
 
 ## [UNRELEASED]
 - Add optional handedness parameter for Sensors ([#687](https://github.com/magpylib/magpylib/pull/687))
--
+- Renaming classes: `Line`→`Polyline`, `Loop`→`Circular_Loop`. Old names are still valid but will issue a `DeprecationWarning` and will eventually be removed in the next major version ([#690](https://github.com/magpylib/magpylib/pull/690))
+- Rework CI/CD workflows ([#686](https://github.com/magpylib/magpylib/pull/686))
+
 ## [4.4.1] - 2023-11-09
 - Fix deployment release ([#682](https://github.com/magpylib/magpylib/pull/682))
 - Fix axis mismatch on show/hide of sensor arrows ([#679](https://github.com/magpylib/magpylib/pull/679))
