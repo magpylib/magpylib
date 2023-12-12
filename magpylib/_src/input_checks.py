@@ -16,6 +16,8 @@ from magpylib._src.utility import format_obj_input
 from magpylib._src.utility import wrong_obj_msg
 
 
+# pylint: disable=no-member
+
 #################################################################
 #################################################################
 # FUNDAMENTAL CHECKS
@@ -157,7 +159,7 @@ def validate_field_func(val):
             if not isinstance(out, np.ndarray):
                 raise MagpylibBadUserInput(
                     "Input parameter `field_func` must be a callable that returns B- and H-field"
-                    "as numpy ndarray.\n"
+                    " as numpy ndarray.\n"
                     f"Instead it returns type {type(out)} for {field}-field."
                 )
             if out.shape != (2, 3):
@@ -281,10 +283,10 @@ def check_format_input_angle(inp):
 def check_format_input_scalar(
     inp, sig_name, sig_type, allow_None=False, forbid_negative=False
 ):
-    """check sclar input and return in formatted form
+    """check scalar input and return in formatted form
     - must be scalar or None (if allowed)
     - must be float compatible
-    - tranform into float
+    - transform into float
     """
     if allow_None:
         if inp is None:
@@ -591,7 +593,7 @@ def check_dimensions(sources):
 
 
 def check_excitations(sources):
-    """check if all sources have exitation initialized"""
+    """check if all sources have excitation initialized"""
     for src in sources:
         for arg in ("magnetization", "current", "moment"):
             if hasattr(src, arg):

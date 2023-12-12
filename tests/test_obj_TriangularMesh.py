@@ -216,7 +216,7 @@ def test_open_mesh():
 
     with warnings.catch_warnings():  # no warning should be issued!
         warnings.simplefilter("error")
-        mesh = magpy.magnet.TriangularMesh(
+        magpy.magnet.TriangularMesh(
             magnetization=(0, 0, 1000),
             vertices=vertices,
             faces=faces,
@@ -361,7 +361,7 @@ def test_TriangularMesh_from_faces_good_inputs():
     # create Tetrahedron and move/orient randomly
     tetra = magpy.magnet.Tetrahedron(mag, [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)])
     tetra.move((3, 4, 5)).rotate_from_angax([13, 37], (1, 2, 3), anchor=0)
-    pos_ori = dict(orientation=tetra.orientation, position=tetra.position)
+    pos_ori = {"orientation": tetra.orientation, "position": tetra.position}
 
     tmesh1 = magpy.magnet.TriangularMesh.from_ConvexHull(mag, tetra.vertices, **pos_ori)
 

@@ -34,18 +34,18 @@ class TriangularMesh(BaseMagnet):
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     vertices: ndarray, shape (n,3)
-        A set of points in units of [mm] in the local object coordinates from which the
+        A set of points in units of mm in the local object coordinates from which the
         triangular faces of the mesh are constructed by the additional `faces`input.
 
     faces: ndarray, shape (n,3)
         Indices of vertices. Each triplet represents one triangle of the mesh.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -75,7 +75,7 @@ class TriangularMesh(BaseMagnet):
 
     check_selfintersecting: bool, optional
         If `True`, the provided set of facets is validated by checking if the body is not
-        self-intersecting. Can be deactivated for perfomance reasons by setting it to `False`.
+        self-intersecting. Can be deactivated for performance reasons by setting it to `False`.
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -95,9 +95,9 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
-    We compute the B-field in units of [mT] of a triangular mesh (4 vertices, 4 faces)
-    with magnetization (100,200,300) in units of [mT] at the observer position
-    (1,1,1) given in units of [mm]:
+    We compute the B-field in units of mT of a triangular mesh (4 vertices, 4 faces)
+    with magnetization (100,200,300) in units of mT at the observer position
+    (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> vv = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
@@ -516,6 +516,7 @@ class TriangularMesh(BaseMagnet):
         coll = Collection(tris)
         coll.position = self.position
         coll.orientation = self.orientation
+        # pylint: disable=no-member
         coll.style.update(self.style.as_dict(), _match_properties=False)
         return coll
 
@@ -537,14 +538,14 @@ class TriangularMesh(BaseMagnet):
         Parameters
         ----------
         magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            Magnetization vector (mu0*M, remanence field) in units of mT given in
             the local object coordinates (rotates with object).
 
         points: ndarray, shape (n,3)
             Point cloud from which the convex hull is computed.
 
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            Object position(s) in the global coordinates in units of mm. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -560,17 +561,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -622,14 +623,14 @@ class TriangularMesh(BaseMagnet):
         Parameters
         ----------
         magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            Magnetization vector (mu0*M, remanence field) in units of mT given in
             the local object coordinates (rotates with object).
 
         polydata: pyvista.core.pointset.PolyData object
             A valid pyvista Polydata mesh object. (e.g. `pyvista.Sphere()`)
 
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            Object position(s) in the global coordinates in units of mm. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -645,17 +646,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -724,14 +725,14 @@ class TriangularMesh(BaseMagnet):
         Parameters
         ----------
         magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            Magnetization vector (mu0*M, remanence field) in units of mT given in
             the local object coordinates (rotates with object).
 
         triangles: list or Collection of Triangle objects
             Only vertices of Triangle objects are taken, magnetization is ignored.
 
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            Object position(s) in the global coordinates in units of mm. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -747,17 +748,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -824,14 +825,14 @@ class TriangularMesh(BaseMagnet):
         Parameters
         ----------
         magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+            Magnetization vector (mu0*M, remanence field) in units of mT given in
             the local object coordinates (rotates with object).
 
         mesh: array_like, shape (n,3,3)
             An array_like of triangular faces that make up a triangular mesh.
 
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of [mm]. For m>1, the
+            Object position(s) in the global coordinates in units of mm. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -847,17 +848,17 @@ class TriangularMesh(BaseMagnet):
             Only a closed mesh guarantees a physical magnet.
             If the mesh is open and "warn", a warning is issued.
             If the mesh is open and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_disconnected: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is disconnected and "warn", a warning is issued.
             If the mesh is disconnected and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         check_selfintersecting: {'warn', 'raise', 'ignore'}, default='warn'
             If the mesh is self-intersecting and "warn", a warning is issued.
             If the mesh is self-intersecting and "raise", a ValueError is raised.
-            If "ignore", no mesh check is perfomed.
+            If "ignore", no mesh check is performed.
 
         parent: `Collection` object or `None`
             The object is a child of it's parent collection.
@@ -898,3 +899,9 @@ class TriangularMesh(BaseMagnet):
             style=style,
             **kwargs,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        ntri = len(self.faces)
+        return f"{ntri} face{'s'[:ntri^1]}"

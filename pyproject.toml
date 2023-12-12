@@ -1,0 +1,83 @@
+[build-system]
+requires = ["flit_core >=3.2,<4"]
+build-backend = "flit_core.buildapi"
+
+[project]
+name = "magpylib"
+dynamic = ["version"]
+dependencies = [
+    "numpy>=1.20",
+    "scipy>=1.7",
+    "matplotlib>=3.3",
+    "plotly>=5.3",
+    ]
+requires-python = ">=3.8"
+authors = [
+    {name = "Michael Ortner", email = "magpylib@gmail.com"},
+]
+maintainers = [
+    {name = "Alexandre Boisselet", email = "alexabois+magpylib@gmail.com"}
+]
+description = "Free Python3 package to compute magnetic fields."
+readme = "README.md"
+license = {file = "LICENSE"}
+keywords = ["magnetism", "physics", "analytical", "electromagnetic", "magnetic-field", "B-field"]
+classifiers = [
+    "Development Status :: 5 - Production/Stable",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Intended Audience :: Developers",
+    "Intended Audience :: Science/Research",
+    "Intended Audience :: Education",
+    "Operating System :: OS Independent",
+]
+
+[project.optional-dependencies]
+code_style = [
+    "pre-commit",
+]
+docs = [
+    "sphinx==5.3",
+    "sphinx-design",
+    "sphinx-thebe",
+    "sphinx-favicon",
+    "sphinx-gallery",
+    "sphinx-copybutton",
+    "sphinx-book-theme",
+    "myst-nb",
+    "pandas",
+    "numpy-stl",
+    "pyvista==0.37",
+    "panel",
+]
+test = [
+    "tox>=4.11",
+    "pytest>=7.4",
+    "pylint>3.0",
+    "coverage",
+    "pandas",
+    "pyvista",
+    "ipygany",
+    "imageio[tifffile]",
+    "kaleido",
+    "jupyterlab",
+]
+binder = [
+    "jupytext",
+    "jupyterlab>=3.2",
+    "jupyterlab-myst",
+]
+
+[project.urls]
+Documentation = "https://magpylib.readthedocs.io/en/latest/"
+Repository = "https://github.com/magpylib/magpylib.git"
+"Bug Tracker" = "https://github.com/magpylib/magpylib/issues"
+Changelog = "https://github.com/magpylib/magpylib/blob/master/CHANGELOG.md"
+
+
+[tool.pytest.ini_options]
+addopts = "--doctest-modules"
+testpaths = ["magpylib", "tests"]

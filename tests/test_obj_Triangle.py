@@ -7,7 +7,7 @@ from magpylib._src.exceptions import MagpylibMissingInput
 def test_Triangle_repr():
     """Triangle repr test"""
     line = magpy.misc.Triangle()
-    assert line.__repr__()[:8] == "Triangle", "Triangle repr failed"
+    assert repr(line)[:8] == "Triangle", "Triangle repr failed"
 
 
 def test_triangle_input1():

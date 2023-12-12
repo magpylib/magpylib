@@ -4,19 +4,16 @@ import pytest
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibBadUserInput
-from magpylib.magnet import Cuboid
-from magpylib.magnet import Cylinder
-from magpylib.magnet import CylinderSegment
-from magpylib.magnet import Sphere
 
 # pylint: disable=assignment-from-no-return
+# pylint: disable=no-member
 
 
 def test_Cylinder_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -34,7 +31,7 @@ def test_CylinderSegment_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -52,7 +49,7 @@ def test_Sphere_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere((1, 2, 3), 2)
     x = src.show(canvas=fig, style_path_frames=15)
     assert x is None, "path should revert to True"
 
@@ -64,7 +61,7 @@ def test_Sphere_display():
 def test_Cuboid_display():
     """testing display"""
     magpy.defaults.display.backend = "plotly"
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     x = src.show(style_path_frames=5, style_magnetization_show=True, renderer="json")
     assert x is None, "display test fail"
@@ -91,11 +88,11 @@ def test_Sensor_display():
     assert x is None, "display test fail"
 
 
-def test_Loop_display():
-    """testing display for Loop source"""
+def test_CircularLoop_display():
+    """testing display for CircularLoop source"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = magpy.current.Loop(current=1, diameter=1)
+    src = magpy.current.CircularLoop(current=1, diameter=1)
     x = src.show(canvas=fig)
     assert x is None, "display test fail"
 
@@ -148,11 +145,11 @@ def test_circular_line_display():
     # pylint: disable=assignment-from-no-return
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src1 = magpy.current.Loop(1, 2)
-    src2 = magpy.current.Loop(1, 2)
+    src1 = magpy.current.CircularLoop(1, 2)
+    src2 = magpy.current.CircularLoop(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     x = src1.show(canvas=fig, style_path_frames=2, style_arrow_show=False)
     assert x is None, "display test fail"
@@ -175,7 +172,7 @@ def test_display_bad_style_kwargs():
 def test_extra_model3d():
     """test diplay when object has an extra model object attached"""
     magpy.defaults.display.backend = "plotly"
-    cuboid = Cuboid((1, 2, 3), (1, 2, 3))
+    cuboid = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     cuboid.move(np.linspace((0.4, 0.4, 0.4), (12.4, 12.4, 12.4), 33), start=-1)
     cuboid.style.model3d.showdefault = False
     cuboid.style.model3d.data = [
@@ -206,26 +203,28 @@ def test_extra_model3d():
         },
     ]
     fig = go.Figure()
-    x = cuboid.show(canvas=fig, style=dict(model3d_showdefault=True))
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig, style={"model3d_showdefault": True})
+
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(canvas=fig)
-    assert x is None, "display test fail"
+    cuboid.show(canvas=fig)
+
     coll = magpy.Collection(cuboid)
     coll.rotate_from_angax(45, "z")
-    x = magpy.show(
+    magpy.show(
         coll,
         canvas=fig,
         animation=True,
-        style=dict(model3d_showdefault=False),
+        style={"model3d_showdefault": False},
     )
-    assert x is None, "display test fail"
-    my_callable_kwargs = lambda: {
-        "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
-        "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
-        "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
-        "mode": "lines",
-    }
+
+    def my_callable_kwargs():
+        return {
+            "x": [-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1],
+            "y": [-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1],
+            "z": [-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1],
+            "mode": "lines",
+        }
+
     cuboid.style.model3d.add_trace(
         **{
             "backend": "plotly",
@@ -235,18 +234,17 @@ def test_extra_model3d():
         }
     )
     cuboid.style.model3d.data[0].show = False
-    x = cuboid.show(
+    cuboid.show(
         canvas=fig,
         style_path_show=False,
-        style=dict(model3d_showdefault=False),
+        style={"model3d_showdefault": False},
     )
-    assert x is None, "display test fail"
 
 
 def test_CustomSource_display():
     """testing display"""
     fig = go.Figure()
-    cs = magpy.misc.CustomSource(style=dict(color="blue"))
+    cs = magpy.misc.CustomSource(style={"color": "blue"})
     x = cs.show(canvas=fig, backend="plotly")
     assert x is None, "display test fail"
 
@@ -262,7 +260,7 @@ def test_display_warnings():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
@@ -270,7 +268,7 @@ def test_display_warnings():
         src.show(canvas=fig, animation=5, animation_fps=3)
     with pytest.warns(UserWarning):  # max frames surpassed
         src.show(canvas=fig, animation=True, animation_time=2, animation_fps=1)
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     with pytest.warns(UserWarning):  # no object path detected
         src.show(canvas=fig, style_path_frames=[], animation=True)
 
@@ -280,7 +278,7 @@ def test_bad_animation_value():
     magpy.defaults.display.backend = "plotly"
     magpy.defaults.display.animation.maxfps = 2
     magpy.defaults.display.animation.maxframes = 2
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.4, 0.4, 0.4), (4, 4, 4), 10), start=-1)
     fig = go.Figure()
 
@@ -320,3 +318,64 @@ def test_subplots():
         ValueError, match=r"The `output` parameter must start with 'B' or 'H'.*"
     ):
         magpy.show(*objs, canvas=fig, output="bad_output")
+
+
+def test_legends():
+    """test legends"""
+    f = 0.5
+    N = 3
+    xs = f * np.array([-1, -1, 1, 1, -1, -1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1])
+    ys = f * np.array([-1, 1, 1, -1, -1, -1, 1, 1, 1, 1, 1, 1, -1, -1, -1, -1])
+    zs = f * np.array([-1, -1, -1, -1, -1, 1, 1, -1, 1, 1, -1, 1, 1, -1, 1, 1])
+    trace_plotly = {
+        "backend": "plotly",
+        "constructor": "scatter3d",
+        "kwargs": {"x": xs, "y": ys, "z": zs, "mode": "lines"},
+    }
+    c = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1), style_label="Plotly extra trace")
+    c.style.model3d.add_trace(trace_plotly)
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.showlegend for t in fig.data] == [False, False]
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 2
+    assert [t.showlegend for t in fig.data] == [True, False]
+
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"]
+    assert [t.showlegend for t in fig.data] == [True]
+
+    c.rotate_from_angax([10 * i for i in range(N)], "y", start=0, anchor=(0, 0, 10))
+    fig = magpy.show(
+        c,
+        backend="plotly",
+        style_path_frames=2,
+        # style_legend_show=False,
+        # style_model3d_showdefault=False,
+        return_fig=True,
+    )
+    assert [t.name for t in fig.data] == ["Plotly extra trace (1mm|1mm|1mm)"] * 4
+    assert [t.showlegend for t in fig.data] == [True, False, False, False]

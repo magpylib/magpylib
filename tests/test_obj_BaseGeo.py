@@ -1,18 +1,18 @@
 import re
-import textwrap
 
 import numpy as np
 import pytest
-import pyvista as pv
 from scipy.spatial.transform import Rotation as R
 
 import magpylib as magpy
 from magpylib._src.obj_classes.class_BaseGeo import BaseGeo
 
 
+# pylint: disable=no-member
+
+
 def test_BaseGeo_basics():
     """fundamental usage test"""
-    # pylint: disable=no-member
 
     ptest = np.array(
         [
@@ -278,7 +278,10 @@ def test_path_functionality3():
 
 def test_scipy_from_methods():
     """test all rotation methods inspired from scipy implemented in BaseTransform"""
-    cube = lambda: magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
+
+    def cube():
+        return magpy.magnet.Cuboid((11, 22, 33), (1, 1, 1))
+
     angs_deg = np.linspace(0, 360, 10)
     angs = np.deg2rad(angs_deg)
     rot = R.from_rotvec((np.array([[0, 0, 1]] * 10).T * angs).T)
@@ -347,11 +350,11 @@ def test_style():
 
 def test_kwargs():
     """test kwargs inputs, only relevant for styles"""
-    bg = BaseGeo((0, 0, 0), None, style=dict(label="label_01"), style_label="label_02")
+    bg = BaseGeo((0, 0, 0), None, style={"label": "label_01"}, style_label="label_02")
     assert bg.style.label == "label_02"
 
     with pytest.raises(TypeError):
-        bg = BaseGeo((0, 0, 0), None, styl_label="label_02")
+        BaseGeo((0, 0, 0), None, styl_label="label_02")
 
 
 def test_copy():
@@ -360,7 +363,7 @@ def test_copy():
     bg2 = BaseGeo((1, 2, 3), None)  # has no style
     bg3 = BaseGeo((4, 6, 8), style_color="blue")  # has style but label is None
     bg1c = bg1.copy()
-    bg2c = bg2.copy(position=(10, 0, 0), style=dict(color="red"), style_color="orange")
+    bg2c = bg2.copy(position=(10, 0, 0), style={"color": "red"}, style_color="orange")
     bg3c = bg3.copy()
 
     # original object should not be affected"
@@ -459,6 +462,7 @@ def test_describe():
         "  • path length: 3",
         "  • position (last): [1. 2. 3.] mm",
         "  • orientation (last): [0. 0. 0.] degrees",
+        "  • handedness: right ",
         "  • pixel: 15 ",  # INVISIBLE SPACE
     ]
     desc = s1.describe(return_string=True)
@@ -473,55 +477,45 @@ def test_describe():
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • handedness: right \n"
         + "  • pixel: 1 \n"
         + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
         + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
         + " color=None, description=Description(show=None, text=None), label=None, "
+        + "legend=Legend(show=None), "
         + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
         + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
         + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
-        + " size=1, symbol=None), size=None) "
-    )
-    desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
-    assert desc == test
-
-    # exclude=None test
-    s = magpy.Sensor()
-    desc = s.describe(exclude=None, return_string=True)
-    test = (
-        "Sensor(id=REGEX)\n"
-        + "  • parent: None \n"
-        + "  • position: [0. 0. 0.] mm\n"
-        + "  • orientation: [0. 0. 0.] degrees\n"
-        + "  • pixel: 1 \n"
-        + "  • style: SensorStyle(arrows=ArrowCS(x=ArrowSingle(color=None, show=True), "
-        + "y=ArrowSingle(color=None, show=True), z=ArrowSingle(color=None, show=True)),"
-        + " color=None, description=Description(show=None, text=None), label=None, "
-        + "model3d=Model3d(data=[], showdefault=True), opacity=None, path=Path(frames=None,"
-        + " line=Line(color=None, style=None, width=None), marker=Marker(color=None,"
-        + " size=None, symbol=None), numbering=None, show=None), pixel=Pixel(color=None,"
-        + " size=1, symbol=None), size=None) "
+        + " size=1, sizemode=None, symbol=None), size=None, sizemode=None) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test
 
     # lots of sensor pixel
-    s = magpy.Sensor(pixel=[[[(1, 2, 3)] * 5] * 5] * 3)
+    s = magpy.Sensor(pixel=[[[(1, 2, 3)] * 5] * 5] * 3, handedness="left")
     desc = s.describe(return_string=True)
     test = (
         "Sensor(id=REGEX)\n"
         + "  • parent: None \n"
         + "  • position: [0. 0. 0.] mm\n"
         + "  • orientation: [0. 0. 0.] degrees\n"
+        + "  • handedness: left \n"
         + "  • pixel: 75 (3x5x5) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     assert desc == test
 
     # describe tringularmesh
-    s = magpy.magnet.TriangularMesh.from_pyvista(
+    points = [
+        (-1, -1, 0),
+        (-1, 1, 0),
+        (1, -1, 0),
+        (1, 1, 0),
+        (0, 0, 2),
+    ]
+    s = magpy.magnet.TriangularMesh.from_ConvexHull(
         magnetization=(0, 0, 1000),
-        polydata=pv.Text3D("A"),
+        points=points,
         check_selfintersecting="skip",
     )
     desc = s.describe(return_string=True)
@@ -531,9 +525,9 @@ def test_describe():
         "  • position: [0. 0. 0.] mm\n"
         "  • orientation: [0. 0. 0.] degrees\n"
         "  • magnetization: [   0.    0. 1000.] mT\n"
-        "  • barycenter: [0.64466889 0.42195708 0.25      ] \n"
-        "  • faces: shape(52, 3) \n"
-        "  • mesh: shape(52, 3, 3) \n"
+        "  • barycenter: [0.         0.         0.46065534] \n"
+        "  • faces: shape(6, 3) \n"
+        "  • mesh: shape(6, 3, 3) \n"
         "  • status_disconnected: False \n"
         "  • status_disconnected_data: 1 part \n"
         "  • status_open: False \n"
@@ -541,7 +535,7 @@ def test_describe():
         "  • status_reoriented: True \n"
         "  • status_selfintersecting: None \n"
         "  • status_selfintersecting_data: None \n"
-        "  • vertices: shape(26, 3) "
+        "  • vertices: shape(5, 3) "
     )
     desc = re.sub("id=*[0-9]*[0-9]", "id=REGEX", desc)
     # to create test: print('\\n"\n'.join(f'"{s}' for s in desc.split("\n")) + '"')
@@ -559,8 +553,8 @@ def test_unset_describe():
         # magpy.magnet.TriangularMesh(), not possible yet
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
-        magpy.current.Line(),
-        magpy.current.Loop(),
+        magpy.current.Polyline(),
+        magpy.current.CircularLoop(),
     ]
 
     for o in objs:

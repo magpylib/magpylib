@@ -14,9 +14,7 @@ except ImportError as missing_module:  # pragma: no cover
         see https://github.com/plotly/plotly.py"""
     ) from missing_module
 
-from magpylib._src.defaults.defaults_classes import default_settings as Config
 from magpylib._src.defaults.defaults_utility import linearize_dict
-from magpylib._src.display.traces_utility import place_and_orient_model3d
 from magpylib._src.display.traces_utility import get_scene_ranges
 
 
@@ -63,7 +61,7 @@ def match_args(ttype: str):
 
     Returns
     -------
-    list
+    set
         Names of the named arguments of the specified function.
     """
     func = getattr(go, ttype.capitalize())
@@ -74,7 +72,7 @@ def match_args(ttype: str):
         for name, param in params.items()
         if param.default != inspect.Parameter.empty
     ]
-    return named_args
+    return set(named_args)
 
 
 def apply_fig_ranges(fig, ranges, apply2d=True):
@@ -96,7 +94,7 @@ def apply_fig_ranges(fig, ranges, apply2d=True):
     """
     fig.update_scenes(
         **{
-            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} [mm]"}
+            f"{k}axis": {"range": ranges[i], "autorange": False, "title": f"{k} (mm)"}
             for i, k in enumerate("xyz")
         },
         aspectratio={k: 1 for k in "xyz"},
@@ -250,46 +248,28 @@ def generic_trace_to_plotly(trace):
 
 def process_extra_trace(model):
     "process extra trace attached to some magpylib object"
-    extr = model["model3d"]
-    kwargs = model["kwargs"]
-    trace3d = {**kwargs}
-    ttype = extr.constructor.lower()
-    trace_kwargs = extr.kwargs() if callable(extr.kwargs) else extr.kwargs
-    trace3d.update({"type": ttype, **trace_kwargs})
+    ttype = model["constructor"].lower()
+    kwargs = {**model["kwargs_extra"], **model["kwargs"]}
+    trace3d = {"type": ttype, **kwargs}
     if ttype == "scatter3d":
         for k in ("marker", "line"):
             trace3d[f"{k}_color"] = trace3d.get(f"{k}_color", kwargs["color"])
-            trace3d.pop("color", None)
     elif ttype == "mesh3d":
         trace3d["showscale"] = trace3d.get("showscale", False)
         trace3d["color"] = trace3d.get("color", kwargs["color"])
     # need to match parameters to the constructor
     # the color parameter is added by default  int the `traces_generic` module but is not
     # compatible with some traces (e.g. `go.Surface`)
+    allowed_prefs = match_args(ttype)
     trace3d = {
-        k: v for k, v in trace3d.items() if k == "type" or k in match_args(ttype)
+        k: v
+        for k, v in trace3d.items()
+        if k in {"row", "col", "type"}
+        or k in allowed_prefs
+        or ("_" in k and k.split("_")[0] in allowed_prefs)
     }
-    trace3d.update(
-        linearize_dict(
-            place_and_orient_model3d(
-                model_kwargs=trace3d,
-                orientation=model["orientation"],
-                position=model["position"],
-                scale=extr.scale,
-            ),
-            separator="_",
-        )
-    )
+    trace3d.update(linearize_dict(trace3d, separator="_"))
     return trace3d
-
-
-def extract_layout_kwargs(kwargs):
-    """Extract layout kwargs"""
-    layout = kwargs.pop("layout", {})
-    layout_kwargs = {k[7:]: v for k, v in kwargs.items() if k.startswith("layout")}
-    kwargs = {k: v for k, v in kwargs.items() if not k.startswith("layout")}
-    layout.update(layout_kwargs)
-    return layout, kwargs
 
 
 def display_plotly(
@@ -297,15 +277,21 @@ def display_plotly(
     zoom=1,
     canvas=None,
     renderer=None,
-    colorsequence=None,
     return_fig=False,
     update_layout=True,
     max_rows=None,
     max_cols=None,
     subplot_specs=None,
-    **kwargs,
+    fig_kwargs=None,
+    show_kwargs=None,
+    **kwargs,  # pylint: disable=unused-argument
 ):
     """Display objects and paths graphically using the plotly library."""
+
+    fig_kwargs = {} if not fig_kwargs else fig_kwargs
+    show_kwargs = {} if not show_kwargs else show_kwargs
+    show_kwargs = {"renderer": renderer, **show_kwargs}
+
     fig = canvas
     show_fig = False
     extra_data = False
@@ -323,10 +309,6 @@ def display_plotly(
                 specs=subplot_specs.tolist(),
             )
 
-    if colorsequence is None:
-        colorsequence = Config.display.colorsequence
-
-    layout, kwargs = extract_layout_kwargs(kwargs)
     frames = data["frames"]
     for fr in frames:
         new_data = []
@@ -372,10 +354,10 @@ def display_plotly(
                 legend_itemsizing="constant",
                 # legend_groupclick="toggleitem",
             )
-        fig.update_layout(layout)
+        fig.update(fig_kwargs)
 
     if return_fig and not show_fig:
         return fig
     if show_fig:
-        fig.show(renderer=renderer)
+        fig.show(**show_kwargs)
     return None

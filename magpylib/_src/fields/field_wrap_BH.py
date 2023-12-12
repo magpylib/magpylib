@@ -250,10 +250,10 @@ def getBH_level2(
     pix_nums = [
         int(np.prod(ps[:-1])) for ps in pix_shapes
     ]  # number of pixel for each sensor
-    pix_inds = np.cumsum([0] + pix_nums)  # cummulative indices of pixel for each sensor
+    pix_inds = np.cumsum([0] + pix_nums)  # cumulative indices of pixel for each sensor
     pix_all_same = len(set(pix_shapes)) == 1
 
-    # check which sensors have unit roation
+    # check which sensors have unit rotation
     #   so that they dont have to be rotated back later (performance issue)
     #   this check is made now when sensor paths are not yet tiled.
     unitQ = np.array([0, 0, 0, 1.0])
@@ -274,7 +274,7 @@ def getBH_level2(
 
     # tile up paths -------------------------------------------------------------
     #   all obj paths that are shorter than max-length are filled up with the last
-    #   postion/orientation of the object (static paths)
+    #   position/orientation of the object (static paths)
     path_lengths = [len(obj._position) for obj in obj_list]
     max_path_len = max(path_lengths)
 
@@ -361,9 +361,10 @@ def getBH_level2(
 
     # apply sensor rotations (after summation over collections to reduce rot.apply operations)
     for sens_ind, sens in enumerate(sensors):  # cycle through all sensors
+        pix_slice = slice(pix_inds[sens_ind], pix_inds[sens_ind + 1])
         if not unrotated_sensors[sens_ind]:  # apply operations only to rotated sensors
             # select part where rot is applied
-            Bpart = B[:, :, pix_inds[sens_ind] : pix_inds[sens_ind + 1]]
+            Bpart = B[:, :, pix_slice]
             # change shape to (P,3) for rot package
             Bpart_orig_shape = Bpart.shape
             Bpart_flat = np.reshape(Bpart, (-1, 3))
@@ -381,9 +382,9 @@ def getBH_level2(
                 )
             Bpart_flat_rot = sens_orient.inv().apply(Bpart_flat)
             # overwrite Bpart in B
-            B[:, :, pix_inds[sens_ind] : pix_inds[sens_ind + 1]] = np.reshape(
-                Bpart_flat_rot, Bpart_orig_shape
-            )
+            B[:, :, pix_slice] = np.reshape(Bpart_flat_rot, Bpart_orig_shape)
+        if sens.handedness == "left":
+            B[..., pix_slice, 0] *= -1
 
     # rearrange sensor-pixel shape
     if pix_all_same:
@@ -409,6 +410,7 @@ def getBH_level2(
 
     if output == "dataframe":
         # pylint: disable=import-outside-toplevel
+        # pylint: disable=no-member
         import pandas as pd
 
         if sumup and len(sources) > 1:
@@ -453,7 +455,7 @@ def getBH_dict_level2(
 
     Returns
     -------
-    field: ndarray, shape (N,3), field at obs_pos in [mT] or [kA/m]
+    field: ndarray, shape (N,3), field at obs_pos in mT or kA/m
 
     Info
     ----
@@ -555,7 +557,7 @@ def getB(
     output="ndarray",
     **kwargs,
 ):
-    """Compute B-field in [mT] for given sources and observers.
+    """Compute B-field in units of mT for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -569,16 +571,16 @@ def getB(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of [mm].
+        are given in units of mm.
 
         Direct interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of [mm].
+        positions to observer positions in units of mm.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -602,7 +604,7 @@ def getB(
     *Direct-interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of [mm].
+        Source position(s) in the global coordinates in units of mm.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -610,46 +612,46 @@ def getB(
 
     magnetization: array_like, shape (3,) or (n,3)
         Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`, `'Sphere'`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of [kA/m] given in
+        Magnetization vector(s) (mu0*M, remanence field) in units of kA/m given in
         the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit [mT*mm^3]
+    moment: array_like, shape (3) or (n,3), unit mT*mm^3
         Only source_type == `'Dipole'`!
-        Magnetic dipole moment(s) in units of [mT*mm^3] given in the local object coordinates
+        Magnetic dipole moment(s) in units of mT*mm^3 given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Loop'` or `'Line'`!
-        Electrical current in units of [A].
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
+        Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`)!
-        Magnet dimension input in units of [mm] and [deg]. Dimension format x of sources is similar
+        Magnet dimension input in units of mm and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Loop'`!
-        Diameter of source in units of [mm].
+        Only source_type == `'Sphere'` or `'CircularLoop'`!
+        Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
-        Start positions of line current segments in units of [mm].
+        Only source_type == `'Polyline'`!
+        Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
-        End positions of line current segments in units of [mm].
+        Only source_type == `'Polyline'`!
+        End positions of line current segments in units of mm.
 
     Returns
     -------
     B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         B-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of [mT]. Sensor pixel positions are equivalent
+        position (n1, n2, ...) in units of mT. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
         considered as static beyond their end.
 
     Direct interface: ndarray, shape (n,3)
-        B-field for every parameter set in units of [mT].
+        B-field for every parameter set in units of mT.
 
     Notes
     -----
@@ -659,11 +661,11 @@ def getB(
 
     Examples
     --------
-    In this example we compute the B-field [mT] of a spherical magnet and a current loop
-    at the observer position (1,1,1) given in units of [mm]:
+    In this example we compute the B-field in units of mT of a spherical magnet and a current loop
+    at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Loop(current=100, diameter=2)
+    >>> src1 = magpy.current.CircularLoop(current=100, diameter=2)
     >>> src2 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1)
     >>> B = magpy.getB([src1, src2], (1,1,1))
     >>> print(B)
@@ -685,7 +687,7 @@ def getB(
     Through the direct interface we can compute the same fields for the loop as:
 
     >>> obs = [(1,1,1), (1,1,-1)]
-    >>> B = magpy.getB('Loop', obs, current=100, diameter=2)
+    >>> B = magpy.getB('CircularLoop', obs, current=100, diameter=2)
     >>> print(B)
     [[ 6.23597388  6.23597388  2.6697781 ]
      [-6.23597388 -6.23597388  2.6697781 ]]
@@ -693,7 +695,7 @@ def getB(
     But also for a set of four completely different instances:
 
     >>> B = magpy.getB(
-    ...     'Loop',
+    ...     'CircularLoop',
     ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
     ...     current=(11, 22, 33, 44),
     ...     diameter=(1, 2, 3, 4),
@@ -726,7 +728,7 @@ def getH(
     output="ndarray",
     **kwargs,
 ):
-    """Compute H-field in [kA/m] for given sources and observers.
+    """Compute H-field in kA/m for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -740,16 +742,16 @@ def getH(
         or a 1D list of l source and/or collection objects.
 
         Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Loop'` or `'Line'`).
+        `'Sphere'`, `'Dipole'`, `'CircularLoop'` or `'Polyline'`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
         should be evaluated, a `Sensor` object with pixel shape (n1, n2, ..., 3) or a list
         of such sensor objects (must all have similar pixel shapes). All positions
-        are given in units of [mm].
+        are given in units of mm.
 
         Direct interface: Input must be array_like with shape (3,) or (n,3) corresponding
-        positions to observer positions in units of [mm].
+        positions to observer positions in units of mm.
 
     sumup: bool, default=`False`
         If `True`, the fields of all sources are summed up.
@@ -773,7 +775,7 @@ def getH(
     *Direct-interface
 
     position: array_like, shape (3,) or (n,3), default=`(0,0,0)`
-        Source position(s) in the global coordinates in units of [mm].
+        Source position(s) in the global coordinates in units of mm.
 
     orientation: scipy `Rotation` object with length 1 or n, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -781,46 +783,46 @@ def getH(
 
     magnetization: array_like, shape (3,) or (n,3)
         Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`, `'Sphere'`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of [kA/m] given in
+        Magnetization vector(s) (mu0*M, remanence field) in units of kA/m given in
         the local object coordinates (rotates with object).
 
-    moment: array_like, shape (3) or (n,3), unit [mT*mm^3]
+    moment: array_like, shape (3) or (n,3), unit mT*mm^3
         Only source_type == `'Dipole'`!
-        Magnetic dipole moment(s) in units of [mT*mm^3] given in the local object coordinates
+        Magnetic dipole moment(s) in units of mT*mm^3 given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Loop'` or `'Line'`!
-        Electrical current in units of [A].
+        Only source_type == `'CircularLoop'` or `'Polyline'`!
+        Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
         Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`)!
-        Magnet dimension input in units of [mm] and [deg]. Dimension format x of sources is similar
+        Magnet dimension input in units of mm and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Loop'`!
-        Diameter of source in units of [mm].
+        Only source_type == `'Sphere'` or `'CircularLoop'`!
+        Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Line'`!
-        Start positions of line current segments in units of [mm].
+        Only source_type == `'Polyline'`!
+        Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Line'`!
-        End positions of line current segments in units of [mm].
+        Only source_type == `'Polyline'`!
+        End positions of line current segments in units of mm.
 
     Returns
     -------
     H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
         H-field at each path position (m) for each sensor (k) and each sensor pixel
-        position (n1, n2, ...) in units of [kA/m]. Sensor pixel positions are equivalent
+        position (n1, n2, ...) in units of kA/m. Sensor pixel positions are equivalent
         to simple observer positions. Paths of objects that are shorter than m will be
         considered as static beyond their end.
 
     Direct interface: ndarray, shape (n,3)
-        H-field for every parameter set in units of [kA/m].
+        H-field for every parameter set in units of kA/m.
 
     Notes
     -----
@@ -830,11 +832,11 @@ def getH(
 
     Examples
     --------
-    In this example we compute the H-field [kA/m] of a spherical magnet and a current loop
-    at the observer position (1,1,1) given in units of [mm]:
+    In this example we compute the H-field kA/m of a spherical magnet and a current loop
+    at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.current.Loop(current=100, diameter=2)
+    >>> src1 = magpy.current.CircularLoop(current=100, diameter=2)
     >>> src2 = magpy.magnet.Sphere(magnetization=(0,0,100), diameter=1)
     >>> H = magpy.getH([src1, src2], (1,1,1))
     >>> print(H)
@@ -856,7 +858,7 @@ def getH(
     Through the direct interface we can compute the same fields for the loop as:
 
     >>> obs = [(1,1,1), (1,1,-1)]
-    >>> H = magpy.getH('Loop', obs, current=100, diameter=2)
+    >>> H = magpy.getH('CircularLoop', obs, current=100, diameter=2)
     >>> print(H)
     [[ 4.96243034  4.96243034  2.12454191]
      [-4.96243034 -4.96243034  2.12454191]]
@@ -864,7 +866,7 @@ def getH(
     But also for a set of four completely different instances:
 
     >>> H = magpy.getH(
-    ...     'Loop',
+    ...     'CircularLoop',
     ...     observers=((1,1,1), (1,1,-1), (1,2,3), (2,2,2)),
     ...     current=(11, 22, 33, 44),
     ...     diameter=(1, 2, 3, 4),

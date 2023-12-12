@@ -29,21 +29,21 @@ def test_dipole_approximation():
     B4 = src4.getB(pos)
     assert np.allclose(B1, B4)
 
-    # Loop loop vs Dipole
+    # CircularLoop loop vs Dipole
     dia = 2
     i0 = 234
     m0 = dia**2 * np.pi**2 / 10 * i0
-    src1 = magpy.current.Loop(current=i0, diameter=dia)
+    src1 = magpy.current.CircularLoop(current=i0, diameter=dia)
     src2 = magpy.misc.Dipole(moment=(0, 0, m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
     assert np.allclose(H1, H2)
 
 
-def test_Loop_vs_Cylinder_field():
+def test_CircularLoop_vs_Cylinder_field():
     """
-    The H-field of a loop with radius r0[mm] and current i0[A] is the same
-    as the H-field of a cylinder with radius r0[mm], height h0[mm] and
+    The H-field of a loop with radius r0 (mm) and current i0 (A) is the same
+    as the H-field of a cylinder with radius r0 (mm), height h0 (mm) and
     magnetization (0, 0, 4pi/10*i0/h0) !!!
     """
 
@@ -171,7 +171,7 @@ def test_Loop_vs_Cylinder_field():
     src1 = magpy.magnet.Cylinder(
         magnetization=(0, 0, i0 / h0 * 4 * np.pi / 10), dimension=(r0, h0)
     )
-    src2 = magpy.current.Loop(current=i0, diameter=r0)
+    src2 = magpy.current.CircularLoop(current=i0, diameter=r0)
 
     H1 = src1.getH(pos_obs)
     H2 = src2.getH(pos_obs)
@@ -179,7 +179,7 @@ def test_Loop_vs_Cylinder_field():
     assert np.allclose(H1, H2)
 
 
-def test_Line_vs_Loop():
+def test_Polyline_vs_CircularLoop():
     """show that line prodices the same as circular"""
 
     # finely approximated loop by lines
@@ -195,19 +195,19 @@ def test_Line_vs_Loop():
     # field from line currents
     Bls = []
     for p in po:
-        Bl = magpy.getB("Line", p, current=1, segment_start=ps, segment_end=pe)
+        Bl = magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)
         Bls += [np.sum(Bl, axis=0)]
     Bls = np.array(Bls)
 
     # field from current loop
-    src = magpy.current.Loop(current=1, diameter=2)
+    src = magpy.current.CircularLoop(current=1, diameter=2)
     Bcs = src.getB(po)
 
     assert np.allclose(Bls, Bcs)
 
 
-def test_Line_vs_Infinite():
-    """compare line current result vs analytical solution to infinite Line"""
+def test_Polyline_vs_Infinite():
+    """compare line current result vs analytical solution to infinite Polyline"""
 
     pos_obs = np.array([(1.0, 2, 3), (-3, 2, -1), (2, -1, -4)])
 
@@ -224,7 +224,7 @@ def test_Line_vs_Infinite():
     pe = (0, 0, 1000000)
     Bls, Binfs = [], []
     for p in pos_obs:
-        Bls += [magpy.getB("Line", p, current=1, segment_start=ps, segment_end=pe)]
+        Bls += [magpy.getB("Polyline", p, current=1, segment_start=ps, segment_end=pe)]
         Binfs += [Binf(1, p)]
     Bls = np.array(Bls)
     Binfs = np.array(Binfs)

@@ -1,23 +1,10 @@
 import numpy as np
+from scipy.spatial.transform import Rotation as RotScipy
 
 
-def get_sensor_mesh(
-    x_color="red",
-    y_color="green",
-    z_color="blue",
-    center_color="grey",
-    x_show=True,
-    y_show=True,
-    z_show=True,
-    center_show=True,
-    colorize_tails=True,
-):
-    """
-    returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
-    and  colored respectively in red,green,blue with a central cube of size 1
-    """
+def _get_default_trace():
     # fmt: off
-    trace =  {
+    return {
         "type": "mesh3d",
         "i": np.array([75, 64,  2, 75, 76, 65, 65, 64,  2,  0,  1,  0, 84, 86, 86, 90, 90, 92,
                     92, 91, 91, 87, 87, 85, 85, 83, 83, 82, 82, 84, 94, 86, 86, 84, 84, 82,
@@ -129,6 +116,24 @@ def get_sensor_mesh(
                     2.89382666e-01, -3.23514738e-17]),
     }
     # fmt: on
+
+
+def get_sensor_mesh(
+    x_color="red",
+    y_color="green",
+    z_color="blue",
+    center_color="grey",
+    x_show=True,
+    y_show=True,
+    z_show=True,
+    center_show=True,
+    colorize_tails=True,
+    handedness="right",
+):
+    """
+    returns a plotly mesh3d dictionary of a x,y,z arrows oriented in space accordingly
+    and  colored respectively in red,green,blue with a central cube of size 1
+    """
     x_color_tail = x_color
     y_color_tail = y_color
     z_color_tail = z_color
@@ -137,6 +142,16 @@ def get_sensor_mesh(
         y_color_tail = center_color
         z_color_tail = center_color
     N, N2 = 56, 18
+    trace = _get_default_trace()
+    if handedness == "left":
+        pts = np.array([trace[k] for k in "xyz"]).T
+        rot = RotScipy.from_euler("y", -90, degrees=True)
+        x, y, z = rot.apply(pts).T
+        trace.update(x=x, y=y, z=z)
+        x_color, z_color = z_color, x_color
+        x_color_tail, z_color_tail = z_color_tail, x_color_tail
+        x_show, z_show = z_show, x_show
+
     trace["facecolor"] = np.concatenate(
         [
             [center_color] * 12,
@@ -149,7 +164,7 @@ def get_sensor_mesh(
         ]
     )
     indices = ((0, 12), (12, 68), (68, 124), (124, 180))
-    show = (center_show, x_show, z_show, y_show)
+    show = (center_show, x_show, y_show, z_show)
     for k in ("i", "j", "k", "facecolor"):
         t = []
         for i, s in zip(indices, show):

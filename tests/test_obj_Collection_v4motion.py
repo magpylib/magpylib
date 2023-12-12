@@ -216,6 +216,7 @@ def test_Collection_setting_orientation(
     src_pos_test,
     src_ori_test,
 ):
+    """test_Collection_setting_orientation"""
     src = magpy.magnet.Cuboid(
         (1, 0, 0), (1, 1, 1), src_pos_init, R.from_rotvec(src_ori_init)
     )

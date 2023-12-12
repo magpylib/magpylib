@@ -28,6 +28,13 @@ share/python-wheels/
 .installed.cfg
 *.egg
 MANIFEST
+_autogen
+
+# docs
+docs/auto_examples
+
+# sphinx-gallery
+auto_examples
 
 # coderunner
 tempCodeRunnerFile.py

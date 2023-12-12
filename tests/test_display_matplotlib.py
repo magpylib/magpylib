@@ -1,3 +1,4 @@
+# pylint: disable="wrong-import-position"
 import re
 from unittest.mock import patch
 
@@ -14,20 +15,18 @@ from matplotlib.figure import Figure as mplFig
 import magpylib as magpy
 from magpylib._src.display.display import ctx
 from magpylib.graphics.model3d import make_Cuboid
-from magpylib.magnet import Cuboid
-from magpylib.magnet import Cylinder
-from magpylib.magnet import CylinderSegment
-from magpylib.magnet import Sphere
 
 
 # pylint: disable=assignment-from-no-return
+# pylint: disable=unnecessary-lambda-assignment
+# pylint: disable=no-member
 
 magpy.defaults.reset()
 
 
 def test_Cuboid_display():
     """testing display"""
-    src = Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
     src.move(np.linspace((0.1, 0.1, 0.1), (2, 2, 2), 20), start=-1)
     src.show(
         style_path_frames=5,
@@ -47,7 +46,7 @@ def test_Cylinder_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = Cylinder((1, 2, 3), (1, 2))
+    src = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     src.show(canvas=ax, style_path_frames=15, backend="matplotlib")
 
     # hide path
@@ -58,14 +57,18 @@ def test_Cylinder_display():
     src.show(canvas=ax, style_path_frames=[], backend="matplotlib")
 
     src.show(
-        canvas=ax, style_path_frames=[1, 5, 6], backend="matplotlib", return_fig=True
+        canvas=ax,
+        style_path_frames=[1, 5, 6],
+        style_path_numbering=True,
+        backend="matplotlib",
+        return_fig=True,
     )
 
 
 def test_CylinderSegment_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
-    src = CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
+    src = magpy.magnet.CylinderSegment((1, 2, 3), (2, 4, 5, 30, 40))
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33), start=-1)
@@ -76,7 +79,7 @@ def test_Sphere_display():
     """testing display"""
     # path should revert to True
     ax = plt.subplot(projection="3d")
-    src = Sphere((1, 2, 3), 2)
+    src = magpy.magnet.Sphere((1, 2, 3), 2)
     src.show(canvas=ax, style_path_frames=15, return_fig=True)
 
     src.move(np.linspace((0.4, 0.4, 0.4), (8, 8, 8), 20), start=-1)
@@ -98,7 +101,7 @@ def test_Tetrahedron_display():
 def test_Sensor_display():
     """testing display"""
     ax = plt.subplot(projection="3d")
-    sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)])
+    sens = magpy.Sensor(pixel=[(1, 2, 3), (2, 3, 4)], handedness="left")
     sens.style.arrows.z.color = "magenta"
     sens.style.arrows.z.show = False
     poz = np.linspace((0.4, 0.4, 0.4), (13.2, 13.2, 13.2), 33)
@@ -120,10 +123,10 @@ def test_CustomSource_display():
     cs.show(canvas=ax, return_fig=True)
 
 
-def test_Loop_display():
-    """testing display for Loop source"""
+def test_CircularLoop_display():
+    """testing display for CircularLoop source"""
     ax = plt.subplot(projection="3d")
-    src = magpy.current.Loop(current=1, diameter=1)
+    src = magpy.current.CircularLoop(current=1, diameter=1)
     src.show(canvas=ax, return_fig=True)
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
@@ -312,11 +315,11 @@ def test_circular_line_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection="3d")
-    src1 = magpy.current.Loop(1, 2)
-    src2 = magpy.current.Loop(1, 2)
+    src1 = magpy.current.CircularLoop(1, 2)
+    src2 = magpy.current.CircularLoop(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
     src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
@@ -331,12 +334,12 @@ def test_matplotlib_model3d_extra():
 
     # using "plot"
     xs, ys, zs = [(1, 2)] * 3
-    trace1 = dict(
-        backend="matplotlib",
-        constructor="plot",
-        args=(xs, ys, zs),
-        kwargs=dict(ls="-"),
-    )
+    trace1 = {
+        "backend": "matplotlib",
+        "constructor": "plot",
+        "args": (xs, ys, zs),
+        "kwargs": {"ls": "-"},
+    }
     obj1 = magpy.misc.Dipole(moment=(0, 0, 1))
     obj1.style.model3d.add_trace(**trace1)
 
@@ -345,14 +348,12 @@ def test_matplotlib_model3d_extra():
     xs = np.cos(u) * np.sin(v)
     ys = np.sin(u) * np.sin(v)
     zs = np.cos(v)
-    trace2 = dict(
-        backend="matplotlib",
-        constructor="plot_surface",
-        args=(xs, ys, zs),
-        kwargs=dict(
-            cmap=plt.cm.YlGnBu_r,  # pylint: disable=no-member
-        ),
-    )
+    trace2 = {
+        "backend": "matplotlib",
+        "constructor": "plot_surface",
+        "args": (xs, ys, zs),
+        "kwargs": {"cmap": plt.cm.YlGnBu_r},  # pylint: disable=no-member},
+    }
     obj2 = magpy.Collection()
     obj2.style.model3d.add_trace(**trace2)
 
@@ -363,15 +364,15 @@ def test_matplotlib_model3d_extra():
     ys = (1 + 0.5 * v * np.cos(u / 2.0)) * np.sin(u)
     zs = 0.5 * v * np.sin(u / 2.0)
     tri = mtri.Triangulation(u, v)
-    trace3 = dict(
-        backend="matplotlib",
-        constructor="plot_trisurf",
-        args=lambda: (xs, ys, zs),  # test callable args
-        kwargs=dict(
-            triangles=tri.triangles,
-            cmap=plt.cm.Spectral,  # pylint: disable=no-member
-        ),
-    )
+    trace3 = {
+        "backend": "matplotlib",
+        "constructor": "plot_trisurf",
+        "args": lambda: (xs, ys, zs),  # test callable args,
+        "kwargs": {
+            "triangles": tri.triangles,
+            "cmap": plt.cm.Spectral,  # pylint: disable=no-member
+        },
+    }
     obj3 = magpy.misc.CustomSource(style_model3d_showdefault=False, position=(3, 0, 0))
     obj3.style.model3d.add_trace(**trace3)
 
@@ -383,12 +384,12 @@ def test_matplotlib_model3d_extra_bad_input():
     """test display extra model3d"""
 
     xs, ys, zs = [(1, 2)] * 3
-    trace = dict(
-        backend="matplotlib",
-        constructor="plot",
-        kwargs={"xs": xs, "ys": ys, "zs": zs},
-        coordsargs={"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
-    )
+    trace = {
+        "backend": "matplotlib",
+        "constructor": "plot",
+        "kwargs": {"xs": xs, "ys": ys, "zs": zs},
+        "coordsargs": {"x": "xs", "y": "ys", "z": "Z"},  # bad Z input
+    }
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
     with pytest.raises(ValueError):
         obj.style.model3d.add_trace(**trace)
@@ -398,7 +399,6 @@ def test_matplotlib_model3d_extra_bad_input():
 
 def test_matplotlib_model3d_extra_updatefunc():
     """test display extra model3d"""
-    ax = plt.subplot(projection="3d")
     obj = magpy.misc.Dipole(moment=(0, 0, 1))
     updatefunc = lambda: make_Cuboid("matplotlib", position=(2, 0, 0))
     obj.style.model3d.data = updatefunc
@@ -455,6 +455,7 @@ def test_mpl_animation():
     fig, anim = c.show(
         backend="matplotlib", animation=True, return_animation=True, return_fig=True
     )
+    # pylint: disable=protected-access
     anim._draw_was_started = True  # avoid mpl test warning
     assert isinstance(fig, matplotlib.figure.Figure)
     assert isinstance(anim, matplotlib.animation.FuncAnimation)
@@ -572,8 +573,8 @@ def test_unset_excitations():
         magpy.magnet.Sphere(diameter=1),
         magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
         magpy.misc.Dipole(),
-        magpy.current.Line(vertices=[[0, -1, 0], [0, 1, 0]]),
-        magpy.current.Loop(diameter=1, current=0),
+        magpy.current.Polyline(vertices=[[0, -1, 0], [0, 1, 0]]),
+        magpy.current.CircularLoop(diameter=1, current=0),
     ]
     for i, o in enumerate(objs):
         o.move((i * 1.5, 0, 0))
@@ -595,8 +596,8 @@ def test_unset_objs():
         # magpy.magnet.TriangularMesh(), not possible yet
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
-        magpy.current.Line(),
-        magpy.current.Loop(),
+        magpy.current.Polyline(),
+        magpy.current.CircularLoop(),
     ]
 
     for i, o in enumerate(objs):

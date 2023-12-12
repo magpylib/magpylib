@@ -3,6 +3,7 @@ from magpylib._src.display.traces_core import make_Sphere
 from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseMagnet
+from magpylib._src.utility import unit_prefix
 
 
 class Sphere(BaseMagnet):
@@ -16,14 +17,14 @@ class Sphere(BaseMagnet):
     Parameters
     ----------
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of [mT] given in
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
         the local object coordinates (rotates with object).
 
     diameter: float, default=`None`
-        Diameter of the sphere in units of [mm].
+        Diameter of the sphere in units of mm.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -45,9 +46,9 @@ class Sphere(BaseMagnet):
 
     Examples
     --------
-    `Sphere` objects are magnetic field sources. In this example we compute the H-field [kA/m]
-    of a spherical magnet with magnetization (100,200,300) in units of [mT] and diameter
-    of 1 [mm] at the observer position (1,1,1) given in units of [mm]:
+    `Sphere` objects are magnetic field sources. In this example we compute the H-field kA/m
+    of a spherical magnet with magnetization (100,200,300) in units of mT and diameter
+    of 1 mm at the observer position (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
     >>> src = magpy.magnet.Sphere(magnetization=(100,200,300), diameter=1)
@@ -100,12 +101,12 @@ class Sphere(BaseMagnet):
     # property getters and setters
     @property
     def diameter(self):
-        """Diameter of the sphere in units of [mm]."""
+        """Diameter of the sphere in units of mm."""
         return self._diameter
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Sphere diameter, float, [mm]."""
+        """Set Sphere diameter, float, mm."""
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
@@ -113,3 +114,10 @@ class Sphere(BaseMagnet):
             allow_None=True,
             forbid_negative=True,
         )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        if self.diameter is None:
+            return "no dimension"
+        return f"D={unit_prefix(self.diameter / 1000)}m"

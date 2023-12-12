@@ -516,7 +516,7 @@ class BaseCollection(BaseDisplayRepr):
         return sources, sensors
 
     def getB(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute B-field in [mT] for given sources and observers.
+        """Compute B-field in mT for given sources and observers.
 
         Parameters
         ----------
@@ -544,7 +544,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         B-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             B-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of [mT]. Sensor pixel positions are equivalent
+            position (n1,n2,...) in units of mT. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
             considered as static beyond their end.
 
@@ -587,7 +587,7 @@ class BaseCollection(BaseDisplayRepr):
         )
 
     def getH(self, *inputs, squeeze=True, pixel_agg=None, output="ndarray"):
-        """Compute H-field in [kA/m] for given sources and observers.
+        """Compute H-field in kA/m for given sources and observers.
 
         Parameters
         ----------
@@ -615,7 +615,7 @@ class BaseCollection(BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(m, k, n1, n2, ..., 3) or DataFrame
             H-field at each path position (m) for each sensor (k) and each sensor pixel
-            position (n1,n2,...) in units of [kA/m]. Sensor pixel positions are equivalent
+            position (n1,n2,...) in units of kA/m. Sensor pixel positions are equivalent
             to simple observer positions. Paths of objects that are shorter than m will be
             considered as static beyond their end.
 
@@ -657,6 +657,22 @@ class BaseCollection(BaseDisplayRepr):
             field="H",
         )
 
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        items = []
+        if self.children_all:
+            nums = {
+                "sensor": len(self.sensors_all),
+                "source": len(self.sources_all),
+            }
+            for name, num in nums.items():
+                if num > 0:
+                    items.append(f"{num} {name}{'s'[:num^1]}")
+        else:
+            items.append("no children")
+        return ", ".join(items)
+
 
 class Collection(BaseGeo, BaseCollection):
     """Group multiple children (sources, sensors and collections) in a collection for
@@ -686,7 +702,7 @@ class Collection(BaseGeo, BaseCollection):
         An ordered list of all collection objects in the collection.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -712,7 +728,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> import magpylib as magpy
     >>> src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
-    >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
+    >>> src2 = magpy.current.CircularLoop(1, 1, position=(-2,0,0))
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
     Collection(id=...)
@@ -728,7 +744,7 @@ class Collection(BaseGeo, BaseCollection):
     >>> src1.move((2,0,0))
     Sphere(id=...)
     >>> col[1].move((-2,0,0))
-    Loop(id=...)
+    CircularLoop(id=...)
     >>> print(src1.position)
     [4. 0. 2.]
     >>> print(src2.position)
@@ -748,7 +764,7 @@ class Collection(BaseGeo, BaseCollection):
     >>> col.add(sens)
     Collection(id=...)
     >>> print(col.children)
-    [Sphere(id=...), Loop(id=...), Sensor(id=...)]
+    [Sphere(id=...), CircularLoop(id=...), Sensor(id=...)]
 
     and can compute the field of the sources in the collection seen by the sensor with
     a single command:

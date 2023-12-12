@@ -1,5 +1,8 @@
 """Sensor class code"""
+import numpy as np
+
 from magpylib._src.display.traces_core import make_Sensor
+from magpylib._src.exceptions import MagpylibBadUserInput
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_vector
 from magpylib._src.obj_classes.class_BaseDisplayRepr import BaseDisplayRepr
@@ -20,13 +23,14 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     Parameters
     ----------
+
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of [mm]. For m>1, the
+        Object position(s) in the global coordinates in units of mm. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
         Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of [mm].
+        (rotate with object), in units of mm.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -40,6 +44,9 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
 
+    handedness: {"right", "left"}
+        Object local coordinate system handedness. If "left", the x-axis is flipped.
+
     Returns
     -------
     observer: `Sensor` object
@@ -47,11 +54,11 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Examples
     --------
     `Sensor` objects are observers for magnetic field computation. In this example we compute the
-    B-field in units of [mT] as seen by the sensor in the center of a circular current loop:
+    B-field in units of mT as seen by the sensor in the center of a circular current loop:
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
-    >>> loop = magpy.current.Loop(current=1, diameter=1)
+    >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
     >>> B = sens.getB(loop)
     >>> print(B)
     [0.         0.         1.25663706]
@@ -84,10 +91,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         pixel=(0, 0, 0),
         orientation=None,
         style=None,
+        handedness="right",
         **kwargs,
     ):
         # instance attributes
         self.pixel = pixel
+        self.handedness = handedness
 
         # init inheritance
         BaseGeo.__init__(self, position, orientation, style=style, **kwargs)
@@ -97,7 +106,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pixel(self):
         """Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of [mm].
+        (rotate with object), in units of mm.
         """
         return self._pixel
 
@@ -114,10 +123,24 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             sig_type="array_like (list, tuple, ndarray) with shape (n1, n2, ..., 3)",
         )
 
+    @property
+    def handedness(self):
+        """Sensor handedness in the local object coordinates."""
+        return self._handedness
+
+    @handedness.setter
+    def handedness(self, val):
+        """Set Sensor handedness in the local object coordinates."""
+        if val not in {"right", "left"}:
+            raise MagpylibBadUserInput(
+                "Sensor `handedness` must be either `'right'` or `'left'`"
+            )
+        self._handedness = val
+
     def getB(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the B-field in units of [mT] as seen by the sensor.
+        """Compute the B-field in units of mT as seen by the sensor.
 
         Parameters
         ----------
@@ -146,17 +169,17 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             B-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of [mT]. Paths of objects that are shorter than
+            position (n1,n2,...) in units of mT. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        B-field [mT] as seen by the sensor in the center of a circular current loop:
+        B-field in units of mT as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Loop(current=1, diameter=1)
+        >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
         >>> B = sens.getB(loop)
         >>> print(B)
         [0.         0.         1.25663706]
@@ -192,7 +215,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getH(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the H-field in units of [kA/m] as seen by the sensor.
+        """Compute the H-field in units of kA/m as seen by the sensor.
 
         Parameters
         ----------
@@ -221,17 +244,17 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             H-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of [kA/m]. Paths of objects that are shorter than
+            position (n1,n2,...) in units of kA/m. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        H-field [kA/m] as seen by the sensor in the center of a circular current loop:
+        H-field in kA/m as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Loop(current=1, diameter=1)
+        >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
         >>> H = sens.getH(loop)
         >>> print(H)
         [0. 0. 1.]
@@ -262,4 +285,18 @@ class Sensor(BaseGeo, BaseDisplayRepr):
             pixel_agg=pixel_agg,
             output=output,
             field="H",
+        )
+
+    @property
+    def _default_style_description(self):
+        """Default style description text"""
+        pixel = np.array(self.pixel).reshape((-1, 3))
+        pix_uniq = np.unique(pixel, axis=0)
+        one_pix = pix_uniq.shape[0] == 1 and not (pix_uniq == 0).all()
+        return (
+            f" ({'x'.join(str(p) for p in self.pixel.shape[:-1])} pixels)"
+            if self.pixel.ndim != 1
+            else f" ({pixel[1:].shape[0]} pixel)"
+            if one_pix
+            else ""
         )

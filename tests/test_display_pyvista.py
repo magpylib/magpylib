@@ -14,7 +14,9 @@ try:
 except ModuleNotFoundError:
     HAS_IMAGEIO = False
 
+# pylint: disable=no-member
 
+# pylint: disable=broad-exception-caught
 ffmpeg_failed = False
 try:
     try:
@@ -26,7 +28,8 @@ try:
             imageio.plugins.ffmpeg.download()
         else:
             raise err
-except:  # noqa: E722
+except Exception:  # noqa: E722
+    # skip test if ffmpeg cannot be loaded
     ffmpeg_failed = True
 
 
@@ -34,7 +37,7 @@ def test_Cuboid_display():
     "test simple display with path"
     src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
     src.move([[i, 0, 0] for i in range(2)], start=0)
-    fig = src.show(return_fig=True, backend="pyvista")
+    fig = src.show(return_fig=True, style_path_numbering=True, backend="pyvista")
     assert isinstance(fig, pv.Plotter)
 
 
@@ -103,10 +106,9 @@ def test_pyvista_animation(is_notebook_result, extension, filename):
             with tempfile.NamedTemporaryFile(suffix=f".{extension}") as temp:
                 animation_output = temp.name if filename else extension
                 magpy.show(
-                    dict(objects=objs, col=1, output=("Bx", "By", "Bz")),
-                    dict(objects=objs, col=2),
+                    {"objects": objs, "col": 1, "output": ("Bx", "By", "Bz")},
+                    {"objects": objs, "col": 2},
                     backend="pyvista",
-                    style_path_numbering=True,
                     animation=True,
                     sumup=True,
                     animation_output=animation_output,

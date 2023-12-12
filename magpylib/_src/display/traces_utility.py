@@ -8,24 +8,19 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
-from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
 
 
-def get_label(obj, default_suffix="", default_name=None, style=None):
+def get_legend_label(obj, style=None, suffix=True):
     """provides legend entry based on name and suffix"""
     style = obj.style if style is None else style
-    default_name = obj.__class__.__name__ if default_name is None else default_name
-    name = default_name if style.label is None else style.label
-    if style.description.show and style.description.text is None:
-        name_suffix = default_suffix
-    elif not style.description.show:
-        name_suffix = ""
-    else:
-        name_suffix = f" ({style.description.text})"
-    return f"{name}{name_suffix}"
+    name = style.label if style.label else obj.__class__.__name__
+    desc = getattr(obj, "_default_style_description", "")
+    suff = f" ({desc})" if style.description.show and desc and suffix else ""
+    return f"{name}{suff}"
 
 
 def place_and_orient_model3d(
@@ -47,6 +42,37 @@ def place_and_orient_model3d(
     if model_args is None:
         model_args = ()
     new_model_args = list(model_args)
+    vertices, coordsargs, useargs = get_vertices_from_model(
+        model_kwargs, model_args, coordsargs
+    )
+
+    # sometimes traces come as (n,m,3) shape
+    vert_shape = vertices.shape
+    vertices = np.reshape(vertices, (3, -1))
+
+    vertices = vertices.T
+
+    if orientation is not None:
+        vertices = orientation.apply(vertices)
+    new_vertices = (vertices * scale + position).T
+    new_vertices = np.reshape(new_vertices, vert_shape)
+    for i, k in enumerate("xyz"):
+        key = coordsargs[k]
+        if useargs:
+            ind = int(key[5])
+            new_model_args[ind] = new_vertices[i]
+        else:
+            new_model_dict[key] = new_vertices[i]
+    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
+
+    out = (new_model_kwargs,)
+    if return_model_args:
+        out += (new_model_args,)
+    return out[0] if len(out) == 1 else out
+
+
+def get_vertices_from_model(model_kwargs, model_args=None, coordsargs=None):
+    """get vertices from model kwargs and args"""
     if model_args:
         if coordsargs is None:  # matplotlib default
             coordsargs = {"x": "args[0]", "y": "args[1]", "z": "args[2]"}
@@ -74,30 +100,7 @@ def place_and_orient_model3d(
         vertices.append(v)
 
     vertices = np.array(vertices)
-
-    # sometimes traces come as (n,m,3) shape
-    vert_shape = vertices.shape
-    vertices = np.reshape(vertices, (3, -1))
-
-    vertices = vertices.T
-
-    if orientation is not None:
-        vertices = orientation.apply(vertices)
-    new_vertices = (vertices * scale + position).T
-    new_vertices = np.reshape(new_vertices, vert_shape)
-    for i, k in enumerate("xyz"):
-        key = coordsargs[k]
-        if useargs:
-            ind = int(key[5])
-            new_model_args[ind] = new_vertices[i]
-        else:
-            new_model_dict[key] = new_vertices[i]
-    new_model_kwargs = {**model_kwargs, **new_model_dict, **kwargs}
-
-    out = (new_model_kwargs,)
-    if return_model_args:
-        out += (new_model_args,)
-    return out[0] if len(out) == 1 else out
+    return vertices, coordsargs, useargs
 
 
 def draw_arrowed_line(
@@ -223,6 +226,8 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.arange(path_len, dtype=int)[::-show_path]
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
+    else:  # pragma: no cover
+        raise ValueError(f"Invalid show_path value ({show_path})")
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:
@@ -258,6 +263,7 @@ def get_flatten_objects_properties_recursive(
     parent_legendgroup=None,
     parent_color=None,
     parent_label=None,
+    parent_showlegend=None,
     **kwargs,
 ):
     """returns a flat dict -> (obj: display_props, ...) from nested collections"""
@@ -266,7 +272,7 @@ def get_flatten_objects_properties_recursive(
     flat_objs = {}
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
-        style = get_style(subobj, Config, **kwargs)
+        style = get_style(subobj, default_settings, **kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
         if parent_legendgroup is not None:
@@ -281,22 +287,10 @@ def get_flatten_objects_properties_recursive(
             "legendgroup": legendgroup,
             "style": style,
             "legendtext": parent_label,
+            "showlegend": parent_showlegend,
         }
         if isCollection:
-            suffs = []
-            if subobj.children_all:
-                nums = {
-                    "sensor": len(subobj.sensors_all),
-                    "source": len(subobj.sources_all),
-                }
-                for name, num in nums.items():
-                    if num > 0:
-                        suffs.append(f"{num} {name}{'s'[:num^1]}")
-            else:
-                suffs.append("no children")
-            label = get_label(
-                subobj, default_suffix=f" ({', '.join(suffs)})", style=style
-            )
+            label = get_legend_label(subobj, style=style)
             flat_objs.update(
                 get_flatten_objects_properties_recursive(
                     *subobj.children,
@@ -305,6 +299,7 @@ def get_flatten_objects_properties_recursive(
                     parent_legendgroup=legendgroup,
                     parent_color=style.color,
                     parent_label=label,
+                    parent_showlegend=style.legend.show,
                     **kwargs,
                 )
             )
@@ -380,7 +375,7 @@ def merge_traces(*traces):
                 new_traces.append(merge_mesh3d(*tlist))
             elif ttype == "scatter3d":
                 new_traces.append(merge_scatter3d(*tlist))
-            else:
+            else:  # pragma: no cover
                 new_traces.extend(tlist)
         elif len(tlist) == 1:
             new_traces.append(tlist[0])
@@ -420,7 +415,7 @@ def getColorscale(
     color_north="#E71111",  # 'red'
     color_middle="#DDDDDD",  # 'grey'
     color_south="#00B050",  # 'green'
-) -> Tuple:
+):
     """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
     containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
     color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.
@@ -472,13 +467,20 @@ def get_scene_ranges(*traces, zoom=1) -> np.ndarray:
     trace3d_found = False
     if traces:
         ranges = {k: [] for k in "xyz"}
-        for t in traces:
+        for tr in traces:
             coords = "xyz"
-            if "z" in t:  # only extend range for 3d traces
+            if "constructor" in tr:
+                verts, *_ = get_vertices_from_model(
+                    model_args=tr.get("args", None),
+                    model_kwargs=tr.get("kwargs", None),
+                    coordsargs=tr.get("coordsargs", None),
+                )
+                tr = dict(zip("xyz", verts))
+            if "z" in tr:  # only extend range for 3d traces
                 trace3d_found = True
-                pts = np.array([t[k] for k in coords], dtype="float64").T
+                pts = np.array([tr[k] for k in coords], dtype="float64").T
                 try:  # for mesh3d, use only vertices part of faces for range calculation
-                    inds = np.array([t[k] for k in "ijk"], dtype="int64").T
+                    inds = np.array([tr[k] for k in "ijk"], dtype="int64").T
                     pts = pts[inds]
                 except KeyError:
                     # for 2d meshes, nothing special needed

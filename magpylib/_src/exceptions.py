@@ -15,3 +15,7 @@ class MagpylibBadInputShape(Exception):
 
 class MagpylibMissingInput(Exception):
     """catching missing user inputs"""
+
+
+class MagpylibDeprecationWarning(Warning):
+    """Non-supressed Deprecation Warning."""

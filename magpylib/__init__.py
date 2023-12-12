@@ -9,7 +9,7 @@ analytical expressions and therefore extremely fast. A user friendly
 geometry interface enables convenient relative positioning between sources
 and observers.
 
-Help us develop the packge further - we appreciate any feedback !
+Help us develop the package further - we appreciate any feedback !
 
 Resources
 ---------
@@ -28,7 +28,7 @@ https://www.sciencedirect.com/science/article/pii/S2352711020300170
 
 """
 # module level dunders
-__version__ = "4.3.0"
+__version__ = "4.4.1"
 __author__ = "Michael Ortner & Alexandre Boisselet"
 __credits__ = "The Magpylib community"
 __all__ = [
