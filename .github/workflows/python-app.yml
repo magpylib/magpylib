@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Setup headless display
         uses: pyvista/setup-headless-display-action@v2
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup python for test ${{ matrix.py }}
@@ -65,9 +65,9 @@ jobs:
       id-token: write
     steps:
       - name: Checkout source
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Set up Python 3.9
-        uses: actions/setup-python@v2
+        uses: actions/setup-python@v4
         with:
           python-version: 3.9
       - name: Install flit
