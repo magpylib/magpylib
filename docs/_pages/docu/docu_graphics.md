@@ -59,7 +59,7 @@ objects = {
         polydata=pv.Dodecahedron(),
         position=(-1, 0, 4),
     ),
-    "CircularLoop": magpy.current.CircularLoop(
+    "Circle": magpy.current.Circle(
         current=1,
         diameter=1,
         position=(4, 0, 0),
@@ -84,7 +84,7 @@ objects = {
     ),
 }
 
-objects["CircularLoop"].move(np.linspace((0, 0, 0), (0, 0, 5), 20))
+objects["Circle"].move(np.linspace((0, 0, 0), (0, 0, 5), 20))
 objects["Cuboid"].rotate_from_angax(np.linspace(0, 90, 20), "z", anchor=0)
 
 magpy.show(*objects.values())
@@ -179,7 +179,7 @@ import pyvista as pv
 pv.set_jupyter_backend("panel")  # improve rendering in a jupyter notebook (pyvista only)
 
 # define sources and paths
-loop = magpy.current.CircularLoop(current=1, diameter=1)
+loop = magpy.current.Circle(current=1, diameter=1)
 loop.position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 
 cylinder = magpy.magnet.Cylinder(
@@ -210,7 +210,7 @@ ax1 = fig.add_subplot(121)  # 2D-axis
 ax2 = fig.add_subplot(122, projection="3d")  # 3D-axis
 
 # define sources and paths
-loop = magpy.current.CircularLoop(current=1, diameter=1)
+loop = magpy.current.Circle(current=1, diameter=1)
 loop.position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 
 cylinder = magpy.magnet.Cylinder(
@@ -243,7 +243,7 @@ fig = go.Figure().set_subplots(
 )
 
 # define sources and paths
-loop = magpy.current.CircularLoop(current=1, diameter=1)
+loop = magpy.current.Circle(current=1, diameter=1)
 loop.position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 
 cylinder = magpy.magnet.Cylinder(
@@ -276,7 +276,7 @@ import pyvista as pv
 pv.set_jupyter_backend("panel")  # improve rending in a jupyter notebook
 
 # define sources and paths
-loop = magpy.current.CircularLoop(current=1, diameter=5)
+loop = magpy.current.Circle(current=1, diameter=5)
 loop.position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 
 cylinder = magpy.magnet.Cylinder(
@@ -312,7 +312,7 @@ import pyvista as pv
 pv.set_jupyter_backend("panel")  # improve rending in a jupyter notebook
 
 # define sources and paths
-loop = magpy.current.CircularLoop(current=1, diameter=5)
+loop = magpy.current.Circle(current=1, diameter=5)
 loop.position = np.linspace((0, 0, -3), (0, 0, 3), 40)
 
 cylinder = magpy.magnet.Cylinder(

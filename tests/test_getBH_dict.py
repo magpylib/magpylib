@@ -137,13 +137,13 @@ def test_getBH_dipole():
     assert np.allclose(H, Htest)
 
 
-def test_getBH_circular_loop():
-    """test if CircularLoop implementation gives correct output"""
-    B = magpy.getB("CircularLoop", (0, 0, 0), current=1, diameter=2)
+def test_getBH_circle():
+    """test if Circle implementation gives correct output"""
+    B = magpy.getB("Circle", (0, 0, 0), current=1, diameter=2)
     Btest = np.array([0, 0, 0.6283185307179586])
     assert np.allclose(B, Btest)
 
-    H = magpy.getH("CircularLoop", (0, 0, 0), current=1, diameter=2)
+    H = magpy.getH("Circle", (0, 0, 0), current=1, diameter=2)
     Htest = np.array([0, 0, 0.6283185307179586 * 10 / 4 / np.pi])
     assert np.allclose(H, Htest)
 
@@ -154,10 +154,10 @@ def test_getBH_circular_loop():
 
 def test_getBH_squeeze():
     """test if squeeze works"""
-    B1 = magpy.getB("CircularLoop", (0, 0, 0), current=1, diameter=2)
-    B2 = magpy.getB("CircularLoop", [(0, 0, 0)], current=1, diameter=2)
-    B3 = magpy.getB("CircularLoop", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
-    B4 = magpy.getB("CircularLoop", [(0, 0, 0)] * 2, current=1, diameter=2)
+    B1 = magpy.getB("Circle", (0, 0, 0), current=1, diameter=2)
+    B2 = magpy.getB("Circle", [(0, 0, 0)], current=1, diameter=2)
+    B3 = magpy.getB("Circle", [(0, 0, 0)], current=1, diameter=2, squeeze=False)
+    B4 = magpy.getB("Circle", [(0, 0, 0)] * 2, current=1, diameter=2)
 
     assert B1.ndim == 1
     assert B2.ndim == 1

@@ -219,7 +219,7 @@ def current_polyline_field(
 
 
 def current_line_field(*args, **kwargs):
-    """current_loop_field is deprecated, see current_polyline_field"""
+    """current_line_field is deprecated, see current_polyline_field"""
 
     warnings.warn(
         (

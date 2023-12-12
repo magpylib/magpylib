@@ -6,7 +6,7 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
-from magpylib.core import current_circular_loop_field
+from magpylib.core import current_circle_field
 from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
@@ -166,7 +166,7 @@ def test_field_dipole2():
     )
 
 
-def test_field_circular_loop():
+def test_field_circle():
     """test if field function gives correct outputs"""
     # from hyperphysics
     # current = 1A
@@ -204,12 +204,12 @@ def test_field_circular_loop():
     current = np.array([1, 1] + [123] * 8)
     dim = np.array([2, 2] + [2] * 8)
 
-    B = current_circular_loop_field("B", pos_test, current, dim)
+    B = current_circle_field("B", pos_test, current, dim)
 
     assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest * 10 / 4 / np.pi
-    H = current_circular_loop_field("H", pos_test, current, dim)
+    H = current_circle_field("H", pos_test, current, dim)
     assert_allclose(H, Htest, rtol=1e-6)
 
     with pytest.warns(MagpylibDeprecationWarning):
@@ -222,12 +222,12 @@ def test_field_loop2():
     curr = np.array([1])
     dim = np.array([2])
     poso = np.array([[0, 0, 0]])
-    B = current_circular_loop_field("B", poso, curr, dim)
+    B = current_circle_field("B", poso, curr, dim)
 
     curr = np.array([1] * 2)
     dim = np.array([2] * 2)
     poso = np.array([[0, 0, 0]] * 2)
-    B2 = current_circular_loop_field("B", poso, curr, dim)
+    B2 = current_circle_field("B", poso, curr, dim)
 
     assert_allclose(B, (B2[0],))
     assert_allclose(B, (B2[1],))
@@ -239,7 +239,7 @@ def test_field_loop_specials():
     dia = np.array([2, 2, 0, 0, 2, 2])
     obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
-    B = current_circular_loop_field("B", obs, cur, dia)
+    B = current_circle_field("B", obs, cur, dia)
     Btest = [
         [0, 0, 0.62831853],
         [0, 0, 0],
@@ -569,7 +569,7 @@ def test_triangle6():
         ("magnet", "Sphere", "diameter"),
         ("magnet", "Tetrahedron", "vertices"),
         ("magnet", "TriangularMesh", "vertices"),
-        ("current", "CircularLoop", "diameter"),
+        ("current", "Circle", "diameter"),
         ("current", "Polyline", "vertices"),
         ("misc", "Triangle", "vertices"),
     ],
@@ -610,7 +610,7 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
                 "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
             },
         ),
-        ("current", "CircularLoop", "current", {"diameter": 1}),
+        ("current", "Circle", "current", {"diameter": 1}),
         ("current", "Polyline", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
         (
             "misc",

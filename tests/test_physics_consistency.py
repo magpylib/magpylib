@@ -29,18 +29,18 @@ def test_dipole_approximation():
     B4 = src4.getB(pos)
     assert np.allclose(B1, B4)
 
-    # CircularLoop loop vs Dipole
+    # Circle loop vs Dipole
     dia = 2
     i0 = 234
     m0 = dia**2 * np.pi**2 / 10 * i0
-    src1 = magpy.current.CircularLoop(current=i0, diameter=dia)
+    src1 = magpy.current.Circle(current=i0, diameter=dia)
     src2 = magpy.misc.Dipole(moment=(0, 0, m0))
     H1 = src1.getH(pos)
     H2 = src2.getH(pos)
     assert np.allclose(H1, H2)
 
 
-def test_CircularLoop_vs_Cylinder_field():
+def test_Circle_vs_Cylinder_field():
     """
     The H-field of a loop with radius r0 (mm) and current i0 (A) is the same
     as the H-field of a cylinder with radius r0 (mm), height h0 (mm) and
@@ -171,7 +171,7 @@ def test_CircularLoop_vs_Cylinder_field():
     src1 = magpy.magnet.Cylinder(
         magnetization=(0, 0, i0 / h0 * 4 * np.pi / 10), dimension=(r0, h0)
     )
-    src2 = magpy.current.CircularLoop(current=i0, diameter=r0)
+    src2 = magpy.current.Circle(current=i0, diameter=r0)
 
     H1 = src1.getH(pos_obs)
     H2 = src2.getH(pos_obs)
@@ -179,7 +179,7 @@ def test_CircularLoop_vs_Cylinder_field():
     assert np.allclose(H1, H2)
 
 
-def test_Polyline_vs_CircularLoop():
+def test_Polyline_vs_Circle():
     """show that line prodices the same as circular"""
 
     # finely approximated loop by lines
@@ -200,7 +200,7 @@ def test_Polyline_vs_CircularLoop():
     Bls = np.array(Bls)
 
     # field from current loop
-    src = magpy.current.CircularLoop(current=1, diameter=2)
+    src = magpy.current.Circle(current=1, diameter=2)
     Bcs = src.getB(po)
 
     assert np.allclose(Bls, Bcs)
