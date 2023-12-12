@@ -75,8 +75,4 @@ jobs:
       - name: Build package
         run: flit build
       - name: Publish
-        env:
-          TWINE_USERNAME: __token__
-          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
-        run: flit publish
-
+        uses: pypa/gh-action-pypi-publish@release/v1
