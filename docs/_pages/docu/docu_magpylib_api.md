@@ -278,7 +278,7 @@ magpy.current.Circle(current, diameter, position, orientation, style)
 ::::{grid} 2
 :::{grid-item}
 :columns: 9
-`Current` represents a circular line current loop. The <span style="color: orange">**diameter**</span> attribute is the loop diameter $d$ in arbitrary length units. The loop lies in the xy-plane with it's center in the origin of the local coordinates.
+`Circle` represents a circular line current loop. The <span style="color: orange">**diameter**</span> attribute is the loop diameter $d$ in arbitrary length units. The loop lies in the xy-plane with it's center in the origin of the local coordinates.
 :::
 :::{grid-item}
 :columns: 3
