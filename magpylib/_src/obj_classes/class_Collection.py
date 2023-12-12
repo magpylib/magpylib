@@ -728,7 +728,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> import magpylib as magpy
     >>> src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
-    >>> src2 = magpy.current.Loop(1, 1, position=(-2,0,0))
+    >>> src2 = magpy.current.CircularLoop(1, 1, position=(-2,0,0))
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
     Collection(id=...)
@@ -744,7 +744,7 @@ class Collection(BaseGeo, BaseCollection):
     >>> src1.move((2,0,0))
     Sphere(id=...)
     >>> col[1].move((-2,0,0))
-    Loop(id=...)
+    CircularLoop(id=...)
     >>> print(src1.position)
     [4. 0. 2.]
     >>> print(src2.position)
@@ -764,7 +764,7 @@ class Collection(BaseGeo, BaseCollection):
     >>> col.add(sens)
     Collection(id=...)
     >>> print(col.children)
-    [Sphere(id=...), Loop(id=...), Sensor(id=...)]
+    [Sphere(id=...), CircularLoop(id=...), Sensor(id=...)]
 
     and can compute the field of the sources in the collection seen by the sensor with
     a single command:

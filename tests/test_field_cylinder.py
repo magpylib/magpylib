@@ -8,7 +8,7 @@ import magpylib as magpy
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_core
 from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
 
-
+# pylint: disable="pointless-string-statement"
 # creating test data
 """ import os
 import numpy as np
@@ -193,18 +193,6 @@ def test_cylinder_tile_slanovc(inputs, H_expected):
     "testing precomputed cylinder test cases"
     H = magnet_cylinder_segment_core(**inputs)
     assert np.allclose(np.nan_to_num(H), np.nan_to_num(H_expected))
-
-
-# from magpylib._src.fields.field_BH_cylinder_old import field_BH_cylinder
-# import magpylib as magpy
-# magpy.Config.ITER_CYLINDER = 10000
-# N = 100
-# mag = (np.random.rand(N, 3)-.5)*1000
-# dim = np.random.rand(N, 3)
-# poso = (np.random.rand(N, 3)-.5)
-# dim2 = dim[:,:2]
-# H0 = field_BH_cylinder(True, mag, dim2, poso)
-# np.save('testdata_full_cyl', np.array([mag,dim,poso,H0]))
 
 
 def test_cylinder_field1():

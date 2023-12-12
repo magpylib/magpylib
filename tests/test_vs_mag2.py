@@ -34,9 +34,8 @@ import magpylib as magpy
 
 def test_vs_mag2_linear():
     """test against magpylib v2"""
-    data = pickle.load(
-        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
-    )[0]
+    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+        data = pickle.load(f)[0]
     poso = [(t, -t, t) for t in np.linspace(0, 3, 100)]
     pm = magpy.magnet.Cuboid(magnetization=(111, 222, 333), dimension=(1, 2, 3))
 
@@ -46,9 +45,8 @@ def test_vs_mag2_linear():
 
 def test_vs_mag2_rotation():
     """test against magpylib v2"""
-    data = pickle.load(
-        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
-    )[1]
+    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+        data = pickle.load(f)[1]
     pm = magpy.magnet.Cuboid(magnetization=(111, 222, 333), dimension=(1, 2, 3))
     possis = [
         (3 * np.sin(t / 180 * np.pi), 3 * np.cos(t / 180 * np.pi), 0)
@@ -60,9 +58,8 @@ def test_vs_mag2_rotation():
 
 def test_vs_mag2_spiral():
     """test against magpylib v2"""
-    data = pickle.load(
-        open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb")
-    )[2]
+    with open(os.path.abspath("tests/testdata/testdata_vs_mag2.p"), "rb") as f:
+        data = pickle.load(f)[2]
     pm = magpy.magnet.Cuboid(
         magnetization=(111, 222, 333), dimension=(1, 2, 3), position=(3, 0, 0)
     )
@@ -79,7 +76,7 @@ def test_vs_mag2_line():
     """test line current vs mag2 results"""
     Btest = np.array([1.47881931, -1.99789688, 0.2093811])
 
-    src = magpy.current.Line(
+    src = magpy.current.Polyline(
         current=10,
         vertices=[(0, -5, 0), (0, 5, 0), (3, 3, 3), (-1, -2, -3), (1, 1, 1), (2, 3, 4)],
     )

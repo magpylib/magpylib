@@ -1,9 +1,12 @@
 """
 Implementations of analytical expressions of line current segments
 """
+import warnings
+
 import numpy as np
 from numpy.linalg import norm
 
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.input_checks import check_field_input
 
 
@@ -17,7 +20,7 @@ def current_vertices_field(
 ) -> np.ndarray:
     """
     This function accepts n (mi,3) shaped vertex-sets, creates a single long
-    input array for field_BH_line(), computes, sums and returns a single field for each
+    input array for field_BH_polyline(), computes, sums and returns a single field for each
     vertex-set at respective n observer positions.
 
     ### Args:
@@ -30,12 +33,14 @@ def current_vertices_field(
     - B-field (ndarray nx3): B-field vectors at pos_obs in units of mT
     """
     if vertices is None:
-        return current_line_field(field, observers, current, segment_start, segment_end)
+        return current_polyline_field(
+            field, observers, current, segment_start, segment_end
+        )
 
     nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
     if all(v == nvs[0] for v in nvs):  # if all vertices sets have the same lenghts
         n0, n1, *_ = vertices.shape
-        BH = current_line_field(
+        BH = current_polyline_field(
             field=field,
             observers=np.repeat(observers, n1 - 1, axis=0),
             current=np.repeat(current, n1 - 1, axis=0),
@@ -46,7 +51,7 @@ def current_vertices_field(
         BH = np.sum(BH, axis=1)
     else:
         split_indices = np.cumsum(nvs - 1)[:-1]  # remove last to avoid empty split
-        BH = current_line_field(
+        BH = current_polyline_field(
             field=field,
             observers=np.repeat(observers, nvs - 1, axis=0),
             current=np.repeat(current, nvs - 1, axis=0),
@@ -59,7 +64,7 @@ def current_vertices_field(
 
 
 # CORE
-def current_line_field(
+def current_polyline_field(
     field: str,
     observers: np.ndarray,
     current: np.ndarray,
@@ -84,10 +89,10 @@ def current_line_field(
         Electrical current in units of A.
 
     start: ndarray, shape (n,3)
-        Line start positions (x,y,z) in Cartesian coordinates in units of mm.
+        Polyline start positions (x,y,z) in Cartesian coordinates in units of mm.
 
     end: ndarray, shape (n,3)
-        Line end positions (x,y,z) in Cartesian coordinates in units of mm.
+        Polyline end positions (x,y,z) in Cartesian coordinates in units of mm.
 
     Returns
     -------
@@ -105,7 +110,7 @@ def current_line_field(
     >>> start = np.array([(-1,0,0), (-1,0,0)])
     >>> end   = np.array([( 1,0,0), ( 2,0,0)])
     >>> obs   = np.array([( 0,0,1), ( 0,0,0)])
-    >>> B = magpy.core.current_line_field('B', obs, curr, start, end)
+    >>> B = magpy.core.current_polyline_field('B', obs, curr, start, end)
     >>> print(B)
     [[ 0.         -0.14142136  0.        ]
      [ 0.          0.          0.        ]]
@@ -116,7 +121,7 @@ def current_line_field(
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements
-    bh = check_field_input(field, "current_line_field()")
+    bh = check_field_input(field, "current_polyline_field()")
 
     # allocate for special case treatment
     ntot = len(current)
@@ -211,3 +216,17 @@ def current_line_field(
 
     # H: mT -> kA/m
     return field_all * 10 / 4 / np.pi
+
+
+def current_line_field(*args, **kwargs):
+    """current_loop_field is deprecated, see current_polyline_field"""
+
+    warnings.warn(
+        (
+            "current_line_field is deprecated and will be removed in a future version, "
+            "use current_polyline_field instead."
+        ),
+        MagpylibDeprecationWarning,
+        stacklevel=2,
+    )
+    return current_polyline_field(*args, **kwargs)

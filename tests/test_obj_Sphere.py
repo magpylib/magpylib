@@ -4,8 +4,6 @@ import pickle
 import numpy as np
 
 import magpylib as magpy
-from magpylib import Collection
-from magpylib.magnet import Sphere
 
 # # """data generation for test_Sphere()"""
 
@@ -39,16 +37,15 @@ from magpylib.magnet import Sphere
 def test_Sphere_basics():
     """test Cuboid fundamentals, test against magpylib2 fields"""
     # data generated below
-    data = pickle.load(
-        open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb")
-    )
+    with open(os.path.abspath("./tests/testdata/testdata_Sphere.p"), "rb") as f:
+        data = pickle.load(f)
     mags, dims, posos, angs, axs, anchs, movs, B = data
 
     btest = []
     for mag, dim, ang, ax, anch, mov, poso in zip(
         mags, dims, angs, axs, anchs, movs, posos
     ):
-        pm = Sphere(mag, dim)
+        pm = magpy.magnet.Sphere(mag, dim)
 
         # 18 subsequent operations
         for a, aa, aaa, mv in zip(ang, ax, anch, mov):
@@ -62,15 +59,15 @@ def test_Sphere_basics():
 
 def test_Sphere_add():
     """testing __add__"""
-    src1 = Sphere(magnetization=(1, 2, 3), diameter=11)
-    src2 = Sphere((1, 2, 3), 11)
+    src1 = magpy.magnet.Sphere(magnetization=(1, 2, 3), diameter=11)
+    src2 = magpy.magnet.Sphere((1, 2, 3), 11)
     col = src1 + src2
-    assert isinstance(col, Collection), "adding cuboids fail"
+    assert isinstance(col, magpy.Collection), "adding cuboids fail"
 
 
 def test_Sphere_squeeze():
     """testing squeeze output"""
-    src1 = Sphere((1, 1, 1), 1)
+    src1 = magpy.magnet.Sphere((1, 1, 1), 1)
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -86,7 +83,7 @@ def test_Sphere_squeeze():
 def test_repr():
     """test __repr__"""
     pm3 = magpy.magnet.Sphere((1, 2, 3), 3)
-    assert pm3.__repr__()[:6] == "Sphere", "Sphere repr failed"
+    assert repr(pm3)[:6] == "Sphere", "Sphere repr failed"
 
 
 def test_sphere_object_vs_lib():

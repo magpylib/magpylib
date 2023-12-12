@@ -8,7 +8,7 @@ from typing import Tuple
 import numpy as np
 from scipy.spatial.transform import Rotation as RotScipy
 
-from magpylib._src.defaults.defaults_classes import default_settings as Config
+from magpylib._src.defaults.defaults_classes import default_settings
 from magpylib._src.defaults.defaults_utility import linearize_dict
 from magpylib._src.style import get_style
 from magpylib._src.utility import format_obj_input
@@ -226,6 +226,8 @@ def get_rot_pos_from_path(obj, show_path=None):
         inds = np.arange(path_len, dtype=int)[::-show_path]
     elif hasattr(show_path, "__iter__") and not isinstance(show_path, str):
         inds = np.array(show_path)
+    else:  # pragma: no cover
+        raise ValueError(f"Invalid show_path value ({show_path})")
     inds[inds >= path_len] = path_len - 1
     inds = np.unique(inds)
     if inds.size == 0:
@@ -270,7 +272,7 @@ def get_flatten_objects_properties_recursive(
     flat_objs = {}
     for subobj in obj_list_semi_flat:
         isCollection = getattr(subobj, "children", None) is not None
-        style = get_style(subobj, Config, **kwargs)
+        style = get_style(subobj, default_settings, **kwargs)
         if style.label is None:
             style.label = str(type(subobj).__name__)
         if parent_legendgroup is not None:
@@ -413,7 +415,7 @@ def getColorscale(
     color_north="#E71111",  # 'red'
     color_middle="#DDDDDD",  # 'grey'
     color_south="#00B050",  # 'green'
-) -> Tuple:
+):
     """Provides the colorscale for a plotly mesh3d trace. The colorscale must be an array
     containing arrays mapping a normalized value to an rgb, rgba, hex, hsl, hsv, or named
     color string. At minimum, a mapping for the lowest (0) and highest (1) values is required.

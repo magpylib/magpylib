@@ -1,20 +1,19 @@
 import numpy as np
 
 import magpylib as magpy
-from magpylib.magnet import Cylinder
 
 
 def test_Cylinder_add():
     """testing __add__"""
-    src1 = Cylinder((1, 2, 3), (1, 2))
-    src2 = Cylinder((1, 2, 3), (1, 2))
+    src1 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
+    src2 = magpy.magnet.Cylinder((1, 2, 3), (1, 2))
     col = src1 + src2
     assert isinstance(col, magpy.Collection), "adding cylinder fail"
 
 
 def test_Cylinder_squeeze():
     """testing squeeze output"""
-    src1 = Cylinder((1, 1, 1), (1, 1))
+    src1 = magpy.magnet.Cylinder((1, 1, 1), (1, 1))
     sensor = magpy.Sensor(pixel=[(1, 2, 3), (1, 2, 3)])
     B = src1.getB(sensor)
     assert B.shape == (2, 3)
@@ -30,13 +29,13 @@ def test_Cylinder_squeeze():
 def test_repr():
     """test __repr__"""
     pm2 = magpy.magnet.Cylinder((1, 2, 3), (2, 3))
-    assert pm2.__repr__()[:8] == "Cylinder", "Cylinder repr failed"
+    assert repr(pm2)[:8] == "Cylinder", "Cylinder repr failed"
 
 
 def test_repr2():
     """test __repr__"""
     pm2 = magpy.magnet.CylinderSegment((1, 2, 3), (2, 3, 1, 0, 45))
-    assert pm2.__repr__()[:15] == "CylinderSegment", "CylinderSegment repr failed"
+    assert repr(pm2)[:15] == "CylinderSegment", "CylinderSegment repr failed"
 
 
 def test_Cylinder_getBH():

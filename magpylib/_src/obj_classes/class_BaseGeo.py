@@ -355,6 +355,7 @@ class BaseGeo(BaseTransform):
         if getattr(self, "_style", None) is not None or bool(
             getattr(self, "_style_kwargs", False)
         ):
+            # pylint: disable=no-member
             label = self.style.label
             if label is None:
                 label = f"{type(self).__name__}_01"

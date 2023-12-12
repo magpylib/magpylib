@@ -35,4 +35,4 @@ def test_Dipole_zero_position():
 def test_repr():
     """test __repr__"""
     dip = magpy.misc.Dipole(moment=(1, 2, 3))
-    assert dip.__repr__()[:6] == "Dipole", "Dipole repr failed"
+    assert repr(dip)[:6] == "Dipole", "Dipole repr failed"

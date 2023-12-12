@@ -63,4 +63,4 @@ def test_CustomSource_None():
 def test_repr():
     """test __repr__"""
     dip = magpy.misc.CustomSource()
-    assert dip.__repr__()[:12] == "CustomSource", "Custom_Source repr failed"
+    assert repr(dip)[:12] == "CustomSource", "Custom_Source repr failed"

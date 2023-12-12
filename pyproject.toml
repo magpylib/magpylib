@@ -54,9 +54,9 @@ docs = [
     "panel",
 ]
 test = [
-    "tox",
-    "pytest",
-    "pylint",
+    "tox>=4.11",
+    "pytest>=7.4",
+    "pylint>3.0",
     "coverage",
     "pandas",
     "pyvista",
