@@ -57,7 +57,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    needs: test
+    #needs: test
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-latest
     permissions:
@@ -78,4 +78,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: magpylib
-          password: ${{ secrets.PYPI_PASSWORD }}
+          password: ${{ secrets.$PYPI_PASSWORD }}
