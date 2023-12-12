@@ -76,7 +76,7 @@ def test_vs_mag2_line():
     """test line current vs mag2 results"""
     Btest = np.array([1.47881931, -1.99789688, 0.2093811])
 
-    src = magpy.current.Line(
+    src = magpy.current.Polyline(
         current=10,
         vertices=[(0, -5, 0), (0, 5, 0), (3, 3, 3), (-1, -2, -3), (1, 1, 1), (2, 3, 4)],
     )

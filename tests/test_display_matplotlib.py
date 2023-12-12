@@ -123,10 +123,10 @@ def test_CustomSource_display():
     cs.show(canvas=ax, return_fig=True)
 
 
-def test_Loop_display():
-    """testing display for Loop source"""
+def test_CircularLoop_display():
+    """testing display for CircularLoop source"""
     ax = plt.subplot(projection="3d")
-    src = magpy.current.Loop(current=1, diameter=1)
+    src = magpy.current.CircularLoop(current=1, diameter=1)
     src.show(canvas=ax, return_fig=True)
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
@@ -315,11 +315,11 @@ def test_circular_line_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection="3d")
-    src1 = magpy.current.Loop(1, 2)
-    src2 = magpy.current.Loop(1, 2)
+    src1 = magpy.current.CircularLoop(1, 2)
+    src2 = magpy.current.CircularLoop(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
-    src3 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
-    src4 = magpy.current.Line(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
+    src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src3.move([(0.4, 0.4, 0.4)] * 5, start=-1)
     src1.show(canvas=ax2, style_path_frames=2, style_arrow_size=0, return_fig=True)
     src2.show(canvas=ax2, style_arrow_sizemode="absolute", return_fig=True)
@@ -573,8 +573,8 @@ def test_unset_excitations():
         magpy.magnet.Sphere(diameter=1),
         magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
         magpy.misc.Dipole(),
-        magpy.current.Line(vertices=[[0, -1, 0], [0, 1, 0]]),
-        magpy.current.Loop(diameter=1, current=0),
+        magpy.current.Polyline(vertices=[[0, -1, 0], [0, 1, 0]]),
+        magpy.current.CircularLoop(diameter=1, current=0),
     ]
     for i, o in enumerate(objs):
         o.move((i * 1.5, 0, 0))
@@ -596,8 +596,8 @@ def test_unset_objs():
         # magpy.magnet.TriangularMesh(), not possible yet
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
-        magpy.current.Line(),
-        magpy.current.Loop(),
+        magpy.current.Polyline(),
+        magpy.current.CircularLoop(),
     ]
 
     for i, o in enumerate(objs):

@@ -3,14 +3,17 @@ import pytest
 from numpy.testing import assert_allclose
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
-from magpylib._src.fields.field_BH_cuboid import magnet_cuboid_field
-from magpylib._src.fields.field_BH_cylinder_segment import magnet_cylinder_segment_field
-from magpylib._src.fields.field_BH_dipole import dipole_field
-from magpylib._src.fields.field_BH_line import current_line_field
-from magpylib._src.fields.field_BH_line import current_vertices_field
-from magpylib._src.fields.field_BH_loop import current_loop_field
-from magpylib._src.fields.field_BH_sphere import magnet_sphere_field
+from magpylib._src.fields.field_BH_polyline import current_vertices_field
+from magpylib.core import current_circular_loop_field
+from magpylib.core import current_line_field
+from magpylib.core import current_loop_field
+from magpylib.core import current_polyline_field
+from magpylib.core import dipole_field
+from magpylib.core import magnet_cuboid_field
+from magpylib.core import magnet_cylinder_segment_field
+from magpylib.core import magnet_sphere_field
 
 
 def test_magnet_cuboid_Bfield():
@@ -163,7 +166,7 @@ def test_field_dipole2():
     )
 
 
-def test_field_loop():
+def test_field_circular_loop():
     """test if field function gives correct outputs"""
     # from hyperphysics
     # current = 1A
@@ -201,13 +204,17 @@ def test_field_loop():
     current = np.array([1, 1] + [123] * 8)
     dim = np.array([2, 2] + [2] * 8)
 
-    B = current_loop_field("B", pos_test, current, dim)
+    B = current_circular_loop_field("B", pos_test, current, dim)
 
     assert_allclose(B, Btest, rtol=1e-6)
 
     Htest = Btest * 10 / 4 / np.pi
-    H = current_loop_field("H", pos_test, current, dim)
+    H = current_circular_loop_field("H", pos_test, current, dim)
     assert_allclose(H, Htest, rtol=1e-6)
+
+    with pytest.warns(MagpylibDeprecationWarning):
+        B = current_loop_field("B", pos_test, current, dim)
+    assert_allclose(B, Btest, rtol=1e-6)
 
 
 def test_field_loop2():
@@ -215,12 +222,12 @@ def test_field_loop2():
     curr = np.array([1])
     dim = np.array([2])
     poso = np.array([[0, 0, 0]])
-    B = current_loop_field("B", poso, curr, dim)
+    B = current_circular_loop_field("B", poso, curr, dim)
 
     curr = np.array([1] * 2)
     dim = np.array([2] * 2)
     poso = np.array([[0, 0, 0]] * 2)
-    B2 = current_loop_field("B", poso, curr, dim)
+    B2 = current_circular_loop_field("B", poso, curr, dim)
 
     assert_allclose(B, (B2[0],))
     assert_allclose(B, (B2[1],))
@@ -232,7 +239,7 @@ def test_field_loop_specials():
     dia = np.array([2, 2, 0, 0, 2, 2])
     obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
-    B = current_loop_field("B", obs, cur, dia)
+    B = current_circular_loop_field("B", obs, cur, dia)
     Btest = [
         [0, 0, 0.62831853],
         [0, 0, 0],
@@ -253,18 +260,18 @@ def test_field_line():
     pe1 = np.array([(2, 2, 2)])
 
     # only normal
-    B1 = current_line_field("B", po1, c1, ps1, pe1)
+    B1 = current_polyline_field("B", po1, c1, ps1, pe1)
     x1 = np.array([[0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
     po1b = np.array([(1, 1, 1)])
-    B2 = current_line_field("B", po1b, c1, ps1, pe1)
+    B2 = current_polyline_field("B", po1b, c1, ps1, pe1)
     x2 = np.zeros((1, 3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
-    B3 = current_line_field("B", po1, c1, ps1, ps1)
+    B3 = current_polyline_field("B", po1, c1, ps1, ps1)
     x3 = np.zeros((1, 3))
     assert_allclose(x3, B3, rtol=1e-6)
 
@@ -273,19 +280,19 @@ def test_field_line():
     ps2 = np.array([(0, 0, 0)] * 2)
     pe2 = np.array([(0, 0, 0), (2, 2, 2)])
     po2 = np.array([(1, 2, 3), (1, 1, 1)])
-    B4 = current_line_field("B", po2, c2, ps2, pe2)
+    B4 = current_polyline_field("B", po2, c2, ps2, pe2)
     x4 = np.zeros((2, 3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
     po2b = np.array([(1, 2, 3), (1, 2, 3)])
-    B5 = current_line_field("B", po2b, c2, ps2, pe2)
+    B5 = current_polyline_field("B", po2b, c2, ps2, pe2)
     x5 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
     pe2b = np.array([(2, 2, 2)] * 2)
-    B6 = current_line_field("B", po2, c2, ps2, pe2b)
+    B6 = current_polyline_field("B", po2, c2, ps2, pe2b)
     x6 = np.array([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x6, B6, rtol=1e-6)
 
@@ -294,13 +301,17 @@ def test_field_line():
     ps4 = np.array([(0, 0, 0)] * 3)
     pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
-    B7 = current_line_field("B", po4, c4, ps4, pe4)
+    B7 = current_polyline_field("B", po4, c4, ps4, pe4)
     x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
+    assert_allclose(x7, B7, rtol=1e-6)
+
+    with pytest.warns(MagpylibDeprecationWarning):
+        x7 = current_line_field("B", po4, c4, ps4, pe4)
     assert_allclose(x7, B7, rtol=1e-6)
 
 
 def test_field_line_from_vert():
-    """test the Line field from vertex input"""
+    """test the Polyline field from vertex input"""
     observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
     current = np.array([1, 5, -3])
 
@@ -323,7 +334,7 @@ def test_field_line_from_vert():
         p2 = vert[1:]
         po = np.array([obs] * (len(vert) - 1))
         cu = np.array([curr] * (len(vert) - 1))
-        B += [np.sum(current_line_field("B", po, cu, p1, p2), axis=0)]
+        B += [np.sum(current_polyline_field("B", po, cu, p1, p2), axis=0)]
     B = np.array(B)
 
     assert_allclose(B_vert, B)
@@ -345,7 +356,7 @@ def test_field_line_v4():
             (-2, 0, 1),
         ]
     )
-    B = current_line_field("B", obs, cur, start, end)
+    B = current_polyline_field("B", obs, cur, start, end)
     Btest = np.array(
         [
             [0, -0.14142136, 0],
@@ -558,8 +569,8 @@ def test_triangle6():
         ("magnet", "Sphere", "diameter"),
         ("magnet", "Tetrahedron", "vertices"),
         ("magnet", "TriangularMesh", "vertices"),
-        ("current", "Loop", "diameter"),
-        ("current", "Line", "vertices"),
+        ("current", "CircularLoop", "diameter"),
+        ("current", "Polyline", "vertices"),
         ("misc", "Triangle", "vertices"),
     ],
 )
@@ -599,8 +610,8 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
                 "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
             },
         ),
-        ("current", "Loop", "current", {"diameter": 1}),
-        ("current", "Line", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
+        ("current", "CircularLoop", "current", {"diameter": 1}),
+        ("current", "Polyline", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
         (
             "misc",
             "Triangle",

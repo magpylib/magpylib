@@ -311,10 +311,10 @@ def test_collection_remove():
 
 def test_collection_nested_getBH():
     """test if getBH functionality is self-consistent with nesting"""
-    s1 = magpy.current.Loop(1, 1)
-    s2 = magpy.current.Loop(1, 1)
-    s3 = magpy.current.Loop(1, 1)
-    s4 = magpy.current.Loop(1, 1)
+    s1 = magpy.current.CircularLoop(1, 1)
+    s2 = magpy.current.CircularLoop(1, 1)
+    s3 = magpy.current.CircularLoop(1, 1)
+    s4 = magpy.current.CircularLoop(1, 1)
 
     obs = [(1, 2, 3), (-2, -3, 1), (2, 2, -4), (4, 2, -4)]
     coll = s1 + s2 + s3 + s4  # nasty nesting
@@ -332,8 +332,8 @@ def test_collection_properties_all():
     """test _all properties"""
     s1 = magpy.magnet.Cuboid()
     s2 = magpy.magnet.Cylinder()
-    s3 = magpy.current.Loop()
-    s4 = magpy.current.Loop()
+    s3 = magpy.current.CircularLoop()
+    s4 = magpy.current.CircularLoop()
     x1 = magpy.Sensor()
     x2 = magpy.Sensor()
     x3 = magpy.Sensor()
