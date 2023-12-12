@@ -78,4 +78,4 @@ jobs:
         uses: pypa/gh-action-pypi-publish@release/v1
         with:
           user: magpylib
-          password: ${{ secrets.$PYPI_PASSWORD }}
+          password: ${{ secrets.PYPI_PASSWORD }}
