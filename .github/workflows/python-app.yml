@@ -1,6 +1,6 @@
 name: Python package
 
-on: [pull_request]
+on: [push, pull_request]
 
 concurrency:
   group: check-${{ github.ref }}
