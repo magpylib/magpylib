@@ -75,10 +75,8 @@ jobs:
       - name: Build package
         run: flit build
       - run:
-      - name: init .pypirc
-        run: |
-          echo -e "[pypi]" >> ~/.pypirc
-          echo -e "username: magpylib" >> ~/.pypirc
-          echo -e "password: $PYPI_PASSWORD" >> ~/.pypirc
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
+        with:
+          user: magpylib
+          password: ${{ secrets.PYPI_PASSWORD }}
