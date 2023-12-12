@@ -99,11 +99,9 @@ def make_Polyline(obj, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     return traces
 
 
-def make_CircularLoop(
-    obj, base=72, **kwargs
-) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
+def make_Circle(obj, base=72, **kwargs) -> Union[Dict[str, Any], List[Dict[str, Any]]]:
     """
-    Creates the plotly scatter3d parameters for a CircularLoop current in a dictionary based on the
+    Creates the plotly scatter3d parameters for a Circle current in a dictionary based on the
     provided arguments.
     """
     style = obj.style

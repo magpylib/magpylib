@@ -1,22 +1,22 @@
-"""CircularCircularLoop current class code"""
+"""CircularCircle current class code"""
 import warnings
 
-from magpylib._src.display.traces_core import make_CircularLoop
+from magpylib._src.display.traces_core import make_Circle
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.fields.field_BH_circular_loop import current_circular_loop_field
+from magpylib._src.fields.field_BH_circle import current_circle_field
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent
 from magpylib._src.utility import unit_prefix
 
 
-class CircularLoop(BaseCurrent):
+class Circle(BaseCurrent):
     """Circular current loop.
 
     Can be used as `sources` input for magnetic field computation.
 
     When `position=(0,0,0)` and `orientation=None` the current loop lies
     in the x-y plane of the global coordinate system, with its center in
-    the origin. The CircularLoop class has a dipole moment of pi**2/10*diameter**2*current.
+    the origin. The Circle class has a dipole moment of pi**2/10*diameter**2*current.
 
     Parameters
     ----------
@@ -44,16 +44,16 @@ class CircularLoop(BaseCurrent):
 
     Returns
     -------
-    current source: `CircularLoop` object
+    current source: `Circle` object
 
     Examples
     --------
-    `CircularLoop` objects are magnetic field sources. In this example we compute the H-field kA/m
+    `Circle` objects are magnetic field sources. In this example we compute the H-field kA/m
     of such a current loop with 100 A current and a diameter of 2 mm at the observer position
     (1,1,1) given in units of mm:
 
     >>> import magpylib as magpy
-    >>> src = magpy.current.CircularLoop(current=100, diameter=2)
+    >>> src = magpy.current.Circle(current=100, diameter=2)
     >>> H = src.getH((1,1,1))
     >>> print(H)
     [4.96243034 4.96243034 2.12454191]
@@ -61,7 +61,7 @@ class CircularLoop(BaseCurrent):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    CircularLoop(id=...)
+    Circle(id=...)
     >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
     >>> print(B)
     [[-1.44441884e-15  6.72068135e+00 -6.72068135e+00]
@@ -72,7 +72,7 @@ class CircularLoop(BaseCurrent):
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
     >>> src.move([(-1,-1,-1), (-2,-2,-2)])
-    CircularLoop(id=...)
+    Circle(id=...)
     >>> sens = magpy.Sensor(position=(1,1,1))
     >>> B = src.getB(sens)
     >>> print(B)
@@ -81,9 +81,9 @@ class CircularLoop(BaseCurrent):
      [-3.55802727e-17  1.65201495e-01 -1.65201495e-01]]
     """
 
-    _field_func = staticmethod(current_circular_loop_field)
+    _field_func = staticmethod(current_circle_field)
     _field_func_kwargs_ndim = {"current": 1, "diameter": 1}
-    get_trace = make_CircularLoop
+    get_trace = make_Circle
 
     def __init__(
         self,
@@ -108,7 +108,7 @@ class CircularLoop(BaseCurrent):
 
     @diameter.setter
     def diameter(self, dia):
-        """Set CircularLoop loop diameter, float, mm."""
+        """Set Circle loop diameter, float, mm."""
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
@@ -125,15 +125,15 @@ class CircularLoop(BaseCurrent):
         return f"{unit_prefix(self.current)}A" if self.current else "no current"
 
 
-class Loop(CircularLoop):
-    """Loop is deprecated, see CircularLoop"""
+class Loop(Circle):
+    """Loop is deprecated, see Circle"""
 
     # pylint: disable=method-hidden
     @staticmethod
     def _field_func(*args, **kwargs):
         """Catch Deprecation warning in getBH_dict"""
         _deprecation_warn()
-        return current_circular_loop_field(*args, **kwargs)
+        return current_circle_field(*args, **kwargs)
 
     def __init__(self, *args, **kwargs):
         _deprecation_warn()
@@ -144,7 +144,7 @@ def _deprecation_warn():
     warnings.warn(
         (
             "Loop is deprecated  and will be removed in a future version, "
-            "use CircularLoop instead."
+            "use Circle instead."
         ),
         MagpylibDeprecationWarning,
         stacklevel=2,

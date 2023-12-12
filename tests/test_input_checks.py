@@ -152,9 +152,9 @@ def test_input_objects_orientation_bad(orientation_rotvec):
     ],
 )
 def test_input_objects_current_good(current):
-    """good input: magpy.current.CircularLoop(current)"""
+    """good input: magpy.current.Circle(current)"""
 
-    src = magpy.current.CircularLoop(current)
+    src = magpy.current.Circle(current)
     if current is None:
         assert src.current is None
     else:
@@ -172,10 +172,10 @@ def test_input_objects_current_good(current):
     ],
 )
 def test_input_objects_current_bad(current):
-    """bad input: magpy.current.CircularLoop(current)"""
+    """bad input: magpy.current.Circle(current)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.CircularLoop(current)
+        magpy.current.Circle(current)
 
 
 @pytest.mark.parametrize(
@@ -190,9 +190,9 @@ def test_input_objects_current_bad(current):
     ],
 )
 def test_input_objects_diameter_good(diameter):
-    """good input: magpy.current.CircularLoop(diameter=inp)"""
+    """good input: magpy.current.Circle(diameter=inp)"""
 
-    src = magpy.current.CircularLoop(diameter=diameter)
+    src = magpy.current.Circle(diameter=diameter)
     if diameter is None:
         assert src.diameter is None
     else:
@@ -212,10 +212,10 @@ def test_input_objects_diameter_good(diameter):
     ],
 )
 def test_input_objects_diameter_bad(diameter):
-    """bad input: magpy.current.CircularLoop(diameter=diameter)"""
+    """bad input: magpy.current.Circle(diameter=diameter)"""
 
     with pytest.raises(MagpylibBadUserInput):
-        magpy.current.CircularLoop(diameter=diameter)
+        magpy.current.Circle(diameter=diameter)
 
 
 @pytest.mark.parametrize(

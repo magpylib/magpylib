@@ -58,7 +58,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
-    >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
+    >>> loop = magpy.current.Circle(current=1, diameter=1)
     >>> B = sens.getB(loop)
     >>> print(B)
     [0.         0.         1.25663706]
@@ -179,7 +179,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
+        >>> loop = magpy.current.Circle(current=1, diameter=1)
         >>> B = sens.getB(loop)
         >>> print(B)
         [0.         0.         1.25663706]
@@ -254,7 +254,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.CircularLoop(current=1, diameter=1)
+        >>> loop = magpy.current.Circle(current=1, diameter=1)
         >>> H = sens.getH(loop)
         >>> print(H)
         [0. 0. 1.]

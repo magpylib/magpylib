@@ -294,7 +294,7 @@ def test_adding_sources():
     s2 = magpy.magnet.Cylinder()
     s3 = magpy.magnet.CylinderSegment()
     s4 = magpy.magnet.Sphere()
-    s5 = magpy.current.CircularLoop()
+    s5 = magpy.current.Circle()
     s6 = magpy.current.Polyline()
     s7 = magpy.misc.Dipole()
     x1 = magpy.Sensor()
@@ -413,14 +413,14 @@ def test_collection_describe():
     assert "".join(test) == re.sub("id=*[0-9]*[0-9]", "id=REGEX", "".join(desc))
 
     c = magpy.Collection(*[magpy.magnet.Cuboid() for _ in range(100)])
-    c.add(*[magpy.current.CircularLoop() for _ in range(50)])
+    c.add(*[magpy.current.Circle() for _ in range(50)])
     c.add(*[magpy.misc.CustomSource() for _ in range(25)])
 
     desc = c.describe(format="type+label", return_string=True).split("\n")
     test = [
         "Collection nolabel",
         "├── 100x Cuboids",
-        "├── 50x CircularLoops",
+        "├── 50x Circles",
         "└── 25x CustomSources",
     ]
     assert test == desc
