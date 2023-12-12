@@ -270,7 +270,7 @@ def test_sensor_rotation3():
 def test_object_tiling():
     """test if object tiling works when input paths are of various lengths"""
     # pylint: disable=no-member
-    src1 = magpy.current.CircularLoop(current=1, diameter=1)
+    src1 = magpy.current.Circle(current=1, diameter=1)
     src1.rotate_from_angax(np.linspace(1, 31, 31), "x", anchor=(0, 1, 0), start=-1)
 
     src2 = magpy.magnet.Cuboid(
@@ -323,7 +323,7 @@ def test_object_tiling():
 def test_superposition_vs_tiling():
     """test superposition vs tiling, see issue #507"""
 
-    loop = magpy.current.CircularLoop(current=10000, diameter=20, position=(1, 20, 10))
+    loop = magpy.current.Circle(current=10000, diameter=20, position=(1, 20, 10))
     loop.rotate_from_angax([45, 90], "x")
 
     sphere1 = magpy.magnet.Sphere(
