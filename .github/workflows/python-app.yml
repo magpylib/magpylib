@@ -1,6 +1,6 @@
 name: Python package
 
-on: [pull_request]
+on: [push, pull_request]
 
 concurrency:
   group: check-${{ github.ref }}
@@ -57,7 +57,7 @@ jobs:
 
   publish:
     name: Publish to PyPI
-    #needs: test
+    needs: test
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-latest
     permissions:
