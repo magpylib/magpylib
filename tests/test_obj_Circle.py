@@ -62,7 +62,7 @@ def test_Circle_basic_H():
 def test_repr():
     """test __repr__"""
     dip = magpy.current.Circle(current=1, diameter=1)
-    assert repr(dip)[:12] == "Circle", "Circle repr failed"
+    assert repr(dip)[:6] == "Circle", "Circle repr failed"
 
 
 def test_old_Loop_deprecation_warning():
