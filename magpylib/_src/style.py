@@ -29,7 +29,7 @@ def get_families(obj):
     from magpylib._src.obj_classes.class_magnet_Tetrahedron import Tetrahedron
     from magpylib._src.obj_classes.class_magnet_TriangularMesh import TriangularMesh
     from magpylib._src.obj_classes.class_BaseExcitations import BaseCurrent as Current
-    from magpylib._src.obj_classes.class_current_CircularLoop import CircularLoop
+    from magpylib._src.obj_classes.class_current_Circle import Circle
     from magpylib._src.obj_classes.class_current_Polyline import Polyline
     from magpylib._src.obj_classes.class_misc_Dipole import Dipole
     from magpylib._src.obj_classes.class_misc_CustomSource import CustomSource

@@ -88,11 +88,11 @@ def test_Sensor_display():
     assert x is None, "display test fail"
 
 
-def test_CircularLoop_display():
-    """testing display for CircularLoop source"""
+def test_Circle_display():
+    """testing display for Circle source"""
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src = magpy.current.CircularLoop(current=1, diameter=1)
+    src = magpy.current.Circle(current=1, diameter=1)
     x = src.show(canvas=fig)
     assert x is None, "display test fail"
 
@@ -145,8 +145,8 @@ def test_circular_line_display():
     # pylint: disable=assignment-from-no-return
     magpy.defaults.display.backend = "plotly"
     fig = go.Figure()
-    src1 = magpy.current.CircularLoop(1, 2)
-    src2 = magpy.current.CircularLoop(1, 2)
+    src1 = magpy.current.Circle(1, 2)
+    src2 = magpy.current.Circle(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
     src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])

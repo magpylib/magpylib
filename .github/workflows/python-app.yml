@@ -1,6 +1,6 @@
 name: Python package
 
-on: [pull_request]
+on: [push, pull_request]
 
 concurrency:
   group: check-${{ github.ref }}
@@ -41,7 +41,7 @@ jobs:
     steps:
       - name: Setup headless display
         uses: pyvista/setup-headless-display-action@v2
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           fetch-depth: 0
       - name: Setup python for test ${{ matrix.py }}
@@ -56,7 +56,7 @@ jobs:
         run: tox --skip-pkg-install
 
   publish:
-    name: Publish to PyPi
+    name: Publish to PyPI
     needs: test
     if: github.event_name == 'push' && startsWith(github.event.ref, 'refs/tags')
     runs-on: ubuntu-latest
@@ -66,14 +66,13 @@ jobs:
     steps:
       - name: Checkout source
         uses: actions/checkout@v4
-      - name: Set up Python 3.8
+      - name: Set up Python 3.9
         uses: actions/setup-python@v4
         with:
-          python-version: 3.8
+          python-version: 3.9
+      - name: Install flit
+        run: pip install flit
       - name: Build package
-        run: |
-          pip install wheel
-          python setup.py sdist bdist_wheel
+        run: flit build
       - name: Publish
         uses: pypa/gh-action-pypi-publish@release/v1
-

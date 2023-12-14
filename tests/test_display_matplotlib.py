@@ -123,10 +123,10 @@ def test_CustomSource_display():
     cs.show(canvas=ax, return_fig=True)
 
 
-def test_CircularLoop_display():
-    """testing display for CircularLoop source"""
+def test_Circle_display():
+    """testing display for Circle source"""
     ax = plt.subplot(projection="3d")
-    src = magpy.current.CircularLoop(current=1, diameter=1)
+    src = magpy.current.Circle(current=1, diameter=1)
     src.show(canvas=ax, return_fig=True)
 
     src.rotate_from_angax([5] * 35, "x", anchor=(1, 2, 3))
@@ -315,8 +315,8 @@ def test_circular_line_display():
     """testing display"""
     # pylint: disable=assignment-from-no-return
     ax2 = plt.subplot(projection="3d")
-    src1 = magpy.current.CircularLoop(1, 2)
-    src2 = magpy.current.CircularLoop(1, 2)
+    src1 = magpy.current.Circle(1, 2)
+    src2 = magpy.current.Circle(1, 2)
     src1.move(np.linspace((0.4, 0.4, 0.4), (2, 2, 2), 5), start=-1)
     src3 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
     src4 = magpy.current.Polyline(1, [(0, 0, 0), (1, 1, 1), (2, 2, 2)])
@@ -574,7 +574,7 @@ def test_unset_excitations():
         magpy.misc.Triangle(vertices=[(0, 0, 0), (1, 0, 0), (0, 1, 0)]),
         magpy.misc.Dipole(),
         magpy.current.Polyline(vertices=[[0, -1, 0], [0, 1, 0]]),
-        magpy.current.CircularLoop(diameter=1, current=0),
+        magpy.current.Circle(diameter=1, current=0),
     ]
     for i, o in enumerate(objs):
         o.move((i * 1.5, 0, 0))
@@ -597,7 +597,7 @@ def test_unset_objs():
         magpy.misc.Triangle(),
         magpy.misc.Dipole(),
         magpy.current.Polyline(),
-        magpy.current.CircularLoop(),
+        magpy.current.Circle(),
     ]
 
     for i, o in enumerate(objs):
