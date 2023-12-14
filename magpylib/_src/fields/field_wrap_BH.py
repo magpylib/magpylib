@@ -166,7 +166,7 @@ def getBH_level2(
     squeeze : bool, default=True:
         If True output is squeezed (axes of length 1 are eliminated)
     pixel_agg : str
-        A compatible numpy aggregator string (e.g. `'min', 'max', 'mean'`)
+        A compatible numpy aggregator string (e.g. `'min'`, `'max'`, `'mean'`)
         which applies on pixel output values.
     field : {'B', 'H'}
         'B' computes B field, 'H' computes H-field
@@ -557,7 +557,7 @@ def getB(
     output="ndarray",
     **kwargs,
 ):
-    """Compute B-field in units of mT for given sources and observers.
+    """Compute B-field in units of T for given sources and observers.
 
     Field implementations can be directly accessed (avoiding the object oriented
     Magpylib interface) by providing a string input `sources=source_type`, array_like
@@ -568,10 +568,10 @@ def getB(
     ----------
     sources: source and collection objects or 1D list thereof
         Sources that generate the magnetic field. Can be a single source (or collection)
-        or a 1D list of l source and/or collection objects.
+        or a 1D list of l sources and/or collection objects.
 
-        Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Circle'` or `'Polyline'`).
+        Functional interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
+        `Sphere`, `Dipole`, `Circle` or `Polyline`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -594,9 +594,9 @@ def getB(
         which is applied to observer output values, e.g. mean of all sensor pixel outputs.
         With this option, observers input with different (pixel) shapes is allowed.
 
-    output: str, default='ndarray'
-        Output type, which must be one of `('ndarray', 'dataframe')`. By default a
-        `numpy.ndarray` object is returned. If 'dataframe' is chosen, a `pandas.DataFrame`
+    output: str, default=`'ndarray'`
+        Output type, which must be one of (`'ndarray'`, `'dataframe'`). By default a
+        `numpy.ndarray` object is returned. If `'dataframe'` is chosen, a `pandas.DataFrame`
         object is returned (the Pandas library must be installed).
 
     See Also
@@ -610,36 +610,43 @@ def getB(
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation.
 
+    polarization: array_like, shape (3,) or (n,3)
+        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`,
+        `Tetrahedron`, `Triangle`, `TriangularMesh`)!
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
     magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`, `'Sphere'`)!
-        Magnetization vector(s) (mu0*M, remanence field) in units of kA/m given in
-        the local object coordinates (rotates with object).
+        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`,
+        `Tetrahedron`, `Triangle`, `TriangularMesh`)!
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     moment: array_like, shape (3) or (n,3), unit mT*mm^3
-        Only source_type == `'Dipole'`!
+        Only source_type == `Dipole`!
         Magnetic dipole moment(s) in units of mT*mm^3 given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Circle'` or `'Polyline'`!
+        Only source_type == `Circle` or `Polyline`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`)!
+        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
         Magnet dimension input in units of mm and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Circle'`!
+        Only source_type == `Sphere` or `Circle`!
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Polyline'`!
+        Only source_type == `Polyline`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Polyline'`!
+        Only source_type == `Polyline`!
         End positions of line current segments in units of mm.
 
     Returns
@@ -741,8 +748,8 @@ def getH(
         Sources that generate the magnetic field. Can be a single source (or collection)
         or a 1D list of l source and/or collection objects.
 
-        Direct interface: input must be one of (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`,
-        `'Sphere'`, `'Dipole'`, `'Circle'` or `'Polyline'`).
+        Direct interface: input must be one of (`Cuboid`, `Cylinder`, `CylinderSegment`,
+        `Sphere`, `Dipole`, `Circle` or `Polyline`).
 
     observers: array_like or (list of) `Sensor` objects
         Can be array_like positions of shape (n1, n2, ..., 3) where the field
@@ -782,35 +789,35 @@ def getH(
         a unit-rotation.
 
     magnetization: array_like, shape (3,) or (n,3)
-        Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`, `'Sphere'`)!
+        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`, `Sphere`)!
         Magnetization vector(s) (mu0*M, remanence field) in units of kA/m given in
         the local object coordinates (rotates with object).
 
     moment: array_like, shape (3) or (n,3), unit mT*mm^3
-        Only source_type == `'Dipole'`!
+        Only source_type == `Dipole`!
         Magnetic dipole moment(s) in units of mT*mm^3 given in the local object coordinates
         (rotates with object). For homogeneous magnets the relation moment=magnetization*volume
         holds.
 
     current: array_like, shape (n,)
-        Only source_type == `'Circle'` or `'Polyline'`!
+        Only source_type == `Circle` or `Polyline`!
         Electrical current in units of A.
 
     dimension: array_like, shape (x,) or (n,x)
-        Only source_type in (`'Cuboid'`, `'Cylinder'`, `'CylinderSegment'`)!
+        Only source_type in (`Cuboid`, `Cylinder`, `CylinderSegment`)!
         Magnet dimension input in units of mm and deg. Dimension format x of sources is similar
         as in object oriented interface.
 
     diameter: array_like, shape (n,)
-        Only source_type == `'Sphere'` or `'Circle'`!
+        Only source_type == `Sphere` or `Circle`!
         Diameter of source in units of mm.
 
     segment_start: array_like, shape (n,3)
-        Only source_type == `'Polyline'`!
+        Only source_type == `Polyline`!
         Start positions of line current segments in units of mm.
 
     segment_end: array_like, shape (n,3)
-        Only source_type == `'Polyline'`!
+        Only source_type == `Polyline`!
         End positions of line current segments in units of mm.
 
     Returns

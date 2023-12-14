@@ -1,5 +1,10 @@
 """BaseHomMag class code"""
 # pylint: disable=cyclic-import
+import warnings
+
+import numpy as np
+
+from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.fields.field_wrap_BH import getBH_level2
 from magpylib._src.input_checks import check_format_input_scalar
 from magpylib._src.input_checks import check_format_input_vector
@@ -187,13 +192,24 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
 
 
 class BaseMagnet(BaseSource):
-    """provides the magnetization attribute  for homogeneously magnetized magnets"""
+    """provides the magnetization and polarization attributes for magnet classes"""
 
     _style_class = MagnetStyle
 
-    def __init__(self, position, orientation, magnetization, style, **kwargs):
+    def __init__(
+        self, position, orientation, magnetization, polarization, style, **kwargs
+    ):
         super().__init__(position, orientation, style=style, **kwargs)
-        self.magnetization = magnetization
+
+        if magnetization:
+            self.magnetization = magnetization
+            if polarization:
+                raise ValueError(
+                    "The attributes magnetization and polarization are dependent. "
+                    "Only one can be provided at magnet initialization."
+                )
+        if polarization:
+            self.polarization = polarization
 
     @property
     def magnetization(self):
@@ -211,6 +227,27 @@ class BaseMagnet(BaseSource):
             sig_type="array_like (list, tuple, ndarray) with shape (3,)",
             allow_None=True,
         )
+        self._polarization = self._magnetization * (4 * np.pi * 1e-7)
+        if np.linalg.norm(self._magnetization) < 2000:
+            _deprecation_warn()
+
+    @property
+    def polarization(self):
+        """Object polarization attribute getter and setter."""
+        return self._polarization
+
+    @polarization.setter
+    def polarization(self, mag):
+        """Set polarization vector, array_like, shape (3,), unit mT."""
+        self._polarization = check_format_input_vector(
+            mag,
+            dims=(1,),
+            shape_m1=3,
+            sig_name="polarization",
+            sig_type="array_like (list, tuple, ndarray) with shape (3,)",
+            allow_None=True,
+        )
+        self._magnetization = self._polarization / (4 * np.pi * 1e-7)
 
 
 class BaseCurrent(BaseSource):
@@ -237,3 +274,15 @@ class BaseCurrent(BaseSource):
             sig_type="`None` or a number (int, float)",
             allow_None=True,
         )
+
+
+def _deprecation_warn():
+    warnings.warn(
+        (
+            "You have entered a very low magnetization."
+            "In Magpylib v5 magnetization is given in units of A/m, "
+            "while polarization is given in units of T."
+        ),
+        MagpylibDeprecationWarning,
+        stacklevel=2,
+    )

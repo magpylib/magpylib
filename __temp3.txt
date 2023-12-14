@@ -1,0 +1,5 @@
+field_BH_cuboid
+class_magnet_Cuboid
+class_BaseDisplayRepr
+class_BaseExcitations -> fix all docstrings
+
