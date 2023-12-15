@@ -43,6 +43,7 @@ jobs:
         uses: pyvista/setup-headless-display-action@v2
         with:
           qt: true
+        if: startsWith(matrix.os, 'ubuntu')
       - uses: actions/checkout@v4
         with:
           fetch-depth: 0
