@@ -301,7 +301,6 @@ def magnet_cylinder_field(
 
     Notes
     -----
-
     Advanced unit use: The input unit of magnetization and polarization
     gives the output unit of H and B. All results are independent of the
     length input units. One must be careful, however, to use consistently

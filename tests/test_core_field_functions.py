@@ -145,6 +145,57 @@ def test_magnet_cylinder_field_BH():
     np.testing.assert_allclose(H, Htest)
 
 
+def test_magnet_sphere_field_BH():
+    """test magnet_sphere_field"""
+    pol = np.array(
+        [
+            (0, 0, 0),
+            (1, 2, 3),
+            (2, 3, -1),
+            (2, 3, -1),
+        ]
+    )
+    dia = np.array([1, 2, 3, 4])
+    obs = np.array(
+        [
+            (1, 2, 3),
+            (1, -1, 0),
+            (0, -1, 0),
+            (1, -1, 0.5),
+        ]
+    )
+    B = magnet_sphere_field(
+        field="B",
+        observers=obs,
+        diameters=dia,
+        polarizations=pol,
+    )
+    H = magnet_sphere_field(
+        field="H",
+        observers=obs,
+        diameters=dia,
+        polarizations=pol,
+    )
+    J = np.array([(0, 0, 0), (0, 0, 0), pol[2], pol[3]])
+    np.testing.assert_allclose(B, MU0 * H + J)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [-0.29462783, -0.05892557, -0.35355339],
+        [1.33333333, 2.0, -0.66666667],
+        [1.33333333, 2.0, -0.66666667],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [0.0, 0.0, 0.0],
+        [-234457.37399925, -46891.47479985, -281348.8487991],
+        [-530516.47697298, -795774.71545948, 265258.23848649],
+        [-530516.47697298, -795774.71545948, 265258.23848649],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
 def test_field_BH_cylinder_tile_mag0():
     """test cylinder_tile field magnetization=0"""
     n = 10
@@ -155,48 +206,6 @@ def test_field_BH_cylinder_tile_mag0():
     dim = np.array([r1, r2, h, phi1, phi2]).T
     pos = np.random.rand(n, 3)
     B = magnet_cylinder_segment_field("B", pos, mag, dim)
-    assert_allclose(mag, B)
-
-
-def test_field_sphere_vs_v2():
-    """testing against old version"""
-    result_v2 = np.array(
-        [
-            [22.0, 44.0, 66.0],
-            [22.0, 44.0, 66.0],
-            [38.47035383, 30.77628307, 23.0822123],
-            [0.60933932, 0.43524237, 1.04458169],
-            [22.0, 44.0, 66.0],
-            [-0.09071337, -0.18142674, -0.02093385],
-            [-0.17444878, -0.0139559, -0.10466927],
-        ]
-    )
-
-    dim = np.array([1.23] * 7)
-    mag = np.array([(33, 66, 99)] * 7)
-    poso = np.array(
-        [
-            (0, 0, 0),
-            (0.2, 0.2, 0.2),
-            (0.4, 0.4, 0.4),
-            (-1, -1, -2),
-            (0.1, 0.1, 0.1),
-            (1, 2, -3),
-            (-3, 2, 1),
-        ]
-    )
-    B = magnet_sphere_field("B", poso, mag, dim)
-
-    np.testing.assert_allclose(result_v2, B, rtol=1e-6)
-
-
-def test_magnet_sphere_field_mag0():
-    """test cuboid field magnetization=0"""
-    n = 10
-    mag = np.zeros((n, 3))
-    dim = np.random.rand(n)
-    pos = np.random.rand(n, 3)
-    B = magnet_sphere_field("B", pos, mag, dim)
     assert_allclose(mag, B)
 
 
