@@ -256,7 +256,7 @@ def magnet_cylinder_field(
     dimensions: np.ndarray,
     polarizations: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a homogeneously magnetized cylinder.
+    """Magnetic field of homogeneously magnetized cylinders.
 
     The cylinder axis coincides with the z-axis and the geometric center of the
     cylinder lies in the origin.

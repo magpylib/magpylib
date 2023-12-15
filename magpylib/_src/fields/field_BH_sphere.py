@@ -10,12 +10,13 @@ from magpylib._src.utility import MU0
 
 # CORE
 def magnet_sphere_field(
+    *,
     field: str,
     observers: np.ndarray,
     diameters: np.ndarray,
     polarizations: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a homogeneously magnetized sphere.
+    """Magnetic field of homogeneously magnetized spheres.
 
     The center of the sphere lies in the origin of the coordinate system.
 

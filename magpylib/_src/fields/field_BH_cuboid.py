@@ -16,7 +16,7 @@ def magnet_cuboid_field(
     dimensions: np.ndarray,
     polarizations: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a homogeneously magnetized cuboid.
+    """Magnetic field of homogeneously magnetized cuboids.
 
     The cuboid sides are parallel to the coordinate axes. The geometric center of the
     cuboid lies in the origin.
@@ -33,7 +33,7 @@ def magnet_cuboid_field(
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     dimensions: ndarray, shape (n,3)
-        Cuboid side lengths in units of m.
+        Length of Cuboid sides in units of m.
 
     polarizations: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.

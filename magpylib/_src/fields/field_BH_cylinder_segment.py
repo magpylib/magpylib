@@ -10,6 +10,7 @@ from scipy.special import ellipkinc
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import MU0
 
 
 def arctan_k_tan_2(k, phi):
@@ -2347,36 +2348,40 @@ def magnet_cylinder_segment_field_internal(
 
 # CORE
 def magnet_cylinder_segment_field(
+    *,
     field: str,
     observers: np.ndarray,
-    magnetization: np.ndarray,
-    dimension: np.ndarray,
+    dimensions: np.ndarray,
+    polarizations: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a homogeneously magnetized cylinder segment.
+    """Magnetic field of homogeneously magnetized cylinder segments.
 
-    The full cylinder axis coincides with the z-axis of the coordinate system. The geometric
-    center of the full cylinder lies in the origin.
+    The cylinder axis coincides with the z-axis of the global coordinate
+    system. The geometric center of the cylinder lies in the origin.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
-
-    magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of mT.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     dimension: ndarray, shape (n,5)
-        Cylinder segment dimensions (r1,r2,h,phi1,phi2) with inner radius r1, outer radius r2,
-        height h in units of mm and the two segment angles phi1 and phi2 in units of deg.
+        Dimensions of CylinderSegments (r1,r2,h,phi1,phi2) with inner radius
+        r1, outer radius r2, height h in units of m and the two segment
+        angles phi1 < phi2 in units of deg.
+
+    polarizations: ndarray, shape (n,3)
+        Magnetic polarization vectors in units of T.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of magnet in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
@@ -2384,25 +2389,31 @@ def magnet_cylinder_segment_field(
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> mag = np.array([(0,0,100), (50,50,0)])
-    >>> dim = np.array([(0,1,2,0,90), (1,2,4,35,125)])
-    >>> obs = np.array([(1,1,1), (1,1,1)])
-    >>> B = magpy.core.magnet_cylinder_segment_field('B', obs, mag, dim)
+    >>> B = magpy.core.magnet_cylinder_segment_field(
+    >>>     field='B',
+    >>>     observers=np.array([(1,1,1), (1,1,1)]),
+    >>>     dimensions=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
+    >>>     polarizations=np.array([(0,0,1), (.5,.5,0)]),
+    >>> )
     >>> print(B)
-    [[ 6.27410168  6.27410168 -1.20044166]
-     [29.84602335 20.75731598  0.34961733]]
+    [[ 0.07046526  0.08373724 -0.0198113 ]
+     [ 0.29846023  0.20757316  0.00349617]]
 
     Notes
     -----
-    Implementation based on
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
 
-    Slanovc: Journal of Magnetism and Magnetic Materials, 2022 (in review)
+    Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
+    Materials, Volume 559, 1 October 2022, 169482
     """
     bh = check_field_input(field, "magnet_cylinder_segment_field()")
 
-    BHfinal = np.zeros((len(magnetization), 3))
+    BHfinal = np.zeros((len(polarizations), 3))
 
-    r1, r2, h, phi1, phi2 = dimension.T
+    r1, r2, h, phi1, phi2 = dimensions.T
     r1 = abs(r1)
     r2 = abs(r2)
     h = abs(h)
@@ -2452,7 +2463,7 @@ def magnet_cylinder_segment_field(
         return BHfinal
 
     # redefine input if there are some surface-points -------------------------
-    magg = magnetization[mask_not_on_surf]
+    magg = polarizations[mask_not_on_surf]
     dim = dim[mask_not_on_surf]
     pos_obs_cy = pos_obs_cy[mask_not_on_surf]
     phi = phi[mask_not_on_surf]
@@ -2468,15 +2479,15 @@ def magnet_cylinder_segment_field(
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
     Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
-    H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T * 10 / 4 / np.pi
+    H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T
 
     # return B or H --------------------------------------------------------
     if not bh:
-        BHfinal[mask_not_on_surf] = H
+        BHfinal[mask_not_on_surf] = H / MU0
         return BHfinal
 
-    B = H / (10 / 4 / np.pi)  # kA/m -> mT
+    B = H
     BHfinal[mask_not_on_surf] = B
     maskX = mask_inside * mask_not_on_surf
-    BHfinal[maskX] += magnetization[maskX]
+    BHfinal[maskX] += polarizations[maskX]
     return BHfinal

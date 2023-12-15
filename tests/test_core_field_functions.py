@@ -196,17 +196,62 @@ def test_magnet_sphere_field_BH():
     np.testing.assert_allclose(H, Htest)
 
 
-def test_field_BH_cylinder_tile_mag0():
-    """test cylinder_tile field magnetization=0"""
-    n = 10
-    mag = np.zeros((n, 3))
-    r1, r2, h, phi1, phi2 = np.random.rand(5, n)
-    r2 = r1 + r2
-    phi2 = phi1 + phi2
-    dim = np.array([r1, r2, h, phi1, phi2]).T
-    pos = np.random.rand(n, 3)
-    B = magnet_cylinder_segment_field("B", pos, mag, dim)
-    assert_allclose(mag, B)
+def test_field_cylinder_segment_BH():
+    """CylinderSegmetn field test"""
+    pol = np.array(
+        [
+            (0, 0, 0),
+            (1, 2, 3),
+            (2, 3, -1),
+            (2, 3, -1),
+        ]
+    )
+    dim = np.array(
+        [
+            (1, 2, 3, 10, 20),
+            (1, 2, 3, 10, 20),
+            (1, 3, 2, -50, 50),
+            (0.1, 5, 2, 20, 370),
+        ]
+    )
+    obs = np.array(
+        [
+            (1, 2, 3),
+            (1, -1, 0),
+            (0, -1, 0),
+            (1, -1, 0.5),
+        ]
+    )
+    B = magnet_cylinder_segment_field(
+        field="B",
+        observers=obs,
+        dimensions=dim,
+        polarizations=pol,
+    )
+    H = magnet_cylinder_segment_field(
+        field="H",
+        observers=obs,
+        dimensions=dim,
+        polarizations=pol,
+    )
+    J = np.array([(0, 0, 0)] * 3 + [pol[3]])
+    np.testing.assert_allclose(B, MU0 * H + J)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [0.00762186, 0.04194934, -0.01974813],
+        [0.52440702, -0.04650694, 0.09432828],
+        [1.75574175, 2.58945648, -0.19025747],
+    ]
+    np.testing.assert_allclose(B, Btest, rtol=1e-6)
+
+    Htest = [
+        [0.0, 0.0, 0.0],
+        [6065.28627343, 33382.22618218, -15715.05894253],
+        [417309.84428576, -37009.05020239, 75064.06294505],
+        [-194374.5385654, -326700.15326755, 644372.62925584],
+    ]
+    np.testing.assert_allclose(H, Htest, rtol=1e-6)
 
 
 def test_field_dipole1():
