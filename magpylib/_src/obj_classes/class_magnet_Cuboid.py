@@ -15,6 +15,8 @@ class Cuboid(BaseMagnet):
     to the global coordinate basis vectors and the geometric center of the Cuboid
     is located in the origin.
 
+    Units .... Min = Bout, Jin = Hout, length units arbitrary
+
     Parameters
     ----------
     polarization: array_like, shape (3,), default=`None`
@@ -26,11 +28,11 @@ class Cuboid(BaseMagnet):
         given in the local object coordinates (rotates with object).
 
     dimension: array_like, shape (3,), default=`None`
-        Length of the cuboid sides [a,b,c] in arbitrary units, e.g. in meters.
+        Length of the cuboid sides [a,b,c] in meters.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in arbitrary units, e.g. in
-        meters. For m>1, the `position` and `orientation` attributes together
+        Object position(s) in the global coordinates in meter.
+        For m>1, the `position` and `orientation` attributes together
         represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -78,11 +80,11 @@ class Cuboid(BaseMagnet):
 
     def __init__(
         self,
-        magnetization=None,
-        polarization=None,
-        dimension=None,
         position=(0, 0, 0),
         orientation=None,
+        dimension=None,
+        polarization=None,
+        magnetization=None,
         style=None,
         **kwargs,
     ):

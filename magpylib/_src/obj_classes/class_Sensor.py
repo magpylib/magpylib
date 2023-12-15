@@ -88,10 +88,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def __init__(
         self,
         position=(0, 0, 0),
-        pixel=(0, 0, 0),
         orientation=None,
-        style=None,
+        pixel=(0, 0, 0),
         handedness="right",
+        style=None,
         **kwargs,
     ):
         # instance attributes

@@ -87,10 +87,11 @@ class Circle(BaseCurrent):
 
     def __init__(
         self,
-        current=None,
-        diameter=None,
         position=(0, 0, 0),
         orientation=None,
+        diameter=None,
+        current=None,
+        *,
         style=None,
         **kwargs,
     ):

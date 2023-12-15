@@ -251,7 +251,7 @@ def fieldH_cylinder_diametral(
 def magnet_cylinder_field(
     field: str,
     observers: np.ndarray,
-    magnetization: np.ndarray,
+    polarization: np.ndarray,
     dimension: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized cylinder.
@@ -268,8 +268,8 @@ def magnet_cylinder_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of mm.
 
-    magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of mT.
+    polarization: ndarray, shape (n,3)
+        Homogeneous polarization vector in units of mT.
 
     dimension: ndarray, shape (n,2)
         Cylinder dimension (d,h) with diameter d and height h in units of mm.
@@ -335,7 +335,7 @@ def magnet_cylinder_field(
     m3 = r <= 1  # inside Cylinder hull plane
 
     # special case: mag = 0
-    mask0 = np.linalg.norm(magnetization, axis=1) == 0
+    mask0 = np.linalg.norm(polarization, axis=1) == 0
 
     # special case: on Cylinder edge
     mask_edge = m0 & m1
@@ -343,8 +343,8 @@ def magnet_cylinder_field(
     # general case
     mask_gen = ~mask0 & ~mask_edge
 
-    # axial/transv magnetization cases
-    magx, magy, magz = magnetization.T
+    # axial/transv polarization cases
+    magx, magy, magz = polarization.T
     mask_tv = (magx != 0) | (magy != 0)
     mask_ax = magz != 0
 
@@ -356,7 +356,7 @@ def magnet_cylinder_field(
     mask_ax = mask_ax & mask_gen
     mask_inside = mask_inside & mask_gen
 
-    # transversal magnetization contributions -----------------------
+    # transversal polarization contributions -----------------------
     if any(mask_tv):
         magxy = np.sqrt(magx**2 + magy**2)[mask_tv]
         tetta = np.arctan2(magy[mask_tv], magx[mask_tv])
@@ -369,7 +369,7 @@ def magnet_cylinder_field(
         Bphi[mask_tv] += magxy * bphi_tv
         Bz[mask_tv] += magxy * bz_tv
 
-    # axial magnetization contributions -----------------------------
+    # axial polarization contributions -----------------------------
     if any(mask_ax):
         br_ax, bz_ax = fieldB_cylinder_axial(z0[mask_ax], r[mask_ax], z[mask_ax])
         Br[mask_ax] += magz[mask_ax] * br_ax

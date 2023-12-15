@@ -7,13 +7,20 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 
 
+# CORE
 def magnet_cuboid_field(
-    field: str, observers: np.ndarray, polarization: np.ndarray, dimension: np.ndarray
+    *,
+    field: str,
+    observers: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of a homogeneously magnetized cuboid.
 
     The cuboid sides are parallel to the coordinate axes. The geometric center of the
     cuboid lies in the origin.
+
+    Use SI units for all inputs and outputs.
 
     Parameters
     ----------
@@ -22,14 +29,13 @@ def magnet_cuboid_field(
         in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in arbitrary length
-        units, e.g. meters.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     dimension: ndarray, shape (n,3)
-        Cuboid side lengths in arbitrary length units, e.g. meters.
+        Cuboid side lengths in units of m.
 
     Returns
     -------
@@ -53,6 +59,11 @@ def magnet_cuboid_field(
 
     Notes
     -----
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
     Field computations via magnetic surface charge density. Published
     several times with similar expressions:
 
