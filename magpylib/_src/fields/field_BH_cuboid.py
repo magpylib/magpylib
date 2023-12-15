@@ -52,8 +52,8 @@ def magnet_cuboid_field(
     >>> B = magpy.core.magnet_cuboid_field(
     >>>     field='B',
     >>>     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
-    >>>     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
-    >>>     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
+    >>>     dimensions=np.array([(2,2,2), (3,3,3), (4,4,4)]),
+    >>>     polarizations=np.array([(0,0,1), (1,0,0), (0,0,1)]),
     >>> )
     >>> print(B)
     [[ 0.          0.         -0.05227894]
