@@ -6,12 +6,14 @@ import magpylib as magpy
 from magpylib._src.exceptions import MagpylibDeprecationWarning
 from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
+from magpylib._src.utility import MU0
 from magpylib.core import current_circle_field
 from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
 from magpylib.core import dipole_field
 from magpylib.core import magnet_cuboid_field
+from magpylib.core import magnet_cylinder_field
 from magpylib.core import magnet_cylinder_segment_field
 from magpylib.core import magnet_sphere_field
 
@@ -25,10 +27,7 @@ def test_magnet_cuboid_field_BH():
             (1, 2, 3),
             (1, 2, 3),
             (1, 2, 3),
-            (2, 2, 2),
-            (2, 2, 2),
-            (1, 1, 1),
-            (1, 1, 1),
+            (1, 2, 3),
         ]
     )
     dim = np.array(
@@ -38,10 +37,7 @@ def test_magnet_cuboid_field_BH():
             (1, 2, 2),
             (0, 2, 2),
             (1, 2, 3),
-            (2, 2, 2),
-            (2, 2, 2),
-            (2, 2, 2),
-            (2, 2, 2),
+            (3, 3, 3),
         ]
     )
     obs = np.array(
@@ -51,10 +47,7 @@ def test_magnet_cuboid_field_BH():
             (1, -1, 0),
             (1, -1, 0),
             (1, 2, 3),
-            (1, 1 + 1e-14, 0),
-            (1, 1, 1),
-            (1, -1, 2),
-            (1 + 1e-14, -1, 2),
+            (0, 0, 0),
         ]
     )
 
@@ -64,48 +57,92 @@ def test_magnet_cuboid_field_BH():
         polarizations=pol,
         dimensions=dim,
     )
-    Btest = [
-        [0.0, 0.0, 0.0],
-        [-0.14174376, -0.16976459, -0.20427478],
-        [-0.14174376, -0.16976459, -0.20427478],
-        [0.0, 0.0, 0.0],
-        [0.02596336, 0.04530334, 0.05840059],
-        [np.inf, np.inf, -0.29516724],
-        [0.0, 0.0, 0.0],
-        [-0.0009913, -0.08747071, 0.04890262],
-        [-0.0009913, -0.08747071, 0.04890262],
-    ]
-    np.testing.assert_allclose(B, Btest, rtol=1e-5)
-
     H = magnet_cuboid_field(
         field="H",
         observers=obs,
         polarizations=pol,
         dimensions=dim,
     )
+    J = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
+    np.testing.assert_allclose(B, MU0 * H + J)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [-0.14174376, -0.16976459, -0.20427478],
+        [-0.14174376, -0.16976459, -0.20427478],
+        [0.0, 0.0, 0.0],
+        [0.02596336, 0.04530334, 0.05840059],
+        [0.66666667, 1.33333333, 2.0],
+    ]
+    np.testing.assert_allclose(B, Btest, rtol=1e-5)
+
     Htest = [
-        [0.00000000e00, 0.00000000e00, 0.00000000e00],
-        [-1.12796098e05, -1.35094372e05, -1.62556705e05],
-        [-1.12796098e05, -1.35094372e05, -1.62556705e05],
-        [0.00000000e00, 0.00000000e00, 0.00000000e00],
-        [2.06609885e04, 3.60512520e04, 4.64737143e04],
-        [np.inf, np.inf, -2.34886623e05],
-        [-1.59154943e06, -1.59154943e06, -1.59154943e06],
-        [-7.88852468e02, -6.96069788e04, 3.89154716e04],
-        [-7.88852468e02, -6.96069788e04, 3.89154716e04],
+        [0.0, 0.0, 0.0],
+        [-112796.09804171, -135094.37189185, -162556.70519527],
+        [-112796.09804171, -135094.37189185, -162556.70519527],
+        [0.0, 0.0, 0.0],
+        [20660.98851314, 36051.25202256, 46473.71425434],
+        [-265258.23848649, -530516.47697298, -795774.71545948],
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-5)
 
 
-def test_magnet_cuboid_field_mag0():
-    """test cuboid field magnetization=0"""
-    B = magnet_cuboid_field(
-        field="B",
-        observers=np.ones((1, 3)),
-        polarizations=np.zeros((1, 3)),
-        dimensions=np.ones((1, 3)),
+def test_magnet_cylinder_field_BH():
+    """test cylinder field computation"""
+    pol = np.array(
+        [
+            (0, 0, 0),
+            (1, 2, 3),
+            (3, 2, -1),
+            (1, 1, 1),
+        ]
     )
-    np.testing.assert_allclose(np.zeros((1, 3)), B)
+    dim = np.array(
+        [
+            (1, 2),
+            (2, 2),
+            (1, 2),
+            (3, 3),
+        ]
+    )
+    obs = np.array(
+        [
+            (1, 2, 3),
+            (1, -1, 0),
+            (1, 1, 1),
+            (0, 0, 0),
+        ]
+    )
+    B = magpy.core.magnet_cylinder_field(
+        field="B",
+        observers=obs,
+        polarizations=pol,
+        dimensions=dim,
+    )
+    H = magpy.core.magnet_cylinder_field(
+        field="H",
+        observers=obs,
+        polarizations=pol,
+        dimensions=dim,
+    )
+    J = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
+    np.testing.assert_allclose(B, MU0 * H + J)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [-0.36846057, -0.10171405, -0.33006492],
+        [0.05331225, 0.07895873, 0.10406998],
+        [0.64644661, 0.64644661, 0.70710678],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [0.0, 0.0, 0.0],
+        [-293211.60229288, -80941.4714998, -262657.31858654],
+        [42424.54100401, 62833.36365626, 82816.25721518],
+        [-281348.8487991, -281348.8487991, -233077.01786129],
+    ]
+    np.testing.assert_allclose(H, Htest)
 
 
 def test_field_BH_cylinder_tile_mag0():
