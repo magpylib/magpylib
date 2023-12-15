@@ -32,10 +32,10 @@ def magnet_cuboid_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    dimension: ndarray, shape (n,3)
+    dimensions: ndarray, shape (n,3)
         Cuboid side lengths in units of m.
 
-    polarization: ndarray, shape (n,3)
+    polarizations: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
