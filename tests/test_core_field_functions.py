@@ -16,6 +16,8 @@ from magpylib.core import magnet_cuboid_field
 from magpylib.core import magnet_cylinder_field
 from magpylib.core import magnet_cylinder_segment_field
 from magpylib.core import magnet_sphere_field
+from magpylib.core import magnet_tetrahedron_field
+from magpylib.core import triangle_field
 
 
 def test_magnet_cuboid_field_BH():
@@ -252,6 +254,121 @@ def test_field_cylinder_segment_BH():
         [-194374.5385654, -326700.15326755, 644372.62925584],
     ]
     np.testing.assert_allclose(H, Htest, rtol=1e-6)
+
+
+def test_triangle_field_BH():
+    """Test of triangle field core function"""
+    pol = np.array(
+        [
+            (0, 0, 0),
+            (1, 2, 3),
+            (2, -1, 1),
+            (1, -1, 2),
+        ]
+    )
+    vert = np.array(
+        [
+            [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
+            [(0, 0, 0), (0, 1, 0), (1, 0, 0)],
+            [(1, 2, 3), (0, 1, -5), (1, 1, 5)],
+            [(1, 2, 2), (0, 1, -1), (3, -1, 1)],
+        ]
+    )
+    obs = np.array(
+        [
+            (1, 1, 1),
+            (1, 1, 1),
+            (1, 1, 1),
+            (2, 3, 1),
+        ]
+    )
+    B = triangle_field(
+        field="B",
+        observers=obs,
+        vertices=vert,
+        polarizations=pol,
+    )
+    H = triangle_field(
+        field="H",
+        observers=obs,
+        vertices=vert,
+        polarizations=pol,
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [-0.02825571, -0.02825571, -0.04386991],
+        [-0.34647603, 0.29421715, 0.06980312],
+        [0.02041789, 0.05109073, 0.00218011],
+    ]
+    np.testing.assert_allclose(B, Btest, rtol=1e-06)
+
+    Htest = [
+        [0.0, 0.0, 0.0],
+        [-22485.1813849, -22485.1813849, -34910.56834885],
+        [-275716.86458395, 234130.57085866, 55547.55765999],
+        [16248.03897974, 40656.7134656, 1734.8781397],
+    ]
+    np.testing.assert_allclose(H, Htest, rtol=1e-06)
+
+
+def test_magnet_tetrahedron_field_BH():
+    """Test of tetrahedron field core function"""
+    pol = np.array(
+        [
+            (0, 0, 0),
+            (1, 2, 3),
+            (-1, 0.5, 0.1),
+            (2, 2, -1),
+        ]
+    )
+    vert = np.array(
+        [
+            [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
+            [(0, 0, 0), (0, 1, 0), (1, 0, 0), (0, 0, 1)],
+            [(-1, 0, -1), (1, 1, -1), (1, -1, -1), (0, 0, 1)],
+            [(-1, 0, -1), (1, 1, -1), (1, -1, -1), (0, 0, 1)],
+        ]
+    )
+    obs = np.array(
+        [
+            (1, 1, 1),
+            (1, 1, 1),
+            (0, 0, 0),
+            (2, 0, 0),
+        ]
+    )
+    B = magnet_tetrahedron_field(
+        field="B",
+        observers=obs,
+        vertices=vert,
+        polarizations=pol,
+    )
+    H = magnet_tetrahedron_field(
+        field="H",
+        observers=obs,
+        vertices=vert,
+        polarizations=pol,
+    )
+    J = np.array([(0, 0, 0)] * 2 + [pol[2]] + [(0, 0, 0)])
+    np.testing.assert_allclose(B, MU0 * H + J)
+
+    Btest = [
+        [0.0, 0.0, 0.0],
+        [0.02602367, 0.02081894, 0.0156142],
+        [-0.69704332, 0.20326329, 0.11578416],
+        [0.04004769, -0.03186713, 0.03854207],
+    ]
+    np.testing.assert_allclose(B, Btest, rtol=1e-06)
+
+    Htest = [
+        [0.0, 0.0, 0.0],
+        [20708.97827326, 16567.1826186, 12425.38696395],
+        [241085.26350642, -236135.56979233, 12560.63814427],
+        [31868.94160192, -25359.05664996, 30670.80436549],
+    ]
+    np.testing.assert_allclose(H, Htest, rtol=1e-06)
 
 
 def test_field_dipole1():
