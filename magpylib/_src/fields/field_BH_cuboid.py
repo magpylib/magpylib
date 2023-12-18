@@ -12,7 +12,7 @@ RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
 def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     """Magnetic B-field of homogeneously magnetized cuboids
-    see core `magnet_cuboid_field for parameter definitions"""
+    see core `magnet_cuboid_field` for parameter definitions"""
     magx, magy, magz = polarizations.T
     a, b, c = dimensions.T / 2
     x, y, z = np.copy(observers).T
