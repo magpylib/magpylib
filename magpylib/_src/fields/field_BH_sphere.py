@@ -70,36 +70,38 @@ def magnet_sphere_field(
     in the inside (see e.g. "Theoretical Physics, Bertelmann").
     """
 
-    bh = check_field_input(field, "magnet_sphere_field()")
+    check_field_input(field)
 
-    # all special cases r0=0 and mag=0 automatically covered
+    # all special cases r_obs=0 and pol=0 automatically covered
 
     x, y, z = np.copy(observers.T)
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    r0 = abs(diameters) / 2
+    r_obs = abs(diameters) / 2
 
     # inside field & allocate
     B = polarizations * 2 / 3
 
     # overwrite outside field entries
-    mask_out = r >= r0
+    mask_outside = r >= r_obs
 
-    mag1 = polarizations[mask_out]
-    obs1 = observers[mask_out]
-    r1 = r[mask_out]
-    r01 = r0[mask_out]
+    pol_out = polarizations[mask_outside]
+    obs_out = observers[mask_outside]
+    r_out = r[mask_outside]
+    r_obs_out = r_obs[mask_outside]
 
     field_out = (
-        (3 * (np.sum(mag1 * obs1, axis=1) * obs1.T) / r1**5 - mag1.T / r1**3)
-        * r01**3
+        (
+            3 * (np.sum(pol_out * obs_out, axis=1) * obs_out.T) / r_out**5
+            - pol_out.T / r_out**3
+        )
+        * r_obs_out**3
         / 3
     )
-    B[mask_out] = field_out.T
+    B[mask_outside] = field_out.T
 
-    if bh:
+    if field == "B":
         return B
 
-    # adjust and return H
-    B[~mask_out] = -polarizations[~mask_out] / 3
+    B[~mask_outside] = -polarizations[~mask_outside] / 3
     H = B / MU0
     return H
