@@ -581,7 +581,7 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar meshess for inside-outside evaluation and adding B
+            # group similar meshes for inside-outside evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
