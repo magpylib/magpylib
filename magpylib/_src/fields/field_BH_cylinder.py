@@ -48,10 +48,10 @@ def fieldB_cylinder_axial(z0: np.ndarray, r: np.ndarray, z: np.ndarray) -> list:
     gamma = dmr / dpr
     one = np.ones(n)
 
-    # radial field (unit magnetization)
+    # radial field (unit polarization)
     Br = (cel(k1, one, one, -one) / sq1 - cel(k0, one, one, -one) / sq0) / np.pi
 
-    # axial field (unit magnetization)
+    # axial field (unit polarization)
     Bz = (
         1
         / dpr
@@ -317,7 +317,7 @@ def magnet_cylinder_field(
     Leitner/Rauber/Orter: WIP
     """
 
-    bh = check_field_input(field, "magnet_cylinder_field()")
+    check_field_input(field)
 
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observers)
@@ -332,27 +332,27 @@ def magnet_cylinder_field(
     Br, Bphi, Bz = np.zeros((3, len(r)))
 
     # create masks to distinguish between cases ---------------------
-    m0 = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
-    m1 = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
-    m2 = np.abs(z) <= z0  # in-between top and bottom plane
-    m3 = r <= 1  # inside Cylinder hull plane
+    mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
+    mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
+    mask_between_bases = np.abs(z) <= z0  # in-between top and bottom plane
+    mask_inside_hull = r <= 1  # inside Cylinder hull plane
 
-    # special case: mag = 0
-    mask0 = np.linalg.norm(polarizations, axis=1) == 0
+    # special case: pol = 0
+    mask_pol_not_null = np.linalg.norm(polarizations, axis=1) != 0
 
     # special case: on Cylinder edge
-    mask_edge = m0 & m1
+    mask_on_edge = mask_on_hull & mask_on_bases
 
     # general case
-    mask_gen = ~mask0 & ~mask_edge
+    mask_gen = mask_pol_not_null & ~mask_on_edge
 
     # axial/transv polarization cases
-    magx, magy, magz = polarizations.T
-    mask_tv = (magx != 0) | (magy != 0)
-    mask_ax = magz != 0
+    pol_x, pol_y, pol_z = polarizations.T
+    mask_tv = (pol_x != 0) | (pol_y != 0)
+    mask_ax = pol_z != 0
 
     # inside/outside
-    mask_inside = m2 & m3
+    mask_inside = mask_between_bases & mask_inside_hull
 
     # general case masks
     mask_tv = mask_tv & mask_gen
@@ -361,33 +361,35 @@ def magnet_cylinder_field(
 
     # transversal polarization contributions -----------------------
     if any(mask_tv):
-        magxy = np.sqrt(magx**2 + magy**2)[mask_tv]
-        tetta = np.arctan2(magy[mask_tv], magx[mask_tv])
-        br_tv, bphi_tv, bz_tv = fieldH_cylinder_diametral(
+        pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_tv]
+        tetta = np.arctan2(pol_y[mask_tv], pol_x[mask_tv])
+        Br_tv, Bphi_tv, Bz_tv = fieldH_cylinder_diametral(
             z0[mask_tv], r[mask_tv], phi[mask_tv] - tetta, z[mask_tv]
         )
 
-        # add to H-field (inside magxy is missing for B !!!)
-        Br[mask_tv] += magxy * br_tv
-        Bphi[mask_tv] += magxy * bphi_tv
-        Bz[mask_tv] += magxy * bz_tv
+        # add to H-field (inside pol_xy is missing for B !!!)
+        Br[mask_tv] += pol_xy * Br_tv
+        Bphi[mask_tv] += pol_xy * Bphi_tv
+        Bz[mask_tv] += pol_xy * Bz_tv
 
     # axial polarization contributions -----------------------------
     if any(mask_ax):
-        br_ax, bz_ax = fieldB_cylinder_axial(z0[mask_ax], r[mask_ax], z[mask_ax])
-        Br[mask_ax] += magz[mask_ax] * br_ax
-        Bz[mask_ax] += magz[mask_ax] * bz_ax
+        Br_ax, Bz_ax = fieldB_cylinder_axial(z0[mask_ax], r[mask_ax], z[mask_ax])
+        Br[mask_ax] += pol_z[mask_ax] * Br_ax
+        Bz[mask_ax] += pol_z[mask_ax] * Bz_ax
 
     # transform field to cartesian CS -------------------------------
     Bx, By = cyl_field_to_cart(phi, Br, Bphi)
 
     # add/subtract Mag when inside for B/H --------------------------
-    if bh:
+    if field == "B":
         if any(mask_tv):  # tv computes H-field
-            Bx[mask_tv * mask_inside] += magx[mask_tv * mask_inside]
-            By[mask_tv * mask_inside] += magy[mask_tv * mask_inside]
+            mask_tv_inside = mask_tv * mask_inside
+            Bx[mask_tv_inside] += pol_x[mask_tv_inside]
+            By[mask_tv_inside] += pol_y[mask_tv_inside]
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
 
     if any(mask_ax):  # ax computes B-field
-        Bz[mask_tv * mask_inside] -= magz[mask_tv * mask_inside]
+        mask_tv_inside = mask_tv * mask_inside
+        Bz[mask_tv_inside] -= pol_z[mask_tv_inside]
     return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
