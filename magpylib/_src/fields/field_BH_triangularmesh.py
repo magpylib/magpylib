@@ -8,6 +8,7 @@ import numpy as np
 import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.utility import MU0
 
 
 def calculate_centroid(vertices, faces):
@@ -493,32 +494,38 @@ def mask_inside_trimesh(points: np.ndarray, faces: np.ndarray) -> np.ndarray:
     return mask_inside
 
 
+# CORE LIKE - but is not a core function!
 def magnet_trimesh_field(
+    *,
     field: str,
     observers: np.ndarray,
-    magnetization: np.ndarray,
-    mesh: np.ndarray,
+    meshes: np.ndarray,
+    polarizations: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
-    core-like function that computes the field of triangular meshes using the triangle_field
-    - closed nice meshes are assumed (input comes only from TriangularMesh class)
+    Core-like function that computes the field of triangular meshes using the triangle_field
+
+    !!!Closed meshes are assumed (input comes only from TriangularMesh class)!!!
+    This is the reasons that this is not a core function
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    magnetization: ndarray, shape (n,3)
-        Homogeneous magnetization vector in units of mT.
-
-    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
+    meshes: ndarray, shape (n,n1,3,3) or ragged sequence
         Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
         `mesh` can be a ragged sequence of mesh-children with different lengths.
+
+    polarizations: ndarray, shape (n,3)
+        Magnetic polarization vectors in units of T.
 
     in_out: {'auto', 'inside', 'outside'}
         Tells if the points are inside or outside the enclosing mesh for the correct B/H-field
@@ -531,37 +538,42 @@ def magnet_trimesh_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of magnet in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of magnet in Cartesian coordinates in units of T or A/m.
 
     Notes
     -----
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    if mesh.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = mesh.shape
-        vertices_tiled = mesh.reshape(-1, 3, 3)
+    if meshes.ndim != 1:  # all vertices objects have same number of children
+        n0, n1, *_ = meshes.shape
+        vertices_tiled = meshes.reshape(-1, 3, 3)
         observers_tiled = np.repeat(observers, n1, axis=0)
-        magnetization_tiled = np.repeat(magnetization, n1, axis=0)
+        polarization_tiled = np.repeat(polarizations, n1, axis=0)
         B = triangle_field(
             field="B",
             observers=observers_tiled,
-            magnetization=magnetization_tiled,
             vertices=vertices_tiled,
+            polarizations=polarization_tiled,
         )
         B = B.reshape((n0, n1, 3))
         B = np.sum(B, axis=1)
     else:
-        nvs = [f.shape[0] for f in mesh]  # length of vertex set
+        nvs = [f.shape[0] for f in meshes]  # length of vertex set
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
+        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in meshes])
         observers_tiled = np.repeat(observers, nvs, axis=0)
-        magnetization_tiled = np.repeat(magnetization, nvs, axis=0)
+        polarization_tiled = np.repeat(polarizations, nvs, axis=0)
         B = triangle_field(
             field="B",
             observers=observers_tiled,
-            magnetization=magnetization_tiled,
             vertices=vertices_tiled,
+            polarizations=polarization_tiled,
         )
         b_split = np.split(B, split_indices)
         B = np.array([np.sum(bh, axis=0) for bh in b_split])
@@ -569,26 +581,26 @@ def magnet_trimesh_field(
     if field == "B":
         if in_out == "auto":
             prev_ind = 0
-            # group similar meshs for inside-outside evaluation and adding B
+            # group similar meshes for inside-outside evaluation and adding B
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
-                    or mesh[new_ind].shape != mesh[prev_ind].shape
-                    or not np.all(mesh[new_ind] == mesh[prev_ind])
+                    or meshes[new_ind].shape != meshes[prev_ind].shape
+                    or not np.all(meshes[new_ind] == meshes[prev_ind])
                 ):
                     if new_ind == len(B) - 1:
                         new_ind = len(B)
                     inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], mesh[prev_ind]
+                        observers[prev_ind:new_ind], meshes[prev_ind]
                     )
-                    # if inside magnet add magnetization vector
-                    B[prev_ind:new_ind][inside_mask] += magnetization[prev_ind:new_ind][
+                    # if inside magnet add polarization vector
+                    B[prev_ind:new_ind][inside_mask] += polarizations[prev_ind:new_ind][
                         inside_mask
                     ]
                     prev_ind = new_ind
         elif in_out == "inside":
-            B += magnetization
+            B += polarizations
         return B
 
-    H = B * 10 / 4 / np.pi  # mT -> kA/m
+    H = B / MU0
     return H
