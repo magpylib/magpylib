@@ -7,6 +7,7 @@ import numpy as np
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import MU0
 
+RTOL_SURFACE = 1e-15 # relative tolerance to consider on surface
 
 # CORE
 def magnet_cuboid_field(
@@ -106,33 +107,35 @@ def magnet_cuboid_field(
     B_all = np.zeros((len(magx), 3))
 
     # SPECIAL CASE 1: mag = (0,0,0)
-    mask1 = (magx == 0) * (magy == 0) * (magz == 0)  # 2x faster than np.all()
+    mask_not_null_mag = (magx != 0) * (magy != 0) * (magz != 0)  # 2x faster than np.all()
 
     # SPECIAL CASE 2: 0 in dimension
-    mask2 = (a * b * c).astype(bool)
+    mask_not_null_dim = (a * b * c).astype(bool)
 
     # SPECIAL CASE 3: observer lies on-edge/corner
-    # -> 1e-15 to account for numerical imprecision when e.g. rotating
-    # -> /a /b /c to account for the "missing" scaling (1e-15 is large when
-    #    a is e.g. 1e-15 itself)
+    # -> EPSILON to account for numerical imprecision when e.g. rotating
+    # -> /a /b /c to account for the "missing" scaling (EPSILON is large when
+    #    a is e.g. EPSILON itself)
+    x_dist = abs(x) - a
+    y_dist = abs(y) - b
+    z_dist = abs(z) - c
+    mx1 = abs(x_dist) < RTOL_SURFACE * a  # on surface
+    my1 = abs(y_dist) < RTOL_SURFACE * b  # on surface
+    mz1 = abs(z_dist) < RTOL_SURFACE * c  # on surface
 
-    mx1 = abs(abs(x) - a) < 1e-15 * a  # on surface
-    my1 = abs(abs(y) - b) < 1e-15 * b  # on surface
-    mz1 = abs(abs(z) - c) < 1e-15 * c  # on surface
-
-    mx2 = (abs(x) - a) < 1e-15 * a  # within cuboid dimension
-    my2 = (abs(y) - b) < 1e-15 * b  # within cuboid dimension
-    mz2 = (abs(z) - c) < 1e-15 * c  # within cuboid dimension
+    mx2 = x_dist < RTOL_SURFACE * a  # within cuboid dimension
+    my2 = y_dist < RTOL_SURFACE * b  # within cuboid dimension
+    mz2 = z_dist < RTOL_SURFACE * c  # within cuboid dimension
 
     mask_xedge = my1 & mz1 & mx2
     mask_yedge = mx1 & mz1 & my2
     mask_zedge = mx1 & my1 & mz2
-    mask3 = mask_xedge | mask_yedge | mask_zedge
+    mask_not_edge = ~(mask_xedge | mask_yedge | mask_zedge)
 
     # on-wall is not a special case
 
     # continue only with general cases ----------------------------
-    mask_gen = ~mask1 & mask2 & ~mask3
+    mask_gen = mask_not_null_mag & mask_not_null_dim & mask_not_edge
 
     if np.any(mask_gen):
         magx, magy, magz = polarizations[mask_gen].T
