@@ -5,7 +5,7 @@ magnetized Cuboids. Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.utility import convert_HBMJ
 
 RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
@@ -243,6 +243,7 @@ def magnet_cuboid_field(
 
     mask_gen = mask_not_null_mag & mask_not_null_dim
 
+    mask_inside = None
     if in_out == "auto" and field != "B":
         # SPECIAL CASE 3: observer lies on-edge/corner
         # -> EPSILON to account for numerical imprecision when e.g. rotating
@@ -276,17 +277,10 @@ def magnet_cuboid_field(
             dimensions[mask_gen],
             observers[mask_gen],
         )
-
-    if field == "B":
-        return B
-    if field == "H":
-        # if inside magnet subtract polarization vector
-        B[mask_inside] -= polarizations[mask_inside]
-        H = B / MU0  # T -> A/m
-        return H
-    J = polarizations.copy()
-    J[~mask_inside] = 0
-    if field == "J":
-        return J
-    if field == "M":
-        return J / MU0
+    return convert_HBMJ(
+        input_field_type="B",
+        output_field_type=field,
+        field_values=B,
+        polarizations=polarizations,
+        mask_inside=mask_inside,
+    )

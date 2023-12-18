@@ -3,6 +3,7 @@
 # pylint: disable=cyclic-import
 # import numbers
 from math import log10
+from typing import Optional
 from typing import Sequence
 
 import numpy as np
@@ -389,3 +390,35 @@ def open_animation(filepath, embed=True):
         import webbrowser
 
         webbrowser.open(filepath)
+
+
+
+def convert_HBMJ(
+    input_field_type: str,
+    output_field_type: str,
+    field_values: np.ndarray,
+    polarizations: np.ndarray,
+    mask_inside: Optional[np.ndarray],
+) -> np.ndarray:
+    """Convert between magnetic field inputs and outputs.
+    Notes
+    -----
+    mask_inside is only optional when output and input field types are the same.
+    """
+    if output_field_type == input_field_type:
+        return field_values
+    if output_field_type in "MJ":
+        J = polarizations.copy()
+        J[~mask_inside] *= 0
+        if output_field_type == "J":
+            return J
+        if output_field_type == "M":
+            return J / MU0
+    if input_field_type == "B":
+        H = field_values.copy()
+        H[mask_inside] -= polarizations[mask_inside]
+        return H / MU0
+    if input_field_type == "H":
+        B = field_values * MU0
+        B[mask_inside] += polarizations[mask_inside]
+        return B
