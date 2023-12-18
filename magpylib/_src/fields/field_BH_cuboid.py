@@ -284,7 +284,7 @@ def magnet_cuboid_field(
         B[mask_inside] -= polarizations[mask_inside]
         H = B / MU0  # T -> A/m
         return H
-    J = polarizations
+    J = polarizations.copy()
     J[~mask_inside] = 0
     if field == "J":
         return J
