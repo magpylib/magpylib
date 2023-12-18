@@ -269,8 +269,8 @@ def magnet_cuboid_field(
         val = in_out == "inside"
         mask_inside = np.full_like(mask_not_null_mag, val, dtype=bool)
 
+    # continue only with general cases
     if np.any(mask_gen) and field in "BH":
-        # continue only with general cases ----------------------------
         B[mask_gen] = _magnet_cuboid_field_B(
             polarizations[mask_gen],
             dimensions[mask_gen],
