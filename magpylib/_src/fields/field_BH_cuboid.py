@@ -231,7 +231,7 @@ def magnet_cuboid_field(
     # dealing with special cases -----------------------------------
 
     # allocate B with zeros
-    B_all = np.zeros((len(magx), 3))
+    B = np.zeros((len(magx), 3))
 
     # SPECIAL CASE 1: mag = (0,0,0)
     mask_not_null_mag = ~(
@@ -271,13 +271,11 @@ def magnet_cuboid_field(
 
     if np.any(mask_gen) and field in "BH":
         # continue only with general cases ----------------------------
-        B = _magnet_cuboid_field_B(
+        B[mask_gen] = _magnet_cuboid_field_B(
             polarizations[mask_gen],
             dimensions[mask_gen],
             observers[mask_gen],
         )
-
-    B_all[mask_gen] = B
 
     if field == "B":
         return B
