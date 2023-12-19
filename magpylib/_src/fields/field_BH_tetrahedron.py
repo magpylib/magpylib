@@ -119,7 +119,7 @@ def magnet_tetrahedron_field(
     distinguish between B- and H-field.
     """
 
-    bh = check_field_input(field, "magnet_tetrahedron_field()")
+    check_field_input(field)
 
     n = len(observers)
 
@@ -146,7 +146,7 @@ def magnet_tetrahedron_field(
         + tri_fields[3 * n :]
     )
 
-    if not bh:
+    if field=="H":
         return tetra_field
 
     # if B, and inside magnet add polarizations vector
