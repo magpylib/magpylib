@@ -5,7 +5,7 @@ magnetized Spheres. Computation details in function docstrings.
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.utility import convert_HBMJ
 
 
 # CORE
@@ -99,9 +99,11 @@ def magnet_sphere_field(
     )
     B[mask_outside] = field_out.T
 
-    if field == "B":
-        return B
-
-    B[~mask_outside] = -polarizations[~mask_outside] / 3
-    H = B / MU0
-    return H
+    mask_inside = ~mask_outside
+    return convert_HBMJ(
+        input_field_type="B",
+        output_field_type=field,
+        field_values=B,
+        polarizations=polarizations,
+        mask_inside=mask_inside,
+    )
