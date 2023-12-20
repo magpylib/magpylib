@@ -278,9 +278,9 @@ def magnet_cuboid_field(
             observers[mask_gen],
         )
     return convert_HBMJ(
-        input_field_type="B",
         output_field_type=field,
-        field_values=B,
         polarizations=polarizations,
+        input_field_type="B",
+        field_values=B,
         mask_inside=mask_inside,
     )

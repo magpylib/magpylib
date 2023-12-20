@@ -394,26 +394,27 @@ def open_animation(filepath, embed=True):
 
 
 def convert_HBMJ(
-    input_field_type: str,
     output_field_type: str,
-    field_values: np.ndarray,
     polarizations: np.ndarray,
-    mask_inside: Optional[np.ndarray],
+    input_field_type: Optional[str]=None,
+    field_values: Optional[np.ndarray]=None,
+    mask_inside: Optional[np.ndarray]=None,
 ) -> np.ndarray:
     """Convert between magnetic field inputs and outputs.
     Notes
     -----
-    mask_inside is only optional when output and input field types are the same.
+    `mask_inside` is only optional when output and input field types are the same.
     """
-    if output_field_type == input_field_type:
-        return field_values
     if output_field_type in "MJ":
         J = polarizations.copy()
-        J[~mask_inside] *= 0
+        if mask_inside is not None:
+            J[~mask_inside] *= 0
         if output_field_type == "J":
             return J
         if output_field_type == "M":
             return J / MU0
+    if output_field_type == input_field_type:
+        return field_values
     if input_field_type == "B":
         H = field_values.copy()
         H[mask_inside] -= polarizations[mask_inside]
@@ -422,3 +423,4 @@ def convert_HBMJ(
         B = field_values * MU0
         B[mask_inside] += polarizations[mask_inside]
         return B
+

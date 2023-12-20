@@ -15,6 +15,7 @@ def magnet_sphere_field(
     observers: np.ndarray,
     diameters: np.ndarray,
     polarizations: np.ndarray,
+    in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized spheres.
 
@@ -81,29 +82,34 @@ def magnet_sphere_field(
     # inside field & allocate
     B = polarizations * 2 / 3
 
+    if in_out == "auto":
+        mask_inside = r < r_obs
+    else:
+        val = in_out == "inside"
+        mask_inside = np.full(len(B), val)
     # overwrite outside field entries
-    mask_outside = r >= r_obs
 
-    pol_out = polarizations[mask_outside]
-    obs_out = observers[mask_outside]
-    r_out = r[mask_outside]
-    r_obs_out = r_obs[mask_outside]
+    mask_outside = ~mask_inside
+    if mask_outside.any():
+        pol_out = polarizations[mask_outside]
+        obs_out = observers[mask_outside]
+        r_out = r[mask_outside]
+        r_obs_out = r_obs[mask_outside]
 
-    field_out = (
-        (
-            3 * (np.sum(pol_out * obs_out, axis=1) * obs_out.T) / r_out**5
-            - pol_out.T / r_out**3
+        field_out = (
+            (
+                3 * (np.sum(pol_out * obs_out, axis=1) * obs_out.T) / r_out**5
+                - pol_out.T / r_out**3
+            )
+            * r_obs_out**3
+            / 3
         )
-        * r_obs_out**3
-        / 3
-    )
-    B[mask_outside] = field_out.T
+        B[mask_outside] = field_out.T
 
-    mask_inside = ~mask_outside
     return convert_HBMJ(
-        input_field_type="B",
         output_field_type=field,
-        field_values=B,
         polarizations=polarizations,
+        input_field_type="B",
+        field_values=B,
         mask_inside=mask_inside,
     )
