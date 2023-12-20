@@ -357,7 +357,6 @@ def magnet_cylinder_field(
     # general case masks
     mask_tv = mask_tv & mask_gen
     mask_ax = mask_ax & mask_gen
-    mask_inside = mask_inside & mask_gen
 
     # transversal polarization contributions -----------------------
     if any(mask_tv):
@@ -383,13 +382,12 @@ def magnet_cylinder_field(
 
     # add/subtract Mag when inside for B/H --------------------------
     if field == "B":
-        if any(mask_tv):  # tv computes H-field
-            mask_tv_inside = mask_tv * mask_inside
+        mask_tv_inside = mask_tv * mask_inside
+        if any(mask_tv_inside):  # tv computes H-field
             Bx[mask_tv_inside] += pol_x[mask_tv_inside]
             By[mask_tv_inside] += pol_y[mask_tv_inside]
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
-
-    if any(mask_ax):  # ax computes B-field
-        mask_tv_inside = mask_tv * mask_inside
+    mask_tv_inside = mask_tv * mask_inside
+    if any(mask_tv_inside):  # ax computes B-field
         Bz[mask_tv_inside] -= pol_z[mask_tv_inside]
     return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
