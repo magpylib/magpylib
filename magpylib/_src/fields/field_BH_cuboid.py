@@ -13,7 +13,7 @@ RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     """Magnetic B-field of homogeneously magnetized cuboids
     see core `magnet_cuboid_field` for parameter definitions"""
-    magx, magy, magz = polarizations.T
+    polx, poly, polz = polarizations.T
     a, b, c = dimensions.T / 2
     x, y, z = np.copy(observers).T
 
@@ -29,7 +29,7 @@ def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     z[maskz] = z[maskz] * -1
 
     # create sign flips for position changes
-    qsigns = np.ones((len(magx), 3, 3))
+    qsigns = np.ones((len(polx), 3, 3))
     qs_flipx = np.array([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]])
     qs_flipy = np.array([[1, -1, 1], [-1, 1, -1], [1, -1, 1]])
     qs_flipz = np.array([[1, 1, -1], [1, 1, -1], [-1, -1, 1]])
@@ -39,7 +39,7 @@ def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     qsigns[maskz] = qsigns[maskz] * qs_flipz
 
     # field computations --------------------------------------------
-    # Note: in principle the computation for all three mag-components can be
+    # Note: in principle the computation for all three polarization-components can be
     #   vectorized itself using symmetries. However, tiling the three
     #   components will cost more than is gained by the vectorized evaluation
 
@@ -109,24 +109,24 @@ def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     )
 
     # contributions from x-polarization
-    bx_magx = (
-        magx * ff1x * qsigns[:, 0, 0]
+    bx_polx = (
+        polx * ff1x * qsigns[:, 0, 0]
     )  # the 'missing' third sign is hidden in ff1x
-    by_magx = magx * ff2z * qsigns[:, 0, 1]
-    bz_magx = magx * ff2y * qsigns[:, 0, 2]
+    by_polx = polx * ff2z * qsigns[:, 0, 1]
+    bz_polx = polx * ff2y * qsigns[:, 0, 2]
     # contributions from y-polarization
-    bx_magy = magy * ff2z * qsigns[:, 1, 0]
-    by_magy = magy * ff1y * qsigns[:, 1, 1]
-    bz_magy = -magy * ff2x * qsigns[:, 1, 2]
+    bx_poly = poly * ff2z * qsigns[:, 1, 0]
+    by_poly = poly * ff1y * qsigns[:, 1, 1]
+    bz_poly = -poly * ff2x * qsigns[:, 1, 2]
     # contributions from z-polarization
-    bx_magz = magz * ff2y * qsigns[:, 2, 0]
-    by_magz = -magz * ff2x * qsigns[:, 2, 1]
-    bz_magz = magz * ff1z * qsigns[:, 2, 2]
+    bx_polz = polz * ff2y * qsigns[:, 2, 0]
+    by_polz = -polz * ff2x * qsigns[:, 2, 1]
+    bz_polz = polz * ff1z * qsigns[:, 2, 2]
 
     # summing all contributions
-    bx_tot = bx_magx + bx_magy + bx_magz
-    by_tot = by_magx + by_magy + by_magz
-    bz_tot = bz_magx + bz_magy + bz_magz
+    bx_tot = bx_polx + bx_poly + bx_polz
+    by_tot = by_polx + by_poly + by_polz
+    bz_tot = bz_polx + bz_poly + bz_polz
 
     # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
     B = np.concatenate(((bx_tot,), (by_tot,), (bz_tot,)), axis=0).T
@@ -221,7 +221,7 @@ def magnet_cuboid_field(
 
     check_field_input(field)
 
-    magx, magy, magz = polarizations.T
+    polx, poly, polz = polarizations.T
     a, b, c = np.abs(dimensions.T) / 2
     x, y, z = observers.T
 
@@ -231,17 +231,17 @@ def magnet_cuboid_field(
     # dealing with special cases -----------------------------------
 
     # allocate B with zeros
-    B = np.zeros((len(magx), 3))
+    B = np.zeros((len(polx), 3))
 
-    # SPECIAL CASE 1: mag = (0,0,0)
-    mask_not_null_mag = ~(
-        (magx == 0) * (magy == 0) * (magz == 0)
+    # SPECIAL CASE 1: polarization = (0,0,0)
+    mask_pol_not_null = ~(
+        (polx == 0) * (poly == 0) * (polz == 0)
     )  # 2x faster than np.all()
 
     # SPECIAL CASE 2: 0 in dimension
-    mask_not_null_dim = (a * b * c).astype(bool)
+    mask_dim_not_null = (a * b * c).astype(bool)
 
-    mask_gen = mask_not_null_mag & mask_not_null_dim
+    mask_gen = mask_pol_not_null & mask_dim_not_null
 
     mask_inside = None
     if in_out == "auto" and field != "B":
@@ -268,7 +268,7 @@ def magnet_cuboid_field(
         mask_gen = mask_gen & mask_not_edge
     elif in_out != "auto":
         val = in_out == "inside"
-        mask_inside = np.full_like(mask_not_null_mag, val, dtype=bool)
+        mask_inside = np.full_like(mask_pol_not_null, val, dtype=bool)
 
     # continue only with general cases
     if np.any(mask_gen) and field in "BH":
