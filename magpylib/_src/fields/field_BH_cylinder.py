@@ -348,46 +348,47 @@ def magnet_cylinder_field(
 
     # axial/transv polarization cases
     pol_x, pol_y, pol_z = polarizations.T
-    mask_tv = (pol_x != 0) | (pol_y != 0)
-    mask_ax = pol_z != 0
+    mask_pol_tv = (pol_x != 0) | (pol_y != 0)
+    mask_pol_ax = pol_z != 0
 
     # inside/outside
     mask_inside = mask_between_bases & mask_inside_hull
 
     # general case masks
-    mask_tv = mask_tv & mask_gen
-    mask_ax = mask_ax & mask_gen
+    mask_pol_tv = mask_pol_tv & mask_gen
+    mask_pol_ax = mask_pol_ax & mask_gen
+    mask_inside = mask_inside & mask_gen
 
     # transversal polarization contributions -----------------------
-    if any(mask_tv):
-        pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_tv]
-        tetta = np.arctan2(pol_y[mask_tv], pol_x[mask_tv])
+    if any(mask_pol_tv):
+        pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_pol_tv]
+        tetta = np.arctan2(pol_y[mask_pol_tv], pol_x[mask_pol_tv])
         Br_tv, Bphi_tv, Bz_tv = fieldH_cylinder_diametral(
-            z0[mask_tv], r[mask_tv], phi[mask_tv] - tetta, z[mask_tv]
+            z0[mask_pol_tv], r[mask_pol_tv], phi[mask_pol_tv] - tetta, z[mask_pol_tv]
         )
 
         # add to H-field (inside pol_xy is missing for B !!!)
-        Br[mask_tv] += pol_xy * Br_tv
-        Bphi[mask_tv] += pol_xy * Bphi_tv
-        Bz[mask_tv] += pol_xy * Bz_tv
+        Br[mask_pol_tv] += pol_xy * Br_tv
+        Bphi[mask_pol_tv] += pol_xy * Bphi_tv
+        Bz[mask_pol_tv] += pol_xy * Bz_tv
 
     # axial polarization contributions -----------------------------
-    if any(mask_ax):
-        Br_ax, Bz_ax = fieldB_cylinder_axial(z0[mask_ax], r[mask_ax], z[mask_ax])
-        Br[mask_ax] += pol_z[mask_ax] * Br_ax
-        Bz[mask_ax] += pol_z[mask_ax] * Bz_ax
+    if any(mask_pol_ax):
+        Br_ax, Bz_ax = fieldB_cylinder_axial(z0[mask_pol_ax], r[mask_pol_ax], z[mask_pol_ax])
+        Br[mask_pol_ax] += pol_z[mask_pol_ax] * Br_ax
+        Bz[mask_pol_ax] += pol_z[mask_pol_ax] * Bz_ax
 
     # transform field to cartesian CS -------------------------------
     Bx, By = cyl_field_to_cart(phi, Br, Bphi)
 
     # add/subtract Mag when inside for B/H --------------------------
     if field == "B":
-        mask_tv_inside = mask_tv * mask_inside
+        mask_tv_inside = mask_pol_tv * mask_inside
         if any(mask_tv_inside):  # tv computes H-field
             Bx[mask_tv_inside] += pol_x[mask_tv_inside]
             By[mask_tv_inside] += pol_y[mask_tv_inside]
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
-    mask_tv_inside = mask_tv * mask_inside
-    if any(mask_tv_inside):  # ax computes B-field
-        Bz[mask_tv_inside] -= pol_z[mask_tv_inside]
+    mask_ax_inside = mask_pol_ax * mask_inside
+    if any(mask_ax_inside):  # ax computes B-field
+        Bz[mask_ax_inside] -= pol_z[mask_ax_inside]
     return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
