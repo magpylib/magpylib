@@ -10,6 +10,7 @@ from scipy.special import ellipk
 from magpylib._src.fields.special_cel import cel
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates
+from magpylib._src.utility import convert_HBMJ
 from magpylib._src.utility import cyl_field_to_cart
 from magpylib._src.utility import MU0
 
@@ -396,7 +397,15 @@ def magnet_cylinder_field(
             Bx[mask_tv_inside] += pol_x[mask_tv_inside]
             By[mask_tv_inside] += pol_y[mask_tv_inside]
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
-    mask_ax_inside = mask_pol_ax * mask_inside
-    if any(mask_ax_inside):  # ax computes B-field
-        Bz[mask_ax_inside] -= pol_z[mask_ax_inside]
-    return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
+
+    if field == "H":
+        mask_ax_inside = mask_pol_ax * mask_inside
+        if any(mask_ax_inside):  # ax computes B-field
+            Bz[mask_ax_inside] -= pol_z[mask_ax_inside]
+        return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
+
+    return convert_HBMJ(
+        output_field_type=field,
+        polarization=polarization,
+        mask_inside=mask_inside,
+    )
