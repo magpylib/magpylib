@@ -35,7 +35,11 @@ def current_vertices_field(
     """
     if vertices is None:
         return current_polyline_field(
-            field, observers, current, segment_start, segment_end
+            field=field,
+            observers=observers,
+            current=current,
+            segment_start=segment_start,
+            segment_end=segment_end,
         )
 
     nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
@@ -133,7 +137,9 @@ def current_polyline_field(
     eg. http://www.phys.uri.edu/gerhard/PHY204/tsl216.pdf
     """
     # pylint: disable=too-many-statements
-    bh = check_field_input(field, "current_polyline_field()")
+    check_field_input(field)
+    if field in "MJ":
+        return np.zeros_like(observers)
 
     # allocate for special case treatment
     ntot = len(current)
@@ -223,7 +229,7 @@ def current_polyline_field(
     field_all[~mask0] = field
 
     # return B
-    if bh:
+    if field == "B":
         return field_all
 
     # return H

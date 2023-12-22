@@ -76,7 +76,9 @@ def current_circle_field(
     the magnetic field of a current loop.", M.Ortner et al, Submitted to MDPI Magnetism, 2022
     """
 
-    bh = check_field_input(field, "current_circle_field()")
+    check_field_input(field)
+    if field in "MJ":
+        return np.zeros_like(observers)
 
     r, phi, z = cart_to_cyl_coordinates(observers)
     r0 = np.abs(diameter / 2)
@@ -140,7 +142,7 @@ def current_circle_field(
     ).T  # ugly but fast
 
     # B or H field
-    if bh:
+    if field=="B":
         return B_cart
 
     return B_cart / MU0
