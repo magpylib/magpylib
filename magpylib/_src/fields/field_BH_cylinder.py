@@ -255,6 +255,7 @@ def magnet_cylinder_field(
     observers: np.ndarray,
     dimensions: np.ndarray,
     polarizations: np.ndarray,
+    in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cylinders.
 
@@ -331,28 +332,31 @@ def magnet_cylinder_field(
     # allocate field vectors ----------------------------------------
     Br, Bphi, Bz = np.zeros((3, len(r)))
 
-    # create masks to distinguish between cases ---------------------
-    mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
-    mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
-    mask_between_bases = np.abs(z) <= z0  # in-between top and bottom plane
-    mask_inside_hull = r <= 1  # inside Cylinder hull plane
+    if in_out == "auto":
+        # inside/outside
+        mask_between_bases = np.abs(z) <= z0  # in-between top and bottom plane
+        mask_inside_hull = r <= 1  # inside Cylinder hull plane
+        mask_inside = mask_between_bases & mask_inside_hull
 
-    # special case: pol = 0
-    mask_pol_not_null = np.linalg.norm(polarizations, axis=1) != 0
-
-    # special case: on Cylinder edge
-    mask_on_edge = mask_on_hull & mask_on_bases
-
-    # general case
-    mask_gen = mask_pol_not_null & ~mask_on_edge
-
+        # special case: on Cylinder edge
+        mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
+        mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
+        mask_not_on_edge = ~(mask_on_hull & mask_on_bases)
+    else:
+        mask_inside = np.full(len(observers), in_out == "inside")
+        mask_not_on_edge = np.full(len(observers), True)
     # axial/transv polarization cases
     pol_x, pol_y, pol_z = polarizations.T
     mask_pol_tv = (pol_x != 0) | (pol_y != 0)
     mask_pol_ax = pol_z != 0
 
-    # inside/outside
-    mask_inside = mask_between_bases & mask_inside_hull
+    # special case: pol = 0
+    mask_pol_not_null = mask_pol_not_null = ~(
+        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
+    )
+
+    # general case
+    mask_gen = mask_pol_not_null & mask_not_on_edge
 
     # general case masks
     mask_pol_tv = mask_pol_tv & mask_gen
@@ -374,7 +378,9 @@ def magnet_cylinder_field(
 
     # axial polarization contributions -----------------------------
     if any(mask_pol_ax):
-        Br_ax, Bz_ax = fieldB_cylinder_axial(z0[mask_pol_ax], r[mask_pol_ax], z[mask_pol_ax])
+        Br_ax, Bz_ax = fieldB_cylinder_axial(
+            z0[mask_pol_ax], r[mask_pol_ax], z[mask_pol_ax]
+        )
         Br[mask_pol_ax] += pol_z[mask_pol_ax] * Br_ax
         Bz[mask_pol_ax] += pol_z[mask_pol_ax] * Bz_ax
 
