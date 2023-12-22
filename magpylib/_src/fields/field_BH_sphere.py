@@ -86,7 +86,7 @@ def magnet_sphere_field(
         mask_inside = r < r_obs
     else:
         val = in_out == "inside"
-        mask_inside = np.full(len(B), val)
+        mask_inside = np.full(len(observers), val)
     # overwrite outside field entries
 
     mask_outside = ~mask_inside
