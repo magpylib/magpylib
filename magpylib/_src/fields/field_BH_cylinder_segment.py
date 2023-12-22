@@ -2300,7 +2300,7 @@ def magnet_cylinder_segment_core(
 def magnet_cylinder_segment_field_internal(
     field: str,
     observers: np.ndarray,
-    magnetization: np.ndarray,
+    polarization: np.ndarray,
     dimension: np.ndarray,
 ) -> np.ndarray:
     """
@@ -2309,7 +2309,7 @@ def magnet_cylinder_segment_field_internal(
     Falls back to magnet_cylinder_field whenever the section angles describe the full
     360° cylinder.
     """
-    n = len(magnetization)
+    n = len(polarization)
 
     BHfinal = np.zeros((n, 3))
 
@@ -2319,28 +2319,28 @@ def magnet_cylinder_segment_field_internal(
     mask1 = (phi2 - phi1) < 360
 
     BHfinal[mask1] = magnet_cylinder_segment_field(
-        field,
-        observers[mask1],
-        magnetization[mask1],
-        dimension[mask1],
+        field=field,
+        observers=observers[mask1],
+        polarization=polarization[mask1],
+        dimension=dimension[mask1],
     )
 
     # case2: full cylinder
     mask1x = ~mask1
     BHfinal[mask1x] = magnet_cylinder_field(
-        field,
-        observers[mask1x],
-        magnetization[mask1x],
-        np.c_[2 * r2[mask1x], h[mask1x]],
+        field=field,
+        observers=observers[mask1x],
+        polarization=polarization[mask1x],
+        dimension=np.c_[2 * r2[mask1x], h[mask1x]],
     )
 
     # case2a: hollow cylinder <- should be vectorized together with above
     mask2 = (r1 != 0) & mask1x
     BHfinal[mask2] -= magnet_cylinder_field(
-        field,
-        observers[mask2],
-        magnetization[mask2],
-        np.c_[2 * r1[mask2], h[mask2]],
+        field=field,
+        observers=observers[mask2],
+        polarization=polarization[mask2],
+        dimension=np.c_[2 * r1[mask2], h[mask2]],
     )
 
     return BHfinal
