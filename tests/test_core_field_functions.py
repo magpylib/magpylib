@@ -9,7 +9,6 @@ from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
 from magpylib.core import current_circle_field
-from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
 from magpylib.core import dipole_field
@@ -477,6 +476,37 @@ def test_current_circle_field_BH():
         [49624.3033947, 49624.3033947, 21245.41908818],
         [24812.15169735, 24812.15169735, 10622.70954409],
         [33082.8689298, 33082.8689298, 14163.61272545],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
+def test_current_polyline_field_BH():
+    """Test of current polyline field core function"""
+    B = magpy.core.current_polyline_field(
+        field="B",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    H = magpy.core.current_polyline_field(
+        field="H",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [0.0, -0.03848367, 0.0],
+        [0.0, -0.08944272, 0.0],
+        [0.0, -0.03848367, 0.0],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [0.0, -30624.33145161, 0.0],
+        [0.0, -71176.25434172, 0.0],
+        [0.0, -30624.33145161, 0.0],
     ]
     np.testing.assert_allclose(H, Htest)
 
