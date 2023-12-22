@@ -392,13 +392,12 @@ def open_animation(filepath, embed=True):
         webbrowser.open(filepath)
 
 
-
 def convert_HBMJ(
     output_field_type: str,
     polarization: np.ndarray,
-    input_field_type: Optional[str]=None,
-    field_values: Optional[np.ndarray]=None,
-    mask_inside: Optional[np.ndarray]=None,
+    input_field_type: Optional[str] = None,
+    field_values: Optional[np.ndarray] = None,
+    mask_inside: Optional[np.ndarray] = None,
 ) -> np.ndarray:
     """Convert between magnetic field inputs and outputs.
     Notes
@@ -423,4 +422,3 @@ def convert_HBMJ(
         B = field_values * MU0
         B[mask_inside] += polarization[mask_inside]
         return B
-

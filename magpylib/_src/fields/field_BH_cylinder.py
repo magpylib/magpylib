@@ -340,7 +340,9 @@ def magnet_cylinder_field(
 
         # special case: on Cylinder edge
         mask_on_hull = np.isclose(r, 1, rtol=1e-15, atol=0)  # on Cylinder hull plane
-        mask_on_bases = np.isclose(abs(z), z0, rtol=1e-15, atol=0)  # on top or bottom plane
+        mask_on_bases = np.isclose(
+            abs(z), z0, rtol=1e-15, atol=0
+        )  # on top or bottom plane
         mask_not_on_edge = ~(mask_on_hull & mask_on_bases)
     else:
         mask_inside = np.full(len(observers), in_out == "inside")

@@ -10,7 +10,8 @@ from scipy.special import ellipkinc
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import convert_HBMJ, MU0
+from magpylib._src.utility import convert_HBMJ
+from magpylib._src.utility import MU0
 
 
 def arctan_k_tan_2(k, phi):

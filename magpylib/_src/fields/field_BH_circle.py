@@ -142,7 +142,7 @@ def current_circle_field(
     ).T  # ugly but fast
 
     # B or H field
-    if field=="B":
+    if field == "B":
         return B_cart
 
     return B_cart / MU0

@@ -125,7 +125,6 @@ def check_field_input(inp):
         raise MagpylibBadUserInput(
             f"`field` input can only be one of {allowed}.\n"
             f"Instead received {repr(inp)}."
-
         )
 
 
