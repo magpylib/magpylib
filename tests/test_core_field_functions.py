@@ -57,14 +57,14 @@ def test_magnet_cuboid_field_BH():
     B = magnet_cuboid_field(
         field="B",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     H = magnet_cuboid_field(
         field="H",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     J = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -119,14 +119,14 @@ def test_magnet_cylinder_field_BH():
     B = magpy.core.magnet_cylinder_field(
         field="B",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     H = magpy.core.magnet_cylinder_field(
         field="H",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     J = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -170,14 +170,14 @@ def test_magnet_sphere_field_BH():
     B = magnet_sphere_field(
         field="B",
         observers=obs,
-        diameters=dia,
-        polarizations=pol,
+        diameter=dia,
+        polarization=pol,
     )
     H = magnet_sphere_field(
         field="H",
         observers=obs,
-        diameters=dia,
-        polarizations=pol,
+        diameter=dia,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0), (0, 0, 0), pol[2], pol[3]])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -228,14 +228,14 @@ def test_field_cylinder_segment_BH():
     B = magnet_cylinder_segment_field(
         field="B",
         observers=obs,
-        dimensions=dim,
-        polarizations=pol,
+        dimension=dim,
+        polarization=pol,
     )
     H = magnet_cylinder_segment_field(
         field="H",
         observers=obs,
-        dimensions=dim,
-        polarizations=pol,
+        dimension=dim,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0)] * 3 + [pol[3]])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -287,13 +287,13 @@ def test_triangle_field_BH():
         field="B",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     H = triangle_field(
         field="H",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     np.testing.assert_allclose(B, MU0 * H)
 
@@ -344,13 +344,13 @@ def test_magnet_tetrahedron_field_BH():
         field="B",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     H = magnet_tetrahedron_field(
         field="H",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0)] * 2 + [pol[2]] + [(0, 0, 0)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -425,14 +425,14 @@ def test_magnet_trimesh_field_BH():
     B = magnet_trimesh_field(
         field="B",
         observers=obs,
-        meshes=meshes,
-        polarizations=pol,
+        mesh=meshes,
+        polarization=pol,
     )
     H = magnet_trimesh_field(
         field="H",
         observers=obs,
-        meshes=meshes,
-        polarizations=pol,
+        mesh=meshes,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0), (3, 2, 1)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -448,6 +448,11 @@ def test_magnet_trimesh_field_BH():
         [-795774.70120171, -530516.47792526, -265258.22366805],
     ]
     np.testing.assert_allclose(H, Htest)
+
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
 
 
 def test_field_dipole1():

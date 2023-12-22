@@ -13,8 +13,8 @@ def magnet_cuboid_field(
     *,
     field: str,
     observers: np.ndarray,
-    dimensions: np.ndarray,
-    polarizations: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cuboids.
 
@@ -32,10 +32,10 @@ def magnet_cuboid_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    dimensions: ndarray, shape (n,3)
+    dimension: ndarray, shape (n,3)
         Length of Cuboid sides in units of m.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -52,8 +52,8 @@ def magnet_cuboid_field(
     >>> B = magpy.core.magnet_cuboid_field(
     >>>     field='B',
     >>>     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
-    >>>     dimensions=np.array([(2,2,2), (3,3,3), (4,4,4)]),
-    >>>     polarizations=np.array([(0,0,1), (1,0,0), (0,0,1)]),
+    >>>     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
+    >>>     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
     >>> )
     >>> print(B)
     [[ 0.          0.         -0.05227894]
@@ -93,8 +93,8 @@ def magnet_cuboid_field(
 
     bh = check_field_input(field, "magnet_cuboid_field()")
 
-    magx, magy, magz = polarizations.T
-    a, b, c = np.abs(dimensions.T) / 2
+    magx, magy, magz = polarization.T
+    a, b, c = np.abs(dimension.T) / 2
     x, y, z = observers.T
 
     # This implementation is completely scale invariant as only observer/dimension
@@ -135,8 +135,8 @@ def magnet_cuboid_field(
     mask_gen = ~mask1 & mask2 & ~mask3
 
     if np.any(mask_gen):
-        magx, magy, magz = polarizations[mask_gen].T
-        a, b, c = dimensions[mask_gen].T / 2
+        magx, magy, magz = polarization[mask_gen].T
+        a, b, c = dimension[mask_gen].T / 2
         x, y, z = np.copy(observers[mask_gen]).T
 
         # avoid indeterminate forms by evaluating in bottQ4 only --------
@@ -264,6 +264,6 @@ def magnet_cuboid_field(
 
     # if inside magnet subtract polarization vector
     mask_inside = mx2 & my2 & mz2
-    B[mask_inside] -= polarizations[mask_inside]
+    B[mask_inside] -= polarization[mask_inside]
     H = B / MU0  # T -> A/m
     return H

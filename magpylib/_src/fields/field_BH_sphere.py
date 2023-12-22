@@ -13,8 +13,8 @@ def magnet_sphere_field(
     *,
     field: str,
     observers: np.ndarray,
-    diameters: np.ndarray,
-    polarizations: np.ndarray,
+    diameter: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized spheres.
 
@@ -31,10 +31,10 @@ def magnet_sphere_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    diameters: ndarray, shape (n,)
+    diameter: ndarray, shape (n,)
         Sphere diameters in units of m.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -52,8 +52,8 @@ def magnet_sphere_field(
     >>> B = magpy.core.magnet_sphere_field(
     >>>     field='B',
     >>>     observers=np.array([(1,1,1), (1,1,1)]),
-    >>>     diameters=np.array([1,5]),
-    >>>     polarizations=np.array([(1,2,3), (0,0,3)]),
+    >>>     diameter=np.array([1,5]),
+    >>>     polarization=np.array([(1,2,3), (0,0,3)]),
     >>> )
     >>> print(B)
     [[0.04009377 0.03207501 0.02405626]
@@ -76,15 +76,15 @@ def magnet_sphere_field(
 
     x, y, z = np.copy(observers.T)
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
-    r0 = abs(diameters) / 2
+    r0 = abs(diameter) / 2
 
     # inside field & allocate
-    B = polarizations * 2 / 3
+    B = polarization * 2 / 3
 
     # overwrite outside field entries
     mask_out = r >= r0
 
-    mag1 = polarizations[mask_out]
+    mag1 = polarization[mask_out]
     obs1 = observers[mask_out]
     r1 = r[mask_out]
     r01 = r0[mask_out]
@@ -100,6 +100,6 @@ def magnet_sphere_field(
         return B
 
     # adjust and return H
-    B[~mask_out] = -polarizations[~mask_out] / 3
+    B[~mask_out] = -polarization[~mask_out] / 3
     H = B / MU0
     return H

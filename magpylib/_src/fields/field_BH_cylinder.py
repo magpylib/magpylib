@@ -253,8 +253,8 @@ def magnet_cylinder_field(
     *,
     field: str,
     observers: np.ndarray,
-    dimensions: np.ndarray,
-    polarizations: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cylinders.
 
@@ -272,10 +272,10 @@ def magnet_cylinder_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    dimensions: ndarray, shape (n,2)
+    dimension: ndarray, shape (n,2)
         Cylinder dimension (d,h) with diameter d and height h in units of m.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -292,8 +292,8 @@ def magnet_cylinder_field(
     >>> B = magpy.core.magnet_cylinder_field(
     >>>     field='B',
     >>>     observers=np.array([(1,0,0), (1,0,0)]),
-    >>>     dimensions=np.array([(1,1), (1,3)]),
-    >>>     polarizations=np.array([(0,0,1), (.5,0,.5)]),
+    >>>     dimension=np.array([(1,1), (1,3)]),
+    >>>     polarization=np.array([(0,0,1), (.5,0,.5)]),
     >>> )
     >>> print(B)
     [[ 0.          0.         -0.05185272]
@@ -321,7 +321,7 @@ def magnet_cylinder_field(
 
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observers)
-    r0, z0 = dimensions.T / 2
+    r0, z0 = dimension.T / 2
 
     # scale invariance (make dimensionless)
     r = np.copy(r / r0)
@@ -338,7 +338,7 @@ def magnet_cylinder_field(
     m3 = r <= 1  # inside Cylinder hull plane
 
     # special case: mag = 0
-    mask0 = np.linalg.norm(polarizations, axis=1) == 0
+    mask0 = np.linalg.norm(polarization, axis=1) == 0
 
     # special case: on Cylinder edge
     mask_edge = m0 & m1
@@ -347,7 +347,7 @@ def magnet_cylinder_field(
     mask_gen = ~mask0 & ~mask_edge
 
     # axial/transv polarization cases
-    magx, magy, magz = polarizations.T
+    magx, magy, magz = polarization.T
     mask_tv = (magx != 0) | (magy != 0)
     mask_ax = magz != 0
 
