@@ -511,6 +511,39 @@ def test_current_polyline_field_BH():
     np.testing.assert_allclose(H, Htest)
 
 
+def test_dipole_field_BH():
+    """Test of dipole field core function"""
+    obs = np.array([(1, 2, 3), (-1, -2, -3), (3, 3, -1)])
+    pol = np.array([(0, 0, 1), (1, 0, 1), (-1, 0.321, 0.123)])
+    mom = pol * 4 * np.pi / 3 / MU0
+
+    B = magpy.core.dipole_field(
+        field="B",
+        observers=obs,
+        moment=mom,
+    )
+    H = magpy.core.dipole_field(
+        field="H",
+        observers=obs,
+        moment=mom,
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [4.09073329e-03, 8.18146659e-03, 5.90883698e-03],
+        [-9.09051843e-04, 1.09086221e-02, 9.99957028e-03],
+        [-9.32067617e-05, -5.41001702e-03, 8.77626395e-04],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [3255.30212351, 6510.60424703, 4702.1030673],
+        [-723.40047189, 8680.8056627, 7957.40519081],
+        [-74.17158426, -4305.1547508, 698.3928945],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
 #######################################################################################
 #######################################################################################
 #######################################################################################
