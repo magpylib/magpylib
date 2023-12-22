@@ -10,7 +10,7 @@ from scipy.special import ellipkinc
 from magpylib._src.fields.field_BH_cylinder import magnet_cylinder_field
 from magpylib._src.fields.special_el3 import el3_angle
 from magpylib._src.input_checks import check_field_input
-from magpylib._src.utility import MU0
+from magpylib._src.utility import convert_HBMJ, MU0
 
 
 def arctan_k_tan_2(k, phi):
@@ -2353,6 +2353,7 @@ def magnet_cylinder_segment_field(
     observers: np.ndarray,
     dimension: np.ndarray,
     polarization: np.ndarray,
+    in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cylinder segments.
 
@@ -2431,35 +2432,42 @@ def magnet_cylinder_segment_field(
 
     # determine when points lie inside and on surface of magnet -------------
 
-    # phip1 in [-2pi,0], phio2 in [0,2pi]
-    phio1 = phi
-    phio2 = phi - np.sign(phi) * 2 * np.pi
+    mask_inside = None
+    if in_out == "auto":
+        # phip1 in [-2pi,0], phio2 in [0,2pi]
+        phio1 = phi
+        phio2 = phi - np.sign(phi) * 2 * np.pi
 
-    # phi=phi1, phi=phi2
-    mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
-    mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
+        # phi=phi1, phi=phi2
+        mask_phi1 = close(phio1, phi1) | close(phio2, phi1)
+        mask_phi2 = close(phio1, phi2) | close(phio2, phi2)
 
-    # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
-    mask_r_in = (r1 - 1e-14 < r) & (r < r2 + 1e-14)
-    mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
-        np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
-    )
-    mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
+        # r, phi ,z lies in-between, avoid numerical fluctuations (e.g. due to rotations) by including 1e-14
+        mask_r_in = (r1 - 1e-14 < r) & (r < r2 + 1e-14)
+        mask_phi_in = (np.sign(phio1 - phi1) != np.sign(phio1 - phi2)) | (
+            np.sign(phio2 - phi1) != np.sign(phio2 - phi2)
+        )
+        mask_z_in = (z1 - 1e-14 < z) & (z < z2 + 1e-14)
 
-    # on surface
-    mask_surf_z = (
-        (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in
-    )  # top / bottom
-    mask_surf_r = (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in  # in / out
-    mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
-    mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
-    mask_not_on_surf = ~mask_on_surface
+        # on surface
+        mask_surf_z = (
+            (close(z, z1) | close(z, z2)) & mask_phi_in & mask_r_in
+        )  # top / bottom
+        mask_surf_r = (
+            (close(r, r1) | close(r, r2)) & mask_phi_in & mask_z_in
+        )  # in / out
+        mask_surf_phi = (mask_phi1 | mask_phi2) & mask_r_in & mask_z_in  # in / out
+        mask_on_surface = mask_surf_z | mask_surf_r | mask_surf_phi
+        mask_not_on_surf = ~mask_on_surface
 
-    # inside
-    mask_inside = mask_r_in & mask_phi_in & mask_z_in
+        # inside
+        mask_inside = mask_r_in & mask_phi_in & mask_z_in
+    else:
+        mask_inside = np.full(len(observers), in_out == "inside")
+        mask_not_on_surf = np.full(len(observers), True)
 
     # return 0 when all points are on surface --------------------------------
-    if np.all(mask_on_surface):
+    if not np.any(mask_not_on_surf):
         return BHfinal
 
     # redefine input if there are some surface-points -------------------------
@@ -2479,15 +2487,12 @@ def magnet_cylinder_segment_field(
     Hr, Hphi, Hz = H_cy.T
     Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
     Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
-    H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T
+    H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T / MU0
 
-    # return B or H --------------------------------------------------------
-    if field=="H":
-        BHfinal[mask_not_on_surf] = H / MU0
-        return BHfinal
-
-    B = H
-    BHfinal[mask_not_on_surf] = B
-    maskX = mask_inside * mask_not_on_surf
-    BHfinal[maskX] += polarization[maskX]
-    return BHfinal
+    return convert_HBMJ(
+        output_field_type=field,
+        polarization=polarization,
+        input_field_type="H",
+        field_values=H,
+        mask_inside=mask_inside & mask_not_on_surf,
+    )
