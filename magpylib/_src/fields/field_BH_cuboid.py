@@ -267,8 +267,7 @@ def magnet_cuboid_field(
 
         mask_gen = mask_gen & mask_not_edge
     elif in_out != "auto":
-        val = in_out == "inside"
-        mask_inside = np.full_like(mask_pol_not_null, val, dtype=bool)
+        mask_inside = np.full(len(observers), in_out == "inside")
 
     # continue only with general cases
     if np.any(mask_gen) and field in "BH":
