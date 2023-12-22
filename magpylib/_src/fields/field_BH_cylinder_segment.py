@@ -2381,7 +2381,7 @@ def magnet_cylinder_segment_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of magnet in Cartesian coordinates in units of T or A/m.
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------

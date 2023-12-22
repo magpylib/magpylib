@@ -1,5 +1,5 @@
 """
-Dipole implementation
+Core implementation of dipole field
 """
 import numpy as np
 
@@ -8,30 +8,31 @@ from magpylib._src.input_checks import check_field_input
 
 # CORE
 def dipole_field(
+    *,
     field: str,
     observers: np.ndarray,
     moment: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a dipole moment.
+    """Magnetic field of a dipole moments.
 
     The dipole moment lies in the origin of the coordinate system.
 
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     moment: ndarray, shape (n,3)
-        Dipole moment vector in units of mT*mm^3.
+        Dipole moment vector in units of A*m^2.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of dipole in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
