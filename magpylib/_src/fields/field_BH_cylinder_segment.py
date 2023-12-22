@@ -2409,7 +2409,7 @@ def magnet_cylinder_segment_field(
     Implementation based on F.Slanovc, Journal of Magnetism and Magnetic
     Materials, Volume 559, 1 October 2022, 169482
     """
-    bh = check_field_input(field, "magnet_cylinder_segment_field()")
+    check_field_input(field)
 
     BHfinal = np.zeros((len(polarizations), 3))
 
@@ -2482,7 +2482,7 @@ def magnet_cylinder_segment_field(
     H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T
 
     # return B or H --------------------------------------------------------
-    if not bh:
+    if field=="H":
         BHfinal[mask_not_on_surf] = H / MU0
         return BHfinal
 
