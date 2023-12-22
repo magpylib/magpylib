@@ -9,7 +9,6 @@ from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
 from magpylib.core import current_circle_field
-from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
 from magpylib.core import dipole_field
@@ -57,14 +56,14 @@ def test_magnet_cuboid_field_BH():
     B = magnet_cuboid_field(
         field="B",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     H = magnet_cuboid_field(
         field="H",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     J = np.array([(0, 0, 0)] * 5 + [(1, 2, 3)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -119,14 +118,14 @@ def test_magnet_cylinder_field_BH():
     B = magpy.core.magnet_cylinder_field(
         field="B",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     H = magpy.core.magnet_cylinder_field(
         field="H",
         observers=obs,
-        polarizations=pol,
-        dimensions=dim,
+        polarization=pol,
+        dimension=dim,
     )
     J = np.array([(0, 0, 0), (0, 0, 0), (0, 0, 0), (1, 1, 1)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -170,14 +169,14 @@ def test_magnet_sphere_field_BH():
     B = magnet_sphere_field(
         field="B",
         observers=obs,
-        diameters=dia,
-        polarizations=pol,
+        diameter=dia,
+        polarization=pol,
     )
     H = magnet_sphere_field(
         field="H",
         observers=obs,
-        diameters=dia,
-        polarizations=pol,
+        diameter=dia,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0), (0, 0, 0), pol[2], pol[3]])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -228,14 +227,14 @@ def test_field_cylinder_segment_BH():
     B = magnet_cylinder_segment_field(
         field="B",
         observers=obs,
-        dimensions=dim,
-        polarizations=pol,
+        dimension=dim,
+        polarization=pol,
     )
     H = magnet_cylinder_segment_field(
         field="H",
         observers=obs,
-        dimensions=dim,
-        polarizations=pol,
+        dimension=dim,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0)] * 3 + [pol[3]])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -287,13 +286,13 @@ def test_triangle_field_BH():
         field="B",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     H = triangle_field(
         field="H",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     np.testing.assert_allclose(B, MU0 * H)
 
@@ -344,13 +343,13 @@ def test_magnet_tetrahedron_field_BH():
         field="B",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     H = magnet_tetrahedron_field(
         field="H",
         observers=obs,
         vertices=vert,
-        polarizations=pol,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0)] * 2 + [pol[2]] + [(0, 0, 0)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -425,14 +424,14 @@ def test_magnet_trimesh_field_BH():
     B = magnet_trimesh_field(
         field="B",
         observers=obs,
-        meshes=meshes,
-        polarizations=pol,
+        mesh=meshes,
+        polarization=pol,
     )
     H = magnet_trimesh_field(
         field="H",
         observers=obs,
-        meshes=meshes,
-        polarizations=pol,
+        mesh=meshes,
+        polarization=pol,
     )
     J = np.array([(0, 0, 0), (3, 2, 1)])
     np.testing.assert_allclose(B, MU0 * H + J)
@@ -448,6 +447,73 @@ def test_magnet_trimesh_field_BH():
         [-795774.70120171, -530516.47792526, -265258.22366805],
     ]
     np.testing.assert_allclose(H, Htest)
+
+
+def test_current_circle_field_BH():
+    """Test of current circle field core function"""
+    B = magpy.core.current_circle_field(
+        field="B",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    H = magpy.core.current_circle_field(
+        field="H",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [0.06235974, 0.06235974, 0.02669778],
+        [0.03117987, 0.03117987, 0.01334889],
+        [0.04157316, 0.04157316, 0.01779852],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [49624.3033947, 49624.3033947, 21245.41908818],
+        [24812.15169735, 24812.15169735, 10622.70954409],
+        [33082.8689298, 33082.8689298, 14163.61272545],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
+def test_current_polyline_field_BH():
+    """Test of current polyline field core function"""
+    B = magpy.core.current_polyline_field(
+        field="B",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    H = magpy.core.current_polyline_field(
+        field="H",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [0.0, -0.03848367, 0.0],
+        [0.0, -0.08944272, 0.0],
+        [0.0, -0.03848367, 0.0],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [0.0, -30624.33145161, 0.0],
+        [0.0, -71176.25434172, 0.0],
+        [0.0, -30624.33145161, 0.0],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
+#######################################################################################
+#######################################################################################
+#######################################################################################
 
 
 def test_field_dipole1():

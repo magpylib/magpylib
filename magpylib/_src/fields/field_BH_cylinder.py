@@ -253,8 +253,8 @@ def magnet_cylinder_field(
     *,
     field: str,
     observers: np.ndarray,
-    dimensions: np.ndarray,
-    polarizations: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cylinders.
@@ -273,10 +273,10 @@ def magnet_cylinder_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    dimensions: ndarray, shape (n,2)
+    dimension: ndarray, shape (n,2)
         Cylinder dimension (d,h) with diameter d and height h in units of m.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -293,8 +293,8 @@ def magnet_cylinder_field(
     >>> B = magpy.core.magnet_cylinder_field(
     >>>     field='B',
     >>>     observers=np.array([(1,0,0), (1,0,0)]),
-    >>>     dimensions=np.array([(1,1), (1,3)]),
-    >>>     polarizations=np.array([(0,0,1), (.5,0,.5)]),
+    >>>     dimension=np.array([(1,1), (1,3)]),
+    >>>     polarization=np.array([(0,0,1), (.5,0,.5)]),
     >>> )
     >>> print(B)
     [[ 0.          0.         -0.05185272]
@@ -322,7 +322,7 @@ def magnet_cylinder_field(
 
     # transform to Cy CS --------------------------------------------
     r, phi, z = cart_to_cyl_coordinates(observers)
-    r0, z0 = dimensions.T / 2
+    r0, z0 = dimension.T / 2
 
     # scale invariance (make dimensionless)
     r = np.copy(r / r0)
@@ -346,7 +346,7 @@ def magnet_cylinder_field(
         mask_inside = np.full(len(observers), in_out == "inside")
         mask_not_on_edge = np.full(len(observers), True)
     # axial/transv polarization cases
-    pol_x, pol_y, pol_z = polarizations.T
+    pol_x, pol_y, pol_z = polarization.T
     mask_pol_tv = (pol_x != 0) | (pol_y != 0)
     mask_pol_ax = pol_z != 0
 

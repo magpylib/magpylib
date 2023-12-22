@@ -499,8 +499,8 @@ def magnet_trimesh_field(
     *,
     field: str,
     observers: np.ndarray,
-    meshes: np.ndarray,
-    polarizations: np.ndarray,
+    mesh: np.ndarray,
+    polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """
@@ -520,11 +520,11 @@ def magnet_trimesh_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    meshes: ndarray, shape (n,n1,3,3) or ragged sequence
+    mesh: ndarray, shape (n,n1,3,3) or ragged sequence
         Triangular mesh of shape [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3)].
         `mesh` can be a ragged sequence of mesh-children with different lengths.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     in_out: {'auto', 'inside', 'outside'}
@@ -550,30 +550,30 @@ def magnet_trimesh_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    if meshes.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = meshes.shape
-        vertices_tiled = meshes.reshape(-1, 3, 3)
+    if mesh.ndim != 1:  # all vertices objects have same number of children
+        n0, n1, *_ = mesh.shape
+        vertices_tiled = mesh.reshape(-1, 3, 3)
         observers_tiled = np.repeat(observers, n1, axis=0)
-        polarization_tiled = np.repeat(polarizations, n1, axis=0)
+        polarization_tiled = np.repeat(polarization, n1, axis=0)
         B = triangle_field(
             field="B",
             observers=observers_tiled,
             vertices=vertices_tiled,
-            polarizations=polarization_tiled,
+            polarization=polarization_tiled,
         )
         B = B.reshape((n0, n1, 3))
         B = np.sum(B, axis=1)
     else:
-        nvs = [f.shape[0] for f in meshes]  # length of vertex set
+        nvs = [f.shape[0] for f in mesh]  # length of vertex set
         split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in meshes])
+        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
         observers_tiled = np.repeat(observers, nvs, axis=0)
-        polarization_tiled = np.repeat(polarizations, nvs, axis=0)
+        polarization_tiled = np.repeat(polarization, nvs, axis=0)
         B = triangle_field(
             field="B",
             observers=observers_tiled,
             vertices=vertices_tiled,
-            polarizations=polarization_tiled,
+            polarization=polarization_tiled,
         )
         b_split = np.split(B, split_indices)
         B = np.array([np.sum(bh, axis=0) for bh in b_split])
@@ -585,21 +585,21 @@ def magnet_trimesh_field(
             for new_ind, _ in enumerate(B):
                 if (
                     new_ind == len(B) - 1
-                    or meshes[new_ind].shape != meshes[prev_ind].shape
-                    or not np.all(meshes[new_ind] == meshes[prev_ind])
+                    or mesh[new_ind].shape != mesh[prev_ind].shape
+                    or not np.all(mesh[new_ind] == mesh[prev_ind])
                 ):
                     if new_ind == len(B) - 1:
                         new_ind = len(B)
                     inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], meshes[prev_ind]
+                        observers[prev_ind:new_ind], mesh[prev_ind]
                     )
                     # if inside magnet add polarization vector
-                    B[prev_ind:new_ind][inside_mask] += polarizations[prev_ind:new_ind][
+                    B[prev_ind:new_ind][inside_mask] += polarization[prev_ind:new_ind][
                         inside_mask
                     ]
                     prev_ind = new_ind
         elif in_out == "inside":
-            B += polarizations
+            B += polarization
         return B
 
     H = B / MU0

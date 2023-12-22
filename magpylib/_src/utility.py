@@ -395,7 +395,7 @@ def open_animation(filepath, embed=True):
 
 def convert_HBMJ(
     output_field_type: str,
-    polarizations: np.ndarray,
+    polarization: np.ndarray,
     input_field_type: Optional[str]=None,
     field_values: Optional[np.ndarray]=None,
     mask_inside: Optional[np.ndarray]=None,
@@ -406,7 +406,7 @@ def convert_HBMJ(
     `mask_inside` is only optional when output and input field types are the same.
     """
     if output_field_type in "MJ":
-        J = polarizations.copy()
+        J = polarization.copy()
         if mask_inside is not None:
             J[~mask_inside] *= 0
         if output_field_type == "J":
@@ -417,10 +417,10 @@ def convert_HBMJ(
         return field_values
     if input_field_type == "B":
         H = field_values.copy()
-        H[mask_inside] -= polarizations[mask_inside]
+        H[mask_inside] -= polarization[mask_inside]
         return H / MU0
     if input_field_type == "H":
         B = field_values * MU0
-        B[mask_inside] += polarizations[mask_inside]
+        B[mask_inside] += polarization[mask_inside]
         return B
 

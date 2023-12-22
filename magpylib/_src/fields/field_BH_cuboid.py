@@ -10,11 +10,11 @@ from magpylib._src.utility import convert_HBMJ
 RTOL_SURFACE = 1e-15  # relative distance tolerance to be considered on surface
 
 
-def _magnet_cuboid_field_B(polarizations, dimensions, observers):
+def _magnet_cuboid_field_B(observers, dimension, polarization):
     """Magnetic B-field of homogeneously magnetized cuboids
     see core `magnet_cuboid_field` for parameter definitions"""
-    polx, poly, polz = polarizations.T
-    a, b, c = dimensions.T / 2
+    pol_x, pol_y, pol_z = polarization.T
+    a, b, c = dimension.T / 2
     x, y, z = np.copy(observers).T
 
     # avoid indeterminate forms by evaluating in bottQ4 only --------
@@ -29,7 +29,7 @@ def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     z[maskz] = z[maskz] * -1
 
     # create sign flips for position changes
-    qsigns = np.ones((len(polx), 3, 3))
+    qsigns = np.ones((len(pol_x), 3, 3))
     qs_flipx = np.array([[1, -1, -1], [-1, 1, 1], [-1, 1, 1]])
     qs_flipy = np.array([[1, -1, 1], [-1, 1, -1], [1, -1, 1]])
     qs_flipz = np.array([[1, 1, -1], [1, 1, -1], [-1, -1, 1]])
@@ -109,24 +109,24 @@ def _magnet_cuboid_field_B(polarizations, dimensions, observers):
     )
 
     # contributions from x-polarization
-    bx_polx = (
-        polx * ff1x * qsigns[:, 0, 0]
+    bx_pol_x = (
+        pol_x * ff1x * qsigns[:, 0, 0]
     )  # the 'missing' third sign is hidden in ff1x
-    by_polx = polx * ff2z * qsigns[:, 0, 1]
-    bz_polx = polx * ff2y * qsigns[:, 0, 2]
+    by_pol_x = pol_x * ff2z * qsigns[:, 0, 1]
+    bz_pol_x = pol_x * ff2y * qsigns[:, 0, 2]
     # contributions from y-polarization
-    bx_poly = poly * ff2z * qsigns[:, 1, 0]
-    by_poly = poly * ff1y * qsigns[:, 1, 1]
-    bz_poly = -poly * ff2x * qsigns[:, 1, 2]
+    bx_pol_y = pol_y * ff2z * qsigns[:, 1, 0]
+    by_pol_y = pol_y * ff1y * qsigns[:, 1, 1]
+    bz_pol_y = -pol_y * ff2x * qsigns[:, 1, 2]
     # contributions from z-polarization
-    bx_polz = polz * ff2y * qsigns[:, 2, 0]
-    by_polz = -polz * ff2x * qsigns[:, 2, 1]
-    bz_polz = polz * ff1z * qsigns[:, 2, 2]
+    bx_pol_z = pol_z * ff2y * qsigns[:, 2, 0]
+    by_pol_z = -pol_z * ff2x * qsigns[:, 2, 1]
+    bz_pol_z = pol_z * ff1z * qsigns[:, 2, 2]
 
     # summing all contributions
-    bx_tot = bx_polx + bx_poly + bx_polz
-    by_tot = by_polx + by_poly + by_polz
-    bz_tot = bz_polx + bz_poly + bz_polz
+    bx_tot = bx_pol_x + bx_pol_y + bx_pol_z
+    by_tot = by_pol_x + by_pol_y + by_pol_z
+    bz_tot = bz_pol_x + bz_pol_y + bz_pol_z
 
     # B = np.c_[bx_tot, by_tot, bz_tot]      # faster for 10^5 and more evaluations
     B = np.concatenate(((bx_tot,), (by_tot,), (bz_tot,)), axis=0).T
@@ -140,8 +140,8 @@ def magnet_cuboid_field(
     *,
     field: str,
     observers: np.ndarray,
-    dimensions: np.ndarray,
-    polarizations: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
     in_out="auto",
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cuboids.
@@ -160,10 +160,10 @@ def magnet_cuboid_field(
     observers: ndarray, shape (n,3)
         Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
-    dimensions: ndarray, shape (n,3)
+    dimension: ndarray, shape (n,3)
         Length of Cuboid sides in units of m.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -180,8 +180,8 @@ def magnet_cuboid_field(
     >>> B = magpy.core.magnet_cuboid_field(
     >>>     field='B',
     >>>     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
-    >>>     dimensions=np.array([(2,2,2), (3,3,3), (4,4,4)]),
-    >>>     polarizations=np.array([(0,0,1), (1,0,0), (0,0,1)]),
+    >>>     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
+    >>>     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
     >>> )
     >>> print(B)
     [[ 0.          0.         -0.05227894]
@@ -221,8 +221,8 @@ def magnet_cuboid_field(
 
     check_field_input(field)
 
-    polx, poly, polz = polarizations.T
-    a, b, c = np.abs(dimensions.T) / 2
+    pol_x, pol_y, pol_z = polarization.T
+    a, b, c = np.abs(dimension.T) / 2
     x, y, z = observers.T
 
     # This implementation is completely scale invariant as only observer/dimension
@@ -231,11 +231,11 @@ def magnet_cuboid_field(
     # dealing with special cases -----------------------------------
 
     # allocate B with zeros
-    B = np.zeros((len(polx), 3))
+    B = np.zeros((len(pol_x), 3))
 
     # SPECIAL CASE 1: polarization = (0,0,0)
     mask_pol_not_null = ~(
-        (polx == 0) * (poly == 0) * (polz == 0)
+        (pol_x == 0) * (pol_y == 0) * (pol_z == 0)
     )  # 2x faster than np.all()
 
     # SPECIAL CASE 2: 0 in dimension
@@ -272,13 +272,13 @@ def magnet_cuboid_field(
     # continue only with general cases
     if np.any(mask_gen) and field in "BH":
         B[mask_gen] = _magnet_cuboid_field_B(
-            polarizations[mask_gen],
-            dimensions[mask_gen],
             observers[mask_gen],
+            dimension[mask_gen],
+            polarization[mask_gen],
         )
     return convert_HBMJ(
         output_field_type=field,
-        polarizations=polarizations,
+        polarization=polarization,
         input_field_type="B",
         field_values=B,
         mask_inside=mask_inside,

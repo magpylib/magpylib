@@ -2145,7 +2145,7 @@ def magnet_cylinder_segment_core(
     obs_pos : ndarray, shape (n,3)
         observer positions (r,phi,z) in cy CS, units: mm rad
     dim: ndarray, shape (n,6)
-        segment dimensions (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm, rad
+        segment dimension (r1,r2,phi1,phi2,z1,z2) in cy CS , units: mm, rad
 
     Returns
     -------
@@ -2351,8 +2351,8 @@ def magnet_cylinder_segment_field(
     *,
     field: str,
     observers: np.ndarray,
-    dimensions: np.ndarray,
-    polarizations: np.ndarray,
+    dimension: np.ndarray,
+    polarization: np.ndarray,
 ) -> np.ndarray:
     """Magnetic field of homogeneously magnetized cylinder segments.
 
@@ -2375,7 +2375,7 @@ def magnet_cylinder_segment_field(
         r1, outer radius r2, height h in units of m and the two segment
         angles phi1 < phi2 in units of deg.
 
-    polarizations: ndarray, shape (n,3)
+    polarization: ndarray, shape (n,3)
         Magnetic polarization vectors in units of T.
 
     Returns
@@ -2392,8 +2392,8 @@ def magnet_cylinder_segment_field(
     >>> B = magpy.core.magnet_cylinder_segment_field(
     >>>     field='B',
     >>>     observers=np.array([(1,1,1), (1,1,1)]),
-    >>>     dimensions=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
-    >>>     polarizations=np.array([(0,0,1), (.5,.5,0)]),
+    >>>     dimension=np.array([(0,1,2,-90,90), (1,2,4,35,125)]),
+    >>>     polarization=np.array([(0,0,1), (.5,.5,0)]),
     >>> )
     >>> print(B)
     [[ 0.07046526  0.08373724 -0.0198113 ]
@@ -2411,9 +2411,9 @@ def magnet_cylinder_segment_field(
     """
     check_field_input(field)
 
-    BHfinal = np.zeros((len(polarizations), 3))
+    BHfinal = np.zeros((len(polarization), 3))
 
-    r1, r2, h, phi1, phi2 = dimensions.T
+    r1, r2, h, phi1, phi2 = dimension.T
     r1 = abs(r1)
     r2 = abs(r2)
     h = abs(h)
@@ -2463,7 +2463,7 @@ def magnet_cylinder_segment_field(
         return BHfinal
 
     # redefine input if there are some surface-points -------------------------
-    magg = polarizations[mask_not_on_surf]
+    magg = polarization[mask_not_on_surf]
     dim = dim[mask_not_on_surf]
     pos_obs_cy = pos_obs_cy[mask_not_on_surf]
     phi = phi[mask_not_on_surf]
@@ -2489,5 +2489,5 @@ def magnet_cylinder_segment_field(
     B = H
     BHfinal[mask_not_on_surf] = B
     maskX = mask_inside * mask_not_on_surf
-    BHfinal[maskX] += polarizations[maskX]
+    BHfinal[maskX] += polarization[maskX]
     return BHfinal
