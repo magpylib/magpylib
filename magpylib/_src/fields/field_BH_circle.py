@@ -11,38 +11,42 @@ from magpylib._src.fields.special_cel import cel_iter
 from magpylib._src.input_checks import check_field_input
 from magpylib._src.utility import cart_to_cyl_coordinates
 from magpylib._src.utility import cyl_field_to_cart
+from magpylib._src.utility import MU0
 
 
 # CORE
 def current_circle_field(
+    *,
     field: str,
     observers: np.ndarray,
-    current: np.ndarray,
     diameter: np.ndarray,
+    current: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a circular (line) current loop.
+    """Magnetic field of a circular (line) current loops.
 
     The loop lies in the z=0 plane with the coordinate origin at its center.
+
+    SI units are used for all inputs and outputs.
 
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
+
+    diameter: ndarray, shape (n,)
+        Diameter of loop in units of m.
 
     current: ndarray, shape (n,)
         Electrical current in units of A.
 
-    diameter: ndarray, shape (n,)
-        Diameter of loop in units of mm.
-
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of current in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of magnet in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
@@ -50,10 +54,12 @@ def current_circle_field(
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> cur = np.array([1,1,2])
-    >>> dia = np.array([2,4,6])
-    >>> obs = np.array([(1,1,1), (2,2,2), (3,3,3)])
-    >>> B = magpy.core.current_circle_field('B', obs, cur, dia)
+    >>> B = magpy.core.current_circle_field(
+    >>>     field='B',
+    >>>     observers=np.array([(1,1,1), (2,2,2), (3,3,3)]),
+    >>>     diameter=np.array([2,4,6]),
+    >>>     current=np.array([1,1,2])
+    >>> )
     >>> print(B)
     [[0.06235974 0.06235974 0.02669778]
      [0.03117987 0.03117987 0.01334889]
@@ -61,6 +67,11 @@ def current_circle_field(
 
     Notes
     -----
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
     Implementation based on "Numerically stable and computationally efficient expression for
     the magnetic field of a current loop.", M.Ortner et al, Submitted to MDPI Magnetism, 2022
     """
@@ -132,7 +143,7 @@ def current_circle_field(
     if bh:
         return B_cart
 
-    return B_cart / np.pi * 2.5
+    return B_cart / MU0
 
 
 def current_loop_field(*args, **kwargs):

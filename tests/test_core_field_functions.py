@@ -450,6 +450,37 @@ def test_magnet_trimesh_field_BH():
     np.testing.assert_allclose(H, Htest)
 
 
+def test_current_circle_field_BH():
+    """Test of current circle field core function"""
+    B = magpy.core.current_circle_field(
+        field="B",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    H = magpy.core.current_circle_field(
+        field="H",
+        observers=np.array([(1, 1, 1), (2, 2, 2), (3, 3, 3)]),
+        diameter=np.array([2, 4, 6]),
+        current=np.array([1, 1, 2]),
+    )
+    np.testing.assert_allclose(B, MU0 * H)
+
+    Btest = [
+        [0.06235974, 0.06235974, 0.02669778],
+        [0.03117987, 0.03117987, 0.01334889],
+        [0.04157316, 0.04157316, 0.01779852],
+    ]
+    np.testing.assert_allclose(B, Btest)
+
+    Htest = [
+        [49624.3033947, 49624.3033947, 21245.41908818],
+        [24812.15169735, 24812.15169735, 10622.70954409],
+        [33082.8689298, 33082.8689298, 14163.61272545],
+    ]
+    np.testing.assert_allclose(H, Htest)
+
+
 #######################################################################################
 #######################################################################################
 #######################################################################################
