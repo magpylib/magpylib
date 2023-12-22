@@ -133,7 +133,7 @@ html_logo = "./_static/images/magpylib_flag.png"
 #
 
 announcement = """
-<p>⚠️ <b>Version 5 is around the corner, and will move to SI units. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
+<p>⚠️ <b>Upcoming Soon: New Version 5 with breaking changes. We recommended to pin your dependencies to magpylib>=4.5<5 to avoid breaking changes!
 <a href="https://github.com/magpylib/magpylib/discussions/647">(see details)</a>
 ⚠️</b></p>
 """
