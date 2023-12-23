@@ -216,7 +216,7 @@ def current_polyline_field(
     mask4 = ~mask2 * ~mask3
     deltaSin[mask4] = abs(sinTh1[mask4] + sinTh2[mask4])
 
-    field = (deltaSin / norm_o4 * eB.T / norm_12 * current / 10).T  # m->mm, T->mT
+    field = (deltaSin / norm_o4 * eB.T / norm_12 * current * 1e-7).T  # m->mm, T->mT
 
     # broadcast general case results into allocated vector
     mask0[~mask0] = mask1
@@ -241,4 +241,4 @@ def current_line_field(*args, **kwargs):
         MagpylibDeprecationWarning,
         stacklevel=2,
     )
-    return current_polyline_field(*args, **kwargs)
+    return None
