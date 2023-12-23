@@ -572,7 +572,8 @@ def test_dipole_field_BH():
 # FIELD COMPUTATION PHYSICS CONSISTENCY TESTS
 
 
-def test_core_phys_dipole_circle():
+# Circle<>Dipole
+def test_core_phys_moment_of_current_circle():
     """
     test dipole vs circular current loop
     moment = current * surface
@@ -597,7 +598,8 @@ def test_core_phys_dipole_circle():
     np.testing.assert_allclose(B1, B2, rtol=1e-02)
 
 
-def test_core_phys_dipole_polyline():
+# Polyline <> Dipole
+def test_core_phys_moment_of_current_square():
     """
     test dipole VS square current loop
     moment = I x A, far field test
@@ -626,6 +628,7 @@ def test_core_phys_dipole_polyline():
     np.testing.assert_allclose(B1, -B2, rtol=1e-03)
 
 
+# Circle <> Polyline
 def test_core_phys_circle_polyline():
     """approximate circle with polyline"""
     ts = np.linspace(0, 2 * np.pi, 300)
@@ -654,6 +657,7 @@ def test_core_phys_circle_polyline():
     np.testing.assert_allclose(H1, -H2, rtol=1e-4)
 
 
+# Dipole <> Sphere
 def test_core_physics_dipole_sphere():
     """
     dipole and sphere field must be similar outside
@@ -678,6 +682,7 @@ def test_core_physics_dipole_sphere():
     np.testing.assert_allclose(B1, B2, rtol=0, atol=1e-16)
 
 
+# -> Circle
 def test_core_physics_long_solenoid():
     """
     test if field from solenoid converges to long-solenoid field
@@ -699,33 +704,14 @@ def test_core_physics_long_solenoid():
 
 
 # dipole vs other magnets
-# solenoid formula
 # approximate magnets with currents
 
 #######################################################################################
 #######################################################################################
 #######################################################################################
 
-# FIELD COMPUTATION TESTS AGAINST OTHER SOFTWARE
 
-# def test_field_dipole_VS_mathematica():
-#     """Test standard dipole field output computed with mathematica"""
-#     obs = np.array([(1, 2, 3), (-1, 2, 3)])
-#     mom = np.array([(2, 3, 4), (0, -3, -2)])/MU0
-#     B = magpy.core.dipole_field(
-#         field="B",
-#         observers=obs,
-#         moment=mom,
-#     )*np.pi
-#     Btest = np.array(
-#         [
-#             (0.01090862, 0.02658977, 0.04227091),
-#             (0.0122722, -0.01022683, -0.02727156),
-#         ]
-#     )
-#     assert_allclose(B, Btest, rtol=1e-6)
-
-
+# --> Circle
 def test_core_other_circle():
     """
     Compare Circle on-axis field vs e-magnetica & hyperphysics
