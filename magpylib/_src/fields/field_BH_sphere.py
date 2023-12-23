@@ -90,7 +90,7 @@ def magnet_sphere_field(
     # overwrite outside field entries
 
     mask_outside = ~mask_inside
-    if mask_outside.any():
+    if mask_outside.any() and field in "BH":
         pol_out = polarization[mask_outside]
         obs_out = observers[mask_outside]
         r_out = r[mask_outside]
