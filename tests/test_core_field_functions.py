@@ -575,7 +575,8 @@ def test_dipole_field_BH():
 def test_core_phys_dipole_circle():
     """
     test dipole vs circular current loop
-    mom = I x A, far field test
+    moment = current * surface
+    far field test
     """
     obs = np.array([(10, 20, 30), (-10, -20, 30)])
     dia = np.array([2, 2])
@@ -677,8 +678,29 @@ def test_core_physics_dipole_sphere():
     np.testing.assert_allclose(B1, B2, rtol=0, atol=1e-16)
 
 
-# dipole vs other magnets
+def test_core_physics_long_solenoid():
+    """
+    test if field from solenoid converges to long-solenoid field
+    Bz = I*N/L
+    """
+    I = 1
+    N = 10000
+    L = 100
+    B = magpy.core.current_circle_field(
+        field="H",
+        observers=np.linspace((0, 0, -L / 2), (0, 0, L / 2), N),
+        diameter=np.array([2] * N),
+        current=np.array([I] * N),
+    )
+    bz = np.sum(B, axis=0)[2]
+    bz_test = N * I / L
 
+    np.testing.assert_allclose(bz, bz_test, rtol=1e-3)
+
+
+# dipole vs other magnets
+# solenoid formula
+# approximate magnets with currents
 
 #######################################################################################
 #######################################################################################
