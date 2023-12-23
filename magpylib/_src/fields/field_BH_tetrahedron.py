@@ -132,38 +132,39 @@ def magnet_tetrahedron_field(
     elif in_out != "auto":
         val = in_out == "inside"
         mask_inside = np.full(len(observers), val)
-    if field in "BH":
-        tri_vertices = np.concatenate(
-            (
-                vertices[:, (0, 2, 1), :],
-                vertices[:, (0, 1, 3), :],
-                vertices[:, (1, 2, 3), :],
-                vertices[:, (0, 3, 2), :],
-            ),
-            axis=0,
-        )
-        tri_fields = triangle_field(
-            field=field,
-            observers=np.tile(observers, (4, 1)),
-            vertices=tri_vertices,
-            polarization=np.tile(polarization, (4, 1)),
-        )
-        tetra_field = (  # slightly faster than reshape + sum
-            tri_fields[:n]
-            + tri_fields[n : 2 * n]
-            + tri_fields[2 * n : 3 * n]
-            + tri_fields[3 * n :]
+
+    if field in "MJ":
+        return convert_HBMJ(
+            output_field_type=field,
+            polarization=polarization,
+            mask_inside=mask_inside,
         )
 
-        if field == "H":
-            return tetra_field
+    tri_vertices = np.concatenate(
+        (
+            vertices[:, (0, 2, 1), :],
+            vertices[:, (0, 1, 3), :],
+            vertices[:, (1, 2, 3), :],
+            vertices[:, (0, 3, 2), :],
+        ),
+        axis=0,
+    )
+    tri_fields = triangle_field(
+        field=field,
+        observers=np.tile(observers, (4, 1)),
+        vertices=tri_vertices,
+        polarization=np.tile(polarization, (4, 1)),
+    )
+    tetra_field = (  # slightly faster than reshape + sum
+        tri_fields[:n]
+        + tri_fields[n : 2 * n]
+        + tri_fields[2 * n : 3 * n]
+        + tri_fields[3 * n :]
+    )
 
-        # if B, and inside magnet add polarization vector
-        tetra_field[mask_inside] += polarization[mask_inside]
+    if field == "H":
         return tetra_field
 
-    return convert_HBMJ(
-        output_field_type=field,
-        polarization=polarization,
-        mask_inside=mask_inside,
-    )
+    # if B, and inside magnet add polarization vector
+    tetra_field[mask_inside] += polarization[mask_inside]
+    return tetra_field
