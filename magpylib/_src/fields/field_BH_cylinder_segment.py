@@ -2471,24 +2471,26 @@ def magnet_cylinder_segment_field(
     if not np.any(mask_not_on_surf):
         return BHfinal
 
-    # redefine input if there are some surface-points -------------------------
-    magg = polarization[mask_not_on_surf]
-    dim = dim[mask_not_on_surf]
-    pos_obs_cy = pos_obs_cy[mask_not_on_surf]
-    phi = phi[mask_not_on_surf]
+    H = None
+    if field in "BH":
+        # redefine input if there are some surface-points -------------------------
+        pol = polarization[mask_not_on_surf]
+        dim = dim[mask_not_on_surf]
+        pos_obs_cy = pos_obs_cy[mask_not_on_surf]
+        phi = phi[mask_not_on_surf]
 
-    # transform mag to spherical CS -----------------------------------------
-    m = np.sqrt(magg[:, 0] ** 2 + magg[:, 1] ** 2 + magg[:, 2] ** 2)
-    phi_m = np.arctan2(magg[:, 1], magg[:, 0])
-    th_m = np.arctan2(np.sqrt(magg[:, 0] ** 2 + magg[:, 1] ** 2), magg[:, 2])
-    mag_sph = np.concatenate(((m,), (phi_m,), (th_m,)), axis=0).T
+        # transform mag to spherical CS -----------------------------------------
+        m = np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2 + pol[:, 2] ** 2)
+        phi_m = np.arctan2(pol[:, 1], pol[:, 0])
+        th_m = np.arctan2(np.sqrt(pol[:, 0] ** 2 + pol[:, 1] ** 2), pol[:, 2])
+        mag_sph = np.concatenate(((m,), (phi_m,), (th_m,)), axis=0).T
 
-    # compute H and transform to cart CS -------------------------------------
-    H_cy = magnet_cylinder_segment_core(mag_sph, dim, pos_obs_cy)
-    Hr, Hphi, Hz = H_cy.T
-    Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
-    Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
-    H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T / MU0
+        # compute H and transform to cart CS -------------------------------------
+        H_cy = magnet_cylinder_segment_core(mag_sph, dim, pos_obs_cy)
+        Hr, Hphi, Hz = H_cy.T
+        Hx = Hr * np.cos(phi) - Hphi * np.sin(phi)
+        Hy = Hr * np.sin(phi) + Hphi * np.cos(phi)
+        H = np.concatenate(((Hx,), (Hy,), (Hz,)), axis=0).T / MU0
 
     return convert_HBMJ(
         output_field_type=field,
