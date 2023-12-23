@@ -348,6 +348,13 @@ def magnet_cylinder_field(
     else:
         mask_inside = np.full(len(observers), in_out == "inside")
         mask_not_on_edge = np.full(len(observers), True)
+
+    if field in "MJ":
+        return convert_HBMJ(
+            output_field_type=field,
+            polarization=polarization,
+            mask_inside=mask_inside,
+        )
     # axial/transv polarization cases
     pol_x, pol_y, pol_z = polarization.T
     mask_pol_tv = (pol_x != 0) | (pol_y != 0)
@@ -371,7 +378,10 @@ def magnet_cylinder_field(
         pol_xy = np.sqrt(pol_x**2 + pol_y**2)[mask_pol_tv]
         tetta = np.arctan2(pol_y[mask_pol_tv], pol_x[mask_pol_tv])
         Br_tv, Bphi_tv, Bz_tv = fieldH_cylinder_diametral(
-            z0[mask_pol_tv], r[mask_pol_tv], phi[mask_pol_tv] - tetta, z[mask_pol_tv]
+            z0[mask_pol_tv],
+            r[mask_pol_tv],
+            phi[mask_pol_tv] - tetta,
+            z[mask_pol_tv],
         )
 
         # add to H-field (inside pol_xy is missing for B !!!)
@@ -398,14 +408,7 @@ def magnet_cylinder_field(
             By[mask_tv_inside] += pol_y[mask_tv_inside]
         return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T
 
-    if field == "H":
-        mask_ax_inside = mask_pol_ax * mask_inside
-        if any(mask_ax_inside):  # ax computes B-field
-            Bz[mask_ax_inside] -= pol_z[mask_ax_inside]
-        return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
-
-    return convert_HBMJ(
-        output_field_type=field,
-        polarization=polarization,
-        mask_inside=mask_inside,
-    )
+    mask_ax_inside = mask_pol_ax * mask_inside
+    if any(mask_ax_inside):  # ax computes B-field
+        Bz[mask_ax_inside] -= pol_z[mask_ax_inside]
+    return np.concatenate(((Bx,), (By,), (Bz,)), axis=0).T / MU0
