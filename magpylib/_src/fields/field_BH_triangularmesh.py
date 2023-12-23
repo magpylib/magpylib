@@ -8,6 +8,7 @@ import numpy as np
 import scipy.spatial
 
 from magpylib._src.fields.field_BH_triangle import triangle_field
+from magpylib._src.utility import convert_HBMJ
 from magpylib._src.utility import MU0
 
 
@@ -550,57 +551,61 @@ def magnet_trimesh_field(
     Field computations via publication:
     Guptasarma: GEOPHYSICS 1999 64:1, 70-74
     """
-    if mesh.ndim != 1:  # all vertices objects have same number of children
-        n0, n1, *_ = mesh.shape
-        vertices_tiled = mesh.reshape(-1, 3, 3)
-        observers_tiled = np.repeat(observers, n1, axis=0)
-        polarization_tiled = np.repeat(polarization, n1, axis=0)
-        B = triangle_field(
-            field="B",
-            observers=observers_tiled,
-            vertices=vertices_tiled,
-            polarization=polarization_tiled,
-        )
-        B = B.reshape((n0, n1, 3))
-        B = np.sum(B, axis=1)
+    if field in "BH":
+        if mesh.ndim != 1:  # all vertices objects have same number of children
+            n0, n1, *_ = mesh.shape
+            vertices_tiled = mesh.reshape(-1, 3, 3)
+            observers_tiled = np.repeat(observers, n1, axis=0)
+            polarization_tiled = np.repeat(polarization, n1, axis=0)
+            B = triangle_field(
+                field="B",
+                observers=observers_tiled,
+                vertices=vertices_tiled,
+                polarization=polarization_tiled,
+            )
+            B = B.reshape((n0, n1, 3))
+            B = np.sum(B, axis=1)
+        else:
+            nvs = [f.shape[0] for f in mesh]  # length of vertex set
+            split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
+            vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
+            observers_tiled = np.repeat(observers, nvs, axis=0)
+            polarization_tiled = np.repeat(polarization, nvs, axis=0)
+            B = triangle_field(
+                field="B",
+                observers=observers_tiled,
+                vertices=vertices_tiled,
+                polarization=polarization_tiled,
+            )
+            b_split = np.split(B, split_indices)
+            B = np.array([np.sum(bh, axis=0) for bh in b_split])
     else:
-        nvs = [f.shape[0] for f in mesh]  # length of vertex set
-        split_indices = np.cumsum(nvs)[:-1]  # remove last to avoid empty split
-        vertices_tiled = np.concatenate([f.reshape((-1, 3, 3)) for f in mesh])
-        observers_tiled = np.repeat(observers, nvs, axis=0)
-        polarization_tiled = np.repeat(polarization, nvs, axis=0)
-        B = triangle_field(
-            field="B",
-            observers=observers_tiled,
-            vertices=vertices_tiled,
-            polarization=polarization_tiled,
-        )
-        b_split = np.split(B, split_indices)
-        B = np.array([np.sum(bh, axis=0) for bh in b_split])
+        B = np.zeros_like(observers)
 
-    if field == "B":
-        if in_out == "auto":
-            prev_ind = 0
-            # group similar meshes for inside-outside evaluation and adding B
-            for new_ind, _ in enumerate(B):
-                if (
-                    new_ind == len(B) - 1
-                    or mesh[new_ind].shape != mesh[prev_ind].shape
-                    or not np.all(mesh[new_ind] == mesh[prev_ind])
-                ):
-                    if new_ind == len(B) - 1:
-                        new_ind = len(B)
-                    inside_mask = mask_inside_trimesh(
-                        observers[prev_ind:new_ind], mesh[prev_ind]
-                    )
-                    # if inside magnet add polarization vector
-                    B[prev_ind:new_ind][inside_mask] += polarization[prev_ind:new_ind][
-                        inside_mask
-                    ]
-                    prev_ind = new_ind
-        elif in_out == "inside":
-            B += polarization
-        return B
+    if field == "H":
+        return B / MU0
 
-    H = B / MU0
-    return H
+    if in_out == "auto":
+        prev_ind = 0
+        # group similar meshes for inside-outside evaluation and adding B
+        for new_ind, _ in enumerate(B):
+            if (
+                new_ind == len(B) - 1
+                or mesh[new_ind].shape != mesh[prev_ind].shape
+                or not np.all(mesh[new_ind] == mesh[prev_ind])
+            ):
+                if new_ind == len(B) - 1:
+                    new_ind = len(B)
+                mask_inside = mask_inside_trimesh(
+                    observers[prev_ind:new_ind], mesh[prev_ind]
+                )
+                # if inside magnet add polarization vector
+                B[prev_ind:new_ind][mask_inside] += polarization[prev_ind:new_ind][
+                    mask_inside
+                ]
+                prev_ind = new_ind
+    elif in_out == "inside":
+        B += polarization
+    if field == "M":
+        B /= MU0
+    return B
