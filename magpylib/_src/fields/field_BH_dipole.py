@@ -1,54 +1,63 @@
 """
-Dipole implementation
+Core implementation of dipole field
 """
 import numpy as np
 
 from magpylib._src.input_checks import check_field_input
+from magpylib._src.utility import MU0
 
 
 # CORE
 def dipole_field(
+    *,
     field: str,
     observers: np.ndarray,
     moment: np.ndarray,
 ) -> np.ndarray:
-    """Magnetic field of a dipole moment.
+    """Magnetic field of a dipole moments.
 
     The dipole moment lies in the origin of the coordinate system.
 
     Parameters
     ----------
     field: str, default=`'B'`
-        If `field='B'` return B-field in units of mT, if `field='H'` return H-field
-        in units of kA/m.
+        If `field='B'` return B-field in units of T, if `field='H'` return H-field
+        in units of A/m.
 
     observers: ndarray, shape (n,3)
-        Observer positions (x,y,z) in Cartesian coordinates in units of mm.
+        Observer positions (x,y,z) in Cartesian coordinates in units of m.
 
     moment: ndarray, shape (n,3)
-        Dipole moment vector in units of mT*mm^3.
+        Dipole moment vector in units of A*m^2.
 
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B/H-field of dipole in Cartesian coordinates (Bx, By, Bz) in units of mT/(kA/m).
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
     Compute the B-field of two different dipole-observer instances.
 
-    >>> import numpy as np
     >>> import magpylib as magpy
-    >>> mom = np.array([(1,2,3), (0,0,1)])
-    >>> obs = np.array([(1,1,1), (0,0,2)])
-    >>> B = magpy.core.dipole_field('B', obs, mom)
+    >>> import numpy as np
+    >>> B = magpy.core.dipole_field(
+    >>>     field="B",
+    >>>     observers=np.array([(1,2,3), (-1,-2,-3)]),
+    >>>     moment=np.array([(0,0,1e6), (1e5,0,1e7)])
+    >>> )
     >>> print(B)
-    [[0.07657346 0.06125877 0.04594407]
-     [0.         0.         0.01989437]]
+    [[0.00122722 0.00245444 0.00177265]
+     [0.01212221 0.02462621 0.01784923]]
 
     Notes
     -----
-    The field is similar to the outside-field of a spherical magnet with Volume = 1 mm^3.
+    Advanced unit use: The input unit of magnetization and polarization
+    gives the output unit of H and B. All results are independent of the
+    length input units. One must be careful, however, to use consistently
+    the same length unit throughout a script.
+
+    The moment of a magnet is given by its volume*magnetization.
     """
     bh = check_field_input(field, "dipole_field()")
 
@@ -58,13 +67,9 @@ def dipole_field(
         # 0/0 produces invalid warn and results in np.nan
         # x/0 produces divide warn and results in np.inf
         B = (
-            (
-                3 * np.sum(moment * observers, axis=1) * observers.T / r**5
-                - moment.T / r**3
-            ).T
-            / 4
-            / np.pi
-        )
+            3 * np.sum(moment * observers, axis=1) * observers.T / r**5
+            - moment.T / r**3
+        ).T * 1e-7
 
     # when r=0 return np.inf in all non-zero moment directions
     mask1 = r == 0
@@ -73,9 +78,8 @@ def dipole_field(
             B[mask1] = moment[mask1] / 0.0
             np.nan_to_num(B, copy=False, posinf=np.inf, neginf=np.NINF)
 
-    # return B or H
     if bh:
         return B
 
-    H = B * 10 / 4 / np.pi
+    H = B / MU0
     return H

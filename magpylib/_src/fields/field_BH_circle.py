@@ -46,7 +46,7 @@ def current_circle_field(
     Returns
     -------
     B-field or H-field: ndarray, shape (n,3)
-        B- or H-field of magnet in Cartesian coordinates in units of T or A/m.
+        B- or H-field of source in Cartesian coordinates in units of T or A/m.
 
     Examples
     --------
@@ -138,7 +138,7 @@ def current_circle_field(
     # transform field to cartesian CS
     Bx_tot, By_tot = cyl_field_to_cart(phi, Br_tot)
     B_cart = (
-        np.concatenate(((Bx_tot,), (By_tot,), (Bz_tot,)), axis=0) * current
+        np.concatenate(((Bx_tot,), (By_tot,), (Bz_tot,)), axis=0) * current * 1e-6
     ).T  # ugly but fast
 
     # B or H field
