@@ -59,7 +59,9 @@ def dipole_field(
 
     The moment of a magnet is given by its volume*magnetization.
     """
-    bh = check_field_input(field, "dipole_field()")
+    check_field_input(field)
+    if field in "MJ":
+        return np.zeros_like(observers)
 
     x, y, z = observers.T
     r = np.sqrt(x**2 + y**2 + z**2)  # faster than np.linalg.norm
@@ -78,8 +80,7 @@ def dipole_field(
             B[mask1] = moment[mask1] / 0.0
             np.nan_to_num(B, copy=False, posinf=np.inf, neginf=np.NINF)
 
-    if bh:
+    if field == "B":
         return B
 
-    H = B / MU0
-    return H
+    return B / MU0
