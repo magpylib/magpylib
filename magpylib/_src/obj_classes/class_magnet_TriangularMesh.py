@@ -33,25 +33,29 @@ class TriangularMesh(BaseMagnet):
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
-
-    vertices: ndarray, shape (n,3)
-        A set of points in units of mm in the local object coordinates from which the
-        triangular faces of the mesh are constructed by the additional `faces`input.
-
-    faces: ndarray, shape (n,3)
-        Indices of vertices. Each triplet represents one triangle of the mesh.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    vertices: ndarray, shape (n,3)
+        A set of points in units of meter in the local object coordinates from which the
+        triangular faces of the mesh are constructed by the additional `faces`input.
+
+    faces: ndarray, shape (n,3)
+        Indices of vertices. Each triplet represents one triangle of the mesh.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     reorient_faces: bool or string, default=`True`
         In a properly oriented mesh, all faces must be oriented outwards.
@@ -95,30 +99,31 @@ class TriangularMesh(BaseMagnet):
 
     Examples
     --------
-    We compute the B-field in units of mT of a triangular mesh (4 vertices, 4 faces)
-    with magnetization (100,200,300) in units of mT at the observer position
-    (1,1,1) given in units of mm:
+    We compute the B-field in units of tesla of a triangular mesh (4 vertices, 4 faces)
+    with polarization (0.1,0.2,0.3) in units of tesla at the observer position
+    (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
-    >>> vv = ((0,0,0), (1,0,0), (0,1,0), (0,0,1))
+    >>> vv = ((0,0,0), (.01,0,0), (0,.01,0), (0,0,.01))
     >>> tt = ((0,1,2), (0,1,3), (0,2,3), (1,2,3))
-    >>> trim = magpy.magnet.TriangularMesh(magnetization=(100,200,300), vertices=vv, faces=tt)
-    >>> print(trim.getB((1,1,1)))
-    [2.60236696 2.08189357 1.56142018]
+    >>> trim = magpy.magnet.TriangularMesh(polarization=(.1,.2,.3), vertices=vv, faces=tt)
+    >>> print(trim.getB((.01,.01,.01)))
+    [0.00260237 0.00208189 0.00156142]
     """
 
     _field_func = staticmethod(magnet_trimesh_field)
-    _field_func_kwargs_ndim = {"magnetization": 2, "mesh": 3}
+    _field_func_kwargs_ndim = {"polarization": 2, "mesh": 3}
     get_trace = make_TriangularMesh
     _style_class = TriangularMeshStyle
 
     def __init__(
         self,
-        magnetization=None,
-        vertices=None,
-        faces=None,
         position=(0, 0, 0),
         orientation=None,
+        vertices=None,
+        faces=None,
+        polarization=None,
+        magnetization=None,
         check_open="warn",
         check_disconnected="warn",
         check_selfintersecting="warn",
@@ -141,7 +146,9 @@ class TriangularMesh(BaseMagnet):
         self.check_selfintersecting(mode=check_selfintersecting)
 
         # inherit
-        super().__init__(position, orientation, magnetization, style, **kwargs)
+        super().__init__(
+            position, orientation, magnetization, polarization, style, **kwargs
+        )
 
     # property getters and setters
     @property
@@ -507,9 +514,7 @@ class TriangularMesh(BaseMagnet):
 
     def to_TriangleCollection(self):
         """Return a Collection of Triangle objects from the current TriangularMesh"""
-        tris = [
-            Triangle(magnetization=self.magnetization, vertices=v) for v in self.mesh
-        ]
+        tris = [Triangle(polarization=self.polarization, vertices=v) for v in self.mesh]
         coll = Collection(tris)
         coll.position = self.position
         coll.orientation = self.orientation
@@ -520,10 +525,11 @@ class TriangularMesh(BaseMagnet):
     @classmethod
     def from_ConvexHull(
         cls,
-        magnetization=None,
-        points=None,
         position=(0, 0, 0),
         orientation=None,
+        points=None,
+        polarization=None,
+        magnetization=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -534,21 +540,25 @@ class TriangularMesh(BaseMagnet):
 
         Parameters
         ----------
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of mT given in
-            the local object coordinates (rotates with object).
-
-        points: ndarray, shape (n,3)
-            Point cloud from which the convex hull is computed.
-
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of mm. For m>1, the
+            Object position(s) in the global coordinates in units of meter. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        points: ndarray, shape (n,3)
+            Point cloud from which the convex hull is computed.
+
+        polarization: array_like, shape (3,), default=`None`
+            Magnetic polarization vector J = mu0*M in units of T,
+            given in the local object coordinates (rotates with object).
+
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector M = J/mu0 in units of A/m,
+            given in the local object coordinates (rotates with object).
 
         reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
@@ -590,11 +600,12 @@ class TriangularMesh(BaseMagnet):
         --------
         """
         return cls(
-            magnetization=magnetization,
-            vertices=points,
-            faces=ConvexHull(points).simplices,
             position=position,
             orientation=orientation,
+            vertices=points,
+            faces=ConvexHull(points).simplices,
+            polarization=polarization,
+            magnetization=magnetization,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -605,10 +616,11 @@ class TriangularMesh(BaseMagnet):
     @classmethod
     def from_pyvista(
         cls,
-        magnetization=None,
-        polydata=None,
         position=(0, 0, 0),
         orientation=None,
+        polydata=None,
+        polarization=None,
+        magnetization=None,
         check_open="warn",
         check_disconnected="warn",
         reorient_faces=True,
@@ -619,21 +631,25 @@ class TriangularMesh(BaseMagnet):
 
         Parameters
         ----------
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of mT given in
-            the local object coordinates (rotates with object).
-
-        polydata: pyvista.core.pointset.PolyData object
-            A valid pyvista Polydata mesh object. (e.g. `pyvista.Sphere()`)
-
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of mm. For m>1, the
+            Object position(s) in the global coordinates in units of meter. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        polydata: pyvista.core.pointset.PolyData object
+            A valid pyvista Polydata mesh object. (e.g. `pyvista.Sphere()`)
+
+        polarization: array_like, shape (3,), default=`None`
+            Magnetic polarization vector J = mu0*M in units of T,
+            given in the local object coordinates (rotates with object).
+
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector M = J/mu0 in units of A/m,
+            given in the local object coordinates (rotates with object).
 
         reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
@@ -692,11 +708,12 @@ class TriangularMesh(BaseMagnet):
         faces = polydata.faces.reshape(-1, 4)[:, 1:]
 
         return cls(
-            magnetization=magnetization,
-            vertices=vertices,
-            faces=faces,
             position=position,
             orientation=orientation,
+            vertices=vertices,
+            faces=faces,
+            polarization=polarization,
+            magnetization=magnetization,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -707,10 +724,11 @@ class TriangularMesh(BaseMagnet):
     @classmethod
     def from_triangles(
         cls,
-        magnetization=None,
-        triangles=None,
         position=(0, 0, 0),
         orientation=None,
+        triangles=None,
+        polarization=None,
+        magnetization=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -721,21 +739,25 @@ class TriangularMesh(BaseMagnet):
 
         Parameters
         ----------
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of mT given in
-            the local object coordinates (rotates with object).
-
-        triangles: list or Collection of Triangle objects
-            Only vertices of Triangle objects are taken, magnetization is ignored.
-
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of mm. For m>1, the
+            Object position(s) in the global coordinates in units of meter. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        triangles: list or Collection of Triangle objects
+            Only vertices of Triangle objects are taken, magnetization is ignored.
+
+        polarization: array_like, shape (3,), default=`None`
+            Magnetic polarization vector J = mu0*M in units of T,
+            given in the local object coordinates (rotates with object).
+
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector M = J/mu0 in units of A/m,
+            given in the local object coordinates (rotates with object).
 
         reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
@@ -792,11 +814,12 @@ class TriangularMesh(BaseMagnet):
         faces = tr.reshape((-1, 3))
 
         return cls(
-            magnetization=magnetization,
-            vertices=vertices,
-            faces=faces,
             position=position,
             orientation=orientation,
+            vertices=vertices,
+            faces=faces,
+            polarization=polarization,
+            magnetization=magnetization,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
@@ -807,10 +830,11 @@ class TriangularMesh(BaseMagnet):
     @classmethod
     def from_mesh(
         cls,
-        magnetization=None,
-        mesh=None,
         position=(0, 0, 0),
         orientation=None,
+        mesh=None,
+        polarization=None,
+        magnetization=None,
         reorient_faces=True,
         check_open="warn",
         check_disconnected="warn",
@@ -821,21 +845,25 @@ class TriangularMesh(BaseMagnet):
 
         Parameters
         ----------
-        magnetization: array_like, shape (3,), default=`None`
-            Magnetization vector (mu0*M, remanence field) in units of mT given in
-            the local object coordinates (rotates with object).
-
-        mesh: array_like, shape (n,3,3)
-            An array_like of triangular faces that make up a triangular mesh.
-
         position: array_like, shape (3,) or (m,3)
-            Object position(s) in the global coordinates in units of mm. For m>1, the
+            Object position(s) in the global coordinates in units of meter. For m>1, the
             `position` and `orientation` attributes together represent an object path.
 
         orientation: scipy `Rotation` object with length 1 or m, default=`None`
             Object orientation(s) in the global coordinates. `None` corresponds to
             a unit-rotation. For m>1, the `position` and `orientation` attributes
             together represent an object path.
+
+        mesh: array_like, shape (n,3,3)
+            An array_like of triangular faces that make up a triangular mesh.
+
+        polarization: array_like, shape (3,), default=`None`
+            Magnetic polarization vector J = mu0*M in units of T,
+            given in the local object coordinates (rotates with object).
+
+        magnetization: array_like, shape (3,), default=`None`
+            Magnetization vector M = J/mu0 in units of A/m,
+            given in the local object coordinates (rotates with object).
 
         reorient_faces: bool, default=`True`
             In a properly oriented mesh, all faces must be oriented outwards.
@@ -885,11 +913,12 @@ class TriangularMesh(BaseMagnet):
         faces = tr.reshape((-1, 3))
 
         return cls(
-            magnetization=magnetization,
-            vertices=vertices,
-            faces=faces,
             position=position,
             orientation=orientation,
+            vertices=vertices,
+            faces=faces,
+            polarization=polarization,
+            magnetization=magnetization,
             reorient_faces=reorient_faces,
             check_open=check_open,
             check_disconnected=check_disconnected,
