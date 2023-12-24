@@ -58,10 +58,10 @@ class Sensor(BaseGeo, BaseDisplayRepr):
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
-    >>> loop = magpy.current.Circle(current=1, diameter=1)
+    >>> loop = magpy.current.Circle(current=1, diameter=0.01)
     >>> B = sens.getB(loop)
     >>> print(B)
-    [0.         0.         1.25663706]
+    [0.         0.         0.00012566]
 
     We rotate the sensor by 45 degrees and compute the field again:
 
@@ -69,16 +69,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Sensor(id=...)
     >>> B = sens.getB(loop)
     >>> print(B)
-    [0.         0.88857659 0.88857659]
+    [0.00000000e+00 8.88576588e-05 8.88576588e-05]
 
     Finally we set some sensor pixels and compute the field again:
 
-    >>> sens.pixel=((0,0,0), (.1,0,0), (.2,0,0))
+    >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
     >>> B = sens.getB(loop)
     >>> print(B)
-    [[0.         0.88857659 0.88857659]
-     [0.         0.916274   0.916274  ]
-     [0.         1.01415383 1.01415383]]
+    [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
+     [0.00000000e+00 9.16274003e-05 9.16274003e-05]
+     [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
     """
 
     _style_class = SensorStyle

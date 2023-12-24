@@ -75,7 +75,7 @@ class Tetrahedron(BaseMagnet):
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
-    >>> Tetrahedron(id=...)
+    Tetrahedron(id=...)
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
     [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]
@@ -87,7 +87,7 @@ class Tetrahedron(BaseMagnet):
 
     >>> sens = magpy.Sensor(position=(.01,.01,.01))
     >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
-    >>> Tetrahedron(id=...)
+    Tetrahedron(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
     [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]

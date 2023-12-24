@@ -456,7 +456,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> import magpylib as magpy
         >>>
         >>> col = magpy.Collection(
-        ...     [magpy.magnet.Sphere((0, 0, 1), 1, position=(i, 0, 0)) for i in range(3)]
+        ...     [magpy.magnet.Sphere(position=(i, 0, 0), diameter=1, polarization=(0, 0, .1)) for i in range(3)]
         ... )
         >>> # We apply styles using underscore magic for magnetization vector size and a style
         >>> # dictionary for the color.
@@ -469,7 +469,7 @@ class BaseCollection(BaseDisplayRepr):
         >>> # Finally we create a separate sphere magnet to demonstrate the default style
         >>> # the collection and the separate magnet with Matplotlib:
         >>>
-        >>> src = magpy.magnet.Sphere((0, 0, 1), 1, position=(3, 0, 0))
+        >>> src = magpy.magnet.Sphere(position=(3, 0, 0), diameter=1, polarization=(0, 0, .1))
         >>> magpy.show(col, src) # doctest: +SKIP
         >>> # graphic output
         """
@@ -553,7 +553,7 @@ class BaseCollection(BaseDisplayRepr):
         In this example we create a collection from two sources and two sensors:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
         >>> sens1 = magpy.Sensor(position=(0,0,1))
         >>> sens2 = sens1.copy()
@@ -567,11 +567,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> B = magpy.getB([src1, src2], col)
         >>> B = magpy.getB([src1, src2], [sens1, sens2])
         >>> print(B)
-        [[[ 0.          0.         83.33333333]
-          [ 0.          0.         83.33333333]]
+        [[[0.         0.         0.08333333]
+          [0.         0.         0.08333333]]
         <BLANKLINE>
-         [[ 0.          0.         83.33333333]
-          [ 0.          0.         83.33333333]]]
+         [[0.         0.         0.08333333]
+          [0.         0.         0.08333333]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -624,7 +624,7 @@ class BaseCollection(BaseDisplayRepr):
         In this example we create a collection from two sources and two sensors:
 
         >>> import magpylib as magpy
-        >>> src1 = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src1 = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> src2 = src1.copy()
         >>> sens1 = magpy.Sensor(position=(0,0,1))
         >>> sens2 = sens1.copy()
@@ -638,11 +638,11 @@ class BaseCollection(BaseDisplayRepr):
         >>> H = magpy.getH([src1, src2], col)
         >>> H = magpy.getH([src1, src2], [sens1, sens2])
         >>> print(H)
-        [[[ 0.          0.         66.31455962]
-          [ 0.          0.         66.31455962]]
+        [[[    0.             0.         66314.55962162]
+          [    0.             0.         66314.55962162]]
         <BLANKLINE>
-         [[ 0.          0.         66.31455962]
-          [ 0.          0.         66.31455962]]]
+         [[    0.             0.         66314.55962162]
+          [    0.             0.         66314.55962162]]]
         """
 
         sources, sensors = self._validate_getBH_inputs(*inputs)
@@ -727,8 +727,8 @@ class Collection(BaseGeo, BaseCollection):
     we create a collection with two sources and move the whole collection:
 
     >>> import magpylib as magpy
-    >>> src1 = magpy.magnet.Sphere((1,2,3), 1, position=(2,0,0))
-    >>> src2 = magpy.current.Circle(1, 1, position=(-2,0,0))
+    >>> src1 = magpy.magnet.Sphere(position=(2,0,0), diameter=1,polarization=(.1,.2,.3))
+    >>> src2 = magpy.current.Circle(position=(-2,0,0), diameter=1, current=1)
     >>> col = magpy.Collection(src1, src2)
     >>> col.move(((0,0,2)))
     Collection(id=...)
@@ -756,7 +756,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> B = col.getB((0,0,0))
     >>> print(B)
-    [ 0.00126232 -0.00093169 -0.00034448]
+    [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
 
     We add a sensor at position (0,0,0) to the collection:
 
@@ -771,7 +771,7 @@ class Collection(BaseGeo, BaseCollection):
 
     >>> B = col.getB()
     >>> print(B)
-    [ 0.00126232 -0.00093169 -0.00034448]
+    [ 2.32922681e-04 -9.31694991e-05 -3.44484717e-10]
     """
 
     def __init__(

@@ -178,11 +178,11 @@ def magnet_cuboid_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.magnet_cuboid_field(
-    >>>     field='B',
-    >>>     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
-    >>>     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
-    >>>     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
-    >>> )
+    ...     field='B',
+    ...     observers=np.array([(1,2,0), (2,3,4), (0,0,0)]),
+    ...     dimension=np.array([(2,2,2), (3,3,3), (4,4,4)]),
+    ...     polarization=np.array([(0,0,1), (1,0,0), (0,0,1)]),
+    ... )
     >>> print(B)
     [[ 0.          0.         -0.05227894]
      [-0.00820941  0.00849123  0.011429  ]

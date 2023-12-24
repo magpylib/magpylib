@@ -51,11 +51,11 @@ def magnet_sphere_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.magnet_sphere_field(
-    >>>     field='B',
-    >>>     observers=np.array([(1,1,1), (1,1,1)]),
-    >>>     diameter=np.array([1,5]),
-    >>>     polarization=np.array([(1,2,3), (0,0,3)]),
-    >>> )
+    ...     field='B',
+    ...     observers=np.array([(1,1,1), (1,1,1)]),
+    ...     diameter=np.array([1,5]),
+    ...     polarization=np.array([(1,2,3), (0,0,3)]),
+    ... )
     >>> print(B)
     [[0.04009377 0.03207501 0.02405626]
      [0.         0.         2.        ]]

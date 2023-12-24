@@ -117,11 +117,11 @@ def triangle_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.triangle_field(
-    >>>     field='B',
-    >>>     observers=np.array([(-.1,.2,.1), (.1,.2,.1)]),
-    >>>     vertices=np.array([((-1,0,0), (1,-1,0), (1,1,0))]*2),
-    >>>     polarization=np.array([(.22,.33,.44), (.33,.44,.55)]),
-    >>> )
+    ...     field='B',
+    ...     observers=np.array([(-.1,.2,.1), (.1,.2,.1)]),
+    ...     vertices=np.array([((-1,0,0), (1,-1,0), (1,1,0))]*2),
+    ...     polarization=np.array([(.22,.33,.44), (.33,.44,.55)]),
+    ... )
     >>> print(B)
     [[-0.0548087   0.05350955  0.17683832]
      [-0.04252323  0.05292106  0.23092368]]

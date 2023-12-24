@@ -42,10 +42,10 @@ def dipole_field(
     >>> import magpylib as magpy
     >>> import numpy as np
     >>> B = magpy.core.dipole_field(
-    >>>     field="B",
-    >>>     observers=np.array([(1,2,3), (-1,-2,-3)]),
-    >>>     moment=np.array([(0,0,1e6), (1e5,0,1e7)])
-    >>> )
+    ...     field="B",
+    ...     observers=np.array([(1,2,3), (-1,-2,-3)]),
+    ...     moment=np.array([(0,0,1e6), (1e5,0,1e7)])
+    ... )
     >>> print(B)
     [[0.00122722 0.00245444 0.00177265]
      [0.01212221 0.02462621 0.01784923]]

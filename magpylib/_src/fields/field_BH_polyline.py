@@ -115,12 +115,12 @@ def current_polyline_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> H = magpy.core.current_polyline_field(
-    >>>     field='H',
-    >>>     observers=np.array([( 0,0,1)]*3),
-    >>>     segment_start=np.array([(-.5,0,0), (.5,0,0), (1.5,0,0)]),
-    >>>     segment_end=np.array([(-1.5,0,0), (-.5,0,0), (.5,0,0)]),
-    >>>     current=np.array([1,1,1]),
-    >>> )
+    ...     field='H',
+    ...     observers=np.array([( 0,0,1)]*3),
+    ...     segment_start=np.array([(-.5,0,0), (.5,0,0), (1.5,0,0)]),
+    ...     segment_end=np.array([(-1.5,0,0), (-.5,0,0), (.5,0,0)]),
+    ...     current=np.array([1,1,1]),
+    ... )
     >>> print(H)
     [[ 0.          0.03062433 -0.        ]
      [ 0.          0.07117625 -0.        ]

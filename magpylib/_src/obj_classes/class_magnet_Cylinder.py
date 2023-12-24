@@ -66,9 +66,9 @@ class Cylinder(BaseMagnet):
     Cylinder(id=...)
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[3.31419501 5.26683023 0.37767015]
-     [0.42298405 0.67710536 0.04464932]
-     [0.12571523 0.20144503 0.01312389]]
+    [[3.31419501e-03 5.26683023e-03 3.77670149e-04]
+     [4.22984050e-04 6.77105357e-04 4.46493154e-05]
+     [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (0.01,0.01,0.01). Here we use a `Sensor` object as observer.
@@ -78,9 +78,9 @@ class Cylinder(BaseMagnet):
     Cylinder(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
-    [[3.31419501 5.26683023 0.37767015]
-     [0.42298405 0.67710536 0.04464932]
-     [0.12571523 0.20144503 0.01312389]]
+    [[3.31419501e-03 5.26683023e-03 3.77670149e-04]
+     [4.22984050e-04 6.77105357e-04 4.46493154e-05]
+     [1.25715233e-04 2.01445027e-04 1.31238931e-05]]
     """
 
     _field_func = staticmethod(magnet_cylinder_field)
