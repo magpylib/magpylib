@@ -298,7 +298,7 @@ def test_subplots():
             for x in np.linspace(0, 10, 11)
         ]
     )
-    cyl1 = magpy.magnet.Cylinder(magnetization=(100, 0, 0), dimension=(1, 2))
+    cyl1 = magpy.magnet.Cylinder(polarization=(0.1, 0, 0), dimension=(1, 2))
 
     # define paths
     sensors.position = np.linspace((0, 0, -3), (0, 0, 3), 100)

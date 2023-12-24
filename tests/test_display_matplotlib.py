@@ -96,7 +96,7 @@ def test_Sphere_display():
 def test_Tetrahedron_display():
     """testing Tetrahedron display"""
     verts = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
-    src = magpy.magnet.Tetrahedron(magnetization=(100, 200, 300), vertices=verts)
+    src = magpy.magnet.Tetrahedron(polarization=(0.1, 0.2, 0.3), vertices=verts)
     src.show(return_fig=True, style_magnetization_mode="color+arrow")
 
 
@@ -143,7 +143,7 @@ def test_Triangle_display():
     triangles = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
         [
-            magpy.misc.Triangle(magnetization=(1000, 1000, 0), vertices=v)
+            magpy.misc.Triangle(polarization=(1, 1, 0), vertices=v)
             for v in points[triangles]
         ]
     )
@@ -171,10 +171,7 @@ def test_Triangle_display_from_convexhull():
     points = np.array([v for k, v in mesh3d["kwargs"].items() if k in "xyz"]).T
     faces = np.array([v for k, v in mesh3d["kwargs"].items() if k in "ijk"]).T
     src = magpy.Collection(
-        [
-            magpy.misc.Triangle(magnetization=(1000, 0, 0), vertices=v)
-            for v in points[faces]
-        ]
+        [magpy.misc.Triangle(polarization=(1, 0, 0), vertices=v) for v in points[faces]]
     )
     magpy.show(
         *src,
@@ -194,7 +191,7 @@ def test_TriangularMesh_display():
     points = [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]
 
     src = magpy.magnet.TriangularMesh.from_ConvexHull(
-        magnetization=(1000, 0, 0), points=points
+        polarization=(1, 0, 0), points=points
     )
     src.show(
         backend="matplotlib",
@@ -470,7 +467,7 @@ def test_subplots():
     )
     sensor.style.label = "Sensor1"
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
 
     # define paths
@@ -499,7 +496,7 @@ def test_bad_show_inputs():
     """bad show inputs"""
 
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
 
     # test bad canvas
@@ -523,7 +520,7 @@ def test_bad_show_inputs():
         pixel=np.linspace((0, 0, -0.2), (0, 0, 0.2), 2), style_size=1.5
     )
     cyl1 = magpy.magnet.Cylinder(
-        magnetization=(100, 0, 0), dimension=(1, 2), style_label="Cylinder1"
+        polarization=(0.1, 0, 0), dimension=(1, 2), style_label="Cylinder1"
     )
     with pytest.raises(
         ValueError,
