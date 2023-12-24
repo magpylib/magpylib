@@ -202,6 +202,8 @@ class BaseMagnet(BaseSource):
     ):
         super().__init__(position, orientation, style=style, **kwargs)
 
+        self._polarization = None
+        self._magnetization = None
         if magnetization:
             self.magnetization = magnetization
             if polarization:
