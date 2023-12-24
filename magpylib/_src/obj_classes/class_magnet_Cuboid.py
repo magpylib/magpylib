@@ -19,17 +19,6 @@ class Cuboid(BaseMagnet):
 
     Parameters
     ----------
-    polarization: array_like, shape (3,), default=`None`
-        Magnetic polarization vector J = mu0*M in units of T,
-        given in the local object coordinates (rotates with object).
-
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector M = J/mu0 in units of A/m,
-        given in the local object coordinates (rotates with object).
-
-    dimension: array_like, shape (3,), default=`None`
-        Length of the cuboid sides [a,b,c] in meters.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
         Object position(s) in the global coordinates in meter.
         For m>1, the `position` and `orientation` attributes together
@@ -39,6 +28,17 @@ class Cuboid(BaseMagnet):
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    dimension: array_like, shape (3,), default=`None`
+        Length of the cuboid sides [a,b,c] in meters.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -54,12 +54,12 @@ class Cuboid(BaseMagnet):
     Examples
     --------
     `Cuboid` magnets are magnetic field sources. Below we compute the H-field in A/m of a
-    cubical magnet with magnetic polarization of (.5,.6,.7) in units of T and 1 mm sides
-    at the observer position (1,1,1) given in units of mm:
+    cubical magnet with magnetic polarization of (0.5,0.6,0.7) in units of tesla and 0.01 m sides
+    at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(1,1,1))
-    >>> H = src.getH((1,1,1))
+    >>> src = magpy.magnet.Cuboid(polarization=(.5,.6,.7), dimension=(.01,.01,.01))
+    >>> H = src.getH((.01,.01,.01))
     >>> print(H)
     [16149.04136518 14906.80741401 13664.57346284]
 
@@ -67,7 +67,7 @@ class Cuboid(BaseMagnet):
 
     >>> src.rotate_from_angax(45, 'x')
     Cuboid(id=...)
-    >>> B = src.getB([(1,0,0), (0,1,0), (0,0,1)])
+    >>> B = src.getB([(.01,0,0), (0,.01,0), (0,0,.01)])
     >>> print(B)
     [[ 0.06739119  0.00476528 -0.0619486 ]
     [-0.03557183 -0.01149497 -0.08403664]
@@ -120,5 +120,5 @@ class Cuboid(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d / 1000) for d in self.dimension]
-        return f"{d[0]}m|{d[1]}m|{d[2]}m"
+        d = [unit_prefix(d) for d in self.dimension]
+        return f"{d[0]}|{d[1]}|{d[2]}"

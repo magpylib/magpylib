@@ -23,12 +23,12 @@ class Polyline(BaseCurrent):
         Electrical current in units of A.
 
     vertices: array_like, shape (n,3), default=`None`
-        The current flows along the vertices which are given in units of mm in the
+        The current flows along the vertices which are given in units of meter in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
@@ -49,40 +49,40 @@ class Polyline(BaseCurrent):
 
     Examples
     --------
-    `Polyline` objects are magnetic field sources. In this example we compute the H-field kA/m
+    `Polyline` objects are magnetic field sources. In this example we compute the H-field A/m
     of a square-shaped line-current with 1 A current at the observer position (1,1,1) given in
-    units of mm:
+    units of meter:
 
     >>> import magpylib as magpy
     >>> src = magpy.current.Polyline(
     ...     current=1,
-    ...     vertices=((1,0,0), (0,1,0), (-1,0,0), (0,-1,0), (1,0,0)),
+    ...     vertices=((.01,0,0), (0,.01,0), (-.01,0,0), (0,-.01,0), (.01,0,0)),
     ... )
-    >>> H = src.getH((1,1,1))
+    >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [0.03160639 0.03160639 0.00766876]
+    [3.16063859 3.16063859 0.76687556]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
     Polyline(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
-     [-5.94009823e-19  3.62181325e-03 -3.62181325e-03]
-     [-2.21112416e-19  1.03643004e-03 -1.03643004e-03]]
+    [[-1.04529728e-21  3.50341393e-06 -3.50341393e-06]
+     [-9.28140348e-23  3.62181325e-07 -3.62181325e-07]
+     [-1.72744075e-23  1.03643004e-07 -1.03643004e-07]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (1,1,1). This time we use a `Sensor` object as observer.
 
-    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
     Polyline(id=...)
-    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> sens = magpy.Sensor(position=(.01,.01,.01))
     >>> B = src.getB(sens)
     >>> print(B)
-    [[-6.68990257e-18  3.50341393e-02 -3.50341393e-02]
-     [-5.94009823e-19  3.62181325e-03 -3.62181325e-03]
-     [-2.21112416e-19  1.03643004e-03 -1.03643004e-03]]
+    [[-1.04529728e-21  3.50341393e-06 -3.50341393e-06]
+     [-9.28140348e-23  3.62181325e-07 -3.62181325e-07]
+     [-1.72744075e-23  1.03643004e-07 -1.03643004e-07]]
     """
 
     # pylint: disable=dangerous-default-value
@@ -114,7 +114,7 @@ class Polyline(BaseCurrent):
     @property
     def vertices(self):
         """
-        The current flows along the vertices which are given in units of mm in the
+        The current flows along the vertices which are given in units of meter in the
         local object coordinates (move/rotate with object). At least two vertices
         must be given.
         """
@@ -122,7 +122,7 @@ class Polyline(BaseCurrent):
 
     @vertices.setter
     def vertices(self, vert):
-        """Set Polyline vertices, array_like, mm."""
+        """Set Polyline vertices, array_like, meter."""
         self._vertices = check_format_input_vertices(vert)
 
     @property

@@ -16,21 +16,25 @@ class Sphere(BaseMagnet):
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
-
-    diameter: float, default=`None`
-        Diameter of the sphere in units of mm.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    diameter: float, default=`None`
+        Diameter of the sphere in units of meter.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -46,49 +50,50 @@ class Sphere(BaseMagnet):
 
     Examples
     --------
-    `Sphere` objects are magnetic field sources. In this example we compute the H-field kA/m
-    of a spherical magnet with magnetization (100,200,300) in units of mT and diameter
-    of 1 mm at the observer position (1,1,1) given in units of mm:
+    `Sphere` objects are magnetic field sources. In this example we compute the H-field A/m
+    of a spherical magnet with polarization (0.1,0.2,0.3) in units of tesla and diameter
+    of 0.01 meter at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Sphere(magnetization=(100,200,300), diameter=1)
-    >>> H = src.getH((1,1,1))
+    >>> src = magpy.magnet.Sphere(polarization=(.1,.2,.3), diameter=.01)
+    >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [3.19056074 2.55244859 1.91433644]
+    [3190.56073739 2552.44858992 1914.33644244]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
     Sphere(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[2.26804606 3.63693295 0.23486386]
-     [0.28350576 0.45461662 0.02935798]
-     [0.08400171 0.13470122 0.00869866]]
+    [[2.26804606e-03 3.63693295e-03 2.34863859e-04]
+     [2.83505757e-04 4.54616618e-04 2.93579824e-05]
+     [8.40017059e-05 1.34701220e-04 8.69866146e-06]]
 
     The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). This time we use a `Sensor` object as observer.
+    observer at position (.01,.01,.01). This time we use a `Sensor` object as observer.
 
-    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
     Sphere(id=...)
-    >>> sens = magpy.Sensor(position=(1,1,1))
+    >>> sens = magpy.Sensor(position=(.01,.01,.01))
     >>> B = src.getB(sens)
     >>> print(B)
-    [[2.26804606 3.63693295 0.23486386]
-     [0.28350576 0.45461662 0.02935798]
-     [0.08400171 0.13470122 0.00869866]]
+    [[2.26804606e-03 3.63693295e-03 2.34863859e-04]
+     [2.83505757e-04 4.54616618e-04 2.93579824e-05]
+     [8.40017059e-05 1.34701220e-04 8.69866146e-06]]
     """
 
     _field_func = staticmethod(magnet_sphere_field)
-    _field_func_kwargs_ndim = {"magnetization": 2, "diameter": 1}
+    _field_func_kwargs_ndim = {"polarization": 2, "diameter": 1}
     get_trace = make_Sphere
 
     def __init__(
         self,
-        magnetization=None,
-        diameter=None,
         position=(0, 0, 0),
         orientation=None,
+        diameter=None,
+        polarization=None,
+        magnetization=None,
         style=None,
         **kwargs,
     ):
@@ -96,17 +101,19 @@ class Sphere(BaseMagnet):
         self.diameter = diameter
 
         # init inheritance
-        super().__init__(position, orientation, magnetization, style, **kwargs)
+        super().__init__(
+            position, orientation, magnetization, polarization, style, **kwargs
+        )
 
     # property getters and setters
     @property
     def diameter(self):
-        """Diameter of the sphere in units of mm."""
+        """Diameter of the sphere in units of meter."""
         return self._diameter
 
     @diameter.setter
     def diameter(self, dia):
-        """Set Sphere diameter, float, mm."""
+        """Set Sphere diameter, float, meter."""
         self._diameter = check_format_input_scalar(
             dia,
             sig_name="diameter",
@@ -120,4 +127,4 @@ class Sphere(BaseMagnet):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"D={unit_prefix(self.diameter / 1000)}m"
+        return f"D={unit_prefix(self.diameter)}"

@@ -50,20 +50,20 @@ def current_circle_field(
 
     Examples
     --------
-    Compute the field of three different loops at three different positions.
+    Compute the field of three different circular loops at three different positions.
 
     >>> import numpy as np
     >>> import magpylib as magpy
-    >>> B = magpy.core.current_circle_field(
-    >>>     field='B',
-    >>>     observers=np.array([(1,1,1), (2,2,2), (3,3,3)]),
-    >>>     diameter=np.array([2,4,6]),
+    >>> H = magpy.core.current_circle_field(
+    >>>     field='H',
+    >>>     observers=np.array([(0,0,0), (1,1,1), (2,2,2)]),
+    >>>     diameter=np.array([1,2,3]),
     >>>     current=np.array([1,1,2])
     >>> )
-    >>> print(B)
-    [[0.06235974 0.06235974 0.02669778]
-     [0.03117987 0.03117987 0.01334889]
-     [0.04157316 0.04157316 0.01779852]]
+    >>> print(H)
+    [[0.         0.         1.        ]
+     [0.0496243  0.0496243  0.02124542]
+     [0.02833835 0.02833835 0.00654999]]
 
     Notes
     -----
@@ -159,4 +159,5 @@ def current_loop_field(*args, **kwargs):
         MagpylibDeprecationWarning,
         stacklevel=2,
     )
-    return current_circle_field(*args, **kwargs)
+    # return current_circle_field(*args, **kwargs)
+    return None

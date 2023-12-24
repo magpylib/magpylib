@@ -25,12 +25,12 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     ----------
 
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     pixel: array_like, shape (3,) or (n1,n2,...,3), default=`(0,0,0)`
         Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of mm.
+        (rotate with object), in units of meter.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
@@ -54,7 +54,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     Examples
     --------
     `Sensor` objects are observers for magnetic field computation. In this example we compute the
-    B-field in units of mT as seen by the sensor in the center of a circular current loop:
+    B-field in units of tesla as seen by the sensor in the center of a circular current loop:
 
     >>> import magpylib as magpy
     >>> sens = magpy.Sensor()
@@ -106,7 +106,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     @property
     def pixel(self):
         """Sensor pixel (=sensing elements) positions in the local object coordinates
-        (rotate with object), in units of mm.
+        (rotate with object), in units of meter.
         """
         return self._pixel
 
@@ -140,7 +140,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getB(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the B-field in units of mT as seen by the sensor.
+        """Compute the B-field in units of tesla as seen by the sensor.
 
         Parameters
         ----------
@@ -169,20 +169,20 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         B-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             B-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of mT. Paths of objects that are shorter than
+            position (n1,n2,...) in units of tesla. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        B-field in units of mT as seen by the sensor in the center of a circular current loop:
+        B-field in units of tesla as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Circle(current=1, diameter=1)
+        >>> loop = magpy.current.Circle(current=1, diameter=.01)
         >>> B = sens.getB(loop)
         >>> print(B)
-        [0.         0.         1.25663706]
+        [0.         0.         0.00012566]
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
@@ -190,16 +190,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensor(id=...)
         >>> B = sens.getB(loop)
         >>> print(B)
-        [0.         0.88857659 0.88857659]
+        [0.00000000e+00 8.88576588e-05 8.88576588e-05]
 
         Finally we set some sensor pixels and compute the field again:
 
-        >>> sens.pixel=((0,0,0), (.1,0,0), (.2,0,0))
+        >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
         >>> B = sens.getB(loop)
         >>> print(B)
-        [[0.         0.88857659 0.88857659]
-         [0.         0.916274   0.916274  ]
-         [0.         1.01415383 1.01415383]]
+        [[0.00000000e+00 8.88576588e-05 8.88576588e-05]
+         [0.00000000e+00 9.16274003e-05 9.16274003e-05]
+         [0.00000000e+00 1.01415383e-04 1.01415383e-04]]
         """
         sources = format_star_input(sources)
         return getBH_level2(
@@ -215,7 +215,7 @@ class Sensor(BaseGeo, BaseDisplayRepr):
     def getH(
         self, *sources, sumup=False, squeeze=True, pixel_agg=None, output="ndarray"
     ):
-        """Compute the H-field in units of kA/m as seen by the sensor.
+        """Compute the H-field in units of A/m as seen by the sensor.
 
         Parameters
         ----------
@@ -244,20 +244,20 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         -------
         H-field: ndarray, shape squeeze(l, m, n1, n2, ..., 3) or DataFrame
             H-field of each source (l) at each path position (m) and each sensor pixel
-            position (n1,n2,...) in units of kA/m. Paths of objects that are shorter than
+            position (n1,n2,...) in units of A/m. Paths of objects that are shorter than
             m will be considered as static beyond their end.
 
         Examples
         --------
         Sensors are observers for magnetic field computation. In this example we compute the
-        H-field in kA/m as seen by the sensor in the center of a circular current loop:
+        B-field in units of tesla as seen by the sensor in the center of a circular current loop:
 
         >>> import magpylib as magpy
         >>> sens = magpy.Sensor()
-        >>> loop = magpy.current.Circle(current=1, diameter=1)
+        >>> loop = magpy.current.Circle(current=1, diameter=.01)
         >>> H = sens.getH(loop)
         >>> print(H)
-        [0. 0. 1.]
+        [  0.   0. 100.]
 
         Then we rotate the sensor by 45 degrees and compute the field again:
 
@@ -265,16 +265,16 @@ class Sensor(BaseGeo, BaseDisplayRepr):
         Sensor(id=...)
         >>> H = sens.getH(loop)
         >>> print(H)
-        [0.         0.70710678 0.70710678]
+        [ 0.         70.71067812 70.71067812]
 
         Finally we set some sensor pixels and compute the field again:
 
-        >>> sens.pixel=((0,0,0), (.1,0,0), (.2,0,0))
+        >>> sens.pixel=((0,0,0), (.001,0,0), (.002,0,0))
         >>> H = sens.getH(loop)
         >>> print(H)
-        [[0.         0.70710678 0.70710678]
-         [0.         0.72914768 0.72914768]
-         [0.         0.80703798 0.80703798]]
+        [[ 0.         70.71067812 70.71067812]
+         [ 0.         72.9147684  72.9147684 ]
+         [ 0.         80.7037979  80.7037979 ]]
         """
         sources = format_star_input(sources)
         return getBH_level2(
