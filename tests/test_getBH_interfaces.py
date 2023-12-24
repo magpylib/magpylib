@@ -2,13 +2,14 @@ import numpy as np
 import pytest
 
 import magpylib as magpy
+from magpylib._src.exceptions import MagpylibMissingInput
 
 # pylint: disable=unnecessary-lambda-assignment
 
 
 def test_getB_interfaces1():
     """self-consistent test of different possibilities for computing the field"""
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
@@ -16,7 +17,7 @@ def test_getB_interfaces1():
         "Cuboid",
         (-1, -1, -1),
         position=src.position,
-        magnetization=(1, 2, 3),
+        polarization=(1, 2, 3),
         dimension=(1, 2, 3),
     )
     B1 = np.tile(B, (2, 2, 1, 1))
@@ -37,7 +38,7 @@ def test_getB_interfaces1():
 
 def test_getB_interfaces2():
     """self-consistent test of different possibilities for computing the field"""
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
@@ -45,7 +46,7 @@ def test_getB_interfaces2():
         "Cuboid",
         (-1, -1, -1),
         position=src.position,
-        magnetization=(1, 2, 3),
+        polarization=(1, 2, 3),
         dimension=(1, 2, 3),
     )
 
@@ -61,7 +62,7 @@ def test_getB_interfaces2():
 
 def test_getB_interfaces3():
     """self-consistent test of different possibilities for computing the field"""
-    src = magpy.magnet.Cuboid((1, 2, 3), (1, 2, 3))
+    src = magpy.magnet.Cuboid(polarization=(1, 2, 3), dimension=(1, 2, 3))
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
     poso = [[(-1, -1, -1)] * 2] * 2
     sens = magpy.Sensor(pixel=poso)
@@ -69,7 +70,7 @@ def test_getB_interfaces3():
         "Cuboid",
         (-1, -1, -1),
         position=src.position,
-        magnetization=(1, 2, 3),
+        polarization=(1, 2, 3),
         dimension=(1, 2, 3),
     )
 
@@ -90,7 +91,7 @@ def test_getH_interfaces1():
     """self-consistent test of different possibilities for computing the field"""
     mag = (22, -33, 44)
     dim = (3, 2, 3)
-    src = magpy.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(polarization=mag, dimension=dim)
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
 
     poso = [[(-1, -2, -3)] * 2] * 2
@@ -100,7 +101,7 @@ def test_getH_interfaces1():
         "Cuboid",
         (-1, -2, -3),
         position=src.position,
-        magnetization=mag,
+        polarization=mag,
         dimension=dim,
     )
     H1 = np.tile(H, (2, 2, 1, 1))
@@ -123,7 +124,7 @@ def test_getH_interfaces2():
     """self-consistent test of different possibilities for computing the field"""
     mag = (22, -33, 44)
     dim = (3, 2, 3)
-    src = magpy.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(polarization=mag, dimension=dim)
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
 
     poso = [[(-1, -2, -3)] * 2] * 2
@@ -133,7 +134,7 @@ def test_getH_interfaces2():
         "Cuboid",
         (-1, -2, -3),
         position=src.position,
-        magnetization=mag,
+        polarization=mag,
         dimension=dim,
     )
 
@@ -151,7 +152,7 @@ def test_getH_interfaces3():
     """self-consistent test of different possibilities for computing the field"""
     mag = (22, -33, 44)
     dim = (3, 2, 3)
-    src = magpy.magnet.Cuboid(mag, dim)
+    src = magpy.magnet.Cuboid(polarization=mag, dimension=dim)
     src.move(np.linspace((0.1, 0.2, 0.3), (1, 2, 3), 10), start=-1)
 
     poso = [[(-1, -2, -3)] * 2] * 2
@@ -161,7 +162,7 @@ def test_getH_interfaces3():
         "Cuboid",
         (-1, -2, -3),
         position=src.position,
-        magnetization=mag,
+        polarization=mag,
         dimension=dim,
     )
 
@@ -184,12 +185,12 @@ def test_dataframe_ouptut():
     num_of_pix = 2
 
     sources = [
-        magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)).move(
+        magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1)).move(
             np.linspace((-4, 0, 0), (4, 0, 0), max_path_len), start=0
         ),
-        magpy.magnet.Cylinder((0, 1000, 0), (1, 1), style_label="Cylinder1").move(
-            np.linspace((0, -4, 0), (0, 4, 0), max_path_len), start=0
-        ),
+        magpy.magnet.Cylinder(
+            polarization=(0, 1000, 0), dimension=(1, 1), style_label="Cylinder1"
+        ).move(np.linspace((0, -4, 0), (0, 4, 0), max_path_len), start=0),
     ]
     pixel = np.linspace((0, 0, 0), (0, 3, 0), num_of_pix)
     sens1 = magpy.Sensor(position=(0, 0, 1), pixel=pixel, style_label="sens1")
@@ -224,8 +225,8 @@ def test_dataframe_ouptut():
 def test_dataframe_ouptut_sumup():
     """test pandas dataframe output when sumup is True"""
     sources = [
-        magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1)),
-        magpy.magnet.Cylinder((0, 1000, 0), (1, 1)),
+        magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1)),
+        magpy.magnet.Cylinder(polarization=(0, 1000, 0), dimension=(1, 1)),
     ]
     df = magpy.getB(sources, (0, 0, 0), sumup=True, output="dataframe")
     np.testing.assert_allclose(
@@ -236,7 +237,7 @@ def test_dataframe_ouptut_sumup():
 
 def test_dataframe_ouptut_pixel_agg():
     """test pandas dataframe output when sumup is True"""
-    src1 = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src1 = magpy.magnet.Cuboid(polarization=(0, 0, 1000), dimension=(1, 1, 1))
     sens1 = magpy.Sensor(position=(0, 0, 1), pixel=np.zeros((4, 5, 3)))
     sens2 = sens1.copy(position=(0, 0, 2))
     sens3 = sens1.copy(position=(0, 0, 3))
@@ -254,7 +255,7 @@ def test_dataframe_ouptut_pixel_agg():
 
 def test_getBH_bad_output_type():
     """test bad output in `getBH`"""
-    src = magpy.magnet.Cuboid((0, 0, 1000), (1, 1, 1))
+    src = magpy.magnet.Cuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
     with pytest.raises(ValueError):
         src.getB((0, 0, 0), output="bad_output_type")
 
@@ -266,7 +267,9 @@ def test_sensor_handedness():
     ls = lambda n: np.linspace(-k / 2, k / 2, n)
     pixel = np.array([[x, y, z] for x in ls(N[0]) for y in ls(N[1]) for z in ls(N[2])])
     pixel = pixel.reshape((*N, 3))
-    c = magpy.magnet.Cuboid((1000, 0, 0), (1, 1, 1), (0, 1, 0))
+    c = magpy.magnet.Cuboid(
+        polarization=(1, 0, 0), dimension=(1, 1, 1), position=(0, 1, 0)
+    )
     sr = magpy.Sensor(
         pixel=pixel,
         position=(-1, 0, 0),
@@ -316,25 +319,25 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
 @pytest.mark.parametrize(
     ("module", "class_", "missing_arg", "kwargs"),
     [
-        ("magnet", "Cuboid", "magnetization", {"dimension": (1, 1, 1)}),
-        ("magnet", "Cylinder", "magnetization", {"dimension": (1, 1)}),
+        ("magnet", "Cuboid", "polarization", {"dimension": (1, 1, 1)}),
+        ("magnet", "Cylinder", "polarization", {"dimension": (1, 1)}),
         (
             "magnet",
             "CylinderSegment",
-            "magnetization",
+            "polarization",
             {"dimension": (0, 1, 1, 45, 120)},
         ),
-        ("magnet", "Sphere", "magnetization", {"diameter": 1}),
+        ("magnet", "Sphere", "polarization", {"diameter": 1}),
         (
             "magnet",
             "Tetrahedron",
-            "magnetization",
+            "polarization",
             {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]},
         ),
         (
             "magnet",
             "TriangularMesh",
-            "magnetization",
+            "polarization",
             {
                 "vertices": ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
                 "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
@@ -345,7 +348,7 @@ def test_getB_on_missing_dimensions(module, class_, missing_arg):
         (
             "misc",
             "Triangle",
-            "magnetization",
+            "polarization",
             {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0)]},
         ),
         ("misc", "Dipole", "moment", {}),

@@ -13,7 +13,7 @@ def test_getB_dict1():
     mag = [111, 222, 333]
     dim = [3, 3]
 
-    pm = magpy.magnet.Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim)
     pm.move(np.linspace((0.5, 0, 0), (7.5, 0, 0), 15), start=-1)
     pm.rotate_from_angax(np.linspace(0, 666, 25), "y", anchor=0)
     pm.move([(0, x, 0) for x in np.linspace(0, 5, 5)], start=-1)
@@ -22,7 +22,7 @@ def test_getB_dict1():
     pos = pm.position
     rot = pm.orientation
 
-    dic = {"magnetization": mag, "dimension": dim, "position": pos, "orientation": rot}
+    dic = {"polarization": mag, "dimension": dim, "position": pos, "orientation": rot}
     B1 = magpy.getB("Cylinder", pos_obs, **dic)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -35,10 +35,10 @@ def test_getB_dict2():
     dim = [3, 3]
     pos = [(1, 1, 1), (2, 2, 2), (3, 3, 3), (5, 5, 5)]
 
-    dic = {"magnetization": mag, "dimension": dim, "position": pos}
+    dic = {"polarization": mag, "dimension": dim, "position": pos}
     B1 = magpy.getB("Cylinder", pos_obs, **dic)
 
-    pm = magpy.magnet.Cylinder(mag, dim, position=pos)
+    pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim, position=pos)
     B2 = magpy.getB([pm], pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -50,13 +50,10 @@ def test_getH_dict1():
     mag = [111, 222, 333]
     dim = [3, 3]
 
-    dic = {
-        "magnetization": mag,
-        "dimension": dim,
-    }
+    dic = {"polarization": mag, "dimension": dim}
     B1 = magpy.getH("Cylinder", pos_obs, **dic)
 
-    pm = magpy.magnet.Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim)
     B2 = pm.getH(pos_obs)
 
     assert np.allclose(B1, B2, rtol=1e-12, atol=1e-12)
@@ -73,12 +70,14 @@ def test_getB_dict3():
     pos = np.array([0, 0, 0])
     rot = R.from_quat([(t, 0.2, 0.3, 0.4) for t in np.linspace(0, 0.1, n)])
 
-    dic = {"magnetization": mag, "dimension": dim, "position": pos, "orientation": rot}
+    dic = {"polarization": mag, "dimension": dim, "position": pos, "orientation": rot}
     B1 = magpy.getB("Cuboid", pos_obs, **dic)
 
     B2 = []
     for i in range(n):
-        pm = magpy.magnet.Cuboid(mag[i], dim, pos, rot[i])
+        pm = magpy.magnet.Cuboid(
+            polarization=mag[i], dimension=dim, position=pos, orientation=rot[i]
+        )
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
@@ -91,12 +90,12 @@ def test_getH_dict3():
     mag = [[111, 222, 333], [22, 2, 2], [22, -33, -44]]
     dim = 3
 
-    dic = {"magnetization": mag, "diameter": dim}
+    dic = {"polarization": mag, "diameter": dim}
     B1 = magpy.getH("Sphere", pos_obs, **dic)
 
     B2 = []
     for i in range(3):
-        pm = magpy.magnet.Sphere(mag[i], dim)
+        pm = magpy.magnet.Sphere(polarization=mag[i], diameter=dim)
         B2 += [magpy.getH([pm], pos_obs)]
     B2 = np.array(B2)
 
@@ -114,12 +113,14 @@ def test_getB_dict4():
     pos = np.array([0, 0, 0])
     rot = R.from_quat([(t, 0.2, 0.3, 0.4) for t in np.linspace(0, 0.1, n)])
 
-    dic = {"magnetization": mag, "diameter": dim, "position": pos, "orientation": rot}
+    dic = {"polarization": mag, "diameter": dim, "position": pos, "orientation": rot}
     B1 = magpy.getB("Sphere", pos_obs, **dic)
 
     B2 = []
     for i in range(n):
-        pm = magpy.magnet.Sphere(mag[i], dim, pos, rot[i])
+        pm = magpy.magnet.Sphere(
+            polarization=mag[i], diameter=dim, position=pos, orientation=rot[i]
+        )
         B2 += [pm.getB(pos_obs)]
     B2 = np.array(B2)
     print(B1 - B2)
@@ -140,7 +141,7 @@ def test_getBH_dipole():
 def test_getBH_circle():
     """test if Circle implementation gives correct output"""
     B = magpy.getB("Circle", (0, 0, 0), current=1, diameter=2)
-    Btest = np.array([0, 0, 0.6283185307179586])
+    Btest = np.array([0, 0, 0.6283185307179586 * 1e-6])
     assert np.allclose(B, Btest)
 
     H = magpy.getH("Circle", (0, 0, 0), current=1, diameter=2)
@@ -185,7 +186,7 @@ def test_getBH_polyline():
 
 def test_getBH_polyline2():
     """test line with pos and rot arguments"""
-    x = 0.14142136
+    x = 0.14142136 * 1e-6
 
     # z-line on x=1
     def getB_line(name):
@@ -260,7 +261,7 @@ def test_getBH_polyline2():
         vertices=np.linspace((0, 5, 5), (5, 5, 5), 6),
     )
     np.testing.assert_allclose(
-        B, np.array([[0.0, 0.0057735, -0.0057735]] * 5), rtol=1e-6
+        B, np.array([[0.0, 0.0057735, -0.0057735]] * 5) * 1e-6, rtol=1e-6
     )
 
     # ragged sequence of vertices
@@ -338,7 +339,7 @@ def test_getBH_Cylinder_FEM():
         "CylinderSegment",
         obsp,
         dimension=(1, 2, 1, 90, 360),
-        magnetization=np.array((1, 2, 3)) * 1000 / np.sqrt(14),
+        polarization=np.array((1, 2, 3)) * 1000 / np.sqrt(14),
         position=(0, 0, 0.5),
     )
 
@@ -353,7 +354,7 @@ def test_getBH_solid_cylinder():
         "CylinderSegment",
         (1, 2, 3),
         dimension=[(0, 1, 2, 20, 120), (0, 1, 2, 120, 220), (0, 1, 2, 220, 380)],
-        magnetization=(22, 33, 44),
+        polarization=(22, 33, 44),
     )
     B1 = np.sum(B1, axis=0)
 
@@ -362,7 +363,7 @@ def test_getBH_solid_cylinder():
         "CylinderSegment",
         (1, 2, 3),
         dimension=(0, 1, 2, 0, 360),
-        magnetization=(22, 33, 44),
+        polarization=(22, 33, 44),
     )
 
     # compute with solid cylinder code
@@ -370,7 +371,7 @@ def test_getBH_solid_cylinder():
         "Cylinder",
         (1, 2, 3),
         dimension=(2, 2),
-        magnetization=(22, 33, 44),
+        polarization=(22, 33, 44),
     )
 
     assert np.allclose(B1, B2)
@@ -383,7 +384,7 @@ def test_getB_dict_over_getB():
     mag = [111, 222, 333]
     dim = [3, 3]
 
-    pm = magpy.magnet.Cylinder(mag, dim)
+    pm = magpy.magnet.Cylinder(polarization=mag, dimension=dim)
     pm.move(np.linspace((0.5, 0, 0), (7.5, 0, 0), 15))
     pm.rotate_from_angax(np.linspace(0, 666, 25), "y", anchor=0)
     pm.move([(0, x, 0) for x in np.linspace(0, 5, 5)])
@@ -395,7 +396,7 @@ def test_getB_dict_over_getB():
     dic = {
         "sources": "Cylinder",
         "observers": pos_obs,
-        "magnetization": mag,
+        "polarization": mag,
         "dimension": dim,
         "position": pos,
         "orientation": rot,
@@ -417,8 +418,8 @@ def test_subclassing():
     class MyCuboid(magpy.magnet.Cuboid):
         """Test subclass"""
 
-    MyCuboid((0, 0, 1000), (1, 1, 1))
-    B1 = magpy.getB("Cuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
-    B2 = magpy.getB("MyCuboid", (0, 0, 0), magnetization=(1, 1, 1), dimension=(1, 1, 1))
+    MyCuboid(polarization=(0, 0, 1), dimension=(1, 1, 1))
+    B1 = magpy.getB("Cuboid", (0, 0, 0), polarization=(1, 1, 1), dimension=(1, 1, 1))
+    B2 = magpy.getB("MyCuboid", (0, 0, 0), polarization=(1, 1, 1), dimension=(1, 1, 1))
 
     np.testing.assert_allclose(B1, B2)
