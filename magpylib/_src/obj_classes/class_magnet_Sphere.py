@@ -127,4 +127,4 @@ class Sphere(BaseMagnet):
         """Default style description text"""
         if self.diameter is None:
             return "no dimension"
-        return f"D={unit_prefix(self.diameter)}"
+        return f"D={unit_prefix(self.diameter)}m"

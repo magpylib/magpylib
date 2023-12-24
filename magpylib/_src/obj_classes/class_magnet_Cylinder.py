@@ -130,4 +130,4 @@ class Cylinder(BaseMagnet):
         if self.dimension is None:
             return "no dimension"
         d = [unit_prefix(d) for d in self.dimension]
-        return f"D={d[0]}, H={d[1]}"
+        return f"D={d[0]}m, H={d[1]}m"
