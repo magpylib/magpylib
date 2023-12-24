@@ -19,27 +19,27 @@ class Tetrahedron(BaseMagnet):
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
-
-    vertices: ndarray, shape (4,3)
-        Vertices [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4)], in the relative
-        coordinate system of the tetrahedron.
-
     position: array_like, shape (3,) or (m,3)
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
         When setting vertices, the initial position is set to the barycenter.
-
-    barycenter: array_like, shape (3,)
-        Read only property that returns the geometric barycenter (=center of mass)
-        of the object.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    vertices: ndarray, shape (4,3)
+        Vertices [(x1,y1,z1), (x2,y2,z2), (x3,y3,z3), (x4,y4,z4)], in the relative
+        coordinate system of the tetrahedron.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -48,76 +48,84 @@ class Tetrahedron(BaseMagnet):
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
 
+    Attributes
+    ----------
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
+
     Returns
     -------
     magnet source: `Tetrahedron` object
 
     Examples
     --------
-    `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
-    tetrahedron magnet with magnetization (100,200,300) in units of mT dimensions defined
-    through the vertices (0,0,0), (1,0,0), (0,1,0) and (0,0,1) in units of mm at the
-    observer position (1,1,1) given in units of mm:
+    `Tetrahedron` magnets are magnetic field sources. Below we compute the H-field in A/m of a
+    tetrahedron magnet with polarization (0.1,0.2,0.3) in units of tesla dimensions defined
+    through the vertices (0,0,0), (.01,0,0), (0,.01,0) and (0,0,.01) in units of meter at the
+    observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
-    >>> verts = [(0,0,0), (1,0,0), (0,1,0), (0,0,1)]
-    >>> src = magpy.magnet.Tetrahedron(magnetization=(100,200,300), vertices=verts)
-    >>> H = src.getH((1,1,1))
+    >>> verts = [(0,0,0), (.01,0,0), (0,.01,0), (0,0,.01)]
+    >>> src = magpy.magnet.Tetrahedron(polarization=(.1,.2,.3), vertices=verts)
+    >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [2.07089783 1.65671826 1.2425387 ]
+    [2070.89782733 1656.71826186 1242.5386964 ]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
-    src.rotate_from_angax(45, 'x')
-    Tetrahedron(id=...)
-    B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
-    print(B)
-    [[ 8.68006559e-01  2.00895792e+00 -5.03469140e-01]
-    [ 1.01357229e-01  1.93731796e-01 -1.59677364e-02]
-    [ 2.90426931e-02  5.22556994e-02 -1.70596096e-03]]
+    >>> src.rotate_from_angax(45, 'x')
+    >>> Tetrahedron(id=...)
+    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
+    >>> print(B)
+    [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]
+     [ 1.01357229e-04  1.93731796e-04 -1.59677364e-05]
+     [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (1,1,1). Here we use a `Sensor` object as observer.
 
-    sens = magpy.Sensor(position=(1,1,1))
-    src.move([(-1,-1,-1), (-2,-2,-2)])
-    Sensor(id=...)
-    B = src.getB(sens)
-    print(B)
-    [[ 8.68006559e-01  2.00895792e+00 -5.03469140e-01]
-    [ 1.01357229e-01  1.93731796e-01 -1.59677364e-02]
-    [ 2.90426931e-02  5.22556994e-02 -1.70596096e-03]]
+    >>> sens = magpy.Sensor(position=(.01,.01,.01))
+    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
+    >>> Tetrahedron(id=...)
+    >>> B = src.getB(sens)
+    >>> print(B)
+    [[ 8.68006559e-04  2.00895792e-03 -5.03469140e-04]
+     [ 1.01357229e-04  1.93731796e-04 -1.59677364e-05]
+     [ 2.90426931e-05  5.22556994e-05 -1.70596096e-06]]
     """
 
     _field_func = staticmethod(magnet_tetrahedron_field)
-    _field_func_kwargs_ndim = {"magnetization": 1, "vertices": 3}
+    _field_func_kwargs_ndim = {"polarization": 1, "vertices": 3}
     get_trace = make_Tetrahedron
 
     def __init__(
         self,
-        magnetization=None,
-        vertices=None,
         position=(0, 0, 0),
         orientation=None,
+        vertices=None,
+        polarization=None,
+        magnetization=None,
         style=None,
         **kwargs,
     ):
         # instance attributes
         self.vertices = vertices
-        self._object_type = "Tetrahedron"
 
         # init inheritance
-        super().__init__(position, orientation, magnetization, style, **kwargs)
+        super().__init__(
+            position, orientation, magnetization, polarization, style, **kwargs
+        )
 
     # property getters and setters
     @property
     def vertices(self):
-        """Length of the Tetrahedron sides [a,b,c] in units of mm."""
+        """Length of the Tetrahedron sides [a,b,c] in units of meter."""
         return self._vertices
 
     @vertices.setter
     def vertices(self, dim):
-        """Set Tetrahedron vertices (a,b,c), shape (3,), (mm)."""
+        """Set Tetrahedron vertices (a,b,c), shape (3,), (meter)."""
         self._vertices = check_format_input_vector(
             dim,
             dims=(2,),
