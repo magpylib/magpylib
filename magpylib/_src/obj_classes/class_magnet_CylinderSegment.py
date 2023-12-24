@@ -22,28 +22,28 @@ class CylinderSegment(BaseMagnet):
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
-
-    dimension: array_like, shape (5,), default=`None`
-        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
-        the cylinder section angles in units of deg and h is the cylinder height
-        in units of mm.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
-
-    barycenter: array_like, shape (3,)
-        Read only property that returns the geometric barycenter (=center of mass)
-        of the object.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    dimension: array_like, shape (5,), default=`None`
+        Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
+        where r1<r2 denote inner and outer radii in units of meter, phi1<phi2 denote
+        the cylinder section angles in units of deg and h is the cylinder height
+        in units of meter.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
+        the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -52,6 +52,12 @@ class CylinderSegment(BaseMagnet):
         Object style inputs must be in dictionary form, e.g. `{'color':'red'}` or
         using style underscore magic, e.g. `style_color='red'`.
 
+    Attributes
+    ----------
+    barycenter: array_like, shape (3,)
+        Read only property that returns the geometric barycenter (=center of mass)
+        of the object.
+
     Returns
     -------
     magnet source: `CylinderSegment` object
@@ -59,49 +65,50 @@ class CylinderSegment(BaseMagnet):
     Examples
     --------
     `CylinderSegment` magnets are magnetic field sources. In this example we compute the
-    H-field kA/m of such a cylinder segment magnet with magnetization (100,200,300)
-    in units of mT, inner radius 1 mm, outer radius 2 mm, height 1 mm, and
-    section angles 0 and 45 deg at the observer position (2,2,2) in units of mm:
+    H-field A/m of such a cylinder segment magnet with polarization (.1,.2,.3)
+    in units of tesla, inner radius 0.01 meter, outer radius 0.02 m, height 0.01 meter, and
+    section angles 0 and 45 deg at the observer position (0.02,0.02,0.02) in units of meter:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.CylinderSegment(magnetization=(100,200,300), dimension=(1,2,1,0,45))
-    >>> H = src.getH((2,2,2))
+    >>> src = magpy.magnet.CylinderSegment(polarization=(.1,.2,.3), dimension=(.01,.02,.01,0,45))
+    >>> H = src.getH((.02,.02,.02))
     >>> print(H)
-    [0.80784692 1.93422813 2.74116805]
+    [ 807.84692335 1934.22812967 2741.16804712]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
     CylinderSegment(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
-    [[-32.82849635  30.15882073 -16.32885658]
-     [  0.62876075   3.97579164   0.73297829]
-     [  0.25439493   0.74331628   0.11682542]]
+    [[-0.0328285   0.03015882 -0.01632886]
+    [ 0.00062876  0.00397579  0.00073298]
+    [ 0.00025439  0.00074332  0.00011683]]
 
     The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). Here we use a `Sensor` object as observer.
+    observer at position (.01,.01,.01). Here we use a `Sensor` object as observer.
 
-    >>> sens = magpy.Sensor(position=(1,1,1))
-    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(.01,.01,.01))
+    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
     CylinderSegment(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
-    [[-32.82849635  30.15882073 -16.32885658]
-     [  0.62876075   3.97579164   0.73297829]
-     [  0.25439493   0.74331628   0.11682542]]
+    [[-0.0328285   0.03015882 -0.01632886]
+    [ 0.00062876  0.00397579  0.00073298]
+    [ 0.00025439  0.00074332  0.00011683]]
     """
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)
-    _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
+    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
     get_trace = make_CylinderSegment
 
     def __init__(
         self,
-        magnetization=None,
-        dimension=None,
         position=(0, 0, 0),
         orientation=None,
+        dimension=None,
+        polarization=None,
+        magnetization=None,
         style=None,
         **kwargs,
     ):
@@ -109,22 +116,24 @@ class CylinderSegment(BaseMagnet):
         self.dimension = dimension
 
         # init inheritance
-        super().__init__(position, orientation, magnetization, style, **kwargs)
+        super().__init__(
+            position, orientation, magnetization, polarization, style, **kwargs
+        )
 
     # property getters and setters
     @property
     def dimension(self):
         """
         Dimension/Size of the cylinder segment of the form (r1, r2, h, phi1, phi2)
-        where r1<r2 denote inner and outer radii in units of mm, phi1<phi2 denote
+        where r1<r2 denote inner and outer radii in units of meter, phi1<phi2 denote
         the cylinder section angles in units of deg and h is the cylinder height
-        in units of mm.
+        in units of meter.
         """
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), (mm, deg)."""
+        """Set Cylinder dimension (r1,r2,h,phi1,phi2), shape (5,), (meter, deg)."""
         self._dimension = check_format_input_cylinder_segment(dim)
 
     @property
@@ -169,8 +178,5 @@ class CylinderSegment(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [
-            unit_prefix(d / (1000 if i < 3 else 1))
-            for i, d in enumerate(self.dimension)
-        ]
-        return f"r={d[0]}m|{d[1]}m, h={d[2]}m, φ={d[3]}°|{d[4]}°"
+        d = [unit_prefix(d) for d in self.dimension]
+        return f"r={d[0]}|{d[1]}, h={d[2]}, φ={d[3]}°|{d[4]}°"
