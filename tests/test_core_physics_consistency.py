@@ -20,13 +20,20 @@ from magpylib.core import magnet_sphere_field
 from magpylib.core import magnet_tetrahedron_field
 from magpylib.core import triangle_field
 
+# PHYSICS CONSISTENCY TESTING
+#
 # Magnetic moment of a current loop with current I and surface A:
 #   mom = I * A
+#
 # Magnetic moment of a homogeneous magnet with magnetization mag and volume vol
 #   mom = vol * mag
+#
 # Current density j on magnet surface in the replacement picture
 #   j = mag = J/MU0
-
+#
+# Geometric approximation testing should give similar results for different
+# implementations when one geometry is constructed from another
+#
 # ----------> Circle          # webpage numbers
 # Circle   <> Dipole          # mom = I*A (far field approx)
 # Polyline <> Dipole          # mom = I*A (far field approx)
@@ -36,6 +43,9 @@ from magpylib.core import triangle_field
 # Polyline <> Cuboid          # j = I*N/L == J/MU0 current replacement picture
 # Circle   <> Polyline        # geometric approx
 # Cylinder <> CylinderSegment # geometric approx
+# Triangle <> Cuboid          # geometric approx
+# Triangle <> Triangle        # geometric approx
+# Cuboid   <> Tetrahedron     # geometric approx
 
 
 # Circle<>Dipole
@@ -438,3 +448,151 @@ def test_core_physics_cube_current_replacement():
         Hcurr[i] = np.sum(h, axis=0)
 
     np.testing.assert_allclose(Hcub, -Hcurr, rtol=1e-4)
+
+
+def test_core_physics_triangle_cube_geometry():
+    """test core triangle VS cube"""
+    obs = np.array([(3, 4, 5)] * 4)
+    mag = np.array([(0, 0, 333)] * 4)
+    fac = np.array(
+        [
+            [(-1, -1, 1), (1, -1, 1), (-1, 1, 1)],  # top1
+            [(1, -1, -1), (-1, -1, -1), (-1, 1, -1)],  # bott1
+            [(1, -1, 1), (1, 1, 1), (-1, 1, 1)],  # top2
+            [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
+        ]
+    )
+    b = magpy.core.triangle_field(
+        field="B",
+        observers=obs,
+        vertices=fac,
+        polarization=mag,
+    )
+    b = np.sum(b, axis=0)
+
+    obs = np.array([(3, 4, 5)])
+    mag = np.array([(0, 0, 333)])
+    dim = np.array([(2, 2, 2)])
+    bb = magpy.core.magnet_cuboid_field(
+        field="B",
+        observers=obs,
+        dimension=dim,
+        polarization=mag,
+    )[0]
+
+    np.testing.assert_allclose(b, bb)
+
+
+def test_core_physics_triangle_VS_itself():
+    """test core single triangle vs same surface split up into 4 triangular faces"""
+    obs = np.array([(3, 4, 5)])
+    mag = np.array([(111, 222, 333)])
+    fac = np.array(
+        [
+            [(0, 0, 0), (10, 0, 0), (0, 10, 0)],
+        ]
+    )
+    b = magpy.core.triangle_field(
+        field="B",
+        observers=obs,
+        polarization=mag,
+        vertices=fac,
+    )
+    b = np.sum(b, axis=0)
+
+    obs = np.array([(3, 4, 5)] * 4)
+    mag = np.array([(111, 222, 333)] * 4)
+    fac = np.array(
+        [
+            [(0, 0, 0), (3, 0, 0), (0, 10, 0)],
+            [(3, 0, 0), (5, 0, 0), (0, 10, 0)],
+            [(5, 0, 0), (6, 0, 0), (0, 10, 0)],
+            [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
+        ]
+    )
+    bb = magpy.core.triangle_field(
+        field="B",
+        observers=obs,
+        polarization=mag,
+        vertices=fac,
+    )
+    bb = np.sum(bb, axis=0)
+
+    np.testing.assert_allclose(b, bb)
+
+
+def test_core_physics_Tetrahedron_VS_Cuboid():
+    """test core tetrahedron vs cube"""
+    ver = np.array(
+        [
+            [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
+            [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
+            [(-1, -1, -1), (-1, -1, 1), (-1, 1, -1), (1, -1, -1)],
+            [(-1, 1, -1), (1, -1, -1), (-1, -1, 1), (-1, 1, 1)],
+            [(1, -1, -1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)],
+            [(-1, 1, -1), (-1, 1, 1), (1, 1, -1), (1, -1, -1)],
+        ]
+    )
+
+    mags = [
+        [1.03595366, 0.42840487, 0.10797529],
+        [0.33513152, 1.61629547, 0.15959791],
+        [0.29904441, 1.32185041, 1.81218046],
+        [0.82665456, 1.86827489, 1.67338911],
+        [0.97619806, 1.52323106, 1.63628455],
+        [1.70290645, 1.49610608, 0.13878711],
+        [1.49886747, 1.55633919, 1.41351862],
+        [0.9959534, 0.62059942, 1.28616663],
+        [0.60114354, 0.96120344, 0.32009221],
+        [0.83133901, 0.7925518, 0.64574592],
+    ]
+
+    obss = [
+        [0.82811352, 1.77818627, 0.19819379],
+        [0.84147235, 1.10200857, 1.51687527],
+        [0.30751474, 0.89773196, 0.56468564],
+        [1.87437889, 1.55908581, 1.10579983],
+        [0.64810548, 1.38123846, 1.90576802],
+        [0.48981034, 0.09376294, 0.53717129],
+        [1.42826412, 0.30246674, 0.57649909],
+        [1.58376758, 1.70420478, 0.22894022],
+        [0.26791832, 0.36839769, 0.67934335],
+        [1.15140149, 0.10549875, 0.98304184],
+    ]
+
+    for mag in mags:
+        for obs in obss:
+            obs6 = np.tile(obs, (6, 1))
+            mag6 = np.tile(mag, (6, 1))
+            b = magpy.core.magnet_tetrahedron_field(
+                field="B",
+                observers=obs6,
+                polarization=mag6,
+                vertices=ver,
+            )
+            h = magpy.core.magnet_tetrahedron_field(
+                field="H",
+                observers=obs6,
+                polarization=mag6,
+                vertices=ver,
+            )
+            b = np.sum(b, axis=0)
+            h = np.sum(h, axis=0)
+
+            obs1 = np.reshape(obs, (1, 3))
+            mag1 = np.reshape(mag, (1, 3))
+            dim = np.array([(2, 2, 2)])
+            bb = magpy.core.magnet_cuboid_field(
+                field="B",
+                observers=obs1,
+                polarization=mag1,
+                dimension=dim,
+            )[0]
+            hh = magpy.core.magnet_cuboid_field(
+                field="H",
+                observers=obs1,
+                polarization=mag1,
+                dimension=dim,
+            )[0]
+            np.testing.assert_allclose(b, bb)
+            np.testing.assert_allclose(h, hh)

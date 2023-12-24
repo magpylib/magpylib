@@ -288,3 +288,73 @@ def test_sensor_handedness():
 
     # second index is sensor index, ...,0 -> x from sl must opposite of x from sr
     np.testing.assert_allclose(B[:, 0, ..., 0], -B[:, 1, ..., 0])
+
+
+@pytest.mark.parametrize(
+    ("module", "class_", "missing_arg"),
+    [
+        ("magnet", "Cuboid", "dimension"),
+        ("magnet", "Cylinder", "dimension"),
+        ("magnet", "CylinderSegment", "dimension"),
+        ("magnet", "Sphere", "diameter"),
+        ("magnet", "Tetrahedron", "vertices"),
+        ("magnet", "TriangularMesh", "vertices"),
+        ("current", "Circle", "diameter"),
+        ("current", "Polyline", "vertices"),
+        ("misc", "Triangle", "vertices"),
+    ],
+)
+def test_getB_on_missing_dimensions(module, class_, missing_arg):
+    """test_getB_on_missing_dimensions"""
+    with pytest.raises(
+        MagpylibMissingInput,
+        match=rf"Parameter `{missing_arg}` of .* must be set.",
+    ):
+        getattr(getattr(magpy, module), class_)().getB([0, 0, 0])
+
+
+@pytest.mark.parametrize(
+    ("module", "class_", "missing_arg", "kwargs"),
+    [
+        ("magnet", "Cuboid", "magnetization", {"dimension": (1, 1, 1)}),
+        ("magnet", "Cylinder", "magnetization", {"dimension": (1, 1)}),
+        (
+            "magnet",
+            "CylinderSegment",
+            "magnetization",
+            {"dimension": (0, 1, 1, 45, 120)},
+        ),
+        ("magnet", "Sphere", "magnetization", {"diameter": 1}),
+        (
+            "magnet",
+            "Tetrahedron",
+            "magnetization",
+            {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]},
+        ),
+        (
+            "magnet",
+            "TriangularMesh",
+            "magnetization",
+            {
+                "vertices": ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
+                "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
+            },
+        ),
+        ("current", "Circle", "current", {"diameter": 1}),
+        ("current", "Polyline", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
+        (
+            "misc",
+            "Triangle",
+            "magnetization",
+            {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0)]},
+        ),
+        ("misc", "Dipole", "moment", {}),
+    ],
+)
+def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
+    """test_getB_on_missing_excitations"""
+    with pytest.raises(
+        MagpylibMissingInput,
+        match=rf"Parameter `{missing_arg}` of .* must be set.",
+    ):
+        getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])

@@ -25,7 +25,7 @@ from magpylib.core import triangle_field
 #######################################################################################
 #######################################################################################
 
-# BASIC FIELD COMPUTATION TESTS
+# NEW V5 BASIC FIELD COMPUTATION TESTS
 
 
 def test_magnet_cuboid_field_BH():
@@ -498,38 +498,48 @@ def test_current_circle_field_BH():
     np.testing.assert_allclose(H, Htest)
 
 
-# def test_current_polyline_field_BH():
-#     """Test of current polyline field core function"""
-#     vert=np.array([(-1.5,0,0), (-.5,0,0), (.5,0,0), (1.5,0,0)])
-#     B = magpy.core.current_polyline_field(
-#         field="B",
-#         observers=np.array([(0,0,1)]*3),
-#         segment_start=vert[:-1],
-#         segment_end=vert[1:],
-#         current=np.array([1, 1, 2]),
-#     )
-#     H = magpy.core.current_polyline_field(
-#         field="H",
-#         observers=np.array([(0,0,1)]*3),
-#         segment_start=vert[:-1],
-#         segment_end=vert[1:],
-#         current=np.array([1, 1, 2]),
-#     )
-#     np.testing.assert_allclose(B, MU0 * H)
+def test_current_polyline_field_BH():
+    """Test of current polyline field core function"""
+    vert = np.array([(-1.5, 0, 0), (-0.5, 0, 0), (0.5, 0, 0), (1.5, 0, 0)])
+    B = magpy.core.current_polyline_field(
+        field="B",
+        observers=np.array([(0, 0, 1)] * 3),
+        segment_start=vert[:-1],
+        segment_end=vert[1:],
+        current=np.array([1, 1, 1]),
+    )
+    H = magpy.core.current_polyline_field(
+        field="H",
+        observers=np.array([(0, 0, 1)] * 3),
+        segment_start=vert[:-1],
+        segment_end=vert[1:],
+        current=np.array([1, 1, 1]),
+    )
+    np.testing.assert_allclose(B, MU0 * H)
 
-#     Btest = np.array([
-#         [0.0, -0.03848367, 0.0],
-#         [0.0, -0.08944272, 0.0],
-#         [0.0, -0.03848367, 0.0],
-#     ])*1e-6
-#     np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
+    Btest = (
+        np.array(
+            [
+                [0.0, -0.03848367, 0.0],
+                [0.0, -0.08944272, 0.0],
+                [0.0, -0.03848367, 0.0],
+            ]
+        )
+        * 1e-6
+    )
+    np.testing.assert_allclose(B, Btest, rtol=0, atol=1e-7)
 
-#     Htest = np.array([
-#         [0.0, -30624.33145161, 0.0],
-#         [0.0, -71176.25434172, 0.0],
-#         [0.0, -30624.33145161, 0.0],
-#     ])*1e-6
-#     np.testing.assert_allclose(H, Htest, rtol=0, atol=1e-7)
+    Htest = (
+        np.array(
+            [
+                [0.0, -30624.33145161, 0.0],
+                [0.0, -71176.25434172, 0.0],
+                [0.0, -30624.33145161, 0.0],
+            ]
+        )
+        * 1e-6
+    )
+    np.testing.assert_allclose(H, Htest, rtol=0, atol=1e-7)
 
 
 def test_dipole_field_BH():
@@ -569,14 +579,17 @@ def test_dipole_field_BH():
 #######################################################################################
 #######################################################################################
 
-# FIELD COMPUTATION PHYSICS CONSISTENCY TESTS
+# OTHER TESTS AND V4 TESTS
 
 
-#######################################################################################
-#######################################################################################
-#######################################################################################
+def test_line_deprecation():
+    with pytest.warns(MagpylibDeprecationWarning):
+        x = current_line_field("B", 1, 2, 3, 4)
 
-# OLD FIELD COMPUTATION TESTS - SPECIAL CASES
+
+def test_loop_deprecation():
+    with pytest.warns(MagpylibDeprecationWarning):
+        x = current_loop_field("B", 1, 2, 3, 4)
 
 
 def test_field_loop_specials():
@@ -585,11 +598,14 @@ def test_field_loop_specials():
     dia = np.array([2, 2, 0, 0, 2, 2])
     obs = np.array([(0, 0, 0), (1, 0, 0), (0, 0, 0), (1, 0, 0), (1, 0, 0), (0, 0, 0)])
 
-    B = current_circle_field(
-        field="B",
-        observers=obs,
-        diameter=dia,
-        current=cur,
+    B = (
+        current_circle_field(
+            field="B",
+            observers=obs,
+            diameter=dia,
+            current=cur,
+        )
+        * 1e6
     )
     Btest = [
         [0, 0, 0.62831853],
@@ -611,35 +627,44 @@ def test_field_line_special_cases():
     pe1 = np.array([(2, 2, 2)])
 
     # only normal
-    B1 = current_polyline_field(
-        field="B",
-        observers=po1,
-        current=c1,
-        segment_start=ps1,
-        segment_end=pe1,
+    B1 = (
+        current_polyline_field(
+            field="B",
+            observers=po1,
+            current=c1,
+            segment_start=ps1,
+            segment_end=pe1,
+        )
+        * 1e6
     )
     x1 = np.array([[0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x1, B1, rtol=1e-6)
 
     # only on_line
     po1b = np.array([(1, 1, 1)])
-    B2 = current_polyline_field(
-        field="B",
-        observers=po1b,
-        current=c1,
-        segment_start=ps1,
-        segment_end=pe1,
+    B2 = (
+        current_polyline_field(
+            field="B",
+            observers=po1b,
+            current=c1,
+            segment_start=ps1,
+            segment_end=pe1,
+        )
+        * 1e6
     )
     x2 = np.zeros((1, 3))
     assert_allclose(x2, B2, rtol=1e-6)
 
     # only zero-segment
-    B3 = current_polyline_field(
-        field="B",
-        observers=po1,
-        current=c1,
-        segment_start=ps1,
-        segment_end=ps1,
+    B3 = (
+        current_polyline_field(
+            field="B",
+            observers=po1,
+            current=c1,
+            segment_start=ps1,
+            segment_end=ps1,
+        )
+        * 1e6
     )
     x3 = np.zeros((1, 3))
     assert_allclose(x3, B3, rtol=1e-6)
@@ -649,36 +674,45 @@ def test_field_line_special_cases():
     ps2 = np.array([(0, 0, 0)] * 2)
     pe2 = np.array([(0, 0, 0), (2, 2, 2)])
     po2 = np.array([(1, 2, 3), (1, 1, 1)])
-    B4 = current_polyline_field(
-        field="B",
-        observers=po2,
-        current=c2,
-        segment_start=ps2,
-        segment_end=pe2,
+    B4 = (
+        current_polyline_field(
+            field="B",
+            observers=po2,
+            current=c2,
+            segment_start=ps2,
+            segment_end=pe2,
+        )
+        * 1e6
     )
     x4 = np.zeros((2, 3))
     assert_allclose(x4, B4, rtol=1e-6)
 
     # normal + zero_segment
     po2b = np.array([(1, 2, 3), (1, 2, 3)])
-    B5 = current_polyline_field(
-        field="B",
-        observers=po2b,
-        current=c2,
-        segment_start=ps2,
-        segment_end=pe2,
+    B5 = (
+        current_polyline_field(
+            field="B",
+            observers=po2b,
+            current=c2,
+            segment_start=ps2,
+            segment_end=pe2,
+        )
+        * 1e6
     )
     x5 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612]])
     assert_allclose(x5, B5, rtol=1e-6)
 
     # normal + on_line
     pe2b = np.array([(2, 2, 2)] * 2)
-    B6 = current_polyline_field(
-        field="B",
-        observers=po2,
-        current=c2,
-        segment_start=ps2,
-        segment_end=pe2b,
+    B6 = (
+        current_polyline_field(
+            field="B",
+            observers=po2,
+            current=c2,
+            segment_start=ps2,
+            segment_end=pe2b,
+        )
+        * 1e6
     )
     x6 = np.array([[0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x6, B6, rtol=1e-6)
@@ -688,365 +722,213 @@ def test_field_line_special_cases():
     ps4 = np.array([(0, 0, 0)] * 3)
     pe4 = np.array([(0, 0, 0), (2, 2, 2), (2, 2, 2)])
     po4 = np.array([(1, 2, 3), (1, 2, 3), (1, 1, 1)])
-    B7 = current_polyline_field(
-        field="B",
-        observers=po4,
-        current=c4,
-        segment_start=ps4,
-        segment_end=pe4,
+    B7 = (
+        current_polyline_field(
+            field="B",
+            observers=po4,
+            current=c4,
+            segment_start=ps4,
+            segment_end=pe4,
+        )
+        * 1e6
     )
     x7 = np.array([[0, 0, 0], [0.02672612, -0.05345225, 0.02672612], [0, 0, 0]])
     assert_allclose(x7, B7, rtol=1e-6)
 
 
-#######################################################################################
-#######################################################################################
-#######################################################################################
+def test_field_loop2():
+    """test if field function accepts correct inputs"""
+    curr = np.array([1])
+    dia = np.array([2])
+    obs = np.array([[0, 0, 0]])
+    B = current_circle_field(
+        field="B",
+        observers=obs,
+        current=curr,
+        diameter=dia,
+    )
 
-# OTHER
+    curr = np.array([1] * 2)
+    dia = np.array([2] * 2)
+    obs = np.array([[0, 0, 0]] * 2)
+    B2 = current_circle_field(
+        field="B",
+        observers=obs,
+        current=curr,
+        diameter=dia,
+    )
 
-
-# def test_field_loop2():
-#     """test if field function accepts correct inputs"""
-#     curr = np.array([1])
-#     dim = np.array([2])
-#     poso = np.array([[0, 0, 0]])
-#     B = current_circle_field("B", poso, curr, dim)
-
-#     curr = np.array([1] * 2)
-#     dim = np.array([2] * 2)
-#     poso = np.array([[0, 0, 0]] * 2)
-#     B2 = current_circle_field("B", poso, curr, dim)
-
-#     assert_allclose(B, (B2[0],))
-#     assert_allclose(B, (B2[1],))
-
-
-def test_line_deprecation():
-    with pytest.warns(MagpylibDeprecationWarning):
-        x = current_line_field("B", 1, 2, 3, 4)
+    assert_allclose(B, (B2[0],))
+    assert_allclose(B, (B2[1],))
 
 
-def test_loop_deprecation():
-    with pytest.warns(MagpylibDeprecationWarning):
-        x = current_loop_field("B", 1, 2, 3, 4)
+def test_field_line_from_vert():
+    """test the Polyline field from vertex input"""
+    observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
+    current = np.array([1, 5, -3])
+
+    vertices = np.array(
+        [
+            np.array(
+                [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
+            ),
+            np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
+            np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
+        ],
+        dtype="object",
+    )
+
+    B_vert = current_vertices_field(
+        field="B",
+        observers=observers,
+        vertices=vertices,
+        current=current,
+    )
+
+    B = []
+    for obs, vert, curr in zip(observers, vertices, current):
+        p1 = vert[:-1]
+        p2 = vert[1:]
+        po = np.array([obs] * (len(vert) - 1))
+        cu = np.array([curr] * (len(vert) - 1))
+        B += [
+            np.sum(
+                current_polyline_field(
+                    field="B",
+                    observers=po,
+                    current=cu,
+                    segment_start=p1,
+                    segment_end=p2,
+                ),
+                axis=0,
+            )
+        ]
+    B = np.array(B)
+
+    assert_allclose(B_vert, B)
 
 
-# def test_field_line_from_vert():
-#     """test the Polyline field from vertex input"""
-#     observers = np.array([(1, 2, 2), (1, 2, 3), (-1, 0, -3)])
-#     current = np.array([1, 5, -3])
-
-#     vertices = np.array(
-#         [
-#             np.array(
-#                 [(0, 0, 0), (1, 1, 1), (2, 2, 2), (3, 3, 3), (1, 2, 3), (-3, 4, -5)]
-#             ),
-#             np.array([(0, 0, 0), (3, 3, 3), (-3, 4, -5)]),
-#             np.array([(1, 2, 3), (-2, -3, 3), (3, 2, 1), (3, 3, 3)]),
-#         ],
-#         dtype="object",
-#     )
-
-#     B_vert = current_vertices_field("B", observers, current, vertices)
-
-#     B = []
-#     for obs, vert, curr in zip(observers, vertices, current):
-#         p1 = vert[:-1]
-#         p2 = vert[1:]
-#         po = np.array([obs] * (len(vert) - 1))
-#         cu = np.array([curr] * (len(vert) - 1))
-#         B += [np.sum(current_polyline_field("B", po, cu, p1, p2), axis=0)]
-#     B = np.array(B)
-
-#     assert_allclose(B_vert, B)
-
-
-# def test_field_line_v4():
-#     """test current_line_Bfield() for all cases"""
-#     cur = np.array([1] * 7)
-#     start = np.array([(-1, 0, 0)] * 7)
-#     end = np.array([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
-#     obs = np.array(
-#         [
-#             (0, 0, 1),
-#             (0, 0, 0),
-#             (0, 0, 0),
-#             (0, 0, 0),
-#             (0, 0, 1e-16),
-#             (2, 0, 1),
-#             (-2, 0, 1),
-#         ]
-#     )
-#     B = current_polyline_field("B", obs, cur, start, end)
-#     Btest = np.array(
-#         [
-#             [0, -0.14142136, 0],
-#             [0, 0.0, 0],
-#             [0, 0.0, 0],
-#             [0, 0.0, 0],
-#             [0, 0.0, 0],
-#             [0, -0.02415765, 0],
-#             [0, -0.02415765, 0],
-#         ]
-#     )
-#     np.testing.assert_allclose(B, Btest)
+def test_field_line_v4():
+    """test current_line_Bfield() for all cases"""
+    cur = np.array([1] * 7)
+    start = np.array([(-1, 0, 0)] * 7)
+    end = np.array([(1, 0, 0), (-1, 0, 0), (1, 0, 0), (-1, 0, 0)] + [(1, 0, 0)] * 3)
+    obs = np.array(
+        [
+            (0, 0, 1),
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 0),
+            (0, 0, 1e-16),
+            (2, 0, 1),
+            (-2, 0, 1),
+        ]
+    )
+    B = (
+        current_polyline_field(
+            field="B",
+            observers=obs,
+            current=cur,
+            segment_start=start,
+            segment_end=end,
+        )
+        * 1e6
+    )
+    Btest = np.array(
+        [
+            [0, -0.14142136, 0],
+            [0, 0.0, 0],
+            [0, 0.0, 0],
+            [0, 0.0, 0],
+            [0, 0.0, 0],
+            [0, -0.02415765, 0],
+            [0, -0.02415765, 0],
+        ]
+    )
+    np.testing.assert_allclose(B, Btest)
 
 
-# def test_triangle1():
-#     """test core triangle VS cube"""
-#     obs = np.array([(3, 4, 5)] * 4)
-#     mag = np.array([(0, 0, 333)] * 4)
-#     fac = np.array(
-#         [
-#             [(-1, -1, 1), (1, -1, 1), (-1, 1, 1)],  # top1
-#             [(1, -1, -1), (-1, -1, -1), (-1, 1, -1)],  # bott1
-#             [(1, -1, 1), (1, 1, 1), (-1, 1, 1)],  # top2
-#             [(1, 1, -1), (1, -1, -1), (-1, 1, -1)],  # bott2
-#         ]
-#     )
-#     b = magpy.core.triangle_field("B", obs, mag, fac)
-#     b = np.sum(b, axis=0)
+def test_triangle5():
+    """special case tests on edges - result is continuous and 0 for vertical component"""
+    btest1 = [
+        [26.29963526814195, 15.319834473660082, 0.0],
+        [54.91549594789228, 41.20535983076747, 0.0],
+        [32.25241487782939, 15.087161660417559, 0.0],
+        [10.110611199952707, -11.41176203622237, 0.0],
+        [-3.8084378251737285, -30.875600143560657, -0.0],
+        [-15.636505140623612, -50.00854548249858, -0.0],
+        [-27.928308992688645, -72.80800891847107, -0.0],
+        [-45.34417750711242, -109.5871836961927, -0.0],
+        [-36.33970306054345, 12.288824457077656, 0.0],
+        [-16.984738462958845, 4.804383318447626, 0.0],
+    ]
 
-#     obs = np.array([(3, 4, 5)])
-#     mag = np.array([(0, 0, 333)])
-#     dim = np.array([(2, 2, 2)])
-#     bb = magpy.core.magnet_cuboid_field("B", obs, mag, dim)[0]
+    btest2 = [
+        [15.31983447366009, 26.299635268142033, 0.0],
+        [41.20535983076747, 54.91549594789104, 0.0],
+        [-72.61316618947018, 32.25241487782958, 0.0],
+        [-54.07597251255013, 10.110611199952693, 0.0],
+        [-44.104089712909634, -3.808437825173785, -0.0],
+        [-36.78005591314963, -15.636505140623605, -0.0],
+        [-30.143798442143236, -27.92830899268858, -0.0],
+        [-21.886855846306176, -45.34417750711366, -0.0],
+        [12.288824457077965, -36.33970306054315, 0.0],
+        [4.80438331844773, -16.98473846295874, 0.0],
+    ]
 
-#     np.testing.assert_allclose(b, bb)
+    n = 10
+    ts = np.linspace(-1, 6, n)
+    obs1 = np.array([(t, 0, 0) for t in ts])
+    obs2 = np.array([(0, t, 0) for t in ts])
+    mag = np.array([(111, 222, 333)] * n)
+    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
 
-
-# def test_triangle2():
-#     """test core single triangle vs same surface split up into 4 triangular faces"""
-#     obs = np.array([(3, 4, 5)])
-#     mag = np.array([(111, 222, 333)])
-#     fac = np.array(
-#         [
-#             [(0, 0, 0), (10, 0, 0), (0, 10, 0)],
-#         ]
-#     )
-#     b = magpy.core.triangle_field("B", obs, mag, fac)
-#     b = np.sum(b, axis=0)
-
-#     obs = np.array([(3, 4, 5)] * 4)
-#     mag = np.array([(111, 222, 333)] * 4)
-#     fac = np.array(
-#         [
-#             [(0, 0, 0), (3, 0, 0), (0, 10, 0)],
-#             [(3, 0, 0), (5, 0, 0), (0, 10, 0)],
-#             [(5, 0, 0), (6, 0, 0), (0, 10, 0)],
-#             [(6, 0, 0), (10, 0, 0), (0, 10, 0)],
-#         ]
-#     )
-#     bb = magpy.core.triangle_field("B", obs, mag, fac)
-#     bb = np.sum(bb, axis=0)
-
-#     np.testing.assert_allclose(b, bb)
-
-
-# def test_triangle3():
-#     """test core tetrahedron vs cube"""
-#     ver = np.array(
-#         [
-#             [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
-#             [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
-#             [(-1, -1, -1), (-1, -1, 1), (-1, 1, -1), (1, -1, -1)],
-#             [(-1, 1, -1), (1, -1, -1), (-1, -1, 1), (-1, 1, 1)],
-#             [(1, -1, -1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)],
-#             [(-1, 1, -1), (-1, 1, 1), (1, 1, -1), (1, -1, -1)],
-#         ]
-#     )
-
-#     mags = [
-#         [1.03595366, 0.42840487, 0.10797529],
-#         [0.33513152, 1.61629547, 0.15959791],
-#         [0.29904441, 1.32185041, 1.81218046],
-#         [0.82665456, 1.86827489, 1.67338911],
-#         [0.97619806, 1.52323106, 1.63628455],
-#         [1.70290645, 1.49610608, 0.13878711],
-#         [1.49886747, 1.55633919, 1.41351862],
-#         [0.9959534, 0.62059942, 1.28616663],
-#         [0.60114354, 0.96120344, 0.32009221],
-#         [0.83133901, 0.7925518, 0.64574592],
-#     ]
-
-#     obss = [
-#         [0.82811352, 1.77818627, 0.19819379],
-#         [0.84147235, 1.10200857, 1.51687527],
-#         [0.30751474, 0.89773196, 0.56468564],
-#         [1.87437889, 1.55908581, 1.10579983],
-#         [0.64810548, 1.38123846, 1.90576802],
-#         [0.48981034, 0.09376294, 0.53717129],
-#         [1.42826412, 0.30246674, 0.57649909],
-#         [1.58376758, 1.70420478, 0.22894022],
-#         [0.26791832, 0.36839769, 0.67934335],
-#         [1.15140149, 0.10549875, 0.98304184],
-#     ]
-
-#     for mag in mags:
-#         for obs in obss:
-#             obs6 = np.tile(obs, (6, 1))
-#             mag6 = np.tile(mag, (6, 1))
-#             b = magpy.core.magnet_tetrahedron_field("B", obs6, mag6, ver)
-#             h = magpy.core.magnet_tetrahedron_field("H", obs6, mag6, ver)
-#             b = np.sum(b, axis=0)
-#             h = np.sum(h, axis=0)
-
-#             obs1 = np.reshape(obs, (1, 3))
-#             mag1 = np.reshape(mag, (1, 3))
-#             dim = np.array([(2, 2, 2)])
-#             bb = magpy.core.magnet_cuboid_field("B", obs1, mag1, dim)[0]
-#             hh = magpy.core.magnet_cuboid_field("H", obs1, mag1, dim)[0]
-#             np.testing.assert_allclose(b, bb)
-#             np.testing.assert_allclose(h, hh)
+    b1 = (
+        magpy.core.triangle_field(
+            field="H",
+            observers=obs1,
+            polarization=mag,
+            vertices=ver,
+        )
+        * 1e-6
+    )
+    np.testing.assert_allclose(btest1, b1)
+    b2 = (
+        magpy.core.triangle_field(
+            field="H",
+            observers=obs2,
+            polarization=mag,
+            vertices=ver,
+        )
+        * 1e-6
+    )
+    np.testing.assert_allclose(btest2, b2)
 
 
-# def test_triangle4():
-#     """test core tetrahedron vs cube"""
-#     obs = np.array([(3, 4, 5)] * 6)
-#     mag = np.array([(111, 222, 333)] * 6)
-#     ver = np.array(
-#         [
-#             [(1, 1, -1), (1, 1, 1), (-1, 1, 1), (1, -1, 1)],
-#             [(-1, -1, 1), (-1, 1, 1), (1, -1, 1), (1, -1, -1)],
-#             [(-1, -1, -1), (-1, -1, 1), (-1, 1, -1), (1, -1, -1)],
-#             [(-1, 1, -1), (1, -1, -1), (-1, -1, 1), (-1, 1, 1)],
-#             [(1, -1, -1), (1, 1, -1), (1, -1, 1), (-1, 1, 1)],
-#             [(-1, 1, -1), (-1, 1, 1), (1, 1, -1), (1, -1, -1)],
-#         ]
-#     )
-#     b = magpy.core.magnet_tetrahedron_field("B", obs, mag, ver)
-#     b = np.sum(b, axis=0)
-
-#     obs = np.array([(3, 4, 5)])
-#     mag = np.array([(111, 222, 333)])
-#     dim = np.array([(2, 2, 2)])
-#     bb = magpy.core.magnet_cuboid_field("B", obs, mag, dim)[0]
-
-#     np.testing.assert_allclose(b, bb)
-
-
-# def test_triangle5():
-#     """special case tests on edges - result is continuous and 0 for vertical component"""
-#     btest1 = [
-#         [26.29963526814195, 15.319834473660082, 0.0],
-#         [54.91549594789228, 41.20535983076747, 0.0],
-#         [32.25241487782939, 15.087161660417559, 0.0],
-#         [10.110611199952707, -11.41176203622237, 0.0],
-#         [-3.8084378251737285, -30.875600143560657, -0.0],
-#         [-15.636505140623612, -50.00854548249858, -0.0],
-#         [-27.928308992688645, -72.80800891847107, -0.0],
-#         [-45.34417750711242, -109.5871836961927, -0.0],
-#         [-36.33970306054345, 12.288824457077656, 0.0],
-#         [-16.984738462958845, 4.804383318447626, 0.0],
-#     ]
-
-#     btest2 = [
-#         [15.31983447366009, 26.299635268142033, 0.0],
-#         [41.20535983076747, 54.91549594789104, 0.0],
-#         [-72.61316618947018, 32.25241487782958, 0.0],
-#         [-54.07597251255013, 10.110611199952693, 0.0],
-#         [-44.104089712909634, -3.808437825173785, -0.0],
-#         [-36.78005591314963, -15.636505140623605, -0.0],
-#         [-30.143798442143236, -27.92830899268858, -0.0],
-#         [-21.886855846306176, -45.34417750711366, -0.0],
-#         [12.288824457077965, -36.33970306054315, 0.0],
-#         [4.80438331844773, -16.98473846295874, 0.0],
-#     ]
-
-#     n = 10
-#     ts = np.linspace(-1, 6, n)
-#     obs1 = np.array([(t, 0, 0) for t in ts])
-#     obs2 = np.array([(0, t, 0) for t in ts])
-#     mag = np.array([(111, 222, 333)] * n)
-#     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]] * n)
-
-#     b1 = magpy.core.triangle_field("H", obs1, mag, ver)
-#     np.testing.assert_allclose(btest1, b1)
-#     b2 = magpy.core.triangle_field("H", obs2, mag, ver)
-#     np.testing.assert_allclose(btest2, b2)
-
-
-# def test_triangle6():
-#     """special case tests on corners - result is nan"""
-#     obs1 = np.array([(0, 0, 0)])
-#     obs2 = np.array([(0, 5, 0)])
-#     obs3 = np.array([(5, 0, 0)])
-#     mag = np.array([(111, 222, 333)])
-#     ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
-#     b1 = magpy.core.triangle_field("B", obs1, mag, ver)
-#     b2 = magpy.core.triangle_field("B", obs2, mag, ver)
-#     b3 = magpy.core.triangle_field("B", obs3, mag, ver)
-
-#     for b in [b1, b2, b3]:
-#         np.testing.assert_equal(b, np.array([[np.nan] * 3]))
-
-
-# @pytest.mark.parametrize(
-#     ("module", "class_", "missing_arg"),
-#     [
-#         ("magnet", "Cuboid", "dimension"),
-#         ("magnet", "Cylinder", "dimension"),
-#         ("magnet", "CylinderSegment", "dimension"),
-#         ("magnet", "Sphere", "diameter"),
-#         ("magnet", "Tetrahedron", "vertices"),
-#         ("magnet", "TriangularMesh", "vertices"),
-#         ("current", "Circle", "diameter"),
-#         ("current", "Polyline", "vertices"),
-#         ("misc", "Triangle", "vertices"),
-#     ],
-# )
-# def test_getB_on_missing_dimensions(module, class_, missing_arg):
-#     """test_getB_on_missing_dimensions"""
-#     with pytest.raises(
-#         MagpylibMissingInput,
-#         match=rf"Parameter `{missing_arg}` of .* must be set.",
-#     ):
-#         getattr(getattr(magpy, module), class_)().getB([0, 0, 0])
-
-
-# @pytest.mark.parametrize(
-#     ("module", "class_", "missing_arg", "kwargs"),
-#     [
-#         ("magnet", "Cuboid", "magnetization", {"dimension": (1, 1, 1)}),
-#         ("magnet", "Cylinder", "magnetization", {"dimension": (1, 1)}),
-#         (
-#             "magnet",
-#             "CylinderSegment",
-#             "magnetization",
-#             {"dimension": (0, 1, 1, 45, 120)},
-#         ),
-#         ("magnet", "Sphere", "magnetization", {"diameter": 1}),
-#         (
-#             "magnet",
-#             "Tetrahedron",
-#             "magnetization",
-#             {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)]},
-#         ),
-#         (
-#             "magnet",
-#             "TriangularMesh",
-#             "magnetization",
-#             {
-#                 "vertices": ((0, 0, 0), (1, 0, 0), (0, 1, 0), (0, 0, 1)),
-#                 "faces": ((0, 1, 2), (0, 1, 3), (0, 2, 3), (1, 2, 3)),
-#             },
-#         ),
-#         ("current", "Circle", "current", {"diameter": 1}),
-#         ("current", "Polyline", "current", {"vertices": [[0, -1, 0], [0, 1, 0]]}),
-#         (
-#             "misc",
-#             "Triangle",
-#             "magnetization",
-#             {"vertices": [(0, 0, 0), (1, 0, 0), (0, 1, 0)]},
-#         ),
-#         ("misc", "Dipole", "moment", {}),
-#     ],
-# )
-# def test_getB_on_missing_excitations(module, class_, missing_arg, kwargs):
-#     """test_getB_on_missing_excitations"""
-#     with pytest.raises(
-#         MagpylibMissingInput,
-#         match=rf"Parameter `{missing_arg}` of .* must be set.",
-#     ):
-#         getattr(getattr(magpy, module), class_)(**kwargs).getB([0, 0, 0])
+def test_triangle6():
+    """special case tests on corners - result is nan"""
+    obs1 = np.array([(0, 0, 0)])
+    obs2 = np.array([(0, 5, 0)])
+    obs3 = np.array([(5, 0, 0)])
+    mag = np.array([(1, 2, 3)])
+    ver = np.array([[(0, 0, 0), (0, 5, 0), (5, 0, 0)]])
+    b1 = magpy.core.triangle_field(
+        field="B",
+        observers=obs1,
+        polarization=mag,
+        vertices=ver,
+    )
+    b2 = magpy.core.triangle_field(
+        field="B",
+        observers=obs2,
+        polarization=mag,
+        vertices=ver,
+    )
+    b3 = magpy.core.triangle_field(
+        field="B",
+        observers=obs3,
+        polarization=mag,
+        vertices=ver,
+    )
+    for b in [b1, b2, b3]:
+        np.testing.assert_equal(b, np.array([[np.nan] * 3]))
