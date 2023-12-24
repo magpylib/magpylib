@@ -17,21 +17,25 @@ class Cylinder(BaseMagnet):
 
     Parameters
     ----------
-    magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
-
-    dimension: array_like, shape (2,), default=`None`
-        Dimension (d,h) denote diameter and height of the cylinder in units of mm.
-
     position: array_like, shape (3,) or (m,3), default=`(0,0,0)`
-        Object position(s) in the global coordinates in units of mm. For m>1, the
+        Object position(s) in the global coordinates in units of meter. For m>1, the
         `position` and `orientation` attributes together represent an object path.
 
     orientation: scipy `Rotation` object with length 1 or m, default=`None`
         Object orientation(s) in the global coordinates. `None` corresponds to
         a unit-rotation. For m>1, the `position` and `orientation` attributes
         together represent an object path.
+
+    dimension: array_like, shape (2,), default=`None`
+        Dimension (d,h) denote diameter and height of the cylinder in units of meter.
+
+    polarization: array_like, shape (3,), default=`None`
+        Magnetic polarization vector J = mu0*M in units of T,
+        given in the local object coordinates (rotates with object).
+
+    magnetization: array_like, shape (3,), default=`None`
+        Magnetization vector (mu0*M, remanence field) in units of mT given in
+        the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
@@ -46,31 +50,31 @@ class Cylinder(BaseMagnet):
 
     Examples
     --------
-    `Cylinder` magnets are magnetic field sources. Below we compute the H-field in kA/m of a
-    cylinder magnet with magnetization (100,200,300) in units of mT and 1 mm diameter and height
-    at the observer position (1,1,1) given in units of mm:
+    `Cylinder` magnets are magnetic field sources. Below we compute the H-field in A/m of a
+    cylinder magnet with polarization (.1,.2,.3) in units of tesla and 0.01 meter diameter and
+    height at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
-    >>> src = magpy.magnet.Cylinder(magnetization=(100,200,300), dimension=(1,1))
-    >>> H = src.getH((1,1,1))
+    >>> src = magpy.magnet.Cylinder(polarization=(.1,.2,.3), dimension=(.01,.01))
+    >>> H = src.getH((.01,.01,.01))
     >>> print(H)
-    [4.84991343 3.88317816 2.73973202]
+    [4849.91343385 3883.17815728 2739.73202386]
 
     We rotate the source object, and compute the B-field, this time at a set of observer positions:
 
     >>> src.rotate_from_angax(45, 'x')
     Cylinder(id=...)
-    >>> B = src.getB([(1,1,1), (2,2,2), (3,3,3)])
+    >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
     [[3.31419501 5.26683023 0.37767015]
      [0.42298405 0.67710536 0.04464932]
      [0.12571523 0.20144503 0.01312389]]
 
     The same result is obtained when the rotated source moves along a path away from an
-    observer at position (1,1,1). Here we use a `Sensor` object as observer.
+    observer at position (0.01,0.01,0.01). Here we use a `Sensor` object as observer.
 
-    >>> sens = magpy.Sensor(position=(1,1,1))
-    >>> src.move([(-1,-1,-1), (-2,-2,-2)])
+    >>> sens = magpy.Sensor(position=(.01,.01,.01))
+    >>> src.move([(-.01,-.01,-.01), (-.02,-.02,-.02)])
     Cylinder(id=...)
     >>> B = src.getB(sens)
     >>> print(B)
@@ -80,15 +84,16 @@ class Cylinder(BaseMagnet):
     """
 
     _field_func = staticmethod(magnet_cylinder_field)
-    _field_func_kwargs_ndim = {"magnetization": 2, "dimension": 2}
+    _field_func_kwargs_ndim = {"polarization": 2, "dimension": 2}
     get_trace = make_Cylinder
 
     def __init__(
         self,
-        magnetization=None,
-        dimension=None,
         position=(0, 0, 0),
         orientation=None,
+        dimension=None,
+        polarization=None,
+        magnetization=None,
         style=None,
         **kwargs,
     ):
@@ -96,17 +101,19 @@ class Cylinder(BaseMagnet):
         self.dimension = dimension
 
         # init inheritance
-        super().__init__(position, orientation, magnetization, style, **kwargs)
+        super().__init__(
+            position, orientation, magnetization, polarization, style, **kwargs
+        )
 
     # property getters and setters
     @property
     def dimension(self):
-        """Dimension (d,h) denote diameter and height of the cylinder in units of mm."""
+        """Dimension (d,h) denote diameter and height of the cylinder in units of meter."""
         return self._dimension
 
     @dimension.setter
     def dimension(self, dim):
-        """Set Cylinder dimension (d,h) in units of mm."""
+        """Set Cylinder dimension (d,h) in units of meter."""
         self._dimension = check_format_input_vector(
             dim,
             dims=(1,),
@@ -122,5 +129,5 @@ class Cylinder(BaseMagnet):
         """Default style description text"""
         if self.dimension is None:
             return "no dimension"
-        d = [unit_prefix(d / 1000) for d in self.dimension]
-        return f"D={d[0]}m, H={d[1]}m"
+        d = [unit_prefix(d) for d in self.dimension]
+        return f"D={d[0]}, H={d[1]}"
