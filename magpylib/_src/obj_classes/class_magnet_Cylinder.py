@@ -34,8 +34,8 @@ class Cylinder(BaseMagnet):
         given in the local object coordinates (rotates with object).
 
     magnetization: array_like, shape (3,), default=`None`
-        Magnetization vector (mu0*M, remanence field) in units of mT given in
-        the local object coordinates (rotates with object).
+        Magnetization vector M = J/mu0 in units of A/m,
+        given in the local object coordinates (rotates with object).
 
     parent: `Collection` object or `None`
         The object is a child of it's parent collection.
