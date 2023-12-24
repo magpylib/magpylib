@@ -583,13 +583,34 @@ def test_dipole_field_BH():
 
 
 def test_line_deprecation():
+    """test line deprecation"""
+    kw = {
+        "field": "B",
+        "observers": np.array([(0, 0, 1)]),
+        "segment_start": np.array([(0, 0, 1)]),
+        "segment_end": np.array([(0, 0, 1)]),
+        "current": np.array([1]),
+    }
+    B1 = current_polyline_field(**kw)
     with pytest.warns(MagpylibDeprecationWarning):
-        x = current_line_field("B", 1, 2, 3, 4)
+        B2 = current_line_field(**kw)
+
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_loop_deprecation():
+    """test loop deprecation"""
+    kw = {
+        "field": "B",
+        "observers": np.array([(0, 0, 1)]),
+        "diameter": np.array([1]),
+        "current": np.array([1]),
+    }
+    B1 = current_circle_field(**kw)
     with pytest.warns(MagpylibDeprecationWarning):
-        x = current_loop_field("B", 1, 2, 3, 4)
+        B2 = current_loop_field(**kw)
+
+    np.testing.assert_allclose(B1, B2)
 
 
 def test_field_loop_specials():
