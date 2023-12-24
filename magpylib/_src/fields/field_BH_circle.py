@@ -55,11 +55,11 @@ def current_circle_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> H = magpy.core.current_circle_field(
-    >>>     field='H',
-    >>>     observers=np.array([(0,0,0), (1,1,1), (2,2,2)]),
-    >>>     diameter=np.array([1,2,3]),
-    >>>     current=np.array([1,1,2])
-    >>> )
+    ...     field='H',
+    ...     observers=np.array([(0,0,0), (1,1,1), (2,2,2)]),
+    ...     diameter=np.array([1,2,3]),
+    ...     current=np.array([1,1,2])
+    ... )
     >>> print(H)
     [[0.         0.         1.        ]
      [0.0496243  0.0496243  0.02124542]

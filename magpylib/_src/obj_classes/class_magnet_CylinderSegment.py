@@ -82,8 +82,8 @@ class CylinderSegment(BaseMagnet):
     >>> B = src.getB([(.01,.01,.01), (.02,.02,.02), (.03,.03,.03)])
     >>> print(B)
     [[-0.0328285   0.03015882 -0.01632886]
-    [ 0.00062876  0.00397579  0.00073298]
-    [ 0.00025439  0.00074332  0.00011683]]
+     [ 0.00062876  0.00397579  0.00073298]
+     [ 0.00025439  0.00074332  0.00011683]]
 
     The same result is obtained when the rotated source moves along a path away from an
     observer at position (.01,.01,.01). Here we use a `Sensor` object as observer.
@@ -94,8 +94,8 @@ class CylinderSegment(BaseMagnet):
     >>> B = src.getB(sens)
     >>> print(B)
     [[-0.0328285   0.03015882 -0.01632886]
-    [ 0.00062876  0.00397579  0.00073298]
-    [ 0.00025439  0.00074332  0.00011683]]
+     [ 0.00062876  0.00397579  0.00073298]
+     [ 0.00025439  0.00074332  0.00011683]]
     """
 
     _field_func = staticmethod(magnet_cylinder_segment_field_internal)

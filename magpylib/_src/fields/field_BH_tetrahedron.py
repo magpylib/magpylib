@@ -98,11 +98,11 @@ def magnet_tetrahedron_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.magnet_tetrahedron_field(
-    >>>     field='B',
-    >>>     observers=np.array([(1,2,3), (2,3,4)]),
-    >>>     vertices=np.array([((-1,0,0), (1,-1,0), (1,1,0), (0,0,1))]*2),
-    >>>     polarization=np.array([(222,333,444), (111,112,113)]),
-    >>> )
+    ...     field='B',
+    ...     observers=np.array([(1,2,3), (2,3,4)]),
+    ...     vertices=np.array([((-1,0,0), (1,-1,0), (1,1,0), (0,0,1))]*2),
+    ...     polarization=np.array([(222,333,444), (111,112,113)]),
+    ... )
     >>> print(B)
     [[0.19075398 0.8240532  1.18170862]
      [0.03125701 0.08445416 0.1178967 ]]

@@ -290,11 +290,11 @@ def magnet_cylinder_field(
     >>> import numpy as np
     >>> import magpylib as magpy
     >>> B = magpy.core.magnet_cylinder_field(
-    >>>     field='B',
-    >>>     observers=np.array([(1,0,0), (1,0,0)]),
-    >>>     dimension=np.array([(1,1), (1,3)]),
-    >>>     polarization=np.array([(0,0,1), (.5,0,.5)]),
-    >>> )
+    ...     field='B',
+    ...     observers=np.array([(1,0,0), (1,0,0)]),
+    ...     dimension=np.array([(1,1), (1,3)]),
+    ...     polarization=np.array([(0,0,1), (.5,0,.5)]),
+    ... )
     >>> print(B)
     [[ 0.          0.         -0.05185272]
      [ 0.06821654  0.         -0.01576545]]

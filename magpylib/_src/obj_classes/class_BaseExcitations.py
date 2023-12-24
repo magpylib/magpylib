@@ -90,12 +90,12 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         Compute the B-field of a spherical magnet at three positions:
 
         >>> import magpylib as magpy
-        >>> src = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> B = src.getB(((0,0,0), (1,0,0), (2,0,0)))
         >>> print(B)
-        [[  0.           0.         666.66666667]
-         [  0.           0.         -41.66666667]
-         [  0.           0.          -5.20833333]]
+        [[ 0.          0.          0.66666667]
+         [ 0.          0.         -0.04166667]
+         [ 0.          0.         -0.00520833]]
 
         Compute the B-field at two sensors, each one with two pixels
 
@@ -103,11 +103,11 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         >>> sens2 = sens1.copy(position=(2,0,0))
         >>> B = src.getB(sens1, sens2)
         >>> print(B)
-        [[[ 12.19288783   0.         -39.83010025]
-          [-12.19288783   0.         -39.83010025]]
+        [[[ 0.01219289  0.         -0.0398301 ]
+          [-0.01219289  0.         -0.0398301 ]]
         <BLANKLINE>
-         [[  0.77638847   0.          -5.15004352]
-          [ -0.77638847   0.          -5.15004352]]]
+         [[ 0.00077639  0.         -0.00515004]
+          [-0.00077639  0.         -0.00515004]]]
         """
         observers = format_star_input(observers)
         return getBH_level2(
@@ -160,12 +160,12 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
 
         >>> import magpylib as magpy
 
-        >>> src = magpy.magnet.Sphere((0,0,1000), 1)
+        >>> src = magpy.magnet.Sphere(polarization=(0,0,1.), diameter=1)
         >>> H = src.getH(((0,0,0), (1,0,0), (2,0,0)))
         >>> print(H)
-        [[   0.            0.         -265.25823849]
-         [   0.            0.          -33.15727981]
-         [   0.            0.           -4.14465998]]
+        [[      0.               0.         -265258.23848649]
+         [      0.               0.          -33157.27981081]
+         [      0.               0.           -4144.65997635]]
 
         Compute the H-field at two sensors, each one with two pixels
 
@@ -173,11 +173,12 @@ class BaseSource(BaseGeo, BaseDisplayRepr):
         >>> sens2 = sens1.copy(position=(2,0,0))
         >>> H = src.getH(sens1, sens2)
         >>> print(H)
-        [[[  9.70279185   0.         -31.69578669]
-          [ -9.70279185   0.         -31.69578669]]
+        [[[  9702.7918453       0.         -31695.78669464]
+          [ -9702.7918453       0.         -31695.78669464]]
         <BLANKLINE>
-         [[  0.61783031   0.          -4.09827441]
-          [ -0.61783031   0.          -4.09827441]]]
+         [[   617.83031378      0.          -4098.27441472]
+          [  -617.83031378      0.          -4098.27441472]]]
+
         """
         observers = format_star_input(observers)
         return getBH_level2(

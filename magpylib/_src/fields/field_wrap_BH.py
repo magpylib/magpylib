@@ -676,8 +676,8 @@ def getB(
     >>> src2 = magpy.magnet.Sphere(polarization=(0,0,.1), diameter=.001)
     >>> B = magpy.getB([src1, src2], (.01,.01,.01))
     >>> print(B)
-    [[6.23597388e+00 6.23597388e+00 2.66977810e+00]
-     [8.01875374e-01 8.01875374e-01 1.48029737e-16]]
+    [[6.05434592e-06 6.05434592e-06 2.35680448e-08]
+     [8.01875374e-07 8.01875374e-07 1.51582450e-22]]
 
     We can also use sensor objects as observers input:
 
