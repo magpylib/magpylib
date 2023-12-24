@@ -4,7 +4,6 @@ from numpy.testing import assert_allclose
 
 import magpylib as magpy
 from magpylib._src.exceptions import MagpylibDeprecationWarning
-from magpylib._src.exceptions import MagpylibMissingInput
 from magpylib._src.fields.field_BH_polyline import current_vertices_field
 from magpylib._src.fields.field_BH_triangularmesh import magnet_trimesh_field
 from magpylib._src.utility import MU0
@@ -12,9 +11,7 @@ from magpylib.core import current_circle_field
 from magpylib.core import current_line_field
 from magpylib.core import current_loop_field
 from magpylib.core import current_polyline_field
-from magpylib.core import dipole_field
 from magpylib.core import magnet_cuboid_field
-from magpylib.core import magnet_cylinder_field
 from magpylib.core import magnet_cylinder_segment_field
 from magpylib.core import magnet_sphere_field
 from magpylib.core import magnet_tetrahedron_field

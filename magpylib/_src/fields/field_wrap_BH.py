@@ -668,8 +668,8 @@ def getB(
 
     Examples
     --------
-    In this example we compute the B-field in units of tesla of a spherical magnet and a current loop
-    at the observer position (0.01,0.01,0.01) given in units of meter:
+    In this example we compute the B-field in units of tesla of a spherical magnet and a current
+    loop at the observer position (0.01,0.01,0.01) given in units of meter:
 
     >>> import magpylib as magpy
     >>> src1 = magpy.current.Circle(current=100, diameter=.002)

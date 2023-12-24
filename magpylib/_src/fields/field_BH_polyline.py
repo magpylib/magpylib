@@ -35,7 +35,11 @@ def current_vertices_field(
     """
     if vertices is None:
         return current_polyline_field(
-            field, observers, current, segment_start, segment_end
+            field=field,
+            observers=observers,
+            current=current,
+            segment_start=segment_start,
+            segment_end=segment_end,
         )
 
     nvs = np.array([f.shape[0] for f in vertices])  # lengths of vertices sets
